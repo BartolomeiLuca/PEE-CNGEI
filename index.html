@@ -38,6 +38,7 @@ html{scroll-behavior:smooth}
 body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh}
 
 /* ── HEADER ── */
+.unit-name{margin-top:14px;max-width:520px}.unit-name label{display:block;font:700 10px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:5px}.unit-name input{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm,8px);font:600 15px 'Montserrat',sans-serif;color:var(--ink);background:#fff}.unit-name input:focus{outline:none;border-color:var(--green)}.unit-name input:disabled{background:#f5f5f2;color:var(--ink)}
 .hdr{background:var(--green);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.2)}
 .hdr-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:14px;height:56px}
 .logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -1095,6 +1096,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <div class="hero-eye" id="hero-eye1">Fase 1</div>
       <h1 id="hero-title1">Osservazione</h1>
       <p id="hero-desc1"></p>
+      <div class="unit-name"><label for="unit-name-in" id="unit-name-lbl">Nome dell'Unità</label><input id="unit-name-in" type="text" maxlength="60" autocomplete="off" oninput="setUnitName(this.value)"></div>
     </div>
       <div class="tutorial-box" id="tut-panel1">
       <button class="tutorial-close" onclick="closeTutorial('panel1')" title="Chiudi">×</button>
@@ -1317,6 +1319,7 @@ let STAFF_TYPE = null;// 'young' | 'misto' | 'esperto'
 let STAFF_RUOLO = null; // 'CU' | 'CG'
 let STAFF_MEMBERS = []; // array di nomi membri staff
 let CURRENT_MEMBER = null; // nome membro corrente
+let UNIT_NAME = ''; // nome dell'Unità / dello Staff (es. «Branco Popolo Libero»)
 let staffObs = {}; // {nome: {percorsoId: 'p'|'a'|'n'}}
 let staffProfiles = {}; // {nome: {eta:'', ruolo:'', esperienza:''}}
 let staffTimeline = {}; // {nome: [{data, note, obs:{}, snapshot:{}}]}
@@ -2226,7 +2229,7 @@ function saveData(silent) {
     localStorage.setItem(LSK, JSON.stringify({
       obs,pris,vals,scheda,MODE,FASCIA,STAFF_TYPE,STAFF_RUOLO,
       STAFF_MEMBERS,staffObs,staffProfiles,staffTimeline,autoObs,CURRENT_MEMBER,
-      autoProfile,
+      autoProfile,UNIT_NAME,
       v:1,
       ts:Date.now()
     }));
@@ -2234,6 +2237,17 @@ function saveData(silent) {
     try{ const si=document.getElementById('save-ind'); if(si) si.innerHTML='✓ Salvato <span class="save-time">'+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+'</span>'; }catch(e){}
     if(!silent) showToast('Dati salvati');
   } catch(e) { if(!silent) showToast('Errore nel salvataggio'); }
+}
+function setUnitName(v){ UNIT_NAME = String(v||'').slice(0,60); saveDataDebounced(); }
+function refreshUnitName(){
+  const i = document.getElementById('unit-name-in'), l = document.getElementById('unit-name-lbl'); if(!i || !l) return;
+  let lbl = "Nome dell'Unità", ph = "Es. Branco Popolo Libero";
+  if(MODE === 'staff'){ lbl = STAFF_RUOLO==='CG' ? 'Nome del Gruppo' : 'Nome dello staff'; ph = STAFF_RUOLO==='CG' ? 'Es. Gruppo di Pesaro' : 'Es. Staff Reparto Kontiki2'; }
+  else if(MODE === 'giovani'){ ph = ({L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki2', R:'Es. il nome della tua Unità'})[FASCIA] || 'Es. il nome della tua Unità'; }
+  else { lbl = 'Nome'; ph = ''; }
+  l.textContent = lbl; i.placeholder = ph;
+  if(document.activeElement !== i) i.value = UNIT_NAME || '';
+  i.parentElement.style.display = (MODE === 'personale') ? 'none' : '';
 }
 function saveDataDebounced() {
   clearTimeout(_saveTimer);
@@ -2258,6 +2272,7 @@ function loadSaved() {
     if(d.autoObs) Object.assign(autoObs,d.autoObs);
     if(d.autoProfile) Object.assign(autoProfile, d.autoProfile);
     if(d.CURRENT_MEMBER) CURRENT_MEMBER = d.CURRENT_MEMBER;
+    if(typeof d.UNIT_NAME === 'string') UNIT_NAME = d.UNIT_NAME;
     // Ripristina variabili di sessione (solo se l'utente non ha già scelto qualcosa)
     if(!MODE){
       if(d.MODE) MODE = d.MODE;
@@ -2319,7 +2334,7 @@ function confirmReset(){
   Object.values(DB).flat().forEach(p => { obs[p.id]='n'; delete pris[p.id]; delete vals[p.id]; });
   // Reset staff
   STAFF_MEMBERS=[]; staffObs={}; staffProfiles={}; staffTimeline={}; autoObs={};
-  CURRENT_MEMBER=null; STAFF_VIEW='osservazione';
+  CURRENT_MEMBER=null; STAFF_VIEW='osservazione'; UNIT_NAME='';
   // Reset autoosservatore
   autoProfile={nome:'',eta:'',ruolo:'',esperienza:'',formazione:''};
   // Reset scheda programmazione
@@ -3850,7 +3865,7 @@ function finishAutoOss() {
 function renderPhase1(){
   // Se modalità staff, usa renderStaffPhase1
   if(MODE === 'staff') {
-    document.getElementById('hero-title1').textContent = STAFF_RUOLO==='CG' ? 'Osservazione dei Capi Unità' : 'Osservazione dello staff';
+    document.getElementById('hero-title1').textContent = STAFF_RUOLO==='CG' ? 'Osservazione dei Capi Unità' : 'Osservazione dello staff'; refreshUnitName();
     document.getElementById('hero-desc1').innerHTML = STAFF_RUOLO==='CG'
       ? 'Osserva ogni Capo Unità del Gruppo sui 24 percorsi PEE. Poi consulta la vista aggregata, le attività suggerite e l\'agenda per il prossimo CdG.'
       : 'Osserva ogni membro del tuo staff (VCU, SiS) sui 24 percorsi PEE. Poi consulta le indicazioni di percorso individualizzate e le attività suggerite per il team.';
@@ -3867,7 +3882,7 @@ function renderPhase1(){
     giovani:'Indica per ogni percorso se il comportamento è <strong>presente</strong>, <strong>assente</strong> o lascia neutro se non hai ancora elementi. Espandi le schede per leggere gli obiettivi, le domande guida e il "Cosa osservare" del KOS per la tua fascia.',
     personale:'Indica per ogni percorso come lo vivi nella tua pratica educativa: <strong>presente</strong>, <strong>ancora nell\'ombra</strong> o <strong>non osservato</strong>.'
   };
-  document.getElementById('hero-title1').textContent = titles[MODE]||'Osservazione';
+  document.getElementById('hero-title1').textContent = titles[MODE]||'Osservazione'; refreshUnitName();
   document.getElementById('hero-desc1').innerHTML = descs[MODE]||descs.giovani;
 
   const root=document.getElementById('percorsi-root');
@@ -5831,7 +5846,7 @@ async function exportExcel(){
     c.value = text; c.font = F({size:16, bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(GREEN);
     c.alignment = {vertical:'middle', indent:1}; ws.getRow(1).height = 30;
     ws.mergeCells(2,1,2,cols); const d = ws.getCell(2,1);
-    d.value = sub; d.font = F({size:9, italic:true, color:{argb:'FF666666'}}); d.alignment = {indent:1, vertical:'middle'};
+    d.value = (UNIT_NAME ? UNIT_NAME + ' · ' : '') + sub; d.font = F({size:9, italic:true, color:{argb:'FF666666'}}); d.alignment = {indent:1, vertical:'middle'};
     ws.getRow(2).height = 18;
   }
   function header(ws, row, labels){
@@ -6162,12 +6177,12 @@ function htmlToParas(html){
 function dDocument(children, headerText){
   const D = dxLib();
   return new D.Document({
-    creator:'PEE CNGEI', title:headerText,
+    creator:'PEE CNGEI', title:(UNIT_NAME?UNIT_NAME+' — ':'')+headerText,
     styles:{default:{document:{run:{font:MF, size:20}}}},
     numbering:{config:[{reference:'bul', levels:[{level:0, format:D.LevelFormat.BULLET, text:'•', alignment:D.AlignmentType.LEFT, style:{paragraph:{indent:{left:420, hanging:260}}, run:{font:MF}}}]}]},
     sections:[{
       properties:{page:{size:{width:11906, height:16838}, margin:{top:1134, bottom:1134, left:1134, right:1134}}},
-      headers:{default:new D.Header({children:[dPara(headerText,{size:15, color:'999999', align:'right', after:0})]})},
+      headers:{default:new D.Header({children:[dPara((UNIT_NAME?UNIT_NAME+' · ':'')+headerText,{size:15, color:'999999', align:'right', after:0})]})},
       footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER, children:[
         new D.TextRun({text:'PEE CNGEI · pagina ', font:MF, size:15, color:'999999'}),
         new D.TextRun({children:[D.PageNumber.CURRENT], font:MF, size:15, color:'999999'})
@@ -6182,6 +6197,7 @@ async function dSave(doc, name){
   showToast('Documento Word scaricato (.docx)');
 }
 function dTitleBlock(title, sub){
+  if(UNIT_NAME) sub = UNIT_NAME + ' · ' + sub;
   return [dPara(title, {size:40, bold:true, color:GREEN, after:60, borderBottom:{size:24,color:GREEN}}), dPara(sub, {size:18, color:'666666', after:240})];
 }
 
@@ -6503,14 +6519,15 @@ function clSaveCtx(){ try{ CL.ctx ? localStorage.setItem(CL_CTX, JSON.stringify(
 function clSnapshot(){ try{ return JSON.parse(localStorage.getItem(CL_LS)||'{}'); }catch(e){ return {}; } }
 function clHasLocal(){ const d = clSnapshot(); return !!(d.MODE || (d.STAFF_MEMBERS||[]).length || Object.values(d.obs||{}).some(v=>v&&v!=='n')); }
 function clMeta(d){
-  return {mode:d.MODE||null, fascia:d.FASCIA||null, staff:(d.STAFF_MEMBERS||[]).length,
+  return {nome:d.UNIT_NAME||'', mode:d.MODE||null, fascia:d.FASCIA||null, staff:(d.STAFF_MEMBERS||[]).length,
           osservati: d.MODE==='staff' ? Object.values(d.staffObs||{}).reduce((a,o)=>a+Object.values(o).filter(v=>v&&v!=='n').length,0) : Object.values(d.obs||{}).filter(v=>v&&v!=='n').length};
 }
 function clMetaTxt(m){
   if(!m) return '';
   const f = {L:'Lupetti/e',E:'Esploratori/trici',R:'Rover'}[m.fascia]||'';
-  if(m.mode==='staff') return `Staff · ${m.staff||0} membri`;
-  if(m.mode==='giovani') return `Unità ${f}`;
+  const nm = m.nome ? m.nome + ' · ' : '';
+  if(m.mode==='staff') return `${nm}Staff · ${m.staff||0} membri`;
+  if(m.mode==='giovani') return `${nm}Unità ${f}`;
   if(m.mode==='personale') return 'Auto osservazione';
   return 'Vuoto';
 }
