@@ -6764,9 +6764,9 @@ async function clRenderArchive(){
       <div style="font-size:12px;color:#555">Connesso come <strong>${clEsc(CL.user.email)}</strong></div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
   if(act){
-    h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Progetto attivo: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
-      <div class="s">Ogni modifica viene salvata automaticamente nel cloud.</div></div>
-      <div style="display:flex;gap:6px"><button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button><button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
+    h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
+      <div class="s">Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clClose()">Continua qui</button><button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button><button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
   }
   if(act){
     h += `<div class="cl-row" style="margin-top:8px"><div><div class="t">Versioni precedenti</div><div class="s">Torna a com'era il lavoro ieri, stamattina o in un momento che hai salvato.</div></div><button class="cl-btn ghost sm" onclick="clShow('hist')">Apri</button></div>`;
@@ -6777,8 +6777,8 @@ async function clRenderArchive(){
     h += `<div class="cl-year">${y}</div>`;
     byYear[y].forEach(r => {
       const isAct = act && act.id === r.id;
-      h += `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clEsc(r.titolo)}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
-        <div style="display:flex;gap:6px;flex-shrink:0">${isAct?'':`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
+      h += `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clClose()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
         <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
     });
   });
@@ -7056,8 +7056,10 @@ async function clNew(){
 async function clOpenProject(id){
   if(!CL.ctx && clHasLocal() && !confirm('Il lavoro su questo dispositivo non è salvato nel cloud e verrà sostituito dal progetto scelto. Continuare?')) return;
   try{
+    if(CL.ctx && CL.ctx.id !== id && CL.pending){ clToast('Salvo il lavoro attuale…'); await clPush(); }
     const r = await dbGet(id);
     if(!r){ clToast('Progetto non trovato'); return; }
+    try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+'. Il progetto precedente è salvato in archivio.'); }catch(e){}
     localStorage.setItem(CL_LS, JSON.stringify(r.data||{}));
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
@@ -7130,7 +7132,8 @@ async function clAutoOpen(){
     const hasLocal = clHasLocal();
     if(rows.length && !hasLocal){
       rows.sort((a,b) => b.ts - a.ts);
-      await clOpenProject(rows[0].id);
+      const pick = rows.find(r => r.meta && r.meta.mode) || rows[0];
+      await clOpenProject(pick.id);
       return 'reload';
     }
     const yr = new Date().getFullYear();
@@ -7193,6 +7196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try{ const wb=document.getElementById('why-box'); if(wb && window.innerWidth>640) wb.open=true; }catch(e){}
   try{ if(typeof loadSaved==='function') loadSaved(); }catch(e){}
   clInit();
+  try{ const m = sessionStorage.getItem('bussola_opened_msg'); if(m){ sessionStorage.removeItem('bussola_opened_msg'); setTimeout(() => clToast(m), 800); } }catch(e){}
   // Se c'è già un lavoro salvato si entra direttamente (niente pagina iniziale, niente "Riprendi")
   try{
     sessionStorage.removeItem('bussola_autoresume');
