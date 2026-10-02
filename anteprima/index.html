@@ -992,13 +992,13 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
         <ul>
           <li><strong>Sezione 1 · Osservazione del Gruppo di Pari e necessità educative</strong>, in quattro passi: <em>1.1 Contesto e KOS</em> (chi compila, contesto territoriale e di Sezione/Gruppo, occasioni di osservazione); <em>1.2 Scheda di osservazione</em> dei 24 percorsi; <em>1.3 Lettura del gruppo</em> (dinamiche, aspetti positivi, necessità, note sui singoli); <em>1.4 Priorità</em> (almeno una necessità per Ambito di Sviluppo e il perché della scelta).</li>
           <li><strong>Sezione 2 · Obiettivi e Indicatori di Risultato:</strong> per ogni priorità un obiettivo dal manuale PEE, almeno 2 indicatori e la tempistica.</li>
-          <li><strong>Sezione 3 · Percorso Educativo Esperienziale:</strong> per <em>un</em> obiettivo a scelta, strumenti del metodo, tempistiche, 3–4 attività (Lancio, Sviluppo, Conclusione) e la verifica delle 7 caratteristiche. Altri percorsi sono facoltativi.</li>
+          <li><strong>Sezione 3 · Percorso Educativo Esperienziale:</strong> per gli obiettivi prioritari: strumenti del metodo declinati per la Branca, tempistiche, 3–4 attività (Lancio, Sviluppo, Conclusione) e la verifica delle 7 caratteristiche.</li>
           <li><strong>Sezione 4 · Verifica delle attività</strong> e <strong>Sezione 5 · Valutazione finale</strong>, dopo aver vissuto il percorso.</li>
-          <li><strong>✓ Checklist e invio:</strong> i criteri di valutazione delle Linee Guida e, per chi svolge il Progetto Personale, le due consegne al tutor. L'app ti suggerisce cosa risulta già a posto, ma l'ultima parola è tua.</li>
+          <li><strong>✓ Checklist e invio:</strong> la completezza della Scheda, il Word, i criteri di valutazione delle Linee Guida e, per chi svolge il Progetto Personale, il promemoria per l’invio al tutor. L'app ti suggerisce cosa risulta già a posto, ma l'ultima parola è tua.</li>
         </ul>
 
-        <h4>Le due consegne</h4>
-        <p>Se stai svolgendo il <strong>Progetto Personale</strong>, le Linee Guida prevedono una <strong>mail di avvio</strong> al tutor (la prepari nella Sezione 1.1) e due consegne. La <strong>prima consegna</strong> è la parte scritta fino alla Sezione 3: la mandi al tutor prima di realizzare le attività. Quando il tutor ha dato il via e hai vissuto il percorso, mandi la <strong>consegna finale</strong> con anche le Sezioni 4 e 5. Dal pannello di controllo scarichi il Word di ciascuna e prepari la mail: il testo è tuo, lo puoi riscrivere come preferisci.</p>
+        <h4>Il documento e l’invio</h4>
+        <p>La Scheda si compila in due momenti: le Sezioni 1–3 prima di realizzare le attività, le Sezioni 4 e 5 dopo aver vissuto il percorso. In <em>Checklist e invio</em> vedi cosa è completo e scarichi il Word. Se stai svolgendo il <strong>Progetto Personale</strong>, lì trovi anche il promemoria dell’iter previsto dalle Linee Guida: mail di avvio al tutor, invio fino alla Sezione 3, invio completo.</p>
 
         <h4>Osservare con il KOS 2.0</h4>
         <p>Nella Sezione 1.1 trovi i tre incontri del KOS per la tua Branca. Spunta le attività che hai svolto: l'app ti mostra quali competenze hai già osservato e quali no, e ti porta l'elenco nelle "Occasioni osservative". Non serve fare tutto né in ordine: adatta le occasioni alla tua realtà e chiudi l'osservazione entro novembre.</p>
@@ -5240,7 +5240,7 @@ function renderValuation(){
   if(G && (schedaStep==='A' || !schedaStep)) schedaStep='ctx';
   if(!G && schedaStep==='ctx') schedaStep='A';
   const tabs = [['A','A — Osservazione'],['B','B — Obiettivi'],['C','C — Percorsi'],['val','Valutazione IDR']];
-  if(G){ gHero4(); if(schedaStep==='chk') navEl.innerHTML = isPP() ? '<div id="pp-ready" style="margin-bottom:16px"></div>' : '<div class="gblock" style="margin-top:0;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div style="font-size:12px"><b>La Scheda in Word</b><br><span style="color:var(--ink-mid)">Le cinque Sezioni nell’ordine delle Linee Guida, da condividere con lo staff e il Capo Gruppo.</span></div><button class="btn-export" onclick="exportSchedaDocx()">↓ Scarica la Scheda in Word</button></div>'; }
+  if(G){ gHero4(); if(schedaStep==='chk') navEl.innerHTML = '<div id="pp-ready" style="margin-bottom:12px"></div>' + gPromemoriaHTML(); }
   else navEl.innerHTML=`<div class="staff-nav-tabs" style="margin-bottom:16px">${tabs.map(([k,l])=>`<div class="staff-nav-tab ${schedaStep===k?'active':''}" onclick="schedaStep='${k}';renderValuation()">${l}</div>`).join('')}</div>`;
   root.appendChild(navEl);
   if(schedaStep==='ctx' && G)renderSchedaCtx(root);
@@ -5296,8 +5296,8 @@ const STRUM_BRANCA = {
     ['Servizio','Rover in Servizio']]
 };
 const BRANCA_NOME = {L:'Branco (Lupetti/e)', E:'Reparto (Esploratori ed Esploratrici)', R:'Compagnia (Rover)'};
-function isPP(){ return !!(scheda.pp && scheda.pp.isPP===true); }
-function idrMin(){ return isPP() ? 2 : 1; }
+function isPP(){ return false; } // Scheda unica: nessuna distinzione tra PP e PE
+function idrMin(){ return 1; }
 function percHasContent(pr){
   const T=t=>(t||'').trim().length>0;
   return (pr.attivita||[]).some(a=>['testo','lancio','sviluppo','conclusione','vBene','vMigl','vAgg'].some(k=>T(a[k])))
@@ -5317,9 +5317,7 @@ function strumToggle(idx,g,i,on){ const per=getAllPercorsi()[idx]; if(!per) retu
 function strumNote(idx,key,v){ const per=getAllPercorsi()[idx]; if(!per||!per.strumSel) return; per.strumSel[decodeURIComponent(key)]=v; saveDataDebounced(); }
 function strumSelHTML(idx,per){ const l=strumList(per);
   if(!l.length) return `<div style="font-size:11px;color:var(--ink-faint);margin:2px 0 6px">Nessuno strumento scelto: aprili qui sotto e spunta quelli che userai.</div>`;
-  return l.map(o=>`<div style="display:grid;grid-template-columns:minmax(140px,38%) 1fr;gap:8px;align-items:center;margin:4px 0">
-      <div style="font-size:12px;font-weight:700">${sEsc(o.s)}${o.g?`<div style="font-size:10px;font-weight:400;color:var(--ink-faint)">${sEsc(o.g)}</div>`:''}</div>
-      <input type="text" style="${SC_IN};font-size:11px" placeholder="Come lo usi in questo percorso (facoltativo)" value="${sEsc(o.n)}" oninput="strumNote(${idx},'${encodeURIComponent(o.s)}',this.value)"></div>`).join(''); }
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px">${l.map(o=>`<span style="font-size:11.5px;font-weight:700;background:var(--green-pale,#e8f5e9);border:1px solid var(--border-light);border-radius:12px;padding:3px 10px" title="${sEsc(o.g)}">${sEsc(o.s)}</span>`).join('')}</div>`; }
 function strumRowHTML(idx,per){
   const L=STRUM_BRANCA[FASCIA]||[]; const sel=per.strumSel||{};
   const cat=L.map((items,g)=>`<div style="margin:8px 0 2px;font-size:10.5px;font-weight:800;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.03em">${STRUM_GRUPPI[g]}</div>
@@ -5329,7 +5327,7 @@ function strumRowHTML(idx,per){
       <div id="strum-sel-${idx}">${strumSelHTML(idx,per)}</div>
       <details style="margin-top:6px;border:1px dashed var(--border);border-radius:6px;padding:6px 10px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Scegli tra gli strumenti della tua Branca <span style="font-weight:400;color:var(--ink-faint)">(<span id="strum-cnt-${idx}">${Object.keys(sel).length}</span> scelti)</span></summary>${cat}
         <div style="font-size:10.5px;color:var(--ink-faint);margin-top:8px">Fonte: <em>Strumenti del Metodo declinati per fasce d'età</em> (CNGEI). Le Linee Guida chiedono di individuare, tra questi, quelli più opportuni per le tue priorità educative.</div></details>
-      <input type="text" style="${SC_IN};margin-top:8px;font-size:11px" placeholder="Altre note sugli strumenti (facoltativo)" value="${sEsc(per.strumenti)}" oninput="updatePercorsoField(${idx},'strumenti',this.value);saveDataDebounced()">
+      ${(per.strumenti||'').trim()?`<label style="${SC_LBL}">Strumenti indicati in precedenza <span style="font-weight:400;color:var(--ink-faint)">— testo scritto con la versione precedente dell'app: se ora li hai spuntati qui sopra puoi cancellarlo</span></label><input type="text" style="${SC_IN};font-size:11px" value="${sEsc(per.strumenti)}" oninput="updatePercorsoField(${idx},'strumenti',this.value);saveDataDebounced()">`:''}
     </td></tr>`;
 }
 
@@ -5391,7 +5389,7 @@ function gHero4(){
     C:['Sezione 3','Percorso Educativo Esperienziale', pp?'Per un obiettivo prioritario a scelta: strumenti del metodo, tempistiche, attività e verifica delle 7 caratteristiche.':'Per gli obiettivi prioritari dell’Unità: strumenti del metodo, tempistiche, attività e verifica delle 7 caratteristiche.'],
     ver:['Sezione 4','Verifica delle attività','Al termine di ciascuna attività svolta: cosa è andato bene, cosa è da migliorare, aggiustamenti necessari.'],
     val:['Sezione 5','Valutazione finale','Al termine del percorso: risposta a ciascun Indicatore di Risultato e valutazione complessiva.'],
-    chk:['Checklist e invio','Checklist e invio', pp?'I criteri di valutazione delle Linee Guida e le due consegne al tutor.':'I criteri di valutazione delle Linee Guida, utili come autoverifica, e il documento Word della Scheda.']}[schedaStep];
+    chk:['Checklist e invio','Checklist e invio','La completezza della Scheda, il documento Word e i criteri di valutazione delle Linee Guida.']}[schedaStep];
   if(!T) return;
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
   set('hero-eye4',T[0]+' · Scheda di Programmazione Educativa Esperienziale'); set('hero-title4',T[1]); set('val-desc',T[2]);
@@ -5404,27 +5402,13 @@ function gCrit(items){ return `<div class="g-crit"><b>Criteri di compilazione (L
 function renderSchedaCtx(root){
   const pp=scheda.pp||(scheda.pp={});
   const el=document.createElement('div'); el.className='profile-card';
-  const spieg = pp.isPP===true
-    ? 'Per il Progetto Personale le Linee Guida prevedono: la <b>mail di avvio</b> al tutor (qui sotto), <b>almeno 2 indicatori</b> per obiettivo, il Percorso Educativo Esperienziale per <b>un obiettivo a scelta</b> e due consegne (fino alla Sezione 3, poi completa).'
-    : pp.isPP===false
-      ? 'Per la Programmazione Educativa dell’Unità il Manuale PEE prevede: un obiettivo prioritario per ciascun Ambito, <b>almeno 1 indicatore</b> per obiettivo e Percorsi Educativi Esperienziali per gli obiettivi prioritari (un percorso può anche essere trasversale a più obiettivi).'
-      : 'Rispondi pure: la scelta cambia solo poche indicazioni (numero minimo di indicatori, percorsi da progettare, strumenti per l’invio al tutor), non la struttura della Scheda.';
   el.innerHTML=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">1.1 — Contesto e osservazione con il KOS</h3>
-    <div class="g-crit" style="font-size:12px"><b>Stai svolgendo il Progetto Personale con un tutor della sperimentazione?</b>
-      <div style="display:flex;gap:8px 18px;margin:8px 0 6px;flex-wrap:wrap">
-        <label style="cursor:pointer"><input type="radio" name="g-pp" ${pp.isPP===true?'checked':''} onchange="gSetPP(true)"> Sì, è il mio Progetto Personale</label>
-        <label style="cursor:pointer"><input type="radio" name="g-pp" ${pp.isPP===false?'checked':''} onchange="gSetPP(false)"> No, è la Programmazione Educativa della mia Unità</label></div>
-      <div>${spieg}</div></div>
     <div style="font-size:12px;font-weight:800;margin:14px 0 2px;color:var(--ink)">Chi compila</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
       <label style="${SC_LBL}">Nome e cognome<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.nome)}" oninput="ppSet('nome',this.value)"></label>
       <label style="${SC_LBL}">Sezione<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.sezione)}" placeholder="Es. Pesaro" oninput="ppSet('sezione',this.value)"></label>
       <label style="${SC_LBL}">Nome dell'Unità<input style="${SC_IN};margin-top:4px" maxlength="60" value="${sEsc(UNIT_NAME)}" oninput="setUnitName(this.value);const u=document.getElementById('unit-name-in');if(u)u.value=this.value"></label>
-      ${pp.isPP===true?`<label style="${SC_LBL}">Tutor della sperimentazione<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.tutor)}" oninput="ppSet('tutor',this.value)"></label>`:''}
     </div>
-    ${pp.isPP===true?`<div style="border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between">
-      <div style="font-size:12px;flex:1;min-width:220px"><b>Prima di iniziare: la mail di avvio</b><br><span style="color:var(--ink-mid)">Le Linee Guida (Step 1) chiedono di comunicare l’avvio del Progetto Personale al Tutor della Sperimentazione, in copia al Capo Gruppo e al Commissario di Sezione.</span></div>
-      <button class="btn-ghost" onclick="ppMailOpen('avvio')">✉ Prepara la mail di avvio</button></div>`:''}
     <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
     <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Adulti in staff, esperienza e disponibilità…</span></label>
@@ -5498,7 +5482,7 @@ function fbCompose(){
   try{ if(document.getElementById('main-app').style.display!=='none'){ if(MODE==='giovani'){ const c=gCur(); dove=(G_STEPS.find(x=>x[0]===c)||[])[1] ? 'Sezione '+G_STEPS.find(x=>x[0]===c)[1]+' '+G_STEPS.find(x=>x[0]===c)[2] : (G_TABS.find(x=>x[0]===c)||[])[4]||c; } else { const n=[1,2,3,4].find(i=>document.getElementById('panel'+i)?.classList.contains('active')); dove='Fase '+n; } } }catch(e){}
   const ua=navigator.userAgent; const disp=/iPad|Tablet/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'telefono':'computer';
   const br=/Edg\//.test(ua)?'Edge':/Chrome\//.test(ua)?'Chrome':/Firefox\//.test(ua)?'Firefox':/Safari\//.test(ua)?'Safari':'altro';
-  const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti/e',E:'Esploratori/trici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—'))+(MODE==='giovani'?(isPP()?' · Progetto Personale':' · Programmazione Educativa'):''), 'Dispositivo: '+disp+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION, 'Data: '+new Date().toLocaleString('it-IT') ];
+  const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti/e',E:'Esploratori/trici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—')), 'Dispositivo: '+disp+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION, 'Data: '+new Date().toLocaleString('it-IT') ];
   const sub='[PEE CNGEI beta] '+tipo.split(' /')[0]+(nome?' — '+nome:'');
   const body=(txt||'(scrivi qui la tua segnalazione)')+'\n\n— — —\n'+ctx.join('\n')+(nome?'\nDa: '+nome:'');
   return {sub, body};
@@ -5557,7 +5541,7 @@ function renderSchedaB(root,selected){
   const ambitoLabel={P:'Personale',C:'Comunitario',S:'Spirituale'};
   const el=document.createElement('div');el.className='profile-card';
   let html=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">Sezione 2 — Obiettivi e indicatori di risultato</h3>
-    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Per ciascun Ambito di Sviluppo scegli <strong>1 obiettivo</strong> dal Manuale PEE e i relativi <strong>Indicatori di Risultato</strong>: ${isPP()?'per il Progetto Personale <strong>almeno 2</strong> per obiettivo (Linee Guida)':'<strong>almeno 1</strong> per obiettivo (Manuale PEE; 2 sono consigliabili)'}, che puoi adattare ai percorsi che progetterai. Gli indicatori scelti tornano nella valutazione finale. Una quarta priorità (o una dedicata a un gruppetto) si aggiunge come percorso extra nella Sezione 3.</p>
+    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Per ciascun Ambito di Sviluppo scegli <strong>1 obiettivo</strong> dal Manuale PEE e i relativi <strong>Indicatori di Risultato</strong>: almeno 1 per obiettivo, <strong>consigliati almeno 2</strong>, che puoi adattare ai percorsi che progetterai. Gli indicatori scelti tornano nella valutazione finale. Una quarta priorità (o una dedicata a un gruppetto) si aggiunge come percorso extra nella Sezione 3.</p>
     <p style="font-size:11px;color:var(--ink-faint);margin-bottom:16px">Le priorità si scelgono nella Fase 2; qui le dettagli. Controlla la coerenza con le necessità educative della Sezione 1.</p>`;
   if(!selected.length) html+=`<div class="empty-state"><div class="empty-icon">△</div><div class="empty-txt">Nessuna priorità selezionata. Torna alla Fase 2.</div></div>`;
   selected.slice(0,3).forEach((id,i)=>{
@@ -5581,7 +5565,7 @@ function renderSchedaB(root,selected){
             <span><strong>${j+1}.</strong> ${o}</span></label>`).join('')}
         </div>
         <div>
-          <label style="font-size:11px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Indicatori di risultato <span style="font-weight:400;color:var(--ink-faint)">(almeno ${idrMin()} per obiettivo)</span></label>
+          <label style="font-size:11px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Indicatori di risultato <span style="font-weight:400;color:var(--ink-faint)">(consigliati almeno 2 per obiettivo)</span></label>
           ${(p.idr||[]).map((idr,j)=>`<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12px;cursor:pointer;color:var(--ink-mid)">
             <input type="checkbox" style="margin-top:2px;flex-shrink:0" ${(scheda.priorita[i].idr||[]).includes(j)?'checked':''}
               onchange="toggleIdr(${i},${j},this.checked);saveDataDebounced()">
@@ -6006,7 +5990,7 @@ function renderSchedaChk(root,selected){
   const esc = t => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const colr = {si:'#2E7D32',parz:'#E0A100',no:'#B3261E'};
   let h = `<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">${MODE==='giovani'?'Checklist — criteri di valutazione':'Checklist PP'}</h3>
-    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:12px">I criteri con cui il formatore valuta la Scheda (Linee Guida e checklist della sperimentazione), in 15 domande: ${MODE==='giovani'&&!isPP()?'usali come autoverifica prima di condividerla con lo staff e il Capo Gruppo':'li usa il/la formatore/trice per dare indicazioni, oppure tu per verificare il tuo lavoro prima di consegnarlo'}. Dove l'app può controllare i dati compilati ti mostra cosa vede (<em>suggerimento</em>): la risposta resta tua.</p>
+    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:12px">I criteri con cui il formatore valuta la Scheda (Linee Guida e checklist della sperimentazione), in 15 domande: ${MODE==='giovani'?'usali come autoverifica prima di condividere o inviare la Scheda (sono gli stessi con cui il formatore valuta il Progetto Personale)':'li usa il/la formatore/trice per dare indicazioni, oppure tu per verificare il tuo lavoro prima di consegnarlo'}. Dove l'app può controllare i dati compilati ti mostra cosa vede (<em>suggerimento</em>): la risposta resta tua.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px">
       <label style="font-size:11px;font-weight:700;color:var(--ink-mid)">Partecipante<input class="cl-in" style="width:100%;margin-top:3px;box-sizing:border-box" maxlength="80" value="${esc(st.partecipante)}" oninput="chkHead('partecipante',this.value)"></label>
       <label style="font-size:11px;font-weight:700;color:var(--ink-mid)">Formatore/trice<input class="cl-in" style="width:100%;margin-top:3px;box-sizing:border-box" maxlength="80" value="${esc(st.formatore)}" oninput="chkHead('formatore',this.value)"></label>
@@ -6229,10 +6213,10 @@ function ppChecks(){
   const T = t => (t||'').trim().length>0;
   const pp = scheda.pp||{};
   const sel = Object.keys(pris).filter(k=>pris[k]).slice(0,3);
-  const percs = getAllPercorsi().filter(x=>x.percorsoId && typeof x.prioritaIdx==='number');
+  const percs = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x));
   const c1=[], c2=[];
   const add=(arr,l,ok,det)=>arr.push({l,ok:!!ok,det:det||''});
-  add(c1,'Dati: nome, Sezione, tutor', T(pp.nome)&&T(pp.sezione)&&T(pp.tutor));
+  add(c1,'Dati: nome, Sezione e Unità', T(pp.nome)&&T(pp.sezione)&&T(UNIT_NAME));
   add(c1,'Contesto territoriale e contesto Sezione/Gruppo', T(pp.ctxTerr)&&T(pp.ctxSez));
   add(c1,'Occasioni osservative descritte (KOS, almeno 2–3)', T(pp.occasioni));
   add(c1,'Analisi delle dinamiche di gruppo', T(pp.dinamiche));
@@ -6242,9 +6226,9 @@ function ppChecks(){
   const amb=new Set(sel.map(id=>id[0]));
   add(c1,'3 priorità, una per ambito', sel.length===3&&amb.size===3, `${sel.length}/3`);
   const pr=sel.map((id,i)=>scheda.priorita[i]||{});
-  add(c1,'Per ogni priorità: 1 obiettivo e almeno 2 indicatori', sel.length>0&&pr.every(x=>(x.obiettivi||[]).length>=1&&(x.idr||[]).length>=2));
+  add(c1,'Per ogni priorità: 1 obiettivo e almeno 1 indicatore (consigliati 2)', sel.length>0&&pr.every(x=>(x.obiettivi||[]).length>=1&&(x.idr||[]).length>=1));
   add(c1,'Per ogni priorità: tempistica (almeno un trimestre)', sel.length>0&&pr.every(x=>T(x.tempistica)));
-  add(c1,'Percorso Educativo Esperienziale per un obiettivo prioritario', percs.length>=1);
+  add(c1,'Percorso Educativo Esperienziale progettato', percs.length>=1, `${percs.length}/${sel.length||3}`);
   add(c1,'Strumenti del metodo e tempistiche in ogni percorso', percs.length>0&&percs.every(x=>(T(x.strumenti)||Object.keys(x.strumSel||{}).length)&&T(x.dal)&&T(x.al)));
   const attOk = x => (x.attivita||[]).filter(a=>T(a.lancio)&&T(a.sviluppo)&&T(a.conclusione)).length>=3;
   add(c1,'Almeno 3 attività con Lancio, Sviluppo e Conclusione in ogni percorso', percs.length>0&&percs.every(attOk));
@@ -6266,9 +6250,22 @@ function ppReadyHTML(){
     return `<details style="flex:1;min-width:260px;border:1px solid ${done?'#2E7D32':'var(--border-light)'};border-radius:8px;padding:8px 12px;background:var(--bg-card)">
       <summary style="cursor:pointer;font-size:12px;font-weight:800;color:var(--ink)">${done?'✅':'☐'} ${t} <span style="font-weight:600;color:${done?'#2E7D32':'var(--ink-mid)'}">· ${n}/${arr.length}</span></summary>
       <div style="margin-top:6px">${arr.map(x=>`<div style="font-size:11px;margin:3px 0;color:${x.ok?'#2E7D32':'var(--ink-mid)'}">${x.ok?'✓':'○'} ${x.l}${x.det?` <span style="color:var(--ink-faint)">(${x.det})</span>`:''}</div>`).join('')}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn-export" style="font-size:11px;padding:5px 10px" onclick="exportSchedaDocx('${id}')">↓ Word</button><button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="ppCopyMail('${id}')">✉ Prepara la mail</button></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn-export" style="font-size:11px;padding:5px 10px" onclick="exportSchedaDocx('${id}')">↓ Word</button></div>
     </details>`; };
-  return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('Prima consegna · fino alla Sezione 3',c1,'parziale')}${box('Consegna finale · Sezioni 4 e 5',c2,'completo')}</div>`;
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('Sezioni 1–3 · prima di realizzare le attività',c1,'parziale')}${box('Sezioni 4 e 5 · dopo aver vissuto il percorso',c2,'completo')}</div>`;
+}
+function gPromemoriaHTML(){
+  const rcdf = RCDF_AREE.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:2px 0;border-bottom:1px dotted var(--border-light)"><span>${x[1]}</span><span style="color:var(--ink-mid)">${x[2]}</span></div>`).join('');
+  return `<details class="gblock" style="margin-top:0"><summary style="cursor:pointer;font-size:13px;font-weight:800">Se stai svolgendo il Progetto Personale: promemoria per l’invio <span style="font-weight:400;color:var(--ink-faint)">(Linee Guida, iter procedurale)</span></summary>
+    <ol style="font-size:12px;line-height:1.6;margin:10px 0 0 18px;padding:0">
+      <li><b>Avvio.</b> Dopo il FOR.A (o ex Wood Badge) invia una mail di avvio <b>al Tutor della Sperimentazione</b>, in copia al <b>Capo Gruppo</b> e al <b>Commissario di Sezione</b>, e attendi la presa in carico.</li>
+      <li><b>Prima verifica.</b> Quando la Scheda è scritta fino alla <b>Sezione 3</b> (anche solo abbozzata), inviala <b>al Tutor</b>, in copia a <b>CG</b>, <b>CdS</b> e al <b>Responsabile del tuo Centro di Formazione</b>, prima di realizzare le attività.</li>
+      <li><b>Oggetto:</b> <em>Invio Progetto Personale - [Nome Cognome] - [Sezione]</em>. <b>Allegato:</b> la Scheda di Programmazione Educativa Esperienziale (Word o PDF) ed eventuali materiali integrativi.</li>
+      <li><b>Invio completo.</b> Dopo l’approvazione del tutor e la realizzazione del percorso, invia di nuovo la Scheda completa delle Sezioni 4 e 5.</li>
+      <li>Il formatore incaricato restituisce il feedback con la <b>checklist</b> che trovi qui sotto.</li>
+    </ol>
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Indirizzi dei Responsabili dei Centri di Formazione</summary><div style="font-size:11.5px;margin-top:6px">${rcdf}</div></details>
+  </details>`;
 }
 function ppRefreshReady(){
   const el=document.getElementById('pp-ready'); if(!el || MODE!=='giovani') return;
@@ -7075,8 +7072,8 @@ async function exportPPDocx(mode){
 
   // ── Sezione 3 ──
   ch.push(dH2('Sezione 3 — Percorso Educativo Esperienziale'));
-  const perc = getAllPercorsi().filter(x=>x.percorsoId);
-  if(!perc.length) ch.push(dNote('Nessun percorso configurato.'));
+  const perc = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x));
+  if(!perc.length) ch.push(dNote('Nessun percorso progettato.'));
   const clKeys = ['nuova','stimolante','progressiva','costruita','rielaborativa','esperienziale','educativa'];
   const clLab = {nuova:'Nuova',stimolante:'Stimolante',progressiva:'Progressiva',costruita:'Co-costruita',rielaborativa:'Rielaborativa (emotiva e cognitiva)',esperienziale:'Esperienziale',educativa:'Educativa'};
   perc.forEach((per,i) => {
@@ -7092,7 +7089,7 @@ async function exportPPDocx(mode){
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${typeof per.prioritaIdx==='number'?'':' (facoltativo)'}`));
     ch.push(dKV([
       ['Obiettivo/i', ob.length ? ob.map(o=>dPara(plain(o),{size:19,after:40})) : '—'],
-      ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara([dTxt(o.s,{size:18,bold:true}), dTxt(o.n?' — '+plain(o.n):'',{size:18})],{after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
+      ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
       ['Tempistiche', `da ${per.dal||'…'} a ${per.al||'…'}`],
       ['Attività', attCell],
       ['Co-costruzione', dMulti(per.coCostr)],
