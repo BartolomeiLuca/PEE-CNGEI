@@ -161,7 +161,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .rbar-legend{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;justify-content:flex-end}
 .rbar-leg{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-faint)}
 .rbar-leg-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.radar-bars{display:flex;flex-direction:column;gap:10px}
+.radar-bars{display:flex;flex-direction:column;gap:10px}.cov-row{display:grid;grid-template-columns:140px repeat(8,minmax(0,1fr));gap:4px;align-items:stretch}.cov-lbl{display:flex;flex-direction:column;justify-content:center;font-size:11px;color:var(--ink-mid);gap:2px}.cov-lbl b{font-weight:700;color:var(--ink)}.cov-lbl span{font-size:10px;color:var(--ink-faint)}.cov-cell{border:0;border-radius:6px;padding:6px 6px 7px;min-height:52px;font:600 10px/1.25 'Montserrat',sans-serif;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}.cov-cell i{font-style:normal;font-size:9px;opacity:.8}.cov-cell:hover{filter:brightness(1.08)}.cov-cell:focus-visible{outline:2px solid var(--ink);outline-offset:1px}@media(max-width:760px){.cov-row{grid-template-columns:repeat(4,minmax(0,1fr))}.cov-lbl{grid-column:1/-1;flex-direction:row;align-items:baseline;justify-content:space-between;margin-top:6px}.cov-cell{min-height:46px;font-size:10px}}@media(max-width:420px){.cov-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .rbar-row{display:flex;align-items:center;gap:10px}
 .rbar-label{font-size:11px;font-weight:600;color:var(--ink-mid);min-width:190px}
 .rbar-track-multi{flex:1;height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;display:flex}
@@ -4449,11 +4449,11 @@ function renderRiepilogo(){
     legend.innerHTML=[5,4,3,2,1].map(t=>`<span class="rbar-leg"><span class="rbar-leg-dot" style="background:${thresholdColor(t)}"></span>${thresholdLabel(t)}</span>`).join('')+`<span class="rbar-leg"><span class="rbar-leg-dot" style="background:var(--border)"></span>Non osservato</span>`;
     ['P','C','S'].forEach(a=>{
       const tot=DB[a].length, nObs=DB[a].filter(p=>obsToThreshold(obsVal(p))>0).length;
-      const row=document.createElement('div'); row.className='rbar-row';
-      row.innerHTML=`
-        <span class="rbar-label">${AMBITI[a].full}</span>
-        ${lvlBarHTML(DB[a])}
-        <span class="rbar-val" style="white-space:nowrap">${nObs}/${tot} osservati</span>`;
+      const row=document.createElement('div'); row.className='cov-row';
+      row.innerHTML=`<div class="cov-lbl"><b>${AMBITI[a].full}</b><span>${nObs}/${tot} osservati</span></div>`+
+        DB[a].map((p,i)=>{ const t=obsToThreshold(obsVal(p)); const n=obsNum(p);
+          const dark=(t===0||t===3); const tip=`${i+1}. ${p.name} · ${thresholdLabel(t)==='—'?'Non osservato':thresholdLabel(t)}${t>0?' · punteggio '+n+' su 10':''}`;
+          return `<button type="button" class="cov-cell" title="${sEsc(tip)}" onclick="gotoObs('${p.id}')" style="background:${t?thresholdColor(t):'var(--border)'};color:${dark?'var(--ink)':'#fff'}"><i>${i+1}</i>${sEsc(p.name)}</button>`; }).join('');
       bars.appendChild(row);
     });
   }
