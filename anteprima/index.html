@@ -5352,8 +5352,8 @@ function gInitNav(){
   s3('hero-desc3','Scegli le necessità educative su cui lavorare durante l’anno: <strong>almeno una per ciascun Ambito di Sviluppo</strong> (Personale, Comunitario, Spirituale). I percorsi meno presenti nell’osservazione compaiono per primi.');
   const b=document.getElementById('p3-next'); if(b) b.textContent='Avanti — Sezione 2 →';
   // primo ingresso: se manca il contesto, si parte dalla Sezione 1.1
-  const pp=scheda.pp||{}; const vuoto=!((pp.nome||'').trim()||(pp.ctxTerr||'').trim()||(pp.ctxSez||'').trim()||(pp.occasioni||'').trim()) && !Object.values(obs||{}).some(v=>v&&v!=='n');
-  if(vuoto) gGo('1a'); else gSync();
+  // finché non c'è osservazione dei percorsi si riparte dalla Sezione 1.1
+  if(!Object.values(obs||{}).some(v=>v&&v!=='n')) gGo('1a'); else gSync();
 }
 function gGo(k){
   if(MODE!=='giovani') return;
@@ -7666,6 +7666,8 @@ async function clInit(){
 function clOpen(){ if(!clOn()){ return; } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
 function clClose(){ $cl('cl-ov').classList.remove('show'); }
+// "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
+function clContinue(){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function') resumeSession(); }catch(e){} }
 function clMsg(t, kind){ const m = $cl('cl-msg'); if(!m) return; m.className = 'cl-msg ' + (kind||'err'); m.textContent = t; }
 function clShow(view){
   const b = $cl('cl-body'), t = $cl('cl-title');
@@ -7787,7 +7789,7 @@ async function clRenderArchive(){
   if(act){
     h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
       <div class="s">Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clClose()">Continua qui</button><button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button><button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clContinue()">Continua qui</button><button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button><button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
   }
   if(act){
     h += `<div class="cl-row" style="margin-top:8px"><div><div class="t">Versioni precedenti</div><div class="s">Torna a com'era il lavoro ieri, stamattina o in un momento che hai salvato.</div></div><button class="cl-btn ghost sm" onclick="clShow('hist')">Apri</button></div>`;
@@ -7799,7 +7801,7 @@ async function clRenderArchive(){
     byYear[y].forEach(r => {
       const isAct = act && act.id === r.id;
       h += `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
-        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clClose()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
         <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
     });
   });
@@ -8313,7 +8315,9 @@ document.addEventListener('DOMContentLoaded', () => {
   try{
     sessionStorage.removeItem('bussola_autoresume');
     const d = clSnapshot();
-    const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n'));
+    const pp0 = (d.scheda&&d.scheda.pp)||{};
+    const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
+      || (d.MODE==='giovani' && ['nome','sezione','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
     if(hasWork && typeof resumeSession==='function') setTimeout(() => resumeSession(), 50);
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
