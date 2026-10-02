@@ -2031,11 +2031,11 @@ async function grpFetch(sez){
 function grpFillList(){ const pp=scheda.pp||{}; document.querySelectorAll('select.grp-sel').forEach(sel=>{ if(document.activeElement!==sel) sel.innerHTML=grpOptsHTML(pp.gruppo); }); }
 function sezSet(v){ ppSet('sezione',v); const n=document.querySelectorAll('.sez-warn'); n.forEach(x=>x.style.display=(String(v||'').trim()&&!sezIn(v))?'block':'none'); grpFillList(); }
 function sezDone(v){ grpFetch(v); }
-function grpLabel(v){ v=String(v||'').trim(); if(!v) return ''; if(v==='unico') return 'Gruppo unico'; return /^\d+$/.test(v)?'Gruppo '+v:v; }
+function grpLabel(v){ v=String(v||'').trim(); if(!v) return ''; if(v==='unico') return 'Monogruppo'; return /^\d+$/.test(v)?'Gruppo '+v:v; }
 function grpOptsHTML(cur){
   const pp=scheda.pp||{}; const known=new Set(grpKnown(pp.sezione)); cur=String(cur||'');
   const o=(v,t)=>`<option value="${v}"${cur===v?' selected':''}>${t}${known.has(v)&&cur!==v?' · già presente':''}</option>`;
-  let h='<option value=""'+(cur?'':' selected')+'>— scegli —</option>'+o('unico','Gruppo unico (Sezione monogruppo)');
+  let h='<option value=""'+(cur?'':' selected')+'>— scegli —</option>'+o('unico','Monogruppo');
   for(let n=1;n<=20;n++) h+=o(String(n),'Gruppo '+n);
   if(cur && cur!=='unico' && !/^([1-9]|1\d|20)$/.test(cur)) h+=`<option value="${sEsc(cur)}" selected>${sEsc(cur)}</option>`;
   return h;
