@@ -161,7 +161,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .rbar-legend{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;justify-content:flex-end}
 .rbar-leg{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-faint)}
 .rbar-leg-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.radar-bars{display:flex;flex-direction:column;gap:10px}.cov-row{display:grid;grid-template-columns:140px repeat(8,minmax(0,1fr));gap:4px;align-items:stretch}.cov-lbl{display:flex;flex-direction:column;justify-content:center;font-size:11px;color:var(--ink-mid);gap:2px}.cov-lbl b{font-weight:700;color:var(--ink)}.cov-lbl span{font-size:10px;color:var(--ink-faint)}.cov-cell{border:0;border-radius:6px;padding:6px 6px 7px;min-height:52px;font:600 10px/1.25 'Montserrat',sans-serif;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}.cov-cell i{font-style:normal;font-size:9px;opacity:.8}.cov-cell:hover{filter:brightness(1.08)}.cov-cell:focus-visible{outline:2px solid var(--ink);outline-offset:1px}@media(max-width:760px){.cov-row{grid-template-columns:repeat(4,minmax(0,1fr))}.cov-lbl{grid-column:1/-1;flex-direction:row;align-items:baseline;justify-content:space-between;margin-top:6px}.cov-cell{min-height:46px;font-size:10px}}@media(max-width:420px){.cov-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.radar-bars{display:flex;flex-direction:column;gap:10px}.cov-keys{margin-top:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:8px}.cov-keys-h{font:700 10px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:6px}.cov-key{font-size:12px;line-height:1.5;color:var(--ink-mid);margin:5px 0}.cov-key b{color:var(--ink)}.cov-row{display:grid;grid-template-columns:140px repeat(8,minmax(0,1fr));gap:4px;align-items:stretch}.cov-lbl{display:flex;flex-direction:column;justify-content:center;font-size:11px;color:var(--ink-mid);gap:2px}.cov-lbl b{font-weight:700;color:var(--ink)}.cov-lbl span{font-size:10px;color:var(--ink-faint)}.cov-cell{border:0;border-radius:6px;padding:6px 6px 7px;min-height:52px;font:600 10px/1.25 'Montserrat',sans-serif;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}.cov-cell i{font-style:normal;font-size:9px;opacity:.8}.cov-cell:hover{filter:brightness(1.08)}.cov-cell:focus-visible{outline:2px solid var(--ink);outline-offset:1px}@media(max-width:760px){.cov-row{grid-template-columns:repeat(4,minmax(0,1fr))}.cov-lbl{grid-column:1/-1;flex-direction:row;align-items:baseline;justify-content:space-between;margin-top:6px}.cov-cell{min-height:46px;font-size:10px}}@media(max-width:420px){.cov-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .rbar-row{display:flex;align-items:center;gap:10px}
 .rbar-label{font-size:11px;font-weight:600;color:var(--ink-mid);min-width:190px}
 .rbar-track-multi{flex:1;height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;display:flex}
@@ -4456,6 +4456,7 @@ function renderRiepilogo(){
           return `<button type="button" class="cov-cell" title="${sEsc(tip)}" onclick="gotoObs('${p.id}')" style="background:${t?thresholdColor(t):'var(--border)'};color:${dark?'var(--ink)':'#fff'}"><i>${i+1}</i>${sEsc(p.name)}</button>`; }).join('');
       bars.appendChild(row);
     });
+    const kd=document.createElement('div'); kd.innerHTML=covKeysHTML(); if(kd.innerHTML) bars.appendChild(kd);
   }
 
   // Alert diagnostico
@@ -5287,6 +5288,59 @@ function getStrumentiByFascia(fascia) {
 function posLines(presenti,sviluppo){ return [presenti.length?'Presenti: '+presenti.join(', '):'', sviluppo.length?'In sviluppo: '+sviluppo.join(', '):''].filter(Boolean).join('\n'); }
 // barra multicolore per un ambito: un segmento per livello (Consolidato → Assente), il resto grigio = non osservati
 function lvlCounts(list){ const c={1:0,2:0,3:0,4:0,5:0,0:0}; list.forEach(p=>{ c[obsToThreshold(obsVal(p))]++; }); return c; }
+// ── Chiave di lettura sotto "Copertura per ambito": pattern semplici, scritti come spunto (non verdetto) ──
+const COV_LENTI = [
+  {id:'corpo', nome:'Corpo e concretezza', p:['P1','P5','P7'],
+   debole:{u:'il fare concreto è l’area meno sviluppata. Quante attività chiedono davvero di muoversi, costruire, mettere le mani in pasta?', s:'il fare concreto è l’area meno sviluppata nel team. Quanto spazio hanno, nelle vostre riunioni e nei campi, la manualità e la cura di sé?'},
+   forte:{u:'corpo e capacità pratiche sono un punto di forza: la concretezza può diventare la porta d’ingresso per lavorare sulle aree più fragili.', s:'il team è solido sul piano pratico: è una risorsa da mettere al servizio delle aree più fragili.'}},
+  {id:'emo', nome:'Emozioni e relazioni', p:['P2','C2','S4'],
+   debole:{u:'il piano emotivo e relazionale è ancora fragile. Ci sono momenti in cui ragazze e ragazzi possono dire cosa provano e ascoltare davvero gli altri?', s:'il piano emotivo e relazionale del team è ancora fragile. C’è uno spazio in cui dirsi come si sta, oltre a cosa si fa?'},
+   forte:{u:'emozioni e relazioni sono una risorsa: il gruppo sa stare insieme e ascoltarsi, una base su cui osare di più.', s:'il team sa ascoltarsi e stare insieme: una base su cui osare di più.'}},
+  {id:'futuro', nome:'Sguardo al futuro', p:['P4','C3','S7'],
+   debole:{u:'progettare, guidare e immaginare il proprio cammino sono ancora poco presenti. Chi decide e organizza, oggi, nella vostra Unità?', s:'progettare e guidare sono ancora poco presenti nel team. Chi decide e organizza, oggi, nello staff?'},
+   forte:{u:'c’è uno sguardo in avanti: si può affidare ai ragazzi più responsabilità reale nella progettazione.', s:'il team sa progettare e guidare: si può distribuire di più la responsabilità.'}},
+  {id:'mondo', nome:'Verso il mondo', p:['C5','C6','C7','C8'],
+   debole:{u:'il gruppo guarda ancora poco fuori da sé. Quando è stata l’ultima volta che avete lasciato un segno sul territorio?', s:'il team guarda ancora poco fuori da sé. Che rapporto ha lo staff con il territorio e la comunità?'},
+   forte:{u:'forte apertura verso l’esterno: il territorio può diventare il luogo in cui lavorare anche sulle aree più fragili.', s:'il team è aperto verso l’esterno: una risorsa da far vivere anche ai ragazzi.'}},
+  {id:'senso', nome:'Interiorità e senso', p:['S1','S5','S6','S8'],
+   debole:{u:'identità, valori e scelte sono l’area più scoperta. C’è spazio, nel programma, per fermarsi e rielaborare ciò che si vive?', s:'identità, valori e scelte sono l’area più scoperta del team. C’è spazio per chiedersi perché si fa ciò che si fa?'},
+   forte:{u:'c’è una base interiore solida: identità e valori possono sostenere sfide più impegnative.', s:'il team ha una base interiore solida: è ciò che rende credibile la testimonianza.'}}
+];
+const COV_PASSAGGI = [
+  {da:['C4','C5'], a:['C7','C8'], u:'conosce i temi (diversità, diritti) ma non li traduce ancora in azione sul territorio. Quale piccola causa concreta potreste fare vostra?', s:'conosce i temi ma non li traduce ancora in azione. Quale impegno concreto potrebbe prendersi lo staff?'},
+  {da:['S5'], a:['S6'], u:'riconosce i valori ma fatica a farli diventare scelte. Dove si possono sperimentare scelte vere, con conseguenze reali?', s:'riconosce i valori ma fatica a farli diventare scelte nel servizio. Dove si decide davvero?'},
+  {da:['P4'], a:['P5'], u:'sa immaginare e progettare, ma fatica a realizzare. Le idee arrivano fino in fondo o si fermano a metà?', s:'sa progettare ma fatica a realizzare. Le idee del team arrivano fino in fondo?'},
+  {da:['P6'], a:['P5'], u:'ragiona e critica bene, ma fa ancora poco. Il pensiero trova occasioni per diventare impresa concreta?', s:'ragiona bene ma fa ancora poco. Il pensiero diventa impresa concreta?'}
+];
+function covPLink(id){ const p=Object.values(DB).flat().find(x=>x.id===id); return p?`<a href="#" onclick="gotoObs('${id}');return false" style="color:inherit;text-decoration:underline dotted">${p.name}</a>`:id; }
+function covKeysHTML(){
+  const all=Object.values(DB).flat(); const byId={}; all.forEach(p=>byId[p.id]=p);
+  const sc=id=>{ const p=byId[id]; if(!p) return null; const v=obsVal(p); return v==='n'?null:Number(v); };
+  const obsN=all.filter(p=>sc(p.id)!=null).length; if(obsN<6) return '';
+  const st=MODE==='staff', k=st?'s':'u', SOG=st?'Il team':'Il gruppo';
+  const out=[]; const avg=ids=>{ const v=ids.map(sc).filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
+  const AMB={P:'Personale',C:'Comunitario',S:'Spirituale'};
+  // 1. sbilanciamento tra ambiti
+  const am=['P','C','S'].map(a=>({a,n:DB[a].filter(p=>sc(p.id)!=null).length,m:avg(DB[a].map(p=>p.id))})).filter(x=>x.n>=4);
+  if(am.length>=2){ am.sort((x,y)=>y.m-x.m); const hi=am[0], lo=am[am.length-1], d=hi.m-lo.m;
+    if(d>=2) out.push({c:'sbil',w:d, h:`<b>Sbilanciamento.</b> Lo Sviluppo ${AMB[hi.a]} (media ${hi.m.toFixed(1)}) è nettamente più avanti dello Sviluppo ${AMB[lo.a]} (media ${lo.m.toFixed(1)}). ${st?'Quanto spazio trova questo ambito nella vita del team?':'Quanto spazio trova questo ambito nel vostro programma?'}`}); }
+  // 2. passaggi pensiero → azione
+  COV_PASSAGGI.forEach(r=>{ const a=avg(r.da), b=avg(r.a); if(a!=null&&b!=null&&a-b>=4) out.push({c:'azione',ids:[...r.da,...r.a],w:(a-b)*0.9, h:`<b>Dal pensiero all’azione.</b> ${SOG} ${r[k]} (${r.da.filter(id=>sc(id)!=null).map(covPLink).join(', ')} → ${r.a.filter(id=>sc(id)!=null).map(covPLink).join(', ')})`}); });
+  // 3. lenti trasversali
+  COV_LENTI.forEach(L=>{ const seen=L.p.filter(id=>sc(id)!=null); if(seen.length<2||seen.length<L.p.length*0.66) return; const m=avg(L.p);
+    if(m<=4){ const deb=seen.filter(id=>obsToThreshold(sc(id))<=2); out.push({c:'lente',w:(5-m)*0.8+1, h:`<b>${L.nome}.</b> ${L.debole[k].charAt(0).toUpperCase()+L.debole[k].slice(1)} (${(deb.length?deb:seen).map(covPLink).join(', ')})`}); }
+    else if(m>=7.5) out.push({c:'forza',w:(m-7)*0.6, h:`<b>${L.nome}.</b> ${L.forte[k].charAt(0).toUpperCase()+L.forte[k].slice(1)}`}); });
+  // 4. macchia di leopardo nello stesso ambito
+  ['P','C','S'].forEach(a=>{ const v=DB[a].filter(p=>sc(p.id)!=null).map(p=>({id:p.id,s:sc(p.id)})); if(v.length<4) return; v.sort((x,y)=>y.s-x.s);
+    const hi=v[0], lo=v[v.length-1]; if(hi.s>=7&&lo.s<=2) out.push({c:'disom',ids:[hi.id,lo.id],w:(hi.s-lo.s)*0.35, h:`<b>Crescita disomogenea.</b> Nello Sviluppo ${AMB[a]} convivono ${covPLink(hi.id)} (${thresholdLabel(obsToThreshold(hi.s)).toLowerCase()}) e ${covPLink(lo.id)} (${thresholdLabel(obsToThreshold(lo.s)).toLowerCase()}): ${st?'su cosa fa leva il team per crescere, e cosa resta indietro?':'su cosa fa leva il gruppo per crescere, e cosa resta indietro?'}`}); });
+  // 5. buchi di osservazione
+  const nonO=['P','C','S'].map(a=>({a,n:DB[a].filter(p=>sc(p.id)==null).length})).sort((x,y)=>y.n-x.n);
+  if(nonO[0].n>=3&&nonO[0].n>nonO[1].n) out.push({c:'buchi',w:1.5+nonO[0].n*0.2, h:`<b>Da osservare.</b> Lo Sviluppo ${AMB[nonO[0].a]} è il meno osservato (${nonO[0].n} percorsi su 8 senza parere): ${st?'mancano forse occasioni in cui vederlo nel team?':'mancano forse occasioni in cui vederlo, o attività del KOS dedicate?'}`});
+  if(!out.length) return '';
+  out.sort((x,y)=>y.w-x.w);
+  const usati=new Set(), visti=new Set(); const scelti=out.filter(x=>{ if(usati.has(x.c)) return false; if(x.ids&&x.ids.every(i=>visti.has(i)||sc(i)==null)) return false; usati.add(x.c); (x.ids||[]).forEach(i=>visti.add(i)); return true; });
+  return `<div class="cov-keys"><div class="cov-keys-h">Chiave di lettura · spunti, non verdetti</div>${scelti.slice(0,3).map(x=>`<div class="cov-key">${x.h}</div>`).join('')}</div>`;
+}
 function lvlBarHTML(list,cls){ const c=lvlCounts(list), tot=list.length;
   return `<div class="${cls||'rbar-track-multi'}">`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}"></div>`:'').join('')+`</div>`; }
 function lvlTag(p){ const v=obsVal(p), t=obsToThreshold(v); if(!t) return `<span class="rie-row-tag tag-n" title="Non osservato">—</span>`;
