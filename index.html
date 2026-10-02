@@ -993,7 +993,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
         </div>
 
         <h4>Salvataggio, archivio e condivisione</h4>
-        <p>Il lavoro si salva da solo, a ogni modifica. Senza account resta nel browser di questo dispositivo. Con un account (<strong>Accedi</strong>) lo ritrovi su ogni dispositivo, trovi l'archivio dei tuoi progetti e le versioni precedenti, e puoi condividerlo con un collega o con il tutor: lui lo legge e ti lascia suggerimenti, senza poterlo modificare. Per tenere una copia fuori dall'app usa i pulsanti di esportazione Word o Excel.</p>
+        <p>Il lavoro si salva da solo, a ogni modifica. Senza account resta nel browser di questo dispositivo. Con un account (<strong>Accedi</strong>) lo ritrovi su ogni dispositivo, trovi l'archivio dei tuoi progetti e le versioni precedenti, e puoi condividerlo con un collega o con il tutor: lui lo legge e ti lascia suggerimenti, senza poterlo modificare. Per tenere una copia fuori dall'app: i pulsanti Word o Excel esportano il progetto aperto; in <strong>Archivio → Scarica tutti i miei progetti</strong> salvi in un unico file l'intero archivio, da ricaricare con <em>Carica file</em> se serve.</p>
 
         <h4>Come leggere i risultati</h4>
         <p>I percorsi poco presenti non sono fallimenti: sono le aree dove il tuo gruppo ha più da guadagnare. Meglio tre percorsi vissuti in profondità che otto sfiorati. Le letture che l'app propone sono spunti di riflessione, da calare nella storia del tuo gruppo e del tuo territorio.</p>
@@ -7428,7 +7428,7 @@ async function clRenderArchive(){
   const b = $cl('cl-body');
   let rows;
   try{ rows = await dbList(); }
-  catch(e){ b.innerHTML = `<div class="cl-msg err" style="display:block">Non riesco a leggere l'archivio: ${clEsc(clErr(e))}<br>Se hai appena configurato il database, controlla di aver pubblicato le Regole di Firestore.</div>`; return; }
+  catch(e){ b.innerHTML = `<div class="cl-msg err" style="display:block">Non riesco a leggere l'archivio: ${clEsc(clErr(e))}<br>Controlla la connessione e riprova; se il problema resta, esci e rientra.</div>`; return; }
   const byYear = {}; rows.forEach(r => (byYear[r.anno] = byYear[r.anno]||[]).push(r));
   const years = Object.keys(byYear).sort((a,b)=>b-a);
   const fmt = ts => ts ? new Date(ts).toLocaleString('it-IT',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
@@ -7464,9 +7464,11 @@ async function clRenderArchive(){
       <div class="cl-grid"><select class="cl-in" id="cl-ny">${yOpts}</select><input class="cl-in" id="cl-nt" placeholder="Titolo (facoltativo)" maxlength="80"></div>
       <div style="margin-top:10px"><button class="cl-btn ghost" onclick="clNew()">+ Crea e apri</button></div></div>
     <div class="cl-sec"><h4>Copia di sicurezza su file</h4>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="cl-btn ghost sm" onclick="clBackup()">↓ Scarica file .json</button>
+      <p class="cl-note" style="margin:0 0 8px">Ogni tanto scarica <strong>tutti i tuoi progetti</strong> in un unico file e conservalo sul computer o su Drive: se qualcosa va storto, con <em>Carica file</em> li rimetti nell'archivio.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="cl-btn sm" id="cl-ball" onclick="clBackupAll()">↓ Scarica tutti i miei progetti</button>
+      <button class="cl-btn ghost sm" onclick="clBackup()">↓ Solo il progetto aperto</button>
       <label class="cl-btn ghost sm" style="cursor:pointer">↑ Carica file .json<input type="file" accept=".json,application/json" style="display:none" onchange="clRestore(this)"></label></div>
-      <div class="cl-msg" id="cl-msg"></div></div>`;
+      <div class="cl-msg" id="cl-msg"></div>${rows.length?`<p class="cl-note" style="margin:6px 0 0">${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}</p>`:''}</div>`;
   b.innerHTML = h;
   clLoadShared();
 }
@@ -7852,12 +7854,101 @@ function clBackup(){
   a.href = URL.createObjectURL(new Blob([JSON.stringify({app:'bussola-pee-cngei', v:1, data:d}, null, 1)], {type:'application/json'}));
   a.download = name + '.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1500);
 }
+// ── tutti i progetti in un unico file ──
+const CL_LASTBK = 'bussola_last_backup_all';
+function clLastBackupTxt(){
+  let t = 0; try{ t = +localStorage.getItem(CL_LASTBK)||0; }catch(e){}
+  return t ? ' · ultima copia completa: ' + new Date(t).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) : ' · nessuna copia completa scaricata finora';
+}
+async function clBackupAll(){
+  if(!CL.sb || !CL.user){ clToast('Accedi per scaricare tutti i tuoi progetti'); return; }
+  const btn = $cl('cl-ball'); if(btn){ btn.disabled = true; btn.textContent = 'Preparo il file…'; }
+  try{
+    if(typeof saveData==='function') saveData(true);
+    if(CL.ctx && (CL.pending || CL.ctx.dirty)) await clPush();
+    const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,data,updated_at').eq('user_id', CL.user.id);
+    if(error) throw error;
+    const rows = (data||[]).sort((a,b) => b.anno - a.anno || String(a.titolo).localeCompare(String(b.titolo)));
+    if(!rows.length){ clMsg('Non hai ancora progetti in archivio.', 'err'); return; }
+    let sugg = [];
+    try{
+      const r2 = await CL.sb.from('pee_suggerimenti').select('archivio_id,percorso,autore_nome,testo,stato,created_at').in('archivio_id', rows.map(r=>r.id));
+      if(!r2.error) sugg = r2.data||[];
+    }catch(e){}
+    const oggi = new Date().toISOString().slice(0,10);
+    const pacchetto = {app:'bussola-pee-cngei', v:2, tipo:'tutti-i-progetti', esportato:new Date().toISOString(), account:CL.user.email||'',
+      progetti: rows.map(r => ({anno:r.anno, titolo:r.titolo, meta:r.meta||{}, aggiornato:r.updated_at, data:r.data||{},
+        suggerimenti: sugg.filter(s => s.archivio_id === r.id).map(({archivio_id, ...x}) => x)}))};
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(pacchetto, null, 1)], {type:'application/json'}));
+    a.download = `PEE-CNGEI_tutti-i-progetti_${oggi}.json`; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1500);
+    try{ localStorage.setItem(CL_LASTBK, String(Date.now())); }catch(e){}
+    clMsg(`Scaricati ${rows.length} ${rows.length===1?'progetto':'progetti'} in un unico file. Conservalo in un posto sicuro (computer, Drive).`, 'ok');
+  }catch(e){ clMsg('Non riesco a preparare il file: '+clErr(e), 'err'); }
+  finally{ if(btn){ btn.disabled = false; btn.textContent = '↓ Scarica tutti i miei progetti'; } }
+}
+function clShowBundle(){
+  const P = CL.bundle; if(!P) return;
+  const b = $cl('cl-body'), t = $cl('cl-title');
+  $cl('cl-ov').classList.add('show');
+  t.textContent = 'Ripristina da file';
+  const when = P.esportato ? new Date(P.esportato).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) : '';
+  let h = `<p class="cl-note" style="margin:0 0 10px">Il file contiene <strong>${P.progetti.length} ${P.progetti.length===1?'progetto':'progetti'}</strong>${when?', salvati il '+clEsc(when):''}.</p>`;
+  if(CL.user){
+    h += `<div class="cl-row act"><div><div class="t">Rimetti nell'archivio quelli che mancano</div><div class="s">I progetti già presenti (stesso anno e stesso titolo) non vengono toccati. Nulla viene cancellato.</div></div><button class="cl-btn sm" id="cl-rall" onclick="clRestoreAll()">Ripristina</button></div>`;
+  } else {
+    h += `<p class="cl-note" style="margin:0 0 10px">Per rimetterli tutti nell'archivio <a href="#" onclick="clShow('login');return false">accedi</a> e ricarica il file. Senza account puoi aprire un progetto alla volta su questo dispositivo.</p>`;
+  }
+  h += `<div class="cl-sec"><h4>Progetti nel file</h4>`;
+  P.progetti.forEach((p, i) => {
+    h += `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(p.anno)} · ${clEsc(p.titolo)}</div><div class="s">${clEsc(clMetaTxt(p.meta||clMeta(p.data||{})))}</div></div>
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${CL.user?`<button class="cl-btn ghost sm" onclick="clRestoreOne(${i})">Aggiungi come copia</button>`:`<button class="cl-btn ghost sm" onclick="clOpenFromBundle(${i})">Apri qui</button>`}</div></div>`;
+  });
+  h += `</div><div class="cl-msg" id="cl-msg"></div>
+    <div style="margin-top:12px"><button class="cl-btn ghost sm" onclick="CL.bundle=null;clShow(CL.user?'archive':'login')">← Indietro</button></div>`;
+  b.innerHTML = h;
+}
+async function clRestoreAll(){
+  const P = CL.bundle; if(!P || !CL.user) return;
+  const btn = $cl('cl-rall'); if(btn){ btn.disabled = true; btn.textContent = 'Ripristino…'; }
+  let add = 0, skip = 0, err = 0;
+  try{
+    const rows = await dbList();
+    for(const p of P.progetti){
+      if(rows.some(r => r.anno === p.anno && r.titolo === p.titolo)){ skip++; continue; }
+      try{ const r = await dbInsert(p.anno, p.titolo, p.data||{}, p.meta||clMeta(p.data||{})); rows.push({anno:r.anno, titolo:r.titolo}); add++; }
+      catch(e){ err++; }
+    }
+    clMsg(`Fatto: ${add} ${add===1?'progetto aggiunto':'progetti aggiunti'}${skip?`, ${skip} ${skip===1?"già presente, lasciato com'era":"già presenti, lasciati com'erano"}`:''}${err?`, ${err} non riusciti`:''}.`, err?'err':'ok');
+  }catch(e){ clMsg('Errore: '+clErr(e), 'err'); }
+  if(btn){ btn.disabled = false; btn.textContent = 'Ripristina'; }
+}
+async function clRestoreOne(i){
+  const p = CL.bundle && CL.bundle.progetti[i]; if(!p || !CL.user) return;
+  try{
+    const titolo = await clUniqueTitle(await dbList(), p.anno, p.titolo);
+    await dbInsert(p.anno, titolo, p.data||{}, p.meta||clMeta(p.data||{}));
+    clMsg(`Aggiunto in archivio: ${p.anno} · ${titolo}`, 'ok');
+  }catch(e){ clMsg('Errore: '+clErr(e), 'err'); }
+}
+function clOpenFromBundle(i){
+  const p = CL.bundle && CL.bundle.progetti[i]; if(!p) return;
+  if(!confirm('Il progetto scelto sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
+  localStorage.setItem(CL_LS, JSON.stringify(p.data||{}));
+  try{ if((p.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
+  location.reload();
+}
 function clRestore(inp){
   const f = inp.files && inp.files[0]; if(!f) return;
   const r = new FileReader();
   r.onload = () => {
     try{
-      const j = JSON.parse(r.result); const d = j.data || j;
+      const j = JSON.parse(r.result);
+      if(j && Array.isArray(j.progetti)){
+        if(!j.progetti.length) throw new Error('il file non contiene progetti');
+        CL.bundle = j; inp.value = ''; clShowBundle(); return;
+      }
+      const d = j.data || j;
       if(typeof d !== 'object' || !('obs' in d || 'STAFF_MEMBERS' in d || 'scheda' in d)) throw new Error('formato non riconosciuto');
       if(!confirm('Il file sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
       localStorage.setItem(CL_LS, JSON.stringify(d));
