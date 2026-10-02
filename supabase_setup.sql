@@ -168,3 +168,17 @@ end $$;
 drop trigger if exists pee_sugg_stato on public.pee_suggerimenti;
 create trigger pee_sugg_stato before update on public.pee_suggerimenti
   for each row execute function public.pee_sugg_solo_stato();
+
+-- ── Gruppi noti per Sezione (suggerimenti nel campo "Gruppo"; base per la futura vista del Capo Gruppo) ──
+create table if not exists public.pee_gruppi (
+  sezione text not null,
+  gruppo  text not null,
+  creato  timestamptz not null default now(),
+  primary key (sezione, gruppo)
+);
+alter table public.pee_gruppi enable row level security;
+drop policy if exists "gruppi_leggi" on public.pee_gruppi;
+create policy "gruppi_leggi" on public.pee_gruppi for select to anon, authenticated using (true);
+drop policy if exists "gruppi_aggiungi" on public.pee_gruppi;
+create policy "gruppi_aggiungi" on public.pee_gruppi for insert to authenticated
+  with check (char_length(sezione) between 1 and 80 and char_length(gruppo) between 1 and 80);

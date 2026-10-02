@@ -38,7 +38,7 @@ html{scroll-behavior:smooth}
 body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh}
 
 /* ── HEADER ── */
-.unit-name{margin-top:14px;max-width:520px}.unit-name label{display:block;font:700 10px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:5px}.unit-name input{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm,8px);font:600 15px 'Montserrat',sans-serif;color:var(--ink);background:#fff}.unit-name input:focus{outline:none;border-color:var(--green)}.unit-name input:disabled{background:#f5f5f2;color:var(--ink)}
+.unit-name{margin-top:14px;max-width:520px}.unit-name label{display:block;font:700 10px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:5px}.unit-name input{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm,8px);font:600 15px 'Montserrat',sans-serif;color:var(--ink);background:#fff}.unit-name input:focus{outline:none;border-color:var(--green)}.unit-name input:disabled{background:#f5f5f2;color:var(--ink)}body:not([data-mode="staff"]) .tm-staff,body[data-mode="staff"] .tm-unit{display:none}.unit-sezgrp .sez-warn{text-transform:none;letter-spacing:0}.pc-kos-todo{border-left:3px solid #E0A400!important}.kos-tag{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.04em;padding:1px 6px;border-radius:8px;background:#EAF3EA;color:var(--green);margin-left:6px;vertical-align:middle}
 .hdr{background:var(--green);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.2)}
 .hdr-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:14px;height:56px}
 .logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -158,7 +158,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .rie-radar{margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
 .rie-radar-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .rie-radar-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint)}
-.rbar-legend{display:flex;align-items:center;gap:12px}
+.rbar-legend{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;justify-content:flex-end}
 .rbar-leg{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-faint)}
 .rbar-leg-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
 .radar-bars{display:flex;flex-direction:column;gap:10px}
@@ -167,7 +167,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .rbar-track-multi{flex:1;height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;display:flex}
 .rbar-seg{height:100%}
 .rbar-seg-p,.rbar-seg-v{background:var(--ok-light)}
-.rbar-seg-a{background:var(--red-mid)}
+.rbar-seg-a{background:var(--red-mid)}.rie-bar-multi{display:flex;overflow:hidden}.rie-bar-multi .rbar-seg{height:100%}
 .rbar-seg-c{background:#E8C44A}
 .rbar-seg-o{background:var(--blue-mid)}
 .rbar-val{font-size:11px;font-weight:700;color:var(--ink-mid);min-width:32px;text-align:right}
@@ -548,7 +548,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 /* ── Beta / segnalazioni, navigazione per Sezioni ── */
 .fb-btn{gap:6px}
 .fb-beta{font-size:9px;font-weight:800;letter-spacing:.06em;background:#FFD54F;color:#5D4300;border-radius:4px;padding:2px 5px}
-#g-subnav{max-width:1100px;margin:14px auto 0;padding:0 16px}
+#g-subnav{max-width:1100px;margin:0 auto;padding:14px 16px 0;position:sticky;top:var(--hdr-h,56px);z-index:90;background:var(--bg)}
+#g-subnav.stuck{padding-top:6px;padding-bottom:6px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+#g-subnav.stuck .gsn-title{display:none}
+#g-subnav.stuck .gsn-wrap{padding:5px 6px}
+#g-subnav.stuck .gsn-steps{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+#g-subnav.stuck .gsn-step{min-width:0;flex:1 0 auto;padding:4px 9px;font-size:11.5px;white-space:nowrap;display:flex;gap:5px;align-items:baseline}
+#g-subnav.stuck .gsn-step b{display:inline}
 .gsn-wrap{background:var(--bg-card,#fff);border:1px solid var(--border-light);border-radius:12px;padding:10px 12px}
 .gsn-title{font-size:11px;font-weight:800;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
 .gsn-steps{display:flex;gap:6px;flex-wrap:wrap}
@@ -560,7 +566,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .gblock h3{font-size:15px;font-weight:800;margin:0 0 4px}
 .g-crit{font-size:11px;color:var(--ink-mid);background:var(--bg);border:1px solid var(--border-light);border-radius:8px;padding:8px 10px;margin:8px 0 12px;line-height:1.55}
 .g-crit b{color:var(--ink)}
-@media(max-width:480px){ .gsn-step{min-width:calc(50% - 6px)} #g-subnav{padding:0 10px} }
+@media(max-width:480px){ .gsn-step{min-width:calc(50% - 6px)} #g-subnav{padding-left:10px;padding-right:10px} }
 body.g-nav .phase-tabs{max-width:820px}
 body.g-nav .ptab{padding:8px 9px;font-size:11.5px;white-space:nowrap}
 body.g-nav .ptab .ic{display:none}
@@ -994,11 +1000,11 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
           <li><strong>Sezione 2 · Obiettivi e Indicatori di Risultato:</strong> per ogni priorità un obiettivo dal manuale PEE, almeno 2 indicatori e la tempistica.</li>
           <li><strong>Sezione 3 · Percorso Educativo Esperienziale:</strong> per gli obiettivi prioritari: strumenti del metodo declinati per la Branca, tempistiche, 3–4 attività (Lancio, Sviluppo, Conclusione) e la verifica delle 7 caratteristiche.</li>
           <li><strong>Sezione 4 · Verifica delle attività</strong> e <strong>Sezione 5 · Valutazione finale</strong>, dopo aver vissuto il percorso.</li>
-          <li><strong>✓ Checklist e invio:</strong> la completezza della Scheda, il Word, i criteri di valutazione delle Linee Guida e, per chi svolge il Progetto Personale, il promemoria per l’invio al tutor. L'app ti suggerisce cosa risulta già a posto, ma l'ultima parola è tua.</li>
+          <li><strong>✓ Controllo e invio:</strong> che cosa manca ancora nella Scheda, il documento Word e, per chi svolge il Progetto Personale, il promemoria per l’invio al tutor.</li>
         </ul>
 
         <h4>Il documento e l’invio</h4>
-        <p>La Scheda si compila in due momenti: le Sezioni 1–3 prima di realizzare le attività, le Sezioni 4 e 5 dopo aver vissuto il percorso. In <em>Checklist e invio</em> vedi cosa è completo e scarichi il Word. Se stai svolgendo il <strong>Progetto Personale</strong>, lì trovi anche il promemoria dell’iter previsto dalle Linee Guida: mail di avvio al tutor, invio fino alla Sezione 3, invio completo.</p>
+        <p>La Scheda si compila in due momenti: le Sezioni 1–3 prima di realizzare le attività, le Sezioni 4 e 5 dopo aver vissuto il percorso. In <em>Controllo e invio</em> vedi che cosa manca e scarichi il Word. Se stai svolgendo il <strong>Progetto Personale</strong>, i passi dell’iter previsto dalle Linee Guida (mail di avvio al tutor, invio fino alla Sezione 3, invio completo) ti vengono ricordati nel momento in cui servono.</p>
 
         <h4>Osservare con il KOS 2.0</h4>
         <p>Nella Sezione 1.1 trovi i tre incontri del KOS per la tua Branca. Spunta le attività che hai svolto: l'app ti mostra quali competenze hai già osservato e quali no, e ti porta l'elenco nelle "Occasioni osservative". Non serve fare tutto né in ordine: adatta le occasioni alla tua realtà e chiudi l'osservazione entro novembre.</p>
@@ -1127,7 +1133,8 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <div class="hero-eye" id="hero-eye1">Fase 1</div>
       <h1 id="hero-title1">Osservazione</h1>
       <p id="hero-desc1"></p>
-      <div class="unit-name"><label for="unit-name-in" id="unit-name-lbl">Nome dell'Unità</label><input id="unit-name-in" type="text" maxlength="60" autocomplete="off" oninput="setUnitName(this.value)"></div>
+      <div class="unit-name"><label for="unit-name-in" id="unit-name-lbl">Nome dell'Unità</label><input id="unit-name-in" type="text" maxlength="60" autocomplete="off" oninput="setUnitName(this.value)" onchange="if(MODE==='staff'&&STAFF_RUOLO==='CG')grpDone()"></div>
+      <div id="staff-sezgrp" class="unit-name unit-sezgrp" style="display:none"></div>
     </div>
       <div class="tutorial-box" id="tut-panel1">
       <button class="tutorial-close" onclick="closeTutorial('panel1')" title="Chiudi">×</button>
@@ -1135,7 +1142,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <ul class="tutorial-list">
         <li>Per ogni percorso indica il livello di presenza osservato: usa la <strong>scala 1–10</strong> (1 = quasi assente, 10 = pienamente presente) oppure spunta <strong>"Non osservato"</strong> se non hai ancora abbastanza elementi.</li>
         <li>Espandi ogni scheda con il pulsante <strong>▼ Espandi</strong> per leggere gli obiettivi e le domande guida.</li>
-        <li>In modalità <strong>Staff</strong> puoi passare da un membro all'altro coi tab in alto.</li>
+        <li class="tm-staff">Puoi passare da un membro dello staff all'altro coi tab in alto.</li>
         <li>Il lavoro si salva da solo: non serve premere Salva. Con un account lo ritrovi su ogni dispositivo.</li>
       </ul>
     </div>
@@ -1144,6 +1151,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
       <span class="prog-count" id="prog-count">0 / 24</span>
     </div>
+    <div id="kos-obs-hint" style="display:none;font-size:12px;line-height:1.5;background:#FFFBEF;border:1px solid #F0DFAF;border-radius:8px;padding:8px 12px;margin:0 0 10px"></div>
     <div id="percorsi-root"></div>
     <div class="foot-nav">
       <button class="btn-primary" onclick="goPhase(2)">Vedi il riepilogo →</button>
@@ -1155,16 +1163,17 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     <div class="hero">
       <div class="hero-eye">Riepilogo</div>
       <h1 id="rie-title">Come siamo messi?</h1>
-      <p id="rie-subtitle">Fotografia dell'osservazione. I percorsi assenti indicano le aree di maggiore bisogno su cui costruire le priorità.</p>
+      <p id="rie-subtitle">Fotografia dell'osservazione. I percorsi assenti o con tracce iniziali indicano le aree di maggiore bisogno su cui costruire le priorità.</p>
     </div>
     <div class="tutorial-box" id="tut-panel2">
       <button class="tutorial-close" onclick="closeTutorial('panel2')" title="Chiudi">×</button>
       <div class="tutorial-hdr">Come funziona — Riepilogo</div>
       <ul class="tutorial-list">
         <li>Il riepilogo mostra la <strong>fotografia dell'osservazione</strong>: barre per ambito, elenco percorsi, lettura diagnostica.</li>
-        <li>I percorsi con punteggio basso (1–4) sono le <strong>aree di maggiore necessità</strong> — quelle su cui costruire le priorità educative.</li>
-        <li>In modalità Staff trovi anche la <strong>vista aggregata</strong> di tutto il team e le attività formative suggerite.</li>
-        <li>Puoi leggere le indicazioni di percorso individuali per ogni membro dello staff.</li>
+        <li>I percorsi con punteggio basso (1–4, <em>Assente</em> o <em>Tracce iniziali</em>) sono le <strong>aree di maggiore necessità</strong> — quelle su cui costruire le priorità <span class="tm-unit">educative</span><span class="tm-staff">formative</span>.</li>
+        <li class="tm-unit">I percorsi <em>In sviluppo</em> (5–6) meritano attenzione: sono quelli in cui un intervento mirato può fare la differenza.</li>
+        <li class="tm-staff">Trovi anche la <strong>vista aggregata</strong> di tutto il team e le attività formative suggerite.</li>
+        <li class="tm-staff">Puoi leggere le indicazioni di percorso individuali per ogni membro dello staff.</li>
       </ul>
     </div>
     <div class="disclaimer-box">
@@ -1959,7 +1968,7 @@ const KOS2 = {"L":[{"t":"1° incontro · in sede (2 ore)","foc":"identità, crea
 function kosPName(id){ for(const a of ['P','C','S']){ const x=(DB[a]||[]).find(p=>p.id===id); if(x) return x.name; } return id; }
 function kosActs(){ const f=FASCIA||'E'; const out=[]; (KOS2[f]||[]).forEach((inc,i)=>inc.a.forEach((a,j)=>out.push(Object.assign({key:f+i+'_'+j,inc:i,incT:inc.t},a)))); return out; }
 function kosWhere(pid){ return kosActs().filter(a=>a.f.indexOf(pid)>=0); }
-function kosToggle(key,on){ if(!scheda.pp) scheda.pp={}; if(!scheda.pp.kosDone) scheda.pp.kosDone={}; if(on) scheda.pp.kosDone[key]=true; else delete scheda.pp.kosDone[key]; saveDataDebounced(); const c=document.getElementById('kos-cov'); if(c) c.innerHTML=kosCovHTML(); }
+function kosToggle(key,on){ if(!scheda.pp) scheda.pp={}; if(!scheda.pp.kosDone) scheda.pp.kosDone={}; if(on) scheda.pp.kosDone[key]=true; else delete scheda.pp.kosDone[key]; saveDataDebounced(); const c=document.getElementById('kos-cov'); if(c) c.innerHTML=kosCovHTML(); try{ occRefresh(); kosObsRefresh(); }catch(e){} }
 function kosFill(){ const done=kosActs().filter(a=>(scheda.pp.kosDone||{})[a.key]); if(!done.length){ showToast('Spunta prima le attività del KOS che hai svolto'); return; }
   const lines=done.map(a=>'• '+a.n+' ('+a.incT.split(' · ')[0]+(a.m?', '+a.m+' min':'')+')');
   const cur=(scheda.pp.occasioni||'').trim(); scheda.pp.occasioni=(cur?cur+'\n':'')+'Dal KOS 2.0:\n'+lines.join('\n'); saveDataDebounced(); renderValuation(); }
@@ -1977,9 +1986,11 @@ function kosPathHTML(){
   const f=FASCIA; if(!f||!KOS2[f]) return '';
   const done=(scheda.pp&&scheda.pp.kosDone)||{};
   const BR={L:'Branco',E:'Reparto',R:'Compagnia'}[f];
-  const badge=a=>a.lv?'<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:#EAF3EA;color:var(--green);margin-left:6px;white-space:nowrap">Percorso Promessa · '+a.lv+'</span>':'';
+  const badge=a=>a.lv?'<span role="button" tabindex="0" title="Cosa significa?" onclick="event.preventDefault();event.stopPropagation();kosPromInfo()" style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:#EAF3EA;color:var(--green);margin-left:6px;white-space:nowrap;cursor:help;text-decoration:underline dotted">Percorso Promessa · '+a.lv+' ⓘ</span>':'';
+  const DET=(KOS2_DET[f]||{});
+  const det=a=>{ const x=DET[a.n]; if(!x) return ''; const g=(x.g||'').trim(); return '<details style="margin:0 0 4px 26px"><summary style="font-size:10.5px;font-weight:700;color:var(--green);cursor:pointer">Come si svolge</summary><div style="font-size:11.5px;line-height:1.5;color:var(--ink);padding:4px 0 2px">'+sEsc(x.d)+(g&&!/^nessuno\b/.test(g)?'<div style="margin-top:5px;color:var(--ink-mid)"><b>Aggancio al Percorso Promessa:</b> '+sEsc(g)+'</div>':'')+'<div style="margin-top:4px;font-size:10px;color:var(--ink-faint)">Dal KOS 2.0 — Kit di Osservazione e Scoperta del gruppo.</div></div></details>'; };
   const incs=KOS2[f].map((inc,i)=>'<div style="margin-top:10px"><div style="font-size:11px;font-weight:800">'+inc.t+' <span style="font-weight:400;color:var(--ink-mid)">— focus su '+inc.foc+'</span></div>'+
-    inc.a.map((a,j)=>{ const key=f+i+'_'+j; return '<label style="display:flex;gap:8px;align-items:flex-start;padding:6px 4px;border-top:1px solid var(--border-light);cursor:pointer"><input type="checkbox" '+(done[key]?'checked':'')+' onchange="kosToggle(\''+key+'\',this.checked)" style="margin-top:3px"><span style="font-size:12px;line-height:1.4"><b>'+a.n+'</b>'+(a.m?' <span style="color:var(--ink-mid)">· '+a.m+' min</span>':'')+badge(a)+'<br><span style="font-size:10.5px;color:var(--ink-mid)">Osserva: '+a.f.map(kosPName).join(' · ')+'</span>'+(a.ag?'<br><span style="font-size:10.5px;color:var(--green)">Aggancio: '+a.ag+'</span>':'')+'</span></label>'; }).join('')+'</div>').join('');
+    inc.a.map((a,j)=>{ const key=f+i+'_'+j; return '<div style="border-top:1px solid var(--border-light)"><label style="display:flex;gap:8px;align-items:flex-start;padding:6px 4px;cursor:pointer"><input type="checkbox" '+(done[key]?'checked':'')+' onchange="kosToggle(\''+key+'\',this.checked)" style="margin-top:3px"><span style="font-size:12px;line-height:1.4"><b>'+a.n+'</b>'+(a.m?' <span style="color:var(--ink-mid)">· '+a.m+' min</span>':'')+badge(a)+'<br><span style="font-size:10.5px;color:var(--ink-mid)">Osserva: '+a.f.map(kosPName).join(' · ')+'</span>'+(a.ag?'<br><span style="font-size:10.5px;color:var(--green)">Aggancio: '+a.ag+'</span>':'')+'</span></label>'+det(a)+'</div>'; }).join('')+'</div>').join('');
   const tech='<details style="margin-top:12px"><summary style="font-size:11.5px;font-weight:700;cursor:pointer">Tecniche per osservare meglio (dal KOS)</summary><ul style="font-size:11.5px;line-height:1.5;margin:6px 0 0 16px;padding:0;color:var(--ink-mid)">'+
     '<li><b>Variazione intenzionale delle condizioni</b>: cambia gruppi, ruoli, materiali o tempi a metà attività e osserva come si adattano.</li>'+
     '<li><b>Inversione delle dinamiche</b>: se qualcuno resta in disparte, cambia chi guida (i più bravi fanno gli arbitri) o la tecnica (disegno invece di parola) per capire se il limite è suo o del contesto.</li>'+
@@ -1991,7 +2002,117 @@ function kosPathHTML(){
   return '<details open style="margin:12px 0;border:1px solid #D4E8D4;border-radius:8px;background:#F8FCF8"><summary style="padding:9px 12px;font-size:12.5px;font-weight:800;cursor:pointer;color:var(--green)">🔍 Percorso osservativo KOS 2.0 · '+BR+' (3 incontri)</summary><div style="padding:0 12px 12px">'+
     '<p style="font-size:11.5px;color:var(--ink-mid);margin:4px 0">Non serve fare tutto né in quest’ordine: puoi adattare le occasioni alla tua realtà e diluirle in altre attività. L’importante è chiudere la parte osservativa <b>entro novembre</b>. Non è necessario osservare ogni anno tutti i focus: parti da ciò che già sai del gruppo.</p>'+
     incs+'<div id="kos-cov" style="margin-top:12px;padding:8px 10px;background:#fff;border:1px dashed #BBD9BB;border-radius:6px">'+kosCovHTML()+'</div>'+
-    '<div style="margin-top:8px"><button class="btn-primary" style="font-size:11px;padding:6px 12px" onclick="kosFill()">Porta le attività spuntate nelle “Occasioni osservative” ↓</button></div>'+tech+'</div></details>';
+    '<div style="margin-top:6px;font-size:11px;color:var(--ink-mid)">Le attività spuntate compaiono nella tabella “Occasioni osservative” qui sotto.</div>'+tech+'</div></details>';
+}
+
+const SEZIONI = ["Ancona", "Anzio Nettuno", "Arco", "Arenzano", "Arezzo", "Asylia", "Bari", "Bassano del Grappa", "Bellaria Igea Marina", "Benevento", "Bergamo", "Bologna", "Bolzano", "Buccinasco", "Cagliari", "Calceranica al Lago", "Caltagirone", "Cantù", "Casoria", "Cassino", "Catania", "Cernobbio", "Cernusco sul Naviglio", "Cerveteri – Gr. Reg. Lazio", "Cesano Maderno", "Cesena – Gr. Reg. Emilia Romagna", "Colli Albani", "Como", "Comuni Vesuviani", "Cremona", "Fermignano", "Firenze", "Fiumicino", "Gassino Torinese", "Genova", "Giarre", "Giffoni Valle Piana", "Isola di Capri", "L'Aquila", "La Spezia", "Lanciano", "Langhirano", "Lariano", "Lecce", "Livorno", "Lonigo", "Mantova", "Matera", "Mediavalle Piana Lucchese", "Messina", "Milano", "Modena", "Molfetta", "Napoli", "Nardò", "Niscemi", "Novoli", "Padova", "Palermo – Gr. Reg. Sicilia", "Parma", "Patti", "Perugia – Gr. Reg. Umbria", "Pesaro", "Piombino – Gr. Reg. Toscana", "Pisa", "Pistoia", "Pontinia", "Porto Torres", "Ragusa", "Ravenna – Gr. Reg. Emilia Romagna", "Reggio Calabria", "Reggio Emilia", "Riposto", "Roma", "Rovereto", "San Benedetto del Tronto", "San Martino Buon Albergo", "Santeramo in Colle", "Savona – Gr. Reg. Liguria", "Senigallia", "Spinea", "Terre Estensi", "Torino", "Trapani – Gr. Reg. Sicilia", "Trento", "Treviso – Gr. Reg. Veneto", "Trieste", "Udine", "Valmadrera", "Velletri", "Venezia", "Verona", "Vicenza", "Zanica"];
+// Dettaglio attività KOS 2.0 (testo dal Kit, per Branca): d = come si svolge, g = aggancio al Percorso Promessa
+const KOS2_DET = {"L": {"Il Cerchio delle Identità": {"d": "Ogni lupetto porta un oggetto/disegno/musica che lo rappresenta e racconta perché. Gli altri possono fare domande.", "g": ""}, "Movimento e Presentazione Corporea": {"d": "Ogni lupetto si presenta, inventando un movimento che rappresenta il suo stato d'animo attuale. Gli altri dovranno a turno ripetere il proprio e quelli prima di lui/lei.", "g": "nessuno Queste due attività d'apertura restano volutamente \"pure\": sono il primo contatto dell'anno e servono a rompere il ghiaccio e osservare, non a veicolare contenuti. Non è necessario forzare un collegamento."}, "La Mappa dei Sogni Condivisa": {"d": "I lupetti vengono divisi in gruppi da 3-4, ad ognuno viene dato un foglio di carta pacco e con tecniche a scelta e usando materiali vari (collage, tempere, gessi, etc) devono creare una mappa visiva dei loro sogni/aspirazioni. Il prompt è “Da grande sarò…”. Al termine lo presentano agli altri gruppi.", "g": "leggero → MIGLIORARSI Nel giro di presentazione finale, il Vecchio Lupo aggiunge una sola domanda a ciascun gruppo: \"cosa potete iniziare a fare già da quest'anno per avvicinarvi a questo sogno?\". Non cambia la meccanica del gioco: aggancia semplicemente il sogno al concetto di Migliorarsi (\"si mette in gioco per superare i propri limiti\"), introducendo con naturalezza il tema senza nominarlo esplicitamente ai lupetti."}, "Il Dilemma del Branco": {"d": "I lupetti sempre divisi in gruppi da 3-4 pescano un dilemma etico, ad esempio: “Il Branco ha trovato una lampada magica con dentro un genio che vi offre tre desideri. Cosa decidete di esaudire?” Ricordate che per spendere dovete ottenere il quorum (50% + 1). Ogni gruppo dopo un paio di minuti di ragionamento, dovrà convincere il Branco delle loro scelte. Al termine ognuno potrà votare per quei desideri più convincenti, ma non per i propri.", "g": "profondo → LEGGE / BUONA AZIONE Questa è l'attività con il potenziale più alto: la struttura (dilemma → argomentazione → voto) è già, di fatto, un esercizio sulla Legge del Branco. Proponiamo di affiancare ai dilemmi \"neutri\" già previsti 1-2 dilemmi pescati da un mazzo dedicato, costruiti sui due articoli della Legge: Segue l'esempio del Vecchio Lupo — es. \"Un lupetto più esperto vi propone di saltare la fila per il gioco più bello. Cosa fate?\" Si prende cura di sé e degli altri — es. \"Durante un gioco un compagno si fa male e piange, ma la vostra squadra sta per vincere. Cosa decidete?\" Il meccanismo di gioco (quorum, votazione) resta identico; cambia solo il contenuto di alcune carte."}, "Tempo Libero Guidato": {"d": "Spazio con diversi materiali disponibili (libri, giochi diversi dalla classica palla, materiali artistici). I lupetti scelgono liberamente cosa fare.", "g": "facoltativo, non forzato Si può aggiungere, tra i materiali disponibili, anche qualche strumento di Branca (Pista di Akela, Quaderno di Caccia, un foulard) per osservare chi vi si avvicina spontaneamente — ma senza obbligo. Il valore di questa fase è proprio l'assenza di struttura: forzare un contenuto valoriale qui rischierebbe di inquinare l'osservazione."}, "Il gioco dell'oca in città": {"d": "I lupi vengono divisi in squadre da 4-5 e a turno dovranno tirare il dado e muovere le pedine tra le caselle per raggiungere l’oca al centro. Quando la loro pedina giunge in una casella tutte le squadre svolgono una prova di pochi minuti che mette in scontro tutti i gruppi. Se vince la squadra che ha mosso la pedina, questa mantiene la posizione; se vince un altro gruppo allora torneranno indietro di tante caselle quante indicate dal dado lanciato dalla squadra vincitrice. Una volta vinta o persa la prova, il turno passa ad un’altra squadra. “Come dei cigni”: sulla base di una sinfonia il gruppo crea usando solo il corpo una coreografia, coordinati a turno da un “direttore”, ovvero la persona a cui viene data una bacchetta. Vince il gruppo che crea la coreografia più idonea e più coordinata. “Poliedro”: sulla base di un’immagine data (es. torre, papera, candelabro, etc) i gruppi dovranno ricostruire tridimensionalmente l’oggetto con materiali limitati (giornali, scotch, cannucce). Vince il gruppo che realizza l’oggetto più simile all’immagine. “Enigmi di cittadinanza”: i gruppi prenotandosi dovranno rispondere a 5 domande a risposta multiple su temi di sostenibilità, diritti, cittadinanza (es. Come si chiama il cestino dove butto gli avanzi di cibo?, Quale tra questi non è un diritto dei bambini? etc). Vince la squadra che per primo ottiene 5 punti. Imprevisto: una domanda/prova di argomento scout (es. canta la canzone “...”?, fai il nodo “...”?, che immagine ha la traccia “...”?, chi è quel personaggio giungla?, etc)", "g": "leggero → sfrutta la prova \"Imprevisto\" già esistente La casella \"Imprevisto\" è già, nel KOS originale, pensata per domande scout generiche: è la sede naturale per inserire, tra le varie possibilità, anche riferimenti al Percorso Promessa — una frase della formula da indovinare dalla descrizione, un pezzo del Motto o della Legge da completare, il nome di una Parola Maestra. Suggerimento: preparare un piccolo mazzo di carte \"Imprevisto\" con 1/3 di domande a tema Promessa e lasciare le altre generiche, così il gioco resta vario e riutilizzabile ogni anno cambiando solo il contenuto delle carte."}, "Una vita come tante": {"d": "I lupi sempre divisi a piccoli gruppi ricevono scenari di conflitto adatti all'età (bullismo, esclusione, ingiustizie). Prima rappresentano la situazione \"problematica\", poi offrono una soluzione. Quindi il capo da la possibilità al pubblico di intervenire per cambiarla.", "g": "leggero → ALTRI/ LEGGE (art. 2) Nella riconduzione finale (già previsto), il Vecchio Lupo può chiudere richiamando esplicitamente il secondo articolo della Legge — \"si prende cura di sé e degli altri\" — e la Parola Maestra di Chil (\"siamo dello stesso sangue tu ed io e la parte della Promessa che invita a “impegnarsi per gli altri\"). Pone ai lupi la sola domanda: \"cosa vuol dire, in questa scena, prendersi cura degli altri o impegnarsi per gli altri?\". La meccanica resta identica."}, "Il Diario di Bordo": {"d": "Ciascun lupo scrive/disegna su un foglio cosa ha imparato su di sé e sugli altri durante l'incontro.", "g": "nessuno Momento di rielaborazione personale: meglio lasciarlo libero da contenuti guidati."}, "I Detective della Natura": {"d": "I lupi vengono divisi in squadre esplorano liberamente l'ambiente circostante con \"missioni\" di scoperta date (trova 5 cose che non sapevi esistessero qui, disegnala e raccogli un estratto, trova segni di vita animale e disegnala, trova 5 profumi che ti colpiscono e disegna cosa li produce, realizza con un pastello di cera e un foglio 3 calchi di superficie diverse, ecc.). Lo scopo è farli avvicinare alla natura scoprendola.", "g": "leggero → MONDO Nel lancio dell'attività (già previsto) basta richiamare il riferimento a “impegnarsi nel mondo”come cornice delle missioni di scoperta, senza aggiungere nulla alla meccanica."}, "Wunderkammer: la Scatola delle Meraviglie": {"d": "I lupi con il materiale raccolto dovranno realizzare una Wunderkammer, ovvero una scatola che funga da raccoglitore artistico delle meraviglie trovate. Per farlo gli vengono forniti materiali per realizzare una scatola e per decorarlo con quanto realizzato precedentemente (calchi, foglie, fiori, etc). Al termine in cerchio ogni lupo condivide le scoperte fatte presentando le proprie “meraviglie”.", "g": "nessuno"}, "In Caccia": {"d": "Ai lupi viene assegnato un numero a 3 cifre e messo con lo scotch carta sulla fronte. I lupi, seguendo un semplice percorso a tracce in piccoli gruppi, dovranno trovare dei sacchetti nascosti nel bosco. I sacchetti sono all’interno di zone segnalate in cui per accedere bisogna superare degli ostacoli (es. superare dei fili di lana senza toccarli, passo del giaguaro, etc), solo quando tutta la squadra è entrata nella zona franca, dove si trova il sacchetto, esso può essere recuperato. Fuori dalle zone ci sono però dei capi che le difendono e che possono eliminare i lupi leggendo il loro numero. Le persone a cui è stato letto il numero tornano alla base, dove gliene verrà assegnato un altro.", "g": "facoltativo, leggero Se lo Staff lo desidera, 1-2 degli ostacoli \"generici\" possono diventare piccole prove a tema Legge/Motto (es. per superare l'ostacolo, la squadra deve completare insieme una frase della Legge). Resta facoltativo: la sfida fisica è già l'obiettivo primario di questa fase, meglio non appesantirla."}, "Al Campo Base": {"d": "I lupi all’interno del sacchetto trovano dei materiali che serviranno per allestire lo spazio per il pranzo e la siesta. Divisi per fasce d’età ci sarà chi cucinerà qualcosa da aggiungere al pranzo a sacco (i più grandi) e chi allestisce la zona pranzo (i più piccoli) e chi quella della siesta (quelli di mezzo) usando solo materiali naturali e pochi strumenti.", "g": "leggero → BUONA AZIONE Nel lancio, si può far notare che allestire lo spazio comune per tutti è già una piccola Buona Azione di squadra (\"è disponibile a dare una mano ogni volta che ce n'è bisogno\") — una frase, non un'aggiunta strutturale."}, "Pausa pranzo e Siesta Osservata": {"d": "Momento di pranzo e siesta lasciato all’autogestione del Branco, senza consegne specifiche: si osservano scelte e dinamiche spontanee.", "g": "nessuno"}, "Il Dono alla Natura": {"d": "I lupi insieme decidono e realizzano un progetto che \"restituisce\" qualcosa al luogo (pulizia area, semina, costruzione rifugio per animali, ecc.).", "g": "profondo → BUONA AZIONE / MONDO Questa attività è, di fatto, già una Buona Azione di Branco e già vive l’impegno nel Mondo proponiamo solo di renderlo esplicito nel lancio (\"oggi il Branco vive insieme una vera Buona Azione\") e di dedicare il progetto realizzato con una piccola frase o rito che richiami la Legge, prima di lasciare il luogo. Nessuna modifica alla meccanica: solo una cornice valoriale dichiarata."}, "Il Cerchio della Gratitudine": {"d": "Ogni lupo condivide una cosa per cui è grato della giornata e una cosa che si porta a casa e fa un nodo ad un filo che passa di mano in mano. Al termine il Capo chiude il filo creando una collana che attaccheranno sul guidone di Branco al termine della prima caccia insieme.", "g": "profondo → CRESCERE SPIRITUALMENTE Proponiamo di usare questo momento come chiusura di tutto il percorso KOS: prima del giro di gratitudine, il Vecchio Lupo ripercorre in un minuto i concetti esplorati nei tre incontri (Migliorarsi, Legge/BA, Altri, Mondo), poi lancia la domanda del giro: \"quale di queste parole senti più tua, oggi?\". La meccanica (filo, nodo, collana sul guidone) resta identica: cambia solo la domanda-guida, che aggancia il momento più \"spirituale\" del KOS legato al “crescere spiritualmente”"}}, "E": {"Chi sono": {"d": "Gli Esplo, dopo un primo giro di nomi, trovano nella stanza appese o sparse immagini diverse (es. tratte da riviste, foto o carte Dixit, etc). Dovranno sceglierne tre che rappresenti: io e la scuola, io e nel tempo libero, io negli scout. Infine, in cerchio a giro ognuno presenta la sua persona. Gli altri possono fare domande.", "g": "nessuno Questa è la prima attività dell'anno: serve a rompere il ghiaccio e a osservare, non a veicolare contenuti. Se qualche Esplo sceglie un'immagine legata a un'uniforme, un distintivo o un momento di Promessa già vissuto, può essere un aggancio spontaneo da raccogliere a voce — senza però strutturarlo."}, "La Mappa delle Influenze": {"d": "Gli Esplo individualmente creano una mappa visiva (tecnica a piacere: collage, pennarelli, etc) di persone, media, esperienze che li influenzano di più e attaccano il poster realizzato ad uno più grande che rappresenta la PTG che conterrà tutti i suoi membri. Condivisione volontaria.", "g": "profondo · Organizzazione di Pattuglia/Equipaggio e Reparto Il gesto di attaccare il proprio poster a quello grande della PTG è già, di fatto, una rappresentazione plastica di \"far parte di\". Si può rendere esplicito chiedendo, prima di attaccare i poster, chi sono il Capo Pattuglia/Equipaggio e il Vice, che ruolo hanno e come è organizzata la Pattuglia/l'Equipaggio all'interno del Reparto (angolo, guidone, grido...). Il poster finale diventa così anche una prima mappa visiva della struttura di Pattuglia/Equipaggio, utile da riprendere più avanti nell'anno quando si tratterà il tema in modo più formale."}, "Intervista Impossibile": {"d": "Gli Esplo si intervistano a coppie come se fossero giornalisti che incontrano il \"sé futuro\" a 25 anni. Poi presentano il partner immaginando il suo futuro.", "g": "leggero · Motto Tra le domande suggerite all'intervistatore si può inserire: \"Cosa significa per il tuo sé futuro essere sempre preparato/a ad affrontare le difficoltà?\". Non serve spiegare il Motto: la domanda da sola introduce, in modo naturale, l'idea di \"Sii preparato/a\" senza interrompere il gioco."}, "Il Barometro delle Opinioni": {"d": "Il Capo legge affermazioni controverse ma adatte all'età (es: \"È giusto pubblicare tutto sui social\", \"L'amicizia è più importante del successo\"). I ragazzi si posizionano fisicamente nello spazio da \"totalmente d'accordo\" a \"totalmente contrario\". Quindi si dà parola a difesa di una e dell’altra posizione.", "g": "profondo · Legge Scout Tra le affermazioni controverse se ne possono inserire 2-3 costruite specchiando (in positivo o in negativo) un articolo della Legge Scout, ad esempio: \"Se un amico mi chiede di coprire una bugia, è giusto farlo\" (art. 1), \"Va bene prendersi gioco di chi è troppo diverso da noi\" (art. 5), \"In natura ogni tanto si può fare uno strappo alla regola\" (art. 6). Il meccanismo del Barometro resta identico: cambia solo il set di affermazioni, che invece di restare generiche permette allo staff di osservare come i singoli articoli della Legge vengono già intuitivamente vissuti dal gruppo, prima ancora di studiarli formalmente."}, "Tableau vivant": {"d": "Gli esplo vengono divisi in squadre miste e ad ognuna di queste viene data un’emozione o una breve situazione (es. al bar la mattina, in tenda, etc) e una musica di sottofondo. Le squadre dovranno proporre il loro tableau vivant realizzando una coreografia che rappresenti al meglio l’emozione/situazione e il pubblico lo deve indovinare.", "g": "leggero · Legge Scout Accanto alle situazioni/emozioni generiche già previste, si possono aggiungere 2-3 situazioni che rappresentino (senza dichiararlo alle squadre) un articolo della Legge messo alla prova — es. \"un compagno di squadra si fa male e la gara sta per iniziare\" (art. 3-4), \"la Pattuglia trova un accampamento abusivo lasciato sporco nel bosco\" (art. 6). Dopo l'indovinello, il pubblico prova anche a dire quale articolo della Legge la scena richiamava. Il gioco resta lo stesso: cambia solo il taglio di alcune situazioni."}, "La Città Sostenibile": {"d": "Gli esplo divisi in PTG partecipano a una simulazione di Consiglio Comunale Straordinario dove devono decidere come utilizzare un'area abbandonata nel centro città. Ogni PTG riceve una carta personaggio e rappresenta uno stakeholder diverso (ambientalisti, residenti, istruzione, etc) e deve negoziare per raggiungere un compromesso, mentre i capi coordinano come sindaco e scandiscono i tempi.", "g": "nessuno L'attività è già di per sé un pieno esercizio di cittadinanza attiva e rispetto dell'ambiente (art. 6 della Legge in azione), ma forzare una citazione esplicita rischierebbe di appesantire una simulazione che funziona bene così com'è. Nessun aggancio necessario."}, "L'analisi del gruppo": {"d": "Gli esplo a giro analizzano le dinamiche emerse durante il gioco. Che ruoli hanno assunto? Quali strategie hanno usato? Come sono stati gestiti i conflitti?", "g": "leggero · Consiglio della Legge Il giro di parola è già, nella forma, molto simile a un piccolo Consiglio della Legge (autovalutazione del proprio comportamento nel gruppo). Si può chiudere il giro con una domanda in più: \"c'è un momento in cui ti sei comportato/a esattamente come vorresti essere ricordato/a?\". Non è necessario nominare il Consiglio della Legge: la domanda prepara però il terreno per quando lo staff lo introdurrà formalmente più avanti nell'anno."}, "Emoji del Momento": {"d": "Ogni esplo sceglie un emoji che rappresenta come si sente, lo attacca ad un poster e scrive sotto una parola che indichi cosa si porta a casa (emozione, valore, etc).", "g": "nessuno Chiusura rapida e volutamente libera: meglio lasciarla senza cornici aggiuntive."}, "L'Orienteering tra Tecnica e Valori": {"d": "Gli esplo in PTG devono svolgere un percorso di orienteering con bussola e mappa dove ad ogni checkpoint devono risolvere sia prove tecniche (es. segnalazione, staffetta di nodi, scheda botanica, etc) sia dilemmi etici su temi come ambiente, tecnologia, futuro, su cui devono dibattere o fare delle scelte in un tempo circoscritto. Il superamento delle prove gli sbloccherà l'indizio successivo. Vince chi arriva prima al traguardo.", "g": "profondo · Legge, Motto, San Giorgio, organizzazione di Pattuglia/Equipaggio Questa è l'attività del KOS più naturalmente compatibile con un innesto profondo, perché ha già la struttura giusta: checkpoint a tappe, ognuno con una prova tecnica e un dilemma. Si può dedicare 1-2 checkpoint aggiuntivi (o riconvertire quelli già previsti) ai contenuti del Percorso Promessa, ad esempio: un checkpoint \"Motto\" in cui la prova tecnica va affrontata con un imprevisto dell'ultimo minuto (materiale mancante, tempo dimezzato) per far vivere concretamente cosa significhi \"Sii preparato/a\"; un checkpoint \"Onore\" ispirato allo spirito della leggenda di San Giorgio, in cui la PTG deve superare una prova mantenendo la parola data anche quando sarebbe più comodo non farlo; un checkpoint \"Pattuglia/Equipaggio\" in cui a rotazione ogni Esplo assume per la durata della prova il ruolo di Capo Pattuglia, sperimentando cosa significhi guidare e farsi guidare. Restano fuori, per la loro natura più nozionistica, i contenuti su Saluto, uniforme, storia di B.P. e del movimento scout, bandiera e inno."}, "La Campagna di Sensibilizzazione": {"d": "Sulla base dei temi trattati prima, ogni PTG valuta quale tema li ha colpiti di più e su quale vorrebbero sensibilizzare i loro coetanei. Progettano, quindi, una breve campagna di sensibilizzazione (poster, video concept, slogan).", "g": "nessuno L'attività prosegue direttamente dall'Orienteering e ha già un obiettivo chiaro e autonomo (cittadinanza/advocacy). Meglio non sovraccaricarla di ulteriori riferimenti."}, "Architetti della Natura": {"d": "Ad ogni PTG viene dato un elemento della natura circostante (bosco, fiori, prato, funghi, etc), una scatola con del cibo vario ed un’altra con materiale di pionierismo e di cancelleria di base. Essi dovranno progettare uno stand che valorizzi l’elemento dato con all’interno: una struttura funzionale (rifugio, area relax, spazio per attività), un tris di piatti e un gioco da fare nel tempo libero. Possono usare solo i materiali dati e quelli naturali che trovano intorno a loro.", "g": "leggero · Legge Scout (art. 6) Nel lancio si può ricordare semplicemente che la struttura va progettata rispettando l'elemento naturale assegnato, non sfruttandolo o danneggiandolo — lo stesso principio dell'art. 6 della Legge (\"rispetta e protegge i luoghi, gli animali e le piante\"). Non serve altro: il Focus Osservativo \"Sostenibilità Ambientale\" già misura esattamente questo."}, "Presentazione dell'Opera": {"d": "Ogni PTG presenta la propria creazione spiegando scelte progettuali, tecniche utilizzate, significato simbolico.", "g": "nessuno Momento di restituzione libera: meglio lasciare spazio a ciò che ogni PTG sceglie di mettere in evidenza, senza guidarlo verso un contenuto specifico."}, "Pausa pranzo e Tempo Libero Osservato": {"d": "Il gruppo organizza autonomamente il pranzo, la pulizia, il riordino e i momenti giocati senza indicazioni specifiche.", "g": "nessuno · Momento di restituzione libera: meglio lasciare spazio a ciò che ogni PTG sceglie di mettere in evidenza, senza guidarlo verso un contenuto specifico."}, "Il Dono alla Natura": {"d": "Il gruppo deve ideare e realizzare un intervento che migliori concretamente l'ambiente visitato (pulizia, piantumazione, costruzione supporti per fauna, installazione artistica eco-compatibile).", "g": "profondo · Legge Scout (art. 6) e \"Impegnarmi nel mondo\" Questa attività è, di fatto, già una messa in pratica dell'art. 6 della Legge e della locuzione \"impegnarmi nel mondo e per gli altri\" del testo della Promessa: basta dichiararlo esplicitamente allo staff (non necessariamente ai ragazzi) come chiave di lettura, senza cambiare nulla nello svolgimento."}, "Il Cerchio del Cambiamento": {"d": "Seduti in cerchio, ogni esplo condivide: una cosa che ha scoperto di sé, una cosa che ha capito del gruppo, un impegno concreto che si prende per il futuro. Al termine fa un piccolo nodo al foulard al ricordo della Buona Azione che scioglierà quando la compirà.", "g": "profondo · Chiusura trasversale (\"Crescere spiritualmente\" e \"Migliorarmi ogni giorno\") È il punto naturale in cui far atterrare l'intero percorso del KOS: le tre domande del cerchio ricalcano quasi alla lettera la chiusura della Promessa Scout (\"crescere spiritualmente e migliorarmi ogni giorno\"). Si può, senza aggiungere nulla di strutturale, far notare al termine del giro che ciò che hanno appena fatto — guardarsi dentro, riconoscere un impegno preso, portarlo con sé in un gesto concreto (il nodo al foulard) — è esattamente lo spirito con cui, più avanti nell'anno, si arriva a scegliere liberamente di prestare la Promessa."}}, "R": {"Scegli me!": {"d": "Ogni rover sulla base di una scheda guida (nome, cosa studio, cosa mi appassiona…, cosa disprezzo…, i miei punti di forza sono…, etc) deve presentarsi in 3 minuti cronometrati come se dovesse convincere un \"investitore\" a \"investire\" nella sua persona per i prossimi 10 anni. I rover durante il discorso si focalizzeranno su valori, competenze, visioni, contributo che vuole dare al mondo.", "g": "leggero · Promessa Alla scheda guida si può aggiungere una domanda: \"quali valori della Legge senti già tuoi, oggi?\". Non cambia la meccanica della presentazione: si aggiunge solo uno spunto di riflessione tra quelli proposti."}, "Il finanziamento": {"d": "La Compagnia deve simulare il CdA di una startup sociale che ha ricevuto un finanziamento importante. Devono decidere come allocare risorse tra diversi progetti (educazione, ambiente, tecnologia sociale, supporto giovani). Ognuno rappresenta un dipartimento, gli verrà data una carta personaggio con le informazioni di base e dovrà difendere il suo budget.", "g": "leggero · Motto \"Prepararsi a servire\" Nel debrief, il Capo Compagnia può far notare che allocare responsabilmente risorse comuni è già un piccolo esercizio di \"prepararsi a servire\": chi gestisce risorse di tutti si prepara ad assumersi responsabilità reali. Nessuna modifica alla meccanica."}, "Il Cerchio della Forcola": {"d": "I rover si dispongono in cerchio attorno alla Forcola sorretta dal Capo Compagnia. Il CC elenca ad alta voce alcuni valori contenuti nella Legge Scout e nella Promessa. Ad ogni valore, ciascun rover si avvicina o si allontana dalla Forcola in base a quanto si sente affine a quel valore in questo momento. I valori proposti possono variare in base alle esigenze educative della Compagnia.", "g": "profondo · Legge Scout e Forcola Questa attività è tratta e adattata da \"Orientarsi nella Legge Scout\" (Percorso Promessa Branca R, Manuale \"Guiderà la sua Canoa\"): i rover sperimentano fisicamente la propria vicinanza ai valori della Legge e della Promessa attorno alla Forcola, lo stesso oggetto che ritroveranno al centro della spedizione del 3° incontro e nel cerchio di chiusura. Nessuna invenzione di meccanica: l'attività riprende uno strumento già previsto dal Manuale di Branca R, adattato ai tempi del KOS."}, "Una sfida per il futuro": {"d": "I rover trovano delle immagini di persone celebri diverse con una loro frase ispirazionale. Dovranno scegliere una frase che li colpisce di più e sulla base di questa una sfida personale che si sentono pronti ad affrontare nelle prossime settimane.", "g": "leggero · \"Migliorarmi ogni giorno\" Nel lancio, il CC può far notare che la sfida personale che stanno per scegliere è, in piccolo, lo stesso gesto richiesto dalla Promessa: impegnarsi a migliorare ogni giorno. Nessuna modifica alla meccanica."}, "Giochi senza frontiere": {"d": "I rover suddivisi in squadre devono superare sfide interconnesse, ognuna rappresentante un aspetto diverso di una comunità urbana. Affrontando le sfide otterranno dei punti. Vince alla fine chi avrà accumulato più punti. Le sfide sono: Torre Umana: Costruire la torre umana più alta e stabile Comunicazione cieca: un membro bendato dovrà disegnare/costruire qualcosa guidato dagli altri Negoziazione: Dibattito strutturato su temi caldi (es. lavoro del futuro, sostenibilità, tecnologia, relazioni) sulla base del ruolo che gli viene dato (es. un nonno, un ambientalista, un genitore, etc). Fai da te: Risolvere un problema pratico con materiali limitati (es. trasportare acqua da A a B con solo carta e scotch) Improvvisazione Teatrale: Rappresentare un tema estratto a sorte in minuti sotto forma di musical, mimo, etc Enigma collaborativo: risolvere 3 enigmi di varia tipologia che richiedono competenze diverse Come un atleta: devono svolgere degli esercizi ginnici nel minor tempo possibile (es. salti con la corda, giri di hula hoop, palleggi, etc)", "g": "leggero · Legge Scout Nel debrief finale, il CC può far notare come la Legge Scout — in particolare lealtà e collaborazione — si sia già vista in azione nelle sfide appena affrontate: senza bisogno di nominarla prima, era già \"in scena\" nel modo in cui la squadra ha collaborato. Nessuna modifica alla meccanica."}, "Uniti (Ciondolo dei Valori)": {"d": "I rover individuano le competenze e i valori degli altri rover, anche alla luce di quanto fatto prima (incluso il Cerchio della Forcola). Ognuno crea un piccolo ciondolo/simbolo personale che rappresenti un valore che sente proprio; alla fine, tutti i ciondoli vengono uniti in un unico grande ciondolo di Compagnia, che rappresenta i punti di forza e i valori condivisi del gruppo.", "g": "profondo · Valori della Legge e della Promessa Questa versione dell'attività riprende, adattandola ai tempi della Compagnia, l'attività ufficiale \"Ciondolo dei Valori\" del Percorso Promessa di Branca R: il ciondolo individuale diventa il simbolo concreto di un valore scelto, e il grande ciondolo collettivo rappresenta l'unione dei valori della Compagnia — un simbolo che può restare esposto in sede o ispirare una futura attività di servizio."}, "La spedizione autogestita": {"d": "La compagnia riceve solo una meta finale e risorse limitate. Deve auto- organizzarsi per: pianificare il percorso, gestire la logistica, distribuire ruoli, gestire imprevisti, mantenere coesione di gruppo. Il Capo Compagnia interviene solo per sicurezza o in caso di stallo.", "g": "profondo · Forcola / Scelta consapevole Questa è l'attività in cui la Forcola — simbolo della capacità rover di fare scelte autonome e consapevoli, già incontrata nel 1° incontro — si vive più che spiegarsi: la compagnia naviga da sola, senza il Capo al timone, proprio come la Forcola permette di sterzare la canoa. Nel lancio, il CC può dire semplicemente: \"Oggi la vostra Forcola siete voi: nessuno decide al posto vostro\". Nessuna modifica alla meccanica: è il significato dichiarato che aggancia la spedizione al Percorso Promessa."}, "Dinamiche di gruppo": {"d": "I rover riflettono su quanto fatto rispondendo a turno alle domande e passando un filo di lana alla persona che ha ricoperto quel ruolo: chi ha assunto la leadership? Chi ha risolto quella situazione di emergenza? Chi è stato democratico? Chi autoritario? etc.", "g": "leggero · Forcola / Scelta consapevole Nel passaggio del filo, il CC può aggiungere una domanda in chiusura: \"chi di voi ha sentito di avere in mano la Forcola, anche solo per un momento?\". Si riallaccia così, senza aggiungere altro, alla spedizione appena vissuta e al tema della scelta consapevole. Nessuna modifica alla meccanica."}, "L'intervento sul territorio": {"d": "La compagnia deve ideare e iniziare a realizzare un intervento che abbia un impatto positivo duraturo sul territorio visitato. Deve essere: sostenibile, replicabile, coinvolgere eventuali soggetti locali, documentabile per altri.", "g": "profondo · Motto \"Prepararsi a servire\" e Legge Scout L'intervento sul territorio è già, nella sostanza, un atto di servizio verso una comunità reale: nel lancio il CC può dichiararlo esplicitamente, collegandolo al Motto \"Prepararsi a servire\" e alla Legge Scout. Nessuna modifica alla meccanica: cambia solo la cornice con cui viene introdotta l'attività."}, "Documentare per il Futuro": {"d": "La compagnia deve creare una documentazione (video, foto, testi) che permetterà ad altri di replicare o continuare il loro intervento.", "g": "leggero · Motto \"Prepararsi a servire\" Nel lancio, il CC può far notare che documentare per chi verrà dopo è già un modo concreto di \"prepararsi a servire\": il servizio non finisce quando la compagnia lascia il territorio, continua attraverso chi troverà e userà questa documentazione. Nessuna modifica alla meccanica."}, "Pausa pranzo e Tempo Libero Osservato": {"d": "La Compagnia gestisce autonomamente pranzo, pulizia, riposo, relazioni.", "g": "nessuno · Questo momento resta volutamente libero da agganci: è tempo libero autogestito, e forzare un collegamento valoriale ne snaturerebbe l'osservazione spontanea."}, "Responsabilità": {"d": "Cerchio finale dove ogni rover condivide: una competenza che ha riconosciuto in sé, una responsabilità che sente di aver acquisito, un'azione concreta che farà nei prossimi mesi per continuare il percorso iniziato. Viene scritto tutto e il Capo Compagnia mette quanto emerso in una busta che verrà aperta tra qualche mese.", "g": "profondo · Chiusura (Promessa, Forcola) Proponiamo di introdurre questo cerchio finale leggendo ad alta voce il testo ufficiale della Promessa CNGEI: \"Prometto di fare del mio meglio per vivere la Legge scout, impegnarmi nel mondo e per gli altri, crescere spiritualmente e migliorarmi ogni giorno\". Prima di condividere ogni rover annoda un pezzo di spago colorato alla stessa Forcola incontrata nel 1° e nel 3° incontro, riconoscendo il proprio impegno verso gli altri. La meccanica del cerchio resta identica: cambia solo l'apertura e il gesto simbolico di chiusura."}}};
+
+// ── Sezione e Gruppo (comuni a Unità e Staff) ──
+function sezIn(v){ return SEZIONI.indexOf(String(v||'').trim())>=0; }
+function sezDatalist(){ return '<datalist id="dl-sezioni">'+SEZIONI.map(s=>'<option value="'+sEsc(s)+'">').join('')+'</datalist>'; }
+function grpKnown(sez){
+  const out=new Set(); const s=String(sez||'').trim().toLowerCase(); if(!s) return [];
+  try{ const loc=JSON.parse(localStorage.getItem('pee_gruppi_noti')||'{}'); (loc[s]||[]).forEach(g=>out.add(g)); }catch(e){}
+  (window._grpRemote&&window._grpRemote[s]||[]).forEach(g=>out.add(g));
+  return [...out].sort();
+}
+function grpRemember(sez,grp){
+  const s=String(sez||'').trim(), g=String(grp||'').trim(); if(!s||!g) return;
+  try{ const loc=JSON.parse(localStorage.getItem('pee_gruppi_noti')||'{}'); const k=s.toLowerCase(); loc[k]=[...new Set([...(loc[k]||[]),g])]; localStorage.setItem('pee_gruppi_noti',JSON.stringify(loc)); }catch(e){}
+  try{ if(typeof CL!=='undefined'&&CL.sb&&CL.user) CL.sb.from('pee_gruppi').upsert({sezione:s,gruppo:g},{onConflict:'sezione,gruppo',ignoreDuplicates:true}).then(()=>{},()=>{}); }catch(e){}
+}
+async function grpFetch(sez){
+  const s=String(sez||'').trim(); if(!s) return;
+  try{ if(typeof CL==='undefined'||!CL.sb) return; const r=await CL.sb.from('pee_gruppi').select('gruppo').eq('sezione',s).limit(200);
+    if(r&&r.data){ window._grpRemote=window._grpRemote||{}; window._grpRemote[s.toLowerCase()]=r.data.map(x=>x.gruppo); grpFillList(); } }catch(e){}
+}
+function grpFillList(){ const dl=document.getElementById('dl-gruppi'); if(!dl) return; const pp=scheda.pp||{}; dl.innerHTML=grpKnown(pp.sezione).map(g=>'<option value="'+sEsc(g)+'">').join(''); }
+function sezSet(v){ ppSet('sezione',v); const n=document.querySelectorAll('.sez-warn'); n.forEach(x=>x.style.display=(String(v||'').trim()&&!sezIn(v))?'block':'none'); grpFillList(); }
+function sezDone(v){ grpFetch(v); }
+function grpSet(v){ ppSet('gruppo',v); }
+function grpDone(){ const pp=scheda.pp||{}; grpRemember(pp.sezione,pp.gruppo); }
+// campi Sezione + Gruppo; withUnit = aggiunge il nome dell'Unità (Sezione 1.1)
+function sezGrpHTML(lblStyle,inStyle,onlySez){
+  const pp=scheda.pp||(scheda.pp={});
+  const warn=(pp.sezione&&!sezIn(pp.sezione))?'block':'none';
+  setTimeout(()=>{ grpFillList(); grpFetch(pp.sezione); },0);
+  return sezDatalist()+'<datalist id="dl-gruppi"></datalist>'+
+    `<label style="${lblStyle}">Sezione<input style="${inStyle}" list="dl-sezioni" maxlength="80" autocomplete="off" value="${sEsc(pp.sezione)}" placeholder="Inizia a scrivere…" oninput="sezSet(this.value)" onchange="sezDone(this.value)"><span class="sez-warn" style="display:${warn};font-size:10px;font-weight:400;color:var(--ink-mid);margin-top:3px">Non è nell’elenco: verrà salvata così come l’hai scritta.</span></label>`+
+    (onlySez?'':`<label style="${lblStyle}">Gruppo<input style="${inStyle}" list="dl-gruppi" maxlength="80" autocomplete="off" value="${sEsc(pp.gruppo)}" placeholder="Nome del Gruppo" oninput="grpSet(this.value)" onchange="grpDone()"></label>`);
+}
+
+// ── Percorso Promessa: spiegazione degli agganci del KOS ──
+function kosPromInfo(){
+  const BR={L:'Branco',E:'Reparto',R:'Compagnia'}[FASCIA]||'Unità';
+  modalShow(`<div style="font-size:15px;font-weight:800;margin-bottom:8px">Aggancio al Percorso Promessa</div>
+    <p style="font-size:12.5px;line-height:1.55;margin:0 0 8px">Il KOS 2.0 affianca, dove ha senso, le attività di osservazione al <b>Percorso Promessa</b> della Branca. Gli agganci sono volutamente generici (richiamano Legge, Promessa, Motto e gli altri elementi), così che ogni staff possa adattarli al proprio tema dell'anno.</p>
+    <p style="font-size:12.5px;line-height:1.55;margin:0 0 4px"><b>Aggancio leggero</b>: una piccola nota o una domanda di chiusura che richiama un elemento del Percorso Promessa, senza cambiare l'attività.</p>
+    <p style="font-size:12.5px;line-height:1.55;margin:0 0 4px"><b>Aggancio profondo</b>: una vera cornice valoriale esplicita, nelle attività in cui la sovrapposizione è più naturale.</p>
+    <p style="font-size:12.5px;line-height:1.55;margin:0 0 8px"><b>Facoltativo</b>: l'aggancio è possibile, ma non necessario.</p>
+    <p style="font-size:12px;line-height:1.5;color:var(--ink-mid);margin:0">In nessun caso l'aggancio cambia il focus osservativo o la meccanica dell'attività. I tre incontri del KOS coprono solo una parte del Percorso Promessa del ${BR}: le altre riunioni e i contenuti previsti dal Regolamento vanno programmati a parte.</p>`);
+}
+function modalShow(html){
+  let ov=document.getElementById('g-modal'); if(!ov){ ov=document.createElement('div'); ov.id='g-modal'; ov.className='modal-overlay'; ov.onclick=e=>{ if(e.target===ov) modalClose(); }; document.body.appendChild(ov); }
+  ov.innerHTML=`<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:520px;width:calc(100% - 24px);max-height:90vh;overflow:auto;padding:18px;position:relative"><button class="btn-ghost" style="position:absolute;top:10px;right:10px" onclick="modalClose()">✕</button>${html}</div>`;
+  ov.classList.add('show');
+}
+function modalClose(){ const ov=document.getElementById('g-modal'); if(ov) ov.classList.remove('show'); }
+
+// ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
+const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, contratto)']];
+function staffTab(){ const pp=scheda.pp||(scheda.pp={}); if(!Array.isArray(pp.staffTab)) pp.staffTab=['CU','VCU','VCU','SiS','CG'].map(r=>({ruolo:r})); return pp.staffTab; }
+function staffTabSet(i,k,v){ const t=staffTab(); if(t[i]){ t[i][k]=v; saveDataDebounced(); } }
+function staffTabAdd(){ staffTab().push({ruolo:''}); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
+function staffTabDel(i){ staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
+function staffTabHTML(){
+  const t=staffTab(); const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
+  const inp=(i,k,v,w)=>`<textarea rows="2" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:11.5px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)">${sEsc(v)}</textarea>`;
+  const w={ruolo:56,nome:100,eta:40,form:100,car:140,prof:130,ruoli:100,disp:100,varie:140};
+  return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:1000px"><thead><tr>${STAFF_TAB_COLS.map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left">${c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg)"></th></tr></thead><tbody>`+
+    t.map((r,i)=>`<tr>${STAFF_TAB_COLS.map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}">${inp(i,c[0],r[c[0]],w[c[0]])}</td>`).join('')}<td style="${cell};text-align:center"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
+    `</tbody></table></div><button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="staffTabAdd()">+ Aggiungi riga</button>`;
+}
+
+// ── Occasioni osservative (tabella) ──
+const OCC_COLS=[['data','Data'],['ctx','Contesto'],['chi','Chi ha osservato'],['note','Note']];
+function occKosRows(){ const pp=scheda.pp||{}; return kosActs().filter(a=>(pp.kosDone||{})[a.key]); }
+function occSet(kind,id,k,v){ const pp=scheda.pp||(scheda.pp={});
+  if(kind==='k'){ if(!pp.occKos) pp.occKos={}; if(!pp.occKos[id]) pp.occKos[id]={}; pp.occKos[id][k]=v; }
+  else { const r=(pp.occMan||[])[id]; if(r) r[k]=v; }
+  saveDataDebounced(); }
+function occAdd(){ const pp=scheda.pp||(scheda.pp={}); if(!Array.isArray(pp.occMan)) pp.occMan=[]; pp.occMan.push({att:''}); saveDataDebounced(); occRefresh(); }
+function occDel(i){ const pp=scheda.pp||{}; (pp.occMan||[]).splice(i,1); saveDataDebounced(); occRefresh(); }
+function occRefresh(){ const b=document.getElementById('occ-tab'); if(b) b.innerHTML=occTableHTML(); }
+function occCount(){ const pp=scheda.pp||{}; return occKosRows().length+(pp.occMan||[]).filter(r=>(r.att||'').trim()).length; }
+function occTableHTML(){
+  const pp=scheda.pp||(scheda.pp={}); const kr=occKosRows(); const man=pp.occMan||[];
+  const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
+  const ta=(kind,id,k,v,ph)=>`<textarea rows="2" style="width:100%;border:none;resize:vertical;font:inherit;font-size:11.5px;padding:4px;box-sizing:border-box;background:transparent" placeholder="${ph||''}" oninput="occSet('${kind}',${kind==='k'?"'"+id+"'":id},'${k}',this.value)">${sEsc(v)}</textarea>`;
+  const ctxPh=a=>/aperto|uscita/i.test(a.incT)?'all’aperto':'in sede';
+  const rows=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{};
+      return `<tr><td style="${cell};padding:6px 8px;font-size:11.5px"><b>${sEsc(a.n)}</b><br><span style="color:var(--ink-mid);font-size:10.5px">KOS 2.0 · ${a.incT.split(' · ')[0]}</span></td>${OCC_COLS.map(c=>`<td style="${cell}">${ta('k',a.key,c[0],o[c[0]],c[0]==='ctx'?ctxPh(a):'')}</td>`).join('')}<td style="${cell}"></td></tr>`; }).join('')+
+    man.map((r,i)=>`<tr><td style="${cell}">${ta('m',i,'att',r.att,'Attività o incontro')}</td>${OCC_COLS.map(c=>`<td style="${cell}">${ta('m',i,c[0],r[c[0]],'')}</td>`).join('')}<td style="${cell};text-align:center"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="occDel(${i})">×</button></td></tr>`).join('');
+  const empty=(!kr.length&&!man.length)?`<tr><td colspan="6" style="${cell};padding:10px;font-size:11.5px;color:var(--ink-mid)">Spunta qui sopra le attività del KOS che hai svolto: compariranno qui. Puoi aggiungere anche altre attività o incontri.</td></tr>`:'';
+  return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:720px"><thead><tr>${[['att','Attività / incontro'],...OCC_COLS].map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left;${c[0]==='att'?'width:24%':c[0]==='data'?'width:11%':''}">${c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg);width:28px"></th></tr></thead><tbody>${rows}${empty}</tbody></table></div>
+    <button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="occAdd()">+ Aggiungi attività o incontro</button>`;
+}
+// percorsi coperti dalle attività KOS spuntate
+function kosCovered(){ const s=new Set(); occKosRows().forEach(a=>a.f.forEach(id=>s.add(id))); return s; }
+function kosCovUnscored(){ const cov=kosCovered(); return Object.values(DB).flat().filter(p=>cov.has(p.id)&&(obs[p.id]===undefined||obs[p.id]===null||obs[p.id]==='n')); }
+function kosObsRefresh(){
+  if(MODE!=='giovani'){ const h0=document.getElementById('kos-obs-hint'); if(h0) h0.style.display='none'; return; }
+  const cov=kosCovered();
+  Object.values(DB).flat().forEach(p=>{ const c=document.getElementById('card-'+p.id); if(!c) return;
+    const tag=document.getElementById('kostag-'+p.id); const unsc=(obs[p.id]===undefined||obs[p.id]==='n');
+    c.classList.toggle('pc-kos-todo', cov.has(p.id)&&unsc);
+    if(tag) tag.style.display=cov.has(p.id)?'':'none'; });
+  const h=document.getElementById('kos-obs-hint'); if(!h) return;
+  if(!cov.size){ h.style.display='none'; return; }
+  const un=kosCovUnscored();
+  h.style.display='';
+  h.innerHTML=`<b>Attività KOS svolte:</b> ${cov.size} percorsi su 24 hanno avuto almeno un’occasione di osservazione (segnati con <span class="kos-tag">KOS</span>). `+(un.length?`Di questi, <b>${un.length}</b> ${un.length===1?'è':'sono'} ancora senza valutazione: è consigliabile esprimere un parere, perché li hai già visti in azione.`:'Li hai valutati tutti ✓');
 }
 
 // KOS_OBS — Cosa osservare per percorso × fascia
@@ -2294,6 +2415,7 @@ function startTool() {
 function applyTheme(){
   const t = MODE==='staff' ? 'S' : (MODE==='giovani' ? FASCIA : '');
   if(t) document.body.setAttribute('data-theme', t); else document.body.removeAttribute('data-theme');
+  document.body.setAttribute('data-mode', MODE||'');
 }
 
 // ── PERSIST ──
@@ -2313,7 +2435,7 @@ function saveData(silent) {
     if(!silent) showToast('Dati salvati');
   } catch(e) { if(!silent) showToast('Errore nel salvataggio'); }
 }
-function setUnitName(v){ UNIT_NAME = String(v||'').slice(0,60); saveDataDebounced(); }
+function setUnitName(v){ UNIT_NAME = String(v||'').slice(0,60); if(MODE==='staff'&&STAFF_RUOLO==='CG'){ if(!scheda.pp) scheda.pp={}; scheda.pp.gruppo=UNIT_NAME; } saveDataDebounced(); }
 function refreshUnitName(){
   const i = document.getElementById('unit-name-in'), l = document.getElementById('unit-name-lbl'); if(!i || !l) return;
   let lbl = "Nome dell'Unità", ph = "Es. Branco Popolo Libero";
@@ -2323,6 +2445,10 @@ function refreshUnitName(){
   l.textContent = lbl; i.placeholder = ph;
   if(document.activeElement !== i) i.value = UNIT_NAME || '';
   i.parentElement.style.display = (MODE === 'personale') ? 'none' : '';
+  const sg=document.getElementById('staff-sezgrp');
+  if(sg){ if(MODE==='staff'){ const CG=STAFF_RUOLO==='CG'; if(!sg.contains(document.activeElement)){ sg.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">'+sezGrpHTML('display:block;font:700 10px Montserrat,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid)','display:block;margin-top:5px',CG)+'</div>'; } sg.style.display='';
+      if(CG){ i.setAttribute('list','dl-gruppi'); } else i.removeAttribute('list'); }
+    else { sg.style.display='none'; sg.innerHTML=''; i.removeAttribute('list'); } }
 }
 function saveDataDebounced() {
   try{ if(typeof ppRefreshReady==='function') ppRefreshReady(); }catch(e){}
@@ -2699,7 +2825,8 @@ function goPhase(n){
       const observed = Object.values(obs).filter(v => v !== 'n').length;
       if (observed < total) {
         const missing = total - observed;
-        const proceed = confirm(`Hai osservato ${observed} percorsi su ${total}.\n${missing} percorsi non sono ancora stati valutati.\n\nVuoi procedere ugualmente al riepilogo?`);
+        let kosTxt=''; try{ if(MODE==='giovani'){ const un=kosCovUnscored(); if(un.length) kosTxt=`\n\nTra questi, ${un.length===1?'uno è stato osservato':un.length+' sono stati osservati'} nelle attività del KOS che hai svolto (consigliato dare un parere):\n• `+un.map(p=>p.name).join('\n• '); } }catch(e){}
+        const proceed = confirm(`Hai osservato ${observed} percorsi su ${total}: ${missing} ${missing===1?'non è ancora stato valutato':'non sono ancora stati valutati'}.${kosTxt}\n\nVuoi procedere ugualmente alla lettura del gruppo?`);
         if (!proceed) return;
       }
     }
@@ -4069,7 +4196,7 @@ function renderPhase1(){
       card.innerHTML=`
         <div class="pc-hdr" onclick="toggleCard('${p.id}')">
           <span class="pc-num">${i+1}</span>
-          <span class="pc-name">${p.name}</span>
+          <span class="pc-name">${p.name}${MODE==='giovani'?`<span class="kos-tag" id="kostag-${p.id}" style="display:none" title="Hai svolto almeno un'attività del KOS in cui osservare questo percorso">KOS</span>`:''}</span>
           <div class="pc-states" onclick="event.stopPropagation()">${stateButtons}</div>
           <span class="pc-chev">▼</span>
         </div>
@@ -4081,6 +4208,8 @@ function renderPhase1(){
   refreshObs();
 }
 
+function gotoObs(id){ try{ if(MODE==='giovani'&&typeof gGo==='function') gGo('1b'); else goPhaseInternal(1); }catch(e){ goPhaseInternal(1); }
+  setTimeout(()=>{ const c=document.getElementById('card-'+id); if(c){ c.classList.add('expanded'); c.scrollIntoView({behavior:'smooth',block:'center'}); } },150); }
 function toggleCard(id){ document.getElementById('card-'+id).classList.toggle('expanded'); }
 
 function setObs(id,s){
@@ -4102,7 +4231,7 @@ function setObs(id,s){
     const a = id[0];
     if(!scheda._userEditedA) scheda._userEditedA = {};
     if(!scheda._userEditedA[a+'_pos']) {
-      scheda.osservazione[a].positivi = DB[a].filter(p=>isPositive(obs[p.id])).map(p=>p.name).join(', ');
+      scheda.osservazione[a].positivi = posLines(DB[a].filter(p=>isPositive(obs[p.id])).map(p=>p.name), DB[a].filter(p=>obsToThreshold(obs[p.id])===3).map(p=>p.name));
     }
     if(!scheda._userEditedA[a+'_neg']) {
       scheda.osservazione[a].necessita = DB[a].filter(p=>{const t=obsToThreshold(obs[p.id]);return t>0&&t<=2;}).map(p=>p.name).join(', ');
@@ -4153,6 +4282,7 @@ function refreshObs(){
     const el=document.getElementById('ahc-'+a);
     if(el) el.textContent=cnt+' / '+DB[a].length+' osservati';
   });
+  try{ kosObsRefresh(); }catch(e){}
 }
 
 // ── RIEPILOGO STAFF — Vista aggregata + attività (spostata qui dal Giro 7) ──
@@ -4303,19 +4433,14 @@ function renderRiepilogo(){
       bars.appendChild(row);
     });
   } else {
-    legend.innerHTML=`
-      <span class="rbar-leg"><span class="rbar-leg-dot" style="background:#4CAF80"></span>presenti</span>
-      <span class="rbar-leg"><span class="rbar-leg-dot" style="background:#E57373"></span>assenti</span>`;
-    [['P',pV,pA],['C',cV,cA],['S',sV,sA]].forEach(([a,v,ab])=>{
-      const tot=DB[a].length;
+    legend.innerHTML=[5,4,3,2,1].map(t=>`<span class="rbar-leg"><span class="rbar-leg-dot" style="background:${thresholdColor(t)}"></span>${thresholdLabel(t)}</span>`).join('')+`<span class="rbar-leg"><span class="rbar-leg-dot" style="background:var(--border)"></span>Non osservato</span>`;
+    ['P','C','S'].forEach(a=>{
+      const tot=DB[a].length, nObs=DB[a].filter(p=>obsToThreshold(obsVal(p))>0).length;
       const row=document.createElement('div'); row.className='rbar-row';
       row.innerHTML=`
         <span class="rbar-label">${AMBITI[a].full}</span>
-        <div class="rbar-track-multi">
-          <div class="rbar-seg rbar-seg-p" style="width:${v/tot*100}%"></div>
-          <div class="rbar-seg rbar-seg-a" style="width:${ab/tot*100}%"></div>
-        </div>
-        <span class="rbar-val">${v}/${tot}</span>`;
+        ${lvlBarHTML(DB[a])}
+        <span class="rbar-val" style="white-space:nowrap">${nObs}/${tot} osservati</span>`;
       bars.appendChild(row);
     });
   }
@@ -4338,27 +4463,22 @@ function renderRiepilogo(){
       ? percorsi.filter(p=>obsToThreshold(obsVal(p))>=4).length
       : percorsi.filter(p=>obsToThreshold(obsVal(p))>=4).length;
     const pct=Math.round(posCount/percorsi.length*100);
+    const nObsA=percorsi.filter(p=>obsToThreshold(obsVal(p))>0).length;
     const card=document.createElement('div'); card.className='rie-card';
     card.innerHTML=`
       <div class="rie-card-hdr rc-hdr-${a}">
         <span class="rie-card-title">${AMBITI[a].label}</span>
-        <span class="rie-score">${posCount}/${percorsi.length}</span>
+        <span class="rie-score">${isPersonale?posCount+'/'+percorsi.length:nObsA+'/'+percorsi.length+'<span style="font-size:10px;font-weight:600;opacity:.85"> osservati</span>'}</span>
       </div>
-      <div class="rie-bar-wrap"><div class="rie-bar" style="width:${pct}%"></div></div>
+      ${isPersonale?`<div class="rie-bar-wrap"><div class="rie-bar" style="width:${pct}%"></div></div>`:lvlBarHTML(percorsi,'rie-bar-wrap rie-bar-multi')}
       <div class="rie-rows">
         ${percorsi.map(p=>{
           const _ov=obsVal(p);
           const _t=obsToThreshold(_ov);
-          let dotCls,tagCls,tagTxt;
-          if(_t===0){dotCls='rie-dot-n';tagCls='tag-n';tagTxt='—';}
-          else if(_t<=2){dotCls='rie-dot-a';tagCls='tag-a';tagTxt='Assente ('+obsNum(p)+')';}
-          else if(_t===3){dotCls='rie-dot-c';tagCls='tag-c';tagTxt='In sviluppo ('+obsNum(p)+')';}
-          else if(_t===4){dotCls='rie-dot-p';tagCls='tag-p';tagTxt='Presente ('+obsNum(p)+')';}
-          else{dotCls='rie-dot-v';tagCls='tag-v';tagTxt='Consolidato ('+obsNum(p)+')';};
           return `<div class="rie-row">
-            <div class="rie-dot ${dotCls}"></div>
+            <div class="rie-dot" style="background:${_t?thresholdColor(_t):'var(--border)'}"></div>
             <span class="rie-row-name">${p.name}</span>
-            <span class="rie-row-tag ${tagCls}">${tagTxt}</span>
+            ${lvlTag(p)}
           </div>`;
         }).join('')}
       </div>`;
@@ -4630,7 +4750,12 @@ function buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP){
   profHTML += protagonismoBlock('crescita', isStaff ? 'staff' : FASCIA);
   profHTML += braveSpaceBlock('crescita', isStaff ? 'staff' : FASCIA);
   } else {
-    profHTML=`<div class="diag-card diag-gold"><div class="diag-tag">Osservazione parziale</div><div class="diag-title">${totPos} presenti · ${totNeg} assenti</div><div class="diag-body">Continua l'osservazione per una lettura più precisa.</div></div>`
+    { const c=lvlCounts(allP); const nonO=allP.filter(p=>!obsToThreshold(obsVal(p)));
+      const parts=[[c[4]+c[5],c[4]+c[5]===1?'presente':'presenti'],[c[3],'in sviluppo'],[c[2],'con tracce iniziali'],[c[1],c[1]===1?'assente':'assenti'],[nonO.length,nonO.length===1?'non osservato':'non osservati']].filter(x=>x[0]>0).map(x=>x[0]+' '+x[1]).join(' · ');
+      const body = nonO.length
+        ? `Il profilo non mostra una tendenza netta. ${nonO.length===1?'Manca ancora un percorso':'Mancano ancora '+nonO.length+' percorsi'}: osservarli può rendere la lettura più precisa — ${nonO.map(p=>`<a href="#" onclick="event.preventDefault();gotoObs('${p.id}')">${p.name}</a>`).join(', ')}.`
+        : 'Il profilo non mostra una tendenza netta tra gli ambiti: parti dai percorsi assenti o con tracce iniziali per individuare le necessità educative.';
+      profHTML=`<div class="diag-card diag-gold"><div class="diag-tag">Profilo · Senza una tendenza netta</div><div class="diag-title">${parts}</div><div class="diag-body">${body}</div></div>`; }
   profHTML += safeSpaceBlock('parziale', isStaff ? 'staff' : FASCIA);
   profHTML += protagonismoBlock('parziale', isStaff ? 'staff' : FASCIA);
   profHTML += braveSpaceBlock('parziale', isStaff ? 'staff' : FASCIA);
@@ -4985,7 +5110,7 @@ function renderCUCG(){
   const allP=Object.values(DB).flat();
   const assenti=allP.filter(p=>{const _t=obsToThreshold(obsVal(p));return _t>0&&_t<=2;});
   if(!assenti.length){
-    inner.innerHTML='<div style="font-size:12px;color:var(--ink-faint);padding:8px 0">Nessun percorso assente — quando emergono aree di bisogno, qui trovi i consigli specifici per il Capo Unità e il Capo Gruppo.</div>';
+    inner.innerHTML='<div style="font-size:12px;color:var(--ink-faint);padding:8px 0">Nessun percorso assente o con tracce iniziali: quando emergono aree di bisogno, qui trovi i consigli specifici per il Capo Unità.</div>';
     return;
   }
 
@@ -5013,8 +5138,7 @@ function renderCUCG(){
     // Blocco CU: usa il testo specifico se disponibile, altrimenti fallback generico per ambito
     const cuText = hasCU ? layer.cu : FALLBACK_CU[a];
     body+=`<div class="cucg-block cucg-block-cu"><div class="cucg-block-lbl">Come Capo Unità</div>${cuText}</div>`;
-    // Blocco CG: solo se c'è un testo specifico
-    if(hasCG) body+=`<div class="cucg-block cucg-block-cg"><div class="cucg-block-lbl">Come Capo Gruppo / in Consiglio di Gruppo</div>${layer.cg}</div>`;
+    // In modalità Unità solo i consigli per il Capo Unità (quelli per CG/CdG stanno nella modalità Staff)
     div.innerHTML=`
       <div class="cucg-percorso-hdr">
         <span class="cucg-percorso-name">${p.name}</span>
@@ -5063,16 +5187,11 @@ function renderPriority(){
       const _pv=getObs(p.id);
       const _pnum=(_pv&&_pv!=='n')?Number(_pv)||0:0;
       const _pt=obsToThreshold(_pv&&_pv!=='n'?_pnum:'n');
-      let bdgCls,bdgTxt;
-      if(_pt===0){bdgCls='bdg-n';bdgTxt='—';}
-      else if(_pt<=2){bdgCls='bdg-a';bdgTxt='Assente ('+_pnum+')';}
-      else if(_pt===3){bdgCls='bdg-c';bdgTxt='In sviluppo ('+_pnum+')';}
-      else if(_pt===4){bdgCls='bdg-p';bdgTxt='Presente ('+_pnum+')';}
-      else{bdgCls='bdg-v';bdgTxt='Consolidato ('+_pnum+')';}
+      const bdg = _pt===0 ? `<span class="pi-bdg bdg-n" title="Non osservato">—</span>` : `<span class="pi-bdg" title="Punteggio ${_pnum} su 10" style="color:${thresholdColor(_pt)};background:${thresholdColor(_pt)}14;cursor:help">${thresholdLabel(_pt)}</span>`;
       const item=document.createElement('div');
       item.className='pri-item'+(pris[p.id]?' sel':'');
       item.id='pri-'+p.id;
-      item.innerHTML=`<div class="pi-chk">${pris[p.id]?'✓':''}</div><span class="pi-name">${p.name}</span><span class="pi-bdg ${bdgCls}">${bdgTxt}</span>`;
+      item.innerHTML=`<div class="pi-chk">${pris[p.id]?'✓':''}</div><span class="pi-name">${p.name}</span>${bdg}`;
       item.onclick=()=>togglePri(p.id,a);
       div.appendChild(item);
     });
@@ -5117,7 +5236,7 @@ function newPercorso(prioritaIdx) {
     ambito:'', percorsoId:'', necessita:'', obiettivo:'',
     idrSelezionati:[],
     strumenti:'', dal:'', al:'', coCostr:'', rielab:'', tempistica:'',
-    attivita:[0,1,2,3].map(() => ({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''})),
+    attivita:[0,1,2].map(() => ({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''})),
     checklist:{
       nuova:{checked:false,note:''},stimolante:{checked:false,note:''},
       progressiva:{checked:false,note:''},costruita:{checked:false,note:''},
@@ -5152,14 +5271,21 @@ function getStrumentiByFascia(fascia) {
   return 'Impresa, Uscita, Consiglio, Campo';
 }
 
+function posLines(presenti,sviluppo){ return [presenti.length?'Presenti: '+presenti.join(', '):'', sviluppo.length?'In sviluppo: '+sviluppo.join(', '):''].filter(Boolean).join('\n'); }
+// barra multicolore per un ambito: un segmento per livello (Consolidato → Assente), il resto grigio = non osservati
+function lvlCounts(list){ const c={1:0,2:0,3:0,4:0,5:0,0:0}; list.forEach(p=>{ c[obsToThreshold(obsVal(p))]++; }); return c; }
+function lvlBarHTML(list,cls){ const c=lvlCounts(list), tot=list.length;
+  return `<div class="${cls||'rbar-track-multi'}">`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}"></div>`:'').join('')+`</div>`; }
+function lvlTag(p){ const v=obsVal(p), t=obsToThreshold(v); if(!t) return `<span class="rie-row-tag tag-n" title="Non osservato">—</span>`;
+  return `<span class="rie-row-tag" title="Punteggio ${obsNum(p)} su 10" style="color:${thresholdColor(t)};background:${thresholdColor(t)}14;cursor:help">${thresholdLabel(t)}</span>`; }
 function precompileScheda(selected){
   const allP=Object.values(DB).flat();
   ['P','C','S'].forEach(a=>{
     const presenti=DB[a].filter(p=>obsToThreshold(obsVal(p))>=4).map(p=>p.name);
     const sviluppo=DB[a].filter(p=>obsToThreshold(obsVal(p))===3).map(p=>p.name);
     const assenti=DB[a].filter(p=>{const t=obsToThreshold(obsVal(p));return t>0&&t<=2;}).map(p=>p.name);
-    if(!scheda.osservazione[a].positivi&&presenti.length>0)
-      scheda.osservazione[a].positivi=presenti.join(', ')+(sviluppo.length>0?' | In sviluppo: '+sviluppo.join(', '):'');
+    if(!scheda.osservazione[a].positivi&&(presenti.length>0||sviluppo.length>0))
+      scheda.osservazione[a].positivi=posLines(presenti,sviluppo);
     if(!scheda.osservazione[a].necessita&&assenti.length>0)
       scheda.osservazione[a].necessita=assenti.join(', ');
   });
@@ -5193,6 +5319,9 @@ function updatePercorsoAmbito(idx,ambito){const per=getAllPercorsi()[idx];if(!pe
 function updatePercorsoId(idx,id){const per=getAllPercorsi()[idx];if(!per)return;per.percorsoId=id;per.ambito=id[0]||per.ambito;renderValuation();}
 function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;}
 function updateChecklist(pidx,key,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.checklist[key])per.checklist[key]={checked:false,note:''};per.checklist[key][field]=val;}
+function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
+function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx<3) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
+  if(has && !confirm('Vuoi togliere l’Attività '+(aidx+1)+' e quello che hai scritto?')) return; per.attivita.splice(aidx,1); saveDataDebounced(); renderValuation(); }
 function addPercorsoExtra(){scheda.percorsiExtra.push(newPercorso(null));renderValuation();}
 function removePercorso(idx){const all=getAllPercorsi();const per=all[idx];if(!per||per.prioritaIdx!==null)return;const i=scheda.percorsiExtra.indexOf(per);if(i>=0)scheda.percorsiExtra.splice(i,1);renderValuation();}
 function movePercorso(idx,dir){
@@ -5247,7 +5376,7 @@ function renderValuation(){
   else if(schedaStep==='A')renderSchedaA(root,selected);
   else if(schedaStep==='B')renderSchedaB(root,selected);
   else if(schedaStep==='C')renderSchedaC(root,selected);
-  else if(schedaStep==='chk' && MODE==='giovani')renderSchedaChk(root,selected);
+  else if(schedaStep==='chk' && MODE==='giovani')renderSchedaInvio(root);
   else if(schedaStep==='ver' && MODE==='giovani')renderSchedaVer(root,selected);
   else renderSchedaVal(root,selected);
   if(MODE==='giovani'){ ppRefreshReady(); try{ gSync(); }catch(e){} }
@@ -5334,7 +5463,7 @@ function strumRowHTML(idx,per){
 // ── navigazione ──
 let gLast1 = '1a', G_ORIG = null;
 const G_STEPS = [['1a','1.1','Contesto e KOS'],['1b','1.2','Scheda di osservazione'],['1c','1.3','Lettura del gruppo'],['1d','1.4','Priorità']];
-const G_TABS = [['1','1. Osservazione','Oss.','i-eye','Sezione 1 · Osservazione del Gruppo di Pari e necessità educative'],['2','2. Obiettivi','Obiettivi','i-target','Sezione 2 · Obiettivi e Indicatori di Risultato'],['3','3. Percorso','Percorso','i-chart','Sezione 3 · Percorso Educativo Esperienziale'],['4','4. Verifica','Verifica','i-check','Sezione 4 · Verifica delle attività'],['5','5. Valutazione','Valuta','i-check','Sezione 5 · Valutazione finale'],['chk','Checklist e invio','Invio','i-check','Checklist e invio']];
+const G_TABS = [['1','1. Osservazione','Oss.','i-eye','Sezione 1 · Osservazione del Gruppo di Pari e necessità educative'],['2','2. Obiettivi','Obiettivi','i-target','Sezione 2 · Obiettivi e Indicatori di Risultato'],['3','3. Percorso','Percorso','i-chart','Sezione 3 · Percorso Educativo Esperienziale'],['4','4. Verifica','Verifica','i-check','Sezione 4 · Verifica delle attività'],['5','5. Valutazione','Valuta','i-check','Sezione 5 · Valutazione finale'],['chk','Controllo e invio','Invio','i-check','Controllo e invio']];
 function gInitNav(){
   const pt=document.getElementById('phase-tabs'), mn=document.getElementById('mobile-nav'), sn=document.getElementById('g-subnav');
   if(!G_ORIG) G_ORIG={pt:pt?pt.innerHTML:'', mn:mn?mn.innerHTML:'', h3:[document.getElementById('hero-eye3')?.innerHTML, document.getElementById('hero-title3')?.innerHTML, document.getElementById('hero-desc3')?.innerHTML], p3n:document.getElementById('p3-next')?.textContent};
@@ -5382,6 +5511,17 @@ function gSync(){
     <div class="gsn-steps">${G_STEPS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${n}</b>${l}</button>`).join('')}</div></div>`;
   if(cur==='1b'){ const e=document.getElementById('hero-eye1'); if(e) e.textContent='Sezione 1.2'; const t=document.getElementById('hero-title1'); if(t) t.textContent='Scheda di osservazione dei percorsi'; }
 }
+// barra della Sezione 1 fissa durante lo scroll (compatta quando agganciata)
+(function(){
+  const setH=()=>{ const h=document.getElementById('hdr'); if(h&&h.offsetHeight) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight+'px'); };
+  const chk=()=>{ const sn=document.getElementById('g-subnav'); if(!sn||sn.style.display==='none') return;
+    const hh=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h'))||56;
+    const stuck = window.scrollY>30 && sn.getBoundingClientRect().top<=hh+1;
+    if(stuck!==sn.classList.contains('stuck')) sn.classList.toggle('stuck',stuck); };
+  window.addEventListener('scroll',chk,{passive:true}); window.addEventListener('resize',()=>{ setH(); chk(); });
+  document.addEventListener('DOMContentLoaded',()=>{ setH(); try{ new ResizeObserver(setH).observe(document.getElementById('hdr')); }catch(e){} });
+  setInterval(setH,2000);
+})();
 function gHero4(){
   const pp=isPP();
   const T={ctx:['Sezione 1.1','Contesto e osservazione con il KOS','Chi compila, il contesto in cui opera l’Unità e le occasioni in cui hai osservato il gruppo.'],
@@ -5389,7 +5529,7 @@ function gHero4(){
     C:['Sezione 3','Percorso Educativo Esperienziale', pp?'Per un obiettivo prioritario a scelta: strumenti del metodo, tempistiche, attività e verifica delle 7 caratteristiche.':'Per gli obiettivi prioritari dell’Unità: strumenti del metodo, tempistiche, attività e verifica delle 7 caratteristiche.'],
     ver:['Sezione 4','Verifica delle attività','Al termine di ciascuna attività svolta: cosa è andato bene, cosa è da migliorare, aggiustamenti necessari.'],
     val:['Sezione 5','Valutazione finale','Al termine del percorso: risposta a ciascun Indicatore di Risultato e valutazione complessiva.'],
-    chk:['Checklist e invio','Checklist e invio','La completezza della Scheda, il documento Word e i criteri di valutazione delle Linee Guida.']}[schedaStep];
+    chk:['Controllo e invio','Controllo e invio','Che cosa manca ancora nella Scheda e il documento Word da condividere o inviare.']}[schedaStep];
   if(!T) return;
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
   set('hero-eye4',T[0]+' · Scheda di Programmazione Educativa Esperienziale'); set('hero-title4',T[1]); set('val-desc',T[2]);
@@ -5402,21 +5542,26 @@ function gCrit(items){ return `<div class="g-crit"><b>Criteri di compilazione (L
 function renderSchedaCtx(root){
   const pp=scheda.pp||(scheda.pp={});
   const el=document.createElement('div'); el.className='profile-card';
+  const IN=SC_IN+';margin-top:4px';
   el.innerHTML=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">1.1 — Contesto e osservazione con il KOS</h3>
+    ${gPPStepHTML('avvio')}
     <div style="font-size:12px;font-weight:800;margin:14px 0 2px;color:var(--ink)">Chi compila</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
-      <label style="${SC_LBL}">Nome e cognome<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.nome)}" oninput="ppSet('nome',this.value)"></label>
-      <label style="${SC_LBL}">Sezione<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.sezione)}" placeholder="Es. Pesaro" oninput="ppSet('sezione',this.value)"></label>
-      <label style="${SC_LBL}">Nome dell'Unità<input style="${SC_IN};margin-top:4px" maxlength="60" value="${sEsc(UNIT_NAME)}" oninput="setUnitName(this.value);const u=document.getElementById('unit-name-in');if(u)u.value=this.value"></label>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+      <label style="${SC_LBL}">Nome e cognome<input style="${IN}" maxlength="80" value="${sEsc(pp.nome)}" oninput="ppSet('nome',this.value)"></label>
+      ${sezGrpHTML(SC_LBL,IN)}
+      <label style="${SC_LBL}">Nome dell'Unità<input style="${IN}" maxlength="60" value="${sEsc(UNIT_NAME)}" oninput="setUnitName(this.value);const u=document.getElementById('unit-name-in');if(u)u.value=this.value"></label>
     </div>
     <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
-    <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Adulti in staff, esperienza e disponibilità…</span></label>
+    <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Unità, rapporti con il Consiglio di Gruppo…</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
+    <div style="font-size:11px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span></div>
+    <div style="font-size:11px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (tutor, Capo Gruppo, Commissario di Sezione). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).</div>
+    <div id="staff-tab">${staffTabHTML()}</div>
     <div style="font-size:12px;font-weight:800;margin:18px 0 2px;color:var(--ink)">Osservazione con il Kit di Osservazione e Scoperta (KOS 2.0)</div>
     ${kosPathHTML()}
-    <label style="${SC_LBL}">Occasioni osservative <span style="font-weight:400;color:var(--ink-faint)">— quali attività o incontri (almeno 2–3), quando, in quali contesti</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('occasioni',this.value)">${sEsc(pp.occasioni)}</textarea>
+    <label style="${SC_LBL}">Occasioni osservative <span style="font-weight:400;color:var(--ink-faint)">— quali attività o incontri (almeno 2–3), quando, in quali contesti, chi ha osservato</span></label>
+    <div id="occ-tab">${occTableHTML()}</div>
     <label style="${SC_LBL}">Condizioni dell'osservazione <span style="font-weight:400;color:var(--ink-faint)">— cosa può aver influito (stanchezza, clima di staff, un’attività riuscita particolarmente bene…)</span></label>
     <textarea style="${SC_TA};min-height:48px" oninput="ppSet('condizioni',this.value)">${sEsc(pp.condizioni)}</textarea>
     ${gCrit(['osservazione basata su attività concrete (2–3 attività iniziali)','riferimenti importanti da segnalare su Adulti, contesto territoriale e associativo'])}
@@ -5523,32 +5668,17 @@ function renderSchedaA(root,selected){
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea></td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Solo se rilevante per il gruppo…" oninput="ppSetObs('${a}','singoli',this.value)">${sEsc(scheda.osservazione[a].singoli||'')}</textarea></td>
     </tr>`).join('');
-  el.innerHTML=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">Sezione 1 — Osservazione del gruppo di pari e necessità educative</h3>
-    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Il Progetto Personale parte da qui. Aspetti positivi e necessità sono precompilati dall'osservazione della Fase 1: modificali liberamente. Osserva con il Kit di Osservazione e Scoperta (KOS): 2–3 occasioni concrete, da chiudere entro novembre.</p>
-    ${kosPathHTML()}
-    <div style="font-size:12px;font-weight:800;margin:14px 0 2px;color:var(--ink)">Chi sei e dove operi</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
-      <label style="${SC_LBL}">Nome e cognome<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.nome)}" oninput="ppSet('nome',this.value)"></label>
-      <label style="${SC_LBL}">Sezione<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.sezione)}" placeholder="Es. Pesaro" oninput="ppSet('sezione',this.value)"></label>
-      <label style="${SC_LBL}">Tutor della sperimentazione<input style="${SC_IN};margin-top:4px" maxlength="80" value="${sEsc(pp.tutor)}" oninput="ppSet('tutor',this.value)"></label>
-    </div>
-    <label style="${SC_LBL}">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— Città/Paese, quartiere, sede, mezzi di trasporto, parchi, offerte del territorio…</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
-    <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione di Sezione e Gruppo, Consiglio di Gruppo, adulti in staff, esperienza e disponibilità…</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
-    <div style="font-size:12px;font-weight:800;margin:18px 0 2px;color:var(--ink)">Come hai osservato</div>
-    <label style="${SC_LBL}">Occasioni osservative <span style="font-weight:400;color:var(--ink-faint)">— quali attività/incontri (almeno 2–3), quando, in quali contesti (sede, aperto…)</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('occasioni',this.value)">${sEsc(pp.occasioni)}</textarea>
-    <label style="${SC_LBL}">Condizioni dell'osservazione <span style="font-weight:400;color:var(--ink-faint)">— cosa può aver influito (stanchezza, clima di staff, un'attività riuscita particolarmente bene…)</span></label>
-    <textarea style="${SC_TA};min-height:48px" oninput="ppSet('condizioni',this.value)">${sEsc(pp.condizioni)}</textarea>
-    <div style="font-size:12px;font-weight:800;margin:18px 0 6px;color:var(--ink)">Aspetti positivi e necessità educative per ambito</div>
-    <p style="font-size:11px;color:var(--ink-mid);margin-bottom:8px">Descrivi comportamenti concreti, non giudizi; parla del gruppo nel suo insieme. Indica necessità concrete e risolvibili, in equilibrio con gli aspetti positivi.</p>
+  const ST=MODE==='staff';
+  el.innerHTML=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">${ST?'A — Osservazione dello staff e necessità formative':'Sezione 1 — Osservazione del gruppo di pari e necessità educative'}</h3>
+    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Aspetti positivi e necessità sono precompilati dall'osservazione: rivedili e completali con comportamenti concreti.</p>
+    <div style="font-size:12px;font-weight:800;margin:18px 0 6px;color:var(--ink)">Aspetti positivi e necessità ${MODE==='staff'?'formative':'educative'} per ambito</div>
+    <p style="font-size:11px;color:var(--ink-mid);margin-bottom:8px">Descrivi comportamenti concreti, non giudizi; parla ${ST?'dello staff':'del gruppo'} nel suo insieme. Indica necessità concrete e risolvibili, in equilibrio con gli aspetti positivi.</p>
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:620px">
       <thead><tr>
         <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">Ambito</th>
         <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">Aspetti positivi emersi</th>
-        <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">Necessità educative</th>
-        <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">Necessità specifiche di singoli/gruppetti</th>
+        <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">Necessità ${ST?'formative':'educative'}</th>
+        <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">Necessità specifiche ${ST?'di singoli educatori':'di singoli/gruppetti'}</th>
       </tr></thead><tbody>${tbody}</tbody></table></div>
     <label style="${SC_LBL}">Perché queste priorità <span style="font-weight:400;color:var(--ink-faint)">— breve spiegazione della scelta delle necessità su cui lavori quest'anno (almeno 1 per ambito)</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('scelta',this.value)">${sEsc(pp.scelta)}</textarea>
@@ -5784,13 +5914,13 @@ function renderSchedaC(root,selected){
       </td></tr>`;
 
     // Attività: Lancio · Sviluppo · Conclusione
-    const attv = per.attivita && per.attivita.length ? per.attivita : [0,1,2,3].map(()=>({testo:''}));
-    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Attività<br><small style="font-weight:400;color:var(--ink-faint)">3–4, coerenti tra loro</small></td>
+    const attv = (per.attivita||[]).slice(); while(attv.length<3) attv.push({testo:''});
+    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Attività<br><small style="font-weight:400;color:var(--ink-faint)">almeno 3, coerenti tra loro</small></td>
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         ${attv.map((att,j)=>{
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
           return `<details ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card)">
-            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${j>=3?' <span style="font-weight:400;color:var(--ink-faint)">(facoltativa)</span>':''}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}</summary>
+            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             <label style="${SC_LBL}">Lancio</label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come presenti l'attività, che cosa motiva i ragazzi a partire…" oninput="updateAttivita(${idx},${j},'lancio',this.value);saveDataDebounced()">${sEsc(att.lancio)}</textarea>
@@ -5800,14 +5930,15 @@ function renderSchedaC(root,selected){
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
             <input type="url" style="${SC_IN};margin-top:8px;font-size:11px" placeholder="Link a materiali (facoltativo)" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);saveDataDebounced()">
           </details>`; }).join('')}
+        <button class="btn-ghost" style="font-size:11.5px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
       </td></tr>
-    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Co-costruzione</td>
-      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quale/i momento/i i ragazzi determinano il percorso e con quali forme (ascolto, proposte, scelte) lo garantisci?" oninput="updatePercorsoField(${idx},'coCostr',this.value);saveDataDebounced()">${sEsc(per.coCostr)}</textarea></td></tr>
-    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Rielaborazione</td>
-      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali momenti rielabori l'esperienza (cognitiva ed emotiva) e come? Anche con il supporto dei ragazzi; i due livelli non devono essere per forza insieme." oninput="updatePercorsoField(${idx},'rielab',this.value);saveDataDebounced()">${sEsc(per.rielab)}</textarea></td></tr>`;
+    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Co-costruzione nel percorso</td>
+      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti i ragazzi determinano il percorso (es. Attività 1, lancio) e con quali forme (ascolto, proposte, scelte)?" oninput="updatePercorsoField(${idx},'coCostr',this.value);saveDataDebounced()">${sEsc(per.coCostr)}</textarea></td></tr>
+    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Rielaborazione nel percorso</td>
+      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti rielabori l'esperienza (es. Attività 2, conclusione), cognitiva ed emotiva, e come? Anche con il supporto dei ragazzi; i due livelli non devono essere per forza insieme." oninput="updatePercorsoField(${idx},'rielab',this.value);saveDataDebounced()">${sEsc(per.rielab)}</textarea></td></tr>`;
 
     // Checklist con note
-    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Checklist<br><small style="font-weight:400;color:var(--ink-faint)">le 7 caratteristiche: spunta e spiega perché</small></td>
+    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Le 7 caratteristiche<br><small style="font-weight:400;color:var(--ink-faint)">verifica il percorso nel suo complesso: spunta e spiega perché</small></td>
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         ${clKeys.map(key=>`
         <div style="display:flex;gap:8px;align-items:flex-start;margin:6px 0">
@@ -5827,7 +5958,7 @@ function renderSchedaC(root,selected){
   });
 
   // Bottone aggiungi percorso
-  html+=`${sez3MoreHTML(selected)}<div style="text-align:center;margin:12px 0">
+  html+=`${sez3MoreHTML(selected)}${MODE==='giovani'?gPPStepHTML('sez3'):''}<div style="text-align:center;margin:12px 0">
     <button class="btn-ghost" onclick="addPercorsoExtra()" style="border-style:dashed;padding:10px 24px">+ Aggiungi ${MODE==='giovani'?'un altro percorso (facoltativo)':'percorso'}</button>
   </div>
   <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:8px">
@@ -6002,6 +6133,14 @@ function chkSelChange(sel, id){
   chkSet(id,'v',sel.value);
   sel.style.borderColor = {si:'#2E7D32',parz:'#E0A100',no:'#B3261E'}[sel.value] || 'var(--border)';
   chkRefreshSummary();
+}
+// Controllo e invio: solo completezza (sopra), promemoria e Word — nessuna autovalutazione
+function renderSchedaInvio(root){
+  const el=document.createElement('div'); el.className='profile-card';
+  el.innerHTML=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">Il documento</h3>
+    <p style="font-size:12px;color:var(--ink-mid);margin:0 0 10px">Il Word riporta le Sezioni delle Linee Guida nello stesso ordine dell’app. Le voci ancora aperte qui sopra sono solo un aiuto per non dimenticare nulla: non finiscono nel documento.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-export" onclick="exportSchedaDocx('parziale')">↓ Scheda Sezioni 1–3 (Word)</button><button class="btn-export" onclick="exportSchedaDocx('completo')">↓ Scheda completa (Word)</button></div>`;
+  root.appendChild(el);
 }
 function renderSchedaChk(root,selected){
   const st = chkState();
@@ -6189,7 +6328,8 @@ function renderSchedaVal(root,selected){
   if(MODE==='giovani'){
     const nv=document.createElement('div'); nv.style.cssText='display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px';
     nv.innerHTML=`<button class="btn-ghost" onclick="schedaStep='ver';renderValuation()">← Sezione 4</button>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-export" onclick="exportSchedaDocx()">↓ Esporta la Scheda in Word</button><button class="btn-primary" onclick="schedaStep='chk';renderValuation()">Checklist e invio →</button></div>`;
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-export" onclick="exportSchedaDocx()">↓ Esporta la Scheda in Word</button><button class="btn-primary" onclick="schedaStep='chk';renderValuation()">Controllo e invio →</button></div>`;
+    const fin=document.createElement('div'); fin.innerHTML=gPPStepHTML('fine'); if(fin.innerHTML) root.appendChild(fin);
     root.appendChild(nv);
   }
   updateScore(selected);
@@ -6235,9 +6375,9 @@ function ppChecks(){
   const percs = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x));
   const c1=[], c2=[];
   const add=(arr,l,ok,det)=>arr.push({l,ok:!!ok,det:det||''});
-  add(c1,'Dati: nome, Sezione e Unità', T(pp.nome)&&T(pp.sezione)&&T(UNIT_NAME));
+  add(c1,'Dati: nome, Sezione, Gruppo e Unità', T(pp.nome)&&T(pp.sezione)&&T(pp.gruppo)&&T(UNIT_NAME));
   add(c1,'Contesto territoriale e contesto Sezione/Gruppo', T(pp.ctxTerr)&&T(pp.ctxSez));
-  add(c1,'Occasioni osservative descritte (KOS, almeno 2–3)', T(pp.occasioni));
+  add(c1,'Occasioni osservative indicate (KOS, almeno 2–3)', occCount()>=2);
   add(c1,'Analisi delle dinamiche di gruppo', T(pp.dinamiche));
   const ob=['P','C','S'].filter(a=>T(scheda.osservazione[a].positivi)&&T(scheda.osservazione[a].necessita)).length;
   add(c1,'Aspetti positivi e necessità per tutti e 3 gli ambiti', ob===3, `${ob}/3`);
@@ -6281,10 +6421,26 @@ function gPromemoriaHTML(){
       <li><b>Prima verifica.</b> Quando la Scheda è scritta fino alla <b>Sezione 3</b> (anche solo abbozzata), inviala <b>al Tutor</b>, in copia a <b>CG</b>, <b>CdS</b> e al <b>Responsabile del tuo Centro di Formazione</b>, prima di realizzare le attività.</li>
       <li><b>Oggetto:</b> <em>Invio Progetto Personale - [Nome Cognome] - [Sezione]</em>. <b>Allegato:</b> la Scheda di Programmazione Educativa Esperienziale (Word o PDF) ed eventuali materiali integrativi.</li>
       <li><b>Invio completo.</b> Dopo l’approvazione del tutor e la realizzazione del percorso, invia di nuovo la Scheda completa delle Sezioni 4 e 5.</li>
-      <li>Il formatore incaricato restituisce il feedback con la <b>checklist</b> che trovi qui sotto.</li>
+      <li>Il formatore incaricato verifica la Scheda e ti restituisce il suo feedback.</li>
     </ol>
     <details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Indirizzi dei Responsabili dei Centri di Formazione</summary><div style="font-size:11.5px;margin-top:6px">${rcdf}</div></details>
   </details>`;
+}
+// Promemoria PP mostrati nel momento in cui servono (richiudibili)
+function gPPHidden(k){ try{ return !!(JSON.parse(localStorage.getItem('pee_pp_hide')||'{}')[k]); }catch(e){ return false; } }
+function gPPHide(k){ try{ const o=JSON.parse(localStorage.getItem('pee_pp_hide')||'{}'); o[k]=1; localStorage.setItem('pee_pp_hide',JSON.stringify(o)); }catch(e){} document.querySelectorAll('.pp-step-'+k).forEach(x=>x.remove()); }
+function gPPStepHTML(k){
+  if(MODE!=='giovani' || gPPHidden(k)) return '';
+  const rcdf = RCDF_AREE.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:2px 0;border-bottom:1px dotted var(--border-light)"><span>${x[1]}</span><span style="color:var(--ink-mid)">${x[2]}</span></div>`).join('');
+  const T={
+    avvio:`<b>Avvio.</b> Dopo il FOR.A (o ex Wood Badge) invia una mail di avvio <b>al Tutor della Sperimentazione</b>, in copia al <b>Capo Gruppo</b> e al <b>Commissario di Sezione</b>, e attendi la presa in carico.`,
+    sez3:`<b>Prima verifica.</b> Ora che la Scheda è scritta fino alla <b>Sezione 3</b> (anche solo abbozzata), inviala <b>al Tutor</b>, in copia a <b>CG</b>, <b>CdS</b> e al <b>Responsabile del tuo Centro di Formazione</b>, prima di realizzare le attività. <b>Oggetto:</b> <em>Invio Progetto Personale - [Nome Cognome] - [Sezione]</em>. <b>Allegato:</b> la Scheda (Word o PDF). <button class="btn-ghost" style="font-size:11px;padding:3px 9px;margin-left:4px" onclick="exportSchedaDocx('prima')">↓ Scarica la Scheda (Word)</button>`,
+    fine:`<b>Invio completo.</b> Dopo l’approvazione del tutor e la realizzazione del percorso, invia di nuovo la Scheda completa delle Sezioni 4 e 5, con gli stessi destinatari. <button class="btn-ghost" style="font-size:11px;padding:3px 9px;margin-left:4px" onclick="exportSchedaDocx('completo')">↓ Scarica la Scheda completa (Word)</button>`
+  };
+  const extra = (k==='avvio'||k==='sez3') ? `<details style="margin-top:6px"><summary style="cursor:pointer;font-size:11px;font-weight:700">Indirizzi dei Responsabili dei Centri di Formazione</summary><div style="font-size:11px;margin-top:4px">${rcdf}</div></details>` : '';
+  return `<div class="pp-step-${k}" style="position:relative;margin:10px 0;padding:9px 34px 9px 12px;background:#F4F7FB;border:1px solid #D5E0EE;border-radius:8px;font-size:11.5px;line-height:1.55">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#3B5A86;margin-bottom:3px">Se stai svolgendo il Progetto Personale</div>${T[k]}${extra}
+    <button title="Chiudi, non mostrare più" onclick="gPPHide('${k}')" style="position:absolute;top:6px;right:6px;border:none;background:none;font-size:15px;cursor:pointer;color:var(--ink-mid)">×</button></div>`;
 }
 function ppRefreshReady(){
   const el=document.getElementById('pp-ready'); if(!el || MODE!=='giovani') return;
@@ -6866,6 +7022,12 @@ function dCell(children, o={}){
     margins: {top:70, bottom:70, left:110, right:110}
   });
 }
+// tabella generica con intestazione verde
+function dGridTable(heads, rows, widths, sz){
+  const D=dxLib(); sz=sz||17;
+  const hr=heads.map((h,i)=>dCell(dPara(h,{size:sz,bold:true,color:'FFFFFF',after:0}),{w:widths[i],fill:GREEN,border:GREEN}));
+  return dTable([hr, ...rows.map(r=>r.map((v,i)=>dCell(dMulti(v,{size:sz}),{w:widths[i],vAlign:D.VerticalAlign.TOP})))], widths);
+}
 function dTable(rows, widths){
   const D = dxLib();
   return new D.Table({
@@ -7015,6 +7177,7 @@ async function exportPPDocx(mode){
   ch.push(dKV([
     ['Compilata da', plain(pp.nome)||'—'],
     ['Sezione', plain(pp.sezione)||'—'],
+    ['Gruppo', plain(pp.gruppo)||'—'],
     ['Unità', plain(UNIT_NAME)||'—'],
     ['Branca', FASCIA_LABEL||'—'],
     ...(PPm?[['Tutor della sperimentazione', plain(pp.tutor)||'—']]:[])
@@ -7024,7 +7187,16 @@ async function exportPPDocx(mode){
   ch.push(dH2('Sezione 1 — Osservazione del Gruppo di Pari & Identificazione e Priorizzazione delle Necessità Educative'));
   ch.push(dH3('Contesto territoriale')); ch.push(...dMulti(pp.ctxTerr));
   ch.push(dH3('Contesto Sezione e Gruppo')); ch.push(...dMulti(pp.ctxSez));
-  ch.push(dH3('Osservazione con il KOS: occasioni osservative')); ch.push(...dMulti(pp.occasioni));
+  { const st=(pp.staffTab||[]).filter(r=>STAFF_TAB_COLS.some(c=>c[0]!=='ruolo'&&T_(r[c[0]])));
+    if(st.length){ ch.push(dPara('Adulti in staff',{size:19,bold:true,before:80,after:40}));
+      const ws=[900,1100,600,1050,1300,1200,1050,1050]; ws.push(CW-ws.reduce((a,b)=>a+b,0));
+      ch.push(dGridTable(STAFF_TAB_COLS.map(c=>c[1]), st.map(r=>STAFF_TAB_COLS.map(c=>r[c[0]])), ws, 15)); } }
+  ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
+  { const kr=occKosRows(); const man=(pp.occMan||[]).filter(r=>T_(r.att)||OCC_COLS.some(c=>T_(r[c[0]])));
+    const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', o.data, o.ctx, o.chi, o.note]; }).concat(man.map(r=>[r.att,r.data,r.ctx,r.chi,r.note]));
+    if(rws.length){ const wo=[2700,1100,1500,1700]; wo.push(CW-wo.reduce((a,b)=>a+b,0)); ch.push(dGridTable(['Attività / incontro','Data','Contesto','Chi ha osservato','Note'], rws, wo, 17)); }
+    else if(T_(pp.occasioni)) ch.push(...dMulti(pp.occasioni));
+    else ch.push(dNote('Nessuna occasione osservativa indicata.')); }
   { const kd=(typeof kosActs==='function')?kosActs().filter(a=>(pp.kosDone||{})[a.key]):[];
     if(kd.length){ const cn={}; kd.forEach(a=>a.f.forEach(id=>cn[id]=1)); ch.push(dPara('Percorso KOS 2.0: '+kd.length+' attività svolte su '+kosActs().length+'; '+Object.keys(cn).length+' competenze su 24 osservate.',{size:18,italics:true,after:80})); } }
   if(T_(pp.condizioni)){ ch.push(dH3('Condizioni dell\'osservazione')); ch.push(...dMulti(pp.condizioni)); }
@@ -7111,9 +7283,9 @@ async function exportPPDocx(mode){
       ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
       ['Tempistiche', `da ${per.dal||'…'} a ${per.al||'…'}`],
       ['Attività', attCell],
-      ['Co-costruzione', dMulti(per.coCostr)],
-      ['Rielaborazione', dMulti(per.rielab)],
-      ['Checklist', clKeys.map(k => dPara([dTxt(`${cl[k]?.checked?'☑':'☐'} ${clLab[k]}: `,{size:18,bold:true,color:cl[k]?.checked?'2E7D32':'777777'}), dTxt(plain(cl[k]?.note)||'—',{size:18})],{after:30}))]
+      ['Co-costruzione nel percorso', dMulti(per.coCostr)],
+      ['Rielaborazione nel percorso', dMulti(per.rielab)],
+      ['Le 7 caratteristiche', clKeys.map(k => dPara([dTxt(`${cl[k]?.checked?'☑':'☐'} ${clLab[k]}: `,{size:18,bold:true,color:cl[k]?.checked?'2E7D32':'777777'}), dTxt(plain(cl[k]?.note)||'—',{size:18})],{after:30}))]
     ]));
     ch.push(dPara('',{after:60}));
   });
@@ -7181,10 +7353,10 @@ async function exportPPDocx(mode){
     ch.push(dPara('Scala 1–10 · 1–2 Assente · 3–4 Tracce iniziali · 5–6 In sviluppo · 7–8 Presente · 9–10 Consolidato',{size:15,italics:true,color:'888888',before:100}));
   }
 
-  // ── Autoverifica (Checklist PP), se compilata ──
+  // (la checklist del formatore non fa parte della Scheda: il tutor la verifica in autonomia)
   try{
     const st = chkState(); const cnt = chkCounts();
-    if(cnt.si+cnt.parz+cnt.no>0){
+    if(false){
       ch.push(dH2('Allegato — Checklist (criteri di valutazione)'));
       const wc = [CW-3300, 900, 2400]; const LB = {si:'SÌ', parz:'IN PARTE', no:'NO'}; const FL = {si:'2E7D32', parz:'E0A100', no:'B3261E'};
       const rowsF = [];
@@ -7217,6 +7389,7 @@ async function exportSchedaDocxLegacy(){
   const ch = [];
   const subtitle = `PEE CNGEI${FASCIA_LABEL?' · '+FASCIA_LABEL:''}${isStaff?' · Modalità Staff':''}${MODE==='personale'?' · Auto osservazione':''} · Generata il ${todayIt()}`;
   ch.push(...dTitleBlock(MODE==='personale' ? 'Scheda di Auto osservazione' : T.schedaTitle, subtitle));
+  if(isStaff){ const pp0=scheda.pp||{}; ch.push(dKV([['Sezione', plain(pp0.sezione)||'—'],['Gruppo', plain(pp0.gruppo)||'—'],...(STAFF_RUOLO==='CG'?[]:[['Staff', plain(UNIT_NAME)||'—']])])); }
 
   // A — riepilogo osservazione
   ch.push(dH2(`Sezione A — ${T.riepilogo}`));
@@ -8317,7 +8490,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const d = clSnapshot();
     const pp0 = (d.scheda&&d.scheda.pp)||{};
     const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
-      || (d.MODE==='giovani' && ['nome','sezione','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
+      || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
     if(hasWork && typeof resumeSession==='function') setTimeout(() => resumeSession(), 50);
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
