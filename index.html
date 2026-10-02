@@ -7883,7 +7883,7 @@ async function clBackupAll(){
     a.href = URL.createObjectURL(new Blob([JSON.stringify(pacchetto, null, 1)], {type:'application/json'}));
     a.download = `PEE-CNGEI_tutti-i-progetti_${oggi}.json`; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1500);
     try{ localStorage.setItem(CL_LASTBK, String(Date.now())); }catch(e){}
-    clMsg(`Scaricati ${rows.length} ${rows.length===1?'progetto':'progetti'} in un unico file. Conservalo in un posto sicuro (computer, Drive).`, 'ok');
+    clMsg(`${rows.length===1?'Scaricato 1 progetto':'Scaricati '+rows.length+' progetti'} in un unico file. Conservalo in un posto sicuro (computer, Drive).`, 'ok');
   }catch(e){ clMsg('Non riesco a preparare il file: '+clErr(e), 'err'); }
   finally{ if(btn){ btn.disabled = false; btn.textContent = '↓ Scarica tutti i miei progetti'; } }
 }
