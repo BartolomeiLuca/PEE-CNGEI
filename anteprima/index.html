@@ -6421,7 +6421,9 @@ function ppReadyHTML(){
   const box=(t,arr,id)=>{ const n=arr.filter(x=>x.ok).length; const done=n===arr.length;
     return `<details style="flex:1;min-width:260px;border:1px solid ${done?'#2E7D32':'var(--border-light)'};border-radius:8px;padding:8px 12px;background:var(--bg-card)">
       <summary style="cursor:pointer;font-size:12px;font-weight:800;color:var(--ink)">${done?'✅':'☐'} ${t} <span style="font-weight:600;color:${done?'#2E7D32':'var(--ink-mid)'}">· ${n}/${arr.length}</span></summary>
-      <div style="margin-top:6px">${arr.map(x=>`<div style="font-size:11px;margin:3px 0;color:${x.ok?'#2E7D32':'var(--ink-mid)'}">${x.ok?'✓':'○'} ${x.l}${x.det?` <span style="color:var(--ink-faint)">(${x.det})</span>`:''}</div>`).join('')}</div>
+      <div style="margin-top:6px">${arr.map(x=>x.ok
+        ?`<div style="font-size:11px;margin:3px 0;color:#5C8F5F">✓ ${x.l}${x.det?` <span style="color:var(--ink-faint)">(${x.det})</span>`:''}</div>`
+        :`<div style="font-size:12px;margin:5px 0;padding:4px 8px;font-weight:700;color:var(--ink);background:#FFF4E5;border-left:3px solid #E65100;border-radius:0">○ ${x.l}${x.det?` <span style="font-weight:400;color:var(--ink-mid)">(${x.det})</span>`:''}</div>`).join('')}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn-export" style="font-size:11px;padding:5px 10px" onclick="exportSchedaDocx('${id}')">↓ Word</button></div>
     </details>`; };
   return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('Sezioni 1–3 · prima di realizzare le attività',c1,'parziale')}${box('Sezioni 4 e 5 · dopo aver vissuto il percorso',c2,'completo')}</div>`;
