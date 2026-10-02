@@ -959,7 +959,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <button class="ptab" id="tab4" onclick="goPhase(4)" title="Fase 3 · Valutazione"><svg class="ic"><use href="#i-check"/></svg><span>3. Valutazione</span></button>
     </div>
     <div class="hdr-actions">
-      <button class="hdr-btn fb-btn" onclick="fbOpen()" title="Versione di prova: segnala un problema o un'idea"><span class="fb-beta">BETA</span><span class="hdr-lbl"> Segnala</span></button>
+      <button class="hdr-btn fb-btn" onclick="fbOpen()" title="Versione di prova: scrivi un suggerimento o segnala un problema"><span class="fb-beta">BETA</span><span class="hdr-lbl"> Suggerimenti?</span></button>
       <button class="hdr-btn" id="cl-histbtn" onclick="clOpenHist()" style="display:none" title="Versioni precedenti: torna a com'era il lavoro prima"><svg class="ic"><use href="#i-history"/></svg><span class="hdr-lbl"> Versioni</span></button>
       <button class="hdr-btn cl-hdrbtn" onclick="clOpen()" title="Account e archivio dei tuoi PEE"><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Accedi</span></button>
       <button class="hdr-btn hdr-zoom" onclick="zoomApp(0)" title="Cambia la dimensione del testo" aria-label="Cambia la dimensione del testo">A<small>a</small></button>
@@ -1031,7 +1031,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <p>Questo strumento si amplia anche all'adulto, per una ragione precisa: <strong>non si può accompagnare un giovane verso competenze e qualità che non si conoscono, almeno in parte, dall'interno.</strong> La leadership autorevole si impara per osmosi — non basta insegnare l'autonomia, bisogna viverla. Non basta proporre la riflessione critica, bisogna praticarla.</p>
       <p>Osservare il proprio staff attraverso la stessa lente con cui si guarda l'Unità è un atto di coerenza educativa: i giovani imparano da ciò che vedono nei loro educatori, molto più che da ciò che sentono dire. Questo strumento aiuta a tenere vivo quel nesso.</p>
     </details>
-    <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Segnala un problema o un'idea</a></p>
+    <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Suggerimenti?</a></p>
 
     <div class="tour-linkbox"><button class="tour-link" onclick="tourStart(true)">▶ Vedi il giro guidato (1 minuto)</button> <button class="tour-link" style="margin-left:14px;font-weight:500;opacity:.7" onclick="openModal()">Ricomincia da zero</button></div>
 
@@ -5462,34 +5462,54 @@ function fbOpen(){
   const inS='width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:13px Montserrat,sans-serif;background:var(--surface,#fff);color:var(--ink)';
   let nm=''; try{ nm=localStorage.getItem('bussola_nome')||''; }catch(e){}
   ov.innerHTML=`<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:520px;width:calc(100% - 24px);max-height:92vh;overflow:auto;padding:18px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Segnala un problema o un'idea</div><button class="btn-ghost" onclick="fbClose()">✕</button></div>
-    <p style="font-size:12px;color:var(--ink-mid);margin:6px 0 10px">PEE CNGEI è in fase di prova: ogni segnalazione aiuta a migliorarlo. La mail parte dalla tua posta verso chi cura l’app.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Suggerimenti?</div><button class="btn-ghost" onclick="fbClose()">✕</button></div>
+    <p style="font-size:12px;color:var(--ink-mid);margin:6px 0 10px">PEE CNGEI è in fase di prova: idee, dubbi e problemi aiutano a migliorarlo. Il messaggio arriva direttamente a chi cura l’app.</p>
     <label style="display:block;font-size:11px;font-weight:700;margin:8px 0 3px">Di cosa si tratta</label>
     <select id="fb-tipo" style="${inS}"><option>Un problema / qualcosa non funziona</option><option>Un'idea o un miglioramento</option><option>Un testo poco chiaro</option><option>Una domanda</option></select>
     <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">Descrivi cosa è successo o cosa proponi</label>
     <textarea id="fb-txt" style="${inS};min-height:120px" placeholder="Cosa stavi facendo, cosa ti aspettavi, cosa è successo invece…"></textarea>
     <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">Il tuo nome <span style="font-weight:400;color:var(--ink-faint)">(facoltativo)</span></label>
     <input id="fb-nome" style="${inS}" value="${sEsc(nm)}">
-    <p style="font-size:11px;color:var(--ink-mid);margin:8px 0 0">Alla mail aggiungo in automatico la schermata in cui ti trovi e il tipo di dispositivo. Non scrivere nomi dei ragazzi o altri dati personali.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn-primary" onclick="fbSend()">✉ Apri nella mia posta</button><button class="btn-ghost" onclick="fbCopy()">Copia testo</button></div>
+    <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">La tua email <span style="font-weight:400;color:var(--ink-faint)">(facoltativa, se vuoi una risposta)</span></label>
+    <input id="fb-mail" type="email" style="${inS}" value="${sEsc((typeof CL!=='undefined'&&CL.user&&CL.user.email)||'')}">
+    <input type="checkbox" id="fb-bot" style="display:none" tabindex="-1" autocomplete="off">
+    <p style="font-size:11px;color:var(--ink-mid);margin:8px 0 0">Al messaggio aggiungo in automatico la schermata in cui ti trovi e il tipo di dispositivo. Non scrivere nomi dei ragazzi o altri dati personali.</p>
+    <div class="cl-msg" id="fb-msg"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn-primary" id="fb-go" onclick="fbSend()">Invia</button><button class="btn-ghost" onclick="fbCopy()">Copia testo</button></div>
   </div>`;
   ov.classList.add('show');
 }
 function fbClose(){ const ov=document.getElementById('fb-ov'); if(ov) ov.classList.remove('show'); }
 function fbCompose(){
-  const tipo=(document.getElementById('fb-tipo')||{}).value||'', txt=((document.getElementById('fb-txt')||{}).value||'').trim(), nome=((document.getElementById('fb-nome')||{}).value||'').trim();
+  const tipo=(document.getElementById('fb-tipo')||{}).value||'', txt=((document.getElementById('fb-txt')||{}).value||'').trim(), nome=((document.getElementById('fb-nome')||{}).value||'').trim(), mailx=((document.getElementById('fb-mail')||{}).value||'').trim();
   let dove='Pagina iniziale';
   try{ if(document.getElementById('main-app').style.display!=='none'){ if(MODE==='giovani'){ const c=gCur(); dove=(G_STEPS.find(x=>x[0]===c)||[])[1] ? 'Sezione '+G_STEPS.find(x=>x[0]===c)[1]+' '+G_STEPS.find(x=>x[0]===c)[2] : (G_TABS.find(x=>x[0]===c)||[])[4]||c; } else { const n=[1,2,3,4].find(i=>document.getElementById('panel'+i)?.classList.contains('active')); dove='Fase '+n; } } }catch(e){}
   const ua=navigator.userAgent; const disp=/iPad|Tablet/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'telefono':'computer';
   const br=/Edg\//.test(ua)?'Edge':/Chrome\//.test(ua)?'Chrome':/Firefox\//.test(ua)?'Firefox':/Safari\//.test(ua)?'Safari':'altro';
   const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti/e',E:'Esploratori/trici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—')), 'Dispositivo: '+disp+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION, 'Data: '+new Date().toLocaleString('it-IT') ];
-  const sub='[PEE CNGEI beta] '+tipo.split(' /')[0]+(nome?' — '+nome:'');
-  const body=(txt||'(scrivi qui la tua segnalazione)')+'\n\n— — —\n'+ctx.join('\n')+(nome?'\nDa: '+nome:'');
+  const sub='[PEE CNGEI · Suggerimenti] '+tipo.split(' /')[0]+(nome?' — '+nome:'');
+  const body=(txt||'(scrivi qui la tua segnalazione)')+'\n\n— — —\n'+ctx.join('\n')+(nome?'\nDa: '+nome:'')+(mailx?' <'+mailx+'>':'');
   return {sub, body};
 }
-function fbSend(){ const t=((document.getElementById('fb-txt')||{}).value||'').trim(); if(!t){ showToast('Scrivi prima la segnalazione'); return; }
-  const n=((document.getElementById('fb-nome')||{}).value||'').trim(); if(n){ try{ localStorage.setItem('bussola_nome',n); }catch(e){} }
-  const {sub,body}=fbCompose(); location.href='mailto:luca.bartolomei@cngei.it?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body); setTimeout(fbClose,600); }
+const FB_KEY = '03d35f61-94a5-46db-8912-5195fed59533'; // Web3Forms: invia a luca.bartolomei@cngei.it
+async function fbSend(){
+  const $f=id=>document.getElementById(id); const t=(($f('fb-txt')||{}).value||'').trim();
+  const msg=(txt,ok)=>{ const m=$f('fb-msg'); if(m){ m.className='cl-msg '+(ok?'ok':'err'); m.textContent=txt; } };
+  if(!t){ msg('Scrivi prima il tuo messaggio.', false); return; }
+  if(($f('fb-bot')||{}).checked) return;
+  const n=(($f('fb-nome')||{}).value||'').trim(); if(n){ try{ localStorage.setItem('bussola_nome',n); }catch(e){} }
+  const mail=(($f('fb-mail')||{}).value||'').trim();
+  const {sub,body}=fbCompose(); const btn=$f('fb-go'); if(btn){ btn.disabled=true; btn.textContent='Invio…'; }
+  try{
+    const fd=new FormData(); fd.append('access_key',FB_KEY); fd.append('subject',sub); fd.append('from_name',n||'Tester PEE CNGEI'); fd.append('message',body);
+    if(/@/.test(mail)){ fd.append('email',mail); fd.append('replyto',mail); }
+    const r=await fetch('https://api.web3forms.com/submit',{method:'POST',body:fd});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok || j.success===false) throw new Error(j.message||('errore '+r.status));
+    msg('Grazie! Il tuo messaggio è arrivato.', true); const tx=$f('fb-txt'); if(tx) tx.value=''; setTimeout(fbClose,1800);
+  }catch(e){ msg('Non riesco a inviarlo adesso (controlla la connessione). Usa “Copia testo” e incollalo in una mail a luca.bartolomei@cngei.it.', false); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='Invia'; } }
+}
 function fbCopy(){ const {sub,body}=fbCompose(); const t='A: luca.bartolomei@cngei.it\nOggetto: '+sub+'\n\n'+body;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>showToast('Testo copiato: incollalo in una mail a luca.bartolomei@cngei.it')).catch(()=>{ prompt('Copia il testo:', t); }); }
 
