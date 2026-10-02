@@ -5825,17 +5825,16 @@ function renderSchedaC(root,selected){
 // ── Sezione 3: introduzione e scelta dell'obiettivo ──
 function sez3IntroHTML(selected){
   const G=MODE==='giovani';
-  const due=`<div style="font-size:11px;color:var(--ink-mid);background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5"><strong>Due attenzioni della PEE.</strong> <em>Co-costruzione</em>: esplicita in quale momento i ragazzi determinano il percorso e con quali forme. <em>Rielaborazione</em>: cognitiva ed emotiva, in uno o più momenti lungo il percorso, non un solo momento finale come una vecchia sedimentazione.</div>`;
-  if(!G) return `<p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Un percorso per ciascuna priorità: strumenti del metodo, tempistiche, 3–4 attività coerenti (Lancio · Sviluppo · Conclusione) e verifica delle 7 caratteristiche.</p>`+due;
+  if(!G) return `<p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Un percorso per ciascuna priorità: strumenti del metodo, tempistiche, 3–4 attività coerenti (Lancio · Sviluppo · Conclusione) e verifica delle 7 caratteristiche.</p>`;
   const sel=selected.slice(0,3); const allP=Object.values(DB).flat(); const lab={P:'Personale',C:'Comunitario',S:'Spirituale'};
   if(isPP()){
     const ch=sez3Chosen(sel.length);
     const radios=sel.map((id,i)=>{ const p=allP.find(x=>x.id===id); const ob=(scheda.priorita[i]?.obiettivi||[]).map(j=>p?.obiettivi?.[j]).filter(Boolean)[0];
       return `<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12px;cursor:pointer"><input type="radio" name="sez3pri" style="margin-top:2px" ${i===ch?'checked':''} onchange="sez3Choose(${i})"><span><b>Priorità ${i+1}</b> — ${lab[id[0]]} · ${p?sEsc(p.name):id}${ob?`<br><span style="color:var(--ink-mid)">${sEsc(ob)}</span>`:''}</span></label>`; }).join('');
     return `<p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Per <strong>un</strong> obiettivo prioritario, a scelta: strumenti del metodo declinati per la tua Branca, tempistiche, 3–4 attività coerenti (Lancio · Sviluppo · Conclusione) e verifica delle 7 caratteristiche spiegando il perché.</p>
-      ${sel.length?`<div class="g-crit" style="font-size:12px"><b>Per quale obiettivo progetti il percorso?</b> Le Linee Guida chiedono il Percorso Educativo Esperienziale per un obiettivo prioritario, a scelta; gli altri sono facoltativi.${radios}</div>`:''}`+due;
+      ${sel.length?`<div class="g-crit" style="font-size:12px"><b>Per quale obiettivo progetti il percorso?</b> Le Linee Guida chiedono il Percorso Educativo Esperienziale per un obiettivo prioritario, a scelta; gli altri sono facoltativi.${radios}</div>`:''}`;
   }
-  return `<p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Il Manuale PEE chiede Percorsi Educativi Esperienziali che portino l’Unità verso i suoi <strong>obiettivi prioritari</strong>: qui trovi un percorso per ciascuna priorità, con strumenti del metodo, tempistiche, almeno 3–4 attività (Lancio · Sviluppo · Conclusione) e la verifica delle 7 caratteristiche. Un’esperienza può anche essere trasversale a più obiettivi: in quel caso dillo nelle note del percorso.</p>`+due;
+  return `<p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Il Manuale PEE chiede Percorsi Educativi Esperienziali che portino l’Unità verso i suoi <strong>obiettivi prioritari</strong>: qui trovi un percorso per ciascuna priorità, con strumenti del metodo, tempistiche, almeno 3–4 attività (Lancio · Sviluppo · Conclusione) e la verifica delle 7 caratteristiche. Un’esperienza può anche essere trasversale a più obiettivi: in quel caso dillo nelle note del percorso.</p>`;
 }
 function sez3MoreHTML(selected){
   if(!(MODE==='giovani' && isPP())) return '';
