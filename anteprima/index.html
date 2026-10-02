@@ -2479,6 +2479,7 @@ function loadSaved() {
       if(d.scheda.idrComp) scheda.idrComp = d.scheda.idrComp;
       if(d.scheda.valCompl) scheda.valCompl = d.scheda.valCompl;
       if(d.scheda.pp) scheda.pp = Object.assign({nome:'',sezione:'',tutor:'',ctxTerr:'',ctxSez:'',occasioni:'',condizioni:'',scelta:'',kosDone:{}}, d.scheda.pp);
+      if(d.scheda._p2Seen) scheda._p2Seen = true;
       if(d.scheda.chkPP) scheda.chkPP = Object.assign({partecipante:'',formatore:'',rev:'01',items:{}}, d.scheda.chkPP);
     }
     if(d.STAFF_MEMBERS) STAFF_MEMBERS = d.STAFF_MEMBERS;
@@ -2829,6 +2830,8 @@ function goPhase(n){
   const currentActive = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active'));
   if (n === 2 && currentActive === 1) {
     // Avviso se osservazione incompleta — SOLO in modalità giovani/personale, NON in staff
+    // Avviso e citazione compaiono solo la prima volta per ciascun progetto
+    if(scheda._p2Seen){ goPhaseInternal(2); return; }
     if(MODE !== 'staff') {
       const total = Object.values(DB).flat().length;
       const observed = Object.values(obs).filter(v => v !== 'n').length;
@@ -2839,6 +2842,7 @@ function goPhase(n){
         if (!proceed) return;
       }
     }
+    scheda._p2Seen = true; saveDataDebounced();
     showCitationPage(obs, "goPhaseInternal(2)");
     return;
   }
