@@ -5683,7 +5683,7 @@ function fbOpen(){
     <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">Il tuo nome <span style="font-weight:400;color:var(--ink-faint)">(facoltativo)</span></label>
     <input id="fb-nome" style="${inS}" value="${sEsc(nm)}">
     <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">La tua email <span style="font-weight:400;color:var(--ink-faint)">(facoltativa, se vuoi una risposta)</span></label>
-    <input id="fb-mail" type="email" style="${inS}" value="" placeholder="nome@esempio.it" autocomplete="off">
+    <input id="fb-mail" type="email" style="${inS}" value="${sEsc((typeof CL!=='undefined'&&CL.user&&CL.user.email)||'')}">
     <input type="checkbox" id="fb-bot" style="display:none" tabindex="-1" autocomplete="off">
     <p style="font-size:11px;color:var(--ink-mid);margin:8px 0 0">Al messaggio aggiungo in automatico la schermata in cui ti trovi e il tipo di dispositivo. Non scrivere nomi dei ragazzi o altri dati personali.</p>
     <div class="cl-msg" id="fb-msg"></div>
