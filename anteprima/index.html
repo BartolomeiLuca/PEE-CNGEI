@@ -2028,19 +2028,28 @@ async function grpFetch(sez){
   try{ if(typeof CL==='undefined'||!CL.sb) return; const r=await CL.sb.from('pee_gruppi').select('gruppo').eq('sezione',s).limit(200);
     if(r&&r.data){ window._grpRemote=window._grpRemote||{}; window._grpRemote[s.toLowerCase()]=r.data.map(x=>x.gruppo); grpFillList(); } }catch(e){}
 }
-function grpFillList(){ const dl=document.getElementById('dl-gruppi'); if(!dl) return; const pp=scheda.pp||{}; dl.innerHTML=grpKnown(pp.sezione).map(g=>'<option value="'+sEsc(g)+'">').join(''); }
+function grpFillList(){ const pp=scheda.pp||{}; document.querySelectorAll('select.grp-sel').forEach(sel=>{ if(document.activeElement!==sel) sel.innerHTML=grpOptsHTML(pp.gruppo); }); }
 function sezSet(v){ ppSet('sezione',v); const n=document.querySelectorAll('.sez-warn'); n.forEach(x=>x.style.display=(String(v||'').trim()&&!sezIn(v))?'block':'none'); grpFillList(); }
 function sezDone(v){ grpFetch(v); }
-function grpSet(v){ ppSet('gruppo',v); }
+function grpLabel(v){ v=String(v||'').trim(); if(!v) return ''; if(v==='unico') return 'Gruppo unico'; return /^\d+$/.test(v)?'Gruppo '+v:v; }
+function grpOptsHTML(cur){
+  const pp=scheda.pp||{}; const known=new Set(grpKnown(pp.sezione)); cur=String(cur||'');
+  const o=(v,t)=>`<option value="${v}"${cur===v?' selected':''}>${t}${known.has(v)&&cur!==v?' · già presente':''}</option>`;
+  let h='<option value=""'+(cur?'':' selected')+'>— scegli —</option>'+o('unico','Gruppo unico (Sezione monogruppo)');
+  for(let n=1;n<=20;n++) h+=o(String(n),'Gruppo '+n);
+  if(cur && cur!=='unico' && !/^([1-9]|1\d|20)$/.test(cur)) h+=`<option value="${sEsc(cur)}" selected>${sEsc(cur)}</option>`;
+  return h;
+}
+function grpSet(v){ ppSet('gruppo',v); grpRemember((scheda.pp||{}).sezione,v); }
 function grpDone(){ const pp=scheda.pp||{}; grpRemember(pp.sezione,pp.gruppo); }
 // campi Sezione + Gruppo; withUnit = aggiunge il nome dell'Unità (Sezione 1.1)
 function sezGrpHTML(lblStyle,inStyle,onlySez){
   const pp=scheda.pp||(scheda.pp={});
   const warn=(pp.sezione&&!sezIn(pp.sezione))?'block':'none';
   setTimeout(()=>{ grpFillList(); grpFetch(pp.sezione); },0);
-  return sezDatalist()+'<datalist id="dl-gruppi"></datalist>'+
+  return sezDatalist()+
     `<label style="${lblStyle}">Sezione<input style="${inStyle}" list="dl-sezioni" maxlength="80" autocomplete="off" value="${sEsc(pp.sezione)}" placeholder="Inizia a scrivere…" oninput="sezSet(this.value)" onchange="sezDone(this.value)"><span class="sez-warn" style="display:${warn};font-size:10px;font-weight:400;color:var(--ink-mid);margin-top:3px">Non è nell’elenco: verrà salvata così come l’hai scritta.</span></label>`+
-    (onlySez?'':`<label style="${lblStyle}">Gruppo<input style="${inStyle}" list="dl-gruppi" maxlength="80" autocomplete="off" value="${sEsc(pp.gruppo)}" placeholder="Nome del Gruppo" oninput="grpSet(this.value)" onchange="grpDone()"></label>`);
+    (onlySez?'':`<label style="${lblStyle}">Gruppo<select class="grp-sel" style="${inStyle}" onchange="grpSet(this.value)">${grpOptsHTML(pp.gruppo)}</select></label>`);
 }
 
 // ── Percorso Promessa: spiegazione degli agganci del KOS ──
@@ -2435,20 +2444,20 @@ function saveData(silent) {
     if(!silent) showToast('Dati salvati');
   } catch(e) { if(!silent) showToast('Errore nel salvataggio'); }
 }
-function setUnitName(v){ UNIT_NAME = String(v||'').slice(0,60); if(MODE==='staff'&&STAFF_RUOLO==='CG'){ if(!scheda.pp) scheda.pp={}; scheda.pp.gruppo=UNIT_NAME; } saveDataDebounced(); }
+function setUnitName(v){ UNIT_NAME = String(v||'').slice(0,60); saveDataDebounced(); }
 function refreshUnitName(){
   const i = document.getElementById('unit-name-in'), l = document.getElementById('unit-name-lbl'); if(!i || !l) return;
   let lbl = "Nome dell'Unità", ph = "Es. Branco Popolo Libero";
-  if(MODE === 'staff'){ lbl = STAFF_RUOLO==='CG' ? 'Nome del Gruppo' : 'Nome dello staff'; ph = STAFF_RUOLO==='CG' ? 'Es. Gruppo di Pesaro' : 'Es. Staff Reparto Kontiki2'; }
+  if(MODE === 'staff'){ lbl = STAFF_RUOLO==='CG' ? 'Nome del Gruppo' : 'Nome dello staff'; ph = STAFF_RUOLO==='CG' ? 'Es. CdG Pesaro' : 'Es. Staff Reparto Kontiki2'; }
   else if(MODE === 'giovani'){ ph = ({L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki2', R:'Es. il nome della tua Unità'})[FASCIA] || 'Es. il nome della tua Unità'; }
   else { lbl = 'Nome'; ph = ''; }
   l.textContent = lbl; i.placeholder = ph;
   if(document.activeElement !== i) i.value = UNIT_NAME || '';
   i.parentElement.style.display = (MODE === 'personale') ? 'none' : '';
   const sg=document.getElementById('staff-sezgrp');
-  if(sg){ if(MODE==='staff'){ const CG=STAFF_RUOLO==='CG'; if(!sg.contains(document.activeElement)){ sg.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">'+sezGrpHTML('display:block;font:700 10px Montserrat,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid)','display:block;margin-top:5px',CG)+'</div>'; } sg.style.display='';
-      if(CG){ i.setAttribute('list','dl-gruppi'); } else i.removeAttribute('list'); }
-    else { sg.style.display='none'; sg.innerHTML=''; i.removeAttribute('list'); } }
+  if(sg){ if(MODE==='staff'){ const CG=STAFF_RUOLO==='CG'; if(!sg.contains(document.activeElement)){ sg.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">'+sezGrpHTML('display:block;font:700 10px Montserrat,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid)','display:block;margin-top:5px',false)+'</div>'; } sg.style.display='';
+      i.removeAttribute('list'); }
+    else { sg.style.display='none'; sg.innerHTML=''; } }
 }
 function saveDataDebounced() {
   try{ if(typeof ppRefreshReady==='function') ppRefreshReady(); }catch(e){}
@@ -7177,7 +7186,7 @@ async function exportPPDocx(mode){
   ch.push(dKV([
     ['Compilata da', plain(pp.nome)||'—'],
     ['Sezione', plain(pp.sezione)||'—'],
-    ['Gruppo', plain(pp.gruppo)||'—'],
+    ['Gruppo', plain(grpLabel(pp.gruppo))||'—'],
     ['Unità', plain(UNIT_NAME)||'—'],
     ['Branca', FASCIA_LABEL||'—'],
     ...(PPm?[['Tutor della sperimentazione', plain(pp.tutor)||'—']]:[])
@@ -7389,7 +7398,7 @@ async function exportSchedaDocxLegacy(){
   const ch = [];
   const subtitle = `PEE CNGEI${FASCIA_LABEL?' · '+FASCIA_LABEL:''}${isStaff?' · Modalità Staff':''}${MODE==='personale'?' · Auto osservazione':''} · Generata il ${todayIt()}`;
   ch.push(...dTitleBlock(MODE==='personale' ? 'Scheda di Auto osservazione' : T.schedaTitle, subtitle));
-  if(isStaff){ const pp0=scheda.pp||{}; ch.push(dKV([['Sezione', plain(pp0.sezione)||'—'],['Gruppo', plain(pp0.gruppo)||'—'],...(STAFF_RUOLO==='CG'?[]:[['Staff', plain(UNIT_NAME)||'—']])])); }
+  if(isStaff){ const pp0=scheda.pp||{}; ch.push(dKV([['Sezione', plain(pp0.sezione)||'—'],['Gruppo', plain(grpLabel(pp0.gruppo))||'—'],...(STAFF_RUOLO==='CG'?[]:[['Staff', plain(UNIT_NAME)||'—']])])); }
 
   // A — riepilogo osservazione
   ch.push(dH2(`Sezione A — ${T.riepilogo}`));
