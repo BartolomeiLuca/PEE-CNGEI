@@ -328,6 +328,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .cucg-block-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
 .cucg-block-cu .cucg-block-lbl{color:var(--green)}
 .cucg-block-cg .cucg-block-lbl{color:var(--blue)}
+.riobs{margin-top:12px;padding:10px 12px;border-radius:6px;border:1px dashed var(--border);font-size:12px;line-height:1.55;color:var(--ink-mid)}.riobs-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}.riobs-l{min-width:72px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint)}
 .pp5sp{margin-top:14px;padding:10px 12px;border-radius:6px;background:var(--green-pale);border-left:3px solid var(--green-light);font-size:12px;line-height:1.6;color:var(--ink-mid)}.pp5sp-tag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:4px}.pp5sp-extra{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-light);font-size:11px;color:var(--ink-faint)}
 .cu3{margin-top:6px}.cu3:first-of-type{margin-top:0}.cu3-l{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1px}
 
@@ -1703,26 +1704,26 @@ const AUTO_OBS_HINTS = {
   P2: `Le emozioni ti danno informazioni, non sono un disturbo. Chiediti: riesci a dare un nome a quello che senti, mentre lo senti? Sai attraversare un'emozione difficile senza soffocarla e senza farti travolgere? Sai distinguere un'emozione vera da una reazione automatica? Cosa fai quando ti senti a disagio davanti ai ragazzi?`,
   P3: `La creatività è un modo di pensare, non solo fare arte. Chiediti: davanti a un ostacolo cerchi strade nuove o usi gli schemi di sempre? Lasci spazio all'improvvisazione nelle attività? Hai almeno una passione creativa tua, come scrivere, suonare, costruire o fotografare, che non c'entra con il tuo ruolo di capo?`,
   P4: `Progettare vuol dire dare forma a quello che desideri. Chiediti: riesci a trasformare un'idea in un piano con tappe concrete? Come reagisci quando un progetto non va come previsto? Sai capire quando il perfezionismo ti blocca e quando invece ti aiuta a fare bene? Le tue attività sono davvero tue o copi soprattutto quello che hai ricevuto?`,
-  P5: `Essere autonomo vuol dire agire senza aver sempre bisogno di approvazione. Chiediti: prendi decisioni con fiducia o cerchi sempre conferme? Riesci a tenere una scelta anche quando non piace a tutti? Sai chiedere aiuto senza sentirti incapace? Sei autonomo allo stesso modo in famiglia e in Unità?`,
+  P5: `Le cose pratiche fanno parte dell'educare. Chiediti: sai organizzare materiali, tempi e logistica senza che tutto ricada all'ultimo momento? Te la cavi con le tecniche (cucina, tende, orientamento, attrezzi) o le deleghi sempre? Chiedi aiuto quando serve, senza sentirti incapace? Lasci ai ragazzi lo spazio per fare da soli, anche se ci mettono di più?`,
   P6: `Il senso critico è un'abitudine della mente, non voglia di polemica. Chiediti: ti fermi spesso a rivedere come lavori con i ragazzi? Sai distinguere tra "si è sempre fatto così" e quello che ha davvero senso? Ascolti più punti di vista prima di farti un'idea? Come reagisci quando qualcuno critica il tuo modo di fare?`,
   P7: `Prenderti cura di te non è un lusso: è quello che ti permette di esserci. Chiediti: riesci a proteggere il tuo tempo per ricaricarti, anche nei periodi pieni? Ti accorgi dei segnali di stanchezza prima che diventino crisi? Hai piccole abitudini di benessere che mantieni con costanza? Quali sono i tuoi limiti nel servizio, e li fai rispettare?`,
-  P8: `La spiritualità è cercare un senso, con o senza una religione. Chiediti: c'è qualcosa più grande di te, come la natura, la comunità o i tuoi valori, che orienta le tue scelte? Riesci a stare nelle domande senza l'ansia di avere subito una risposta? Fare il capo ha per te un significato più profondo del ruolo? Riesci a trasmettere senso senza imporlo?`,
+  P8: `Conoscersi è il primo passo per educare. Chiediti: sai dire con onestà in cosa sei bravo e dove fai fatica? Accetti un tuo limite senza vergognartene e senza nasconderlo? Ti rispetti abbastanza da dire di no quando è troppo? Quello che pensi di te coincide con quello che ti rimandano gli altri dello staff?`,
   C1: `Comunicare vuol dire esserci, non solo passare informazioni. Chiediti: quando qualcuno ti parla, lo ascolti davvero o stai già pensando a cosa rispondere? Sai cambiare il tuo modo di parlare in base a chi hai davanti? Riesci a dire cose difficili in modo chiaro e rispettoso? Nei conflitti tendi a evitarli, a ingigantirli o a risolverli?`,
   C2: `Le relazioni vanno curate, non date per scontate. Chiediti: con i ragazzi hai relazioni vere o soprattutto legate al ruolo? Riesci a restare nella relazione anche quando è faticosa o scomoda? Sai ricucire dopo una rottura? Dove metti il confine tra essere vicino ai ragazzi e creare dipendenza affettiva?`,
   C3: `Guidare è un servizio, non un potere. Chiediti: quando guidi, lo fai per far crescere gli altri o per affermare te stesso? Sai lasciare il controllo quando qualcun altro è più adatto? Cosa fai quando il gruppo va in una direzione che non condividi? Sai passare dal guidare al sostenere a seconda del momento?`,
-  C4: `Lavorare in staff è una capacità da allenare, non solo adattarsi. Chiediti: il tuo contributo si vede o ti confondi nel gruppo senza lasciare traccia? Sai gestire le tensioni senza evitarle né ingigantirle? Sai valorizzare chi è diverso da te? Cosa fai quando lo staff decide qualcosa con cui non sei d'accordo?`,
-  C5: `Includere è una pratica di ogni giorno, non un bel principio. Chiediti: in Unità c'è qualcuno che fa fatica a entrare davvero? Come reagisci alle differenze che ti mettono in difficoltà? Ti è mai capitato di escludere qualcuno senza accorgertene? Sai creare spazi dove chi sta ai margini trova posto senza dover cambiare chi è?`,
-  C6: `Essere cittadino attivo è un modo di stare al mondo, non un'occasione ogni tanto. Chiediti: leggi con occhio critico quello che succede nella tua città e nel tuo paese? Ti senti uno che cambia le cose o uno che guarda? Come colleghi le attività con i ragazzi a quello che succede fuori? Hai mai promosso un'iniziativa con effetti concreti fuori dalla tua Unità?`,
-  C7: `Programmare è un lavoro da fare insieme. Chiediti: le tue programmazioni partono dai bisogni veri dell'Unità o dalle abitudini? Coinvolgi davvero i ragazzi nel costruire le attività? Sai capire, con criteri concreti, se un percorso ha funzionato? Come usi quello che ti dicono i ragazzi per programmare meglio?`,
-  C8: `Le famiglie sono alleate, non un problema. Chiediti: il confronto con i genitori lo vivi come un aiuto o come una minaccia? Sai spiegare in modo chiaro, senza metterti sulla difensiva, cosa fai con i ragazzi? Hai costruito fiducia con le famiglie della tua Unità? Cosa fai quando un genitore non è d'accordo con te?`,
-  S1: `Il senso del sacro è saper ancora meravigliarsi. Chiediti: riesci ancora a stupirti? Hai momenti in cui ti fermi davanti alla bellezza o al silenzio, senza fretta di capire tutto? Natura, arte, preghiera, meditazione: hai qualcosa che ti fa uscire dal rumore? Come coltivi questi momenti nella tua vita di capo?`,
-  S2: `I valori sono una bussola da vivere, non da dichiarare. Chiediti: i valori che dici di avere guidano davvero le tue scelte di ogni giorno? Ti accorgi di quando fai il contrario di quello che dici? Cosa fai quando i tuoi valori si scontrano con quello che ti chiedono? I ragazzi vedono i tuoi valori in quello che fai, non solo in quello che dici?`,
-  S3: `Mantenere gli impegni dice chi sei. Chiediti: mantieni quello che prometti, all'Unità, allo staff e a te stesso? Cosa fai quando non riesci a mantenere una promessa? I ragazzi possono contare su di te? Hai trovato un equilibrio tra quello che offri e quello che puoi davvero dare?`,
-  S4: `Il servizio è una scelta, non un dovere o un bisogno di sentirti utile. Chiediti: perché sei qui? Quello che ti ha spinto a fare il capo è ancora vivo o è diventato abitudine? Servi perché ti dà senso o perché senza servire temi di non valere abbastanza? Sai fin dove vuoi spingerti nel dare te stesso?`,
-  S5: `La calma interiore è una risorsa per educare. Chiediti: riesci a stare dentro un conflitto senza perdere il tuo centro? Hai una calma che non dipende dal fatto che fuori vada tutto bene? Come resti stabile quando l'Unità o lo staff attraversano momenti agitati? La tua calma è una conquista o un modo per difenderti?`,
-  S6: `Pensare con la tua testa è un atto di fiducia nell'intelligenza. Chiediti: metti in discussione quello che ti chiedono di credere, anche nelle tradizioni scout e nelle cose che dai per scontate? Sai distinguere una tradizione che ha senso da una che è solo abitudine? Come alleni il pensiero libero dove tutti spingono ad adeguarsi?`,
+  C4: `Includere è una pratica di ogni giorno, non un bel principio. Chiediti: in Unità c'è qualcuno che fa fatica a entrare davvero? Come reagisci alle differenze che ti mettono in difficoltà? Ti è mai capitato di escludere qualcuno senza accorgertene? Sai creare spazi dove chi sta ai margini trova posto senza dover cambiare chi è?`,
+  C5: `Le regole servono a proteggere i diritti di tutti. Chiediti: rispetti le regole dell'associazione anche quando nessuno guarda o quando sono scomode? Le applichi allo stesso modo con tutti i ragazzi, anche con chi ti sta più simpatico? Sai spiegare il senso di una regola invece di imporla? Quando una regola ti sembra ingiusta, la discuti nelle sedi giuste o la ignori?`,
+  C6: `L'ambiente si cura soprattutto con le abitudini. Chiediti: a campi e uscite vivi tu per primo i comportamenti che chiedi ai ragazzi (rifiuti, acqua, sprechi, mezzi di trasporto)? Lasci la sede e i luoghi meglio di come li hai trovati? Nella vita di tutti i giorni fai scelte coerenti con quello che dici? Riesci a parlarne senza fare prediche?`,
+  C7: `Essere cittadino attivo è un modo di stare al mondo, non un'occasione ogni tanto. Chiediti: leggi con occhio critico quello che succede nella tua città e nel tuo paese? Ti senti uno che cambia le cose o uno che guarda? Come colleghi le attività con i ragazzi a quello che succede fuori? Hai mai promosso un'iniziativa con effetti concreti fuori dalla tua Unità?`,
+  C8: `Promuovere una causa vuol dire informarsi, scegliere e agire con altri. Chiediti: c'è una causa che ti sta davvero a cuore, e cosa fai per lei? Prima di prendere posizione ti informi da fonti diverse? Sai coinvolgere altri senza imporre le tue idee? Sai distinguere tra aiutare i ragazzi a farsi un'opinione e passargli la tua?`,
+  S1: `Il tuo percorso è un filo che attraversa il tempo. Chiediti: sai raccontare la tua storia di capo: perché sei arrivato qui, cosa hai imparato, dove vuoi andare? Riesci a vedere le difficoltà come parte della tua crescita, non solo come errori? Come usi le esperienze passate in quello che fai oggi? Qual è la domanda più importante a cui cerchi di rispondere con il tuo servizio?`,
+  S2: `Le tue radici dicono qualcosa di te. Chiediti: conosci la storia e le tradizioni da cui vieni, in famiglia e nel posto in cui vivi? Ne sei consapevole senza chiuderti? Quando incontri qualcuno con una cultura diversa sei curioso o ti metti sulla difensiva? Ti accorgi dei tuoi pregiudizi, anche piccoli?`,
+  S3: `Il senso del sacro è saper ancora meravigliarsi. Chiediti: riesci ancora a stupirti? Hai momenti in cui ti fermi davanti alla bellezza o al silenzio, senza fretta di capire tutto? Natura, arte, preghiera, meditazione: hai qualcosa che ti fa uscire dal rumore? Come coltivi questi momenti nella tua vita di capo?`,
+  S4: `Entrare in contatto con il mondo interiore degli altri chiede ascolto e rispetto. Chiediti: conosci davvero le persone del tuo staff, oltre al ruolo? Sai stare vicino a chi sta male senza dover subito risolvere? Lasci spazio perché anche gli altri ti conoscano? Sai riconoscere quando qualcosa è troppo grande per te e serve chiedere aiuto?`,
+  S5: `I valori sono una bussola da vivere, non da dichiarare. Chiediti: i valori che dici di avere guidano davvero le tue scelte di ogni giorno? Ti accorgi di quando fai il contrario di quello che dici? Cosa fai quando i tuoi valori si scontrano con quello che ti chiedono? I ragazzi vedono i tuoi valori in quello che fai, non solo in quello che dici?`,
+  S6: `Mantenere gli impegni dice chi sei. Chiediti: mantieni quello che prometti, all'Unità, allo staff e a te stesso? Cosa fai quando non riesci a mantenere una promessa? I ragazzi possono contare su di te? Hai trovato un equilibrio tra quello che offri e quello che puoi davvero dare?`,
   S7: `La speranza è guardare al futuro in modo attivo. Chiediti: credi che quello che fai cambi qualcosa, anche poco? Come resti motivato quando non vedi risultati? Sai distinguere l'ottimismo di facciata da una speranza che ha passato anche il dubbio? Come mostri ai ragazzi che un futuro diverso è possibile, senza essere né ingenuo né cinico?`,
-  S8: `Il tuo percorso è un filo che attraversa il tempo. Chiediti: sai raccontare la tua storia di capo: perché sei arrivato qui, cosa hai imparato, dove vuoi andare? Riesci a vedere le difficoltà come parte della tua crescita, non solo come errori? Come usi le esperienze passate in quello che fai oggi? Qual è la domanda più importante a cui cerchi di rispondere con il tuo servizio?`
+  S8: `La spiritualità è cercare un senso, con o senza una religione. Chiediti: c'è qualcosa più grande di te, come la natura, la comunità o i tuoi valori, che orienta le tue scelte? Riesci a stare nelle domande senza l'ansia di avere subito una risposta? Fare il capo ha per te un significato più profondo del ruolo? Riesci a trasmettere senso senza imporlo?`
 };
 
 // ══════════════════════════════════════════════════════════════════
@@ -1745,10 +1746,10 @@ C4: `Guarda come vive le differenze nello staff e nell'Unità: le cerca come una
 C5: `Guarda se applica le regole dell'associazione con coerenza, anche quando è scomodo: anche se il ragazzo che le infrange è simpatico o il genitore che protesta è influente. Se la regola non è chiara, improvvisa, chiede o decide con buon senso? Un segnale importante: se una regola le sembra ingiusta, ne parla nei posti giusti (staff, CdG, strutture) o la aggira in silenzio? Nota se spiega ai ragazzi il perché delle regole, invece di pretenderle e basta. Un segnale chiaro: fa lei per prima quello che chiede ai ragazzi (puntualità, cura del materiale e degli spazi), o c'è un doppio standard?`,
 C6: `Guarda questa persona a campi e uscite: i comportamenti sostenibili che propone li vive anche lei ogni giorno, o c'è distanza tra quello che dice e quello che fa? Quando essere sostenibili costa tempo, comodità o fatica organizzativa, resta coerente o sceglie la via più veloce? Un segnale importante: si accorge dell'impatto del gruppo sull'ambiente? Lascia i posti meglio di come li ha trovati, o non ci fa caso? Guarda anche il rapporto col territorio: conosce il posto in cui vive l'Unità, ha contatti con le realtà locali, o lo scoutismo resta chiuso in sé stesso?`,
 C7: `Guarda se conosce la comunità in cui vive l'Unità (il quartiere, le famiglie, le associazioni del posto) o se lavora in una bolla scout. Le imprese che progetta lasciano qualcosa di concreto alla comunità, o contano solo per chi le vive? Nota se sa creare rapporti con chi è fuori dallo scoutismo (Comune, altre associazioni, famiglie) con naturalezza e idee, o lo vive come una formalità. Un segnale importante: chiede ai ragazzi di capire cosa serve al territorio, o decide da sola cosa è utile fare? Guarda anche se sa raccontare il valore del suo lavoro a chi non conosce lo scoutismo.`,
-C8: `Guarda come sta con i genitori nei giorni normali, non solo nelle crisi. Sa spiegare il senso di quello che fa, oltre agli orari e alla logistica? Se un genitore è preoccupato, critico o in disaccordo, risponde con apertura e chiarezza, si mette sulla difensiva, o resta freddo e distante? Nota se coinvolge le famiglie nel percorso educativo o manda solo comunicati. Un segnale chiaro: sa distinguere il suo ruolo da quello del genitore, tenendo il confine senza alzare muri? Guarda anche come parla dei genitori in riunione di staff: con rispetto e curiosità, o con giudizi che chiudono la porta alla collaborazione?`,
+C8: `Guarda come prende posizione su un tema che le sta a cuore: si informa da fonti diverse o ripete slogan? Nota se sa coinvolgere altri (staff, ragazzi, realtà del territorio) o se porta avanti le sue battaglie da sola. Un segnale chiaro: sa aiutare i ragazzi a farsi un'opinione loro, senza passargli la sua? Guarda anche se, quando un'Unità sceglie una causa, la segue nel tempo o si accende e poi la lascia cadere.`,
 S1: `Guarda se sa chi è come educatore: se alla domanda "perché faccio questo?" risponde con qualcosa di più di "mi piace stare coi ragazzi". In riunione di staff porta un punto di vista suo o si accoda all'opinione più forte? Nota se quello che dice di credere si vede nelle scelte concrete: chi sei come educatore si vede nelle piccole decisioni di ogni giorno, non nei bei discorsi. Un segnale chiaro: nei momenti difficili (un'attività che non va, un conflitto nello staff, una critica) resta salda o si sgretola? Guarda anche come usa la sua storia scout: come spunto per riflettere, o come scusa per fare sempre come ha sempre fatto?`,
 S2: `Guarda come si rapporta con ragazzi e famiglie di cultura diversa dalla sua: c'è curiosità vera, gentilezza di facciata, o un disagio che non ha mai affrontato? Nota se nelle attività che propone c'è spazio per storie e punti di vista diversi da quello più comune nel gruppo, o se tutto riflette un solo modo di vedere. Un segnale importante: sa che anche il suo punto di vista è parziale, non valido per tutti? Guarda come gestisce le differenze di religione, lingua o famiglia quando vengono fuori: ne parla con naturalezza, le evita per non creare imbarazzo, o le usa come occasione educativa?`,
-S3: `Guarda questa persona quando lo scoutismo chiede un sacrificio vero (un weekend pesante, una decisione scomoda, un compito poco gratificante): lo fa con spirito di servizio o con fastidio mal nascosto? Nota se nello staff c'è sempre e ci si può contare, o se la sua presenza va e viene con l'entusiasmo. Un segnale importante: fa le cose che nessuno vede (logistica, cura dei dettagli, presenza nei momenti meno visibili) o si fa vedere soprattutto quando c'è pubblico? Guarda anche come racconta il suo impegno scout a chi è fuori: con orgoglio e chiarezza, con imbarazzo, o sminuendo quanto è profonda l'esperienza?`,
+S3: `Guarda questa persona a uscite e campi: si ferma a guardare un paesaggio, un cielo stellato, un animale, o è sempre presa dalla logistica? Nota se crea momenti di silenzio e di stupore per i ragazzi o se la natura resta solo uno sfondo. Un segnale importante: sa far nascere domande davanti a quello che si vede, senza spiegare tutto subito? Guarda anche come tratta i luoghi: li vive con rispetto e cura, o come un posto da usare?`,
 S4: `Guarda come crea legami nello staff: conosce i colleghi oltre il ruolo, sa cosa conta per loro, cosa li preoccupa, cosa li motiva fuori dallo scoutismo? Quando un collega è in difficoltà, gli sta vicino davvero, resta così discreta da diventare distante, o offre un aiuto di facciata che non arriva? Nota se sa anche ricevere cura: accetta aiuto con naturalezza o lo vive come una debolezza? Un segnale chiaro: grazie allo scoutismo nascono amicizie vere, o i rapporti restano solo di servizio? Guarda anche il rapporto con i singoli ragazzi: va oltre il "come stai?" di rito, sa creare momenti di contatto vero?`,
 S5: `Guarda questa persona quando i valori scout costano qualcosa: essere corretta quando sarebbe comodo fare i furbi, coerente quando sarebbe facile fare un'eccezione, semplice quando potrebbe mettersi in mostra. Nota se i valori che dichiara si vedono nelle piccole scelte di ogni giorno: come usa il materiale comune, come parla dei colleghi assenti, come gestisce i soldi del Gruppo. Un segnale chiaro: se un educatore dello staff va contro i valori dell'associazione, lo dice (nei posti giusti, con coraggio) o tace per evitare il conflitto? Guarda anche Legge e Promessa: sono strumenti vivi del suo lavoro educativo o formule da recitare?`,
 S6: `Guarda come reagisce quando un'attività che ha condotto non è andata: capisce cosa è dipeso da lei e cosa no, senza cercare colpevoli e senza flagellarsi? In riunione di staff sa dire "ho sbagliato" con semplicità, senza drammi, o non ci arriva mai? Nota se vede da sola cosa c'è da fare e lo fa, o aspetta sempre che qualcuno glielo chieda. Un segnale chiaro: quando le cose vanno male cerca soluzioni o cerca colpevoli? Guarda anche le decisioni difficili: le prende con coraggio quando serve, le rimanda, o le lascia sempre a chi ha più autorità?`,
@@ -1820,23 +1821,23 @@ const LAYER_CUCG = {
   },
   C5: {
     fascia: 'tutte',
-    cu: 'La parte più difficile è mantenere l\'impegno di un progetto nel tempo. In Branca L tocca al Capo ricordarlo e stimolarlo con segni visibili. In Branca E aiuta i capi del piccolo gruppo a ricordare l\'impegno preso ai loro compagni. In Branca R è il piccolo gruppo stesso a trovare il modo di tenere vivo l\'impegno.',
+    cu: 'Le regole si capiscono quando si vivono, non quando si spiegano. Coinvolgi i ragazzi nel costruirle e nel rivederle, nel consiglio della tua Unità. Quando una regola viene infranta, chiedi il perché prima di sanzionare. E fai vedere che i diritti valgono anche fuori: a scuola, in quartiere, verso chi è più debole.',
     cg: 'Il CG controlla che i valori dichiarati del Gruppo corrispondano a quello che si fa davvero. Almeno una volta all\'anno, dedica una riunione di CdG ai valori, non all\'organizzazione. Come gestiamo le regole nelle Unità? Come reagiamo quando un ragazzo le infrange? Ci sono regole non scritte di cui non abbiamo mai parlato? Non è filosofia: è evitare incoerenze che i ragazzi notano sempre, anche quando gli adulti pensano di no.'
   },
   C6: {
     fascia: 'tutte',
-    cu: 'La cura dell\'ambiente comincia dalla sede. Organizza turni di pulizia. Aiuta staff e ragazzi a lasciare materiali e spazi puliti, in ordine e "vivibili" per tutti. Quello che si impara ogni giorno in sede si porta nelle uscite e nei campi.',
+    cu: 'La parte più difficile è mantenere l\'impegno di un progetto nel tempo. In Branca L tocca al Capo ricordarlo e stimolarlo con segni visibili. In Branca E aiuta i capi del piccolo gruppo a ricordare l\'impegno preso ai loro compagni. In Branca R è il piccolo gruppo stesso a trovare il modo di tenere vivo l\'impegno.',
     cg: 'Curare la sede è educazione prima ancora che gestione. Mettila nel Piano di Gruppo, nella minima entità gestionale, con responsabili precisi e verifiche in CdG. Ma vai oltre la sede. Quando approvi la logistica di campi e uscite, chiedi alle Unità come pensano all\'ambiente: come gestiscono i rifiuti, come lasciano il posto. Se lo chiedi sempre, nasce una cultura di Gruppo che arriva alle Unità senza doverla ripetere ogni anno.'
   },
   C7: {
     fascia: 'LER',
     cu: 'In Branca L ed E dai occasioni per conoscere il mondo intorno e l\'attualità, con attività in cui ci si informa con il tuo aiuto o da soli. In Branca R spingi i ragazzi a partecipare alla vita del quartiere o della città: conferenze, dibattiti, consulte, marce, fiaccolate. Cura che l\'immagine che i ragazzi danno di voi fuori sia sempre positiva.',
-    cg: 'Il CG è il collegamento stabile tra Gruppo e territorio, non solo ogni tanto. Nel Piano di Gruppo, nella minima entità territoriale, scrivi con quali realtà locali vuoi creare o tenere rapporti: enti, associazioni, istituzioni. Quando un\'Unità propone un\'impresa rivolta all\'esterno, controlla che ci sia davvero qualcuno sul territorio con cui farla. Porta in CdG le notizie dalla Sezione e dal Consiglio di Sezione: i capi che si sentono parte dell\'associazione sono più motivati e trasmettono meglio il senso civico ai ragazzi.'
+    cg: 'Il CG è il collegamento stabile tra Gruppo e territorio, non solo ogni tanto. Nel Piano di Gruppo, nella minima entità territoriale, scrivi con quali realtà locali vuoi creare o tenere rapporti: enti, associazioni, istituzioni. Quando un\'Unità partecipa a eventi esterni, avvisa la dirigenza di Sezione e cura che l\'immagine che i ragazzi danno di voi sia sempre positiva. Porta in CdG le notizie dalla Sezione: i capi che si sentono parte dell\'associazione trasmettono meglio il senso civico ai ragazzi.'
   },
   C8: {
     fascia: 'tutte',
     cu: 'Fare advocacy, cioè sostenere una causa, non è solo attivismo. Si parte dal conoscere bene un tema, ci si fa un\'opinione propria e poi si sceglie con consapevolezza cosa sostenere. Aiuta i ragazzi a scegliere cause in linea con i loro valori e a fare azioni concrete, non solo dichiarazioni.',
-    cg: 'Il CG è il collegamento tra Gruppo e territorio, ed è un compito stabile. Quando un\'Unità avvia un\'impresa rivolta all\'esterno, assicurati che il Gruppo abbia già rapporti con le realtà locali con cui collaborare. Non improvvisare all\'ultimo momento: mettili nel Piano di Gruppo come obiettivo della minima entità territoriale. Ricordati di avvisare la dirigenza di Sezione degli eventi esterni e cura che l\'immagine che i ragazzi danno di voi sia sempre positiva.'
+    cg: 'Promuovere una causa vuol dire fare rete: da soli si cambia poco. In CdG chiedi quali cause stanno a cuore alle Unità e se ce n\'è una che il Gruppo può sostenere insieme, con altre associazioni del territorio. Controlla che le Unità aiutino i ragazzi a informarsi e a farsi un\'opinione loro, non a ripetere quella degli adulti. E aiuta i capi a tenere vivo l\'impegno nel tempo: una causa abbandonata dopo un mese insegna il contrario.'
   },
   S1: {
     fascia: 'tutte',
@@ -2198,7 +2199,7 @@ const CU_BRANCA = {
 },
 "C7": {
 "notare": "Quanto conoscono quartiere, scuola e città. Chi partecipa a qualcosa fuori dallo scautismo, come consulte o associazioni, e chi ne resta lontano.",
-"attenzione": "Tenere la Compagnia chiusa in sede. E portarla a una manifestazione senza esserti confrontato prima con il Capo Gruppo.",
+"attenzione": "Tenere la Compagnia chiusa in sede. E portarla a una manifestazione senza esserti confrontato prima con il VCC, se c'è, e con il Capo Gruppo.",
 "spunto": "Controllate che nel programma trimestrale ci sia sempre l'Area Sociale. Scegliete un evento pubblico da vivere insieme. Dopo chiedi: cosa possiamo fare noi, adesso, per la nostra città?"
 },
 "C8": {
@@ -2223,7 +2224,7 @@ const CU_BRANCA = {
 },
 "S4": {
 "notare": "Chi in Compagnia si apre davvero e chi resta in superficie. Come ascoltano chi racconta qualcosa di difficile.",
-"attenzione": "Avere fretta di risolvere quando qualcuno si apre: serve uno spazio senza giudizi. Se emerge qualcosa troppo grande per lo scautismo, parlane con il Capo Gruppo.",
+"attenzione": "Avere fretta di risolvere quando qualcuno si apre: serve uno spazio senza giudizi. Se emerge qualcosa troppo grande per lo scautismo, parlane con il VCC, se c'è, e con il Capo Gruppo.",
 "spunto": "Prova un Fuoco Rover sul tema \"le radici\": ognuno porta un oggetto o una canzone che lo racconta. Oppure il \"libro della vita\": titolo e copertina della propria storia."
 },
 "S5": {
@@ -2458,7 +2459,10 @@ function modalClose(){ const ov=document.getElementById('g-modal'); if(ov) ov.cl
 
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, contratto)']];
-function staffTab(){ const pp=scheda.pp||(scheda.pp={}); if(!Array.isArray(pp.staffTab)) pp.staffTab=['CU','VCU','VCU','SiS','CG'].map(r=>({ruolo:r})); return pp.staffTab; }
+function staffTab(){ const pp=scheda.pp||(scheda.pp={});
+  if(Array.isArray(pp.staffTab)){ const t=pp.staffTab, emp=t.every(r=>Object.keys(r).every(k=>k==='ruolo'||!String(r[k]||'').trim())), rl=t.map(r=>r.ruolo).join(',');
+    if(emp && FASCIA==='R' && rl==='CU,VCU,VCU,SiS,CG') pp.staffTab=null; else if(emp && FASCIA!=='R' && rl==='CC,VCC,CG') pp.staffTab=null; }
+  if(!Array.isArray(pp.staffTab)) pp.staffTab=(FASCIA==='R'?['CC','VCC','CG']:['CU','VCU','VCU','SiS','CG']).map(r=>({ruolo:r})); return pp.staffTab; }
 function staffTabSet(i,k,v){ const t=staffTab(); if(t[i]){ t[i][k]=v; saveDataDebounced(); } }
 function staffTabAdd(){ staffTab().push({ruolo:''}); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 function staffTabDel(i){ staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
@@ -2878,6 +2882,7 @@ function loadSaved() {
       if(d.scheda.idrRaggiunto) scheda.idrRaggiunto = d.scheda.idrRaggiunto;
       if(d.scheda.idrComp) scheda.idrComp = d.scheda.idrComp;
       if(d.scheda.valCompl) scheda.valCompl = d.scheda.valCompl;
+      if(d.scheda.riobs) scheda.riobs = d.scheda.riobs;
       if(d.scheda.pp) scheda.pp = Object.assign({nome:'',sezione:'',tutor:'',ctxTerr:'',ctxSez:'',occasioni:'',condizioni:'',scelta:'',kosDone:{}}, d.scheda.pp);
       if(d.scheda._p2Seen) scheda._p2Seen = true;
       if(d.scheda.chkPP) scheda.chkPP = Object.assign({partecipante:'',formatore:'',rev:'01',items:{}}, d.scheda.chkPP);
@@ -2964,7 +2969,7 @@ function confirmReset(){
     ],
     percorsiExtra:[],
     idrRaggiunto:{},
-    idrComp:{}, valCompl:{},
+    idrComp:{}, valCompl:{}, riobs:{},
     pp:{nome:'', sezione:'', tutor:'', ctxTerr:'', ctxSez:'', occasioni:'', condizioni:'', scelta:'', kosDone:{}},
     chkPP:{partecipante:'',formatore:'',rev:'01',items:{}}
   };
@@ -5386,7 +5391,7 @@ function buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP){
       S7: {
         L: 'In questa fascia il futuro è lontano e vago. Lavora sul presente: piccoli obiettivi raggiungibili, festeggiare i progressi, fiducia in quello che sanno fare.',
         E: 'Aiutali a distinguere cosa si aspettano gli altri da cosa vogliono loro. Fai domande concrete: "Cosa ti piace davvero fare? Quando ti senti più te stesso?" Non dare risposte: aiutali a trovarle.',
-        R: 'In questa fascia il progetto di vita diventa urgente. La Riflessione sul Cammino e la Carta di Compagnia sono strumenti preziosi: usali davvero, non come pratiche da sbrigare.'
+        R: 'In questa fascia il progetto di vita diventa urgente. Le Riflessioni sul Cammino e la Carta di Compagnia sono strumenti preziosi: usali davvero, non come pratiche da sbrigare.'
       },
       S8: {
         L: 'In questa fascia le grandi domande sono semplici ma sincere. Accoglile sempre, anche se non sai rispondere. Un "non lo so" detto con onestà è un ottimo esempio.',
@@ -5896,10 +5901,10 @@ const STRUM_BRANCA = {
     ['Uscita','Campo estivo'],
     ['Servizio']],
   R: [
-    ['Legge','Promessa','Motto','Carta di Compagnia','Percorso Promessa','Rinnovo della Promessa'],
-    ['Progressione Personale Verticale (Specchio, Riflessione sul Cammino, Firma della Carta di Compagnia)','Progressione Orizzontale','Ronda Esecutiva',"Ronda d'Interesse","Ronda d'Azione",'E.P.I.','Progetto di Interesse','Inchiesta Rover','Percorso Partenza','Partenza','Corso di Introduzione al Roverismo','Settimana di Convivenza'],
+    ['Legge','Promessa','Motto','Carta di Compagnia','Percorso Promessa','Rinnovo Promessa'],
+    ['Progressione Personale Verticale (Attività Specchio, Riflessioni sul Cammino, Firma della Carta di Compagnia)','Progressione Orizzontale','Ronda Esecutiva',"Ronda d'Interesse","Ronda d'Azione",'EPI','Progetto di Interesse','Inchiesta Rover','Percorso Partenza','Partenza','Corso di Introduzione al Roverismo','Settimana di Convivenza'],
     ['Compagnia','Consiglio di Compagnia'],
-    ['Forcola','Grido di Compagnia','Saluto','Forcola di Compagnia','Saluto con la forcola','Uniforme','Distintivi','Omerale di Compagnia','Cerimonia del Rinnovo della Promessa','Encomi'],
+    ['Forcola','Grido di Compagnia','Saluto','Forcola di Compagnia','Saluto con la forcola','Uniforme','Distintivi','Omerale di Compagnia','Cerimonia del Rinnovo Promessa','Encomi'],
     ['Autoprogrammazione Rover'],
     ['Hike','Estate Rover'],
     ['Servizio','Rover in Servizio']]
@@ -5939,13 +5944,13 @@ const ATT_TIPI = {
       ['Altro',['Altro']]],
   R: [['Strada e aria aperta',['Hike','Settimana di convivenza','Campo invernale / Pasqua Rover','Estate Rover']],
       ['Servizio',['Servizio di Compagnia','Servizio extra-associativo','Rover in Servizio']],
-      ['Ronde e progetti',['Ronda Esecutiva','Ronda d’Interesse','Ronda d’Azione','Inchiesta Rover','Progetto di Interesse','E.P.I.','Officine']],
-      ['Strumenti di Compagnia',['Consiglio di Compagnia','Carta di Compagnia','Autoprogrammazione','Specchio','Riflessione sul Cammino','Percorso Partenza','Rinnovo della Promessa']],
+      ['Ronde e progetti',['Ronda Esecutiva','Ronda d’Interesse','Ronda d’Azione','Inchiesta Rover','Progetto di Interesse','EPI','Officine Rover']],
+      ['Strumenti di Compagnia',['Consiglio di Compagnia','Carta di Compagnia','Autoprogrammazione','Attività Specchio','Riflessioni sul Cammino','Percorso Partenza','Rinnovo Promessa']],
       ['Spirito e confronto',['Veglia','Fuoco Rover','Momento spirituale','Incontro con testimoni / esperti']],
       ['Rielaborazione',['Verifica','Rielaborazione (cognitiva ed emotiva)']],
       ['Altro',['Altro']]]
 };
-function attGet(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per) return null; if(!per.attivita) per.attivita=[]; while(per.attivita.length<=aidx) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); return per.attivita[aidx]; }
+function attGet(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per) return null; nomiMigra(per); if(!per.attivita) per.attivita=[]; while(per.attivita.length<=aidx) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); return per.attivita[aidx]; }
 function attTipiLabel(a){ const t=(a&&a.tipi)||[]; return t.map(x=>x==='Altro'?((a.tipoAltro||'').trim()||'Altro'):x); }
 function attTipiSelHTML(a){ const l=attTipiLabel(a);
   if(!l.length) return `<div style="font-size:11px;color:var(--ink-faint);margin:2px 0 4px">Nessun tipo scelto (facoltativo): serve solo a darti qualche idea.</div>`;
@@ -5998,7 +6003,10 @@ function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''
     : `<span style="font-size:11px;color:var(--ink-faint);margin-left:6px">ripresa dalla Sezione 2 · cambiala se il percorso dura meno</span>`;
   const old=t.txt&&t.own?`<div style="font-size:11px;color:var(--ink-mid);margin-top:4px">Indicata in precedenza: ${sEsc(t.txt)}</div>`:'';
   return `<span style="font-size:12px">da </span>${tmSelHTML(t.dal,`(function(p,v){percTempoSet(${idx},'dal',p,v)})`)}<span style="font-size:12px"> a </span>${tmSelHTML(t.al,`(function(p,v){percTempoSet(${idx},'al',p,v)})`)}${note}${warn?`<div style="font-size:11px;color:#8A5300;margin-top:4px">${warn}</div>`:''}${old}`; }
-function strumList(per){ const L=STRUM_BRANCA[FASCIA]||[]; const sel=per.strumSel||{}; const out=[];
+const NOMI_MANUALE={'Specchio':'Attività Specchio','Riflessione sul Cammino':'Riflessioni sul Cammino','E.P.I.':'EPI','Officine':'Officine Rover','Rinnovo della Promessa':'Rinnovo Promessa','Cerimonia del Rinnovo della Promessa':'Cerimonia del Rinnovo Promessa','Progressione Personale Verticale (Specchio, Riflessione sul Cammino, Firma della Carta di Compagnia)':'Progressione Personale Verticale (Attività Specchio, Riflessioni sul Cammino, Firma della Carta di Compagnia)'};
+function nomiMigra(per){ const s=per&&per.strumSel; if(s) Object.keys(s).forEach(k=>{ const n=NOMI_MANUALE[k]; if(n){ if(!(n in s)) s[n]=s[k]; delete s[k]; } });
+  (per&&per.attivita||[]).forEach(a=>{ if(a&&Array.isArray(a.tipi)) a.tipi=a.tipi.map(t=>NOMI_MANUALE[t]||t); }); }
+function strumList(per){ nomiMigra(per); const L=STRUM_BRANCA[FASCIA]||[]; const sel=per.strumSel||{}; const out=[];
   L.forEach((items,g)=>items.forEach(it=>{ if(it in sel) out.push({g:STRUM_GRUPPI[g], s:it, n:sel[it]||''}); }));
   Object.keys(sel).forEach(k=>{ if(!out.some(o=>o.s===k)) out.push({g:'', s:k, n:sel[k]||''}); });
   return out; }
@@ -6136,7 +6144,7 @@ function renderSchedaCtx(root){
     <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
     <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Unità, rapporti con il Consiglio di Gruppo…</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
-    <div style="font-size:11px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span></div>
+    <div style="font-size:11px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">${FASCIA==='R'?'Adulti in Compagnia <span style="font-weight:400;color:var(--ink-faint)">— in Compagnia non c\'è un vero staff: di solito ci sei tu (CC) e, se c\'è, il VCC. Esperienza, formazione e disponibilità; aggiungi o togli righe</span>':'Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span>'}</div>
     <div style="font-size:11px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (tutor, Capo Gruppo, Commissario di Sezione). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).</div>
     <div id="staff-tab">${staffTabHTML()}</div>
     <div style="font-size:12px;font-weight:800;margin:18px 0 2px;color:var(--ink)">Osservazione con il Kit di Osservazione e Scoperta (KOS 2.0)</div>
@@ -7141,13 +7149,29 @@ function ppSpuntiInner(pid,idxs){
   const n=vals.length, s=vals.filter(v=>v==='spontaneo').length, st=vals.filter(v=>v==='stimolato').length, no=vals.filter(v=>v==='no').length;
   const k = s===n||(s>n/2&&!no) ? 'A' : (no===n||no>n/2) ? 'C' : (st===n||st>n/2) ? 'B' : 'D';
   const sp=PP5_SPUNTI[k];
-  return `<div class="pp5sp"><div class="pp5sp-tag">Uno spunto per la valutazione · ${sp.t}</div><div>${sp.b}</div>
-    <div class="pp5sp-extra"><strong>Per restare sul pezzo</strong> (facoltativo, non serve per il Progetto Personale): tra qualche settimana riosserva questo percorso con la scala 1–10 della scheda di osservazione e confrontalo con il punteggio di partenza.</div></div>`;
+  return `<div class="pp5sp"><div class="pp5sp-tag">Uno spunto per la valutazione · ${sp.t}</div><div>${sp.b}</div></div>`;
+}
+// "Da dove sei partito, dove sei arrivato": confronto facoltativo con il punteggio della 1.2 (non va nel Word)
+function riobsDelta(pid){
+  const v0=obs[pid], a=(v0&&v0!=='n')?Number(v0)||0:0, b=Number(((scheda.riobs||{})[pid])||0);
+  if(!a) return '<span style="color:var(--ink-faint)">Non avevi osservato questo percorso nella scheda di osservazione, quindi manca il punto di partenza.</span>';
+  if(!b) return '<span style="color:var(--ink-faint)">Scegli il punteggio di oggi per vedere il cammino fatto.</span>';
+  const d=b-a, col=d>0?'#2E7D32':d<0?'#C77700':'var(--ink-mid)';
+  return `da <strong>${thresholdLabel(obsToThreshold(a))} (${a})</strong> a <strong>${thresholdLabel(obsToThreshold(b))} (${b})</strong>: <strong style="color:${col}">${d>0?'+'+d:d===0?'stesso livello':d}</strong>`+(d<=0?' <span style="color:var(--ink-faint)">— non è un fallimento: a volte vuol dire che ora guardi meglio.</span>':'');
+}
+function riobsSet(pid,v){ if(!scheda.riobs) scheda.riobs={}; if(v) scheda.riobs[pid]=Number(v); else delete scheda.riobs[pid]; saveDataDebounced(); const el=document.getElementById('riobs-d-'+pid); if(el) el.innerHTML=riobsDelta(pid); }
+function riobsHTML(pid){
+  const v0=obs[pid], a=(v0&&v0!=='n')?Number(v0)||0:0, b=Number(((scheda.riobs||{})[pid])||0);
+  return `<div class="riobs"><div class="pp5sp-tag">Da dove sei partito, dove sei arrivato</div>
+    <div class="riobs-row"><span class="riobs-l">Partenza</span><span>${a?`${thresholdLabel(obsToThreshold(a))} (${a}) <span style="color:var(--ink-faint)">· dalla scheda di osservazione</span>`:'<span style="color:var(--ink-faint)">non osservato</span>'}</span></div>
+    <div class="riobs-row"><span class="riobs-l">Oggi</span><select class="obs-select" style="font-size:12px;min-width:170px" onchange="riobsSet('${pid}',this.value)"><option value="">— Riosserva (1–10) —</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${b===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select></div>
+    <div class="riobs-row"><span class="riobs-l">Il cammino</span><span id="riobs-d-${pid}">${riobsDelta(pid)}</span></div>
+    <div class="pp5sp-extra">Facoltativo, non serve per il Progetto Personale: ti aiuta a restare sul pezzo e a guardare oltre questo percorso. Il confronto ha senso se a riosservare sono le stesse persone, in situazioni simili a quelle di partenza.</div></div>`;
 }
 function ppSpuntiRefresh(pid){ const el=document.getElementById('pp5sp-'+pid); if(el) el.innerHTML=ppSpuntiInner(pid,JSON.parse(el.dataset.idx||'[]')); }
 function ppComplessivaHTML(pid,idxs){
   return `<div id="pp5sp-${pid}" data-idx='${JSON.stringify(idxs||[])}'>${ppSpuntiInner(pid,idxs)}</div><div style="margin-top:14px"><label style="${SC_LBL}">Valutazione complessiva <span style="font-weight:400;color:var(--ink-faint)">— hai raggiunto l'obiettivo? Perché? Che cosa riproporresti o modificheresti?</span></label>
-    <textarea style="${SC_TA};min-height:78px" oninput="if(!scheda.valCompl)scheda.valCompl={};scheda.valCompl['${pid}']=this.value;saveDataDebounced();ppRefreshReady()">${sEsc((scheda.valCompl||{})[pid])}</textarea></div>`;
+    <textarea style="${SC_TA};min-height:78px" oninput="if(!scheda.valCompl)scheda.valCompl={};scheda.valCompl['${pid}']=this.value;saveDataDebounced();ppRefreshReady()">${sEsc((scheda.valCompl||{})[pid])}</textarea></div>`+riobsHTML(pid);
 }
 
 
@@ -7718,6 +7742,11 @@ function htmlToParas(html){
   walk(doc.body, {});
   return out;
 }
+function docFooterText(){
+  const pp=scheda.pp||{}; const g=String(pp.gruppo||'').trim();
+  const parts=[(pp.nome||'').trim(), (pp.sezione||'').trim(), (g&&g!=='unico')?grpLabel(g):'', (MODE==='giovani'&&FASCIA)?'Branca '+FASCIA:'', 'PEE CNGEI'];
+  return parts.filter(Boolean).join(' - ');
+}
 function dDocument(children, headerText){
   const D = dxLib();
   return new D.Document({
@@ -7727,9 +7756,9 @@ function dDocument(children, headerText){
     sections:[{
       properties:{page:{size:{width:11906, height:16838}, margin:{top:1134, bottom:1134, left:1134, right:1134}}},
       headers:{default:new D.Header({children:[dPara((UNIT_NAME?UNIT_NAME+' · ':'')+headerText,{size:15, color:'999999', align:'right', after:0})]})},
-      footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER, children:[
-        new D.TextRun({text:'PEE CNGEI · pagina ', font:MF, size:15, color:'999999'}),
-        new D.TextRun({children:[D.PageNumber.CURRENT], font:MF, size:15, color:'999999'})
+      footers:{default:new D.Footer({children:[new D.Paragraph({tabStops:[{type:D.TabStopType.RIGHT, position:9638}], children:[
+        new D.TextRun({text:docFooterText(), font:MF, size:15, color:'999999'}),
+        new D.TextRun({children:[(D.Tab?new D.Tab():'\t'), D.PageNumber.CURRENT], font:MF, size:15, color:'999999'})
       ]})]})},
       children
     }]
@@ -7788,7 +7817,7 @@ async function exportPPDocx(mode){
   ch.push(dH3('Contesto territoriale')); ch.push(...dMulti(pp.ctxTerr));
   ch.push(dH3('Contesto Sezione e Gruppo')); ch.push(...dMulti(pp.ctxSez));
   { const st=(pp.staffTab||[]).filter(r=>STAFF_TAB_COLS.some(c=>c[0]!=='ruolo'&&T_(r[c[0]])));
-    if(st.length){ ch.push(dPara('Adulti in staff',{size:19,bold:true,before:80,after:40}));
+    if(st.length){ ch.push(dPara(FASCIA==='R'?'Adulti in Compagnia':'Adulti in staff',{size:19,bold:true,before:80,after:40}));
       const ws=[900,1100,600,1050,1300,1200,1050,1050]; ws.push(CW-ws.reduce((a,b)=>a+b,0));
       ch.push(dGridTable(STAFF_TAB_COLS.map(c=>c[1]), st.map(r=>STAFF_TAB_COLS.map(c=>r[c[0]])), ws, 15)); } }
   ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
