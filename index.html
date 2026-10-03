@@ -7469,11 +7469,13 @@ async function exportPPDocx(mode){
     ch.push(dH2('Sezione 5 — Valutazione Finale'));
     const LBL = {spontaneo:'Spontaneo', stimolato:'Stimolato', no:'Non adottato'}; const FILL = {spontaneo:'2E7D32', stimolato:'E0A100', no:'B3261E'};
     const seen = new Set(); let any5 = false;
-    perc.forEach((per,i) => {
+    // Sezione 5: tutte le priorità (come nell'app), non solo il percorso sviluppato in Sezione 3
+    const perc5 = getAllPercorsi().filter(x=>x.percorsoId && (typeof x.prioritaIdx==='number' || percHasContent(x)));
+    perc5.forEach((per,i) => {
       const pid = per.percorsoId; if(seen.has(pid)) return; seen.add(pid);
       const p = allP.find(x=>x.id===pid); if(!p) return;
       const idrIdx = typeof per.prioritaIdx==='number' ? (scheda.priorita[per.prioritaIdx]?.idr||[]) : (per.idrSelezionati||[]);
-      ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[pid[0]]} · ${p.name}`));
+      ch.push(dH3(`${typeof per.prioritaIdx==='number'?'Priorità '+(per.prioritaIdx+1):'Percorso facoltativo'} — ${AMB_LABEL[pid[0]]} · ${p.name}`));
       if(idrIdx.length){
         any5 = true;
         const w5 = [CW-4400, 1500, 2900];
