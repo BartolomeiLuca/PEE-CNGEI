@@ -328,6 +328,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .cucg-block-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
 .cucg-block-cu .cucg-block-lbl{color:var(--green)}
 .cucg-block-cg .cucg-block-lbl{color:var(--blue)}
+.pp5sp{margin-top:14px;padding:10px 12px;border-radius:6px;background:var(--green-pale);border-left:3px solid var(--green-light);font-size:12px;line-height:1.6;color:var(--ink-mid)}.pp5sp-tag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:4px}.pp5sp-extra{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-light);font-size:11px;color:var(--ink-faint)}
+.cu3{margin-top:6px}.cu3:first-of-type{margin-top:0}.cu3-l{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1px}
 
 /* ── ISTRUZIONI ── */
 .istr-box{background:var(--bg-card);border:1px solid var(--border-light);border-radius:14px;margin-bottom:24px;overflow:hidden;box-shadow:var(--shadow)}
@@ -1877,6 +1879,376 @@ const LAYER_CUCG = {
     cg: 'Il CG dà il tono spirituale del Gruppo. Non in senso religioso, ma nel senso del "perché facciamo quello che facciamo". Una volta all\'anno proponi in CdG un momento non organizzativo: una breve lettura, un\'esperienza vissuta, una domanda aperta. "Cosa vogliamo davvero lasciare a questi ragazzi?" non è retorica: è la domanda più importante che degli educatori possano farsi insieme. Se in CdG non ci sono mai venti minuti per questo, state facendo solo logistica.'
   }
 };
+// Consigli per il Capo Unità, specifici per Branca (Cosa notare / Attenzione a / Uno spunto)
+const CU_BRANCA = {
+"L": {
+"P1": {
+"notare": "Chi si vergogna a cambiarsi in Caccia o nei giochi d'acqua. Le domande sul corpo, le risatine quando qualcuno cresce prima degli altri.",
+"attenzione": "Ridere o cambiare discorso quando una domanda ti imbarazza: arriva il messaggio \"di questo non si parla\". E niente soprannomi sull'aspetto fisico.",
+"spunto": "Con il Consiglio di Akela puoi parlare dei cambiamenti verso gli 11 anni. Rispondi a tutti con parole giuste e semplici; se non sai, dillo e torna con la risposta. Prima avvisa i genitori."
+},
+"P2": {
+"notare": "Come reagiscono quando perdono: chi piange, chi accusa, chi si chiude. Chi sa dire cosa sente e chi risponde sempre \"bene\".",
+"attenzione": "Fare giochi in cui vincono tutti: perdere in un posto protetto come il Branco aiuta a crescere. E non zittire il pianto: \"Lasciale scendere, sono solo lacrime\".",
+"spunto": "Chiudi il Gioco con una sedimentazione breve: immagini di emozioni in Tana, ognuno mette il suo nome. Poi chiedi: \"Cosa ti ha fatto arrabbiare, o felice, oggi?\""
+},
+"P3": {
+"notare": "Chi inventa varianti ai giochi, chi costruisce con quello che trova in Caccia. E chi aspetta istruzioni e si blocca davanti a un foglio bianco.",
+"attenzione": "Trasformare tutto in istruzioni da eseguire, o chiudere la fantasia nel solo momento \"creativo\": può entrare in ogni Gioco.",
+"spunto": "Un Fiore Rosso preparato in piccoli gruppi è il posto giusto. Dai un tema e pochi materiali, poi lascia fare. Alla fine chiedi: \"Da dove vi è venuta l'idea?\""
+},
+"P4": {
+"notare": "Chi in Muta propone idee e chi aspetta che decida il Vecchio Lupo. Chi porta a termine un compito e chi lo lascia a metà.",
+"attenzione": "Fare tutto tu perché è più veloce. Non servono grandi progetti: serve vivere il giro intero, pensare, fare, verificare.",
+"spunto": "Affida al Branco una merenda speciale per un'Unità in visita: decidono loro cosa e chi fa cosa. Accompagnali con tre domande: cosa serve? come facciamo se...? cosa è andato bene?"
+},
+"P5": {
+"notare": "Chi sa rifarsi lo zaino in Caccia o usare forbici e colla da solo. Chi chiede sempre aiuto e chi insegna volentieri agli altri.",
+"attenzione": "Guardare solo se il lavoro è venuto bello. Un lavoretto storto fatto con impegno vale più di uno perfetto finito da te.",
+"spunto": "Cucciolo d'Uomo si impara cacciando, non a lezione. Usa le prove \"Fratello/Sorella di Tana\" della PO: un Lupetto grande insegna a uno piccolo. Poi chiedi: \"Cosa avete imparato?\""
+},
+"P6": {
+"notare": "Chi ripete come vero quello che ha sentito in TV, e chi chiede \"perché?\". Chi grida \"non è giusto!\" per una regola del Gioco.",
+"attenzione": "Fare discorsi astratti: a questa età si ragiona su cose vissute. E fingere di non sbagliare mai: un Vecchio Lupo che ammette un errore insegna tanto.",
+"spunto": "Usa il Racconto Giungla: Mowgli si fida delle Bandar e finisce rapito. Nella sedimentazione chiedi: \"Come si capisce di chi fidarsi?\""
+},
+"P7": {
+"notare": "Cosa lasciano nel piatto alle VdB, come curano igiene e zaino, quanto parlano di videogiochi.",
+"attenzione": "Fare la predica o vietare e basta. I Lupetti copiano prima di ascoltare: se un Vecchio Lupo fuma, sii sincero, mai \"io sono grande, posso\".",
+"spunto": "Aggancia la Legge del Branco: \"si prende cura di sé e degli altri\". Proponi giochi da rifare a casa e chiedi: \"Cosa ci siamo divertiti a fare oggi senza schermo?\""
+},
+"P8": {
+"notare": "Chi si paragona sempre agli altri e chi non trova nulla in cui riesce. Chi si sente invisibile in un Branco numeroso.",
+"attenzione": "I soprannomi che sottolineano un difetto e i confronti tra Lupetti davanti a tutti: a questa età pesano a lungo.",
+"spunto": "Nella Famiglia Felice ognuno si sente importante. Usa consegne di PO e PV e compleanni per valorizzare ognuno davanti al Branco. In riunione di staff chiedetevi: \"Chi non abbiamo ancora valorizzato?\""
+},
+"C1": {
+"notare": "Chi parla più con il corpo che con le parole. Chi sa chiedere quello che gli serve e chi urla o si chiude se non viene ascoltato.",
+"attenzione": "Dimenticare che imparano imitando voi. Non puoi chiedere una lingua cortese se tra Vecchi Lupi, anche stanchi, non c'è.",
+"spunto": "Passa dall'Espressione: mimo, Bans, scenette. Fai trasmettere a una Muta un messaggio senza parole, poi chiedi: \"Cosa vi ha aiutato a capirvi?\""
+},
+"C2": {
+"notare": "I gruppetti sempre uguali, per età, maschi e femmine o amicizia. Chi resta ai margini nel tempo libero, ai pasti, in viaggio. Come finiscono i litigi.",
+"attenzione": "Forzare le amicizie o ignorare i litigi. Famiglia Felice non vuol dire non litigare mai, ma risolvere ascoltando tutti e due senza schierarti subito.",
+"spunto": "Componi le Mute pensando a chi ha bisogno di incontrarsi. Proponi giochi in cui si vince solo aiutandosi e chiedi: \"Chi ti ha aiutato oggi?\""
+},
+"C3": {
+"notare": "Chi si fa avanti a organizzare un gioco e chi segue sempre. Come il Capo Muta coordina: coinvolge tutti o fa da solo, comanda o aiuta.",
+"attenzione": "Caricare il Capo Muta di compiti da adulto. È un bambino: la responsabilità resta al Vecchio Lupo.",
+"spunto": "Scegli i Capi Muta pensando a chi ha bisogno di crescere in quel ruolo, non a chi è già bravo. Ogni tanto chiedi loro: \"Cosa è stato facile e cosa difficile?\""
+},
+"C4": {
+"notare": "Come reagiscono a chi è diverso per aspetto, provenienza o modo di giocare. Chi prende in giro o esclude, chi si incuriosisce.",
+"attenzione": "Far finta che le differenze non ci siano, o parlarne solo a discorsi. La diversità si capisce vivendola, e guardando come la tratti tu.",
+"spunto": "Fai lanciare a Chil, \"Siamo dello stesso sangue, tu ed io\", un gioco dove ognuno porta qualcosa che sa fare. Poi chiedi: \"Cosa hai scoperto di un compagno?\""
+},
+"C5": {
+"notare": "Chi rispetta le regole del Gioco, chi bara, chi protesta se le trova ingiuste. Chi le segue solo se un Vecchio Lupo guarda.",
+"attenzione": "Imporre regole senza spiegare il perché. A questa età il senso di giustizia è fortissimo: un \"non è giusto!\" va ascoltato.",
+"spunto": "Partite dai due articoli della Legge del Branco e costruite insieme, in Mute, poche regole della Tana. Tenetele in vista e ogni tanto chiedi: \"Questa regola ci aiuta ancora?\""
+},
+"C6": {
+"notare": "Come lasciano la Tana a fine riunione e il posto di Caccia prima di partire. Chi spreca, e chi vede il disordine senza che glielo dicano.",
+"attenzione": "Lanciare un impegno e poi dimenticarlo: a questa età tocca a te tenerlo vivo, con segni visibili in Tana.",
+"spunto": "Usa la Parola Maestra di Hathi: \"Tutta la Giungla è la nostra Tana, chi ne ha cura vivrà lieto e prospero\". Poi chiedi: \"Lo lasciamo meglio di come l'abbiamo trovato?\""
+},
+"C7": {
+"notare": "Quanto conoscono il quartiere intorno alla Tana. Chi nota cosa non va, un'altalena rotta o i rifiuti, e chi passa oltre.",
+"attenzione": "Restare sempre chiusi in Tana. Si diventa cittadini con esperienze concrete fuori, vedendo che il proprio gesto ha un effetto.",
+"spunto": "Una Caccia alla scoperta del quartiere, con chi lo conosce bene, può portare a una BA di Branco su un piccolo problema che sentono loro. Alla fine chiedi: \"Cosa è cambiato grazie a noi?\""
+},
+"C8": {
+"notare": "Chi prende le difese di un compagno preso in giro, anche quando è scomodo. Chi si indigna per qualcosa di ingiusto.",
+"attenzione": "Pensare che sostenere una causa sia roba da grandi. Per un Lupetto è difendere ciò che è giusto nel piccolo: se non lo valorizzi, smette.",
+"spunto": "Una BA di Branco può diventare una piccola causa: capire un problema, agire, raccontarlo al Gruppo o a un altro Branco. Chiedi: \"Perché per noi è importante?\""
+},
+"S1": {
+"notare": "Chi prova ruoli diversi e chi resta incastrato sempre nello stesso. Come si descrivono: \"io sono quello che...\".",
+"attenzione": "Mettere etichette, anche per scherzo. A questa età l'identità è in prova: serve un posto sicuro dove sperimentare senza venire inchiodati.",
+"spunto": "Nella PV, il Fiutiamo la Preda a tu per tu, con la Pista d'Akela, è il momento in cui il Lupetto si guarda. Inizia chiedendo: \"In cosa senti di essere cresciuto?\""
+},
+"S2": {
+"notare": "Cosa raccontano delle loro famiglie: feste, cibi, lingue, nonni venuti da lontano. Chi ne parla con orgoglio e chi tace.",
+"attenzione": "Dare per scontato che tutti vivano le stesse feste. O mettere in vetrina la cultura di un Lupetto senza chiedergli se gli va.",
+"spunto": "Un'Attività Manuale in cucina con i piatti delle famiglie apre il discorso senza forzarlo. Usa le culture del tuo Gruppo e chiedi con curiosità vera: \"Come si festeggia a casa tua?\""
+},
+"S3": {
+"notare": "Chi si ferma a guardare un insetto o le stelle in Caccia, e chi corre al gioco dopo. Le domande spontanee: \"perché?\", \"come fa?\".",
+"attenzione": "Riempire ogni minuto della Caccia. A questa età la meraviglia è naturale: il tuo compito è non spegnerla e lasciare tempo per fermarsi.",
+"spunto": "Fermati tu per primo e di' ad alta voce cosa vedi. Una sera alle VdB guardate il cielo in silenzio e chiedi: \"Cosa vi ha stupito oggi?\""
+},
+"S4": {
+"notare": "Le amicizie intense ma veloci. Chi si accorge che un compagno è triste o ha nostalgia di casa, e chi no.",
+"attenzione": "Pensare che giocare insieme basti per conoscersi. E quando un Lupetto si apre, avere fretta di risolvere: prima ascolta.",
+"spunto": "Alle VdB, prima della favola della buona notte, fai un momento fisso di Famiglia Felice: ognuno racconta una cosa bella e una difficile della giornata. Poi chiedi: \"Chi vuoi ringraziare?\""
+},
+"S5": {
+"notare": "Come vivono la Legge del Branco fuori dai momenti ufficiali: nel Gioco, ai pasti, quando nessuno guarda. Chi sa la Promessa a memoria e chi la vive.",
+"attenzione": "Spiegare i valori a parole. La Legge dice \"segue l'esempio del Vecchio Lupo\": se lo staff non è coerente, nessun discorso regge.",
+"spunto": "Usa le Parole Maestre per lodare un bel gesto, non solo per correggere. In riunione di staff chiedetevi: \"E noi come la stiamo vivendo?\""
+},
+"S6": {
+"notare": "Come scelgono: chi segue sempre gli altri, chi cambia idea mille volte, chi accetta le conseguenze e chi dà la colpa a qualcun altro.",
+"attenzione": "Drammatizzare l'errore o farlo sparire. Giudica l'azione, mai il bambino. E di' anche \"hai fatto una bella scelta\".",
+"spunto": "Aggancia la Parola Maestra di Baloo: \"che scelga attentamente il suo sentiero\". Dopo un gioco a bivi o un errore chiedi: \"Cosa faresti di diverso la prossima volta?\""
+},
+"S7": {
+"notare": "Chi si pone piccoli obiettivi e li raggiunge, chi si scoraggia subito. Come parlano del Reparto i Lupetti dell'ultimo anno: curiosità, paura, voglia di restare.",
+"attenzione": "Chiedere \"cosa vuoi fare da grande?\": il futuro è lontano. Lavora sul presente, con piccoli traguardi festeggiati.",
+"spunto": "La Pista d'Akela rende visibile il cammino. Nei Passaggi di Branca, con il Consiglio di Akela, ripensate alla scelta di Mowgli nella Corsa di Primavera e chiedi: \"Cosa porterai con te in Reparto?\""
+},
+"S8": {
+"notare": "Le grandi domande che arrivano all'improvviso: un nonno che muore, cosa c'è dopo. Chi le fa al Fiore Rosso o la sera prima di dormire.",
+"attenzione": "Liquidarle o dare per forza una risposta. Un \"non lo so, pensiamoci insieme\" è un ottimo esempio. Rispetta le risposte delle famiglie.",
+"spunto": "Dopo un Racconto Giungla forte, come la morte di Akela nei Cani Rossi, lascia un momento di silenzio. Poi una sola domanda: \"Secondo voi, cosa ha capito Mowgli?\""
+}
+},
+"E": {
+"P1": {
+"notare": "Chi si nasconde quando ci si cambia al campo, chi scherza sempre sul corpo degli altri. Le battute sulla voce, sull'altezza o sul peso che girano in Pattuglia.",
+"attenzione": "Lasciar passare soprannomi o Totem legati all'aspetto fisico: a questa età si attaccano addosso. E trattare i cambiamenti del corpo come un tabù.",
+"spunto": "Uscite e Campo estivo mettono il corpo alla prova. Dopo una fatica vera chiedi in Pattuglia: dove pensavi di non farcela e invece ce l'hai fatta?"
+},
+"P2": {
+"notare": "Chi dopo una sconfitta si chiude o se la prende con un compagno. Chi risponde sempre \"tutto bene\" anche quando si vede che non è così.",
+"attenzione": "Evitare le sconfitte per proteggerli: perdere in un posto sicuro aiuta a crescere. Davanti agli amici, poi, le emozioni si nascondono facilmente.",
+"spunto": "Dopo una Gara tra Pattuglie, prima di parlare del risultato, chiedi: cosa avete provato? Le volte dopo lascia che sia il Capo Pattuglia a fare questa domanda."
+},
+"P3": {
+"notare": "Se le Pattuglie propongono Imprese sempre uguali o idee nuove. Chi trova soluzioni insolite quando al campo manca qualcosa, e chi aspetta che risolva il capo.",
+"attenzione": "Pensare che fantasia e creatività siano cose da bambini e riempire il programma solo di attività \"serie\". Serio e creativo non sono opposti.",
+"spunto": "In Consiglio di Pattuglia, prima di scegliere l'Impresa, fate una raffica di idee anche folli senza scartarne nessuna. Domanda: quale di queste non ha mai fatto nessun Reparto?"
+},
+"P4": {
+"notare": "Chi in Pattuglia propone idee e chi aspetta che decidano altri. Chi porta a termine quello che si è preso in carico e chi si perde a metà.",
+"attenzione": "Dare per scontato che \"sono grandi, ce la fanno\": progettare si impara, passo dopo passo, con qualcuno che fa le domande giuste.",
+"spunto": "L'Impresa di Pattuglia è il posto naturale. Fai presentare il progetto allo staff prima di partire, con tre domande: cosa serve? chi fa cosa? entro quando?"
+},
+"P5": {
+"notare": "Chi al campo sa usare attrezzi e montare una tenda, e chi resta a guardare. Chi insegna agli altri quello che sa fare e chi lo tiene per sé.",
+"attenzione": "Guardare solo se la costruzione sta in piedi. Contano anche l'impegno, i tentativi e gli errori da cui si impara.",
+"spunto": "Usa il Trapasso delle nozioni: chi ha una Specialità la insegna a un compagno più giovane. Chiedi in Pattuglia: cosa sapete fare oggi che a settembre non sapevate?"
+},
+"P6": {
+"notare": "Chi in Consiglio di Pattuglia cambia idea appena parla il più grande o il più popolare. Chi ripete cose viste sui social come se fossero fatti.",
+"attenzione": "Ascoltare le loro opinioni senza mai metterle alla prova. A questa età il giudizio degli amici pesa tanto: dissentire, anche dal capo, deve essere normale.",
+"spunto": "In Consiglio di Reparto, prima di una decisione, chiedi a qualcuno di difendere apposta l'idea opposta. Poi domanda: cosa vi ha fatto cambiare idea, se l'avete cambiata?"
+},
+"P7": {
+"notare": "Quanto resta lo smartphone in mano durante le attività e in tenda. Come mangiano e dormono al campo, chi inizia a parlare di sigarette, alcol o scommesse.",
+"attenzione": "Fare la predica o vietare e basta: non funziona. E ricorda che guardano te: se dici una cosa e ne fai un'altra, perdi credibilità.",
+"spunto": "Prova un'Uscita senza telefoni, piena di avventura, spiegando prima il perché. Al ritorno chiedi in Pattuglia: cosa vi è mancato e cosa avete trovato al suo posto?"
+},
+"P8": {
+"notare": "Chi sa dire in cosa è bravo e chi risponde sempre \"in niente\". Chi accetta ogni Incarico anche quando è già pieno di scuola e impegni.",
+"attenzione": "Aggiungere scadenze scout nei periodi pesanti di scuola. E far passare l'idea che dire \"no\" o chiedere aiuto sia una debolezza.",
+"spunto": "Quando un ragazzo sceglie una Specialità, parti dalle sue passioni vere, non da quello che serve alla Pattuglia. Domanda: cosa ti piace così tanto da farlo anche se nessuno te lo chiede?"
+},
+"C1": {
+"notare": "Come si parlano in Pattuglia: chi prende sempre la parola, chi non riesce a farsi ascoltare, chi usa toni che feriscono. Quanto passa per la chat.",
+"attenzione": "Dimenticare che imparano soprattutto imitando. Guardano come parlate voi dello staff, tra voi e con loro, soprattutto quando c'è fatica.",
+"spunto": "Il Consiglio di Pattuglia è una palestra di comunicazione. Aiuta il Capo Pattuglia a far parlare tutti almeno una volta, poi chiedigli: chi oggi non è riuscito a dire la sua?"
+},
+"C2": {
+"notare": "Chi in Pattuglia resta ai margini, chi forma coppie o gruppetti chiusi. Come si gestisce un litigio: se ne parla, si sparla in chat o si fa finta di niente?",
+"attenzione": "Risolvere i conflitti al posto loro, oppure ignorarli. E lasciare che le relazioni vivano solo online: dal vivo ci si capisce meglio.",
+"spunto": "Un'Uscita di Pattuglia, con tempi lunghi e cose da fare insieme, crea legami. Al ritorno chiedi al Capo Pattuglia: chi hai conosciuto meglio questa volta?"
+},
+"C3": {
+"notare": "Come guidano i Capi Pattuglia: accolgono le proposte di tutti o decidono da soli? Chi tra i più giovani viene coinvolto e chi fa sempre le stesse cose.",
+"attenzione": "Correggere i Capi Pattuglia da fuori o sostituirti a loro. A guidare si impara provando e confrontandosi con altri Capi Pattuglia, più che ascoltando i capi.",
+"spunto": "In Consiglio di Reparto fai raccontare ai Capi Pattuglia una situazione difficile. Scegliete insieme una strategia da provare e verificatela la volta dopo."
+},
+"C4": {
+"notare": "Le battute su chi è diverso per provenienza, aspetto, modo di fare o interessi. Chi viene lasciato fuori quando si dividono i Posti d'azione.",
+"attenzione": "Pensare che basti parlarne. A questa età i pregiudizi si fissano se nessuno li mette in discussione: serve un contatto vero con chi è diverso.",
+"spunto": "Una Missione può portare la Pattuglia a incontrare davvero una realtà diversa dalla sua, magari nel quartiere. Al ritorno chiedi: cosa pensavate prima e cosa pensate adesso?"
+},
+"C5": {
+"notare": "Come vivono le regole del Reparto: le rispettano solo davanti al capo o ne capiscono il senso? Chi protesta quando una regola gli sembra ingiusta.",
+"attenzione": "Chiudere le proteste con un \"si fa così e basta\". Proprio ora iniziano a distinguere regole giuste e ingiuste: è un'occasione da non sprecare.",
+"spunto": "Fai rivedere al Consiglio di Reparto una regola di vita comune che i ragazzi trovano ingiusta. Poi affida ai Capi Pattuglia il compito di ricordare in Pattuglia l'impegno preso."
+},
+"C6": {
+"notare": "Come lasciano la sede, il materiale di Pattuglia e il posto del campo: puliti e in ordine, o tocca sempre allo staff?",
+"attenzione": "Ridurla a una lista di regole. Lasciare i luoghi meglio di come li si è trovati deve diventare il modo di essere del Reparto, non un obbligo.",
+"spunto": "Affida a ogni Pattuglia un Incarico fisso di cura della sede o dell'angolo di Pattuglia. Al Campo estivo chiedi: cosa lasciamo a questo posto, oltre all'erba schiacciata?"
+},
+"C7": {
+"notare": "Quanto conoscono il quartiere dove si trova la sede. Se in Pattuglia si parla mai di quello che succede fuori, a scuola o nelle notizie.",
+"attenzione": "Pensare che siano troppo piccoli per l'attualità. Essere cittadini parte dal conoscere: serve un aiuto per informarsi, non una lezione.",
+"spunto": "Una Missione può chiedere alla Pattuglia di scoprire un pezzo di quartiere: intervistare chi ci vive o lavora, cercare articoli, video o podcast. Domanda finale: cosa cambiereste, se poteste?"
+},
+"C8": {
+"notare": "Le cause che li fanno arrabbiare o appassionare: ambiente, animali, ingiustizie a scuola. Chi passa dal lamentarsi al proporre qualcosa di concreto.",
+"attenzione": "Accontentarsi del buon cuore o di un cartellone. Sostenere una causa vuol dire conoscerla bene e avere un metodo, non solo entusiasmo.",
+"spunto": "Un'Impresa di Pattuglia può nascere da una causa scelta da loro. Prima di partire chiedi: che cambiamento volete vedere, e come capirete se ci siete riusciti?"
+},
+"S1": {
+"notare": "Chi cambia modo di fare a seconda di chi ha intorno, chi vuole somigliare a qualcuno a tutti i costi, chi non si sente libero di essere com'è.",
+"attenzione": "Mettere etichette o lasciarle mettere. Tra i 12 e i 14 anni si inizia a capire il proprio orientamento sessuale: serve un Reparto dove nessuno debba nascondersi.",
+"spunto": "Quando rivedi con un ragazzo la sua Progressione Personale, guardate il tratto fatto, non solo le prove. Domanda: in cosa sei diverso da com'eri a inizio anno?"
+},
+"S2": {
+"notare": "Quali tradizioni, lingue, feste e abitudini di famiglia portano i ragazzi nel Reparto. Chi ne parla volentieri e chi le tiene nascoste.",
+"attenzione": "Lasciare che la cultura interna del Reparto, con le sue tradizioni, diventi un recinto. Le tradizioni devono accogliere chi arriva, non escluderlo.",
+"spunto": "Al Campo estivo ogni Pattuglia può preparare un piatto, un gioco o una canzone che viene dalla famiglia di qualcuno. Chiedi: cosa vi portate dietro da casa senza accorgervene?"
+},
+"S3": {
+"notare": "Chi si ferma a guardare un cielo stellato e chi lo copre con una battuta. Se in Uscita c'è mai un momento di silenzio che non sia imposto.",
+"attenzione": "Riempire ogni minuto. A questa età la meraviglia si nasconde sotto l'ironia: ha bisogno di tempo e di adulti che si fermino per primi.",
+"spunto": "In Uscita fermati tu e di' ad alta voce cosa ti stupisce. Poi lascia a ogni Pattuglia dieci minuti di silenzio in un bel posto, senza consegne."
+},
+"S4": {
+"notare": "Se in Pattuglia ci si conosce davvero o solo per quello che si fa insieme. Chi si accorge quando un compagno non sta bene, e cosa fa.",
+"attenzione": "Quando qualcuno si apre, avere fretta di dare consigli o di chiudere il discorso. La voglia di risolvere blocca tutto.",
+"spunto": "In un'Uscita di Pattuglia, la sera intorno al fuoco, proponi un giro in cui ognuno racconta un momento importante dell'anno. Chi vuole passa. Niente commenti, solo ascolto."
+},
+"S5": {
+"notare": "Chi rispetta la Legge solo quando lo staff guarda e chi la vive anche fuori. Chi resta fedele a quello che pensa anche quando il gruppo va da un'altra parte.",
+"attenzione": "Parlare di valori più che viverli. Ogni scelta coerente dello staff, anche scomoda, educa; ogni incoerenza fa il contrario.",
+"spunto": "Prepara il Consiglio della Legge partendo da un fatto vero vissuto in Uscita, non da un articolo letto. Domanda: quando, questo mese, è stato difficile essere fedeli alla Promessa?"
+},
+"S6": {
+"notare": "Chi in Pattuglia si prende la responsabilità di una decisione sbagliata e chi dà la colpa agli altri. Chi sceglie sempre e solo seguendo il gruppo.",
+"attenzione": "Drammatizzare gli errori o minimizzarli. E ricordarsi solo degli sbagli: anche una scelta buona va riconosciuta ad alta voce.",
+"spunto": "Nella verifica di un'Impresa, lascia che la Pattuglia ripercorra le scelte fatte e cosa hanno provocato. Domanda: cosa fareste di diverso la prossima volta?"
+},
+"S7": {
+"notare": "Chi riesce a immaginarsi tra qualche anno e chi risponde \"boh\". Chi sceglie Specialità e obiettivi pensando a cosa gli piace o a cosa si aspettano gli altri.",
+"attenzione": "Chiedere \"cosa vuoi fare da grande?\" e dare tu le risposte. Aiutali a capire cosa vogliono davvero loro.",
+"spunto": "Quando rivedi con un ragazzo PV e PO, fissate insieme un obiettivo vero per i prossimi mesi, scelto da lui. Domanda: quando ti senti più te stesso?"
+},
+"S8": {
+"notare": "Le grandi domande che escono all'improvviso: in tenda la sera, dopo una notizia forte, mentre si cammina. Chi le butta lì con una battuta per vedere come reagisci.",
+"attenzione": "Liquidarle con una risposta pronta o rimandarle perché \"non è il momento\". Non servono risposte, serve spazio: un \"non lo so\" onesto va benissimo.",
+"spunto": "Al Campo estivo, dopo un'Impresa o un momento forte, lascia un tempo di silenzio prima di passare oltre. Poi chiedi: cosa ci ha lasciato quello che abbiamo vissuto?"
+}
+},
+"R": {
+"P1": {
+"notare": "Come parlano del proprio corpo e di quello degli altri. All'Hike, chi esagera per sentirsi invulnerabile e chi si tira indietro per paura.",
+"attenzione": "Totem e soprannomi che prendono in giro l'aspetto fisico: a questa età l'immagine di sé è fragile. Una tradizione che ferisce va cambiata.",
+"spunto": "All'Hike dividete il peso degli zaini in modo equo, non uguale: ognuno secondo le sue possibilità. A fine giornata chiedi: cosa ti ha detto il corpo oggi?"
+},
+"P2": {
+"notare": "Chi dice come sta davvero e chi risponde sempre \"tutto bene\". Gli sbalzi tra entusiasmo e apatia, tipici di questa età.",
+"attenzione": "Nei periodi pesanti, come la maturità, arrivano ansia e paura di non farcela. Non aggiungere scadenze scout: prima ascolta, senza giudicare.",
+"spunto": "Prova una Veglia breve: uno stimolo, tempo in silenzio, nessun commento degli altri. Poi riprendi il tema nelle Riflessioni sul Cammino: in questo periodo, cosa ti toglie energia?"
+},
+"P3": {
+"notare": "Se al Consiglio di Compagnia le proposte sono sempre le stesse o qualcuno osa idee nuove. Se l'Estate Rover è sempre uguale.",
+"attenzione": "Bocciare le idee troppo grandi in nome della \"concretezza\". Meglio una versione in miniatura: prima una biciclettata di due giorni, poi l'Estate Rover in bici.",
+"spunto": "Al Consiglio fai un \"mercato di idee\", con un banco per ogni Area di Esperienza. Prima tutte le idee, anche le più strane. Poi chiedi: quale non abbiamo mai provato?"
+},
+"P4": {
+"notare": "Chi in Ronda propone e chi aspetta. Se il programma deciso al Consiglio di Compagnia arriva in fondo o si perde a metà trimestre.",
+"attenzione": "Pensare \"sono quasi adulti, ce la fanno da soli\": progettare si impara. Tieni in equilibrio successi e insuccessi, troppi fallimenti abbattono l'autostima.",
+"spunto": "Il Progetto di Interesse è la palestra giusta: un Rover, un ambito nuovo, inizio e fine entro un trimestre. Fallo presentare al Consiglio: cosa serve, chi ti aiuta, entro quando?"
+},
+"P5": {
+"notare": "Chi sa davvero fare menu, cassa o zaino, e chi lascia fare. Chi si mette sempre e solo nella Ronda spesa.",
+"attenzione": "Sostituirti alle Ronde per ansia di perfezione, o delegare troppo a chi non è pronto. E verificare solo il risultato: conta anche il processo.",
+"spunto": "Affida alle Ronde d'Azione la logistica vera dell'Estate Rover, coordinate dalla Ronda Esecutiva. In verifica chiedi: cosa sapete fare adesso che prima non sapevate?"
+},
+"P6": {
+"notare": "Come discutono al Consiglio di Compagnia: chi porta fatti e chi solo opinioni, chi cambia idea e chi si accoda. Il giudizio netto, bianco o nero.",
+"attenzione": "Dare tu le risposte giuste. E giudicare l'Inchiesta da quanto è completa: conta l'abitudine a informarsi in modo critico.",
+"spunto": "Lancia un'Inchiesta Rover: andare alla fonte, incontrare testimoni, vedere con i propri occhi. Niente \"ognuno porta un articolo\". Alla fine chiedi: cosa pensavate all'inizio, e adesso?"
+},
+"P7": {
+"notare": "Le abitudini che emergono alla Settimana di Convivenza: sonno, cibo, studio, fumo, ore sul telefono. Chi trascina gli altri, nel bene e nel male.",
+"attenzione": "Fare prediche o imporre divieti senza spiegarli. Su alcol e sostanze però non si tratta, anche per legge: dillo chiaro, poi lavora sul perché.",
+"spunto": "Gioca d'anticipo: al Consiglio d'Autunno la Compagnia scrive le sue regole su fumo e vita insieme, e saranno i Rover a farle rispettare. Al campo chiedi: cosa ci aggiunge davvero?"
+},
+"P8": {
+"notare": "Chi dice di essere sovraccarico e chi accetta tutto per non deludere. Come si parla di affetti e sessualità: con naturalezza, imbarazzo o solo battute.",
+"attenzione": "Riempire di scadenze i mesi di esami. Insegna a dire \"no\" senza sensi di colpa: chiedere aiuto è una capacità.",
+"spunto": "Dopo l'Attività Specchio, nelle Riflessioni sul Cammino aiuta il Rover a scegliere un impegno piccolo e realistico, chiuso in uno slogan da ricordare. E chiedi: quando è troppo, a chi lo dici?"
+},
+"C1": {
+"notare": "Come si parlano al Consiglio di Compagnia: chi interrompe, chi non prende mai la parola, chi riformula le idee degli altri.",
+"attenzione": "Lasciare che tutto passi dalla chat, dove ci si fraintende di più. E ricorda che imparano da come parli tu: di' sempre \"noi\", mai \"voi\".",
+"spunto": "Quando qualcuno torna da un'Officina Rover, da un EPI o da un servizio, prevedete un momento di restituzione alla Compagnia o ai genitori. Prima chiedi: chi deve capire questo messaggio?"
+},
+"C2": {
+"notare": "Coppie, rivalità, gruppetti chiusi: come cambiano il clima della Compagnia. Chi all'Hike resta indietro da solo, e come si affronta un conflitto.",
+"attenzione": "Far finta di non vedere amori e tensioni. O risolverli tu al posto loro: la Compagnia è un Cerchio, si decide alla pari.",
+"spunto": "Portate il conflitto al Consiglio di Compagnia: cercate un punto d'incontro invece di votare. Chiedi: come vogliamo trattarci quando non siamo d'accordo? Può entrare nella Carta."
+},
+"C3": {
+"notare": "Chi guida la Ronda Esecutiva e la riunione di Compagnia: ascolta o decide da solo? Chi trascina tutti al ribasso, chi si oppone sempre, chi non si fa avanti.",
+"attenzione": "Sentirti minacciato dai Rover del terzo anno: è il loro momento. E lasciare la Ronda Esecutiva sempre alle stesse persone.",
+"spunto": "Ogni Rover dovrebbe passare almeno un trimestre in Ronda Esecutiva. Con chi si oppone, valorizza il buono delle sue proposte. A fine mandato chiedi: chi è rimasto fuori?"
+},
+"C4": {
+"notare": "Come parlano di chi è diverso per origine, idee, orientamento o condizione. Chi reagisce a una battuta discriminatoria e chi ride o tace.",
+"attenzione": "Fermarsi alle discussioni in sede: i pregiudizi si sciolgono con un incontro vero. E includere un Rover con disabilità è compito di tutta la Compagnia.",
+"spunto": "Proponi un servizio in realtà lontane dalla vostra, o un EPI internazionale come il Roverway, con il racconto di chi c'è già stato. Al ritorno chiedi: cosa vi ha spiazzato?"
+},
+"C5": {
+"notare": "Come vivono le regole che la Compagnia si è data: le rispettano, le discutono, le aggirano? Chi nota un'ingiustizia e reagisce.",
+"attenzione": "Imporre regole senza spiegarne il senso: a questa età le regole esterne vengono rifiutate. Quelle di Compagnia si scelgono insieme, al Consiglio.",
+"spunto": "Parti dal desiderio di giustizia, fortissimo a questa età. Rileggete le vostre regole: proteggono davvero tutti? Poi una Ronda d'Interesse può lavorare su un diritto negato nel territorio."
+},
+"C6": {
+"notare": "Come lasciano la sede o il posto dell'Estate Rover. Chi propone scelte sostenibili su menu e spostamenti, e se l'impegno dura.",
+"attenzione": "Iniziative di facciata che finiscono in una foto. E promettere a un'associazione una presenza fissa negli anni: la Compagnia si impegna per un anno alla volta.",
+"spunto": "Lancia un'Inchiesta sul clima: un documentario, un incontro con chi ci lavora, poi un gesto concreto. Chiedi: fra tre mesi, come capiremo se è cambiato qualcosa?"
+},
+"C7": {
+"notare": "Quanto conoscono quartiere, scuola e città. Chi partecipa a qualcosa fuori dallo scautismo, come consulte o associazioni, e chi ne resta lontano.",
+"attenzione": "Tenere la Compagnia chiusa in sede. E portarla a una manifestazione senza esserti confrontato prima con il Capo Gruppo.",
+"spunto": "Controllate che nel programma trimestrale ci sia sempre l'Area Sociale. Scegliete un evento pubblico da vivere insieme. Dopo chiedi: cosa possiamo fare noi, adesso, per la nostra città?"
+},
+"C8": {
+"notare": "Se hanno a cuore una causa e sanno spiegare perché. Chi si ferma a un post e chi si impegna nel tempo.",
+"attenzione": "Confondere l'advocacy con lo slogan: prima ci si informa e ci si fa un'opinione, poi si agisce. Ogni presa di posizione va confrontata con la Carta.",
+"spunto": "Parti da un'Inchiesta e cercate chi lavora già su quel tema. Se la causa li accende, potete organizzare un'Officina Rover. Prima di agire chiedi: che cambiamento vogliamo vedere?"
+},
+"S1": {
+"notare": "Chi sa raccontare chi è e cosa vuole, e chi si descrive con le aspettative degli altri. Come cambiano dopo un'esperienza forte, come l'Estate Rover.",
+"attenzione": "Dire tu chi sono, o fissarli in un ruolo: \"il simpatico\", \"quello pigro\". A questa età l'identità si rafforza ma resta aperta.",
+"spunto": "Nell'Attività Specchio ognuno modella un oggetto che lo rappresenta, da solo, senza confronti. Settimane dopo, nelle Riflessioni sul Cammino, fattelo raccontare e chiedi: quando ti senti più te stesso?"
+},
+"S2": {
+"notare": "Cosa raccontano delle loro radici: famiglia, paese d'origine, tradizioni, fede. Come reagiscono davanti a un modo di vivere diverso dal loro.",
+"attenzione": "Pensare che basti parlarne: il dialogo tra culture lascia il segno quando si vive. E agli eventi internazionali non serve rinunciare al vostro modo di fare scautismo.",
+"spunto": "Proponete un'Estate Rover con un gemellaggio con un'altra Compagnia, anche straniera. Al Fuoco Rover chiedi: cosa avete scoperto della vostra cultura guardando quella degli altri?"
+},
+"S3": {
+"notare": "Chi all'Hike si ferma a guardare e chi cammina con cuffie e telefono in mano. Chi fa notare agli altri un panorama.",
+"attenzione": "Riempire l'Hike di tappe e cose da fare: la protagonista è la natura, lascia tempo vuoto. Ma meteo e percorso si studiano sempre prima.",
+"spunto": "Proponi un tratto in silenzio e senza telefono, fino a un posto che stupisce. Fermati tu per primo a guardare. La sera, al fuoco, chiedi solo: cosa vi ha colpito?"
+},
+"S4": {
+"notare": "Chi in Compagnia si apre davvero e chi resta in superficie. Come ascoltano chi racconta qualcosa di difficile.",
+"attenzione": "Avere fretta di risolvere quando qualcuno si apre: serve uno spazio senza giudizi. Se emerge qualcosa troppo grande per lo scautismo, parlane con il Capo Gruppo.",
+"spunto": "Prova un Fuoco Rover sul tema \"le radici\": ognuno porta un oggetto o una canzone che lo racconta. Oppure il \"libro della vita\": titolo e copertina della propria storia."
+},
+"S5": {
+"notare": "Se la Carta di Compagnia si legge solo all'apertura del Consiglio o entra davvero nelle scelte. Chi resta coerente se è scomodo.",
+"attenzione": "Parlare di valori senza viverli: i Rover se ne accorgono. E trattare la Carta come un testo sacro: si verifica ogni anno, si riscrive ogni tre.",
+"spunto": "In verifica ognuno sceglie nella Carta un passo vissuto bene e uno da migliorare. La Firma arriva quando un Rover sente di viverla. Se non vuole firmare, chiedi: perché?"
+},
+"S6": {
+"notare": "Come prendono le decisioni: chi motiva le proprie scelte e chi segue il gruppo. Chi si assume le conseguenze di un impegno saltato.",
+"attenzione": "Drammatizzare l'errore o minimizzarlo. E vedere solo gli sbagli: un \"hai fatto una scelta responsabile\" vale più di dieci prediche.",
+"spunto": "La Forcola è il simbolo della scelta e della responsabilità. Quando un impegno salta, non sostituirti alla Ronda: verificatelo al Consiglio, partendo da ciò che ha funzionato. Poi chiedi: cosa faresti di diverso?"
+},
+"S7": {
+"notare": "Chi parla del futuro con desiderio e chi con ansia o silenzio. Chi sceglie università o lavoro per sé e chi per gli altri.",
+"attenzione": "Usare le Riflessioni sul Cammino come pratiche da sbrigare. E dare tu le risposte: il Rover deve imparare a guidare da sé la sua canoa.",
+"spunto": "Nelle Riflessioni sul Cammino chiedi: cosa ti piace davvero fare? Aiutalo a scegliere un impegno concreto, non banale. All'ultimo anno il Percorso Partenza lo porta fino all'Orizzonte Rover."
+},
+"S8": {
+"notare": "Se in Compagnia c'è spazio per le domande grandi: vita, morte, fede, senso. Chi le pone sul serio, chi le schiva con una battuta.",
+"attenzione": "Cercare risposte pronte o una serata a tema. Le domande del Percorso di Formazione Spirituale non si leggono ai Rover: devono nascere dalle esperienze.",
+"spunto": "Dopo un'esperienza forte, all'Estate Rover o in servizio, cura la sedimentazione: una Veglia breve, uno stimolo, silenzio, nessun commento. Poi una sola domanda: cosa resta di quello che abbiamo vissuto?"
+}
+}
+};
+
 
 // ══════════════════════════════════════════════════════════════════
 // SFH_MYP_CONSIGLI — Consigli contestuali per cluster
@@ -5045,7 +5417,7 @@ function buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP){
     }
   }
 
-  return profHTML+arnettHTML+clHtml+fasciaHTML;
+  return profHTML+arnettHTML+clHtml; // note di fascia ora dentro 'Dall'osservazione all'azione'
 }
 
 // ── ALERT PERSONALE (lettera riflessiva) ──
@@ -5179,7 +5551,10 @@ function renderCUCG(){
     div.className='cucg-percorso';
     let body='';
     // Blocco CU: usa il testo specifico se disponibile, altrimenti fallback generico per ambito
-    const cuText = hasCU ? layer.cu : FALLBACK_CU[a];
+    const cb = (CU_BRANCA[FASCIA]||{})[p.id];
+    const cuText = cb
+      ? `<div class="cu3"><span class="cu3-l">Cosa notare</span> ${cb.notare}</div><div class="cu3"><span class="cu3-l">Attenzione a</span> ${cb.attenzione}</div><div class="cu3"><span class="cu3-l">Uno spunto</span> ${cb.spunto}</div>`
+      : (hasCU ? layer.cu : FALLBACK_CU[a]);
     body+=`<div class="cucg-block cucg-block-cu"><div class="cucg-block-lbl">Come Capo Unità</div>${cuText}</div>`;
     // In modalità Unità solo i consigli per il Capo Unità (quelli per CG/CdG stanno nella modalità Staff)
     div.innerHTML=`
@@ -6459,7 +6834,7 @@ function renderSchedaVal(root,selected){
       <div class="val-card-body">
         <div class="val-idr-lbl">${MODE==='personale'?'Come mi osservo':'Indicatori di risultato — valuta ogni IDR da 1 a 10'}</div>
         ${idrHTML}
-        ${MODE==='giovani'?ppComplessivaHTML(pid):''}
+        ${MODE==='giovani'?ppComplessivaHTML(pid,idrToShow.map(x=>x.origIdx)):''}
       </div>`;
     root.appendChild(card);
   });
@@ -6737,7 +7112,7 @@ function ppCopyMail(kind){ ppMailOpen(kind); }
 // ── Sezione 5: comportamento per IdR + valutazione complessiva ──
 function ppIdrSet(pid,j,field,val){
   if(!scheda.idrComp) scheda.idrComp={}; if(!scheda.idrComp[pid]) scheda.idrComp[pid]={}; if(!scheda.idrComp[pid][j]) scheda.idrComp[pid][j]={c:'',note:''};
-  scheda.idrComp[pid][j][field]=val; saveDataDebounced(); ppRefreshReady();
+  scheda.idrComp[pid][j][field]=val; saveDataDebounced(); ppRefreshReady(); if(field==='c') ppSpuntiRefresh(pid);
 }
 function ppIdrOfficialHTML(pid,j){
   const cur=(scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][j])||{c:'',note:''};
@@ -6752,8 +7127,26 @@ function ppIdrOfficialHTML(pid,j){
     <input type="text" style="flex:1;min-width:180px;${SC_IN}" placeholder="Osservazioni qualitative…" value="${sEsc(cur.note)}" oninput="ppIdrSet('${pid}',${j},'note',this.value)">
   </div>`;
 }
-function ppComplessivaHTML(pid){
-  return `<div style="margin-top:14px"><label style="${SC_LBL}">Valutazione complessiva <span style="font-weight:400;color:var(--ink-faint)">— hai raggiunto l'obiettivo? Perché? Che cosa riproporresti o modificheresti?</span></label>
+// Spunti di riflessione dopo aver segnato gli IdR (solo app, non vanno nel Word)
+const PP5_SPUNTI = {
+  A:{t:'Quasi tutto spontaneo', b:'Sembra che l\'obiettivo sia raggiunto. Chiediti: è merito del percorso o quel comportamento c\'era già? Come lo tieni vivo senza rifare le stesse attività? Forse è il momento di passare a un\'altra priorità.'},
+  B:{t:'Quasi tutto stimolato', b:'Il comportamento c\'è, ma soprattutto quando lo chiedi tu. Chiediti: cosa puoi lasciare in mano ai ragazzi la prossima volta? Il passo dopo non è rifare il percorso, ma togliere un po\' alla volta il tuo aiuto.'},
+  C:{t:'Quasi tutto non adottato', b:'Prima di pensare "il gruppo non c\'è", guarda il percorso. L\'indicatore si poteva osservare davvero? Il tempo bastava? Le attività toccavano proprio quell\'obiettivo? È il risultato che insegna di più a te come capo: scrivilo con onestà.'},
+  D:{t:'Risultati misti', b:'Chiediti dove e con chi ha funzionato, e dove no. Spesso la risposta sta in una singola attività o in una parte del gruppo: è lì che trovi cosa riproporre e cosa cambiare.'}
+};
+function ppSpuntiInner(pid,idxs){
+  const comp=(scheda.idrComp||{})[pid]||{};
+  const vals=(idxs||[]).map(j=>(comp[j]||{}).c||'');
+  if(!vals.length||vals.some(v=>!v)) return '';
+  const n=vals.length, s=vals.filter(v=>v==='spontaneo').length, st=vals.filter(v=>v==='stimolato').length, no=vals.filter(v=>v==='no').length;
+  const k = s===n||(s>n/2&&!no) ? 'A' : (no===n||no>n/2) ? 'C' : (st===n||st>n/2) ? 'B' : 'D';
+  const sp=PP5_SPUNTI[k];
+  return `<div class="pp5sp"><div class="pp5sp-tag">Uno spunto per la valutazione · ${sp.t}</div><div>${sp.b}</div>
+    <div class="pp5sp-extra"><strong>Per restare sul pezzo</strong> (facoltativo, non serve per il Progetto Personale): tra qualche settimana riosserva questo percorso con la scala 1–10 della scheda di osservazione e confrontalo con il punteggio di partenza.</div></div>`;
+}
+function ppSpuntiRefresh(pid){ const el=document.getElementById('pp5sp-'+pid); if(el) el.innerHTML=ppSpuntiInner(pid,JSON.parse(el.dataset.idx||'[]')); }
+function ppComplessivaHTML(pid,idxs){
+  return `<div id="pp5sp-${pid}" data-idx='${JSON.stringify(idxs||[])}'>${ppSpuntiInner(pid,idxs)}</div><div style="margin-top:14px"><label style="${SC_LBL}">Valutazione complessiva <span style="font-weight:400;color:var(--ink-faint)">— hai raggiunto l'obiettivo? Perché? Che cosa riproporresti o modificheresti?</span></label>
     <textarea style="${SC_TA};min-height:78px" oninput="if(!scheda.valCompl)scheda.valCompl={};scheda.valCompl['${pid}']=this.value;saveDataDebounced();ppRefreshReady()">${sEsc((scheda.valCompl||{})[pid])}</textarea></div>`;
 }
 
