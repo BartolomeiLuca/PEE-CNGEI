@@ -167,7 +167,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .rbar-track-multi{flex:1;height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;display:flex}
 .rbar-seg{height:100%}
 .rbar-seg-p,.rbar-seg-v{background:var(--ok-light)}
-.rbar-seg-a{background:var(--red-mid)}.rie-bar-multi{display:flex;overflow:hidden}.rie-bar-multi .rbar-seg{height:100%}
+.rbar-seg-a{background:var(--red-mid)}.rie-bar-multi{display:flex;overflow:hidden}.rie-bar-wrap.rie-bar-multi{height:16px;background:#E4E4DE}.rie-bar-multi .rbar-seg{display:flex;align-items:center;justify-content:center;font:800 10px/1 'Montserrat',sans-serif;color:#fff;border-right:1.5px solid rgba(255,255,255,.85);box-sizing:border-box;text-shadow:0 0 2px rgba(0,0,0,.35)}.rie-bar-multi .rbar-seg:last-child{border-right:0}.rie-bar-multi .rbar-seg{height:100%}
 .rbar-seg-c{background:#E8C44A}
 .rbar-seg-o{background:var(--blue-mid)}
 .rbar-val{font-size:11px;font-weight:700;color:var(--ink-mid);min-width:32px;text-align:right}
@@ -547,7 +547,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 
 /* ── Beta / segnalazioni, navigazione per Sezioni ── */
 .fb-btn{gap:6px}
-body.g-nav .hdr-inner{max-width:1440px}body.g-nav .phase-tabs{min-width:0}@media(max-width:1700px){body.g-nav .save-time,body.g-nav .cl-lbl,body.g-nav .hdr-mode{display:none}}@media(max-width:1300px){body.g-nav .save-w{display:none}}@media(max-width:900px){body.g-nav .home-lbl{display:none}body.g-nav .back-landing-btn{padding-left:10px;padding-right:10px}body.g-nav .hdr-inner{gap:8px}body.g-nav .save-w{display:none}body.g-nav .hdr-actions{gap:4px}body.g-nav .hdr-btn{padding-left:9px;padding-right:9px}}body.g-nav .foot-nav .btn-export{display:none}.hdr .hdr-save{display:none}body.g-nav .hdr .cl-lbl{display:none}.save-mini{color:#9BE7B0;font-weight:800;margin-left:4px;font-size:12px}body.g-nav #cl-histbtn .hdr-lbl{display:none}.phase-tabs{overflow:hidden}.ptab{min-width:0;overflow:hidden;text-overflow:ellipsis}body.g-nav.pt-compact .ptab span.pt-l{display:none!important}body.g-nav.pt-compact .ptab span.pt-s{display:inline!important}body.g-nav.pt-compact .ptab{padding-left:6px;padding-right:6px}.g-dl{max-width:960px;margin:6px auto 30px;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-mid);border-top:1px dashed var(--border)}@media(max-width:640px){.g-dl{margin-bottom:90px}}.fb-lbl{font-size:11px;font-weight:700;white-space:nowrap}.pt-s{display:none}@media(max-width:1100px){body.g-nav .ptab span.pt-l{display:none!important}body.g-nav .ptab span.pt-s{display:inline!important}body.g-nav .ptab{padding:8px 7px;font-size:11px;flex:1 1 auto}body.g-nav .logo-sq{display:none}}@media(max-width:800px){body.g-nav .ptab{padding:7px 5px;font-size:10px;letter-spacing:0}.fb-lbl{font-size:10px}}.fb-beta{font-size:9px;font-weight:800;letter-spacing:.06em;background:#FFD54F;color:#5D4300;border-radius:4px;padding:2px 5px}
+body.g-nav .hdr-inner{max-width:1440px}body.g-nav .ptab{flex:1 1 auto}body.g-nav .phase-tabs{min-width:0}@media(max-width:1700px){body.g-nav .save-time,body.g-nav .cl-lbl,body.g-nav .hdr-mode{display:none}}@media(max-width:1300px){body.g-nav .save-w{display:none}}@media(max-width:900px){body.g-nav .home-lbl{display:none}body.g-nav .back-landing-btn{padding-left:10px;padding-right:10px}body.g-nav .hdr-inner{gap:8px}body.g-nav .save-w{display:none}body.g-nav .hdr-actions{gap:4px}body.g-nav .hdr-btn{padding-left:9px;padding-right:9px}}body.g-nav .foot-nav .btn-export{display:none}.hdr .hdr-save{display:none}body.g-nav .hdr .cl-lbl{display:none}.save-mini{color:#9BE7B0;font-weight:800;margin-left:4px;font-size:12px}body.g-nav #cl-histbtn .hdr-lbl{display:none}.phase-tabs{overflow:hidden}.ptab{min-width:0;overflow:hidden;text-overflow:ellipsis}body.g-nav.pt-compact .ptab span.pt-l{display:none!important}body.g-nav.pt-compact .ptab span.pt-s{display:inline!important}body.g-nav.pt-compact .ptab{padding-left:6px;padding-right:6px}.g-dl{max-width:960px;margin:6px auto 30px;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-mid);border-top:1px dashed var(--border)}@media(max-width:640px){.g-dl{margin-bottom:90px}}.fb-lbl{font-size:11px;font-weight:700;white-space:nowrap}.pt-s{display:none}@media(max-width:1100px){body.g-nav .ptab span.pt-l{display:none!important}body.g-nav .ptab span.pt-s{display:inline!important}body.g-nav .ptab{padding:8px 7px;font-size:11px;flex:1 1 auto}body.g-nav .logo-sq{display:none}}@media(max-width:800px){body.g-nav .ptab{padding:7px 5px;font-size:10px;letter-spacing:0}.fb-lbl{font-size:10px}}.fb-beta{font-size:9px;font-weight:800;letter-spacing:.06em;background:#FFD54F;color:#5D4300;border-radius:4px;padding:2px 5px}
 #g-subnav{max-width:1100px;margin:0 auto;padding:14px 16px 0;position:sticky;top:var(--hdr-h,56px);z-index:90;background:var(--bg)}
 #g-subnav.stuck{padding-top:6px;padding-bottom:6px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
 #g-subnav.stuck .gsn-title{display:none}
@@ -5371,7 +5371,8 @@ function covKeysHTML(){
   return `<div class="cov-keys"><div class="cov-keys-h">Chiave di lettura · spunti, non verdetti</div>${scelti.slice(0,3).map(x=>`<div class="cov-key">${x.h}</div>`).join('')}</div>`;
 }
 function lvlBarHTML(list,cls){ const c=lvlCounts(list), tot=list.length;
-  return `<div class="${cls||'rbar-track-multi'}">`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}"></div>`:'').join('')+`</div>`; }
+  const big=/rie-bar-multi/.test(cls||''); const non=tot-[1,2,3,4,5].reduce((x,t)=>x+(c[t]||0),0);
+  return `<div class="${cls||'rbar-track-multi'}"${big?` title="${[5,4,3,2,1].filter(t=>c[t]).map(t=>thresholdLabel(t)+': '+c[t]).join(' · ')}${non?' · Non osservati: '+non:''}"`:''}>`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}">${big?c[t]:''}</div>`:'').join('')+`</div>`; }
 function lvlTag(p){ const v=obsVal(p), t=obsToThreshold(v); if(!t) return `<span class="rie-row-tag tag-n" title="Non osservato">—</span>`;
   return `<span class="rie-row-tag" title="Punteggio ${obsNum(p)} su 10" style="color:${thresholdColor(t)};background:${thresholdColor(t)}14;cursor:help">${thresholdLabel(t)}</span>`; }
 function precompileScheda(selected){
@@ -5578,6 +5579,42 @@ function attTipiHTML(pidx,aidx,a){ const L=ATT_TIPI[FASCIA]||[]; if(!L.length) r
       <div id="att-tipi-${k}">${attTipiSelHTML(a)}</div>
       <details style="margin:4px 0 6px;border:1px dashed var(--border);border-radius:6px;padding:6px 10px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Scegli tra i tipi di attività della tua Branca <span style="font-weight:400;color:var(--ink-faint)">(<span id="att-tipi-cnt-${k}">${sel.length}</span> scelti)</span></summary>${cat}
         <input id="att-tipi-alt-${k}" type="text" style="${SC_IN};margin-top:8px;${sel.includes('Altro')?'':'display:none'}" placeholder="Altro: scrivi il tipo di attività" value="${sEsc((a&&a.tipoAltro)||'')}" oninput="attTipoAltro(${pidx},${aidx},this.value)"></details>`; }
+
+// ── Tempistiche con menu mese/anno (Sezione 2 e Sezione 3) ──
+const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+function tmTxt(v){ if(!v) return ''; const [y,m]=v.split('-').map(Number); return MESI[m-1]+' '+y; }
+function tmRange(dal,al){ return (dal||al)?`da ${tmTxt(dal)||'…'} a ${tmTxt(al)||'…'}`:''; }
+function tmMonths(dal,al){ if(!dal||!al) return null; const [y1,m1]=dal.split('-').map(Number), [y2,m2]=al.split('-').map(Number); return (y2*12+m2)-(y1*12+m1); }
+function tmWarn(dal,al,min){ const d=tmMonths(dal,al); if(d===null) return ''; if(d<0) return 'La fine viene prima dell’inizio: controlla le date.'; if(min && d<3) return 'Le Linee Guida chiedono almeno un trimestre: valuta di allungare un po’ l’orizzonte.'; return ''; }
+function tmSelHTML(val,onch){ const now=new Date(); const y0=now.getFullYear()-1; const [vy,vm]=(val||'').split('-').map(Number);
+  // ordine dell'anno scout: da settembre ad agosto
+  const order=[8,9,10,11,0,1,2,3,4,5,6,7];
+  const sm=`<select style="padding:5px 6px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px" onchange="${onch}('m',this.value)"><option value="">mese</option>${order.map(i=>`<option value="${i+1}" ${vm===i+1?'selected':''}>${MESI[i]}</option>`).join('')}</select>`;
+  const sy=`<select style="padding:5px 6px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px" onchange="${onch}('y',this.value)"><option value="">anno</option>${[0,1,2,3].map(k=>y0+k).map(y=>`<option ${vy===y?'selected':''}>${y}</option>`).join('')}</select>`;
+  return sm+' '+sy; }
+function tmFixAl(dal,al,part,which){ if(which!=='al'||part!=='m'||!dal||!al) return al; const [y1,m1]=dal.split('-').map(Number), [,m2]=al.split('-').map(Number); return `${m2<m1?y1+1:y1}-${String(m2).padStart(2,'0')}`; }
+function tmMerge(old,part,v){ const now=new Date(); let [y,m]=(old||'').split('-').map(Number); if(part==='m'){ m=Number(v)||0; if(m&&!y){ const sy=now.getMonth()>=7?now.getFullYear():now.getFullYear()-1; y=m>=9?sy:sy+1; } } else y=Number(v)||0;
+  return (y&&m)?`${y}-${String(m).padStart(2,'0')}`:''; }
+// Sezione 2
+function priTempo(i,which,part,v){ const pr=scheda.priorita[i]; if(!pr) return; const k=which==='dal'?'tDal':'tAl'; pr[k]=tmMerge(pr[k],part,v); pr.tAl=tmFixAl(pr.tDal,pr.tAl,part,which);
+  pr.tempistica=tmRange(pr.tDal,pr.tAl); saveDataDebounced(); const w=document.getElementById('pri-tw-'+i); if(w){ const t=tmWarn(pr.tDal,pr.tAl,true); w.textContent=t; w.style.display=t?'':'none'; }
+  // riallinea i selettori quando l'anno è stato dedotto
+  const box=document.getElementById('pri-tm-'+i); if(box&&part==='m') box.innerHTML=priTempoHTML(i); }
+function priTempoHTML(i){ const pr=scheda.priorita[i]||{}; return `<span style="font-size:12px">da </span>${tmSelHTML(pr.tDal,`(function(p,v){priTempo(${i},'dal',p,v)})`)}<span style="font-size:12px"> a </span>${tmSelHTML(pr.tAl,`(function(p,v){priTempo(${i},'al',p,v)})`)}`; }
+// Sezione 3: eredita dalla Sezione 2 finché non viene modificata
+function percTempo(per){ if(per.tDal||per.tAl) return {dal:per.tDal,al:per.tAl,own:true};
+  if((per.dal||'').trim()||(per.al||'').trim()) return {txt:`da ${per.dal||'…'} a ${per.al||'…'}`,own:true};
+  const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null; return {dal:pr&&pr.tDal,al:pr&&pr.tAl,own:false,txt:pr&&!pr.tDal&&!pr.tAl&&(pr.tempistica||'').trim()?pr.tempistica:''}; }
+function percTempoTxt(per){ const t=percTempo(per); return t.dal||t.al?tmRange(t.dal,t.al):(t.txt||'da … a …'); }
+function percTempoSet(idx,which,part,v){ const per=getAllPercorsi()[idx]; if(!per) return; const t=percTempo(per);
+  if(!per.tDal&&!per.tAl){ per.tDal=t.dal||''; per.tAl=t.al||''; }
+  const k=which==='dal'?'tDal':'tAl'; per[k]=tmMerge(per[k],part,v); per.tAl=tmFixAl(per.tDal,per.tAl,part,which); saveDataDebounced(); const b=document.getElementById('perc-tm-'+idx); if(b) b.innerHTML=percTempoHTML(idx); }
+function percTempoReset(idx){ const per=getAllPercorsi()[idx]; if(!per) return; per.tDal=''; per.tAl=''; per.dal=''; per.al=''; saveDataDebounced(); const b=document.getElementById('perc-tm-'+idx); if(b) b.innerHTML=percTempoHTML(idx); }
+function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const t=percTempo(per); const warn=tmWarn(t.dal,t.al,false);
+  const note = t.own ? (typeof per.prioritaIdx==='number'?`<a href="#" style="font-size:11px;color:var(--green);margin-left:6px" onclick="percTempoReset(${idx});return false">↺ riprendi dalla Sezione 2</a>`:'')
+    : `<span style="font-size:11px;color:var(--ink-faint);margin-left:6px">ripresa dalla Sezione 2 · cambiala se il percorso dura meno</span>`;
+  const old=t.txt&&t.own?`<div style="font-size:11px;color:var(--ink-mid);margin-top:4px">Indicata in precedenza: ${sEsc(t.txt)}</div>`:'';
+  return `<span style="font-size:12px">da </span>${tmSelHTML(t.dal,`(function(p,v){percTempoSet(${idx},'dal',p,v)})`)}<span style="font-size:12px"> a </span>${tmSelHTML(t.al,`(function(p,v){percTempoSet(${idx},'al',p,v)})`)}${note}${warn?`<div style="font-size:11px;color:#8A5300;margin-top:4px">${warn}</div>`:''}${old}`; }
 function strumList(per){ const L=STRUM_BRANCA[FASCIA]||[]; const sel=per.strumSel||{}; const out=[];
   L.forEach((items,g)=>items.forEach(it=>{ if(it in sel) out.push({g:STRUM_GRUPPI[g], s:it, n:sel[it]||''}); }));
   Object.keys(sel).forEach(k=>{ if(!out.some(o=>o.s===k)) out.push({g:'', s:k, n:sel[k]||''}); });
@@ -5608,12 +5645,22 @@ const G_STEPS = [['1a','1.1','Contesto e KOS'],['1b','1.2','Scheda di osservazio
 const G_TABS_SHORT = {'1':'1 Osserv.','2':'2 Obiettivi','3':'3 Percorso','4':'4 Verifica','5':'5 Valuta','chk':'Invio'};
 const G_TABS = [['1','1. Osservazione','Oss.','i-eye','Sezione 1 · Osservazione del Gruppo di Pari e necessità educative'],['2','2. Obiettivi','Obiettivi','i-target','Sezione 2 · Obiettivi e Indicatori di Risultato'],['3','3. Percorso','Percorso','i-chart','Sezione 3 · Percorso Educativo Esperienziale'],['4','4. Verifica','Verifica','i-check','Sezione 4 · Verifica delle attività'],['5','5. Valutazione','Valuta','i-check','Sezione 5 · Valutazione finale'],['chk','Controllo e invio','Invio','i-check','Controllo e invio']];
 
-// Titoli delle fasi: se non ci stanno (account, zoom, Safari…), passa alle etichette brevi
-(function(){ function chk(){ const pt=document.getElementById('phase-tabs'); if(!pt||!document.body.classList.contains('g-nav')) return;
-  document.body.classList.remove('pt-compact'); const tight=pt.scrollWidth>pt.clientWidth+2 || [...pt.querySelectorAll('.ptab')].some(b=>b.scrollWidth>b.clientWidth+1); if(tight) document.body.classList.add('pt-compact'); }
-  window.ptCheck=chk; window.addEventListener('resize',()=>requestAnimationFrame(chk));
-  try{ new ResizeObserver(()=>requestAnimationFrame(chk)).observe(document.documentElement); }catch(e){}
-  setInterval(chk,1500); })();
+// Titoli delle fasi: se non ci stanno (account, zoom, Safari…), passa alle etichette brevi.
+// Si misura il testo "a vuoto" (canvas), senza togliere/rimettere classi: niente sfarfallio.
+(function(){ let cv=null, last=null, raf=0;
+  function need(pt){ const tabs=[...pt.querySelectorAll('.ptab')]; if(!tabs.length) return 0; cv=cv||document.createElement('canvas'); const ctx=cv.getContext('2d');
+    const cs=getComputedStyle(tabs[0]); ctx.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const pad=Math.max(22,(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0)+4), gap=parseFloat(getComputedStyle(pt).columnGap)||2; return tabs.reduce((s,b)=>{ const l=b.querySelector('.pt-l'); const t=l?l.textContent:b.textContent; return s+ctx.measureText(t).width+pad+gap; },8); }
+  function chk(){ raf=0; const pt=document.getElementById('phase-tabs'); if(!pt||!document.body.classList.contains('g-nav')||!pt.offsetParent) return;
+    const w=pt.clientWidth, n=need(pt); if(!w||!n) return;
+    const compact=document.body.classList.contains('pt-compact');
+    // isteresi: si torna ai titoli lunghi solo con un po' di margine
+    const want = compact ? (n > w-12) : (n > w);
+    if(want!==compact) document.body.classList.toggle('pt-compact',want); last=w; }
+  function sched(){ if(!raf) raf=requestAnimationFrame(chk); }
+  window.ptCheck=sched; window.addEventListener('resize',sched);
+  try{ document.fonts && document.fonts.ready.then(sched); }catch(e){}
+})();
 function gInitNav(){
   const pt=document.getElementById('phase-tabs'), mn=document.getElementById('mobile-nav'), sn=document.getElementById('g-subnav');
   if(!G_ORIG) G_ORIG={pt:pt?pt.innerHTML:'', mn:mn?mn.innerHTML:'', h3:[document.getElementById('hero-eye3')?.innerHTML, document.getElementById('hero-title3')?.innerHTML, document.getElementById('hero-desc3')?.innerHTML], p3n:document.getElementById('p3-next')?.textContent};
@@ -5876,8 +5923,9 @@ function renderSchedaB(root,selected){
         </div>
         <div style="margin-top:12px">
           <label style="font-size:11px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Tempistica <span style="font-weight:400;color:var(--ink-faint)">— orizzonte temporale per raggiungere l'obiettivo, non inferiore a un trimestre</span></label>
-          <input type="text" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;box-sizing:border-box"
-            placeholder="Es. da novembre a febbraio" value="${sEsc(scheda.priorita[i].tempistica||'')}" oninput="scheda.priorita[${i}].tempistica=this.value;saveDataDebounced()">
+          <div id="pri-tm-${i}">${priTempoHTML(i)}</div>
+          ${(scheda.priorita[i].tempistica||'').trim()&&!scheda.priorita[i].tDal&&!scheda.priorita[i].tAl?`<div style="font-size:11px;color:var(--ink-mid);margin-top:4px">Indicata in precedenza: ${sEsc(scheda.priorita[i].tempistica)}</div>`:''}
+          <div id="pri-tw-${i}" style="font-size:11px;color:#8A5300;margin-top:4px;${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)?'':'display:none'}">${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)}</div>
         </div>
       </div>
     </div>`;
@@ -6056,14 +6104,7 @@ function renderSchedaC(root,selected){
     // Tempistiche
     html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Tempistiche</td>
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
-        <span style="font-size:12px">da </span>
-        <input type="text" style="width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:12px"
-          placeholder="ottobre" value="${per.dal||''}"
-          oninput="updatePercorsoField(${idx},'dal',this.value);saveDataDebounced()">
-        <span style="font-size:12px"> a </span>
-        <input type="text" style="width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:12px"
-          placeholder="maggio" value="${per.al||''}"
-          oninput="updatePercorsoField(${idx},'al',this.value);saveDataDebounced()">
+        <div id="perc-tm-${idx}">${percTempoHTML(idx)}</div>
       </td></tr>`;
 
     // Attività: Lancio · Sviluppo · Conclusione
@@ -6540,9 +6581,9 @@ function ppChecks(){
   add(c1,'3 priorità, una per ambito', sel.length===3&&amb.size===3, `${sel.length}/3`);
   const pr=sel.map((id,i)=>scheda.priorita[i]||{});
   add(c1,'Per ogni priorità: 1 obiettivo e almeno 1 indicatore (consigliati 2)', sel.length>0&&pr.every(x=>(x.obiettivi||[]).length>=1&&(x.idr||[]).length>=1));
-  add(c1,'Per ogni priorità: tempistica (almeno un trimestre)', sel.length>0&&pr.every(x=>T(x.tempistica)));
+  add(c1,'Per ogni priorità: tempistica (almeno un trimestre)', sel.length>0&&pr.every(x=>x.tDal&&x.tAl ? tmMonths(x.tDal,x.tAl)>=3 : T(x.tempistica)));
   add(c1,'Percorso Educativo Esperienziale progettato', percs.length>=1, `${percs.length}/${sel.length||3}`);
-  add(c1,'Strumenti del metodo e tempistiche in ogni percorso', percs.length>0&&percs.every(x=>(T(x.strumenti)||Object.keys(x.strumSel||{}).length)&&T(x.dal)&&T(x.al)));
+  add(c1,'Strumenti del metodo e tempistiche in ogni percorso', percs.length>0&&percs.every(x=>(T(x.strumenti)||Object.keys(x.strumSel||{}).length)&&(()=>{ const t=percTempo(x); return (t.dal&&t.al)||(T(x.dal)&&T(x.al)); })()));
   const attOk = x => (x.attivita||[]).filter(a=>T(a.lancio)&&T(a.sviluppo)&&T(a.conclusione)).length>=3;
   add(c1,'Almeno 3 attività con Lancio, Sviluppo e Conclusione in ogni percorso', percs.length>0&&percs.every(attOk));
   add(c1,'Co-costruzione esplicitata in ogni percorso', percs.length>0&&percs.every(x=>T(x.coCostr)));
@@ -7440,7 +7481,7 @@ async function exportPPDocx(mode){
     ch.push(dKV([
       ['Obiettivo/i', ob.length ? ob.map(o=>dPara(plain(o),{size:19,after:40})) : '—'],
       ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
-      ['Tempistiche', `da ${per.dal||'…'} a ${per.al||'…'}`],
+      ['Tempistiche', percTempoTxt(per)],
       ['Attività', attCell],
       ['Co-costruzione nel percorso', dMulti(per.coCostr)],
       ['Rielaborazione nel percorso', dMulti(per.rielab)],
@@ -7603,7 +7644,7 @@ async function exportSchedaDocxLegacy(){
       ['Obiettivo', plain(per.obiettivo)||'—'],
       ['Indicatori di risultato', idr.length ? idr.map(r=>dPara(plain(r),{size:19,after:40,bullet:true})) : '—'],
       ['Strumenti del metodo', plain(per.strumenti)||'—'],
-      ['Tempistiche', `da ${per.dal||'…'} a ${per.al||'…'}`],
+      ['Tempistiche', percTempoTxt(per)],
       ['Attività', att.length ? att.map((x,k)=>dPara([dTxt(`${k+1}. ${plain(x.testo)}`,{size:19}), ...(x.link?[dTxt(`  ${x.link}`,{size:16,color:GREEN,italics:true})]:[])],{after:40})) : '—'],
       [T.checklist, clKeys.map(k=>dPara(`${cl[k]?.checked?'☑':'☐'}  ${clLabels[k]}${cl[k]?.note?' — '+plain(cl[k].note):''}`,{size:18,after:20,color:cl[k]?.checked?'2E7D32':'777777'}))]
     ]));
@@ -7963,6 +8004,7 @@ function clSetStatus(s){
     b.title = tip + (!land && window._saveAt ? ' · Salvato alle '+window._saveAt : '');
     b.innerHTML = `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}`;
   });
+  try{ window.ptCheck&&ptCheck(); }catch(e){}
 }
 
 async function clInit(){
