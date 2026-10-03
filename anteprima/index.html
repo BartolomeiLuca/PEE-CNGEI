@@ -1988,14 +1988,14 @@ function kosFill(){ const done=kosActs().filter(a=>(scheda.pp.kosDone||{})[a.key
   const lines=done.map(a=>'• '+a.n+' ('+a.incT.split(' · ')[0]+(a.m?', '+a.m+' min':'')+')');
   const cur=(scheda.pp.occasioni||'').trim(); scheda.pp.occasioni=(cur?cur+'\n':'')+'Dal KOS 2.0:\n'+lines.join('\n'); saveDataDebounced(); renderValuation(); }
 function kosCovHTML(){ const acts=kosActs(); const done=acts.filter(a=>(scheda.pp&&scheda.pp.kosDone||{})[a.key]);
-  const cnt={}; done.forEach(a=>a.f.forEach(id=>cnt[id]=(cnt[id]||0)+1));
+  const cnt={}; done.forEach(a=>a.f.forEach(id=>cnt[id]=(cnt[id]||0)+1)); occManValid().forEach(r=>(r.perc||[]).forEach(id=>cnt[id]=(cnt[id]||0)+1));
   const miss=[]; ['P','C','S'].forEach(am=>(DB[am]||[]).forEach(p=>{ if(!cnt[p.id]) miss.push(p); }));
   const tot=acts.length, nd=done.length;
-  if(!nd) return '<div style="font-size:11px;color:var(--ink-mid)">Spunta le attività che hai fatto: qui vedrai quali competenze hai già potuto osservare.</div>';
+  if(!nd && !Object.keys(cnt).length) return '<div style="font-size:11px;color:var(--ink-mid)">Spunta le attività che hai fatto: qui vedrai quali competenze hai già potuto osservare.</div>';
   const missBy=am=>miss.filter(p=>p.id[0]===am).map(p=>p.name);
   const L={P:'Personale',C:'Comunitario',S:'Spirituale'};
   const rows=['P','C','S'].map(am=>{ const m=missBy(am); return '<div style="font-size:11px;margin-top:3px"><b>'+L[am]+'</b>: '+(m.length?'non ancora osservate → '+m.join(', '):'tutte e 8 le competenze hanno almeno un’occasione ✓')+'</div>'; }).join('');
-  return '<div style="font-size:11px;font-weight:700;color:'+(miss.length?'var(--ink)':'var(--green)')+'">'+nd+' attività su '+tot+' svolte · '+(24-miss.length)+' competenze su 24 osservate</div>'+rows;
+  return '<div style="font-size:11px;font-weight:700;color:'+(miss.length?'var(--ink)':'var(--green)')+'">'+nd+' attività KOS su '+tot+' svolte · '+(24-miss.length)+' competenze su 24 osservate'+(occManValid().some(r=>(r.perc||[]).length)?' (contando anche le altre occasioni)':'')+'</div>'+rows;
 }
 function kosPathHTML(){
   const f=FASCIA; if(!f||!KOS2[f]) return '';
@@ -2108,35 +2108,47 @@ function occSet(kind,id,k,v){ const pp=scheda.pp||(scheda.pp={});
   saveDataDebounced(); }
 function occAdd(){ const pp=scheda.pp||(scheda.pp={}); if(!Array.isArray(pp.occMan)) pp.occMan=[]; pp.occMan.push({att:''}); saveDataDebounced(); occRefresh(); }
 function occDel(i){ const pp=scheda.pp||{}; (pp.occMan||[]).splice(i,1); saveDataDebounced(); occRefresh(); }
-function occRefresh(){ const b=document.getElementById('occ-tab'); if(b) b.innerHTML=occTableHTML(); }
+function occRefresh(){ const b=document.getElementById('occ-tab'); if(b) b.innerHTML=occTableHTML(); const k=document.getElementById('kos-cov'); if(k&&typeof kosCovHTML==='function') k.innerHTML=kosCovHTML(); try{ kosObsRefresh(); }catch(e){} }
 function occCount(){ const pp=scheda.pp||{}; return occKosRows().length+(pp.occMan||[]).filter(r=>(r.att||'').trim()).length; }
+function occPercChips(ids){ ids=(ids||[]).slice().sort((a,b)=>'PCS'.indexOf(a[0])-'PCS'.indexOf(b[0])||(+a.slice(1))-(+b.slice(1)));
+  return ids.map(id=>`<span title="${sEsc(kosPName(id))}" style="display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;margin:1px 2px 1px 0;border-radius:8px;background:var(--${id[0]}-pale);color:var(--${id[0]});border:1px solid var(--${id[0]}-border)">${id}</span>`).join(''); }
+function occPercToggle(i,id,on){ const r=((scheda.pp||{}).occMan||[])[i]; if(!r) return; if(!r.perc) r.perc=[]; if(on){ if(!r.perc.includes(id)) r.perc.push(id); } else r.perc=r.perc.filter(x=>x!==id);
+  saveDataDebounced(); const c=document.getElementById('occ-chips-'+i); if(c) c.innerHTML=occPercChips(r.perc)||'—'; const k=document.getElementById('kos-cov'); if(k&&typeof kosCovHTML==='function') k.innerHTML=kosCovHTML(); try{ kosObsRefresh(); }catch(e){} }
+function occPick(i){ window._occPick=(window._occPick===i)?null:i; occRefresh(); }
 function occTableHTML(){
   const pp=scheda.pp||(scheda.pp={}); const kr=occKosRows(); const man=pp.occMan||[];
   const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
   const ta=(kind,id,k,v,ph)=>`<textarea rows="2" style="width:100%;border:none;resize:vertical;font:inherit;font-size:11.5px;padding:4px;box-sizing:border-box;background:transparent" placeholder="${ph||''}" oninput="occSet('${kind}',${kind==='k'?"'"+id+"'":id},'${k}',this.value)">${sEsc(v)}</textarea>`;
   const ctxPh=a=>/aperto|uscita/i.test(a.incT)?'all’aperto':'in sede';
   const rows=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{};
-      return `<tr><td style="${cell};padding:6px 8px;font-size:11.5px"><b>${sEsc(a.n)}</b><br><span style="color:var(--ink-mid);font-size:10.5px">KOS 2.0 · ${a.incT.split(' · ')[0]}</span></td>${OCC_COLS.map(c=>`<td style="${cell}">${ta('k',a.key,c[0],o[c[0]],c[0]==='ctx'?ctxPh(a):'')}</td>`).join('')}<td style="${cell}"></td></tr>`; }).join('')+
-    man.map((r,i)=>`<tr><td style="${cell}">${ta('m',i,'att',r.att,'Attività o incontro')}</td>${OCC_COLS.map(c=>`<td style="${cell}">${ta('m',i,c[0],r[c[0]],'')}</td>`).join('')}<td style="${cell};text-align:center"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="occDel(${i})">×</button></td></tr>`).join('');
-  const empty=(!kr.length&&!man.length)?`<tr><td colspan="6" style="${cell};padding:10px;font-size:11.5px;color:var(--ink-mid)">Spunta qui sopra le attività del KOS che hai svolto: compariranno qui. Puoi aggiungere anche altre attività o incontri.</td></tr>`:'';
-  return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:720px"><thead><tr>${[['att','Attività / incontro'],...OCC_COLS].map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left;${c[0]==='att'?'width:24%':c[0]==='data'?'width:11%':''}">${c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg);width:28px"></th></tr></thead><tbody>${rows}${empty}</tbody></table></div>
+      return `<tr><td style="${cell};padding:6px 8px;font-size:11.5px"><b>${sEsc(a.n)}</b><br><span style="color:var(--ink-mid);font-size:10.5px">KOS 2.0 · ${a.incT.split(' · ')[0]}</span></td>${OCC_COLS.map(c=>`<td style="${cell}">${ta('k',a.key,c[0],o[c[0]],c[0]==='ctx'?ctxPh(a):'')}</td>`).join('')}<td style="${cell};padding:5px 6px" title="Percorsi che questa attività del KOS permette di osservare">${occPercChips(a.f)}</td><td style="${cell}"></td></tr>`; }).join('')+
+    man.map((r,i)=>`<tr><td style="${cell}">${ta('m',i,'att',r.att,'Attività o incontro')}</td>${OCC_COLS.map(c=>`<td style="${cell}">${ta('m',i,c[0],r[c[0]],'')}</td>`).join('')}<td style="${cell};padding:5px 6px"><div id="occ-chips-${i}">${occPercChips(r.perc)||'—'}</div><button class="btn-ghost" style="margin-top:4px;padding:2px 8px;font-size:10.5px" onclick="occPick(${i})">${window._occPick===i?'Fatto ✓':'+ percorsi'}</button></td><td style="${cell};text-align:center"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="occDel(${i})">×</button></td></tr>`+
+      (window._occPick===i?`<tr><td colspan="7" style="${cell};padding:8px 10px;background:var(--bg)"><div style="font-size:11px;font-weight:700;margin-bottom:6px">Quali percorsi hai avuto occasione di osservare in «${sEsc((r.att||'').trim()||'questa attività')}»? <span style="font-weight:400;color:var(--ink-mid)">Anche più di uno.</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px">${['P','C','S'].map(am=>`<div><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--${am});margin:2px 0 4px">${({P:'Sviluppo Personale',C:'Sviluppo Comunitario',S:'Sviluppo Spirituale'})[am]}</div>${(DB[am]||[]).map(pc=>`<label style="display:flex;gap:6px;align-items:flex-start;font-size:11.5px;margin:2px 0;cursor:pointer"><input type="checkbox" style="margin-top:2px;accent-color:var(--green)" ${(r.perc||[]).includes(pc.id)?'checked':''} onchange="occPercToggle(${i},'${pc.id}',this.checked)"><span><b>${pc.id}</b> ${sEsc(pc.name)}</span></label>`).join('')}</div>`).join('')}</div></td></tr>`:'')).join('');
+  const empty=(!kr.length&&!man.length)?`<tr><td colspan="7" style="${cell};padding:10px;font-size:11.5px;color:var(--ink-mid)">Spunta qui sopra le attività del KOS che hai svolto: compariranno qui. Puoi aggiungere anche altre attività o incontri.</td></tr>`:'';
+  return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:820px"><thead><tr>${[['att','Attività / incontro'],...OCC_COLS,['perc','Cosa hai osservato']].map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left;${c[0]==='att'?'width:22%':c[0]==='data'?'width:10%':c[0]==='perc'?'width:17%':''}">${c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg);width:28px"></th></tr></thead><tbody>${rows}${empty}</tbody></table></div>
     <button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="occAdd()">+ Aggiungi attività o incontro</button>`;
 }
 // percorsi coperti dalle attività KOS spuntate
-function kosCovered(){ const s=new Set(); occKosRows().forEach(a=>a.f.forEach(id=>s.add(id))); return s; }
+function occManValid(){ return ((scheda.pp||{}).occMan||[]).filter(r=>(r.att||'').trim()||(r.perc||[]).length); }
+function obsSources(){ const m={}; const add=(id,src)=>{ (m[id]=m[id]||[]).includes(src)||m[id].push(src); };
+  occKosRows().forEach(a=>a.f.forEach(id=>add(id,'KOS: '+a.n)));
+  occManValid().forEach(r=>(r.perc||[]).forEach(id=>add(id,((r.att||'').trim()||'Altra attività')+((r.data||'').trim()?' ('+r.data.trim()+')':''))));
+  return m; }
+function kosCovered(){ return new Set(Object.keys(obsSources())); }
 function kosCovUnscored(){ const cov=kosCovered(); return Object.values(DB).flat().filter(p=>cov.has(p.id)&&(obs[p.id]===undefined||obs[p.id]===null||obs[p.id]==='n')); }
 function kosObsRefresh(){
   if(MODE!=='giovani'){ const h0=document.getElementById('kos-obs-hint'); if(h0) h0.style.display='none'; return; }
-  const cov=kosCovered();
+  const src=obsSources(); const cov=new Set(Object.keys(src));
   Object.values(DB).flat().forEach(p=>{ const c=document.getElementById('card-'+p.id); if(!c) return;
     const tag=document.getElementById('kostag-'+p.id); const unsc=(obs[p.id]===undefined||obs[p.id]==='n');
     c.classList.toggle('pc-kos-todo', cov.has(p.id)&&unsc);
-    if(tag) tag.style.display=cov.has(p.id)?'':'none'; });
+    if(tag){ tag.style.display=cov.has(p.id)?'':'none'; tag.title=cov.has(p.id)?'Osservato in: '+src[p.id].join(' · '):''; } });
   const h=document.getElementById('kos-obs-hint'); if(!h) return;
   if(!cov.size){ h.style.display='none'; return; }
   const un=kosCovUnscored();
   h.style.display='';
-  h.innerHTML=`<b>Attività KOS svolte:</b> ${cov.size} percorsi su 24 hanno avuto almeno un’occasione di osservazione (segnati con <span class="kos-tag">KOS</span>). `+(un.length?`Di questi, <b>${un.length}</b> ${un.length===1?'è':'sono'} ancora senza valutazione: è consigliabile esprimere un parere, perché li hai già visti in azione.`:'Li hai valutati tutti ✓');
+  h.innerHTML=`<b>Occasioni osservative:</b> ${cov.size} percorsi su 24 hanno avuto almeno un’occasione di osservazione, con il KOS o con altre attività (segnati con <span class="kos-tag">osservato</span>, passaci sopra per vedere dove). `+(un.length?`Di questi, <b>${un.length}</b> ${un.length===1?'è':'sono'} ancora senza valutazione: è consigliabile esprimere un parere, perché li hai già visti in azione.`:'Li hai valutati tutti ✓');
 }
 
 // KOS_OBS — Cosa osservare per percorso × fascia
@@ -2854,7 +2866,7 @@ function goPhase(n){
       const observed = Object.values(obs).filter(v => v !== 'n').length;
       if (observed < total) {
         const missing = total - observed;
-        let kosTxt=''; try{ if(MODE==='giovani'){ const un=kosCovUnscored(); if(un.length) kosTxt=`\n\nTra questi, ${un.length===1?'uno è stato osservato':un.length+' sono stati osservati'} nelle attività del KOS che hai svolto (consigliato dare un parere):\n• `+un.map(p=>p.name).join('\n• '); } }catch(e){}
+        let kosTxt=''; try{ if(MODE==='giovani'){ const un=kosCovUnscored(); if(un.length) kosTxt=`\n\nTra questi, ${un.length===1?'uno è stato osservato':un.length+' sono stati osservati'} nelle occasioni osservative che hai segnato, con il KOS o con altre attività (consigliato dare un parere):\n• `+un.map(p=>p.name).join('\n• '); } }catch(e){}
         const proceed = confirm(`Hai osservato ${observed} percorsi su ${total}: ${missing} ${missing===1?'non è ancora stato valutato':'non sono ancora stati valutati'}.${kosTxt}\n\nVuoi procedere ugualmente alla lettura del gruppo?`);
         if (!proceed) return;
       }
@@ -4226,7 +4238,7 @@ function renderPhase1(){
       card.innerHTML=`
         <div class="pc-hdr" onclick="toggleCard('${p.id}')">
           <span class="pc-num">${i+1}</span>
-          <span class="pc-name">${p.name}${MODE==='giovani'?`<span class="kos-tag" id="kostag-${p.id}" style="display:none" title="Hai svolto almeno un'attività del KOS in cui osservare questo percorso">KOS</span>`:''}</span>
+          <span class="pc-name">${p.name}${MODE==='giovani'?`<span class="kos-tag" id="kostag-${p.id}" style="display:none" title="">osservato</span>`:''}</span>
           <div class="pc-states" onclick="event.stopPropagation()">${stateButtons}</div>
           <span class="pc-chev">▼</span>
         </div>
@@ -7336,13 +7348,16 @@ async function exportPPDocx(mode){
       const ws=[900,1100,600,1050,1300,1200,1050,1050]; ws.push(CW-ws.reduce((a,b)=>a+b,0));
       ch.push(dGridTable(STAFF_TAB_COLS.map(c=>c[1]), st.map(r=>STAFF_TAB_COLS.map(c=>r[c[0]])), ws, 15)); } }
   ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
-  { const kr=occKosRows(); const man=(pp.occMan||[]).filter(r=>T_(r.att)||OCC_COLS.some(c=>T_(r[c[0]])));
-    const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', o.data, o.ctx, o.chi, o.note]; }).concat(man.map(r=>[r.att,r.data,r.ctx,r.chi,r.note]));
-    if(rws.length){ const wo=[2700,1100,1500,1700]; wo.push(CW-wo.reduce((a,b)=>a+b,0)); ch.push(dGridTable(['Attività / incontro','Data','Contesto','Chi ha osservato','Note'], rws, wo, 17)); }
+  { const kr=occKosRows(); const man=(pp.occMan||[]).filter(r=>T_(r.att)||OCC_COLS.some(c=>T_(r[c[0]]))||(r.perc||[]).length);
+    const pc=ids=>(ids||[]).slice().sort((a,b)=>'PCS'.indexOf(a[0])-'PCS'.indexOf(b[0])||(+a.slice(1))-(+b.slice(1))).join(', ');
+    const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', o.data, o.ctx, o.chi, o.note, pc(a.f)]; }).concat(man.map(r=>[r.att,r.data,r.ctx,r.chi,r.note,pc(r.perc)]));
+    if(rws.length){ const wo=[2300,950,1250,1400,1500]; wo.push(CW-wo.reduce((a,b)=>a+b,0)); ch.push(dGridTable(['Attività / incontro','Data','Contesto','Chi ha osservato','Note','Percorsi osservati'], rws, wo, 17)); }
     else if(T_(pp.occasioni)) ch.push(...dMulti(pp.occasioni));
     else ch.push(dNote('Nessuna occasione osservativa indicata.')); }
   { const kd=(typeof kosActs==='function')?kosActs().filter(a=>(pp.kosDone||{})[a.key]):[];
-    if(kd.length){ const cn={}; kd.forEach(a=>a.f.forEach(id=>cn[id]=1)); ch.push(dPara('Percorso KOS 2.0: '+kd.length+' attività svolte su '+kosActs().length+'; '+Object.keys(cn).length+' competenze su 24 osservate.',{size:18,italics:true,after:80})); } }
+    const cn={}; kd.forEach(a=>a.f.forEach(id=>cn[id]=1)); const tot=Object.keys(typeof obsSources==='function'?obsSources():cn).length;
+    if(kd.length) ch.push(dPara('Percorso KOS 2.0: '+kd.length+' attività svolte su '+kosActs().length+'; '+Object.keys(cn).length+' competenze su 24 osservate'+(tot>Object.keys(cn).length?'; con le altre occasioni osservative, '+tot+' su 24.':'.'),{size:18,italics:true,after:80}));
+    else if(tot) ch.push(dPara('Percorsi con almeno un’occasione di osservazione: '+tot+' su 24.',{size:18,italics:true,after:80})); }
   if(T_(pp.condizioni)){ ch.push(dH3('Condizioni dell\'osservazione')); ch.push(...dMulti(pp.condizioni)); }
   ch.push(dH3('Analisi delle dinamiche di gruppo')); ch.push(...dMulti(pp.dinamiche));
   ch.push(dH3('Aspetti positivi e necessità educative'));
