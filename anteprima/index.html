@@ -5503,6 +5503,52 @@ function percHasContent(pr){
 function sez3Chosen(n){ const c=scheda.sez3Pri; return (typeof c==='number' && c>=0 && c<n) ? c : 0; }
 
 // ── strumenti del metodo declinati per Branca ──
+
+// ── Tipo di attività (Sezione 3): elenchi per Branca, scelta multipla ──
+const ATT_TIPI = {
+  L: [['Gioco',['Grande Gioco ambientato','Gioco a tappe / a basi','Gioco Giungla di sedimentazione','Gioco di movimento','Gioco d’attesa / tappabuchi']],
+      ['Giungla',['Racconto Giungla','Danza Giungla','Bans e canti']],
+      ['Imparare facendo',['Abilità manuale / laboratorio','Espressione (teatro, mimo, disegno…)']],
+      ['Legge e Promessa',['Promessa','Percorso Promessa','Parole Maestre']],
+      ['Strumenti di Branca',['Attività di Muta','Consiglio di Akela','Progressione Orizzontale (PO)','Progressione Verticale (PV)','Cerimonia']],
+      ['Aria aperta',['Caccia','Caccia con pernotto','Vacanze di Branco']],
+      ['Servizio e incontro',['Buona Azione','Incontro con altre Unità o realtà esterne']],
+      ['Riflessione',['Momento di sedimentazione','Verifica in cerchio','Momento spirituale']],
+      ['Altro',['Altro']]],
+  E: [['Gioco',['Grande Gioco','Gioco a basi','Gioco serale','Tappabuchi']],
+      ['Tecnica',['Tecnica (pionieristica, topografia, cucina, primo soccorso…)','Trapasso delle nozioni','Specialità / Specialista']],
+      ['Pattuglia e Reparto',['Riunione di Pattuglia','Consiglio di Pattuglia','Consiglio di Reparto (CdR)','Alta Pattuglia','Gara tra Pattuglie','Posti d’azione / Incarichi']],
+      ['Legge e Promessa',['Consiglio della Legge','Percorso Promessa','Cerimonia']],
+      ['Progressione',['Progressione Verticale (PV)','Progressione Orizzontale (PO)','Impresa','Missione']],
+      ['Aria aperta',['Uscita di Reparto','Uscita di Pattuglia','Campo estivo']],
+      ['Servizio',['Servizio']],
+      ['Spirito e riflessione',['Veglia','Momento spirituale','Sedimentazione','Verifica']],
+      ['Altro',['Altro']]],
+  R: [['Strada e aria aperta',['Hike','Settimana di convivenza','Campo invernale / Pasqua Rover','Estate Rover']],
+      ['Servizio',['Servizio di Compagnia','Servizio extra-associativo','Rover in Servizio']],
+      ['Ronde e progetti',['Ronda Esecutiva','Ronda d’Interesse','Ronda d’Azione','Inchiesta Rover','Progetto di Interesse','E.P.I.','Officine']],
+      ['Strumenti di Compagnia',['Consiglio di Compagnia','Carta di Compagnia','Autoprogrammazione','Specchio','Riflessione sul Cammino','Percorso Partenza','Rinnovo della Promessa']],
+      ['Spirito e confronto',['Veglia','Fuoco Rover','Momento spirituale','Incontro con testimoni / esperti']],
+      ['Rielaborazione',['Verifica','Rielaborazione (cognitiva ed emotiva)']],
+      ['Altro',['Altro']]]
+};
+function attGet(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per) return null; if(!per.attivita) per.attivita=[]; while(per.attivita.length<=aidx) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); return per.attivita[aidx]; }
+function attTipiLabel(a){ const t=(a&&a.tipi)||[]; return t.map(x=>x==='Altro'?((a.tipoAltro||'').trim()||'Altro'):x); }
+function attTipiSelHTML(a){ const l=attTipiLabel(a);
+  if(!l.length) return `<div style="font-size:11px;color:var(--ink-faint);margin:2px 0 4px">Nessun tipo scelto (facoltativo): serve solo a darti qualche idea.</div>`;
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px">${l.map(x=>`<span style="font-size:11.5px;font-weight:700;background:var(--green-pale,#e8f5e9);border:1px solid var(--border-light);border-radius:12px;padding:3px 10px">${sEsc(x)}</span>`).join('')}</div>`; }
+function attTipoToggle(pidx,aidx,g,i,on){ const a=attGet(pidx,aidx); if(!a) return; const it=(ATT_TIPI[FASCIA]||[])[g]?.[1]?.[i]; if(!it) return;
+  if(!a.tipi) a.tipi=[]; if(on){ if(!a.tipi.includes(it)) a.tipi.push(it); } else a.tipi=a.tipi.filter(x=>x!==it);
+  saveDataDebounced(); const k=pidx+'-'+aidx; const box=document.getElementById('att-tipi-'+k); if(box) box.innerHTML=attTipiSelHTML(a);
+  const c=document.getElementById('att-tipi-cnt-'+k); if(c) c.textContent=a.tipi.length; const al=document.getElementById('att-tipi-alt-'+k); if(al) al.style.display=a.tipi.includes('Altro')?'':'none'; }
+function attTipoAltro(pidx,aidx,v){ const a=attGet(pidx,aidx); if(!a) return; a.tipoAltro=v; saveDataDebounced(); const box=document.getElementById('att-tipi-'+pidx+'-'+aidx); if(box) box.innerHTML=attTipiSelHTML(a); }
+function attTipiHTML(pidx,aidx,a){ const L=ATT_TIPI[FASCIA]||[]; if(!L.length) return ''; const sel=(a&&a.tipi)||[]; const k=pidx+'-'+aidx;
+  const cat=L.map(([gn,items],g)=>`${gn==='Altro'?'<div style="margin-top:8px"></div>':`<div style="margin:8px 0 2px;font-size:10.5px;font-weight:800;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.03em">${gn}</div>`}
+      <div style="display:flex;flex-wrap:wrap;gap:4px 14px">${items.map((it,i)=>`<label style="display:flex;gap:6px;align-items:flex-start;font-size:12px;cursor:pointer;min-width:180px;flex:1 1 180px"><input type="checkbox" style="margin-top:2px;accent-color:var(--green)" ${sel.includes(it)?'checked':''} onchange="attTipoToggle(${pidx},${aidx},${g},${i},this.checked)"><span>${sEsc(it)}</span></label>`).join('')}</div>`).join('');
+  return `<label style="${SC_LBL}">Tipo di attività <span style="font-weight:400;color:var(--ink-faint)">— facoltativo, anche più di uno</span></label>
+      <div id="att-tipi-${k}">${attTipiSelHTML(a)}</div>
+      <details style="margin:4px 0 6px;border:1px dashed var(--border);border-radius:6px;padding:6px 10px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Scegli tra i tipi di attività della tua Branca <span style="font-weight:400;color:var(--ink-faint)">(<span id="att-tipi-cnt-${k}">${sel.length}</span> scelti)</span></summary>${cat}
+        <input id="att-tipi-alt-${k}" type="text" style="${SC_IN};margin-top:8px;${sel.includes('Altro')?'':'display:none'}" placeholder="Altro: scrivi il tipo di attività" value="${sEsc((a&&a.tipoAltro)||'')}" oninput="attTipoAltro(${pidx},${aidx},this.value)"></details>`; }
 function strumList(per){ const L=STRUM_BRANCA[FASCIA]||[]; const sel=per.strumSel||{}; const out=[];
   L.forEach((items,g)=>items.forEach(it=>{ if(it in sel) out.push({g:STRUM_GRUPPI[g], s:it, n:sel[it]||''}); }));
   Object.keys(sel).forEach(k=>{ if(!out.some(o=>o.s===k)) out.push({g:'', s:k, n:sel[k]||''}); });
@@ -5991,6 +6037,7 @@ function renderSchedaC(root,selected){
           return `<details ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card)">
             <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
+            ${attTipiHTML(idx,j,att)}
             <label style="${SC_LBL}">Lancio</label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come presenti l'attività, che cosa motiva i ragazzi a partire…" oninput="updateAttivita(${idx},${j},'lancio',this.value);saveDataDebounced()">${sEsc(att.lancio)}</textarea>
             <label style="${SC_LBL}">Sviluppo</label>
@@ -7343,7 +7390,7 @@ async function exportPPDocx(mode){
     const cl = per.checklist || {};
     const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k])));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
-      dPara(`${j+1}. ${plain(x.testo)||'Attività '+(j+1)}`,{size:19,bold:true,after:30,keepNext:true}),
+      dPara([dTxt(`${j+1}. ${plain(x.testo)||'Attività '+(j+1)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).map(k => dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240})),
       ...(x.link?[dPara(x.link,{size:16,color:GREEN,italics:true,indent:240,after:60})]:[dPara('',{after:40})])
     ]) : '—';
