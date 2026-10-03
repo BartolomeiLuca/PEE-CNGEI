@@ -5415,7 +5415,15 @@ function updatePercorsoField(idx,field,val){const all=getAllPercorsi();if(all[id
 function updatePercorsoAmbito(idx,ambito){const per=getAllPercorsi()[idx];if(!per)return;per.ambito=ambito;per.percorsoId='';renderValuation();}
 function updatePercorsoId(idx,id){const per=getAllPercorsi()[idx];if(!per)return;per.percorsoId=id;per.ambito=id[0]||per.ambito;renderValuation();}
 function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;}
-function updateChecklist(pidx,key,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.checklist[key])per.checklist[key]={checked:false,note:''};per.checklist[key][field]=val;}
+function attLinkBtn(inp){ const a=inp.parentElement&&inp.parentElement.querySelector('.att-link-open'); if(!a) return; const u=linkNorm(inp.value); const ok=/^(https?:|mailto:)/i.test(u); a.style.display=ok?'':'none'; if(ok) a.href=u; }
+const CL3=[['si','Sì'],['parte','In parte'],['no','Non ancora']];
+const CL3_COL={si:'#2e7d32',parte:'#E0A100',no:'#c62828'};
+const CL3_PH={nuova:'Cosa c’è di nuovo per i ragazzi? (o cosa manca per esserlo)',stimolante:'Cosa li accende? In quale attività?',progressiva:'Come cresce la difficoltà da un’attività all’altra?',costruita:'Dove decidono o propongono i ragazzi?',rielaborativa:'Dove si rielabora, con la testa e con il cuore?',esperienziale:'Cosa fanno in prima persona?',educativa:'Come porta all’obiettivo scelto?'};
+function cl3Val(c){ return c ? (c.val || (c.checked?'si':'')) : ''; }
+function cl3HTML(idx,key,v){ return CL3.map(([k,l])=>`<button type="button" onclick="cl3Set(${idx},'${key}','${k}')" style="font:700 11px 'Montserrat',sans-serif;padding:4px 10px;border-radius:12px;cursor:pointer;border:1.5px solid ${v===k?CL3_COL[k]:'var(--border)'};background:${v===k?CL3_COL[k]:'#fff'};color:${v===k?'#fff':'var(--ink-mid)'};margin-right:4px">${l}</button>`).join(''); }
+function cl3Set(idx,key,k){ const per=getAllPercorsi()[idx]; if(!per) return; if(!per.checklist) per.checklist={}; if(!per.checklist[key]) per.checklist[key]={checked:false,note:''};
+  const c=per.checklist[key]; c.val = (cl3Val(c)===k)?'':k; c.checked = c.val==='si'; saveDataDebounced(); const b=document.getElementById('cl3-'+idx+'-'+key); if(b) b.innerHTML=cl3HTML(idx,key,c.val); }
+function updateChecklist(pidx,key,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.checklist)per.checklist={};if(!per.checklist[key])per.checklist[key]={checked:false,note:''};per.checklist[key][field]=val;}
 function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
 function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx<3) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
   if(has && !confirm('Vuoi togliere l’Attività '+(aidx+1)+' e quello che hai scritto?')) return; per.attivita.splice(aidx,1); saveDataDebounced(); renderValuation(); }
@@ -6123,7 +6131,7 @@ function renderSchedaC(root,selected){
             <textarea style="${SC_TA};min-height:56px" placeholder="Che cosa fanno i ragazzi, con quali ruoli, materiali e tempi…" oninput="updateAttivita(${idx},${j},'sviluppo',this.value);saveDataDebounced()">${sEsc(att.sviluppo)}</textarea>
             <label style="${SC_LBL}">Conclusione <span style="font-weight:400;color:var(--ink-faint)">— compresa l'eventuale rielaborazione</span></label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
-            <input type="url" style="${SC_IN};margin-top:8px;font-size:11px" placeholder="Link a materiali (facoltativo)" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);saveDataDebounced()">
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:11px;flex:1" placeholder="Link a materiali (facoltativo), es. drive.google.com/…" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>
           </details>`; }).join('')}
         <button class="btn-ghost" style="font-size:11.5px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
       </td></tr>
@@ -6133,19 +6141,16 @@ function renderSchedaC(root,selected){
       <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti rielabori l'esperienza (es. Attività 2, conclusione), cognitiva ed emotiva, e come? Anche con il supporto dei ragazzi; i due livelli non devono essere per forza insieme." oninput="updatePercorsoField(${idx},'rielab',this.value);saveDataDebounced()">${sEsc(per.rielab)}</textarea></td></tr>`;
 
     // Checklist con note
-    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Le 7 caratteristiche<br><small style="font-weight:400;color:var(--ink-faint)">verifica il percorso nel suo complesso: spunta e spiega perché</small></td>
+    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Le 7 caratteristiche<br><small style="font-weight:400;color:var(--ink-faint)">guarda il percorso nel suo insieme: per ognuna dì quanto c'è e perché</small></td>
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
-        ${clKeys.map(key=>`
-        <div style="display:flex;gap:8px;align-items:flex-start;margin:6px 0">
-          <input type="checkbox" style="margin-top:3px;flex-shrink:0;accent-color:var(--green)" ${cl[key]?.checked?'checked':''}
-            onchange="updateChecklist(${idx},'${key}','checked',this.checked);saveDataDebounced()">
-          <div style="flex:1">
-            <div style="font-size:12px;font-weight:600">${clLabels[key]}</div>
-            <input type="text" style="width:100%;padding:4px 8px;border:1px solid var(--border-light);border-radius:4px;font-family:inherit;font-size:11px;margin-top:3px;box-sizing:border-box"
-              placeholder="${key==='nuova'?'Spiega perché…':'Perché?'}"
-              value="${sEsc(cl[key]?.note||'')}"
-              oninput="updateChecklist(${idx},'${key}','note',this.value);saveDataDebounced()">
+        ${clKeys.map(key=>`<div style="margin:8px 0 10px">
+          <div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center">
+            <div style="font-size:12px;font-weight:700;min-width:110px">${clLabels[key]}</div>
+            <div class="cl3" id="cl3-${idx}-${key}">${cl3HTML(idx,key,cl3Val(cl[key]))}</div>
           </div>
+          <input type="text" style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:4px;font-family:inherit;font-size:11.5px;margin-top:4px;box-sizing:border-box"
+            placeholder="${CL3_PH[key]||'Perché? In quale attività si vede?'}" value="${sEsc(cl[key]?.note||'')}"
+            oninput="updateChecklist(${idx},'${key}','note',this.value);saveDataDebounced()">
         </div>`).join('')}
       </td></tr>`;
 
@@ -6589,13 +6594,14 @@ function ppChecks(){
   add(c1,'Co-costruzione esplicitata in ogni percorso', percs.length>0&&percs.every(x=>T(x.coCostr)));
   add(c1,'Rielaborazione (cognitiva ed emotiva) esplicitata in ogni percorso', percs.length>0&&percs.every(x=>T(x.rielab)));
   const clK=['nuova','stimolante','progressiva','costruita','rielaborativa','esperienziale','educativa'];
-  add(c1,'Le 7 caratteristiche spiegate (con il perché) in ogni percorso', percs.length>0&&percs.every(x=>clK.every(k=>x.checklist&&x.checklist[k]&&T(x.checklist[k].note))));
+  add(c1,'Le 7 caratteristiche: per ognuna quanto c’è e perché, in ogni percorso', percs.length>0&&percs.every(x=>clK.every(k=>x.checklist&&x.checklist[k]&&cl3Val(x.checklist[k])&&T(x.checklist[k].note))), (()=>{ let t=0,d=0; percs.forEach(x=>clK.forEach(k=>{ t++; const c=(x.checklist||{})[k]; if(c&&cl3Val(c)&&T(c.note)) d++; })); return t?d+'/'+t:''; })());
   const acts=[]; percs.forEach(x=>(x.attivita||[]).forEach(a=>{ if(T(a.lancio)||T(a.sviluppo)||T(a.conclusione)||T(a.testo)) acts.push(a); }));
   add(c2,'Verifica di ogni attività descritta (bene / da migliorare)', acts.length>0&&acts.every(a=>T(a.vBene)&&T(a.vMigl)), acts.length?`${acts.filter(a=>T(a.vBene)&&T(a.vMigl)).length}/${acts.length}`:'');
-  let nI=0,dI=0; const pids=[...new Set(percs.map(x=>x.percorsoId))];
-  pids.forEach(pid=>{ const per=percs.find(x=>x.percorsoId===pid); const idx=(scheda.priorita[per.prioritaIdx]||{}).idr||per.idrSelezionati||[]; idx.forEach(j=>{ nI++; if(scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][j]&&scheda.idrComp[pid][j].c) dI++; }); });
+  let nI=0,dI=0,qI=0; const perc5=getAllPercorsi().filter(x=>x.percorsoId && (typeof x.prioritaIdx==='number' || percHasContent(x))); const pids=[...new Set(perc5.map(x=>x.percorsoId))];
+  pids.forEach(pid=>{ const per=perc5.find(x=>x.percorsoId===pid); const idx=(scheda.priorita[per.prioritaIdx]||{}).idr||per.idrSelezionati||[]; idx.forEach(j=>{ nI++; const cc=scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][j]; if(cc&&cc.c) dI++; if(cc&&T(cc.note)) qI++; }); });
   add(c2,'Comportamento indicato per ogni indicatore di risultato', nI>0&&dI===nI, nI?`${dI}/${nI}`:'');
-  add(c2,'Valutazione complessiva per ogni percorso', pids.length>0&&pids.every(pid=>T((scheda.valCompl||{})[pid])));
+  add(c2,'Osservazioni qualitative per ogni indicatore (cosa hai visto)', nI>0&&qI===nI, nI?`${qI}/${nI}`:'');
+  add(c2,'Valutazione complessiva per ogni priorità', pids.length>0&&pids.every(pid=>T((scheda.valCompl||{})[pid])), pids.length?`${pids.filter(pid=>T((scheda.valCompl||{})[pid])).length}/${pids.length}`:'');
   return {c1,c2};
 }
 function ppReadyHTML(){
@@ -7185,6 +7191,10 @@ function dTxt(text, o={}){
   const D = dxLib();
   return new D.TextRun({text:String(text), font:MF, size:o.size||20, bold:!!o.bold, italics:!!o.italics, color:o.color||'1A1A1A', break:o.break});
 }
+function linkNorm(u){ u=String(u||'').trim(); if(!u) return ''; if(/^(https?:|mailto:)/i.test(u)) return u; if(/^www\.|^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(u)) return 'https://'+u; return u; }
+function dLink(url, o={}){ const D=dxLib(); const u=linkNorm(url);
+  if(!/^(https?:|mailto:)/i.test(u) || !D.ExternalHyperlink) return dTxt(url, o);
+  return new D.ExternalHyperlink({link:u, children:[new D.TextRun({text:o.label||String(url), font:MF, size:o.size||18, color:'1155CC', underline:{}})]}); }
 function dPara(content, o={}){
   const D = dxLib();
   const kids = Array.isArray(content) ? content : [dTxt(content, o)];
@@ -7475,7 +7485,7 @@ async function exportPPDocx(mode){
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
       dPara([dTxt(`${j+1}. ${plain(x.testo)||'Attività '+(j+1)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).map(k => dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240})),
-      ...(x.link?[dPara(x.link,{size:16,color:GREEN,italics:true,indent:240,after:60})]:[dPara('',{after:40})])
+      ...(x.link?[dPara([dTxt('Materiali: ',{size:16,bold:true,color:GREEN}), dLink(x.link,{size:16})],{indent:240,after:60})]:[dPara('',{after:40})])
     ]) : '—';
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${typeof per.prioritaIdx==='number'?'':' (facoltativo)'}`));
     ch.push(dKV([
@@ -7485,7 +7495,7 @@ async function exportPPDocx(mode){
       ['Attività', attCell],
       ['Co-costruzione nel percorso', dMulti(per.coCostr)],
       ['Rielaborazione nel percorso', dMulti(per.rielab)],
-      ['Le 7 caratteristiche', clKeys.map(k => dPara([dTxt(`${cl[k]?.checked?'☑':'☐'} ${clLab[k]}: `,{size:18,bold:true,color:cl[k]?.checked?'2E7D32':'777777'}), dTxt(plain(cl[k]?.note)||'—',{size:18})],{after:30}))]
+      ['Le 7 caratteristiche', clKeys.map(k => { const v=cl3Val(cl[k]); const L={si:'Sì',parte:'In parte',no:'Non ancora'}[v]||'(da indicare)'; const C={si:'2E7D32',parte:'B07D00',no:'B3261E'}[v]||'777777'; return dPara([dTxt(`${clLab[k]}: `,{size:18,bold:true}), dTxt(L,{size:18,bold:true,color:C}), dTxt(' — '+(plain(cl[k]?.note)||'—'),{size:18})],{after:30}); })]
     ]));
     ch.push(dPara('',{after:60}));
   });
@@ -7645,7 +7655,7 @@ async function exportSchedaDocxLegacy(){
       ['Indicatori di risultato', idr.length ? idr.map(r=>dPara(plain(r),{size:19,after:40,bullet:true})) : '—'],
       ['Strumenti del metodo', plain(per.strumenti)||'—'],
       ['Tempistiche', percTempoTxt(per)],
-      ['Attività', att.length ? att.map((x,k)=>dPara([dTxt(`${k+1}. ${plain(x.testo)}`,{size:19}), ...(x.link?[dTxt(`  ${x.link}`,{size:16,color:GREEN,italics:true})]:[])],{after:40})) : '—'],
+      ['Attività', att.length ? att.map((x,k)=>dPara([dTxt(`${k+1}. ${plain(x.testo)}`,{size:19}), ...(x.link?[dTxt('  '), dLink(x.link,{size:16})]:[])],{after:40})) : '—'],
       [T.checklist, clKeys.map(k=>dPara(`${cl[k]?.checked?'☑':'☐'}  ${clLabels[k]}${cl[k]?.note?' — '+plain(cl[k].note):''}`,{size:18,after:20,color:cl[k]?.checked?'2E7D32':'777777'}))]
     ]));
     ch.push(dPara('',{after:60}));
