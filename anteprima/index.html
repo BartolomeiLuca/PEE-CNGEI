@@ -167,7 +167,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .rbar-track-multi{flex:1;height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;display:flex}
 .rbar-seg{height:100%}
 .rbar-seg-p,.rbar-seg-v{background:var(--ok-light)}
-.rbar-seg-a{background:var(--red-mid)}.rie-bar-multi{display:flex;overflow:hidden}.rie-bar-multi .rbar-seg{height:100%}
+.rbar-seg-a{background:var(--red-mid)}.rie-bar-multi{display:flex;overflow:hidden}.rie-bar-wrap.rie-bar-multi{height:16px;background:#E4E4DE}.rie-bar-multi .rbar-seg{display:flex;align-items:center;justify-content:center;font:800 10px/1 'Montserrat',sans-serif;color:#fff;border-right:1.5px solid rgba(255,255,255,.85);box-sizing:border-box;text-shadow:0 0 2px rgba(0,0,0,.35)}.rie-bar-multi .rbar-seg:last-child{border-right:0}.rie-bar-multi .rbar-seg{height:100%}
 .rbar-seg-c{background:#E8C44A}
 .rbar-seg-o{background:var(--blue-mid)}
 .rbar-val{font-size:11px;font-weight:700;color:var(--ink-mid);min-width:32px;text-align:right}
@@ -5371,7 +5371,8 @@ function covKeysHTML(){
   return `<div class="cov-keys"><div class="cov-keys-h">Chiave di lettura · spunti, non verdetti</div>${scelti.slice(0,3).map(x=>`<div class="cov-key">${x.h}</div>`).join('')}</div>`;
 }
 function lvlBarHTML(list,cls){ const c=lvlCounts(list), tot=list.length;
-  return `<div class="${cls||'rbar-track-multi'}">`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}"></div>`:'').join('')+`</div>`; }
+  const big=/rie-bar-multi/.test(cls||''); const non=tot-[1,2,3,4,5].reduce((x,t)=>x+(c[t]||0),0);
+  return `<div class="${cls||'rbar-track-multi'}"${big?` title="${[5,4,3,2,1].filter(t=>c[t]).map(t=>thresholdLabel(t)+': '+c[t]).join(' · ')}${non?' · Non osservati: '+non:''}"`:''}>`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}">${big?c[t]:''}</div>`:'').join('')+`</div>`; }
 function lvlTag(p){ const v=obsVal(p), t=obsToThreshold(v); if(!t) return `<span class="rie-row-tag tag-n" title="Non osservato">—</span>`;
   return `<span class="rie-row-tag" title="Punteggio ${obsNum(p)} su 10" style="color:${thresholdColor(t)};background:${thresholdColor(t)}14;cursor:help">${thresholdLabel(t)}</span>`; }
 function precompileScheda(selected){
