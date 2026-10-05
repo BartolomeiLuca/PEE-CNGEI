@@ -6079,7 +6079,7 @@ function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPerc
   h+=`<div class="ax-row3"><div><div class="ax-sub">Ragazzi in tutto</div><select class="ax-in" onchange="axSet(${p},${j},'pres.rag',this.value,true)">${axNumOpts(P.rag,60)}</select></div><div><div class="ax-sub">di cui ragazze <span class="ax-opt">(facoltativo)</span></div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragF',this.value)">${axNumOpts(P.ragF,60)}</select></div><div><div class="ax-sub">di cui ragazzi <span class="ax-opt">(facoltativo)</span></div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragM',this.value)">${axNumOpts(P.ragM,60)}</select></div></div>`;
   if(N.tot) h+=`<div class="ax-hint"><b>${N.tot} persone</b>: ${N.ad} adult${N.ad===1?'o':'i'} e ${N.rag} ragazz${N.rag===1?'o':'i'}${N.ad&&N.rag?' · un adulto ogni '+(N.rag/N.ad).toFixed(1).replace('.0','').replace('.',',')+' ragazzi':''}</div>`;
   h+=axLbl('Data')+`<input class="ax-in" type="date" style="max-width:190px" value="${axE(x.data)}" onchange="axSet(${p},${j},'data',this.value,true)"><span class="ax-warn">${axDateWarn(per,x.data)}</span>`;
-  h+=axLbl('Ritrovo e rientro','scrivi il luogo, oppure da Google Maps tocca Condividi → Copia link e incollalo qui')+`<div class="ax-rr"><div><div class="ax-sub">Luogo di ritrovo</div>${axPlaceField(p,j,L,'ritrovoDove','es. in sede, piazza del Popolo')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.ritrovo',this.value)">${axTimeOpts(L.ritrovo)}</select></div></div>
+  h+=axLbl('Ritrovo e rientro')+`<div class="ax-rr"><div><div class="ax-sub">Luogo di ritrovo</div>${axPlaceField(p,j,L,'ritrovoDove','es. in sede, piazza del Popolo')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.ritrovo',this.value)">${axTimeOpts(L.ritrovo)}</select></div></div>
     <div class="ax-rr"><div><div class="ax-sub">Luogo di rientro</div>${axPlaceField(p,j,L,'rientroDove','es. in sede, stazione')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.rientro',this.value)">${axTimeOpts(L.rientro)}</select></div></div>`;
   h+=axLbl('Dove si svolge')+axChips(AX_TIPO,L.tipo,v=>`axSet(${p},${j},'luogo.tipo',axD('${v}'),true)`);
   if(L.tipo==='altro') h+=axIN(p,j,'luogo.tipoAltro','Specifica',L.tipoAltro);
@@ -6105,17 +6105,12 @@ function axParseMap(u){ let t=u; try{ t=decodeURIComponent(u); }catch(e){} const
   m=/\/place\/([^/@?]+)/.exec(t); if(m) o.nome=m[1].replace(/\+/g,' ').trim();
   else { m=/[?&](?:q|query)=([^&]+)/.exec(t); if(m&&!/^-?\d+\.\d+,/.test(m[1])) o.nome=m[1].replace(/\+/g,' ').trim(); }
   return o; }
-function axPlaceUrl(L,k){ return (L&&L[k+'Link'])||axMapUrl(L&&L[k], k==='nome'?L:null); }
-function axPlaceShort(L,k){ const lk=L&&L[k+'Link']; if(lk){ const o=axParseMap(lk); return (o.lat!=null&&lk.length>45)?'https://maps.google.com/?q='+o.lat.toFixed(5)+','+o.lon.toFixed(5):lk; } return axMapShort(L&&L[k], k==='nome'?L:null); }
-function axPlaceField(p,j,L,k,ph,extra){ const lk=L[k+'Link'];
-  return `<div class="ax-geo"><input class="ax-in" placeholder="${lk?'Scrivi il nome del luogo':ph}" value="${axE(L[k])}" oninput="axPlaceIn(${p},${j},'${k}',this)">${extra||''}<a class="att-link-open ax-map" target="_blank" rel="noopener" href="${axE(axPlaceUrl(L,k))}" style="${axPlaceUrl(L,k)?'':'display:none'}">Maps ↗</a></div>`+
-    (lk?`<div class="ax-plink">📍 Posizione da Maps salvata · <a href="${axE(lk)}" target="_blank" rel="noopener">controlla ↗</a><button type="button" class="btn-ghost ax-x" title="Togli il link" onclick="axPlaceUnlink(${p},${j},'${k}')">×</button></div>`:'')
-    ; }
-function axPlaceIn(p,j,k,inp){ const v=inp.value.trim(); const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo;
-  if(AX_MAPLINK.test(v)){ const u=/^https?:/i.test(v)?v:'https://'+v; const o=axParseMap(u); L[k+'Link']=u; L[k]=o.nome||'';
-    if(k==='nome'){ if(o.lat!=null){ L.lat=o.lat; L.lon=o.lon; } else { delete L.lat; delete L.lon; } }
-    axSave(); axRe(p,j); showToast(o.nome?'Luogo preso da Maps':'Link salvato: scrivi il nome del luogo'); return; }
-  axSet(p,j,'luogo.'+k,inp.value); if(k==='nome'&&L.lat&&!L.nomeLink){ delete L.lat; delete L.lon; }
+function axPlaceUrl(L,k){ return axMapUrl(L&&L[k], k==='nome'?L:null); }
+function axPlaceShort(L,k){ return axMapShort(L&&L[k], k==='nome'?L:null); }
+function axPlaceField(p,j,L,k,ph,extra){ const u=axPlaceUrl(L,k);
+  return `<div class="ax-geo"><input class="ax-in" placeholder="${ph}" value="${axE(L[k])}" oninput="axPlaceIn(${p},${j},'${k}',this)">${extra||''}<a class="btn-ghost ax-btn ax-map" target="_blank" rel="noopener" href="${axE(u)}" style="${u?'':'display:none'}">Apri in Maps</a></div>`; }
+function axPlaceIn(p,j,k,inp){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; delete L[k+'Link'];
+  axSet(p,j,'luogo.'+k,inp.value); if(k==='nome'&&L.lat){ delete L.lat; delete L.lon; }
   const a=inp.parentElement.querySelector('.ax-map'); if(a){ const u=axPlaceUrl(L,k); a.style.display=u?'':'none'; if(u) a.href=u; } }
 function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Link']; if(k==='nome'){ delete L.lat; delete L.lon; } axSave(); axRe(p,j); }
 function axMapA(q,L,id){ const u=axMapUrl(q,L); return `<a class="att-link-open ax-map" ${id?`id="${id}"`:''} target="_blank" rel="noopener" href="${axE(u)}" style="${u?'':'display:none'}">Maps ↗</a>`; }
@@ -6256,9 +6251,9 @@ function axMsgPlain(t){ return t.replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u
 function axMsgHtml(t){ return axE(t).replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u0003/g,'<a href="$2">$1</a>').replace(/\n/g,'<br>'); }
 function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
-  const out=['Ciao a tutti!',`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&((L.nome||'').trim()||L.nomeLink)?' a '+axLk((L.nome||'').trim()||'questo posto',axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
-  if(L.ritrovo||L.ritrovoDove||L.ritrovoDoveLink) out.push('• Ritrovo'+(L.ritrovo?' alle '+L.ritrovo:'')+((L.ritrovoDove||L.ritrovoDoveLink)?', '+axLk(L.ritrovoDove||'qui',axPlaceShort(L,'ritrovoDove')):''));
-  if(L.rientro||L.rientroDove||L.rientroDoveLink) out.push('• Rientro'+(L.rientro?' alle '+L.rientro:'')+((L.rientroDove||L.rientroDoveLink)?', '+axLk(L.rientroDove||'qui',axPlaceShort(L,'rientroDove')):''));
+  const out=['Ciao a tutti!',`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&(L.nome||'').trim()?' a '+axLk(L.nome.trim(),axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
+  if(L.ritrovo||L.ritrovoDove) out.push('• Ritrovo'+(L.ritrovo?' alle '+L.ritrovo:'')+(L.ritrovoDove?', '+axLk(L.ritrovoDove,axPlaceShort(L,'ritrovoDove')):''));
+  if(L.rientro||L.rientroDove) out.push('• Rientro'+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(L.rientroDove,axPlaceShort(L,'rientroDove')):''));
   const mz=Object.fromEntries(AX_MEZZI); if(L.mezzo&&L.mezzo!=='piedi') out.push('• Ci spostiamo '+(L.mezzo==='altro'?(L.mezzoAltro||''):({bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto'}[L.mezzo]||mz[L.mezzo])));
   const port=(x.portare||'').split('\n').map(s=>s.trim()).filter(Boolean); if(port.length) out.push('• Nello zaino: '+port.join(', '));
   const q=axQuota(x); out.push(q?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare al ritrovo':'• Non c’è nessuna quota da versare');
@@ -6303,9 +6298,9 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   const tipo=Object.fromEntries(AX_TIPO), mz=Object.fromEntries(AX_MEZZI);
   const kv=[];
   if(x.data) kv.push(['Data', new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})]);
-  const kvMap=(txt,k)=>{ const u=k?axPlaceUrl(L,k):''; return u?[dPara([dTxt(txt+'  ',{size:19}), dLink(u,{size:17,label:'mappa'})],{after:0})]:txt; };
-  if(L.ritrovo||L.ritrovoDove||L.ritrovoDoveLink) kv.push(['Ritrovo',kvMap([L.ritrovo?'ore '+L.ritrovo:'',L.ritrovoDove||''].filter(Boolean).join(' · '),'ritrovoDove')]);
-  if(L.rientro||L.rientroDove||L.rientroDoveLink) kv.push(['Rientro',kvMap([L.rientro?'ore '+L.rientro:'',L.rientroDove||''].filter(Boolean).join(' · '),'rientroDove')]);
+  const kvMap=(txt,k)=>{ const u=k?axPlaceShort(L,k):''; return u?[dPara([dTxt(txt,{size:19})],{after:20}), dPara([dLink(u,{size:16,label:u.replace(/^https?:\/\//,'')})],{after:0})]:txt; };
+  if(L.ritrovo||L.ritrovoDove) kv.push(['Ritrovo',kvMap([L.ritrovo?'ore '+L.ritrovo:'',L.ritrovoDove||''].filter(Boolean).join(' · '),'ritrovoDove')]);
+  if(L.rientro||L.rientroDove) kv.push(['Rientro',kvMap([L.rientro?'ore '+L.rientro:'',L.rientroDove||''].filter(Boolean).join(' · '),'rientroDove')]);
   if(L.tipo) kv.push(['Dove',kvMap([L.tipo==='altro'?(L.tipoAltro||'altro'):tipo[L.tipo],(L.nome||'').trim()].filter(Boolean).join(' · '),L.tipo!=='sede'?'nome':'')]);
   if(L.mezzo){ let v=(L.mezzo==='altro'?(L.mezzoAltro||'altro'):mz[L.mezzo])+(L.km?' · '+L.km+' km andata e ritorno':''); if(L.km&&N.tot&&AX_CO2[L.mezzo]!=null){ const pa=Math.max(1,Number(L.perAuto)||4); const c=L.mezzo==='auto'?L.km*Math.ceil(N.tot/pa)*AX_CO2.auto:L.km*N.tot*AX_CO2[L.mezzo]; v+=' · impronta stimata '+(c<10?c.toFixed(1):Math.round(c))+' kg CO₂'; } kv.push(['Spostamento',v]); }
   if(N.tot) kv.push(['Presenti', N.ad+' adulti'+((x.pres.ad||[]).length?' ('+x.pres.ad.join(', ')+')':'')+' · '+N.rag+' ragazzi'+((x.pres.ragF||x.pres.ragM)?' ('+[x.pres.ragF?x.pres.ragF+' ragazze':'',x.pres.ragM?x.pres.ragM+' ragazzi':''].filter(Boolean).join(', ')+')':'')]);
