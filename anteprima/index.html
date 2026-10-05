@@ -7775,8 +7775,8 @@ function loadLib(url, check){
     document.head.appendChild(s);
   });
 }
-const needExcel = () => loadLib(LIB_URLS.exceljs, () => !!window.ExcelJS);
-const needDocx  = () => loadLib(LIB_URLS.docx, () => !!window.docx);
+const needExcel = () => { exportTheme(); return loadLib(LIB_URLS.exceljs, () => !!window.ExcelJS); };
+const needDocx  = () => { exportTheme(); return loadLib(LIB_URLS.docx, () => !!window.docx); };
 function saveBlob(blob, name){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -7799,7 +7799,10 @@ const scoreHex = n => n>0 ? thrHex(obsToThreshold(n)) : 'BBBBBB';
 const scoreLabel = n => n>0 ? thresholdLabel(obsToThreshold(Math.round(n))) : 'Non osservato';
 const AMB_LABEL = {P:'Personale', C:'Comunitario', S:'Spirituale'};
 const AMB_HEX = {P:'BF9000', C:'990000', S:'1155CC'};
-const GREEN = '1B5E42';
+let GREEN = '1B5E42', PALE = 'E8F5E9';
+// Colori di Branca per Word ed Excel: L giallo (scurito per la leggibilità), E verde, R rosso
+const BRANCA_HEX = {L:['9A6700','FFF8E6'], E:['1B5E42','F1F7F3'], R:['A31F1F','FCF1F1']};
+function exportTheme(){ const c=BRANCA_HEX[typeof FASCIA!=='undefined'?FASCIA:'']||BRANCA_HEX.E; GREEN=c[0]; PALE=c[1]; }
 const RUOLO_LBL = {CU:'Capo Unità', VCU:'Vice Capo Unità', SiS:'Senior in Servizio'};
 const FORM_LBL = {nessuna:'Nessuna', base:'Base', tdm:'Testa di Moro', wb:'Wood Badge'};
 const ESP_LBL = {basso:'Bassa (0–2 anni)', medio:'Media (3–6 anni)', alto:'Alta (7+ anni)'};
@@ -7932,7 +7935,7 @@ async function exportExcel(){
         scoreCell(ws.getCell(r,4), n);
         const lc = ws.getCell(r,5); lc.value = scoreLabel(n); lc.font = F({bold:true, color:{argb:'FF'+scoreHex(n)}});
         const pc = ws.getCell(r,6); pc.value = pris[p.id] ? '★ Sì' : ''; pc.alignment = {horizontal:'center', vertical:'middle'};
-        if(pris[p.id]){ pc.font = F({bold:true, color:{argb:'FF'+GREEN}}); pc.fill = fill('E8F5E9'); }
+        if(pris[p.id]){ pc.font = F({bold:true, color:{argb:'FF'+GREEN}}); pc.fill = fill(PALE); }
         r++;
       });
     });
@@ -8104,7 +8107,7 @@ const CW = 9638; // larghezza utile A4 con margini 20mm
 function dKV(rows){
   const w = [2400, CW-2400];
   return dTable(rows.map(([l, v]) => [
-    dCell(l, {w:w[0], fill:'F4F8F6', bold:true, color:'444444', size:18, vAlign:dxLib().VerticalAlign.TOP}),
+    dCell(l, {w:w[0], fill:PALE, bold:true, color:'444444', size:18, vAlign:dxLib().VerticalAlign.TOP}),
     dCell(v, {w:w[1], vAlign:dxLib().VerticalAlign.TOP})
   ]), w);
 }
