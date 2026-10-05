@@ -351,7 +351,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-day{border:1px solid var(--border);border-radius:8px;padding:6px 8px;margin:8px 0;background:var(--bg-card,#fff)}.ax-day-h{font-weight:800;font-size:12.5px;color:var(--ink);display:flex;justify-content:space-between;align-items:center}.ax-meal{border-left:3px solid var(--green-light,#9CC79C);padding-left:8px;margin:6px 0}.ax-meal-h{font-size:12px;font-weight:700;color:var(--green)}.ax-pt1b{display:flex;justify-content:space-between;align-items:center}.ax-addmeal{margin-top:6px;align-items:center}
 .ax-plink{font-size:11.5px;color:var(--ink-mid);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.ax-plink a{color:var(--green);font-weight:700}
 .ax-msgbox a{color:var(--green);text-decoration:underline}
-.ax-circ-intro{font-size:12px;line-height:1.55;color:var(--ink-mid);background:var(--green-pale);border-left:3px solid var(--green-light);border-radius:6px;padding:8px 10px;margin-bottom:6px}.ax-circ-rec{font-size:12.5px;border:1px solid var(--border-light);border-radius:8px;padding:6px 10px}.ax-circ-rec>div{padding:2px 0}.ax-circ-rec span{display:inline-block;min-width:96px;font-weight:700;color:var(--ink-mid)}
+.ax-circ-intro{font-size:12px;line-height:1.55;color:var(--ink-mid);background:var(--green-pale);border-left:3px solid var(--green-light);border-radius:6px;padding:8px 10px;margin-bottom:6px}.ax-circ-rec{font-size:12.5px;border:1px solid var(--border-light);border-radius:8px;padding:6px 10px}.ax-circ-rec>div{padding:2px 0}.ax-circ-sub{padding:1px 0 1px 14px}.ax-circ-sub span{min-width:82px!important;font-weight:600!important}.ax-circ-rec a{color:var(--green);text-decoration:underline}.ax-circ-rec span{display:inline-block;min-width:96px;font-weight:700;color:var(--ink-mid)}
 .ax-msgf{margin-top:12px;padding:10px 12px;border:1px solid var(--border-light);border-radius:8px;background:var(--bg-card,#fff)}
 .ax-map{font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;align-self:center}
 .ax-diet{display:grid;grid-template-columns:1fr 80px 28px;gap:5px;margin:4px 0}
@@ -2521,7 +2521,15 @@ function modalClose(){ const ov=document.getElementById('g-modal'); if(ov) ov.cl
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, contratto)']];
 function staffCols(){ const c=STAFF_TAB_COLS.slice(); if(FASCIA==='L') c.splice(2,0,['giungla','Nome giungla']); return c; }
-function staffGiungla(r){ return String(r&&r.giungla||'').trim() || (FASCIA==='L'&&/^\s*CG\s*$/i.test(r&&r.ruolo||'')?'Hathi':''); }
+const GJ_VCB=['Baloo','Bagheera','Kaa','Raksha','Chil','Fratel Bigio'], GJ_SIS=['Chikai','Ikki','Mor','Mang','Mysa','Oo','Rama','Ferao'];
+function gjOpts(ruolo){ const r=String(ruolo||'').trim().toUpperCase();
+  if(/^(CU|CB)$/.test(r)) return ['Akela']; if(/^CG$/.test(r)) return ['Hathi']; if(/^(VCU|VCB)$/.test(r)) return GJ_VCB.concat(['Phao']); if(/^SIS/.test(r)) return GJ_SIS;
+  return ['Akela'].concat(GJ_VCB,['Phao'],GJ_SIS,['Hathi']); }
+function staffGiungla(r){ const g=String(r&&r.giungla||'').trim(); if(g) return g; if(FASCIA!=='L') return ''; const o=gjOpts(r&&r.ruolo); return o.length===1?o[0]:''; }
+function gjSel(i,r){ const o=gjOpts(r.ruolo), cur=String(r.giungla||'').trim(); const custom=r.gjAltro||(cur&&!o.includes(cur));
+  if(custom) return `<div style="display:flex;gap:2px"><input style="width:100%;min-width:80px;border:none;font:inherit;font-size:11.5px;padding:4px;background:transparent" placeholder="Nome giungla" value="${sEsc(cur)}" oninput="staffTabSet(${i},'giungla',this.value)"><button class="btn-ghost" style="padding:0 5px;font-size:11px" title="Torna all’elenco" onclick="staffTabSet(${i},'gjAltro',false);staffTabSet(${i},'giungla','');document.getElementById('staff-tab').innerHTML=staffTabHTML()">↺</button></div>`;
+  const hint=GJ_SIS.includes(o[0])?'personaggi minori':o.length===1?'':'scegli';
+  return `<select style="width:100%;min-width:96px;border:none;font:inherit;font-size:11.5px;padding:4px;background:transparent" onchange="if(this.value==='__a'){staffTabSet(${i},'gjAltro',true);document.getElementById('staff-tab').innerHTML=staffTabHTML();}else staffTabSet(${i},'giungla',this.value)">${o.length===1?'':`<option value="">— ${hint} —</option>`}${o.map(n=>`<option ${(cur||(o.length===1?o[0]:''))===n?'selected':''}>${n}</option>`).join('')}<option value="__a">Altro…</option></select>`; }
 function staffTab(){ const pp=scheda.pp||(scheda.pp={});
   if(Array.isArray(pp.staffTab)){ const t=pp.staffTab, emp=t.every(r=>Object.keys(r).every(k=>k==='ruolo'||!String(r[k]||'').trim())), rl=t.map(r=>r.ruolo).join(',');
     if(emp && FASCIA==='R' && rl==='CU,VCU,VCU,SiS,CG') pp.staffTab=null; else if(emp && FASCIA!=='R' && rl==='CC,VCC,CG') pp.staffTab=null; }
@@ -2531,10 +2539,10 @@ function staffTabAdd(){ staffTab().push({ruolo:''}); saveDataDebounced(); const 
 function staffTabDel(i){ staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 function staffTabHTML(){
   const t=staffTab(); const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
-  const inp=(i,k,v,w)=>`<textarea rows="2" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:11.5px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)">${sEsc(v)}</textarea>`;
+  const inp=(i,k,v,w)=>`<textarea rows="2" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:11.5px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)"${k==='ruolo'&&FASCIA==='L'?` onchange="document.getElementById('staff-tab').innerHTML=staffTabHTML()"`:''}>${sEsc(v)}</textarea>`;
   const w={ruolo:56,nome:100,giungla:90,eta:40,form:100,car:140,prof:130,ruoli:100,disp:100,varie:140};
   return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:1000px"><thead><tr>${staffCols().map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left">${c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg)"></th></tr></thead><tbody>`+
-    t.map((r,i)=>`<tr>${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}">${c[0]==='giungla'&&!r.giungla&&staffGiungla(r)?inp(i,c[0],'',w[c[0]]).replace('<textarea','<textarea placeholder="'+staffGiungla(r)+'"'):inp(i,c[0],r[c[0]],w[c[0]])}</td>`).join('')}<td style="${cell};text-align:center"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
+    t.map((r,i)=>`<tr>${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}">${c[0]==='giungla'?gjSel(i,r):inp(i,c[0],r[c[0]],w[c[0]])}</td>`).join('')}<td style="${cell};text-align:center"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
     `</tbody></table></div><button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="staffTabAdd()">+ Aggiungi riga</button>`;
 }
 
@@ -6061,7 +6069,7 @@ const AX_ZAINO=[['Sempre',['Uniforme completa','Borraccia','K-way o giacca imper
  ['All’aperto',['Scarpe da trekking','Pile o felpa','Ricambio completo','Crema solare','Torcia']],
  ['Se si dorme fuori',['Sacco a pelo','Materassino','Pigiama','Necessaire','Asciugamano','Gavetta, posate e bicchiere']],
  ['Documenti',['Tessera sanitaria']]];
-const AX_CIT={L:[['Per la forza del Branco è il Lupo, e la forza del Lupo è il Branco.','Rudyard Kipling, Il libro della giungla'],['Noi siamo dello stesso sangue, tu ed io.','Rudyard Kipling, Il libro della giungla'],['Lasciate il mondo un po’ migliore di come l’avete trovato.','Baden-Powell']],
+const AX_CIT={L:[['La forza del Lupo è nel Branco, la forza del Branco è nel Lupo.','Parola Maestra di Raksha'],['Siamo dello stesso sangue, tu ed io.','Parola Maestra di Chil'],['La Giungla è grande, il Lupetto è piccolo, che scelga attentamente il suo sentiero.','Parola Maestra di Baloo'],['Zampe che non fanno rumore, occhi che vedono nell’oscurità, continua la Pista e conquista la Preda.','Parola Maestra di Bagheera'],['Tutta la Giungla è la nostra Tana, chi ne ha cura vivrà lieto e prospero.','Parola Maestra di Hathi'],['La mia Traccia è la tua Traccia, la mia Tana è la tua Tana e la mia Preda è la tua Preda.','Parola Maestra di Fratel Bigio']],
  E:[['Guarda lontano, e quando credi di guardare lontano, guarda più lontano ancora.','Baden-Powell'],['Un’avventura è soltanto un disagio considerato nel modo giusto.','G. K. Chesterton'],['Lasciate il mondo un po’ migliore di come l’avete trovato.','Baden-Powell']],
  R:[['Viandante, non c’è cammino: il cammino si fa camminando.','Antonio Machado'],['Guida da te la tua canoa.','Baden-Powell'],['Il vero modo di essere felici è procurare la felicità agli altri.','Baden-Powell']]};
 function axAperture(a,x){ const t=(a.testo||'').trim(), tt=t?'“'+t+'”':'la prossima avventura'; const d=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long'}):''; const D=d?d.charAt(0).toUpperCase()+d.slice(1):'Presto';
@@ -6070,8 +6078,8 @@ function axAperture(a,x){ const t=(a.testo||'').trim(), tt=t?'“'+t+'”':'la p
     E:[`Esploratori ed Esploratrici, zaino in spalla! ${D} comincia ${tt}${fuori?' e si parte':''}: servirà tutta la forza delle vostre Pattuglie.`,`Ci siamo quasi: ${tt} è pronta a mettervi alla prova. Portate curiosità, spirito di squadra e voglia di fare.`],
     R:[`Rover, la strada ci aspetta: ${D} ${tt} è l’occasione per mettersi in gioco insieme alla Compagnia.`,`${tt.charAt(0).toUpperCase()+tt.slice(1)}: un pezzo di strada da fare insieme, con lo zaino leggero e gli occhi aperti.`]}[FASCIA]||[`Ci siamo quasi! ${D} ci aspetta ${tt}: non vediamo l’ora di viverla insieme.`]); }
 function axPropose(p,j,kind){ const a=attGet(p,j), x=axX(p,j); window._axPi=(window._axPi||0)+1;
-  let v; if(kind==='cit'){ const C=AX_CIT[FASCIA]||AX_CIT.E; const c=C[window._axPi%C.length]; v='«'+c[0]+'» ('+c[1]+')'; } else { const A=axAperture(a,x); v=A[window._axPi%A.length]; }
-  x.ambientProp=true; axSet(p,j,'ambient',v,true); showToast('È uno spunto: personalizzalo con parole vostre'); }
+  if(kind==='cit'){ const C=AX_CIT[FASCIA]||AX_CIT.E; const c=C[window._axPi%C.length]; x.citProp=true; axSet(p,j,'citaz','«'+c[0]+'» ('+c[1]+')',true); } else { const A=axAperture(a,x); x.ambientProp=true; axSet(p,j,'ambient',A[window._axPi%A.length],true); }
+  showToast('È uno spunto: personalizzalo con parole vostre'); }
 function axPortList(x){ const sel=(x.portareSel||[]).slice(); const ord=AX_ZAINO.flatMap(g=>g[1]); sel.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)); return sel.concat((x.portare||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
 function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):''; }
 function axTog(p,j,k,v){ const r=axArrP(p,j,k); const i=r.indexOf(v); if(i>=0) r.splice(i,1); else r.push(v); axSave(); axRe(p,j); }
@@ -6136,14 +6144,33 @@ function axParseMap(u){ let t=u; try{ t=decodeURIComponent(u); }catch(e){} const
   m=/\/place\/([^/@?]+)/.exec(t); if(m) o.nome=m[1].replace(/\+/g,' ').trim();
   else { m=/[?&](?:q|query)=([^&]+)/.exec(t); if(m&&!/^-?\d+\.\d+,/.test(m[1])) o.nome=m[1].replace(/\+/g,' ').trim(); }
   return o; }
-function axPlaceUrl(L,k){ return axMapUrl(L&&L[k], k==='nome'?L:null); }
-function axPlaceShort(L,k){ return axMapShort(L&&L[k], k==='nome'?L:null); }
-function axPlaceField(p,j,L,k,ph,extra){ const u=axPlaceUrl(L,k);
-  return `<div class="ax-geo"><input class="ax-in" placeholder="${ph}" value="${axE(L[k])}" oninput="axPlaceIn(${p},${j},'${k}',this)">${extra||''}<a class="btn-ghost ax-btn ax-map" target="_blank" rel="noopener" href="${axE(u)}" style="${u?'':'display:none'}">Apri in Maps</a></div>`; }
-function axPlaceIn(p,j,k,inp){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; delete L[k+'Link'];
-  axSet(p,j,'luogo.'+k,inp.value); if(k==='nome'&&L.lat){ delete L.lat; delete L.lon; }
-  const a=inp.parentElement.querySelector('.ax-map'); if(a){ const u=axPlaceUrl(L,k); a.style.display=u?'':'none'; if(u) a.href=u; } }
-function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Link']; if(k==='nome'){ delete L.lat; delete L.lon; } axSave(); axRe(p,j); }
+function axGmaps(q){ return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q); }
+function axAddrFmt(r){ const a=r.address||{}; const via=[a.road||a.pedestrian||a.square||a.footway||a.path||'',a.house_number||''].filter(Boolean).join(' '); const city=a.city||a.town||a.village||a.hamlet||a.municipality||'';
+  const nm=(r.name&&r.name!==via&&r.name!==city)?r.name:''; const out=[nm,via,[a.postcode,city].filter(Boolean).join(' ')].filter(Boolean).join(', '); return out||String(r.display_name||'').split(',').slice(0,3).join(','); }
+function axPlaceUrl(L,k){ if(!L) return ''; const la=L[k+'Lat']??(k==='nome'?L.lat:null), lo=L[k+'Lon']??(k==='nome'?L.lon:null);
+  if(la!=null&&lo!=null&&(L[k+'Addr']||k==='nome')) return axGmaps((+la).toFixed(6)+','+(+lo).toFixed(6));
+  const t=String(L[k]||'').trim(); if(!t) return ''; if(axIsLinkTxt(t)) return linkNorm(t); if(/^\s*(in\s+)?(sede|alla sede)\s*$/i.test(t)) return '';
+  return axGmaps(t+(scheda.pp&&scheda.pp.sezione&&!/,/.test(t)?', '+scheda.pp.sezione:'')); }
+function axPlaceShort(L,k){ return axPlaceUrl(L,k); }
+const AX_PLBL={ritrovoDove:'Punto di ritrovo',rientroDove:'Punto di rientro',nome:'Luogo dell’attività'};
+function axPlaceTxt(L,k){ const t=String(L&&L[k]||'').trim(), ad=String(L&&L[k+'Addr']||'').trim(); const isL=axIsLinkTxt(t);
+  if(ad){ if(!t||isL||ad.toLowerCase().includes(t.toLowerCase())) return ad; return t+' – '+ad; }
+  return isL?AX_PLBL[k]:t; }
+function axPlaceField(p,j,L,k,ph,extra){ const u=axPlaceUrl(L,k), ad=L[k+'Addr'];
+  return `<div class="ax-geo"><input class="ax-in" placeholder="${ph}" value="${axE(L[k])}" oninput="axPlaceIn(${p},${j},'${k}',this)">${extra||`<button type="button" class="btn-ghost ax-btn" onclick="axGeoK(${p},${j},'${k}')">Cerca l’indirizzo</button>`}</div>`
+   +(ad?`<div class="ax-plink">📍 <a href="${axE(u)}" target="_blank" rel="noopener">${axE(ad)}</a> <span class="ax-opt">tocca per verificarlo su Maps</span><button type="button" class="btn-ghost ax-x" title="Togli l’indirizzo" onclick="axPlaceUnlink(${p},${j},'${k}')">×</button></div>`
+       :(u?`<div class="ax-plink"><a href="${axE(u)}" target="_blank" rel="noopener">Verifica su Maps ↗</a> <span class="ax-opt">${axIsLinkTxt(L[k])?'link incollato':'per un link preciso usa “Cerca l’indirizzo”'}</span></div>`:''))
+   +`<div id="ax-geo-${k}-${p}-${j}"></div>`; }
+function axPlaceIn(p,j,k,inp){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo;
+  axSet(p,j,'luogo.'+k,inp.value); if(k==='nome'&&L.lat&&!L.nomeAddr){ delete L.lat; delete L.lon; } }
+function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Addr']; delete L[k+'Lat']; delete L[k+'Lon']; if(k==='nome'){ delete L.lat; delete L.lon; } axSave(); axRe(p,j); }
+async function axGeoK(p,j,k){ const L=(axX(p,j).luogo)||{}; const box=document.getElementById('ax-geo-'+k+'-'+p+'-'+j); const q=String(L[k]||'').trim();
+  if(!q||axIsLinkTxt(q)){ showToast('Scrivi prima il nome o l’indirizzo del luogo'); return; } box.innerHTML='<span class="ax-sub">Cerco…</span>';
+  try{ const sez=((scheda.pp&&scheda.pp.sezione)||'').trim(); let res=sez&&!/,/.test(q)?await axGeoQ(q+', '+sez):[]; if(!res.length) res=await axGeoQ(q);
+    if(!res.length){ box.innerHTML='<span class="ax-sub">Non lo trovo: prova con via e città, oppure incolla qui il link di Google Maps.</span>'; return; }
+    window._axResK=res; box.innerHTML='<div class="ax-sub">Scegli l’indirizzo giusto:</div>'+res.map((r,i)=>`<button type="button" class="ax-res" onclick="axPickK(${p},${j},'${k}',${i})">${axE(axAddrFmt(r))}<br><span class="ax-opt">${axE(r.display_name)}</span></button>`).join('');
+  }catch(e){ box.innerHTML='<span class="ax-sub">Ricerca non disponibile ora (serve internet).</span>'; } }
+function axPickK(p,j,k,i){ const r=(window._axResK||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L[k+'Addr']=axAddrFmt(r); L[k+'Lat']=+r.lat; L[k+'Lon']=+r.lon; axSave(); axRe(p,j); }
 function axMapA(q,L,id){ const u=axMapUrl(q,L); return `<a class="att-link-open ax-map" ${id?`id="${id}"`:''} target="_blank" rel="noopener" href="${axE(u)}" style="${u?'':'display:none'}">Maps ↗</a>`; }
 function axMapUpd(inp){ const a=inp.parentElement.querySelector('.ax-map'); if(!a) return; const u=axMapUrl(inp.value); a.style.display=u?'':'none'; if(u) a.href=u; }
 function axCO2(L,n){ const km=Number(L.km)||0; if(!km||!n) return '<span class="ax-sub">Indica i presenti e i km per stimare l’impronta ecologica del viaggio.</span>';
@@ -6152,13 +6179,13 @@ function axCO2(L,n){ const km=Number(L.km)||0; if(!km||!n) return '<span class="
   const alt=Object.entries(est).filter(([k])=>k!==L.mezzo).map(([k,v])=>({auto:'in auto',treno:'in treno',bus:'in pullman'}[k]+' circa '+f(v)+' kg')).join(' · ');
   return (cur!=null?`<b>Impronta stimata del viaggio (${n} persone): circa ${f(cur)} kg di CO₂</b>`:'<b>Stima per confronto</b>')+`<div class="ax-sub">${alt}. Stima indicativa con fattori medi (UK DESNZ 2023); per il treno i km sono approssimati.</div>`; }
 function axDateWarn(per,d){ if(!d||!per) return ''; const t=percTempo(per); if(!t.dal||!t.al) return ''; const ym=d.slice(0,7); return (ym<t.dal||ym>t.al)?' La data è fuori dalle tempistiche del percorso.':''; }
-async function axGeoQ(q){ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=it&accept-language=it&q='+encodeURIComponent(q)); if(!r.ok) throw new Error('ricerca'); return r.json(); }
+async function axGeoQ(q){ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&countrycodes=it&accept-language=it&q='+encodeURIComponent(q)); if(!r.ok) throw new Error('ricerca'); return r.json(); }
 async function axGeo(p,j){ const x=axX(p,j); const L=x.luogo||{}; const box=document.getElementById('ax-geo-r-'+p+'-'+j); const q=(L.nome||'').trim(); if(!q){ showToast('Scrivi prima il luogo'); return; }
   box.innerHTML='<span class="ax-sub">Cerco…</span>';
   try{ const res=await axGeoQ(q); if(!res.length){ box.innerHTML='<span class="ax-sub">Nessun luogo trovato: prova a scriverlo in un altro modo, o inserisci i km a mano.</span>'; return; }
     window._axRes=res; box.innerHTML='<div class="ax-sub">Scegli il luogo giusto:</div>'+res.map((r,i)=>`<button type="button" class="ax-res" onclick="axPick(${p},${j},${i})">${axE(r.display_name)}</button>`).join('');
   }catch(e){ box.innerHTML='<span class="ax-sub">Ricerca non disponibile ora (serve internet). Puoi inserire i km a mano.</span>'; } }
-async function axPick(p,j,i){ const r=(window._axRes||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L.nome=r.display_name.split(',').slice(0,3).join(','); L.lat=+r.lat; L.lon=+r.lon; axSave();
+async function axPick(p,j,i){ const r=(window._axRes||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L.nome=r.display_name.split(',').slice(0,3).join(','); L.lat=+r.lat; L.lon=+r.lon; L.nomeAddr=axAddrFmt(r); L.nomeLat=+r.lat; L.nomeLon=+r.lon; axSave();
   const box=document.getElementById('ax-geo-r-'+p+'-'+j); box.innerHTML='<span class="ax-sub">Calcolo la distanza…</span>';
   try{ const from=(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim(); if(!from) throw new Error('nofrom'); const fr=await axGeoQ(from); if(!fr.length) throw new Error('nofrom');
     const a={lat:+fr[0].lat,lon:+fr[0].lon}; let km=null, how='';
@@ -6267,7 +6294,7 @@ function axImpr(p,j,a,x){ const PB=x.pb||{}; const N=axN(x);
   let h=axLbl('Piano B','tocca le situazioni da prevedere')+axChips(AX_PB,Object.keys(PB).filter(k=>PB[k]!=null),v=>`axPB(${p},${j},axD('${v}'))`,true);
   h+=AX_PB.filter(([k])=>PB[k]!=null).map(([k,l])=>`<div class="ax-sub">${l}</div>`+axTA(p,j,'pb.'+k,k==='altro'?'Quale situazione, e cosa fai?':'Cosa fai in questo caso?',PB[k])).join('');
   if((a.pianoB||'').trim()) h+=`<div class="ax-sub">Note</div><textarea class="ax-ta" oninput="updateAttivita(${p},${j},'pianoB',this.value);saveDataDebounced()">${axE(a.pianoB)}</textarea>`;
-  const S=x.sic||{}; h+=axLbl('Sicurezza')+(N.tot?`<div class="ax-hint">Presenti: ${N.ad} adulti e ${N.rag} ragazzi${N.ad&&N.rag?' (un adulto ogni '+(N.rag/N.ad).toFixed(1).replace('.0','').replace('.',',')+')':''}</div>`:'<div class="ax-hint">Indica i presenti in “Chi, quando, dove”.</div>')+
+  const S=x.sic||{}; h+=axLbl('Sicurezza')+(N.tot?`<div class="ax-hint">Presenti: ${N.ad} adulti e ${N.rag} ragazzi${N.ad&&N.rag?' (un adulto ogni '+(N.rag/N.ad).toFixed(1).replace('.0','').replace('.',',')+')':''}</div>`:'<div class="ax-hint">Indica i presenti in “Chi, quando, dove, come”.</div>')+
     `<div class="ax-row2"><div><div class="ax-sub">Chi ha la cassetta di primo soccorso</div>${axPersonSel(S.cassetta,`axSet(${p},${j},'sic.cassetta',@V,true)`)}</div><div><div class="ax-sub">Numeri utili</div>${axIN(p,j,'sic.numeri','es. 112, guardia medica, referente del luogo',S.numeri)}</div></div><div class="ax-sub">Rischi specifici e come li riduci</div>${axTA(p,j,'sic.rischi','es. attraversamento della strada, acqua, attrezzi da taglio…',S.rischi)}`;
   h+=axLbl('Accortezze e possibili attenzioni per includere e tutelare il benessere di tutti')+`<div class="att-inc"><div><div class="att-sub">A cosa fare attenzione</div><textarea class="ax-ta" placeholder="es. un ragazzo con difficoltà motorie, chi non sa nuotare, chi ha paura del buio, chi è appena arrivato, chi si espone poco…" oninput="updateAttivita(${p},${j},'incRischi',this.value);saveDataDebounced();axLive(${p},${j})">${axE(a.incRischi)}</textarea></div><div><div class="att-sub">Accortezze che metti in campo</div><textarea class="ax-ta" placeholder="es. un ruolo alternativo di pari valore, un percorso più corto, una coppia di riferimento, la possibilità di dire “passo” senza giudizio…" oninput="updateAttivita(${p},${j},'incAzioni',this.value);saveDataDebounced();axLive(${p},${j})">${axE(a.incAzioni)}</textarea></div></div><div class="att-note">Descrivi le situazioni senza nomi e senza dati sanitari: questa parte finisce nella scheda dell’attività che condividi.</div>`;
   h+=axLbl('Eventuali link esterni','schede, video, materiali online')+`<div style="display:flex;gap:8px;align-items:center"><input type="text" inputmode="url" autocomplete="off" class="ax-in" style="flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${axE(a.link)}" oninput="updateAttivita(${p},${j},'link',this.value);attLinkBtn(this);saveDataDebounced();axLive(${p},${j})"><a class="att-link-open" href="${axE(linkNorm(a.link||''))}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(a.link||''))?'':'display:none'}">Apri ↗</a></div>`;
@@ -6281,9 +6308,9 @@ function axMsgPlain(t){ return t.replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u
 function axMsgHtml(t){ return axE(t).replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u0003/g,(m,a,b)=>'<a href="'+b+'">'+(axIsLinkTxt(a)?'mappa':a)+'</a>').replace(/\n/g,'<br>'); }
 function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
-  const amb=(x.ambient||'').trim(); const out=['Ciao a tutti!',...(amb?[amb,'']:[]),`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&(L.nome||'').trim()?' a '+axLk(L.nome.trim(),axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
-  if(L.ritrovo||L.ritrovoDove) out.push('• Ritrovo'+(L.ritrovo?' alle '+L.ritrovo:'')+(L.ritrovoDove?', '+axLk(L.ritrovoDove,axPlaceShort(L,'ritrovoDove')):''));
-  if(L.rientro||L.rientroDove) out.push('• Rientro'+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(L.rientroDove,axPlaceShort(L,'rientroDove')):''));
+  const amb=(x.ambient||'').trim(), cit=(x.citaz||'').trim(); const out=[...(cit?[cit,'']:[]),'Ciao a tutti!',...(amb?[amb,'']:[]),`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&(L.nome||'').trim()?' a '+axLk(axPlaceTxt(L,'nome'),axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
+  if(L.ritrovo||L.ritrovoDove) out.push('• Ritrovo'+(L.ritrovo?' alle '+L.ritrovo:'')+(L.ritrovoDove?', '+axLk(axPlaceTxt(L,'ritrovoDove'),axPlaceShort(L,'ritrovoDove')):''));
+  if(L.rientro||L.rientroDove) out.push('• Rientro'+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(axPlaceTxt(L,'rientroDove'),axPlaceShort(L,'rientroDove')):''));
   const mz=Object.fromEntries(AX_MEZZI); if(L.mezzo&&L.mezzo!=='piedi') out.push('• Ci spostiamo '+(L.mezzo==='altro'?(L.mezzoAltro||''):({bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto'}[L.mezzo]||mz[L.mezzo])));
   const port=axPortList(x); if(port.length) out.push('• Nello zaino: '+port.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
   const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco, lo porta ciascuno: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
@@ -6291,7 +6318,7 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' (lo trovate qui: '+linkNorm(L.permLink)+')':' (ve lo facciamo avere a parte)'));
   out.push('','Vi chiediamo di rispettare gli orari: ci aiuta a far partire l’attività con tutti e a riportare i ragazzi puntuali. Per qualsiasi dubbio potete contattarci:',...axStaffNomi().map(n=>'• '+n+': [telefono]'),'','A presto e grazie,',axFirma());
   return out.join('\n'); }
-function axMsg(p,j){ const box=document.getElementById('ax-msg-'+p+'-'+j); const raw=axMsgText(p,j); if(axX(p,j).ambientProp) showToast('L’apertura è ancora la proposta: personalizzala prima di inviare');
+function axMsg(p,j){ const box=document.getElementById('ax-msg-'+p+'-'+j); const raw=axMsgText(p,j); if(axX(p,j).ambientProp||axX(p,j).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
   box.innerHTML=`<div class="ax-ta ax-msgbox" id="ax-msgt-${p}-${j}" contenteditable="true" style="min-height:190px;margin-top:6px;white-space:normal;overflow-wrap:anywhere">${axMsgHtml(raw)}</div><div class="ax-chips" style="margin-top:4px"><button type="button" class="btn-ghost ax-btn" onclick="axCopyMsg(${p},${j})">Copia il messaggio</button></div><div class="ax-hint">Puoi modificarlo qui prima di copiarlo, poi incollalo dove vuoi. I nomi dei luoghi sottolineati portano alla mappa: restano link dove il testo formattato è supportato (mail, documenti); dove non lo è, come WhatsApp, resta solo il nome. Il Word si apre anche su Drive (e da lì diventa PDF) con i link funzionanti. Il Word è impaginato per sezioni (quando, dove, cosa portare, quota, contatti): prima di condividerlo completa IBAN, intestatario del conto e numeri di telefono.</div>`; }
 function axCopyMsg(p,j){ const el=document.getElementById('ax-msgt-'+p+'-'+j); if(!el) return; const h=el.innerHTML, t=el.innerText.replace(/\n{3,}/g,'\n\n').trim();
   const fb=()=>{ try{ const r=document.createRange(); r.selectNodeContents(el); const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r); document.execCommand('copy'); sl.removeAllRanges(); showToast('Copiato'); }catch(e){ showToast('Seleziona e copia il testo'); } };
@@ -6303,12 +6330,12 @@ function axFilledN(a){ const x=a.ax||{}, L=x.luogo||{}, P=x.pres||{}; let n=0;
   if((P.ad||[]).length||P.rag) n++; if(x.data||L.tipo||L.ritrovo||L.ritrovoDove) n++; if((x.todo||[]).some(r=>(r.cosa||'').trim())) n++;
   if((x.mat||[]).some(r=>(r.cosa||'').trim())||(a.materiali||'').trim()||(x.portare||'').trim()||(x.portareSel||[]).length) n++; if((x.piatti||[]).length) n++; if((x.spese||[]).some(r=>(r.voce||'').trim()||r.importo)) n++;
   if((x.tt2||[]).some(r=>(r.cosa||'').trim()||r.dur)||(a.tt||[]).some(r=>(r.t||r.cosa||'').trim())) n++; if((x.strum||[]).length||(x.ruoli||[]).length||(x.ruoliAltro||'').trim()) n++; if(Object.values(x.oss||{}).some(o=>o&&o.on)) n++;
-  if(Object.values(x.pb||{}).some(v=>(v||'').trim())||(a.pianoB||'').trim()) n++; if(Object.values(x.sic||{}).some(v=>(v||'').trim())) n++; if((a.incRischi||'').trim()||(a.incAzioni||'').trim()) n++; if((a.link||'').trim()) n++; if((x.ambient||'').trim()||x.paga||x.entro) n++; return n; }
+  if(Object.values(x.pb||{}).some(v=>(v||'').trim())||(a.pianoB||'').trim()) n++; if(Object.values(x.sic||{}).some(v=>(v||'').trim())) n++; if((a.incRischi||'').trim()||(a.incAzioni||'').trim()) n++; if((a.link||'').trim()) n++; if((x.ambient||'').trim()||(x.citaz||'').trim()||x.paga||x.entro) n++; return n; }
 function attExtraFilled(a){ return axFilledN(a)>0; }
 function axCount(p,j){ const el=document.getElementById('ax-n-'+p+'-'+j); if(el){ const n=axFilledN(attGet(p,j)); el.textContent=n?' · '+n+' compilat'+(n===1?'a':'e'):''; } }
 function axLive(p,j){ axCount(p,j); const a=attGet(p,j), x=a.ax||{}; const t=document.getElementById('ax-tot-'+p+'-'+j); if(t) t.innerHTML=axTot(x)||'<span class="ax-hint">Qui compaiono i totali quando inserisci prezzi o spese.</span>'; const f=document.getElementById('ax-food-'+p+'-'+j); if(f) f.innerHTML=axFoodSum(x); const c=document.getElementById('ax-co2-'+p+'-'+j); if(c) c.innerHTML=axCO2(x.luogo||{},axN(x).tot); }
 function axBody(p,j){ const a=axA(p,j); const x=a.ax;
-  return axGroup(p,j,'chi','Chi, quando, dove <span>· presenti, data, ritrovo e rientro, luogo, permessi, cose da fare</span>',axChi(p,j,a,x))+
+  return axGroup(p,j,'chi','Chi, quando, dove, come <span>· presenti, data, ritrovo e rientro, luogo, permessi, cose da fare</span>',axChi(p,j,a,x))+
     axGroup(p,j,'mat','Materiali <span>· cosa serve, chi lo procura, quanto costa</span>',axMat(p,j,a,x))+
     axGroup(p,j,'pasti','Pasti e spesa <span>· menù, diete speciali, lista della spesa</span>',axCibo(p,j,x))+
     axGroup(p,j,'spese','Altre spese <span>· casa, trasporti, ingressi…</span>',axSpese(p,j,x))+
@@ -6319,19 +6346,22 @@ function axBody(p,j){ const a=axA(p,j); const x=a.ax;
     `<div class="ax-chips" style="margin-top:10px"><button type="button" class="btn-ghost ax-btn" onclick="axDocx(${p},${j})">↓ Scheda di questa attività per lo staff (Word)</button></div>`; }
 function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_TIPO); const mzL={bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto',piedi:'a piedi'};
   let h=`<div class="ax-circ-intro"><b>Comunicare con le famiglie fa parte dell’essere capi.</b> Una circolare chiara e puntuale crea fiducia: mandala con almeno una settimana d’anticipo, metti per prime le informazioni pratiche (quando, dove, cosa portare, cosa fare), usa frasi brevi e un tono caldo. Ricorda che la leggono anche i ragazzi: è prima di tutto per loro. Niente nomi di ragazzi né dati sulla salute.</div>`;
-  h+=axLbl('1. Apertura','due righe di ambientazione o una citazione')+`<div class="ax-sub"><span class="ax-opt">Incuriosisci senza svelare.</span></div><textarea class="ax-ta" style="min-height:44px" placeholder="es. Una pergamena è arrivata in sede: qualcuno chiede aiuto dal rifugio…" oninput="axSetQuiet(axX(${p},${j}),'ambientProp',false);axSet(${p},${j},'ambient',this.value)">${axE(x.ambient)}</textarea><div class="ax-chips" style="margin-top:4px"><button type="button" class="ax-chip" onclick="axPropose(${p},${j},'ap')">Proponi un’apertura</button><button type="button" class="ax-chip" onclick="axPropose(${p},${j},'cit')">Proponi una citazione</button></div>
-    <div class="ax-hint" style="margin-top:4px">${x.ambientProp?'<b style="color:#B26A00">Questa è una proposta: riscrivila con parole vostre prima di inviare.</b> ':''}Le proposte sono solo uno spunto per scrivere una circolare che funziona: personalizzale sempre, legandole all’ambientazione dell’attività e al vostro modo di parlare ai ragazzi. Toccando di nuovo ne esce un’altra.</div>
+  h+=axLbl('1. Apertura','una citazione e due righe di ambientazione, insieme')+`<div class="ax-sub">Citazione</div><textarea class="ax-ta" style="min-height:36px" placeholder="es. «Siamo dello stesso sangue, tu ed io.» (Parola Maestra di Chil)" oninput="axSetQuiet(axX(${p},${j}),'citProp',false);axSet(${p},${j},'citaz',this.value)">${axE(x.citaz)}</textarea><div class="ax-chips" style="margin-top:3px"><button type="button" class="ax-chip" onclick="axPropose(${p},${j},'cit')">Proponi una citazione</button>${x.citProp?'<span class="ax-hint"><b style="color:#B26A00">È ancora la proposta: riscrivila con parole vostre.</b></span>':''}</div>
+    <div class="ax-sub" style="margin-top:8px">Frase d’apertura <span class="ax-opt">(incuriosisci senza svelare)</span></div><textarea class="ax-ta" style="min-height:44px" placeholder="es. Una pergamena è arrivata in sede: qualcuno chiede aiuto dal rifugio…" oninput="axSetQuiet(axX(${p},${j}),'ambientProp',false);axSet(${p},${j},'ambient',this.value)">${axE(x.ambient)}</textarea><div class="ax-chips" style="margin-top:3px"><button type="button" class="ax-chip" onclick="axPropose(${p},${j},'ap')">Proponi una frase</button>${x.ambientProp?'<span class="ax-hint"><b style="color:#B26A00">È ancora la proposta: riscrivila con parole vostre.</b></span>':''}</div>
+    <div class="ax-hint" style="margin-top:4px">Le proposte sono solo uno spunto per scrivere una circolare che funziona: personalizzale sempre, legandole all’ambientazione dell’attività e al vostro modo di parlare ai ragazzi. Toccando di nuovo ne esce un’altra.</div>
     `;
   const dLong=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
-  const rows=[['Data',dLong],['Ritrovo',[L.ritrovo?'ore '+L.ritrovo:'',L.ritrovoDove||''].filter(Boolean).join(', ')],['Rientro',[L.rientro?'ore '+L.rientro:'',L.rientroDove||''].filter(Boolean).join(', ')],['Dove',L.tipo==='sede'?'in sede':(L.nome||'').trim()],['Spostamento',L.mezzo?(L.mezzo==='altro'?(L.mezzoAltro||''):mzL[L.mezzo]||''):'']];
-  const miss=rows.filter(r=>!r[1]).map(r=>r[0].toLowerCase());
-  h+=axLbl('2. Riepilogo','si prende da “Chi, quando, dove”')+`<div class="ax-circ-rec">${rows.filter(r=>r[1]).map(r=>`<div><span>${r[0]}</span>${axE(r[1])}</div>`).join('')||'<div class="ax-hint">Ancora vuoto.</div>'}</div>`+(miss.length?`<div class="ax-hint">Manca: ${miss.join(', ')}. Si compila in “Chi, quando, dove”.</div>`:'');
+  const ln=k=>{ const u=axPlaceShort(L,k), t=axPlaceTxt(L,k); return t?(u?`<a href="${axE(u)}" target="_blank" rel="noopener">${axE(t)}</a>`:axE(t)):''; };
+  const dove=L.tipo==='sede'?'in sede':ln('nome');
+  const blk=(lab,ora,k)=>`<div style="margin-top:6px"><b>${lab}</b></div><div class="ax-circ-sub"><span>Ora</span>${ora?axE(ora):'<i class="ax-opt">manca</i>'}</div><div class="ax-circ-sub"><span>Luogo</span>${ln(k)||'<i class="ax-opt">manca</i>'}</div>`;
+  h+=axLbl('2. Riepilogo','si prende da “Chi, quando, dove, come”: tocca i luoghi per verificarli su Maps')+`<div class="ax-circ-rec"><div><span>Data</span>${dLong?axE(dLong):'<i class="ax-opt">manca</i>'}</div><div><span>Dove</span>${dove||'<i class="ax-opt">manca</i>'}</div>${blk('Ritrovo',L.ritrovo,'ritrovoDove')}${blk('Rientro',L.rientro,'rientroDove')}${L.mezzo?`<div style="margin-top:6px"><span>Spostamento</span>${axE(L.mezzo==='altro'?(L.mezzoAltro||''):mzL[L.mezzo]||'')}</div>`:''}</div>`
+    +((!L.ritrovoDoveAddr&&L.ritrovoDove&&!/sede/i.test(L.ritrovoDove))||(!L.rientroDoveAddr&&L.rientroDove&&!/sede/i.test(L.rientroDove))?`<div class="ax-hint">Per un link preciso, in “Chi, quando, dove, come” usa “Cerca l’indirizzo” accanto a ritrovo e rientro.</div>`:'');
   h+=axLbl('3. Cosa portano i ragazzi','tocca per scegliere')+AX_ZAINO.map(([g,l])=>`<div class="ax-sub" style="margin-top:6px">${g}</div>`+axChips(l.map(v=>[v,v]),x.portareSel||[],v=>`axTog(${p},${j},'portareSel',axD('${v}'))`,true)).join('')
     +`<div class="ax-sub" style="margin-top:6px">Altro <span class="ax-opt">(una cosa per riga)</span></div>`+axTA(p,j,'portare','es. quaderno\nsacchetto per i rifiuti',x.portare,44);
   h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>
     ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
     <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
-  h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi, quando, dove”.</div>`);
+  h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi, quando, dove, come”.</div>`);
   h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button></div><div id="ax-msg-${p}-${j}"></div>`;
   return h; }
 function attExtraHTML(p,j,a){ const n=axFilledN(a);
@@ -6347,7 +6377,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   const tipo=Object.fromEntries(AX_TIPO), mz=Object.fromEntries(AX_MEZZI);
   const kv=[];
   if(x.data) kv.push(['Data', new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})]);
-  const kvMap=(txt,k)=>{ const u=k?axPlaceShort(L,k):''; if(u&&k&&axIsLinkTxt(L[k])) txt=txt.replace(L[k],'').replace(/\s·\s*$/,'').trim(); return u?[dPara([dTxt(txt,{size:19})],{after:20}), dPara([dLink(u,{size:16,label:u.replace(/^https?:\/\//,'')})],{after:0})]:txt; };
+  const kvMap=(txt,k)=>{ const u=k?axPlaceShort(L,k):''; if(u&&k&&axIsLinkTxt(L[k])) txt=txt.replace(L[k],'').replace(/\s·\s*$/,'').trim(); return u?[dPara([dTxt(txt,{size:19})],{after:20}), dPara([dLink(u,{size:16,label:'Apri su Google Maps'})],{after:0})]:txt; };
   if(L.ritrovo||L.ritrovoDove) kv.push(['Ritrovo',kvMap([L.ritrovo?'ore '+L.ritrovo:'',L.ritrovoDove||''].filter(Boolean).join(' · '),'ritrovoDove')]);
   if(L.rientro||L.rientroDove) kv.push(['Rientro',kvMap([L.rientro?'ore '+L.rientro:'',L.rientroDove||''].filter(Boolean).join(' · '),'rientroDove')]);
   if(L.tipo) kv.push(['Dove',kvMap([L.tipo==='altro'?(L.tipoAltro||'altro'):tipo[L.tipo],(L.nome||'').trim()].filter(Boolean).join(' · '),L.tipo!=='sede'?'nome':'')]);
@@ -6396,12 +6426,12 @@ async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFood
   ch.push(dPara('Quantità calcolate sui presenti e sulle dosi a persona; prezzi medi indicativi.',{size:15,color:'888888',before:100}));
   await dSave(dDocument(ch,'Lista della spesa'),'Lista_spesa_'+(((a.testo||'').trim()||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx'); }
 
-function axStaffNomi(){ const n=[]; (staffTab()||[]).forEach(r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; if(!f&&!String(r&&r.giungla||'').trim()) return; const gj=FASCIA==='L'?staffGiungla(r):''; const v=gj?(gj+(f?' ('+f+')':'')):f; if(v&&!n.includes(v)) n.push(v); }); return n; }
+function axStaffNomi(){ const n=[]; (staffTab()||[]).forEach(r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; if(!f&&!String(r&&r.giungla||'').trim()) return; const gj=FASCIA==='L'?staffGiungla(r):''; const v=gj||f; if(v&&!n.includes(v)) n.push(v); }); return n; }
 // Loghi di Sezione per il messaggio ai genitori (da caricare): { 'pesaro': 'data:image/png;base64,...' }
 const SEZ_LOGHI={};
 function axCausale(tit){ const g=((scheda.pp&&scheda.pp.gruppo)||'').trim(); return 'nome e cognome – Branca '+FASCIA+(g&&!/monogruppo/i.test(g)?', Gruppo '+g:'')+' – Quota '+(tit||'attività'); }
 async function axMsgDocx(p,j){ try{ await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
-  if((attGet(p,j).ax||{}).ambientProp) showToast('L’apertura è ancora la proposta: personalizzala prima di inviare');
+  if((attGet(p,j).ax||{}).ambientProp||(attGet(p,j).ax||{}).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
   const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, D=dxLib(); const sez=((scheda.pp&&scheda.pp.sezione)||'').trim(); const logo=SEZ_LOGHI[sez.toLowerCase()];
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
   const T=(t,o={})=>dTxt(t,Object.assign({size:22},o)), B=t=>dTxt(t,{size:22,bold:true}), LK=(label,u)=>u?dLink(u,{size:22,label}):T(label);
@@ -6410,6 +6440,7 @@ async function axMsgDocx(p,j){ try{ await needDocx(); }catch(e){ showToast('Impo
   if(logo&&D.ImageRun){ try{ const bin=Uint8Array.from(atob(logo.split(',')[1]),c=>c.charCodeAt(0)); ch.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:160},children:[new D.ImageRun({data:bin,transformation:{width:100,height:100}})]})); }catch(e){} }
   ch.push(dPara('Comunicazione per le famiglie',{size:34,bold:true,color:GREEN,after:40}));
   ch.push(dPara([UNIT_NAME||'',sez?'Sezione di '+sez:''].filter(Boolean).join(' · ')||' ',{size:19,color:'666666',after:200,borderBottom:{size:14,color:GREEN}}));
+  const citz=(x.citaz||'').trim(); if(citz) ch.push(dPara([dTxt(citz,{size:21,italics:true,color:GREEN})],{align:'center',after:160}));
   ch.push(P([T('Ciao a tutti! ')].concat(tit?[T(U.charAt(0).toUpperCase()+U.slice(1)+' vive '),B('“'+tit+'”'),T('.')]:[T('Ecco le informazioni per la prossima attività.')]),{after:80}));
   const amb=(x.ambient||'').trim(); if(amb) ch.push(P([dTxt(amb,{size:22,italics:true,color:'444444'})],{after:120}));
   const dLong=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
@@ -6417,20 +6448,15 @@ async function axMsgDocx(p,j){ try{ await needDocx(); }catch(e){ showToast('Impo
   const q=axQuota(x), entro=axEntroTxt(x);
   const cellP=kids=>[dPara(kids,{after:0})];
   const rr=(k,ora,dove)=>(ora?[T('ore '+ora+(dove?', ':''))]:[]).concat(dove?[LK(dove,axPlaceShort(L,k))]:[]);
-  // 1. In breve
-  const kv=[]; if(dLong) kv.push(['Data',cellP([T(dLong.charAt(0).toUpperCase()+dLong.slice(1))])]);
-  if(L.ritrovo||L.ritrovoDove) kv.push(['Ritrovo',cellP(rr('ritrovoDove',L.ritrovo,L.ritrovoDove))]);
-  if(L.rientro||L.rientroDove) kv.push(['Rientro',cellP(rr('rientroDove',L.rientro,L.rientroDove))]);
-  if((L.nome||'').trim()&&L.tipo!=='sede') kv.push(['Dove',cellP([LK(L.nome.trim(),axPlaceShort(L,'nome'))].concat(L.tipo&&L.tipo!=='altro'?[T(' ('+String(tipo[L.tipo]||'').toLowerCase()+')')]:[]))]);
-  if(L.mezzo&&L.mezzo!=='piedi') kv.push(['Spostamento',cellP([T((L.mezzo==='altro'?(L.mezzoAltro||''):(mzL[L.mezzo]||'')).replace(/^./,c=>c.toUpperCase()))])]);
-  kv.push(['Quota',cellP([T(q?axEur(q)+' a testa'+(x.paga==='partenza'?', alla partenza':', con bonifico'+(entro?' entro '+entro:'')):'nessuna')])]);
-  ch.push(H('In breve')); ch.push(dKV(kv));
-  if(L.ritrovo||L.ritrovoDove||L.rientro||L.rientroDove||L.mezzo||((L.nome||'').trim()&&L.tipo!=='sede')){ ch.push(H('Orari e luoghi'));
-    if(dLong) ch.push(P([B('Data: '),T(dLong.charAt(0).toUpperCase()+dLong.slice(1))]));
-    if(L.ritrovo||L.ritrovoDove) ch.push(P([B('Ritrovo: ')].concat(rr('ritrovoDove',L.ritrovo,L.ritrovoDove))));
-    if(L.rientro||L.rientroDove) ch.push(P([B('Rientro: ')].concat(rr('rientroDove',L.rientro,L.rientroDove))));
-    if((L.nome||'').trim()&&L.tipo!=='sede') ch.push(P([B('Luogo dell’attività: '),LK(L.nome.trim(),axPlaceShort(L,'nome'))].concat(L.tipo&&L.tipo!=='altro'?[T(' ('+String(tipo[L.tipo]||'').toLowerCase()+')')]:[])));
-    if(L.mezzo) ch.push(P([B('Come ci spostiamo: '),T(L.mezzo==='altro'?(L.mezzoAltro||''):(mzL[L.mezzo]||''))]));
+  // Orari e luoghi
+  const plk=k=>LK(axPlaceTxt(L,k),axPlaceShort(L,k)), hasP=k=>String(L[k]||'').trim()||L[k+'Addr'];
+  if(dLong||L.ritrovo||hasP('ritrovoDove')||L.rientro||hasP('rientroDove')||L.mezzo||(hasP('nome')&&L.tipo!=='sede')){ ch.push(H('Orari e luoghi'));
+    if(dLong) ch.push(P([B('Data: '),T(dLong.charAt(0).toUpperCase()+dLong.slice(1))],{after:120}));
+    if(L.tipo==='sede') ch.push(P([B('Dove: '),T('in sede')],{after:120}));
+    else if(hasP('nome')) ch.push(P([B('Dove: '),plk('nome')].concat(L.tipo&&L.tipo!=='altro'?[T(' ('+String(tipo[L.tipo]||'').toLowerCase()+')')]:[]),{after:120}));
+    const blk=(lab,ora,k)=>{ if(!ora&&!hasP(k)) return; ch.push(P([B(lab)],{after:30,keepNext:true})); if(ora) ch.push(P([T('Ora: '),B(ora)],{after:20,indent:300})); if(hasP(k)) ch.push(P([T('Luogo: ')].concat(axPlaceShort(L,k)?[plk(k)]:[T(axPlaceTxt(L,k))]),{after:100,indent:300})); };
+    blk('Ritrovo',L.ritrovo,'ritrovoDove'); blk('Rientro',L.rientro,'rientroDove');
+    if(L.mezzo&&L.mezzo!=='piedi') ch.push(P([B('Come ci spostiamo: '),T(L.mezzo==='altro'?(L.mezzoAltro||''):(mzL[L.mezzo]||''))]));
     ch.push(P([dTxt('Vi chiediamo di rispettare gli orari: ci aiuta a partire tutti insieme e a riportare i ragazzi puntuali.',{size:20,italics:true,color:'555555'})],{before:60})); }
   // 3. Cosa portare
   const port=axPortList(x), sac=axSaccoList(x);
