@@ -357,7 +357,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-piatto{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:6px 0}.ax-pt1{display:grid;grid-template-columns:1fr 1fr 28px;gap:5px;margin-bottom:5px}.ax-ing{display:grid;grid-template-columns:1fr 70px 110px 80px 28px;gap:4px;margin:3px 0}
 .ax-spesa{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:4px 0}.ax-spesa>input:first-child{flex:1 1 200px}.ax-spesa>input[type=number]{width:90px}.ax-spesa>select{width:auto}
 @media (max-width:600px){.ax-rr{grid-template-columns:1fr 100px}.ax-ing{grid-template-columns:1fr 60px 28px}.ax-ing>select,.ax-ing>input:nth-child(4){grid-column:span 1}}
-.att-extra{margin-top:10px;border:1px dashed var(--border);border-radius:8px;padding:6px 10px;background:var(--bg)}.att-extra>summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)}.att-extra>summary span{font-weight:400;color:var(--ink-faint)}
+.opt-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f5f5f;background:#e9e9e9;border-radius:999px;padding:2px 8px;margin-right:6px;vertical-align:1px;line-height:1.5;white-space:nowrap}
+.att-extra{margin-top:12px;border:1.5px dashed var(--border);border-radius:8px;padding:8px 12px;background:var(--bg)}.att-extra>summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-mid);line-height:1.5}.att-extra>summary .ax-sumd{display:block;font-weight:400;color:var(--ink-faint);font-size:11.5px;margin-top:3px}
 .att-tt-wrap{overflow-x:auto}.att-tt{width:100%;border-collapse:collapse;table-layout:fixed}.att-tt th{font-size:10.5px;text-align:left;color:var(--ink-mid);font-weight:700;padding:2px 4px}.att-tt td{padding:2px 3px}.att-tt th:first-child{width:27%}.att-tt th:nth-child(3){width:22%}.att-tt th:last-child{width:30px}.att-tt input{width:100%;box-sizing:border-box;padding:5px 7px;border:1px solid var(--border-light);border-radius:4px;font:inherit;font-size:11.5px;background:var(--bg-card,#fff);color:var(--ink)}.att-tt-x{padding:0 7px!important;font-size:13px}
 .att-inc{display:grid;grid-template-columns:1fr 1fr;gap:8px}.att-sub{font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:2px}@media (max-width:600px){.att-inc{grid-template-columns:1fr}}.att-note{font-size:10.5px;color:var(--ink-faint);margin-top:3px}
 .modal-x{position:sticky;top:0;float:right;z-index:2;width:34px!important;min-width:0!important;height:34px;padding:0!important;margin:-6px -6px 4px 8px;border-radius:50%;border:1px solid var(--border);background:var(--surface,#fff);color:var(--ink);font-size:15px;line-height:1;cursor:pointer;flex:none!important}
@@ -6009,6 +6010,7 @@ const ATT_TIPI = {
 };
 function attGet(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per) return null; nomiMigra(per); if(!per.attivita) per.attivita=[]; while(per.attivita.length<=aidx) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); return per.attivita[aidx]; }
 
+const OPT='<span class="opt-tag">Facoltativo</span>';
 // ── Attività: sezioni facoltative "Per preparare bene l'attività" ──
 const AX_DUR=[5,10,15,20,25,30,40,45,50,60,75,90,105,120,150,180,240,300,360];
 const AX_TIPO=[['sede','In sede'],['vicino','All’aperto vicino'],['uscita','Uscita'],['altro','Altro…']];
@@ -6287,7 +6289,7 @@ function axBody(p,j){ const a=axA(p,j); const x=a.ax;
     `<div class="ax-chips" style="margin-top:10px"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio per i genitori</button><button type="button" class="btn-ghost ax-btn" onclick="axDocx(${p},${j})">↓ Scheda di questa attività (Word)</button></div><div id="ax-msg-${p}-${j}"></div>`; }
 function attExtraHTML(p,j,a){ const n=axFilledN(a);
   if(!document.getElementById('ax-food-dl')){ const dl=document.createElement('datalist'); dl.id='ax-food-dl'; dl.innerHTML=Object.keys(AX_FOOD).map(k=>`<option value="${k}">`).join(''); document.body.appendChild(dl); }
-  return `<details class="att-extra"><summary>Per preparare bene l’attività <span>· facoltativo per il Progetto Personale, ma utile per una programmazione efficace<b id="ax-n-${p}-${j}">${n?' · '+n+' compilat'+(n===1?'a':'e'):''}</b></span></summary><div id="ax-${p}-${j}" class="ax-body">${axBody(p,j)}</div></details>`; }
+  return `<details class="att-extra"><summary>${OPT}Quando arriva il momento di organizzarla<b style="font-weight:700;color:var(--green)" id="ax-n-${p}-${j}">${n?' · '+n+' compilat'+(n===1?'a':'e'):''}</b><span class="ax-sumd">Il Progetto Personale chiede il cuore educativo dell’attività, che hai già scritto sopra. Qui trovi strumenti pratici per prepararla: usali solo se ti semplificano il lavoro.</span></summary><div id="ax-${p}-${j}" class="ax-body">${axBody(p,j)}</div></details>`; }
 
 // ── Word: scheda della singola attività ──
 async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
@@ -6362,7 +6364,7 @@ function attTipoAltro(pidx,aidx,v){ const a=attGet(pidx,aidx); if(!a) return; a.
 function attTipiHTML(pidx,aidx,a){ const L=ATT_TIPI[FASCIA]||[]; if(!L.length) return ''; const sel=(a&&a.tipi)||[]; const k=pidx+'-'+aidx;
   const cat=L.map(([gn,items],g)=>`${gn==='Altro'?'<div style="margin-top:8px"></div>':`<div style="margin:8px 0 2px;font-size:10.5px;font-weight:800;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.03em">${gn}</div>`}
       <div style="display:flex;flex-wrap:wrap;gap:4px 14px">${items.map((it,i)=>`<label style="display:flex;gap:6px;align-items:flex-start;font-size:12px;cursor:pointer;min-width:180px;flex:1 1 180px"><input type="checkbox" style="margin-top:2px;accent-color:var(--green)" ${sel.includes(it)?'checked':''} onchange="attTipoToggle(${pidx},${aidx},${g},${i},this.checked)"><span>${sEsc(it)}</span></label>`).join('')}</div>`).join('');
-  return `<label style="${SC_LBL}">Tipo di attività <span style="font-weight:400;color:var(--ink-faint)">— facoltativo, anche più di uno</span></label>
+  return `<label style="${SC_LBL}">Tipo di attività ${MODE==='giovani'?OPT:''}<span style="font-weight:400;color:var(--ink-faint)">anche più di uno: serve solo a darti qualche idea</span></label>
       <div id="att-tipi-${k}">${attTipiSelHTML(a)}</div>
       <details style="margin:4px 0 6px;border:1px dashed var(--border);border-radius:6px;padding:6px 10px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Scegli tra i tipi di attività della tua Branca <span style="font-weight:400;color:var(--ink-faint)">(<span id="att-tipi-cnt-${k}">${sel.length}</span> scelti)</span></summary>${cat}
         <input id="att-tipi-alt-${k}" type="text" style="${SC_IN};margin-top:8px;${sel.includes('Altro')?'':'display:none'}" placeholder="Altro: scrivi il tipo di attività" value="${sEsc((a&&a.tipoAltro)||'')}" oninput="attTipoAltro(${pidx},${aidx},this.value)"></details>`; }
@@ -6602,9 +6604,9 @@ function fbOpen(){
     <input id="fb-altro" type="text" style="${inS};margin-top:6px;display:none" maxlength="80" placeholder="Specifica: di che cosa si tratta?">
     <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">Descrivi cosa è successo o cosa proponi</label>
     <textarea id="fb-txt" style="${inS};min-height:120px" placeholder="Cosa stavi facendo, cosa ti aspettavi, cosa è successo invece…"></textarea>
-    <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">Il tuo nome <span style="font-weight:400;color:var(--ink-faint)">(facoltativo)</span></label>
+    <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">Il tuo nome ${OPT}</label>
     <input id="fb-nome" style="${inS}" value="${sEsc(nm)}">
-    <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">La tua email <span style="font-weight:400;color:var(--ink-faint)">(facoltativa, se vuoi una risposta)</span></label>
+    <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">La tua email ${OPT}<span style="font-weight:400;color:var(--ink-faint)">se vuoi una risposta</span></label>
     <input id="fb-mail" type="email" style="${inS}" value="${sEsc((typeof CL!=='undefined'&&CL.user&&CL.user.email)||'')}">
     <input type="checkbox" id="fb-bot" style="display:none" tabindex="-1" autocomplete="off">
     <p style="font-size:11px;color:var(--ink-mid);margin:8px 0 0">Al messaggio aggiungo in automatico la schermata in cui ti trovi e il tipo di dispositivo. Non scrivere nomi dei ragazzi o altri dati personali.</p>
@@ -6941,7 +6943,7 @@ function renderSchedaC(root,selected){
 
   // Bottone aggiungi percorso
   html+=`${sez3MoreHTML(selected)}${MODE==='giovani'?gPPStepHTML('sez3'):''}<div style="text-align:center;margin:12px 0">
-    <button class="btn-ghost" onclick="addPercorsoExtra()" style="border-style:dashed;padding:10px 24px">+ Aggiungi ${MODE==='giovani'?'un altro percorso (facoltativo)':'percorso'}</button>
+    <button class="btn-ghost" onclick="addPercorsoExtra()" style="border-style:dashed;padding:10px 24px">+ Aggiungi ${MODE==='giovani'?'un altro percorso '+OPT:'percorso'}</button>
   </div>
   <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:8px">
     <button class="btn-ghost" onclick="schedaStep='B';renderValuation()">← Sezione 2</button>
@@ -7011,7 +7013,7 @@ function protSpuntiLink(txt){ return MODE==='giovani'?'<a href="javascript:void(
 function attSpuntiLink(txt){ return MODE==='giovani'?'<a href="javascript:void(0)" class="asp-link" onclick="attSpuntiOpen()">'+(txt||'Spunti per costruire un’attività che funziona')+'</a>':''; }
 
 // ── Sezione 3: introduzione e scelta dell'obiettivo ──
-function sez3IntroHTML(selected){ return sez3IntroHTML0(selected)+(MODE==='giovani'?'<div class="asp-cta"><span>Spunti facoltativi:</span>'+attSpuntiLink('Come costruire un’attività')+'<span>·</span>'+protSpuntiLink()+'<span>·</span>'+tecSpuntiLink()+'</div>':''); }
+function sez3IntroHTML(selected){ return sez3IntroHTML0(selected)+(MODE==='giovani'?'<div class="asp-cta">'+OPT+'<span>Spunti, se ti servono:</span>'+attSpuntiLink('Come costruire un’attività')+'<span>·</span>'+protSpuntiLink()+'<span>·</span>'+tecSpuntiLink()+'</div>':''); }
 function sez3IntroHTML0(selected){
   const G=MODE==='giovani';
   if(!G) return `<p style="font-size:12px;color:var(--ink-mid);margin-bottom:6px">Un percorso per ciascuna priorità: strumenti del metodo, tempistiche, 3–4 attività coerenti (Lancio · Sviluppo · Conclusione) e verifica delle 7 caratteristiche.</p>`;
@@ -7349,7 +7351,7 @@ function renderSchedaVal(root,selected){
   const gT = obsToThreshold(globalMedia>0 ? Math.round(globalMedia) : 'n');
   const gCol = globalMedia>0 ? thresholdColor(gT) : 'var(--ink-faint)';
 
-  recapEl.innerHTML=`<h3 style="font-size:14px;font-weight:800;margin-bottom:12px">${MODE==='giovani'?'Riepilogo con punteggi 1–10 (facoltativo)':'Valutazione IDR'}</h3>
+  recapEl.innerHTML=`<h3 style="font-size:14px;font-weight:800;margin-bottom:12px">${MODE==='giovani'?OPT+'Riepilogo con punteggi 1–10':'Valutazione IDR'}</h3>
     ${globalMedia>0?`<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);border:1.5px solid ${gCol}">
       <div style="text-align:center;min-width:56px">
         <div class="idr-global-score" style="font-size:28px;font-weight:800;color:${gCol};line-height:1">${globalR}</div>
@@ -7545,9 +7547,9 @@ function ppMailOpen(kind){
       <div><label style="${lb}">CC: Capo Gruppo</label><input style="${inS}" type="email" placeholder="email" value="${sEsc(m.cgMail)}" oninput="ppMailSet('cgMail',this.value,1)"></div>
       <div><label style="${lb}">CC: Commissario di Sezione</label><input style="${inS}" type="email" placeholder="email" value="${sEsc(m.cdsMail)}" oninput="ppMailSet('cdsMail',this.value,1)"></div>
     </div>
-${av?'':`    <label style="${lb}">Una cosa che ti è venuta bene o che ti ha fatto piacere <span style="font-weight:400;color:var(--ink-faint)">(facoltativa)</span></label>
+${av?'':`    <label style="${lb}">Una cosa che ti è venuta bene o che ti ha fatto piacere ${OPT}</label>
     <input style="${inS}" value="${sEsc(m.l1)}" placeholder="es. i ragazzi hanno risposto bene alle prime attività di osservazione" oninput="ppMailSet('l1',this.value)">
-    <label style="${lb}">Un dubbio su cui vorresti un parere <span style="font-weight:400;color:var(--ink-faint)">(facoltativo)</span></label>
+    <label style="${lb}">Un dubbio su cui vorresti un parere ${OPT}</label>
     <input style="${inS}" value="${sEsc(m.l2)}" placeholder="es. ho un dubbio sulle tempistiche della Sezione 3: sono realistiche?" oninput="ppMailSet('l2',this.value)">`}
     <div style="display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700">Tono</span>
       <button class="btn-ghost" id="pp-tono-sobrio" style="padding:4px 10px;font-size:11px;${m.tono==='sobrio'?'font-weight:800;border-color:var(--green)':''}" onclick="ppMailTono('sobrio')">Sobrio</button>
@@ -7617,11 +7619,11 @@ function riobsDelta(pid){
 function riobsSet(pid,v){ if(!scheda.riobs) scheda.riobs={}; if(v) scheda.riobs[pid]=Number(v); else delete scheda.riobs[pid]; saveDataDebounced(); const el=document.getElementById('riobs-d-'+pid); if(el) el.innerHTML=riobsDelta(pid); }
 function riobsHTML(pid){
   const v0=obs[pid], a=(v0&&v0!=='n')?Number(v0)||0:0, b=Number(((scheda.riobs||{})[pid])||0);
-  return `<div class="riobs"><div class="pp5sp-tag">Dal punto di partenza a oggi</div>
+  return `<div class="riobs"><div class="pp5sp-tag">${OPT}Dal punto di partenza a oggi</div>
     <div class="riobs-row"><span class="riobs-l">Partenza</span><span>${a?`${thresholdLabel(obsToThreshold(a))} (${a}) <span style="color:var(--ink-faint)">· dalla scheda di osservazione</span>`:'<span style="color:var(--ink-faint)">non osservato</span>'}</span></div>
     <div class="riobs-row"><span class="riobs-l">Oggi</span><select class="obs-select" style="font-size:12px;min-width:170px" onchange="riobsSet('${pid}',this.value)"><option value="">— Riosserva (1–10) —</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${b===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select></div>
     <div class="riobs-row"><span class="riobs-l">Il cammino</span><span id="riobs-d-${pid}">${riobsDelta(pid)}</span></div>
-    <div class="pp5sp-extra">Facoltativo, non serve per il Progetto Personale: ti aiuta a restare sul pezzo e a guardare oltre questo percorso. Il confronto ha senso se a riosservare sono le stesse persone, in situazioni simili a quelle di partenza.</div></div>`;
+    <div class="pp5sp-extra">Non serve per il Progetto Personale: ti aiuta a restare sul pezzo e a guardare oltre questo percorso. Il confronto ha senso se a riosservare sono le stesse persone, in situazioni simili a quelle di partenza.</div></div>`;
 }
 function ppSpuntiRefresh(pid){ const el=document.getElementById('pp5sp-'+pid); if(el) el.innerHTML=ppSpuntiInner(pid,JSON.parse(el.dataset.idx||'[]')); }
 function ppComplessivaHTML(pid,idxs){
