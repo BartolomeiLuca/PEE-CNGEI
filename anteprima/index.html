@@ -335,6 +335,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .asp{font-size:12.5px;line-height:1.55;color:var(--ink)}.asp-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.asp-tabs button,.asp-chip{font:inherit;font-size:12px;font-weight:700;padding:5px 11px;border-radius:16px;border:1px solid var(--border);background:var(--bg-card,#fff);color:var(--ink-mid);cursor:pointer}.asp-tabs button.on,.asp-chip.on{background:var(--green);border-color:var(--green);color:#fff}.asp-chips{display:flex;gap:6px;flex-wrap:wrap}
 .asp-f{border:1px solid var(--border-light);border-radius:8px;padding:8px 10px;margin-bottom:8px}.asp-h{display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px}.asp-n{width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px}.asp details{margin-top:3px}.asp summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--green)}.asp-note{font-size:12px;background:var(--green-pale,#EEF6EE);border-radius:6px;padding:7px 9px}
 .asp-cta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px;background:#FFF8E6;border:1px solid #F0DFAF;border-radius:8px;padding:8px 11px;margin:6px 0 10px}.asp-cta span{color:var(--ink-mid)}.asp-link{font-weight:700;color:var(--green);text-decoration:underline;cursor:pointer;font-size:12px}
+@media (max-width:600px){.perc-tab,.perc-tab>tbody,.perc-tab>tbody>tr,.perc-tab>tbody>tr>td,.perc-tab>tr,.perc-tab>tr>td{display:block;width:auto!important;box-sizing:border-box}.perc-tab>tbody>tr>td:first-child,.perc-tab>tr>td:first-child{border-bottom:0!important;background:var(--bg)}}
+.att-extra{margin-top:10px;border:1px dashed var(--border);border-radius:8px;padding:6px 10px;background:var(--bg)}.att-extra>summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)}.att-extra>summary span{font-weight:400;color:var(--ink-faint)}
+.att-tt-wrap{overflow-x:auto}.att-tt{width:100%;border-collapse:collapse;table-layout:fixed}.att-tt th{font-size:10.5px;text-align:left;color:var(--ink-mid);font-weight:700;padding:2px 4px}.att-tt td{padding:2px 3px}.att-tt th:first-child{width:27%}.att-tt th:nth-child(3){width:22%}.att-tt th:last-child{width:30px}.att-tt input{width:100%;box-sizing:border-box;padding:5px 7px;border:1px solid var(--border-light);border-radius:4px;font:inherit;font-size:11.5px;background:var(--bg-card,#fff);color:var(--ink)}.att-tt-x{padding:0 7px!important;font-size:13px}
+.att-inc{display:grid;grid-template-columns:1fr 1fr;gap:8px}.att-sub{font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:2px}@media (max-width:600px){.att-inc{grid-template-columns:1fr}}.att-note{font-size:10.5px;color:var(--ink-faint);margin-top:3px}
 .modal-x{position:sticky;top:0;float:right;z-index:2;width:34px!important;min-width:0!important;height:34px;padding:0!important;margin:-6px -6px 4px 8px;border-radius:50%;border:1px solid var(--border);background:var(--surface,#fff);color:var(--ink);font-size:15px;line-height:1;cursor:pointer;flex:none!important}
 .riobs{margin-top:12px;padding:10px 12px;border-radius:6px;border:1px dashed var(--border);font-size:12px;line-height:1.55;color:var(--ink-mid)}.riobs-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}.riobs-l{min-width:72px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint)}
 .pp5sp{margin-top:14px;padding:10px 12px;border-radius:6px;background:var(--green-pale);border-left:3px solid var(--green-light);font-size:12px;line-height:1.6;color:var(--ink-mid)}.pp5sp-tag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:4px}.pp5sp-extra{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-light);font-size:11px;color:var(--ink-faint)}
@@ -5946,7 +5950,7 @@ function isPP(){ return false; } // Scheda unica: nessuna distinzione tra PP e P
 function idrMin(){ return 1; }
 function percHasContent(pr){
   const T=t=>(t||'').trim().length>0;
-  return (pr.attivita||[]).some(a=>['testo','lancio','sviluppo','conclusione','vBene','vMigl','vAgg'].some(k=>T(a[k])))
+  return (pr.attivita||[]).some(a=>['testo','lancio','sviluppo','conclusione','vBene','vMigl','vAgg'].some(k=>T(a[k]))||attExtraFilled(a))
     || ['strumenti','dal','al','coCostr','rielab'].some(k=>T(pr[k])) || Object.keys(pr.strumSel||{}).length>0
     || Object.values(pr.checklist||{}).some(c=>c&&(c.checked||T(c.note)));
 }
@@ -5983,6 +5987,32 @@ const ATT_TIPI = {
       ['Altro',['Altro']]]
 };
 function attGet(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per) return null; nomiMigra(per); if(!per.attivita) per.attivita=[]; while(per.attivita.length<=aidx) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); return per.attivita[aidx]; }
+
+// ── Attività: sezioni facoltative (materiali, scaletta, piano B, inclusione, link) ──
+function attTT(a){ if(!Array.isArray(a.tt)) a.tt=[]; return a.tt; }
+function attTTSet(p,j,r,k,v){ const a=attGet(p,j); if(!a) return; const t=attTT(a); while(t.length<=r) t.push({t:'',cosa:'',chi:''}); t[r][k]=v; saveDataDebounced(); }
+function attTTAdd(p,j){ const a=attGet(p,j); if(!a) return; attTT(a).push({t:'',cosa:'',chi:''}); saveDataDebounced(); const el=document.getElementById('att-tt-'+p+'-'+j); if(el) el.innerHTML=attTTRows(p,j,a); }
+function attTTDel(p,j,r){ const a=attGet(p,j); if(!a) return; attTT(a).splice(r,1); saveDataDebounced(); const el=document.getElementById('att-tt-'+p+'-'+j); if(el) el.innerHTML=attTTRows(p,j,a); }
+function attTTRows(p,j,a){ const t=attTT(a); const rows=t.length?t:[{t:'',cosa:'',chi:''},{t:'',cosa:'',chi:''},{t:'',cosa:'',chi:''}];
+  return rows.map((r,i)=>`<tr><td><input type="text" placeholder="${['15:00 · 10′','15:10 · 40′','15:50 · 10′'][i]||'ora · durata'}" value="${sEsc(r.t)}" oninput="attTTSet(${p},${j},${i},'t',this.value)"></td><td><input type="text" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${sEsc(r.cosa)}" oninput="attTTSet(${p},${j},${i},'cosa',this.value)"></td><td><input type="text" placeholder="Chi" value="${sEsc(r.chi)}" oninput="attTTSet(${p},${j},${i},'chi',this.value)"></td><td>${t.length&&i<t.length?`<button class="btn-ghost att-tt-x" title="Togli riga" onclick="attTTDel(${p},${j},${i})">×</button>`:''}</td></tr>`).join(''); }
+function attExtraFilled(a){ return ['materiali','pianoB','incRischi','incAzioni','link'].some(k=>(a[k]||'').trim()) || (a.tt||[]).some(r=>(r.t||r.cosa||r.chi||'').trim()); }
+function attExtraHTML(p,j,a,linkHTML){
+  const n=['materiali','pianoB','incRischi','link'].filter(k=>(a[k]||'').trim()).length+((a.tt||[]).some(r=>(r.t||r.cosa||'').trim())?1:0);
+  const ta=(k,ph,h)=>`<textarea style="${SC_TA};min-height:${h||44}px" placeholder="${ph}" oninput="updateAttivita(${p},${j},'${k}',this.value);saveDataDebounced()">${sEsc(a[k])}</textarea>`;
+  return `<details class="att-extra" ${attExtraFilled(a)?'open':''}><summary>Per preparare bene l’attività <span>· facoltativo per il Progetto Personale, ma utile per una programmazione efficace${n?' · '+n+' compilat'+(n===1?'a':'e'):''}</span></summary>
+    <label style="${SC_LBL}">Materiali</label>${ta('materiali','Cosa serve e chi lo porta: es. 4 teli, corde, 20 bende, cassetta di primo soccorso, torce…')}
+    <label style="${SC_LBL}">Scaletta dell’attività <span style="font-weight:400;color:var(--ink-faint)">— orari, durata e chi conduce ogni momento</span></label>
+    <div class="att-tt-wrap"><table class="att-tt"><thead><tr><th>Quando · durata</th><th>Cosa succede</th><th>Chi conduce</th><th></th></tr></thead><tbody id="att-tt-${p}-${j}">${attTTRows(p,j,a)}</tbody></table></div>
+    <button class="btn-ghost" style="font-size:11px;margin-top:4px;border-style:dashed" onclick="attTTAdd(${p},${j})">+ Aggiungi riga</button>
+    <label style="${SC_LBL}">Piano B</label>${ta('pianoB','Se piove, se mancano persone o materiali, se il gioco non decolla: cosa fai?')}
+    <label style="${SC_LBL}">Accortezze e possibili attenzioni per includere e tutelare il benessere di tutti</label>
+    <div class="att-inc"><div><div class="att-sub">A cosa fare attenzione</div>${ta('incRischi','es. un ragazzo con difficoltà motorie, chi non sa nuotare, chi ha paura del buio, chi è appena arrivato, chi si espone poco…')}</div>
+    <div><div class="att-sub">Accortezze che metti in campo</div>${ta('incAzioni','es. un ruolo alternativo di pari valore, un percorso più corto, una coppia di riferimento, la possibilità di dire “passo” senza giudizio…')}</div></div>
+    <div class="att-note">Descrivi le situazioni senza nomi e senza dati sanitari: questa parte finisce nel Word che condividi.</div>
+    <label style="${SC_LBL}">Eventuali link esterni <span style="font-weight:400;color:var(--ink-faint)">— schede, video, materiali online</span></label>
+    ${linkHTML}
+  </details>`;
+}
 function attTipiLabel(a){ const t=(a&&a.tipi)||[]; return t.map(x=>x==='Altro'?((a.tipoAltro||'').trim()||'Altro'):x); }
 function attTipiSelHTML(a){ const l=attTipiLabel(a);
   if(!l.length) return `<div style="font-size:11px;color:var(--ink-faint);margin:2px 0 4px">Nessun tipo scelto (facoltativo): serve solo a darti qualche idea.</div>`;
@@ -6431,7 +6461,7 @@ function renderSchedaC(root,selected){
           ${!isPriority?`<button onclick="removePercorso(${idx})" title="Rimuovi" style="background:none;border:1px solid var(--red);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:12px;color:var(--red)">✕</button>`:''}
         </div>
       </div>
-      <table style="width:100%;border-collapse:collapse">`;
+      <table class="perc-tab" style="width:100%;border-collapse:collapse">`;
 
     // Ambito (solo per extra)
     if(!isPriority){
@@ -6546,7 +6576,7 @@ function renderSchedaC(root,selected){
             <textarea style="${SC_TA};min-height:56px" placeholder="Che cosa fanno i ragazzi, con quali ruoli, materiali e tempi…" oninput="updateAttivita(${idx},${j},'sviluppo',this.value);saveDataDebounced()">${sEsc(att.sviluppo)}</textarea>
             <label style="${SC_LBL}">Conclusione <span style="font-weight:400;color:var(--ink-faint)">— compresa l'eventuale rielaborazione</span></label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
-            <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:11px;flex:1" placeholder="Link a materiali (facoltativo), es. drive.google.com/…" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>
+            ${attExtraHTML(idx,j,att,`<div style="display:flex;gap:8px;align-items:center;margin-top:2px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:11px;flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>`)}
           </details>`; }).join('')}
         <button class="btn-ghost" style="font-size:11.5px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
       </td></tr>
@@ -7991,11 +8021,15 @@ async function exportPPDocx(mode){
     const pid = per.percorsoId; const p = allP.find(x=>x.id===pid); if(!p) return; const a = pid[0];
     const ob = typeof per.prioritaIdx==='number' ? (scheda.priorita[per.prioritaIdx]?.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean) : (per.obiettiviExtra||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const cl = per.checklist || {};
-    const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k])));
+    const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))||attExtraFilled(o.x));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
       dPara([dTxt(`${j+1}. ${plain(x.testo)||'Attività '+(j+1)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).map(k => dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240})),
-      ...(x.link?[dPara([dTxt('Materiali: ',{size:16,bold:true,color:GREEN}), dLink(x.link,{size:16})],{indent:240,after:60})]:[dPara('',{after:40})])
+      ...(T_(x.materiali)?[dPara([dTxt('Materiali: ',{size:18,bold:true,color:GREEN}), dTxt(plain(x.materiali),{size:18})],{after:30,indent:240})]:[]),
+      ...((x.tt||[]).some(r=>T_(r.t)||T_(r.cosa))?[dPara([dTxt('Scaletta:',{size:18,bold:true,color:GREEN})],{after:20,indent:240,keepNext:true}), ...(x.tt||[]).filter(r=>T_(r.t)||T_(r.cosa)).map(r=>dPara([dTxt((plain(r.t)||'—')+'  ',{size:17,bold:true}), dTxt(plain(r.cosa)||'',{size:17}), ...(T_(r.chi)?[dTxt('  ('+plain(r.chi)+')',{size:17,italics:true})]:[])],{after:10,indent:480}))]:[]),
+      ...(T_(x.pianoB)?[dPara([dTxt('Piano B: ',{size:18,bold:true,color:GREEN}), dTxt(plain(x.pianoB),{size:18})],{after:30,indent:240})]:[]),
+      ...(T_(x.incRischi)||T_(x.incAzioni)?[dPara([dTxt('Accortezze per inclusione e benessere: ',{size:18,bold:true,color:GREEN}), dTxt([T_(x.incRischi)?'attenzioni: '+plain(x.incRischi):'', T_(x.incAzioni)?'accortezze: '+plain(x.incAzioni):''].filter(Boolean).join(' — '),{size:18})],{after:30,indent:240})]:[]),
+      ...(x.link?[dPara([dTxt('Link esterni: ',{size:16,bold:true,color:GREEN}), dLink(x.link,{size:16})],{indent:240,after:60})]:[dPara('',{after:40})])
     ]) : '—';
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${typeof per.prioritaIdx==='number'?'':' (facoltativo)'}`));
     ch.push(dKV([
