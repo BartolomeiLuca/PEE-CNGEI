@@ -6498,7 +6498,7 @@ const SEZ_LOGHI={};
 function axCausale(tit){ const g=((scheda.pp&&scheda.pp.gruppo)||'').trim(); return 'nome e cognome – Branca '+FASCIA+(g&&!/monogruppo/i.test(g)?', Gruppo '+g:'')+' – Quota '+(tit||'attività'); }
 function axSezFile(sez){ return String(sez||'').replace(/\s*[–-]\s*Gr\. Reg\..*$/,'').replace(/['’]/g,'_').trim(); }
 // ── Circolare per le famiglie: carta intestata ufficiale CNGEI (circolare/base.docx) ──
-const LUOGO_PPR='<w:pPr><w:spacing w:after="225" w:line="360" w:lineRule="auto"/><w:ind w:left="2692"/><w:jc w:val="both"/></w:pPr>';
+const LUOGO_PPR='<w:pPr><w:spacing w:after="225" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr>';
 function cxE(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function cxBuilder(){ const rels=[]; let n=0;
   const rpr=o=>'<w:rPr><w:rFonts w:ascii="Montserrat" w:eastAsia="Montserrat" w:hAnsi="Montserrat" w:cs="Montserrat"/>'+(o.b?'<w:b/>':'')+(o.i?'<w:i/>':'')+(o.color?'<w:color w:val="'+o.color+'"/>':'')+(o.u?'<w:u w:val="single"/>':'')+'<w:sz w:val="'+(o.sz||20)+'"/><w:szCs w:val="'+(o.sz||20)+'"/></w:rPr>';
