@@ -6524,6 +6524,7 @@ async function axMsgDocx(p,j){
   if(!val.CU_NOME&&!val.CU_MAIL&&!val.CU_TEL) val.CONT_H=''; val.SOCIAL_H=(val.SEZ_SITO||val.SEZ_SOCIAL)?'Social':'';
   let hx=await zip.file('word/header3.xml').async('string');
   hx=hx.replace(/<w:p\b(?:(?!<w:p\b)[\s\S])*?\{\{(\w+)\}\}[\s\S]*?<\/w:p>/g,(m,k)=>val[k]?m.replace('{{'+k+'}}',cxE(val[k])):'');
+  let side=''; hx=hx.replace(/<!--CXSIDE-->([\s\S]*?)<!--\/CXSIDE-->/,(m,g)=>{ side=g; return ''; });
   zip.file('word/header3.xml',hx);
   // corpo
   const {R,LK,P,rels}=cxBuilder(); const C=GREEN; const b=[];
@@ -6570,7 +6571,8 @@ async function axMsgDocx(p,j){
   const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
   b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
   let dx=await zip.file('word/document.xml').async('string');
-  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',b.join(''));
+  let bx=b.join(''); if(side){ const k=bx.indexOf('</w:pPr>'); bx=k>0?bx.slice(0,k+8)+side+bx.slice(k+8):bx; rels.push('<Relationship Id="rIdCxSoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image3.jpg"/>'); }
+  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx);
   zip.file('word/document.xml',dx);
   if(rels.length){ let rx=await zip.file('word/_rels/document.xml.rels').async('string'); rx=rx.replace('</Relationships>',rels.join('')+'</Relationships>'); zip.file('word/_rels/document.xml.rels',rx); }
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
