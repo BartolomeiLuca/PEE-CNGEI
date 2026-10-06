@@ -6069,20 +6069,29 @@ function axRowAdd(p,j,k,init){ axArrP(p,j,k).push(init||{}); axSave(); axRe(p,j)
 function axRowDel(p,j,k,i){ axArrP(p,j,k).splice(i,1); axSave(); axRe(p,j); }
 // Materiali per la circolare: [nome, branche in cui ha senso]. Fonte: circolari di Branco e Reparto raccolte da Luca.
 const AX_ZAINO=[
- ['Uniforme',[['Uniforme completa','ER'],['Pelliccia (uniforme) completa, con i distintivi al posto giusto','L'],['Maglione dell’uniforme','LER'],['Uniforme da campo (pantaloncini e magliette tinta unita o scout)','LE'],['Maglietta bianca da personalizzare','LER']]],
- ['Zaino e notte',[['Zaino da 50–75 litri con coprizaino','ER'],['Zainetto da 10–15 litri','LER'],['Zainetto di Caccia (borraccia, torcia, Quaderno di Caccia, astuccio)','L'],['Sacco a pelo','LER'],['Sacco a pelo invernale','ER'],['Stuoino (bello spesso)','ER'],['Lenzuolo con angoli e federa','L'],['Pigiama o tuta per dormire','LER']]],
- ['Abbigliamento',[['Cambio completo (mutande, calzini, maglietta, pantaloni)','LER'],['Pantaloni lunghi di ricambio','LER'],['Calzettoni lunghi','LER'],['Felpa o pile','LER'],['Giacca a vento','LER'],['Mantella impermeabile o k-way','LER'],['Pantaloni impermeabili','ER'],['Cappellino','LER'],['Costume da bagno','LER'],['Ciabatte','LER']]],
- ['Scarpe',[['Scarponi da trekking alti alla caviglia','LER'],['Scarpe da ginnastica di ricambio','LER'],['Scarpette da scoglio','LER'],['Ghette (neve e fango)','ER']]],
- ['Freddo e neve',[['Berretto di lana','LER'],['Sciarpa','LER'],['Guanti di lana e da neve','LER'],['Ricambi pesanti','LER']]],
- ['Igiene',[['Beauty case essenziale (spazzolino, dentifricio, sapone bio, spazzola)','LER'],['Asciugamano','LER'],['Telo mare','LER'],['Saponetta di Marsiglia bio (corpo e bucato)','LER'],['Crema solare','LER'],['Fazzoletti','LER'],['Sacchetto di tela per i panni sporchi','LER'],['Mollette per il bucato','LER']]],
+ ['Uniforme',[['Uniforme completa','ER'],['Pelliccia (uniforme) completa, con i distintivi al posto giusto','L'],['Felpa dell’uniforme','LER'],['Uniforme da campo (pantaloncini e magliette tinta unita o scout)','LE'],['Maglietta bianca da personalizzare','LER']]],
+ ['Zaino',[['Zaino da 50–75 litri con coprizaino','ER'],['Zainetto da 10–15 litri','LER'],['Zainetto di Caccia (borraccia, torcia, Quaderno di Caccia, astuccio)','L']]],
+ ['Per la notte',[['Sacco a pelo','LER'],['Sacco a pelo invernale','ER'],['Stuoino (bello spesso)','ER'],['Lenzuolo con angoli e federa','L'],['Pigiama o tuta per dormire','LER']]],
+ ['Abbigliamento',[['Cambio completo (mutande, calzini, maglietta, pantaloni)','LER'],['Pantaloni lunghi di ricambio','LER'],['Calzettoni lunghi','LER'],['Felpa o pile','LER'],['Ciabatte','LER'],['Sacchetto di tela per i panni sporchi','LER']]],
+ ['Pioggia',[['Giacca a vento impermeabile','LER'],['Mantella impermeabile o k-way','LER'],['Copripantaloni impermeabili','LER'],['Coprizaino','ER']]],
+ ['Scarpe',[['Scarponi da trekking alti alla caviglia','LER'],['Scarpe da ginnastica di ricambio','LER'],['Ghette (neve e fango)','LER']]],
+ ['Freddo e neve',[['Berretto di lana','LER'],['Sciarpa o scaldacollo','LER'],['Guanti di lana e da neve','LER'],['Calzamaglia','LER'],['Ricambi pesanti','LER']]],
+ ['Caldo e sole',[['Cappellino','LER'],['Crema solare','LER'],['Occhiali da sole','LER'],['Repellente antizanzare','LER']]],
+ ['Acqua e mare',[['Costume da bagno','LER'],['Telo mare','LER'],['Scarpette da scoglio','LER']]],
+ ['Igiene',[['Beauty case essenziale (spazzolino, dentifricio, sapone bio, spazzola)','LER'],['Asciugamano','LER'],['Saponetta di Marsiglia bio (corpo e bucato)','LER'],['Fazzoletti','LER'],['Mollette per il bucato','LER']]],
  ['Mangiare e bere',[['Borraccia piena (almeno 1 litro)','LER'],['Gavetta completa (piatto, tazza, posate) e canovaccio','LER']]],
- ['Attrezzatura',[['Torcia frontale con pile di ricambio','LER'],['Kit da cucito','LER'],['Guanti da lavoro','ER'],['Coltellino','ER'],['Accendino antivento o fiammiferi antivento','ER'],['Acciarino','ER'],['Bussola','ER'],['Spago grosso','E'],['Nastro telato','E'],['Guidone di Pattuglia','E'],['Materiale di Pattuglia: accetta, badile, sega','E'],['Lampada di Pattuglia con bombole e retine','E'],['Kit di primo soccorso di Pattuglia','E']]],
+ ['Attrezzatura personale',[['Torcia frontale con pile di ricambio','LER'],['Kit da cucito','LER'],['Guanti da lavoro','ER'],['Coltellino','ER'],['Accendino antivento o fiammiferi antivento','ER'],['Acciarino','ER'],['Bussola','ER'],['Spago grosso','E'],['Nastro telato','E']]],
+ ['Materiale di Pattuglia',[['Guidone di Pattuglia','E'],['Accetta, badile e sega','E'],['Lampada con bombole e retine','E'],['Kit di primo soccorso di Pattuglia','E']]],
  ['Quaderno e svago',[['Quaderno di Caccia e astuccio','LE'],['Pista di Akela','L'],['Quaderno e penna','R'],['Canzoniere o strumento musicale (per chi lo ha)','LER'],['Macchina fotografica','ER']]],
- ['Documenti e salute',[['Copia della tessera sanitaria','LER'],['Scheda sanitaria compilata','LER'],['Eventuali medicinali in busta chiusa, con le istruzioni per i capi','LER']]]];
+ ['Documenti e salute',[['Copia della tessera sanitaria','LER'],['Scheda sanitaria compilata','LER'],['Eventuali medicinali, con la liberatoria per la somministrazione','LER']]]];
+const AX_MEDIC='Eventuali medicinali, con la liberatoria per la somministrazione';
 function axZainoFor(){ return AX_ZAINO.map(([g,l])=>[g,l.filter(it=>it[1].includes(FASCIA||'E')).map(it=>it[0])]).filter(g=>g[1].length); }
-const AX_ZAINO_BASE={giorno:['Uniforme completa','Pelliccia (uniforme) completa, con i distintivi al posto giusto','Borraccia piena (almeno 1 litro)','Mantella impermeabile o k-way','Cappellino'],
- piu:['Uniforme completa','Pelliccia (uniforme) completa, con i distintivi al posto giusto','Zaino da 50–75 litri con coprizaino','Sacco a pelo','Stuoino (bello spesso)','Lenzuolo con angoli e federa','Pigiama o tuta per dormire','Cambio completo (mutande, calzini, maglietta, pantaloni)','Giacca a vento','Mantella impermeabile o k-way','Scarponi da trekking alti alla caviglia','Scarpe da ginnastica di ricambio','Beauty case essenziale (spazzolino, dentifricio, sapone bio, spazzola)','Asciugamano','Borraccia piena (almeno 1 litro)','Gavetta completa (piatto, tazza, posate) e canovaccio','Torcia frontale con pile di ricambio','Quaderno di Caccia e astuccio','Copia della tessera sanitaria']};
-function axZainoBase(p,j){ const x=axX(p,j); const ok=new Set(axZainoFor().flatMap(g=>g[1])); const S=x.portareSel||(x.portareSel=[]); (AX_ZAINO_BASE[axMulti(x)||x.durata==='piu'?'piu':'giorno']).forEach(v=>{ if(ok.has(v)&&!S.includes(v)) S.push(v); }); axSave(); axRe(p,j); showToast('Lista base aggiunta: togli o aggiungi quello che serve'); }
+const AX_ZAINO_BASE={giorno:['Uniforme completa','Pelliccia (uniforme) completa, con i distintivi al posto giusto','Borraccia piena (almeno 1 litro)','Mantella impermeabile o k-way'],
+ piu:['Uniforme completa','Pelliccia (uniforme) completa, con i distintivi al posto giusto','Zaino da 50–75 litri con coprizaino','Sacco a pelo','Stuoino (bello spesso)','Lenzuolo con angoli e federa','Pigiama o tuta per dormire','Cambio completo (mutande, calzini, maglietta, pantaloni)','Giacca a vento impermeabile','Mantella impermeabile o k-way','Scarponi da trekking alti alla caviglia','Scarpe da ginnastica di ricambio','Beauty case essenziale (spazzolino, dentifricio, sapone bio, spazzola)','Asciugamano','Borraccia piena (almeno 1 litro)','Gavetta completa (piatto, tazza, posate) e canovaccio','Torcia frontale con pile di ricambio','Quaderno di Caccia e astuccio','Copia della tessera sanitaria']};
+function axZainoBase(p,j){ const x=axX(p,j); const ok=new Set(axZainoFor().flatMap(g=>g[1])); const S=x.portareSel||(x.portareSel=[]);
+  const m=x.data?new Date(x.data+'T12:00').getMonth()+1:0; const add=AX_ZAINO_BASE[axMulti(x)||x.durata==='piu'?'piu':'giorno'].slice();
+  if(m&&(m>=11||m<=3)) add.push('Berretto di lana','Guanti di lana e da neve','Sciarpa o scaldacollo','Calzamaglia'); if(m>=6&&m<=9) add.push('Cappellino','Crema solare','Repellente antizanzare');
+  add.forEach(v=>{ if(ok.has(v)&&!S.includes(v)) S.push(v); }); axSave(); axRe(p,j); showToast(m?'Lista base aggiunta, adattata alla stagione: togli o aggiungi quello che serve':'Lista base aggiunta: togli o aggiungi quello che serve'); }
 function axZainoAdd(p,j,sel){ const v=sel.value; if(!v) return; const x=axX(p,j); const S=x.portareSel||(x.portareSel=[]); if(!S.includes(v)) S.push(v); axSave(); axRe(p,j); }
 function axZainoHTML(p,j,x){ const G=axZainoFor(), S=x.portareSel||[];
   const opts='<option value="">+ Aggiungi dalla lista…</option>'+G.map(([g,l])=>`<optgroup label="${axE(g)}">${l.filter(v=>!S.includes(v)).map(v=>`<option value="${axE(v)}">${axE(v)}</option>`).join('')}</optgroup>`).join('');
@@ -6106,7 +6115,8 @@ function axNGiorni(x){ return axMulti(x)?Math.round((new Date(x.dataFine+'T12:00
 function axDateTxt(x,year){ if(!x.data) return ''; if(!axMulti(x)) return axDt(x.data,year?{year:'numeric'}:{});
   const a=new Date(x.data+'T12:00'), b=new Date(x.dataFine+'T12:00'); const sameM=a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear();
   return 'da '+axDt(x.data,sameM?{month:undefined}:{})+' a '+axDt(x.dataFine,year?{year:'numeric'}:{}); }
-function axPortList(x){ const sel=(x.portareSel||[]).slice(); const ord=AX_ZAINO.flatMap(g=>g[1].map(it=>it[0])); sel.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)); return sel.concat((x.portare||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
+const AX_ZAINO_REN={'Maglione dell’uniforme':'Felpa dell’uniforme','Pantaloni impermeabili':'Copripantaloni impermeabili','Giacca a vento':'Giacca a vento impermeabile','Sciarpa':'Sciarpa o scaldacollo','Eventuali medicinali in busta chiusa, con le istruzioni per i capi':AX_MEDIC,'Materiale di Pattuglia: accetta, badile, sega':'Accetta, badile e sega','Lampada di Pattuglia con bombole e retine':'Lampada con bombole e retine','Zaino da 50–75 litri con coprizaino':'Zaino da 50–75 litri con coprizaino'};
+function axPortList(x){ if(Array.isArray(x.portareSel)) x.portareSel=x.portareSel.map(v=>AX_ZAINO_REN[v]||v); const sel=(x.portareSel||[]).slice(); const ord=AX_ZAINO.flatMap(g=>g[1].map(it=>it[0])); sel.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)); return sel.concat((x.portare||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
 function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):''; }
 function axTog(p,j,k,v){ const r=axArrP(p,j,k); const i=r.indexOf(v); if(i>=0) r.splice(i,1); else r.push(v); axSave(); axRe(p,j); }
 function axE(s){ return sEsc(s==null?'':String(s)); }
@@ -6346,6 +6356,7 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
   const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: [da inserire], intestato a: [da inserire]; causale: '+axCausale(tit)+')'));
   if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' – '+axLk('link al documento',linkNorm(L.permLink)):' – link al documento: [da inserire]'));
+  if((x.portareSel||[]).includes(AX_MEDIC)){ const lu=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'')+'circolare/Liberatoria_somministrazione_farmaci.pdf'; out.push('• Solo se servono medicinali: compilare la '+axLk('liberatoria per la somministrazione dei farmaci',lu)+', allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome'); }
   out.push('','Vi chiediamo di rispettare gli orari: ci aiuta a far partire l’attività con tutti e a riportare i ragazzi puntuali. Per qualsiasi dubbio potete contattarci:',...axStaffContatti().map(c=>'• '+c.n+': '+(c.tel||'[telefono]')),'','A presto e grazie,',axFirma());
   return out.join('\n'); }
 function axMsg(p,j){ const box=document.getElementById('ax-msg-'+p+'-'+j); const raw=axMsgText(p,j); if(axX(p,j).ambientProp||axX(p,j).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
@@ -6519,13 +6530,16 @@ async function axMsgDocx(p,j){
     if(sac.length) b.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '))],{before:80})); }
   const bon=q&&x.paga!=='partenza';
   if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
-  if(bon||L.permessi){ H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
+  const med=(x.portareSel||[]).includes(AX_MEDIC), libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
+  if(bon||L.permessi||med){ H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
     if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
       b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
       b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
       b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
     if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
-      b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420})); } }
+      b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
+    if(med){ b.push(P([T('☐  '),B('Solo se servono medicinali: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
+      b.push(P([LK('Link al documento',libUrl)],{ind:420})); } }
   H('Contatti'); b.push(P([T('Per qualsiasi dubbio potete contattarci:')],{after:80}));
   const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
   b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
