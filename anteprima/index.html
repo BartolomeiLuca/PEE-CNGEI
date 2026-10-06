@@ -6086,7 +6086,7 @@ const AX_ZAINO=[
  ['Documenti e salute',[['Copia della tessera sanitaria','LER'],['Scheda sanitaria compilata','LER']]]];
 const AX_ADDOSSO=()=>[FASCIA==='L'?'Pelliccia (uniforme) completa':'Uniforme completa','Scarponi ai piedi','Felpa dell’uniforme','Giacca a vento'];
 const AX_CASA=['Cellulare e dispositivi elettronici','Oggetti di valore','Soldi, se non servono','Cibo e dolci, se non previsti'];
-const AX_CONSIGLI=()=>['Scrivere il nome su tutto','Preparare lo zaino insieme '+(FASCIA==='L'?'al Lupetto o alla Lupetta':FASCIA==='R'?'al Rover':'all’Esploratore o all’Esploratrice')+', così sa dove trovare le cose','Uno zaino leggero: solo quello che serve davvero'];
+const AX_CONSIGLI=()=>['Scrivere il nome su tutto','Preparare lo zaino insieme al Lupetto o alla Lupetta, così sa dove trovare le cose','Uno zaino leggero: solo quello che serve davvero'];
 const AX_MEDIC='Eventuali medicinali, con la liberatoria per la somministrazione';
 function axZainoFor(){ return AX_ZAINO.map(([g,l])=>[g,l.filter(it=>it[1].includes(FASCIA||'E')).map(it=>it[0])]).filter(g=>g[1].length); }
 const AX_ZAINO_BASE={giorno:['Uniforme completa','Pelliccia (uniforme) completa, con i distintivi al posto giusto','Borraccia piena (almeno 1 litro)','Mantella impermeabile o k-way'],
@@ -6360,7 +6360,7 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
   const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: [da inserire], intestato a: [da inserire]; causale: '+axCausale(tit)+')'));
   if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' – '+axLk('link al documento',linkNorm(L.permLink)):' – link al documento: [da inserire]'));
-  { const casa=(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)); if(casa.length) out.push('• Da lasciare a casa: '+casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')); (x.consigli||[]).forEach(t=>out.push('• '+t)); }
+  { const casa=FASCIA==='R'?[]:(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)); if(casa.length) out.push('• Da lasciare a casa: '+casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')); if(FASCIA==='L') (x.consigli||[]).forEach(t=>out.push('• '+t)); }
   { const lu=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'')+'circolare/Liberatoria_somministrazione_farmaci.pdf'; out.push('• Solo se servono farmaci: compilare la '+axLk('liberatoria per la somministrazione dei farmaci',lu)+', allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome'); }
   out.push('','Vi chiediamo di rispettare gli orari: ci aiuta a far partire l’attività con tutti e a riportare i ragazzi puntuali. Per qualsiasi dubbio potete contattarci:',...axStaffContatti().map(c=>'• '+c.n+': '+(c.tel||'[telefono]')),'','A presto e grazie,',axFirma());
   return out.join('\n'); }
@@ -6405,8 +6405,8 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
   h+=axLbl('3. Cosa portano i ragazzi','scegli dal menù, oppure parti da una lista base')+axZainoHTML(p,j,x)
     +`<div class="ax-sub" style="margin-top:6px">Altro <span class="ax-opt">(una cosa per riga)</span></div>`+axTA(p,j,'portare','es. quaderno\nsacchetto per i rifiuti',x.portare,44)
     +`<div class="ax-sub" style="margin-top:10px">Si parte con addosso <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_ADDOSSO().map(v=>[v,v]),x.addosso||[],v=>`axTog(${p},${j},'addosso',axD('${v}'))`,true)
-    +`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36)
-    +`<div class="ax-sub" style="margin-top:8px">Consigli per le famiglie <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true);
+    +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
+    +(FASCIA==='L'?`<div class="ax-sub" style="margin-top:8px">Consigli per le famiglie <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true):'');
   h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>
     ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
     <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
@@ -6532,7 +6532,7 @@ async function axMsgDocx(p,j){
     blk('Ritrovo',L.ritrovo,'ritrovoDove',x.data); blk('Rientro',L.rientro,'rientroDove',x.dataFine);
     if(L.mezzo&&L.mezzo!=='piedi') b.push(P([B('Come ci spostiamo: '),T(L.mezzo==='altro'?(L.mezzoAltro||''):(mzL[L.mezzo]||''))]));
     b.push(P([R('Vi chiediamo di rispettare gli orari: ci aiuta a partire tutti insieme e a riportare i ragazzi puntuali.',{i:true,color:'555555'})],{before:40})); }
-  const port=axPortList(x), sac=axSaccoList(x), add=(x.addosso||[]), casa=(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)), cons=(x.consigli||[]);
+  const port=axPortList(x), sac=axSaccoList(x), add=(x.addosso||[]), casa=FASCIA==='R'?[]:(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)), cons=FASCIA==='L'?(x.consigli||[]):[];
   if(port.length||sac.length||add.length){ H('Cosa portare');
     if(add.length) b.push(P([B('Alla partenza, addosso: '),T(add.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '))],{after:100}));
     if(port.length&&add.length) b.push(P([B('Nello zaino:')],{after:40,keepNext:true}));
