@@ -2520,7 +2520,7 @@ function modalClose(){ const ov=document.getElementById('g-modal'); if(ov) ov.cl
 
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, contratto)']];
-const STAFF_CONTACT_COLS=[['mail','Email (solo circolare)'],['tel','Telefono (solo circolare)']];
+const STAFF_CONTACT_COLS=[['mail','Email'],['tel','Telefono']];
 function staffCols(contacts){ const c=STAFF_TAB_COLS.slice(); if(FASCIA==='L') c.splice(2,0,['giungla','Nome giungla']); if(contacts!==false) c.splice(FASCIA==='L'?3:2,0,...STAFF_CONTACT_COLS); return c; }
 const GJ_VCB=['Baloo','Bagheera','Kaa','Raksha','Chil','Fratel Bigio'], GJ_SIS=['Chikai','Ikki','Mor','Mang','Mysa','Oo','Rama','Ferao'];
 function gjOpts(ruolo){ const r=String(ruolo||'').trim().toUpperCase();
@@ -6081,6 +6081,12 @@ function axAperture(a,x){ const t=(a.testo||'').trim(), tt=t?'“'+t+'”':'la p
 function axPropose(p,j,kind){ const a=attGet(p,j), x=axX(p,j); window._axPi=(window._axPi||0)+1;
   if(kind==='cit'){ const C=AX_CIT[FASCIA]||AX_CIT.E; const c=C[window._axPi%C.length]; x.citProp=true; axSet(p,j,'citaz','«'+c[0]+'» ('+c[1]+')',true); } else { const A=axAperture(a,x); x.ambientProp=true; axSet(p,j,'ambient',A[window._axPi%A.length],true); }
   showToast('È uno spunto: personalizzalo con parole vostre'); }
+function axMulti(x){ return x&&x.durata==='piu'&&x.data&&x.dataFine&&x.dataFine>x.data; }
+function axDt(iso,o){ return iso?new Date(iso+'T12:00').toLocaleDateString('it-IT',Object.assign({weekday:'long',day:'numeric',month:'long'},o||{})):''; }
+function axNGiorni(x){ return axMulti(x)?Math.round((new Date(x.dataFine+'T12:00')-new Date(x.data+'T12:00'))/864e5)+1:1; }
+function axDateTxt(x,year){ if(!x.data) return ''; if(!axMulti(x)) return axDt(x.data,year?{year:'numeric'}:{});
+  const a=new Date(x.data+'T12:00'), b=new Date(x.dataFine+'T12:00'); const sameM=a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear();
+  return 'da '+axDt(x.data,sameM?{month:undefined}:{})+' a '+axDt(x.dataFine,year?{year:'numeric'}:{}); }
 function axPortList(x){ const sel=(x.portareSel||[]).slice(); const ord=AX_ZAINO.flatMap(g=>g[1]); sel.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)); return sel.concat((x.portare||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
 function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):''; }
 function axTog(p,j,k,v){ const r=axArrP(p,j,k); const i=r.indexOf(v); if(i>=0) r.splice(i,1); else r.push(v); axSave(); axRe(p,j); }
@@ -6117,7 +6123,11 @@ function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPerc
   h+=`<div class="ax-sub">Adulti</div>`+(ppl.length?axChips(ppl.map(n=>[n,n]),P.ad||[],v=>`axTog(${p},${j},'pres.ad',axD('${v}'))`,true):'<div class="ax-hint">Inserisci i nomi dello staff nella 1.1, oppure aggiungi una persona qui.</div>')+`<button type="button" class="btn-ghost ax-add" onclick="(function(){const n=axNewPerson(); if(n){ const r=axArrP(${p},${j},'pres.ad'); if(!r.includes(n)) r.push(n); axSave(); axRe(${p},${j}); }})()">+ Altra persona</button>`;
   h+=`<div class="ax-row3"><div><div class="ax-sub">Ragazzi in tutto</div><select class="ax-in" onchange="axSet(${p},${j},'pres.rag',this.value,true)">${axNumOpts(P.rag,60)}</select></div><div><div class="ax-sub">di cui ragazze <span class="ax-opt">(facoltativo)</span></div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragF',this.value)">${axNumOpts(P.ragF,60)}</select></div><div><div class="ax-sub">di cui ragazzi <span class="ax-opt">(facoltativo)</span></div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragM',this.value)">${axNumOpts(P.ragM,60)}</select></div></div>`;
   if(N.tot) h+=`<div class="ax-hint"><b>${N.tot} persone</b>: ${N.ad} adult${N.ad===1?'o':'i'} e ${N.rag} ragazz${N.rag===1?'o':'i'}${N.ad&&N.rag?' · un adulto ogni '+(N.rag/N.ad).toFixed(1).replace('.0','').replace('.',',')+' ragazzi':''}</div>`;
-  h+=axLbl('Data')+`<input class="ax-in" type="date" style="max-width:190px" value="${axE(x.data)}" onchange="axSet(${p},${j},'data',this.value,true)"><span class="ax-warn">${axDateWarn(per,x.data)}</span>`;
+  h+=axLbl('Quanto dura')+axChips([['giorno','In giornata'],['piu','Più giorni (con pernotto)']],x.durata||'giorno',v=>`axSet(${p},${j},'durata',axD('${v}'),true)`);
+  if(x.durata==='piu'){ const bad=x.data&&x.dataFine&&x.dataFine<=x.data;
+    h+=`<div class="ax-row3"><div><div class="ax-sub">Data di partenza</div><input class="ax-in" type="date" value="${axE(x.data)}" onchange="axSet(${p},${j},'data',this.value,true)"></div><div><div class="ax-sub">Data di rientro</div><input class="ax-in" type="date" min="${axE(x.data)}" value="${axE(x.dataFine)}" onchange="axSet(${p},${j},'dataFine',this.value,true)"></div><div></div></div>`
+      +(bad?`<div class="ax-warn">La data di rientro deve venire dopo la partenza.</div>`:axMulti(x)?`<div class="ax-hint">${axNGiorni(x)} giorni, ${axNGiorni(x)-1} nott${axNGiorni(x)-1===1?'e':'i'}. Il menù parte già con ${axNGiorni(x)} giorni.</div>`:'')+`<span class="ax-warn">${axDateWarn(per,x.data)}</span>`; }
+  else h+=axLbl('Data')+`<input class="ax-in" type="date" style="max-width:190px" value="${axE(x.data)}" onchange="axSet(${p},${j},'data',this.value,true)"><span class="ax-warn">${axDateWarn(per,x.data)}</span>`;
   h+=axLbl('Ritrovo e rientro')+`<div class="ax-rr"><div><div class="ax-sub">Luogo di ritrovo</div>${axPlaceField(p,j,L,'ritrovoDove','es. in sede, piazza del Popolo')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.ritrovo',this.value)">${axTimeOpts(L.ritrovo)}</select></div></div>
     <div class="ax-rr"><div><div class="ax-sub">Luogo di rientro</div>${axPlaceField(p,j,L,'rientroDove','es. in sede, stazione')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.rientro',this.value)">${axTimeOpts(L.rientro)}</select></div></div>`;
   h+=axLbl('Dove si svolge')+axChips(AX_TIPO,L.tipo,v=>`axSet(${p},${j},'luogo.tipo',axD('${v}'),true)`);
@@ -6227,7 +6237,7 @@ function axCibo(p,j,x){ const C=x.cibo||{}; const N=axN(x); const P=axArrP(p,j,'
   if(C.modo==='medio') h+=`<div class="ax-row3"><div><div class="ax-sub">€ a pasto a persona</div><input class="ax-in" type="number" min="0" step="0.5" value="${axE(C.medio)}" oninput="axSet(${p},${j},'cibo.medio',this.value)"></div><div><div class="ax-sub">Numero di pasti</div><input class="ax-in" type="number" min="0" placeholder="${axPasti(x)||''}" value="${axE(C.npasti)}" oninput="axSet(${p},${j},'cibo.npasti',this.value)"></div><div></div></div>`;
   h+=`<div class="ax-mat2"><span class="ax-sub">A carico di</span><select class="ax-in" onchange="axSet(${p},${j},'cibo.carico',this.value,true)">${axOpt(AX_CARICO,C.carico)}</select></div>`;
   h+=`<div class="ax-row3"><div><div class="ax-sub">Porzioni</div><select class="ax-in" onchange="axSet(${p},${j},'cibo.porz',this.value,true)">${axOpt(AX_PORZ,String(C.porz||(FASCIA==='L'?'0.8':'1')))}</select></div><div><div class="ax-sub">Persone a tavola</div><div class="ax-hint" style="padding-top:6px">${N.tot||'— indica i presenti'}</div></div><div></div></div>`;
-  const nG=Math.max(Number(x.giorni)||1,...P.map(pt=>Number(pt.g)||1)); const ord=AX_PORD;
+  const nG=Math.max(Number(x.giorni)||1,axNGiorni(x),...P.map(pt=>Number(pt.g)||1)); const ord=AX_PORD;
   const cardOf=(pt,k)=>`<div class="ax-piatto"><div class="ax-pt1b"><span class="ax-sub">Piatto</span><button type="button" class="btn-ghost ax-x" title="Togli il piatto" onclick="axRowDel(${p},${j},'piatti',${k})">×</button></div>
     <div class="ax-row2"><input class="ax-in" placeholder="Piatto, es. pasta al pomodoro" value="${axE(pt.nome)}" oninput="axSet(${p},${j},'piatti.${k}.nome',this.value)"><div style="display:flex;gap:6px;align-items:center"><span class="ax-sub">Chi cucina</span>${axIN(p,j,'piatti.'+k+'.chi','es. Pattuglia Volpi',pt.chi)}</div></div>
     <div class="ax-mat2"><span class="ax-sub">Per chi</span><select class="ax-in" onchange="axSet(${p},${j},'piatti.${k}.per',this.value,true)">${axOpt(AX_PERCHI,pt.per||'tutti')}</select>${pt.per==='n'?`<select class="ax-in" title="Quante persone" onchange="axSet(${p},${j},'piatti.${k}.pn',this.value,true)">${axNumOpts(pt.pn,60)}</select>`:`<span class="ax-hint">${axPtN(pt,N)||'—'} persone</span>`}</div>
@@ -6307,11 +6317,11 @@ function axMapShort(q,L){ if(axIsLinkTxt(q)) return linkNorm(String(q).trim()); 
 function axLk(w,u){ return u?'\u0001'+w+'\u0002'+u+'\u0003':w; }
 function axMsgPlain(t){ return t.replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u0003/g,(m,a,b)=>axIsLinkTxt(a)?b:a+' ('+b+')'); }
 function axMsgHtml(t){ return axE(t).replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u0003/g,(m,a,b)=>'<a href="'+b+'">'+(axIsLinkTxt(a)?'mappa':a)+'</a>').replace(/\n/g,'<br>'); }
-function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
+function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d=axDateTxt(x); const mul=axMulti(x);
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
   const amb=(x.ambient||'').trim(), cit=(x.citaz||'').trim(); const out=[...(cit?[cit,'']:[]),'Ciao a tutti!',...(amb?[amb,'']:[]),`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&(L.nome||'').trim()?' a '+axLk(axPlaceTxt(L,'nome'),axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
-  if(L.ritrovo||L.ritrovoDove) out.push('• Ritrovo'+(L.ritrovo?' alle '+L.ritrovo:'')+(L.ritrovoDove?', '+axLk(axPlaceTxt(L,'ritrovoDove'),axPlaceShort(L,'ritrovoDove')):''));
-  if(L.rientro||L.rientroDove) out.push('• Rientro'+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(axPlaceTxt(L,'rientroDove'),axPlaceShort(L,'rientroDove')):''));
+  if(L.ritrovo||L.ritrovoDove) out.push('• Ritrovo'+(mul?' '+axDt(x.data):'')+(L.ritrovo?' alle '+L.ritrovo:'')+(L.ritrovoDove?', '+axLk(axPlaceTxt(L,'ritrovoDove'),axPlaceShort(L,'ritrovoDove')):''));
+  if(L.rientro||L.rientroDove) out.push('• Rientro'+(mul?' '+axDt(x.dataFine):'')+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(axPlaceTxt(L,'rientroDove'),axPlaceShort(L,'rientroDove')):''));
   const mz=Object.fromEntries(AX_MEZZI); if(L.mezzo&&L.mezzo!=='piedi') out.push('• Ci spostiamo '+(L.mezzo==='altro'?(L.mezzoAltro||''):({bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto'}[L.mezzo]||mz[L.mezzo])));
   const port=axPortList(x); if(port.length) out.push('• Nello zaino: '+port.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
   const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco, lo porta ciascuno: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
@@ -6351,11 +6361,11 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
     <div class="ax-sub" style="margin-top:8px">Frase d’apertura <span class="ax-opt">(incuriosisci senza svelare)</span></div><textarea class="ax-ta" style="min-height:44px" placeholder="es. Una pergamena è arrivata in sede: qualcuno chiede aiuto dal rifugio…" oninput="axSetQuiet(axX(${p},${j}),'ambientProp',false);axSet(${p},${j},'ambient',this.value)">${axE(x.ambient)}</textarea><div class="ax-chips" style="margin-top:3px"><button type="button" class="ax-chip" onclick="axPropose(${p},${j},'ap')">Proponi una frase</button>${x.ambientProp?'<span class="ax-hint"><b style="color:#B26A00">È ancora la proposta: riscrivila con parole vostre.</b></span>':''}</div>
     <div class="ax-hint" style="margin-top:4px">Le proposte sono solo uno spunto per scrivere una circolare che funziona: personalizzale sempre, legandole all’ambientazione dell’attività e al vostro modo di parlare ai ragazzi. Toccando di nuovo ne esce un’altra.</div>
     `;
-  const dLong=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
+  const dLong=axDateTxt(x), mul=axMulti(x);
   const ln=k=>{ const u=axPlaceShort(L,k), t=axPlaceTxt(L,k); return t?(u?`<a href="${axE(u)}" target="_blank" rel="noopener">${axE(t)}</a>`:axE(t)):''; };
   const dove=L.tipo==='sede'?'in sede':ln('nome');
-  const blk=(lab,ora,k)=>`<div style="margin-top:6px"><b>${lab}</b></div><div class="ax-circ-sub"><span>Ora</span>${ora?axE(ora):'<i class="ax-opt">manca</i>'}</div><div class="ax-circ-sub"><span>Luogo</span>${ln(k)||'<i class="ax-opt">manca</i>'}</div>`;
-  h+=axLbl('2. Riepilogo','si prende da “Chi, quando, dove, come”: tocca i luoghi per verificarli su Maps')+`<div class="ax-circ-rec"><div><span>Data</span>${dLong?axE(dLong):'<i class="ax-opt">manca</i>'}</div><div><span>Dove</span>${dove||'<i class="ax-opt">manca</i>'}</div>${blk('Ritrovo',L.ritrovo,'ritrovoDove')}${blk('Rientro',L.rientro,'rientroDove')}${L.mezzo?`<div style="margin-top:6px"><span>Spostamento</span>${axE(L.mezzo==='altro'?(L.mezzoAltro||''):mzL[L.mezzo]||'')}</div>`:''}</div>`
+  const blk=(lab,ora,k,g)=>`<div style="margin-top:6px"><b>${lab}</b></div>${mul&&g?`<div class="ax-circ-sub"><span>Giorno</span>${axE(axDt(g))}</div>`:''}<div class="ax-circ-sub"><span>Ora</span>${ora?axE(ora):'<i class="ax-opt">manca</i>'}</div><div class="ax-circ-sub"><span>Luogo</span>${ln(k)||'<i class="ax-opt">manca</i>'}</div>`;
+  h+=axLbl('2. Riepilogo','si prende da “Chi, quando, dove, come”: tocca i luoghi per verificarli su Maps')+`<div class="ax-circ-rec"><div><span>${mul?'Date':'Data'}</span>${dLong?axE(dLong):'<i class="ax-opt">manca</i>'}</div><div><span>Dove</span>${dove||'<i class="ax-opt">manca</i>'}</div>${blk('Ritrovo',L.ritrovo,'ritrovoDove',x.data)}${blk('Rientro',L.rientro,'rientroDove',x.dataFine)}${L.mezzo?`<div style="margin-top:6px"><span>Spostamento</span>${axE(L.mezzo==='altro'?(L.mezzoAltro||''):mzL[L.mezzo]||'')}</div>`:''}</div>`
     +((!L.ritrovoDoveAddr&&L.ritrovoDove&&!/sede/i.test(L.ritrovoDove))||(!L.rientroDoveAddr&&L.rientroDove&&!/sede/i.test(L.rientroDove))?`<div class="ax-hint">Per un link preciso, in “Chi, quando, dove, come” usa “Cerca l’indirizzo” accanto a ritrovo e rientro.</div>`:'');
   h+=axLbl('3. Cosa portano i ragazzi','tocca per scegliere')+AX_ZAINO.map(([g,l])=>`<div class="ax-sub" style="margin-top:6px">${g}</div>`+axChips(l.map(v=>[v,v]),x.portareSel||[],v=>`axTog(${p},${j},'portareSel',axD('${v}'))`,true)).join('')
     +`<div class="ax-sub" style="margin-top:6px">Altro <span class="ax-opt">(una cosa per riga)</span></div>`+axTA(p,j,'portare','es. quaderno\nsacchetto per i rifiuti',x.portare,44);
@@ -6377,7 +6387,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   // In breve
   const tipo=Object.fromEntries(AX_TIPO), mz=Object.fromEntries(AX_MEZZI);
   const kv=[];
-  if(x.data) kv.push(['Data', new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})]);
+  if(x.data) kv.push([axMulti(x)?'Date':'Data', (t=>t.charAt(0).toUpperCase()+t.slice(1))(axDateTxt(x,true))+(axMulti(x)?' · '+axNGiorni(x)+' giorni':'')]);
   const kvMap=(txt,k)=>{ const u=k?axPlaceShort(L,k):''; if(u&&k&&axIsLinkTxt(L[k])) txt=txt.replace(L[k],'').replace(/\s·\s*$/,'').trim(); return u?[dPara([dTxt(txt,{size:19})],{after:20}), dPara([dLink(u,{size:16,label:'Apri su Google Maps'})],{after:0})]:txt; };
   if(L.ritrovo||L.ritrovoDove) kv.push(['Ritrovo',kvMap([L.ritrovo?'ore '+L.ritrovo:'',L.ritrovoDove||''].filter(Boolean).join(' · '),'ritrovoDove')]);
   if(L.rientro||L.rientroDove) kv.push(['Rientro',kvMap([L.rientro?'ore '+L.rientro:'',L.rientroDove||''].filter(Boolean).join(' · '),'rientroDove')]);
@@ -6420,7 +6430,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
 // ── Word: lista della spesa ──
 async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFoodList(x); if(!L.length){ showToast('Aggiungi prima piatti, ingredienti e presenti'); return; }
   try{ await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
-  const N=axN(x); const ch=[...dTitleBlock('Lista della spesa', ((a.testo||'').trim()||'Attività '+(j+1))+(x.data?' · '+x.data.split('-').reverse().join('/'):'')+' · '+N.tot+' persone')];
+  const N=axN(x); const ch=[...dTitleBlock('Lista della spesa', ((a.testo||'').trim()||'Attività '+(j+1))+(x.data?' · '+x.data.split('-').reverse().join('/')+(axMulti(x)?'–'+x.dataFine.split('-').reverse().join('/'):''):'')+' · '+N.tot+' persone')];
   ch.push(dGridTable(['Alimento','Quantità','Prezzo indicativo','Costo stimato'],L.map(r=>[r.nome, r.qtxt, r.prezzo!=null&&r.prezzo!==''?axEur(r.prezzo)+(r.um==='pz'?' /pz':r.um==='ml'?' /l':' /kg'):'—', r.cost!=null?axEur(r.cost):'—']),[3438,2200,2000,2000]));
   const tot=L.reduce((t,r)=>t+(r.cost||0),0); if(tot) ch.push(dPara('Spesa stimata: '+axEur(tot),{size:19,bold:true,before:100}));
   const dd=axDieteTxt(x); if(dd.length) ch.push(dPara('Diete speciali: '+dd.join(', '),{size:18,before:60}));
@@ -6434,82 +6444,79 @@ function axStaffNomi(){ const n=[]; (staffTab()||[]).forEach(r=>{ const f=String
 // Loghi di Sezione per il messaggio ai genitori (da caricare): { 'pesaro': 'data:image/png;base64,...' }
 const SEZ_LOGHI={};
 function axCausale(tit){ const g=((scheda.pp&&scheda.pp.gruppo)||'').trim(); return 'nome e cognome – Branca '+FASCIA+(g&&!/monogruppo/i.test(g)?', Gruppo '+g:'')+' – Quota '+(tit||'attività'); }
-async function axImg(path){ try{ const r=await fetch(path,{cache:'force-cache'}); if(!r.ok) return null; const b=await r.blob(); let w=0,h=0; try{ const bm=await createImageBitmap(b); w=bm.width; h=bm.height; }catch(e){} return {data:new Uint8Array(await b.arrayBuffer()),w,h}; }catch(e){ return null; } }
 function axSezFile(sez){ return String(sez||'').replace(/\s*[–-]\s*Gr\. Reg\..*$/,'').replace(/['’]/g,'_').trim(); }
-async function axCartaDoc(ch,tit,sez){ const D=dxLib();
-  // carta intestata: colonna sinistra con loghi e contatti, a destra il testo ──
-  const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
-  const [lgS,lgB,lgA,lgSo]=await Promise.all([axImg(base+'loghi/sezioni/'+encodeURIComponent(axSezFile(sez))+'.jpg'),axImg(base+'loghi/branca/'+FASCIA+'.jpg'),axImg(base+'loghi/affiliazioni.jpg'),axImg(base+'loghi/social.jpg')]);
-  const img=(im,w,after)=>im?new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:after||160},children:[new D.ImageRun({data:im.data,transformation:{width:w,height:Math.round(w*((im.h&&im.w)?im.h/im.w:1))}})]}):null;
-  const sm=(t,o={})=>dPara([dTxt(t,Object.assign({size:14,color:'555555'},o))],{after:0});
-  const cu=axCapoUnita(), pp=scheda.pp||{};
-  const left=[img(lgS,112,200),img(lgB,104,260),img(lgA,118,300)].filter(Boolean);
-  if(cu){ left.push(sm(cu.nome||'',{bold:true,color:'333333'})); left.push(sm(cu.ruolo)); if(cu.mail) left.push(dPara([dLink('mailto:'+cu.mail,{size:14,label:cu.mail})],{after:0})); if(cu.tel) left.push(sm(cu.tel)); left.push(dPara('',{after:160})); }
-  if(sez||pp.sedeVia){ left.push(sm('Sede di '+(sez||''),{bold:true,color:'333333'})); if((pp.sedeVia||'').trim()) left.push(sm(pp.sedeVia.trim())); if((pp.sedeCitta||'').trim()) left.push(sm(pp.sedeCitta.trim())); if((pp.sedeSito||'').trim()) left.push(dPara([dLink(linkNorm(pp.sedeSito.trim()),{size:14,label:pp.sedeSito.trim()})],{after:0})); left.push(dPara('',{after:200})); }
-  if(lgSo) left.push(img(lgSo,118,0));
-  if(!left.length) left.push(dPara(''));
-  const nb={style:D.BorderStyle.NONE,size:0,color:'FFFFFF'}, dash={style:D.BorderStyle.DASHED,size:8,color:'6CCFAE'};
-  const tbl=new D.Table({width:{size:10206,type:D.WidthType.DXA},columnWidths:[2650,7556],layout:D.TableLayoutType?D.TableLayoutType.FIXED:undefined,
-    borders:{top:nb,bottom:nb,left:nb,right:nb,insideHorizontal:nb,insideVertical:nb},
-    rows:[new D.TableRow({cantSplit:false,children:[
-      new D.TableCell({width:{size:2650,type:D.WidthType.DXA},borders:{top:nb,bottom:nb,left:nb,right:dash},margins:{top:0,bottom:0,left:60,right:240},verticalAlign:D.VerticalAlign.TOP,children:left}),
-      new D.TableCell({width:{size:7556,type:D.WidthType.DXA},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:0,bottom:0,left:420,right:0},verticalAlign:D.VerticalAlign.TOP,children:ch})]})]});
-  const docM=new D.Document({creator:'CNGEI'+(sez?' Sezione di '+sez:''),title:tit||'Comunicazione per le famiglie',styles:{default:{document:{run:{font:MF,size:21}}}},
-    numbering:{config:[{reference:'bul',levels:[{level:0,format:D.LevelFormat.BULLET,text:'•',alignment:D.AlignmentType.LEFT,style:{paragraph:{indent:{left:420,hanging:260}},run:{font:MF}}}]}]},
-    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:850,bottom:900,left:700,right:1000}}},
-      footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[new D.TextRun({children:[D.PageNumber.CURRENT],font:MF,size:15,color:'999999'})]})]})},
-      children:[tbl]}]});
-  return docM; }
-async function axMsgDocx(p,j){ try{ await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+// ── Circolare per le famiglie: carta intestata ufficiale CNGEI (circolare/base.docx) ──
+const LUOGO_PPR='<w:pPr><w:spacing w:after="225" w:line="360" w:lineRule="auto"/><w:ind w:left="2692"/><w:jc w:val="both"/></w:pPr>';
+function cxE(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cxBuilder(){ const rels=[]; let n=0;
+  const rpr=o=>'<w:rPr><w:rFonts w:ascii="Montserrat" w:eastAsia="Montserrat" w:hAnsi="Montserrat" w:cs="Montserrat"/>'+(o.b?'<w:b/>':'')+(o.i?'<w:i/>':'')+(o.color?'<w:color w:val="'+o.color+'"/>':'')+(o.u?'<w:u w:val="single"/>':'')+'<w:sz w:val="'+(o.sz||20)+'"/><w:szCs w:val="'+(o.sz||20)+'"/></w:rPr>';
+  const R=(t,o={})=>'<w:r>'+rpr(o)+'<w:t xml:space="preserve">'+cxE(t)+'</w:t></w:r>';
+  const LK=(t,url,o={})=>{ if(!url) return R(t,o); const id='rIdCx'+(++n); rels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="'+cxE(url)+'" TargetMode="External"/>'); return '<w:hyperlink r:id="'+id+'" w:history="1">'+R(t,Object.assign({},o,{color:'1155CC',u:true}))+'</w:hyperlink>'; };
+  const P=(runs,o={})=>'<w:p><w:pPr>'+(o.keepNext?'<w:keepNext/>':'')+(o.border?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="2" w:color="'+o.border+'"/></w:pBdr>':'')+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?160:o.after)+'" w:line="'+(o.line||312)+'" w:lineRule="auto"/>'+(o.ind?'<w:ind w:left="'+o.ind+'"'+(o.hang?' w:hanging="'+o.hang+'"':'')+'/>':'')+'<w:jc w:val="'+(o.jc||'left')+'"/></w:pPr>'+(Array.isArray(runs)?runs.join(''):runs)+'</w:p>';
+  return {R,LK,P,rels}; }
+async function axMsgDocx(p,j){
   if((attGet(p,j).ax||{}).ambientProp||(attGet(p,j).ax||{}).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
-  const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, D=dxLib(); const sez=((scheda.pp&&scheda.pp.sezione)||'').trim(); const logo=SEZ_LOGHI[sez.toLowerCase()];
+  showToast('Preparo la circolare…');
+  try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+  const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, pp=scheda.pp||{}; const sez=axSezFile(((pp.sezione)||'').trim());
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
-  const T=(t,o={})=>dTxt(t,Object.assign({size:22},o)), B=t=>dTxt(t,{size:22,bold:true}), LK=(label,u)=>u?dLink(u,{size:22,label}):T(label);
-  const P=(kids,o={})=>dPara(kids,Object.assign({after:80},o)), H=t=>dPara(t,{size:25,bold:true,color:GREEN,before:240,after:90,keepNext:true,borderBottom:{size:6,color:PALE}});
-  const ch=[];
-  ch.push(dPara([dTxt('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani',{size:17,bold:true})],{after:0}));
-  ch.push(dPara([dTxt('Associazione SCOUT Laica di Promozione Sociale',{size:17,bold:true})],{after:280}));
-  const citz=(x.citaz||'').trim(); if(citz) ch.push(dPara([dTxt(citz,{size:20,italics:true,color:'444444'})],{align:'right',after:220}));
-  ch.push(dPara([dTxt(tit||'Comunicazione per le famiglie',{size:28,bold:true,color:GREEN})],{after:40}));
-  ch.push(dPara([dTxt([UNIT_NAME||'',sez?'Sezione di '+sez:''].filter(Boolean).join(' · ')||' ',{size:18,color:'777777'})],{after:200}));
-  ch.push(P([T('Ciao a tutti! ')].concat(tit?[T(U.charAt(0).toUpperCase()+U.slice(1)+' vive '),B('“'+tit+'”'),T('.')]:[T('Ecco le informazioni per la prossima attività.')]),{after:80}));
-  const amb=(x.ambient||'').trim(); if(amb) ch.push(P([dTxt(amb,{size:22,italics:true,color:'444444'})],{after:120}));
-  const dLong=x.data?new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+  const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
+  const get=async u=>{ try{ const r=await fetch(u); return r.ok?await r.arrayBuffer():null; }catch(e){ return null; } };
+  const [tpl,lgS,lgB]=await Promise.all([get(base+'circolare/base.docx'),get(base+'circolare/sezioni/'+encodeURIComponent(sez)+'.png'),get(base+'circolare/branca/'+FASCIA+'.png')]);
+  if(!tpl){ showToast('Non riesco a scaricare la carta intestata: serve la connessione'); return; }
+  const zip=await JSZip.loadAsync(tpl);
+  if(lgS) zip.file('word/media/image2.png',lgS); if(lgB) zip.file('word/media/branca.png',lgB);
+  // intestazione: contatti del Capo Unità e dati della Sezione
+  const cu=axCapoUnita()||{}; const val={CONT_H:'Contatti',CU_NOME:cu.nome||'',CU_RUOLO:cu.nome?cu.ruolo:'',CU_MAIL:cu.mail||'',CU_TEL:cu.tel?'T '+cu.tel:'',CU_FAX:'',
+    SEZ_NOME:sez?'CNGEI '+sez:'',SEZ_VIA:(pp.sedeVia||'').trim(),SEZ_CITTA:(pp.sedeCitta||'').trim(),SEZ_CF:(pp.sedeCF||'').trim()?'C.F. '+pp.sedeCF.trim():'',SEZ_SITO:(pp.sedeSito||'').trim(),SEZ_SOCIAL:(pp.sedeSocial||'').trim()};
+  if(!val.CU_NOME&&!val.CU_MAIL&&!val.CU_TEL) val.CONT_H=''; val.SOCIAL_H=(val.SEZ_SITO||val.SEZ_SOCIAL)?'Social':'';
+  let hx=await zip.file('word/header3.xml').async('string');
+  hx=hx.replace(/<w:p\b(?:(?!<w:p\b)[\s\S])*?\{\{(\w+)\}\}[\s\S]*?<\/w:p>/g,(m,k)=>val[k]?m.replace('{{'+k+'}}',cxE(val[k])):'');
+  zip.file('word/header3.xml',hx);
+  // corpo
+  const {R,LK,P,rels}=cxBuilder(); const C=GREEN; const b=[];
+  const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:200,after:100,keepNext:true,border:PALE}));
+  const oggi=new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
+  b.push('<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+R((sez?sez+', ':'')+oggi,{b:true})+'</w:p>');
+  const citz=(x.citaz||'').trim(); if(citz) b.push(P([R(citz,{i:true,color:'444444'})],{jc:'right',after:200}));
+  b.push(P([R(tit||'Comunicazione per le famiglie',{b:true,sz:27,color:C})],{after:60}));
+  const amb=(x.ambient||'').trim(); if(amb) b.push(P([R(amb,{i:true,color:'444444'})],{after:200}));
+  b.push(P([T('Ciao a tutti! ')].concat(tit?[T(U.charAt(0).toUpperCase()+U.slice(1)+' vive '),B('“'+tit+'”'),T('.')]:[T('Ecco le informazioni per la prossima attività.')]),{after:160}));
+  const dLong=axDateTxt(x,true), mul=axMulti(x);
   const tipo=Object.fromEntries(AX_TIPO), mzL={bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto',piedi:'a piedi'};
   const q=axQuota(x), entro=axEntroTxt(x);
-  const cellP=kids=>[dPara(kids,{after:0})];
-  const rr=(k,ora,dove)=>(ora?[T('ore '+ora+(dove?', ':''))]:[]).concat(dove?[LK(dove,axPlaceShort(L,k))]:[]);
-  // Orari e luoghi
   const plk=k=>LK(axPlaceTxt(L,k),axPlaceShort(L,k)), hasP=k=>String(L[k]||'').trim()||L[k+'Addr'];
-  if(dLong||L.ritrovo||hasP('ritrovoDove')||L.rientro||hasP('rientroDove')||L.mezzo||(hasP('nome')&&L.tipo!=='sede')){ ch.push(H('Orari e luoghi'));
-    if(dLong) ch.push(P([B('Data: '),T(dLong.charAt(0).toUpperCase()+dLong.slice(1))],{after:120}));
-    if(L.tipo==='sede') ch.push(P([B('Dove: '),T('in sede')],{after:120}));
-    else if(hasP('nome')) ch.push(P([B('Dove: '),plk('nome')].concat(L.tipo&&L.tipo!=='altro'?[T(' ('+String(tipo[L.tipo]||'').toLowerCase()+')')]:[]),{after:120}));
-    const blk=(lab,ora,k)=>{ if(!ora&&!hasP(k)) return; ch.push(P([B(lab)],{after:30,keepNext:true})); if(ora) ch.push(P([T('Ora: '),B(ora)],{after:20,indent:300})); if(hasP(k)) ch.push(P([T('Luogo: ')].concat(axPlaceShort(L,k)?[plk(k)]:[T(axPlaceTxt(L,k))]),{after:100,indent:300})); };
-    blk('Ritrovo',L.ritrovo,'ritrovoDove'); blk('Rientro',L.rientro,'rientroDove');
-    if(L.mezzo&&L.mezzo!=='piedi') ch.push(P([B('Come ci spostiamo: '),T(L.mezzo==='altro'?(L.mezzoAltro||''):(mzL[L.mezzo]||''))]));
-    ch.push(P([dTxt('Vi chiediamo di rispettare gli orari: ci aiuta a partire tutti insieme e a riportare i ragazzi puntuali.',{size:20,italics:true,color:'555555'})],{before:60})); }
-  // 3. Cosa portare
+  if(dLong||L.ritrovo||hasP('ritrovoDove')||L.rientro||hasP('rientroDove')||L.mezzo||(hasP('nome')&&L.tipo!=='sede')){ H('Orari e luoghi');
+    if(dLong) b.push(P([B(mul?'Date: ':'Data: '),T(dLong.charAt(0).toUpperCase()+dLong.slice(1)+(mul?' ('+axNGiorni(x)+' giorni)':''))]));
+    if(L.tipo==='sede') b.push(P([B('Dove: '),T('in sede')]));
+    else if(hasP('nome')) b.push(P([B('Dove: '),plk('nome')].concat(L.tipo&&L.tipo!=='altro'?[T(' ('+String(tipo[L.tipo]||'').toLowerCase()+')')]:[])));
+    const blk=(lab,ora,k,giorno)=>{ if(!ora&&!hasP(k)) return; b.push(P([B(lab)],{after:40,keepNext:true})); if(mul&&giorno) b.push(P([T('Giorno: '),B(axDt(giorno))],{after:20,ind:300})); if(ora) b.push(P([T('Ora: '),B(ora)],{after:20,ind:300})); if(hasP(k)) b.push(P([T('Luogo: '),axPlaceShort(L,k)?plk(k):T(axPlaceTxt(L,k))],{after:120,ind:300})); };
+    blk('Ritrovo',L.ritrovo,'ritrovoDove',x.data); blk('Rientro',L.rientro,'rientroDove',x.dataFine);
+    if(L.mezzo&&L.mezzo!=='piedi') b.push(P([B('Come ci spostiamo: '),T(L.mezzo==='altro'?(L.mezzoAltro||''):(mzL[L.mezzo]||''))]));
+    b.push(P([R('Vi chiediamo di rispettare gli orari: ci aiuta a partire tutti insieme e a riportare i ragazzi puntuali.',{i:true,color:'555555'})],{before:40})); }
   const port=axPortList(x), sac=axSaccoList(x);
-  if(port.length||sac.length){ ch.push(H('Cosa portare'));
-    port.forEach(t=>ch.push(P([T(t.charAt(0).toUpperCase()+t.slice(1))],{after:30,bullet:true})));
-    if(sac.length) ch.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', ')+', lo porta ciascuno')],{before:60})); }
-  // 4. Da fare prima
+  if(port.length||sac.length){ H('Cosa portare');
+    port.forEach(t=>b.push(P([T('•  '+t.charAt(0).toUpperCase()+t.slice(1))],{after:40,ind:360,hang:220})));
+    if(sac.length) b.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', ')+', lo porta ciascuno')],{before:80})); }
   const bon=q&&x.paga!=='partenza';
-  if(bon||L.permessi){ ch.push(H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':'')));
-    if(bon){ ch.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:40}));
-      ch.push(P([B('IBAN: '),T('______________________________________')],{after:30,indent:420}));
-      ch.push(P([B('Intestatario del conto: '),T('______________________________')],{after:30,indent:420}));
-      ch.push(P([B('Causale: '),T(axCausale(tit))],{after:100,indent:420})); }
-    if(L.permessi){ ch.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:30}));
-      ch.push(P(axIsUrl(L.permLink)?[T('Lo trovate qui: '),LK('modulo',linkNorm(L.permLink))]:[T('Ve lo facciamo avere a parte.')],{indent:420})); } }
-  // 5. Contatti
-  const nomi=axStaffNomi(); ch.push(H('Contatti'));
-  ch.push(P([T('Per qualsiasi dubbio potete contattarci:')]));
-  const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>ch.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,indent:240})));
-  ch.push(P([T('A presto e grazie,')],{before:240,after:40})); ch.push(P([B(axFirma())]));
-  const docM=await axCartaDoc(ch,tit,sez);
-  await dSave(docM,'Messaggio_genitori_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx'); }
+  if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
+  if(bon||L.permessi){ H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
+    if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
+      b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
+      b.push(P([B('Intestatario del conto: '),T('______________________________')],{after:40,ind:420}));
+      b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
+    if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
+      b.push(P(axIsUrl(L.permLink)?[T('Lo trovate qui: '),LK('modulo',linkNorm(L.permLink))]:[T('Ve lo facciamo avere a parte.')],{ind:420})); } }
+  H('Contatti'); b.push(P([T('Per qualsiasi dubbio potete contattarci:')],{after:80}));
+  const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
+  b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
+  let dx=await zip.file('word/document.xml').async('string');
+  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',b.join(''));
+  zip.file('word/document.xml',dx);
+  if(rels.length){ let rx=await zip.file('word/_rels/document.xml.rels').async('string'); rx=rx.replace('</Relationships>',rels.join('')+'</Relationships>'); zip.file('word/_rels/document.xml.rels',rx); }
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const nm='Circolare_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx';
+  const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); showToast('Circolare pronta'); }
 function axFirma(){ const n=axStaffNomi();
   if(!n.length) return UNIT_NAME?'lo staff di '+UNIT_NAME:'lo staff';
   return n.length===1?n[0]:n.slice(0,-1).join(', ')+' e '+n[n.length-1]; }
@@ -6706,13 +6713,15 @@ function renderSchedaCtx(root){
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:8px">
       <label style="${SC_LBL}">Indirizzo<input style="${IN}" maxlength="80" placeholder="es. Strada Santa Colomba n.1" value="${sEsc(pp.sedeVia)}" oninput="ppSet('sedeVia',this.value)"></label>
       <label style="${SC_LBL}">CAP, città e provincia<input style="${IN}" maxlength="60" placeholder="es. 61122 Pesaro (PU)" value="${sEsc(pp.sedeCitta)}" oninput="ppSet('sedeCitta',this.value)"></label>
-      <label style="${SC_LBL}">Sito della Sezione<input style="${IN}" maxlength="80" placeholder="es. cngei-pesaro.it" value="${sEsc(pp.sedeSito)}" oninput="ppSet('sedeSito',this.value)"></label></div></details>`:''}
+      <label style="${SC_LBL}">Sito della Sezione<input style="${IN}" maxlength="80" placeholder="es. pesaro.cngei.it" value="${sEsc(pp.sedeSito)}" oninput="ppSet('sedeSito',this.value)"></label>
+      <label style="${SC_LBL}">Profilo social<input style="${IN}" maxlength="60" placeholder="es. @cngeipesaro" value="${sEsc(pp.sedeSocial)}" oninput="ppSet('sedeSocial',this.value)"></label>
+      <label style="${SC_LBL}">Codice fiscale della Sezione<input style="${IN}" maxlength="20" value="${sEsc(pp.sedeCF)}" oninput="ppSet('sedeCF',this.value)"></label></div></details>`:''}
     <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
     <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Unità, rapporti con il Consiglio di Gruppo…</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
     <div style="font-size:11px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">${FASCIA==='R'?'Adulti in Compagnia <span style="font-weight:400;color:var(--ink-faint)">— in Compagnia non c\'è un vero staff: di solito ci sei tu (CC) e, se c\'è, il VCC. Esperienza, formazione e disponibilità; aggiungi o togli righe</span>':'Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span>'}</div>
-    <div style="font-size:11px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (tutor, Capo Gruppo, Commissario di Sezione). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).${MODE==='giovani'?' <b>Email e telefono</b> non vanno nella Scheda: servono solo a compilare la circolare per le famiglie, e solo se la persona è d’accordo.':''}</div>
+    <div style="font-size:11px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (tutor, Capo Gruppo, Commissario di Sezione). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).</div>
     <div id="staff-tab">${staffTabHTML()}</div>
     <div style="font-size:12px;font-weight:800;margin:18px 0 2px;color:var(--ink)">Osservazione con il Kit di Osservazione e Scoperta (KOS 2.0)</div>
     ${kosPathHTML()}
@@ -7946,7 +7955,8 @@ function executeExport() {
 const MF = 'Montserrat';
 const LIB_URLS = {
   exceljs: 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
-  docx: 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js'
+  docx: 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
+  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
 };
 function loadLib(url, check){
   return new Promise((res, rej) => {
