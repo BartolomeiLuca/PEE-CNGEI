@@ -6324,9 +6324,9 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   if(L.rientro||L.rientroDove) out.push('• Rientro'+(mul?' '+axDt(x.dataFine):'')+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(axPlaceTxt(L,'rientroDove'),axPlaceShort(L,'rientroDove')):''));
   const mz=Object.fromEntries(AX_MEZZI); if(L.mezzo&&L.mezzo!=='piedi') out.push('• Ci spostiamo '+(L.mezzo==='altro'?(L.mezzoAltro||''):({bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto'}[L.mezzo]||mz[L.mezzo])));
   const port=axPortList(x); if(port.length) out.push('• Nello zaino: '+port.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
-  const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco, lo porta ciascuno: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
-  const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: [da inserire], intestatario: [da inserire]; causale: '+axCausale(tit)+')'));
-  if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' (lo trovate qui: '+linkNorm(L.permLink)+')':' (ve lo facciamo avere a parte)'));
+  const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
+  const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: [da inserire], intestato a: [da inserire]; causale: '+axCausale(tit)+')'));
+  if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' – '+axLk('link al documento',linkNorm(L.permLink)):' – link al documento: [da inserire]'));
   out.push('','Vi chiediamo di rispettare gli orari: ci aiuta a far partire l’attività con tutti e a riportare i ragazzi puntuali. Per qualsiasi dubbio potete contattarci:',...axStaffContatti().map(c=>'• '+c.n+': '+(c.tel||'[telefono]')),'','A presto e grazie,',axFirma());
   return out.join('\n'); }
 function axMsg(p,j){ const box=document.getElementById('ax-msg-'+p+'-'+j); const raw=axMsgText(p,j); if(axX(p,j).ambientProp||axX(p,j).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
@@ -6475,12 +6475,12 @@ async function axMsgDocx(p,j){
   zip.file('word/header3.xml',hx);
   // corpo
   const {R,LK,P,rels}=cxBuilder(); const C=GREEN; const b=[];
-  const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:200,after:100,keepNext:true,border:PALE}));
+  const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE}));
   const oggi=new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
   b.push('<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+R((sez?sez+', ':'')+oggi,{b:true})+'</w:p>');
   const citz=(x.citaz||'').trim(); if(citz) b.push(P([R(citz,{i:true,color:'444444'})],{jc:'right',after:200}));
   b.push(P([R(tit||'Comunicazione per le famiglie',{b:true,sz:27,color:C})],{after:60}));
-  const amb=(x.ambient||'').trim(); if(amb) b.push(P([R(amb,{i:true,color:'444444'})],{after:200}));
+  const amb=(x.ambient||'').trim(); if(amb) b.push(P([R(amb,{i:true,color:'444444'})],{after:420}));
   b.push(P([T('Ciao a tutti! ')].concat(tit?[T(U.charAt(0).toUpperCase()+U.slice(1)+' vive '),B('“'+tit+'”'),T('.')]:[T('Ecco le informazioni per la prossima attività.')]),{after:160}));
   const dLong=axDateTxt(x,true), mul=axMulti(x);
   const tipo=Object.fromEntries(AX_TIPO), mzL={bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto',piedi:'a piedi'};
@@ -6497,16 +6497,16 @@ async function axMsgDocx(p,j){
   const port=axPortList(x), sac=axSaccoList(x);
   if(port.length||sac.length){ H('Cosa portare');
     port.forEach(t=>b.push(P([T('•  '+t.charAt(0).toUpperCase()+t.slice(1))],{after:40,ind:360,hang:220})));
-    if(sac.length) b.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', ')+', lo porta ciascuno')],{before:80})); }
+    if(sac.length) b.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '))],{before:80})); }
   const bon=q&&x.paga!=='partenza';
   if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
   if(bon||L.permessi){ H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
     if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
       b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
-      b.push(P([B('Intestatario del conto: '),T('______________________________')],{after:40,ind:420}));
+      b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
       b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
     if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
-      b.push(P(axIsUrl(L.permLink)?[T('Lo trovate qui: '),LK('modulo',linkNorm(L.permLink))]:[T('Ve lo facciamo avere a parte.')],{ind:420})); } }
+      b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420})); } }
   H('Contatti'); b.push(P([T('Per qualsiasi dubbio potete contattarci:')],{after:80}));
   const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
   b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
