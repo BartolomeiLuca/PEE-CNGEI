@@ -6439,9 +6439,13 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   if(L.rientro||L.rientroDove) kv.push(['Rientro',kvMap([L.rientro?'ore '+L.rientro:'',L.rientroDove||''].filter(Boolean).join(' · '),'rientroDove')]);
   if(L.tipo) kv.push(['Dove',kvMap([L.tipo==='altro'?(L.tipoAltro||'altro'):tipo[L.tipo],(L.nome||'').trim()].filter(Boolean).join(' · '),L.tipo!=='sede'?'nome':'')]);
   if(L.mezzo){ let v=(L.mezzo==='altro'?(L.mezzoAltro||'altro'):mz[L.mezzo])+(L.km?' · '+L.km+' km andata e ritorno':''); if(L.km&&N.tot&&AX_CO2[L.mezzo]!=null){ const pa=Math.max(1,Number(L.perAuto)||4); const c=L.mezzo==='auto'?L.km*Math.ceil(N.tot/pa)*AX_CO2.auto:L.km*N.tot*AX_CO2[L.mezzo]; v+=' · impronta stimata '+(c<10?c.toFixed(1):Math.round(c))+' kg CO₂'; } kv.push(['Spostamento',v]); }
-  if(N.tot) kv.push(['Presenti', N.ad+' adulti'+((x.pres.ad||[]).length?' ('+x.pres.ad.join(', ')+')':'')+' · '+N.rag+' ragazzi'+((x.pres.ragF||x.pres.ragM)?' ('+[x.pres.ragF?x.pres.ragF+' ragazze':'',x.pres.ragM?x.pres.ragM+' ragazzi':''].filter(Boolean).join(', ')+')':'')]);
+  { const refL=Object.fromEntries(AX_REF.map(([k,l])=>[k,l.replace(' (e cassetta)',' e cassetta').toLowerCase()])); const roles={}; const addR=(n,l)=>{ if(!n) return; (roles[n]=roles[n]||[]).push(l); };
+    AX_REF.forEach(([k])=>addR(axRef(x,k),refL[k])); (x.refAltro||[]).forEach(r=>{ if((r.r||'').trim()) addR(r.chi,r.r.trim().toLowerCase()); });
+    const st=[...new Set([...((x.pres&&x.pres.ad)||[]),...Object.keys(roles)])];
+    if(st.length) kv.push(['Staff'+(N.ad&&N.ad!==st.length?' ('+N.ad+' adulti)':''), st.map(n=>dPara([dTxt(n,{size:19,bold:true}),...(roles[n]?[dTxt('  ·  '+roles[n].join(', '),{size:17,color:'666666'})]:[])],{after:30}))]);
+    else if(N.ad) kv.push(['Staff', N.ad+' adulti']);
+    if(N.rag) kv.push(['Ragazzi', N.rag+((x.pres.ragF||x.pres.ragM)?' ('+[x.pres.ragF?x.pres.ragF+' ragazze':'',x.pres.ragM?x.pres.ragM+' ragazzi':''].filter(Boolean).join(', ')+')':'')]); }
   if(L.permessi) kv.push(['Permessi',[L.permCosa||'da definire',L.permRef?'referente: '+L.permRef:''].filter(Boolean).join(' · ')+(axIsUrl(L.permLink)?' · modulo: '+linkNorm(L.permLink):'')]);
-  { const rl=axRefList(x); if(rl.length) kv.push(['Chi fa cosa',dMulti(rl.map(([l,n])=>l+': '+n).join('\n'),{size:18})]); }
   if(kv.length){ ch.push(dH3('In breve')); ch.push(dKV(kv)); }
   // Svolgimento
   const fasi=['lancio','sviluppo','conclusione'].filter(k=>T_(a[k])); if(fasi.length){ ch.push(dH3('Svolgimento')); ch.push(dKV(fasi.map(k=>[k[0].toUpperCase()+k.slice(1),plain(a[k])]))); }
@@ -6451,13 +6455,14 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   if(kv2.length){ ch.push(dH3('Ruoli e osservazione')); ch.push(dKV(kv2)); }
   // Materiali e costi
   const M=(x.mat||[]).filter(r=>(r.cosa||'').trim()); const pv=Object.fromEntries(AX_PROV), cr=Object.fromEntries(AX_CARICO);
-  if(M.length){ ch.push(dH3('Materiali')); const W=[2200,950,1450,1500,1100,1100,1338]; const hd=['Materiale','Quantità','Provenienza','Chi lo procura','Dove','Costo','A carico di'].map((h,i)=>dCell(dPara(h,{size:16,bold:true,color:'FFFFFF',after:0}),{w:W[i],fill:GREEN,border:GREEN}));
-    const rows=M.map(r=>{ const q=axMatQty(r,N); const c=axMatCost(r,N); const cell=(v,i)=>dCell(dPara(String(v),{size:16,after:0}),{w:W[i]});
-      return [cell(plain(r.cosa),0), cell(q+(r.qm&&r.qm!=='fissa'?' ('+(r.q==null?1:r.q)+' '+(r.qm==='rag'?'per ragazzo':'per persona')+')':''),1), cell(r.prov==='altro'?(r.provAltro||'altro'):pv[r.prov||'unita'],2), cell(r.chi||'—',3),
-        r.prov==='comprare'&&(r.dove||'').trim()?(axIsUrl(r.dove)?dCell([dPara([dLink(r.dove,{size:16,label:'link'})],{after:0})],{w:W[4]}):cell(r.dove,4)):cell('—',4), cell(c?axEur(c):'—',5), cell(r.prov==='comprare'&&r.carico?cr[r.carico].replace(' (quota)',''):'—',6)]; });
+  if(M.length){ ch.push(dH3('Materiali')); const W=[3300,1300,3238,1800]; const hd=['Materiale','Quantità','Da dove · chi lo procura','Costo'].map((h,i)=>dCell(dPara(h,{size:16,bold:true,color:'FFFFFF',after:0}),{w:W[i],fill:GREEN,border:GREEN}));
+    const rows=M.map(r=>{ const q=axMatQty(r,N); const c=axMatCost(r,N); const cell=(v,i,o)=>dCell(dPara([dTxt(String(v),Object.assign({size:17},o||{}))],{after:0}),{w:W[i]});
+      const prov=r.prov==='altro'?(r.provAltro||'altro'):(pv[r.prov||'unita']||'Già in Unità'); const dove=r.prov==='comprare'&&(r.dove||'').trim()?r.dove.trim():'';
+      const c3=dCell([dPara([dTxt(prov,{size:17}),...(r.chi?[dTxt(' · '+r.chi,{size:17,bold:true})]:[]),...(dove?[dTxt(' · ',{size:17}),axIsUrl(dove)?dLink(dove,{size:16,label:'link'}):dTxt(dove,{size:17})]:[])],{after:0})],{w:W[2]});
+      return [cell(plain(r.cosa),0,{bold:true}), cell(q+(r.qm&&r.qm!=='fissa'?' ('+(r.q==null?1:r.q)+(r.qm==='rag'?' a ragazzo':' a persona')+')':''),1), c3, cell(c?axEur(c)+(r.carico?' · '+cr[r.carico].replace(' (quota)','').toLowerCase():''):'—',3)]; });
     ch.push(dTable([hd,...rows],W)); }
   if(T_(a.materiali)) ch.push(dPara([dTxt('Note sui materiali: ',{size:17,bold:true,color:GREEN}),dTxt(plain(a.materiali),{size:17})],{before:60,after:40}));
-  { const pl=axPortList(x); if(pl.length){ ch.push(dH3('Cosa portano i ragazzi')); ch.push(dPara(pl.join(' · '),{size:18,after:60})); } }
+  { const pl=axPortList(x); if(pl.length){ ch.push(dH3('Cosa portano i ragazzi')); const nc=3, w=Math.floor(CW/nc), per=Math.ceil(pl.length/nc); const cols=[...Array(nc)].map((_,c)=>pl.slice(c*per,(c+1)*per)); ch.push(dTable([cols.map(cl=>dCell(cl.length?cl.map(t=>dPara([dTxt('☐  ',{size:17,color:GREEN}),dTxt(t,{size:17})],{after:30,line:260})):[dPara('',{after:0})],{w,noBorder:true,vAlign:dxLib().VerticalAlign.TOP}))],[...Array(nc)].map(()=>w))); } }
   const PT=(x.piatti||[]).filter(pt=>(pt.nome||'').trim()&&!axPtSacco(x,pt)); const SAC=axSaccoList(x); if(PT.length||SAC.length){ ch.push(dH3('Menù')); const so=axPastoSo;
     const rows=PT.slice().sort((a1,b1)=>(a1.g||1)-(b1.g||1)||so(a1.pasto||'pranzo')-so(b1.pasto||'pranzo')).map(pt=>['Giorno '+(pt.g||1), axPastoLab(x,pt.pasto||'pranzo'), plain(pt.nome)+(pt.unico?' (piatto unico)':'')+(axPtPerTxt(pt,N)?' · '+axPtPerTxt(pt,N):''), pt.chi||'—', pt.g||1, so(pt.pasto||'pranzo')]).concat(SAC.map(o=>['Giorno '+o.g, o.lab, 'Al sacco: lo porta ciascuno', '—', o.g, so(o.m)])).sort((a1,b1)=>a1[4]-b1[4]||a1[5]-b1[5]).map(r=>r.slice(0,4));
     ch.push(dGridTable(['Giorno','Pasto','Piatto','Chi cucina'],rows,[1400,1500,4538,2200])); const dd=axDieteTxt(x); if(dd.length) ch.push(dPara('Diete speciali: '+dd.join(', '),{size:17,before:40,after:40})); const fc=axFoodCost(x); if(fc) ch.push(dPara([dTxt('Costo stimato del cibo: ',{size:18,bold:true,color:GREEN}),dTxt(axEur(fc)+((x.cibo||{}).carico?' · a carico di '+cr[(x.cibo||{}).carico].replace(' (quota)','').toLowerCase():''),{size:18})],{before:40,after:40})); }
@@ -6466,7 +6471,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   const items=axCosti(x); if(items.length){ ch.push(dH3('Riepilogo dei costi')); const lab=k=>k?cr[k].replace(' (quota)',''):'Da attribuire'; const rows=items.map(i=>[i.voce.charAt(0).toUpperCase()+i.voce.slice(1), lab(i.k), axEur(i.c)]);
     const by={}; items.forEach(it=>{ by[it.k]=(by[it.k]||0)+it.c; }); Object.keys(by).forEach(k=>rows.push(['Totale a carico: '+lab(k), '', axEur(by[k])+(k==='ragazzi'&&N.rag?' → '+axEur(by[k]/N.rag)+' a testa':'')]));
     rows.push(['Totale complessivo','',axEur(items.reduce((s2,i)=>s2+i.c,0))]); ch.push(dGridTable(['Voce','A carico di','Importo'],rows,[4438,2400,2800])); }
-  const TD=(x.todo||[]).filter(r=>(r.cosa||'').trim()); if(TD.length){ ch.push(dH3('Cose da fare prima')); ch.push(dGridTable(['Fatto','Cosa','Chi','Entro'],TD.map(r=>[r.fatto?'✓':'', plain(r.cosa), r.chi||'—', r.entro?r.entro.split('-').reverse().join('/'):'—']),[900,5038,2200,1500])); }
+  const TD=(x.todo||[]).filter(r=>(r.cosa||'').trim()); if(TD.length){ ch.push(dH3('Cose da fare prima')); ch.push(dGridTable(['Stato','Cosa','Chi','Entro'],TD.map(r=>[r.fatto?'Fatto':'Da fare', plain(r.cosa), r.chi||'—', r.entro?r.entro.split('-').reverse().join('/'):'—']),[900,5038,2200,1500])); }
   // Imprevisti e attenzioni
   const kv3=[]; const pbl=Object.fromEntries(AX_PB); const PB=Object.entries(x.pb||{}).filter(([k,v])=>(v||'').trim()); if(PB.length||T_(a.pianoB)) kv3.push(['Piano B',[...PB.map(([k,v])=>dPara([dTxt(pbl[k].replace('…','')+': ',{size:18,bold:true}),dTxt(plain(v),{size:18})],{after:30})), ...(T_(a.pianoB)?[dPara(plain(a.pianoB),{size:18,after:30})]:[])]]);
   const sc=x.sic||{}; const scl=[N.tot?N.ad+' adulti e '+N.rag+' ragazzi':'', axRef(x,'ps')?'primo soccorso e cassetta: '+axRef(x,'ps'):'', sc.numeri?'numeri utili: '+sc.numeri:'', sc.rischi?'rischi: '+sc.rischi:''].filter(Boolean); if(scl.length) kv3.push(['Sicurezza',scl.join('\n')]);
