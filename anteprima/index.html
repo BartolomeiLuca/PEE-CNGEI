@@ -363,6 +363,14 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-spesa{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:4px 0}.ax-spesa>input:first-child{flex:1 1 200px}.ax-spesa>input[type=number]{width:90px}.ax-spesa>select{width:auto}
 @media (max-width:600px){.ax-rr{grid-template-columns:1fr 100px}.ax-ing{grid-template-columns:1fr 60px 28px}.ax-ing>select,.ax-ing>input:nth-child(4){grid-column:span 1}}
 .opt-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f5f5f;background:#e9e9e9;border-radius:999px;padding:2px 8px;margin-right:6px;vertical-align:1px;line-height:1.5;white-space:nowrap}
+.tl-sum{font-size:11.5px;color:var(--ink-mid);margin:0 0 6px}.tl{position:relative;padding-left:4px}.tl-empty{font-size:12px;color:var(--ink-faint)}
+.tl-mese{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--green);margin:10px 0 4px}.tl-mese.tl-vuoto{color:var(--ink-faint);font-weight:600}
+.tl-it{display:flex;gap:10px;align-items:flex-start;margin:4px 0 4px 2px;padding-left:0}.tl-dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:3px;background:#bbb;box-shadow:0 0 0 3px var(--bg-card,#fff)}
+.tl-b-ok .tl-dot{background:#2e7d32}.tl-b-ver .tl-dot{background:#E0A100}.tl-b-prog .tl-dot{background:#3B6FB6}.tl-b-now .tl-dot{background:#3B6FB6}.tl-b-nd .tl-dot{background:transparent;border:2px dashed #aaa;box-sizing:border-box}
+.tl-body{flex:1;min-width:0;padding-bottom:6px;border-bottom:1px dotted var(--border-light)}.tl-top{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}.tl-name{font-size:12.5px;font-weight:700;color:var(--ink);text-decoration:none}.tl-name:hover{text-decoration:underline}
+.tl-st{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px;background:#eee;color:#555;white-space:nowrap}.tl-ok{background:#E6F2E7;color:#2e7d32}.tl-ver{background:#FFF4D6;color:#8A5B00}.tl-prog,.tl-now{background:#E8EFF9;color:#2E5A94}
+.tl-meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:11.5px;color:var(--ink-mid);margin-top:3px}.tl-date{font-size:11.5px;font-family:inherit;padding:2px 4px;border:1px solid var(--border-light);border-radius:5px;background:var(--surface,#fff);color:var(--ink);max-width:150px}
+.tl-act{font-size:11.5px;font-weight:700;color:var(--green)}.tl-warn{font-size:11px;color:#8A5300;margin-top:3px}.tl-oggi{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:10px;font-weight:800;color:#c62828;text-transform:uppercase}.tl-oggi:before,.tl-oggi:after{content:'';flex:1;height:1px;background:#e57373}.tl-oggi:before{flex:0 0 14px}
 .att-extra{margin-top:12px;border:1.5px dashed var(--border);border-radius:8px;padding:8px 12px;background:var(--bg)}.att-extra>summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-mid);line-height:1.5}.att-extra>summary .ax-sumd{display:block;font-weight:400;color:var(--ink-faint);font-size:11.5px;margin-top:3px}
 .att-tt-wrap{overflow-x:auto}.att-tt{width:100%;border-collapse:collapse;table-layout:fixed}.att-tt th{font-size:10.5px;text-align:left;color:var(--ink-mid);font-weight:700;padding:2px 4px}.att-tt td{padding:2px 3px}.att-tt th:first-child{width:27%}.att-tt th:nth-child(3){width:22%}.att-tt th:last-child{width:30px}.att-tt input{width:100%;box-sizing:border-box;padding:5px 7px;border:1px solid var(--border-light);border-radius:4px;font:inherit;font-size:11.5px;background:var(--bg-card,#fff);color:var(--ink)}.att-tt-x{padding:0 7px!important;font-size:13px}
 .att-inc{display:grid;grid-template-columns:1fr 1fr;gap:8px}.att-sub{font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:2px}@media (max-width:600px){.att-inc{grid-template-columns:1fr}}.att-note{font-size:10.5px;color:var(--ink-faint);margin-top:3px}
@@ -5954,7 +5962,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-02 · beta';
+const APP_VERSION = '2026-10-07 · beta';
 const STRUM_GRUPPI = ['Legge e Promessa','Programmi Progressivi e Stimolanti','Gruppo di Pari','Simbolismo e Tradizioni','Imparare Facendo',"Vita all'Aria Aperta",'Servizio'];
 // Fonte: "Strumenti del Metodo declinati per fasce d'età" (CNGEI)
 const STRUM_BRANCA = {
@@ -6060,7 +6068,7 @@ function axA(p,j){ const a=attGet(p,j); if(a && !a.ax) a.ax={}; return a; }
 function axX(p,j){ const a=axA(p,j); return a?a.ax:{}; }
 function axSave(){ saveDataDebounced(); }
 function axRe(p,j){ const el=document.getElementById('ax-'+p+'-'+j); if(!el) return; [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open); el.innerHTML=axBody(p,j); axCount(p,j); }
-function axSet(p,j,path,v,re){ const x=axX(p,j); const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
+function axSet(p,j,path,v,re){ if(/^(data|dataFine|durata)$/.test(path)) setTimeout(()=>tlRefresh(p),0); const x=axX(p,j); const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
 function axGet(x,path){ return String(path).split('.').reduce((o,k)=>o==null?undefined:o[k],x); }
 function axArrP(p,j,path){ const x=axX(p,j); let v=axGet(x,path); if(!Array.isArray(v)){ axSetQuiet(x,path,[]); v=axGet(x,path); } return v; }
 function axSetQuiet(x,path,v){ const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; }
@@ -6628,6 +6636,42 @@ function percTempoSet(idx,which,part,v){ const per=getAllPercorsi()[idx]; if(!pe
   if(!per.tDal&&!per.tAl){ per.tDal=t.dal||''; per.tAl=t.al||''; }
   const k=which==='dal'?'tDal':'tAl'; per[k]=tmMerge(per[k],part,v); per.tAl=tmFixAl(per.tDal,per.tAl,part,which); saveDataDebounced(); const b=document.getElementById('perc-tm-'+idx); if(b) b.innerHTML=percTempoHTML(idx); }
 function percTempoReset(idx){ const per=getAllPercorsi()[idx]; if(!per) return; per.tDal=''; per.tAl=''; per.dal=''; per.al=''; saveDataDebounced(); const b=document.getElementById('perc-tm-'+idx); if(b) b.innerHTML=percTempoHTML(idx); }
+// ── Linea del tempo del percorso ──
+const TL_MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+function tlToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function tlStato(a){ const x=a.ax||{}, d=x.data, f=(x.durata==='piu'&&x.dataFine)?x.dataFine:d, oggi=tlToday();
+  const ver=['vBene','vMigl'].some(k=>(a[k]||'').trim());
+  if(!d) return {k:'nd',l:'Da mettere in calendario'};
+  if(ver) return {k:'ok',l:'Verificata'};
+  if(f<oggi) return {k:'ver',l:'Vissuta · da verificare'};
+  if(d<=oggi) return {k:'now',l:'In corso'};
+  const gg=Math.round((new Date(d+'T12:00')-new Date(oggi+'T12:00'))/864e5); return {k:'prog',l:'In programma'+(gg<=60?' · tra '+gg+(gg===1?' giorno':' giorni'):'')}; }
+function tlDataTxt(x){ const f=d=>{ const [y,m,g]=d.split('-').map(Number); return g+' '+TL_MESI[m-1].slice(0,3); }; return x.durata==='piu'&&x.dataFine&&x.dataFine!==x.data?f(x.data)+' – '+f(x.dataFine):f(x.data); }
+function tlHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const att=(per.attivita||[]);
+  const t=percTempo(per); const ym=d=>d?d.slice(0,7):''; const oggi=tlToday();
+  const items=att.map((a,j)=>({a,j,d:(a.ax||{}).data||'',st:tlStato(a)})).filter(o=>(o.a.testo||'').trim()||o.d||['lancio','sviluppo','conclusione'].some(k=>(o.a[k]||'').trim()));
+  if(!items.length) return '<div class="tl-empty">Quando scrivi le attività, qui le vedi in ordine nel tempo, con lo stato di ciascuna.</div>';
+  const dated=items.filter(o=>o.d).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.j-b.j), nod=items.filter(o=>!o.d);
+  let a0=[t.dal,...dated.map(o=>ym(o.d))].filter(Boolean).sort()[0], a1=[t.al,...dated.map(o=>ym(o.d))].filter(Boolean).sort().pop();
+  const out=[]; const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
+  const row=o=>{ const x=o.a.ax||{}; const fuori=o.d&&((t.dal&&ym(o.d)<t.dal)||(t.al&&ym(o.d)>t.al));
+    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${idx},${o.j})">Attività ${o.j+1}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div>
+      <div class="tl-meta">${o.d&&x.durata==='piu'&&x.dataFine&&x.dataFine!==x.data?'<b>'+tlDataTxt(x)+'</b>':''}<input type="date" class="tl-date" value="${sEsc(o.d)}" title="Data dell’attività" onchange="tlSetDate(${idx},${o.j},this.value)">${o.st.k==='ver'?`<a href="javascript:void(0)" class="tl-act" onclick="gGo('4')">Vai alla verifica →</a>`:''}</div>
+      ${fuori?'<div class="tl-warn">Fuori dalle tempistiche del percorso ('+percTempoTxt(per)+').</div>':''}</div></div>`; };
+  if(a0&&a1&&a0<=a1){ let [y,m]=a0.split('-').map(Number); const [y1,m1]=a1.split('-').map(Number); let guard=0; let todayDone=false;
+    while((y<y1||(y===y1&&m<=m1))&&guard++<36){ const key=y+'-'+String(m).padStart(2,'0'); const inM=dated.filter(o=>ym(o.d)===key);
+      out.push(`<div class="tl-mese${inM.length?'':' tl-vuoto'}">${TL_MESI[m-1]} ${y}</div>`);
+      inM.forEach(o=>{ if(!todayDone&&o.d>oggi&&ym(oggi)===key){ out.push('<div class="tl-oggi"><span>oggi</span></div>'); todayDone=true; } out.push(row(o)); });
+      if(!todayDone&&ym(oggi)===key){ out.push('<div class="tl-oggi"><span>oggi</span></div>'); todayDone=true; }
+      m++; if(m>12){ m=1; y++; } } }
+  else dated.forEach(o=>out.push(row(o)));
+  if(nod.length){ out.push('<div class="tl-mese">Senza data</div>'); nod.forEach(o=>out.push(row(o))); }
+  const n={tot:items.length,ok:items.filter(o=>o.st.k==='ok').length,ver:items.filter(o=>o.st.k==='ver').length,nd:nod.length};
+  const sum=[n.ok?n.ok+' verificat'+(n.ok===1?'a':'e'):'',n.ver?n.ver+' da verificare':'',n.nd?n.nd+' senza data':''].filter(Boolean).join(' · ');
+  return `<div class="tl-sum">${n.tot} attività${sum?' · '+sum:''}${t.dal||t.al?' · percorso '+percTempoTxt(per):''}</div><div class="tl">${out.join('')}</div>`; }
+function tlRefresh(idx){ const b=document.getElementById('tl-'+idx); if(b) b.innerHTML=tlHTML(idx); }
+function tlSetDate(idx,j,v){ const x=axX(idx,j); x.data=v; if(x.dataFine&&v&&x.dataFine<v) x.dataFine=v; saveDataDebounced(); tlRefresh(idx); try{ axRe(idx,j); }catch(e){} }
+function tlGo(idx,j){ const d=document.getElementById('att-'+idx+'-'+j); if(!d) return; d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'}); }
 function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const t=percTempo(per); const warn=tmWarn(t.dal,t.al,false);
   const note = t.own ? (typeof per.prioritaIdx==='number'?`<a href="#" style="font-size:11px;color:var(--green);margin-left:6px" onclick="percTempoReset(${idx});return false">↺ riprendi dalla Sezione 2</a>`:'')
     : `<span style="font-size:11px;color:var(--ink-faint);margin-left:6px">ripresa dalla Sezione 2 · cambiala se il percorso dura meno</span>`;
@@ -6845,7 +6889,7 @@ function fbOpen(){
     <label style="display:block;font-size:11px;font-weight:700;margin:10px 0 3px">La tua email ${OPT}<span style="font-weight:400;color:var(--ink-faint)">se vuoi una risposta</span></label>
     <input id="fb-mail" type="email" style="${inS}" value="${sEsc((typeof CL!=='undefined'&&CL.user&&CL.user.email)||'')}">
     <input type="checkbox" id="fb-bot" style="display:none" tabindex="-1" autocomplete="off">
-    <p style="font-size:11px;color:var(--ink-mid);margin:8px 0 0">Al messaggio aggiungo in automatico la schermata in cui ti trovi e il tipo di dispositivo. Non scrivere nomi dei ragazzi o altri dati personali.</p>
+    <p style="font-size:11px;color:var(--ink-mid);margin:8px 0 0">Al messaggio aggiungo in automatico la schermata in cui ti trovi, il dispositivo, il sistema operativo, il browser e la versione dell’app. Non scrivere nomi dei ragazzi o altri dati personali.</p>
     <div class="cl-msg" id="fb-msg"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn-primary" id="fb-go" onclick="fbSend()">Invia</button><button class="btn-ghost" onclick="fbCopy()">Copia testo</button></div>
   </div>`;
@@ -6857,8 +6901,9 @@ function fbCompose(){
   let dove='Pagina iniziale';
   try{ if(document.getElementById('main-app').style.display!=='none'){ if(MODE==='giovani'){ const c=gCur(); dove=(G_STEPS.find(x=>x[0]===c)||[])[1] ? 'Sezione '+G_STEPS.find(x=>x[0]===c)[1]+' '+G_STEPS.find(x=>x[0]===c)[2] : (G_TABS.find(x=>x[0]===c)||[])[4]||c; } else { const n=[1,2,3,4].find(i=>document.getElementById('panel'+i)?.classList.contains('active')); dove='Fase '+n; } } }catch(e){}
   const ua=navigator.userAgent; const disp=/iPad|Tablet/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'telefono':'computer';
+  const os=/iPhone|iPod/.test(ua)?'iOS '+((ua.match(/OS (\d+[_\d]*)/)||[])[1]||'').replace(/_/g,'.'):(/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1))?'iPadOS'+((ua.match(/OS (\d+[_\d]*)/)||[])[1]?' '+(ua.match(/OS (\d+[_\d]*)/)||[])[1].replace(/_/g,'.'):''):/Android/.test(ua)?'Android '+((ua.match(/Android ([\d.]+)/)||[])[1]||''):/Windows NT/.test(ua)?'Windows':/Mac OS X/.test(ua)?'macOS':/CrOS/.test(ua)?'ChromeOS':/Linux/.test(ua)?'Linux':'altro';
   const br=/Edg\//.test(ua)?'Edge':/Chrome\//.test(ua)?'Chrome':/Firefox\//.test(ua)?'Firefox':/Safari\//.test(ua)?'Safari':'altro';
-  const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti e Lupette',E:'Esploratori ed Esploratrici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—')), 'Dispositivo: '+disp+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION, 'Data: '+new Date().toLocaleString('it-IT') ];
+  const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti e Lupette',E:'Esploratori ed Esploratrici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—')), 'Dispositivo: '+disp+' · '+os.trim()+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION, 'Data: '+new Date().toLocaleString('it-IT') ];
   const sub='[PEE CNGEI · Suggerimenti] '+tipo.split(' /')[0]+(nome?' — '+nome:'');
   const body=(txt||'(scrivi qui la tua segnalazione)')+'\n\n— — —\n'+ctx.join('\n')+(nome?'\nDa: '+nome:'')+(mailx?' <'+mailx+'>':'');
   return {sub, body};
@@ -7134,6 +7179,8 @@ function renderSchedaC(root,selected){
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         <div id="perc-tm-${idx}">${percTempoHTML(idx)}</div>
       </td></tr>`;
+    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Linea del tempo<br><small style="font-weight:400;color:var(--ink-faint)">le attività in ordine, con lo stato di ciascuna</small></td>
+      <td style="padding:8px 10px;border:1px solid var(--border-light)"><div id="tl-${idx}">${tlHTML(idx)}</div></td></tr>`;
 
     // Attività: Lancio · Sviluppo · Conclusione
     const attv = (per.attivita||[]).slice(); while(attv.length<3) attv.push({testo:''});
@@ -7141,7 +7188,7 @@ function renderSchedaC(root,selected){
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         ${attv.map((att,j)=>{
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
-          return `<details ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card)">
+          return `<details id="att-${idx}-${j}" ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
             <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             ${attTipiHTML(idx,j,att)}
