@@ -5758,6 +5758,7 @@ let scheda = {
   valCompl: {},     // Sez. 5: valutazione complessiva per percorso {pid:'testo'}
   pp: {nome:'', sezione:'', tutor:'', ctxTerr:'', ctxSez:'', occasioni:'', condizioni:'', scelta:'', kosDone:{}}
 };
+const SCHEDA_DEFAULT = JSON.stringify(scheda);
 let schedaStep = 'A';
 
 function newPercorso(prioritaIdx) {
@@ -9582,8 +9583,10 @@ async function roRefresh(manual){
     if(!d){ clToast('Questo progetto non è più condiviso con te'); setTimeout(roExit, 1200); return; }
     const cur = (CL.ctx && CL.ctx.ts) || 0;
     if(d.ts > cur){
-      localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(d.data||{}));
       localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:d.id, anno:d.anno, titolo:d.titolo, ts:d.ts, dirty:false}));
+      if(CL.ctx) CL.ctx.ts = d.ts;
+      if(document.getElementById('main-app').style.display !== 'none' && clApplyInPlace(d.data||{})){ if(manual) clToast('Aggiornato'); return; }
+      localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(d.data||{}));
       sessionStorage.setItem('bussola_autoresume','1');
       location.reload();
     } else if(manual){ clToast('Già aggiornato'); }
@@ -9639,11 +9642,12 @@ function clBaseGet(){ try{ const v = localStorage.getItem(CL_BASE); return v ? J
 const clJ = v => JSON.stringify(v === undefined ? null : v);
 const clIsObj = v => v && typeof v === 'object' && !Array.isArray(v);
 const clSameData = (a, b) => clJ(Object.assign({}, a||{}, {ts:0})) === clJ(Object.assign({}, b||{}, {ts:0}));
+const clCovers = (up, path) => up.some(u => u === path || u.startsWith(path + '/') || path.startsWith(u + '/'));
 function clMerge(base, mine, theirs, out, path){
   path = path || '';
   if(clJ(mine) === clJ(theirs)) return mine;
   if(clJ(base) === clJ(mine)) return theirs;
-  if(clJ(base) === clJ(theirs)) return mine;
+  if(clJ(base) === clJ(theirs)) return (out.up && !clCovers(out.up, path)) ? theirs : mine;
   if(path === '/ts') return Math.max(+mine||0, +theirs||0);
   // testi riempiti in automatico dall'app (sintesi dell'osservazione): se nascono da tutte e due le parti si tiene quello già condiviso
   if(/^\/scheda\/osservazione\/[PCS]\/(positivi|necessita)$/.test(path) && !base) return theirs;
@@ -9666,8 +9670,7 @@ function clMerge(base, mine, theirs, out, path){
       return r;
     }
   }
-  const up = out.up || [];
-  if(out.up && !up.some(u => u === path || u.startsWith(path + '/') || path.startsWith(u + '/'))) return theirs;
+  if(out.up && !clCovers(out.up, path)) return theirs;
   out.conf.push(path);
   return mine;
 }
@@ -9694,11 +9697,13 @@ function clApplyQuiet(merged, paths){
 let _clLastIn = 0, _idleT = null, _idleFn = null;
 document.addEventListener('input', () => { _clLastIn = Date.now(); }, true);
 document.addEventListener('keydown', () => { _clLastIn = Date.now(); }, true);
+document.addEventListener('pointerdown', () => { window._clClickAt = Date.now(); }, true);
 function clIdle(){
   if(document.visibilityState === 'hidden') return true;
   const a = document.activeElement;
-  if(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !a.closest('#cl-ov')) return false;
-  return Date.now() - _clLastIn > 2500;
+  if(a && a.isContentEditable) return false;
+  if(a && a.tagName === 'SELECT' && Date.now() - _clLastIn < 8000) return false;
+  return Date.now() - _clLastIn > 2500 && Date.now() - (window._clClickAt||0) > 1500;
 }
 function clWhenIdle(fn){
   _idleFn = fn; clearTimeout(_idleT);
@@ -9706,20 +9711,77 @@ function clWhenIdle(fn){
   tick();
 }
 // ricarica restando nello stesso punto (sezione, schede aperte, posizione nella pagina)
+// ── aggiornare la pagina con i dati arrivati, SENZA ricaricarla e restando esattamente dove si è ──
+function clDetKey(d){
+  if(d.id) return '#' + d.id;
+  const anc = d.parentElement && d.parentElement.closest('[id]');
+  const sib = anc ? [...anc.querySelectorAll('details')].indexOf(d) : -1;
+  return (anc ? anc.id : '') + '|' + (d.dataset.k || d.className || '') + '|' + sib;
+}
+function clFieldKey(el){ const anc = el.parentElement && el.parentElement.closest('[id]'); return anc ? anc.id + '|' + [...anc.querySelectorAll('input,textarea,select')].indexOf(el) : ''; }
+function clViewSave(){
+  const app = document.getElementById('main-app'), v = {y: window.scrollY};
+  try{ if(MODE === 'giovani') v.k = gCur(); else v.n = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active')) || 1; }catch(e){}
+  try{ v.step = schedaStep; v.member = CURRENT_MEMBER; v.sview = (typeof STAFF_VIEW !== 'undefined') ? STAFF_VIEW : null; }catch(e){}
+  if(!app) return v;
+  const ds = [...app.querySelectorAll('details')]; v.det = ds.map(clDetKey); v.open = ds.map(d => d.open);
+  try{ const el = document.elementFromPoint(Math.min(window.innerWidth / 2, 420), 150); const a = el && el.closest('[id]');
+       if(a && app.contains(a) && a !== app) v.anchor = {id: a.id, off: a.getBoundingClientRect().top}; }catch(e){}
+  const f = document.activeElement;
+  if(f && app.contains(f) && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)){
+    v.focus = {i: [...app.querySelectorAll('input,textarea,select')].indexOf(f), tag: f.tagName, key: clFieldKey(f)};
+    try{ v.focus.s = f.selectionStart; v.focus.e = f.selectionEnd; }catch(e){}
+  }
+  return v;
+}
+function clViewRestore(v){
+  const app = document.getElementById('main-app'); if(!app) return;
+  const map = new Map((v.det||[]).map((k, i) => [k, v.open[i]]));
+  const det = () => app.querySelectorAll('details').forEach(d => { const k = clDetKey(d); if(map.has(k) && d.open !== map.get(k)) d.open = map.get(k); });
+  const go = () => { if(v.anchor){ const el = document.getElementById(v.anchor.id); if(el){ window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - v.anchor.off); return; } } window.scrollTo(0, v.y || 0); };
+  const foc = () => { if(!v.focus) return; let el = null;
+    if(v.focus.key){ const [aid, ix] = v.focus.key.split('|'); const anc = document.getElementById(aid); if(anc) el = [...anc.querySelectorAll('input,textarea,select')][+ix]; }
+    if(!el) el = [...app.querySelectorAll('input,textarea,select')][v.focus.i];
+    if(el && el.tagName === v.focus.tag && !el.disabled){ try{ el.focus({preventScroll:true}); if(v.focus.s != null && el.setSelectionRange) el.setSelectionRange(v.focus.s, v.focus.e); }catch(e){} } };
+  det(); go();
+  requestAnimationFrame(() => { det(); go(); });
+  setTimeout(() => { det(); go(); foc(); }, 120);
+}
+function clApplyInPlace(d){
+  const main = document.getElementById('main-app');
+  if(!main || main.style.display === 'none'){ localStorage.setItem(LSK, JSON.stringify(d || {})); return true; }  // pagina iniziale: basta salvare
+  const v = clViewSave();
+  try{
+    Object.keys(obs).forEach(k => delete obs[k]); Object.values(DB).flat().forEach(p => { obs[p.id] = 'n'; });
+    Object.keys(pris).forEach(k => delete pris[k]); Object.keys(vals).forEach(k => delete vals[k]);
+    STAFF_MEMBERS = []; staffObs = {}; staffProfiles = {}; staffTimeline = {}; autoObs = {};
+    autoProfile = {nome:'', eta:'', ruolo:'', esperienza:'', formazione:''}; UNIT_NAME = '';
+    scheda = JSON.parse(SCHEDA_DEFAULT);
+    localStorage.setItem(LSK, JSON.stringify(d || {}));
+    startTool();
+    // ciò che riguarda solo questo schermo resta com'era (membro dello staff aperto, vista)
+    if(v.member !== undefined) CURRENT_MEMBER = v.member;
+    if(MODE === 'staff'){ try{ if(v.sview && typeof STAFF_VIEW !== 'undefined') STAFF_VIEW = v.sview; if(STAFF_MEMBERS.length) renderStaffPhase1(); }catch(e){} }
+    if(MODE === 'giovani' && v.k) gGo(v.k);
+    else if(v.n && v.n > 1){ if(v.step) schedaStep = v.step; goPhaseInternal(v.n); }
+    clViewRestore(v);
+    _clLast = clSnapshot(); _clUserAt = 0;
+    try{ sgRender(); }catch(e){} try{ edLock(); }catch(e){}
+    return true;
+  }catch(e){ console.error('applica in pagina', e); return false; }
+}
 function clSoftReload(msg){
+  CL.pending = false;
+  if(clApplyInPlace(clSnapshot())){ if(msg) clToast(msg); clSetStatus('ok'); return; }
+  // solo se qualcosa va storto: ricarico la pagina (al massimo 3 volte al minuto)
   try{
     const now = Date.now(); let h = []; try{ h = JSON.parse(sessionStorage.getItem('bussola_reloads')||'[]').filter(t => now - t < 60000); }catch(e){}
     if(h.length >= 3){ clSetStatus('ok'); clUpdBar(true); return; }
     h.push(now); sessionStorage.setItem('bussola_reloads', JSON.stringify(h));
-  }catch(e){}
-  try{
-    const v = {y: window.scrollY, open: [...document.querySelectorAll('details[open][id]')].map(d => d.id).slice(0, 60)};
-    try{ if(MODE === 'giovani') v.k = gCur(); else v.n = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active')) || 1; }catch(e){}
-    sessionStorage.setItem('bussola_view', JSON.stringify(v));
+    const v = clViewSave(); sessionStorage.setItem('bussola_view', JSON.stringify({k:v.k, n:v.n, y:v.y, open:[]}));
     sessionStorage.setItem('bussola_autoresume', '1');
     if(msg) sessionStorage.setItem('bussola_opened_msg', msg);
   }catch(e){}
-  CL.pending = false;
   location.reload();
 }
 function clRestoreView(){
@@ -9784,7 +9846,7 @@ function clRemoteChanged(ts){
     if(!ts || ts <= (CL.ctx.ts||0)) return;
     clSetStatus('sync');
     clWhenIdle(() => { if(!CL.busy) clPush(); else clRemoteChanged(ts); });
-  }, 1200);
+  }, 500);
 }
 async function clPollRemote(){
   if(!CL.sb || !CL.user || !CL.ctx || document.visibilityState !== 'visible') return;
@@ -10290,7 +10352,7 @@ let _clTouched = false, _clUserAt = 0, _clLast = null;
 function clNoteUserPaths(){
   try{
     const now = clSnapshot();
-    if(_clLast && CL.ctx && Date.now() - _clUserAt < 2000){
+    if(_clLast && CL.ctx && Date.now() - _clUserAt < 10000){
       const up = new Set(CL.ctx.upaths || []);
       clDiffPaths(_clLast, now).forEach(x => up.add(x));
       CL.ctx.upaths = [...up].slice(-400);
@@ -10306,7 +10368,7 @@ function clQueuePush(){
   if(!_clTouched && !CL.ctx.udirty) return;
   CL.pending = true; clSetStatus('sync');
   if(!CL.ctx.dirty){ CL.ctx.dirty = true; clSaveCtx(); }
-  clearTimeout(CL.timer); CL.timer = setTimeout(() => clPush(), 2500);
+  clearTimeout(CL.timer); CL.timer = setTimeout(() => clPush(), 1200);
 }
 window.cloudQueuePush = clQueuePush;
 async function clPush(force){
@@ -10316,7 +10378,7 @@ async function clPush(force){
   try{
     if(!force){
       const t0 = await dbTsRaw(CL.ctx.id); const cur = t0 && t0.ts; raw = t0 && t0.raw;
-      const mine = _clTouched || CL.ctx.udirty;
+      const mine = (CL.ctx.upaths||[]).length > 0 || (CL.ctx.udirty && !Array.isArray(CL.ctx.upaths));
       if(!mine){
         // nessuna modifica fatta da una persona su questo dispositivo: non salvo, al massimo prendo le novità
         CL.pending = false;
