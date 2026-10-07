@@ -363,6 +363,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-spesa{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:4px 0}.ax-spesa>input:first-child{flex:1 1 200px}.ax-spesa>input[type=number]{width:90px}.ax-spesa>select{width:auto}
 @media (max-width:600px){.ax-rr{grid-template-columns:1fr 100px}.ax-ing{grid-template-columns:1fr 60px 28px}.ax-ing>select,.ax-ing>input:nth-child(4){grid-column:span 1}}
 .opt-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f5f5f;background:#e9e9e9;border-radius:999px;padding:2px 8px;margin-right:6px;vertical-align:1px;line-height:1.5;white-space:nowrap}
+.aff-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 0 2px}.aff-row label{font-size:11px;font-weight:700;color:var(--ink-mid)}.aff-sel{font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--border-light);border-radius:6px;background:var(--bg-card,#fff);color:var(--ink)}.aff-note{font-size:10.5px;color:var(--ink-faint)}
+.aff-chip{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:10px;background:#eef2f7;color:#26364f;margin-left:6px;vertical-align:1px}.aff-chip.me{background:#fff3cd;color:#7a5b00}
+.att-lock:empty{display:none}.att-lock{margin:8px 0 2px;padding:6px 10px;border-radius:6px;background:#fff3e0;color:#8a4b00;font-size:11.5px;font-weight:600}
+details.att-locked{opacity:.75}
 .tl-all{margin:14px 0 6px;border:1.5px solid var(--border-light);border-radius:10px;background:var(--bg-card,#fff)}.tl-all>summary{cursor:pointer;padding:10px 14px;list-style:none}.tl-all>summary::-webkit-details-marker{display:none}.tl-all>summary:before{content:'▸ ';color:var(--ink-mid)}.tl-all[open]>summary:before{content:'▾ '}.tl-all-t{font-size:13px;font-weight:800;color:var(--ink)}.tl-all-s{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:2px;padding-left:14px}.tl-all-b{padding:0 14px 12px}.tl-leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 6px;font-size:11.5px;color:var(--ink-mid)}.tl-lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .tl-sum{font-size:11.5px;color:var(--ink-mid);margin:0 0 6px}.tl{position:relative;padding-left:4px}.tl-empty{font-size:12px;color:var(--ink-faint)}
 .tl-mese{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--green);margin:10px 0 4px}.tl-mese.tl-vuoto{color:var(--ink-faint);font-weight:600}
@@ -5897,6 +5901,23 @@ function toggleIdr(priIdx,idrIdx,checked){
 function updatePercorsoField(idx,field,val){const all=getAllPercorsi();if(all[idx]) all[idx][field]=val;}
 function updatePercorsoAmbito(idx,ambito){const per=getAllPercorsi()[idx];if(!per)return;per.ambito=ambito;per.percorsoId='';renderValuation();}
 function updatePercorsoId(idx,id){const per=getAllPercorsi()[idx];if(!per)return;per.percorsoId=id;per.ambito=id[0]||per.ambito;renderValuation();}
+// ── "Affidata a": chi dello staff si occupa dell'attività (persone della tabella 1.1) ──
+function affPeople(){ let t=[]; try{ t=(scheda.pp&&Array.isArray(scheda.pp.staffTab))?scheda.pp.staffTab:[]; }catch(e){}
+  return t.map(r=>({nome:String(r.nome||'').trim(), mail:String(r.mail||'').trim().toLowerCase().split(/[\s,;]+/)[0]||''})).filter(r=>r.nome); }
+const affKey=r=>r.mail||r.nome;
+const affNorm=v=>String(v||'').trim().toLowerCase().replace(/\s+/g,' ');
+function affName(v){ const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)); return r?r.nome:String(v||''); }
+function affIsMe(v,people){ if(!v) return false; try{ if(typeof CL==='undefined'||!CL.user) return false; const em=affNorm(CL.user.email), nv=affNorm(v);
+  if(nv===em) return true; const nm=affNorm(typeof clMyName==='function'?clMyName():''); if(nm&&nv===nm) return true;
+  const r=(people||affPeople()).find(x=>x.mail===em); return !!(r&&(nv===affNorm(r.nome))); }catch(e){ return false; } }
+function affPeopleOf(d){ const t=(d&&d.scheda&&d.scheda.pp&&Array.isArray(d.scheda.pp.staffTab))?d.scheda.pp.staffTab:[];
+  return t.map(r=>({nome:String(r.nome||'').trim(), mail:String(r.mail||'').trim().toLowerCase().split(/[\s,;]+/)[0]||''})).filter(r=>r.nome); }
+// attività affidate a me e non ancora verificate
+function affMine(list, people){ const out=[]; (list||[]).forEach((per,idx)=>(per.attivita||[]).forEach((a,j)=>{ if(a&&affIsMe(a.aff,people)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())) out.push({idx,j,t:(a.testo||'').trim()}); })); return out; }
+function affRowHTML(idx,j,att){ const P=affPeople(); if(!P.length&&!att.aff) return '';
+  const cur=att.aff||''; const has=P.some(r=>affNorm(affKey(r))===affNorm(cur));
+  return `<div class="aff-row"><label>Affidata a</label>${OPT}<select class="aff-sel" onchange="affSet(${idx},${j},this.value)"><option value="">— nessuno —</option>${P.map(r=>`<option value="${sEsc(affKey(r))}" ${affNorm(affKey(r))===affNorm(cur)?'selected':''}>${sEsc(r.nome)}</option>`).join('')}${cur&&!has?`<option value="${sEsc(cur)}" selected>${sEsc(cur)}</option>`:''}</select><span class="aff-note">chi dello staff se ne occupa (dalla tabella 1.1)</span></div>`; }
+function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); s.insertBefore(c, s.querySelector('button')); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
 function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;}
 function attLinkBtn(inp){ const a=inp.parentElement&&inp.parentElement.querySelector('.att-link-open'); if(!a) return; const u=linkNorm(inp.value); const ok=/^(https?:|mailto:)/i.test(u); a.style.display=ok?'':'none'; if(ok) a.href=u; }
 const CL3=[['si','Sì'],['parte','In parte'],['no','Non ancora']];
@@ -7231,8 +7252,9 @@ function renderSchedaC(root,selected){
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         ${attv.map((att,j)=>{
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
-          return `<details id="att-${idx}-${j}" ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
-            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
+          return `<details id="att-${idx}-${j}" data-aff="${sEsc(att.aff||'')}" ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
+            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${att.aff?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
+            <div class="att-lock" id="att-lock-${idx}-${j}"></div>${affRowHTML(idx,j,att)}
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             ${attTipiHTML(idx,j,att)}
             <label style="${SC_LBL}">Lancio</label>
@@ -9267,7 +9289,7 @@ async function clInit(){
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); roRefresh(false); sgWatch(); sgLoad(true); }
     else if(CL.user && CL.ctx){ if(!clBaseGet() && !CL.ctx.dirty) clBaseSet(clSnapshot()); clCheckRemoteNewer(); sgWatch(); sgLoad(); }
     else if(CL.user) clAutoOpen();
-    if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); }
+    if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); if(CL.user && CL.ctx){ edWatch(); clPresence(); } }
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
     if(CL.user && !window.BRO){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 120000); }
     if(CL.user){ clRealtime(); setInterval(clPollRemote, 60000); }
@@ -9803,6 +9825,13 @@ async function clPerTe(){
   try{
     try{ (await dbShared()).filter(r => r.nuovo).forEach(r => items.push({k:'inv', id:r.id, mid:r.mid, owner:r.owner, anno:r.anno, titolo:r.titolo, ruolo:r.ruolo})); }catch(e){}
     try{ (await dbSgNuovi()).forEach(r => items.push({k:'sg', id:r.id, anno:r.anno, titolo:r.titolo, n:r.n})); }catch(e){}
+    // attività affidate a me: nel progetto aperto e nei progetti che posso modificare
+    try{
+      if(CL.ctx){ affMine(getAllPercorsi()).forEach(a => items.push({k:'att', id:CL.ctx.id, cur:true, idx:a.idx, j:a.j, t:a.t, anno:CL.ctx.anno, titolo:CL.ctx.titolo})); }
+      const sh = (await dbShared()).filter(r => clEditRole(r.ruolo) && !(CL.ctx && CL.ctx.id === r.id)).slice(0, 6);
+      for(const r of sh){ const g = await dbGet(r.id); const d = g && g.data || {}; const list = (d.scheda && d.scheda.percorsiExtra) || [];
+        affMine(list, affPeopleOf(d)).forEach(a => items.push({k:'att', id:r.id, cur:false, ruolo:r.ruolo, owner:r.owner, idx:a.idx, j:a.j, t:a.t, anno:r.anno, titolo:r.titolo})); }
+    }catch(e){}
     CL.perte = items; clSetStatus(CL.status);
   }finally{ _ptBusy = false; }
   return items;
@@ -9811,10 +9840,16 @@ function clPerTeHTML(){
   const it = CL.perte || []; if(!it.length) return '';
   const row = x => {
     if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un collega')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
+    if(x.k === 'att') return `<div class="cl-row"><div style="min-width:0"><div class="t">Attività affidata a te${x.t?': '+clEsc(x.t.slice(0,60)):' (attività '+(x.j+1)+')'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}</div></div><button class="cl-btn sm" onclick="${x.cur?`clPtGoAtt(${x.idx},${x.j})`:`clOpenShared('${x.id}')`}">Apri</button></div>`;
     const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;
     return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
   };
   return `<div class="cl-perte"><h4>Per te · ${it.length === 1 ? '1 cosa' : it.length + ' cose'} da fare</h4>${it.map(row).join('')}</div>`;
+}
+function clPtGoAtt(idx, j){
+  clContinue();
+  setTimeout(() => { try{ if(MODE === 'giovani') gGo('3'); else { schedaStep = 'C'; goPhaseInternal(4); } }catch(e){}
+    setTimeout(() => { try{ tlGo(idx, j); }catch(e){} }, 500); }, 300);
 }
 function clPtGoSg(){
   clContinue();
@@ -9872,6 +9907,55 @@ function clRoleWatch(){
   clearInterval(_rcTimer);
   if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)) _rcTimer = setInterval(() => { if(document.visibilityState === 'visible') clRoleCheck(); }, 45000);
 }
+
+// ── chi sta modificando cosa (presenza in tempo reale) e parti affidate ──
+let _pres = {}, _presCh = null, _myAtt = null, _attT = null;
+function edLock(){
+  if(window.BRO || !CL.ctx) return;
+  const app = document.getElementById('main-app'); if(!app) return;
+  const collab = CL.ctx.ruolo === 'collaboratore' && clEditOn();
+  const me = clLc(CL.user && CL.user.email);
+  const others = {}; Object.entries(_pres).forEach(([em, v]) => { if(em !== me && v && v.att) others[v.att] = v.nome || em; });
+  app.querySelectorAll('details[id^="att-"]').forEach(d => {
+    const k = d.id.slice(4), who = others[k], lk = document.getElementById('att-lock-' + k);
+    const txt = who ? '✎ ' + who + ' sta modificando questa attività: aspetta che finisca, poi potrai modificarla anche tu.'
+      : (collab && !affIsMe(d.dataset.aff) ? 'Questa attività non è affidata a te: la puoi leggere, non modificare.' : '');
+    if(lk && lk.textContent !== txt) lk.textContent = txt;
+    d.classList.toggle('att-locked', !!who);
+  });
+  app.querySelectorAll('select,input,textarea').forEach(e => {
+    if(e.closest('.sg-wrap') || e.closest('#cl-ov') || e.closest('#ed-bar')) return;
+    const d = e.closest('details[id^="att-"]');
+    let off = false;
+    if(collab) off = !(d && affIsMe(d.dataset.aff)) || e.classList.contains('aff-sel');
+    if(d && others[d.id.slice(4)]) off = true;
+    if(off && !e.disabled){ e.disabled = true; e.dataset.edl = '1'; }
+    else if(!off && e.dataset.edl){ e.disabled = false; delete e.dataset.edl; }
+  });
+}
+window.edLock = edLock;
+function edWatch(){
+  const app = document.getElementById('main-app'); if(!app || app._edw) return; app._edw = true; let t;
+  new MutationObserver(() => { clearTimeout(t); t = setTimeout(edLock, 120); }).observe(app, {childList:true, subtree:true});
+  edLock();
+}
+function clPresence(){
+  try{
+    if(!CL.sb || !CL.user || !CL.ctx || window.BRO || typeof CL.sb.channel !== 'function') return;
+    if(_presCh){ try{ CL.sb.removeChannel(_presCh); }catch(e){} _presCh = null; }
+    const me = clLc(CL.user.email);
+    const ch = CL.sb.channel('pee-pres-' + CL.ctx.id, {config:{presence:{key:me}}});
+    ch.on('presence', {event:'sync'}, () => {
+      try{ const st = ch.presenceState() || {}; _pres = {}; Object.entries(st).forEach(([k, arr]) => { const v = (arr||[])[(arr||[]).length - 1]; if(v) _pres[k] = v; }); }catch(e){}
+      edLock();
+    });
+    ch.subscribe(st => { if(st === 'SUBSCRIBED') clPresTrack(); });
+    _presCh = ch;
+  }catch(e){}
+}
+function clPresTrack(){ try{ if(_presCh && _presCh.track) _presCh.track({nome: clMyName() || sgMyName() || (CL.user && CL.user.email) || '', att: _myAtt || null}); }catch(e){} }
+document.addEventListener('focusin', e => { const d = e.target && e.target.closest && e.target.closest('details[id^="att-"]'); const k = d ? d.id.slice(4) : null; clearTimeout(_attT); if(k && k !== _myAtt){ _myAtt = k; clPresTrack(); } }, true);
+document.addEventListener('focusout', () => { clearTimeout(_attT); _attT = setTimeout(() => { const a = document.activeElement; const d = a && a.closest && a.closest('details[id^="att-"]'); const k = d ? d.id.slice(4) : null; if(k !== _myAtt){ _myAtt = k; clPresTrack(); } }, 4000); }, true);
 
 // ── progetto di un collega aperto in modifica (co-titolare o collaboratore) ──
 function edInit(){
