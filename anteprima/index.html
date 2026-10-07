@@ -9134,7 +9134,7 @@ async function dbList(){
 async function dbGet(id){
   const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,data,updated_at').eq('id', id).maybeSingle();
   if(error) throw error;
-  return data ? {id:data.id, anno:data.anno, titolo:data.titolo, data:data.data||{}, ts:clTs(data.updated_at)} : null;
+  return data ? {id:data.id, anno:data.anno, titolo:data.titolo, data:data.data||{}, ts:clTs(data.updated_at), raw:data.updated_at} : null;
 }
 async function dbTs(id){
   const {data, error} = await CL.sb.from('pee_archivi').select('updated_at').eq('id', id).maybeSingle();
@@ -9146,10 +9146,23 @@ async function dbInsert(anno, titolo, data, meta){
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
   return {id:r.id, anno:r.anno, titolo:r.titolo, ts:clTs(r.updated_at)};
 }
-async function dbUpdate(id, data, meta){
-  const {data:r, error} = await CL.sb.from('pee_archivi').update({data, meta}).eq('id', id).select('updated_at').single();
+async function dbTsRaw(id){
+  const {data, error} = await CL.sb.from('pee_archivi').select('updated_at').eq('id', id).maybeSingle();
   if(error) throw error;
-  return clTs(r.updated_at);
+  return data ? {ts:clTs(data.updated_at), raw:data.updated_at} : null;
+}
+// salva solo se nel frattempo nessun altro ha salvato (raw = l'ora dell'ultima versione letta); altrimenti 'stale'
+async function dbUpdate(id, data, meta, raw){
+  let q = CL.sb.from('pee_archivi').update({data, meta}).eq('id', id);
+  if(raw) q = q.eq('updated_at', raw);
+  const {data:r, error} = await q.select('updated_at');
+  if(error) throw error;
+  if(!r || !r.length){
+    // nessuna riga salvata: o qualcuno ha salvato nel frattempo ('stale'), o non ho più il permesso di modificare
+    if(raw){ const t = await dbTsRaw(id).catch(() => null); if(t && t.raw !== raw) throw new Error('stale'); }
+    throw new Error('Non hai il permesso di modificare questo progetto');
+  }
+  return clTs(r[0].updated_at);
 }
 async function dbRename(id, titolo){
   const {error} = await CL.sb.from('pee_archivi').update({titolo}).eq('id', id);
@@ -9441,7 +9454,7 @@ async function clRestoreVersion(vid){
     const v = await dbVersionGet(vid); if(!v){ clToast('Versione non trovata'); return; }
     await dbSnap(CL.ctx.id, clSnapshot(), 'Prima del ripristino');
     localStorage.setItem(CL_LS, JSON.stringify(v.data||{}));
-    CL.ctx.ts = await dbUpdate(CL.ctx.id, v.data||{}, clMeta(v.data||{})); CL.ctx.dirty = false; clSaveCtx();
+    CL.ctx.ts = await dbUpdate(CL.ctx.id, v.data||{}, clMeta(v.data||{})); CL.ctx.dirty = false; clSaveCtx(); clBaseSet(v.data||{});
     location.reload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
@@ -9577,12 +9590,15 @@ function clBaseSet(d){ try{ localStorage.setItem(CL_BASE, JSON.stringify(d||{}))
 function clBaseGet(){ try{ const v = localStorage.getItem(CL_BASE); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
 const clJ = v => JSON.stringify(v === undefined ? null : v);
 const clIsObj = v => v && typeof v === 'object' && !Array.isArray(v);
+const clSameData = (a, b) => clJ(Object.assign({}, a||{}, {ts:0})) === clJ(Object.assign({}, b||{}, {ts:0}));
 function clMerge(base, mine, theirs, out, path){
   path = path || '';
   if(clJ(mine) === clJ(theirs)) return mine;
   if(clJ(base) === clJ(mine)) return theirs;
   if(clJ(base) === clJ(theirs)) return mine;
   if(path === '/ts') return Math.max(+mine||0, +theirs||0);
+  // testi riempiti in automatico dall'app (sintesi dell'osservazione): se nascono da tutte e due le parti si tiene quello già condiviso
+  if(/^\/scheda\/osservazione\/[PCS]\/(positivi|necessita)$/.test(path) && !base) return theirs;
   if(clIsObj(mine) && clIsObj(theirs)){
     const b = clIsObj(base) ? base : {}, r = {};
     new Set([...Object.keys(mine), ...Object.keys(theirs)]).forEach(k => {
@@ -9605,6 +9621,25 @@ function clMerge(base, mine, theirs, out, path){
   out.conf.push(path);
   return mine;
 }
+const CL_QUIET = /^\/scheda\/(osservazione\/[PCS]\/(positivi|necessita)|_userEdited\w*)(\/|$)/;
+function clDiffPaths(a, b, p, out){
+  out = out || []; p = p || '';
+  if(clJ(a) === clJ(b)) return out;
+  if(clIsObj(a) && clIsObj(b)){ new Set([...Object.keys(a), ...Object.keys(b)]).forEach(k => { if(p + '/' + k !== '/ts') clDiffPaths(a[k], b[k], p + '/' + k, out); }); return out; }
+  out.push(p); return out;
+}
+function clApplyQuiet(merged, paths){
+  try{
+    paths.forEach(path => {
+      const seg = path.split('/').slice(1); if(seg[0] !== 'scheda') throw 0;
+      let src = merged.scheda, dst = scheda;
+      seg.slice(1, -1).forEach(k => { src = src ? src[k] : undefined; if(!clIsObj(dst[k])) dst[k] = {}; dst = dst[k]; });
+      const last = seg[seg.length - 1], v = src ? src[last] : undefined;
+      if(v === undefined) delete dst[last]; else dst[last] = JSON.parse(JSON.stringify(v));
+    });
+    return true;
+  }catch(e){ return false; }
+}
 // "fermo": nessun campo attivo e nessuna battitura negli ultimi secondi (così non cambio la pagina sotto le dita)
 let _clLastIn = 0, _idleT = null, _idleFn = null;
 document.addEventListener('input', () => { _clLastIn = Date.now(); }, true);
@@ -9622,6 +9657,11 @@ function clWhenIdle(fn){
 }
 // ricarica restando nello stesso punto (sezione, schede aperte, posizione nella pagina)
 function clSoftReload(msg){
+  try{
+    const now = Date.now(); let h = []; try{ h = JSON.parse(sessionStorage.getItem('bussola_reloads')||'[]').filter(t => now - t < 60000); }catch(e){}
+    if(h.length >= 3){ clSetStatus('ok'); clUpdBar(true); return; }
+    h.push(now); sessionStorage.setItem('bussola_reloads', JSON.stringify(h));
+  }catch(e){}
   try{
     const v = {y: window.scrollY, open: [...document.querySelectorAll('details[open][id]')].map(d => d.id).slice(0, 60)};
     try{ if(MODE === 'giovani') v.k = gCur(); else v.n = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active')) || 1; }catch(e){}
@@ -9653,13 +9693,20 @@ async function clMergeNow(){
   const local = clSnapshot();
   if(!base){ clSetStatus('off'); clShow('conflict'); return; }
   const out = {conf:[]};
-  const merged = clMerge(base, local, r.data||{}, out);
-  if(out.conf.length){ try{ await dbSnap(id, r.data||{}, 'Versione sostituita'); }catch(e){} }
-  const ts = await dbUpdate(id, merged, clMeta(merged));
+  const remote = r.data||{};
+  const merged = clMerge(base, local, remote, out);
+  let ts = r.ts;
+  if(!clSameData(merged, remote)){
+    if(out.conf.length){ try{ await dbSnap(id, remote, 'Versione sostituita'); }catch(e){} }
+    try{ ts = await dbUpdate(id, merged, clMeta(merged), r.raw); }
+    catch(e){ if(e.message === 'stale'){ CL.pending = true; setTimeout(() => clWhenIdle(() => clPush()), 300); return; } throw e; }
+  }
   localStorage.setItem(CL_LS, JSON.stringify(merged));
   CL.ctx.ts = ts; CL.ctx.dirty = false; clSaveCtx(); clBaseSet(merged);
-  const same = clJ(Object.assign({}, merged, {ts:0})) === clJ(Object.assign({}, local, {ts:0}));
-  if(same){ CL.pending = false; clSetStatus('ok'); return; }
+  if(clSameData(merged, local)){ CL.pending = false; clSetStatus('ok'); return; }
+  // se cambiano solo testi che l'app ricalcola da sola, li aggiorno senza ricaricare la pagina
+  const dp = clDiffPaths(local, merged);
+  if(dp.length && dp.every(x => CL_QUIET.test(x)) && clApplyQuiet(merged, dp)){ CL.pending = false; clSetStatus('ok'); return; }
   clSoftReload(out.conf.length
     ? 'Ho unito le modifiche. In ' + (out.conf.length === 1 ? '1 punto' : out.conf.length + ' punti') + ' avevate cambiato la stessa cosa: ho tenuto la tua, l\'altra è in Versioni precedenti.'
     : 'Aggiornato con le modifiche arrivate ora');
@@ -10108,9 +10155,10 @@ window.cloudQueuePush = clQueuePush;
 async function clPush(force){
   if(window.BRO || !CL.sb || !CL.user || !CL.ctx || CL.busy) return;
   CL.busy = true; clearTimeout(CL.timer);
+  let raw = null;
   try{
     if(!force){
-      const cur = await dbTs(CL.ctx.id);
+      const t0 = await dbTsRaw(CL.ctx.id); const cur = t0 && t0.ts; raw = t0 && t0.raw;
       if(cur && cur > CL.ctx.ts){
         if(!clIdle()){ CL.busy = false; clSetStatus('sync'); clWhenIdle(() => clPush()); return; }
         try{ await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; }
@@ -10118,7 +10166,11 @@ async function clPush(force){
       }
     }
     const d = clSnapshot();
-    CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d)); CL.ctx.dirty = false; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
+    const base = clBaseGet();
+    if(!force && base && clSameData(d, base)){ CL.ctx.dirty = false; clSaveCtx(); CL.pending = false; clSetStatus('ok'); CL.busy = false; return; }
+    try{ CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d), raw); }
+    catch(e){ if(e.message === 'stale'){ CL.busy = false; CL.pending = true; clSetStatus('sync'); clWhenIdle(() => clPush()); return; } throw e; }
+    CL.ctx.dirty = false; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
     // una versione automatica ogni 30 minuti di lavoro (ne teniamo le ultime 10)
     try{
       if(!CL.ctx.lastSnap || Date.now() - CL.ctx.lastSnap > 30*60*1000){
