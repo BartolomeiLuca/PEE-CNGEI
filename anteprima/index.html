@@ -10060,7 +10060,7 @@ function clWaText(email, ruolo){
   const lui = first(clStaffName(email));
   const io = first(clMyName() || clStaffName(CL.user && CL.user.email));
   let chi = 'della nostra Unità';
-  try{ chi = MODE === 'staff' ? 'del nostro staff' : ({L:'dei nostri Lupetti e Lupette', E:'dei nostri Esploratori ed Esploratrici', R:'dei nostri Rover'}[FASCIA] || chi); }catch(e){}
+  try{ if(MODE === 'staff') chi = 'del nostro staff'; }catch(e){}
   const cosa = {
     lettore: `in sola lettura, così puoi lasciarmi suggerimenti sui percorsi educativi ${chi}`,
     cotitolare: `come co-titolare, così possiamo lavorare insieme sui percorsi educativi ${chi}: puoi modificare tutto il progetto`,
