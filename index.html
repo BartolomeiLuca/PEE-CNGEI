@@ -945,6 +945,19 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 #ro-bar{background:#eef2f7;border-bottom:1px solid #b8c4d6;padding:10px 16px;font:600 12.5px 'Montserrat',sans-serif;color:#26364f;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 #ro-bar .grow{flex:1;min-width:220px;line-height:1.5}
 #ro-bar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #26364f;background:#fff;color:#26364f;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
+#ed-bar{background:#eaf5ee;border-bottom:1px solid #a9cdb6;padding:10px 16px;font:600 12.5px 'Montserrat',sans-serif;color:#1b5e42;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#ed-bar .grow{flex:1;min-width:220px;line-height:1.5}
+#ed-bar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #1b5e42;background:#fff;color:#1b5e42;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
+#cl-invbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(560px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:14px 16px;z-index:9000;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
+#cl-invbar .ib-t{font-weight:800;color:#1b5e42;margin-bottom:4px}
+#cl-invbar .ib-r{padding:6px 0;border-top:1px solid #e3ece6}
+#cl-invbar .ib-r:first-of-type{border-top:none}
+#cl-invbar .ib-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+#cl-invbar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #1b5e42;background:#fff;color:#1b5e42;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
+#cl-invbar button.pri{background:#1b5e42;color:#fff}
+.cl-role{font:600 12px 'Montserrat',sans-serif;border:1.5px solid #c9d6ce;border-radius:8px;padding:6px 8px;background:#fff;color:#1f2a24;max-width:100%}
+.cl-badge{display:inline-block;font:700 10.5px 'Montserrat',sans-serif;padding:2px 8px;border-radius:10px;background:#eaf5ee;color:#1b5e42;margin-left:6px;vertical-align:middle}
+.cl-btn.wa{border-color:#1f9d55;color:#1f7a45}
 body.ro .hdr-save,body.ro #cl-histbtn,body.ro .member-tab.add-btn,body.ro .member-tab button,body.ro .staff-nav-tab[onclick*="autooss"],body.ro .autooss-notice{display:none!important}
 /* cronologia */
 .cl-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b6b64;margin:14px 0 6px}
@@ -1216,7 +1229,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     <div class="hero">
       <div class="hero-eye">Riepilogo</div>
       <h1 id="rie-title">Come siamo messi?</h1>
-      <p id="rie-subtitle">Fotografia dell'osservazione. I percorsi assenti o con tracce iniziali indicano le aree di maggiore bisogno su cui costruire le priorità.</p>
+      <p id="rie-subtitle">Fotografia dell'osservazione. I percorsi non ancora emersi o con tracce iniziali indicano le aree su cui crescere di più, da cui costruire le priorità.</p>
     </div>
     <div class="tutorial-box" id="tut-panel2">
       <button class="tutorial-close" onclick="closeTutorial('panel2')" title="Chiudi">×</button>
@@ -1224,7 +1237,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <ul class="tutorial-list tm-unit">
         <li>In alto c'è la <strong>fotografia</strong> del gruppo: una casella colorata per ogni percorso. Toccala per tornare a quel percorso.</li>
         <li>Sotto trovi la <strong>chiave di lettura</strong>: qualche spunto per guardare meglio. Sono domande, non verdetti.</li>
-        <li>I percorsi <em>Assenti</em> o con <em>Tracce iniziali</em> (1–4) sono le aree di maggior bisogno. Quelli <em>In sviluppo</em> (5–6) sono dove un intervento mirato fa la differenza.</li>
+        <li>I percorsi <em>Non ancora emersi</em> o con <em>Tracce iniziali</em> (1–4) sono le aree su cui crescere di più. Quelli <em>In sviluppo</em> (5–6) sono dove un intervento mirato fa la differenza.</li>
         <li>Più in basso scrivi tu la lettura: dinamiche del gruppo, aspetti positivi e necessità educative per ogni ambito.</li>
       </ul>
       <ul class="tutorial-list tm-staff">
@@ -1273,7 +1286,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     <div class="hero">
       <div class="hero-eye" id="hero-eye3">Fase 2</div>
       <h1 id="hero-title3">Priorità educative</h1>
-      <p id="hero-desc3">Scegli al massimo <strong>1 priorità per ambito</strong> — 3 in totale. I percorsi con osservazione <em>assente</em> appaiono per primi.</p>
+      <p id="hero-desc3">Scegli al massimo <strong>1 priorità per ambito</strong> — 3 in totale. I percorsi ancora <em>non emersi</em> appaiono per primi.</p>
     </div>
     <div class="tutorial-box" id="tut-panel3">
       <button class="tutorial-close" onclick="closeTutorial('panel3')" title="Chiudi">×</button>
@@ -4182,7 +4195,7 @@ function generateIndicazioneHTML(member) {
   if(deboli.length>0) {
     ['P','C','S'].forEach(a=>{if(clusterDeboli[a].length>0) testo+=`<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:12px"><span style="color:var(--amber);flex-shrink:0">▸</span><span><strong>${ambitoLabel[a]}:</strong> ${clusterDeboli[a].map(x=>x.nome).join(', ')}</span></div>`;});
   } else {
-    testo += `<div style="font-size:12px;color:var(--ink-faint)">Nessun percorso marcato come assente.</div>`;
+    testo += `<div style="font-size:12px;color:var(--ink-faint)">Nessun percorso segnato come non ancora emerso.</div>`;
   }
   testo += `</div>`;
 
@@ -4592,7 +4605,7 @@ function renderPhase1(){
     personale:'Auto osservazione'
   };
   const descs = {
-    giovani:'Indica per ogni percorso se il comportamento è <strong>presente</strong>, <strong>assente</strong> o lascia neutro se non hai ancora elementi. Espandi le schede per leggere gli obiettivi, le domande guida e il "Cosa osservare" del KOS per la tua fascia.',
+    giovani:'Indica per ogni percorso a che punto è il comportamento, da <strong>non ancora emerso</strong> a <strong>consolidato</strong>, oppure lascia <strong>non osservato</strong> se non hai ancora elementi. Espandi le schede per leggere gli obiettivi, le domande guida e il "Cosa osservare" del KOS per la tua fascia.',
     personale:'Indica per ogni percorso come lo vivi nella tua pratica educativa: <strong>presente</strong>, <strong>ancora nell\'ombra</strong> o <strong>non osservato</strong>.'
   };
   document.getElementById('hero-title1').textContent = titles[MODE]||'Osservazione'; refreshUnitName();
@@ -4876,7 +4889,7 @@ function renderRiepilogo(){
     const subEl = document.getElementById('rie-subtitle');
     const disclaimerEl = document.getElementById('disclaimer-txt');
     if(titleEl) titleEl.textContent = isStaff ? 'Come siamo messi come staff?' : 'Come siamo messi come Unità?';
-    if(subEl) subEl.textContent = isStaff ? 'Fotografia dei percorsi di sviluppo personale del team. Le aree in ombra indicano dove concentrare il percorso formativo.' : 'Fotografia dell\'Unità. I percorsi assenti indicano le aree su cui concentrare il lavoro educativo.';
+    if(subEl) subEl.textContent = isStaff ? 'Fotografia dei percorsi di sviluppo personale del team. Le aree in ombra indicano dove concentrare il percorso formativo.' : 'Fotografia dell\'Unità. I percorsi non ancora emersi indicano le aree su cui concentrare il lavoro educativo.';
     if(disclaimerEl) disclaimerEl.innerHTML = `Le riflessioni di questa pagina si basano sul <strong>Progetto Educativo Esperienziale CNGEI (rev. 2025)</strong> e sui suoi 24 percorsi di sviluppo, applicati qui come strumento di osservazione della crescita degli <em>adulti educatori</em> — non dei giovani. I riferimenti metodologici integrano il <strong>KOS (Kit Osservazione e Scoperta)</strong> rev. 2025, lo <strong>Sciroppo del Capo Gruppo</strong> CNGEI, e la letteratura internazionale sull'<strong>Adult Learning</strong> (Knowles, Mezirow) e sullo <strong>sviluppo personale degli educatori</strong>.<br><br>
     Le osservazioni formative non sono giudizi — sono strumenti di orientamento. Nascono da ciò che è emerso in un contesto specifico e in un momento preciso. Usale come punto di partenza per un dialogo aperto con ogni membro dello staff, non come valutazioni definitive.`;
 
@@ -5237,26 +5250,26 @@ function buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP){
   profHTML += braveSpaceBlock('pers_forte', isStaff ? 'staff' : FASCIA);
   } else if(pA+sA>=6 && cA>=4){
     profHTML=`<div class="diag-card diag-urgency"><div class="diag-tag">Profilo · Molte aree ancora aperte</div><div class="diag-title">${totNeg} percorsi da sviluppare — è un punto di partenza, non un giudizio</div><div class="diag-body">${isStaff
-      ? 'Molti percorsi risultano assenti nel team. Succede spesso nei team nuovi, quando cambiano tante persone, o quando il team non si è mai fermato a riflettere su di sé. Priorità: scegli 3 percorsi, uno per ambito, e lavoraci con costanza. Non serve un corso: servono momenti di confronto vero, meglio se partono da situazioni vissute insieme.'
-      : "Molti percorsi risultano assenti. Non è un giudizio: è la situazione di oggi, normale per un'Unità giovane o con tanti cambi. Regola d'oro: non cercare di coprire tutto. Scegli 3 percorsi, uno per ambito, e lavoraci a fondo. Conta molto di più la qualità di ciò che si vive che il numero di attività."
+      ? 'Molti percorsi non sono ancora emersi nel team. Succede spesso nei team nuovi, quando cambiano tante persone, o quando il team non si è mai fermato a riflettere su di sé. Priorità: scegli 3 percorsi, uno per ambito, e lavoraci con costanza. Non serve un corso: servono momenti di confronto vero, meglio se partono da situazioni vissute insieme.'
+      : "Molti percorsi non sono ancora emersi. Non è un giudizio: è la situazione di oggi, normale per un'Unità giovane o con tanti cambi. Regola d'oro: non cercare di coprire tutto. Scegli 3 percorsi, uno per ambito, e lavoraci a fondo. Conta molto di più la qualità di ciò che si vive che il numero di attività."
     }</div></div>`
   profHTML += safeSpaceBlock('molte_aree', isStaff ? 'staff' : FASCIA);
   profHTML += protagonismoBlock('molte_aree', isStaff ? 'staff' : FASCIA);
   profHTML += braveSpaceBlock('molte_aree', isStaff ? 'staff' : FASCIA);
   } else if(totNeg<=3 && totPos>=8){
     profHTML=`<div class="diag-card diag-ok"><div class="diag-tag">Profilo · In buona crescita</div><div class="diag-title">Quadro positivo con spazi di sviluppo mirati</div><div class="diag-body">${isStaff
-      ? 'Il team è solido su più fronti. I percorsi assenti non sono emergenze: sono le aree su cui lavorare nella prossima fase. Hai spazio per farlo senza fretta, ed è un vantaggio da non sprecare.'
-      : "L'Unità è solida su più fronti. I percorsi assenti non sono emergenze: sono le occasioni di crescita del prossimo ciclo. Hai spazio per lavorare a fondo."
+      ? 'Il team è solido su più fronti. I percorsi non ancora emersi non sono emergenze: sono le aree su cui lavorare nella prossima fase. Hai spazio per farlo senza fretta, ed è un vantaggio da non sprecare.'
+      : "L'Unità è solida su più fronti. I percorsi non ancora emersi non sono emergenze: sono le occasioni di crescita del prossimo ciclo. Hai spazio per lavorare a fondo."
     }</div></div>`
   profHTML += safeSpaceBlock('crescita', isStaff ? 'staff' : FASCIA);
   profHTML += protagonismoBlock('crescita', isStaff ? 'staff' : FASCIA);
   profHTML += braveSpaceBlock('crescita', isStaff ? 'staff' : FASCIA);
   } else {
     { const c=lvlCounts(allP); const nonO=allP.filter(p=>!obsToThreshold(obsVal(p)));
-      const parts=[[c[4]+c[5],c[4]+c[5]===1?'presente':'presenti'],[c[3],'in sviluppo'],[c[2],'con tracce iniziali'],[c[1],c[1]===1?'assente':'assenti'],[nonO.length,nonO.length===1?'non osservato':'non osservati']].filter(x=>x[0]>0).map(x=>x[0]+' '+x[1]).join(' · ');
+      const parts=[[c[4]+c[5],c[4]+c[5]===1?'presente':'presenti'],[c[3],'in sviluppo'],[c[2],'con tracce iniziali'],[c[1],'non ancora emersi'],[nonO.length,nonO.length===1?'non osservato':'non osservati']].filter(x=>x[0]>0).map(x=>x[0]+' '+x[1]).join(' · ');
       const body = nonO.length
         ? `Il profilo non mostra una tendenza netta. ${nonO.length===1?'Manca ancora un percorso':'Mancano ancora '+nonO.length+' percorsi'}: osservarli può rendere la lettura più precisa — ${nonO.map(p=>`<a href="#" onclick="event.preventDefault();gotoObs('${p.id}')">${p.name}</a>`).join(', ')}.`
-        : 'Non emerge una tendenza chiara tra gli ambiti: parti dai percorsi assenti o appena accennati per capire di cosa hanno bisogno i ragazzi.';
+        : 'Non emerge una tendenza chiara tra gli ambiti: parti dai percorsi non ancora emersi o appena accennati per capire di cosa hanno bisogno i ragazzi.';
       profHTML=`<div class="diag-card diag-gold"><div class="diag-tag">Profilo · Senza una tendenza netta</div><div class="diag-title">${parts}</div><div class="diag-body">${body}</div></div>`; }
   profHTML += safeSpaceBlock('parziale', isStaff ? 'staff' : FASCIA);
   profHTML += protagonismoBlock('parziale', isStaff ? 'staff' : FASCIA);
@@ -5317,7 +5330,7 @@ function buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP){
       const cls=cl.urgenza==='alta'?'diag-urgency':'diag-info';
       const testo = isStaff ? cl.testoStaff : cl.testoGiovani;
       clHtml+=`<div class="diag-card ${cls}" style="margin-top:10px">
-        <div class="diag-tag">Pattern specifico · ${match}/${cl.percorsi.length} percorsi assenti</div>
+        <div class="diag-tag">Pattern specifico · ${match}/${cl.percorsi.length} percorsi non ancora emersi</div>
         <div class="diag-title">${cl.label}</div>
         <div class="diag-body">${testo}<br><span class="diag-leva">↳ Da dove partire: <strong>${cl.leva}</strong></span></div>
       </div>
@@ -5612,7 +5625,7 @@ function renderCUCG(){
   const allP=Object.values(DB).flat();
   const assenti=allP.filter(p=>{const _t=obsToThreshold(obsVal(p));return _t>0&&_t<=2;});
   if(!assenti.length){
-    inner.innerHTML='<div style="font-size:12px;color:var(--ink-faint);padding:8px 0">Nessun percorso assente o appena accennato: quando emergono bisogni, qui trovi i consigli per il Capo Unità.</div>';
+    inner.innerHTML='<div style="font-size:12px;color:var(--ink-faint);padding:8px 0">Nessun percorso non ancora emerso o appena accennato: quando emergono bisogni, qui trovi i consigli per il Capo Unità.</div>';
     return;
   }
 
@@ -5665,8 +5678,8 @@ function renderPriority(){
   const heroP = document.querySelector('#panel3 .hero p');
   const priInfo = document.querySelector('.pri-info');
   if(heroP) heroP.innerHTML = isStaff
-    ? 'Scegli al massimo <strong>1 priorità formativa per ambito</strong>, 3 in tutto. I percorsi assenti nello staff compaiono per primi.'
-    : 'Scegli al massimo <strong>1 priorità per ambito</strong>, 3 in tutto. I percorsi con osservazione <em>assente</em> compaiono per primi.';
+    ? 'Scegli al massimo <strong>1 priorità formativa per ambito</strong>, 3 in tutto. I percorsi non ancora emersi nello staff compaiono per primi.'
+    : 'Scegli al massimo <strong>1 priorità per ambito</strong>, 3 in tutto. I percorsi ancora <em>non emersi</em> compaiono per primi.';
   if(priInfo) priInfo.innerHTML = isStaff
     ? '<strong>Regola PEE (adulti):</strong> al massimo 3 priorità formative, una per ambito, per il ciclo.'
     : '<strong>Regola PEE:</strong> al massimo 3 priorità, una per ambito, in un ciclo. Meglio 3 percorsi vissuti a fondo che 8 sfiorati.';
@@ -9207,6 +9220,7 @@ async function clInit(){
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); roRefresh(false); sgWatch(); sgLoad(true); }
     else if(CL.user && CL.ctx){ clCheckRemoteNewer(); sgWatch(); sgLoad(); }
     else if(CL.user) clAutoOpen();
+    if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); }
   }catch(e){ clSetStatus('off'); }
   window.addEventListener('online', () => { if(CL.pending) clPush(); });
   document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); } });
@@ -9242,7 +9256,7 @@ function clShow(view){
       <div style="margin-top:16px"><button class="cl-btn" id="cl-go" onclick="clSubmit('recovery')">Salva password</button></div><div class="cl-msg" id="cl-msg"></div>`;
   } else if(view === 'conflict'){
     t.textContent = 'Versione più recente nel cloud';
-    b.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 14px">Questo progetto (<strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong>) è stato modificato da un altro dispositivo dopo l'ultima sincronizzazione.</p>
+    b.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 14px">Questo progetto (<strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong>) è stato modificato ${CL.roles?'da un collega o ':''}da un altro dispositivo dopo l'ultima sincronizzazione.</p>
       <div style="display:flex;flex-direction:column;gap:8px">
       <button class="cl-btn" onclick="clOpenProject('${CL.ctx.id}')">Carica la versione del cloud (le modifiche locali non sincronizzate andranno perse)</button>
       <button class="cl-btn ghost" onclick="clPush(true);clClose()">Tieni questa versione e sovrascrivi il cloud</button>
@@ -9256,9 +9270,11 @@ function clShow(view){
     clLoadHist();
   } else if(view === 'share'){
     t.textContent = 'Condividi con un collega';
-    b.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Scrivi l'email di un collega: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p>
+    if(CL.ctx.ruolo){ b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un collega')}</strong>: solo chi lo ha creato può invitare altre persone.</p><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button>`; return; }
+    b.innerHTML = `<div id="cl-shintro"><p class="cl-note" style="margin:0 0 10px">Scrivi l'email di un collega: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p></div>
       <div class="cl-grid2"><input class="cl-in" id="cl-inv" type="email" autocomplete="off" placeholder="email del collega" onkeydown="if(event.key==='Enter')clInvite()"><button class="cl-btn" onclick="clInvite()">Invita</button></div>
-      <div class="cl-msg" id="cl-msg"></div>
+      <div id="cl-rolebox" style="display:none;margin-top:8px"><label class="cl-lb" for="cl-invr" style="margin-top:0">Come lo inviti</label><select class="cl-role" id="cl-invr">${Object.keys(CL_RUOLI).map(k=>`<option value="${k}">${CL_RUOLI[k]}: ${CL_RUOLI_TXT[k]}</option>`).join('')}</select></div>
+      <div class="cl-msg" id="cl-msg"></div><div id="cl-wanow"></div>
       <p class="cl-note">Il collega deve creare l'account (o accedere) con <strong>questa stessa email</strong>: poi il progetto gli compare in «Condivisi con me». Invita solo persone di cui ti fidi: vedranno le osservazioni.</p>
       <div id="cl-mem" class="cl-hist"><p class="cl-note">Carico…</p></div>
       <div style="margin-top:12px"><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button></div>`;
@@ -9294,7 +9310,7 @@ async function clSubmit(view){
       if(error) throw error;
       CL.user = data.user || (data.session && data.session.user) || CL.user;
       clSetStatus(CL.ctx ? 'ok' : '');
-      const ao = await clAutoOpen(); if(ao !== 'reload') clClose();
+      const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); }
     } else if(view === 'signup'){
       if(pw.length < 8) throw new Error('La password deve avere almeno 8 caratteri.');
       const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back()}});
@@ -9339,8 +9355,8 @@ async function clRenderArchive(){
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
   if(act){
     h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
-      <div class="s">Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clContinue()">Continua qui</button><button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button><button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
+      <div class="s">${act.ruolo?`Progetto di <strong>${clEsc(act.owner||'un collega')}</strong> · sei ${clEsc((CL_RUOLI[act.ruolo]||'').toLowerCase())}. `:''}Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clContinue()">Continua qui</button>${act.ruolo?'':`<button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button>`}<button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
   }
   if(act){
     h += `<div class="cl-row" style="margin-top:8px"><div><div class="t">Versioni precedenti</div><div class="s">Torna a com'era il lavoro ieri, stamattina o in un momento che hai salvato.</div></div><button class="cl-btn ghost sm" onclick="clShow('hist')">Apri</button></div>`;
@@ -9415,21 +9431,36 @@ async function clRestoreVersion(vid){
 const clLc = s => String(s||'').trim().toLowerCase();
 const clEmailOk = s => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 const clNoTable = e => /42P01|does not exist|schema cache|relation/i.test((e&&(e.code+' '+e.message))||'');
+// ruoli (attivi solo dopo l'aggiornamento del database: senza, tutto funziona come prima, in sola lettura)
+const CL_RUOLI = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
+const CL_RUOLI_TXT = {lettore:'vede il progetto in sola lettura e lascia suggerimenti', cotitolare:'modifica tutto il progetto insieme a te', collaboratore:'modifica il progetto, lavorando sulle parti che gli affidi'};
+const clEditRole = r => r === 'cotitolare' || r === 'collaboratore';
+async function clRolesOk(){
+  if(CL.roles !== undefined) return CL.roles;
+  try{ const {error} = await CL.sb.from('pee_membri').select('ruolo,visto_il').limit(1); CL.roles = !error; }catch(e){ CL.roles = false; }
+  return CL.roles;
+}
 async function dbMembri(id){
-  const {data, error} = await CL.sb.from('pee_membri').select('id,email,created_at').eq('archivio_id', id).order('created_at');
+  const roles = await clRolesOk();
+  const {data, error} = await CL.sb.from('pee_membri').select('id,email,created_at' + (roles ? ',ruolo,visto_il' : '')).eq('archivio_id', id).order('created_at');
   if(error) throw error; return data||[];
 }
-async function dbInvite(id, email){
-  const {error} = await CL.sb.from('pee_membri').insert({archivio_id:id, email, owner_email:(CL.user&&CL.user.email)||''});
+async function dbInvite(id, email, ruolo){
+  const row = {archivio_id:id, email, owner_email:(CL.user&&CL.user.email)||''};
+  if(ruolo && await clRolesOk()) row.ruolo = ruolo;
+  const {error} = await CL.sb.from('pee_membri').insert(row);
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
 }
+async function dbSetRole(mid, ruolo){ const {error} = await CL.sb.from('pee_membri').update({ruolo, visto_il:null}).eq('id', mid); if(error) throw error; }
+async function dbSeen(mid){ try{ await CL.sb.rpc('pee_segna_visto', {m:mid}); }catch(e){} }
 async function dbRevoke(mid){ const {error} = await CL.sb.from('pee_membri').delete().eq('id', mid); if(error) throw error; }
 async function dbShared(){
-  const {data, error} = await CL.sb.from('pee_membri').select('id,archivio_id,owner_email').eq('email', clLc(CL.user.email));
+  const roles = await clRolesOk();
+  const {data, error} = await CL.sb.from('pee_membri').select('id,archivio_id,owner_email' + (roles ? ',ruolo,visto_il' : '')).eq('email', clLc(CL.user.email));
   if(error) throw error; const rows = data||[]; if(!rows.length) return [];
   const {data:ar, error:e2} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').in('id', rows.map(r=>r.archivio_id));
   if(e2) throw e2;
-  return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email} : null; }).filter(Boolean);
+  return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email, ruolo:(roles && r.ruolo) || 'lettore', nuovo:!!(roles && !r.visto_il)} : null; }).filter(Boolean);
 }
 async function dbSgList(id){
   const {data, error} = await CL.sb.from('pee_suggerimenti').select('id,percorso,autore_nome,testo,stato,created_at,user_id').eq('archivio_id', id).order('created_at');
@@ -9448,6 +9479,8 @@ async function clOpenShared(id){
   try{
     const list = await dbShared(); const it = list.find(x => x.id === id);
     if(!it){ clToast('Questo progetto non è più condiviso con te'); clRenderArchive(); return; }
+    if(it.nuovo) await dbSeen(it.mid);
+    if(clEditRole(it.ruolo)) return clOpenProject(id, {ruolo:it.ruolo, owner:it.owner||''});
     const r = await dbGet(id); if(!r){ clToast('Progetto non trovato'); return; }
     localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(r.data||{}));
     localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}));
@@ -9488,10 +9521,40 @@ function roInit(){
   }
 }
 
+// ── progetto di un collega aperto in modifica (co-titolare o collaboratore) ──
+function edInit(){
+  if(window.BRO || !CL.ctx || !CL.ctx.ruolo) { const old = document.getElementById('ed-bar'); if(old) old.remove(); return; }
+  const app = document.getElementById('main-app'); if(!app) return;
+  let bar = document.getElementById('ed-bar');
+  if(!bar){ bar = document.createElement('div'); bar.id = 'ed-bar'; app.insertAdjacentElement('afterbegin', bar); }
+  const col = CL.ctx.ruolo === 'collaboratore';
+  bar.innerHTML = `<div class="grow">Stai lavorando su «${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}» di <strong>${clEsc(CL.ctx.owner||'un collega')}</strong> come <strong>${clEsc((CL_RUOLI[CL.ctx.ruolo]||'').toLowerCase())}</strong>. ${col ? 'Lavora sulle parti che vi siete divisi: le modifiche si salvano nel progetto comune.' : 'Le modifiche si salvano nel progetto comune.'} Evitate di modificare la stessa parte nello stesso momento.</div><button onclick="clOpen()">I miei PEE</button>`;
+}
+// avviso all'ingresso: inviti non ancora aperti
+async function clCheckInvites(){
+  if(window.BRO || !CL.sb || !CL.user) return;
+  try{ if(sessionStorage.getItem('bussola_inv_later')) return; }catch(e){}
+  try{
+    if(!(await clRolesOk())) return;
+    const rows = (await dbShared()).filter(r => r.nuovo && !(CL.ctx && CL.ctx.id === r.id));
+    let bar = document.getElementById('cl-invbar');
+    if(!rows.length){ if(bar) bar.remove(); return; }
+    if(!bar){ bar = document.createElement('div'); bar.id = 'cl-invbar'; bar.setAttribute('role', 'status'); document.body.appendChild(bar); }
+    const first = rows.slice(0, 3);
+    bar.innerHTML = `<div class="ib-t">${rows.length === 1 ? 'Hai un invito nuovo' : `Hai ${rows.length} inviti nuovi`}</div>` + first.map(r =>
+      `<div class="ib-r"><strong>${clEsc(r.owner||'Un collega')}</strong> ti ha invitato su «${clEsc(r.anno)} · ${clEsc(r.titolo)}» come <strong>${clEsc((CL_RUOLI[r.ruolo]||'lettore').toLowerCase())}</strong>.
+        <div class="ib-a"><button class="pri" onclick="clInvOpen('${r.id}')">${clEditRole(r.ruolo) ? 'Apri e modifica' : 'Apri'}</button></div></div>`).join('') +
+      `${rows.length > 3 ? `<p style="margin:6px 0 0;font-size:12px">Gli altri li trovi in Archivio › Condivisi con me.</p>` : ''}<div class="ib-a" style="justify-content:flex-end"><button onclick="clInvLater()">Più tardi</button></div>`;
+  }catch(e){}
+}
+function clInvLater(){ try{ sessionStorage.setItem('bussola_inv_later', '1'); }catch(e){} const b = document.getElementById('cl-invbar'); if(b) b.remove(); clToast('Lo ritrovi in Archivio › Condivisi con me'); }
+function clInvOpen(id){ const b = document.getElementById('cl-invbar'); if(b) b.remove(); clOpenShared(id); }
+window.edInit = edInit;
+
 // ── suggerimenti dei colleghi (solo testo, con il nome di chi li scrive) ──
 const SG = {list:[], open:{}, form:null, draft:{}, announced:0};
 async function sgLoad(quiet){
-  if(!CL.sb || !CL.user || !CL.ctx || MODE_NOT_GIOVANI()) return;
+  if(!CL.sb || !CL.user || !CL.ctx || CL.ctx.ruolo || MODE_NOT_GIOVANI()) return;
   try{
     SG.list = await dbSgList(CL.ctx.id); sgRender();
     if(!window.BRO){
@@ -9579,17 +9642,60 @@ async function clLoadMem(){
   const box = $cl('cl-mem'); if(!box || !CL.ctx) return;
   try{
     const rows = await dbMembri(CL.ctx.id);
+    const roles = !!CL.roles;
+    if(roles){
+      const rb = $cl('cl-rolebox'); if(rb) rb.style.display = '';
+      const it = $cl('cl-shintro'); if(it) it.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Invita un collega su <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> e scegli come lavorerà:</p>
+        <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>: ${CL_RUOLI_TXT[k]}.</li>`).join('')}</ul>`;
+    }
     if(!rows.length){ box.innerHTML = '<p class="cl-note" style="margin:8px 0 0">Non hai ancora invitato nessuno.</p>'; return; }
-    box.innerHTML = '<div class="cl-year">Hanno accesso</div>' + rows.map(r => `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · sola lettura + suggerimenti</div></div><button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button></div>`).join('');
+    box.innerHTML = '<div class="cl-year">Hanno accesso</div>' + rows.map(r => {
+      const ru = r.ruolo || 'lettore';
+      const sel = roles ? `<select class="cl-role" aria-label="Ruolo di ${clEsc(r.email)}" onchange="clSetRole('${r.id}',this.value)">${Object.keys(CL_RUOLI).map(k=>`<option value="${k}" ${k===ru?'selected':''}>${CL_RUOLI[k]}</option>`).join('')}</select>` : '';
+      const stato = roles ? (r.visto_il ? 'ha già visto l\'invito' : 'non ha ancora aperto l\'invito') : 'sola lettura + suggerimenti';
+      return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button></div></div>`;
+    }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> apre un messaggio già scritto: se nella tabella dello staff (1.1) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
   }catch(e){ box.innerHTML = `<p class="cl-note">${clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : 'Elenco non disponibile: '+clEsc(clErr(e))}</p>`; }
+}
+// WhatsApp: il numero si prende dalla tabella dello staff (1.1) cercando l'email o il nome; serve solo a comporre il link
+function clStaffTel(email){
+  let t = []; try{ t = (typeof scheda !== 'undefined' && scheda && scheda.pp && Array.isArray(scheda.pp.staffTab)) ? scheda.pp.staffTab : []; }catch(e){}
+  const em = clLc(email), loc = em.split('@')[0].replace(/[._\-\d]+/g,' ').trim();
+  let r = t.find(x => clLc(x.mail).split(/[\s,;]+/).includes(em));
+  if(!r && loc) r = t.find(x => { const n = clLc(x.nome).replace(/[^a-zàèéìòù ]/g,' ').split(/\s+/).filter(w => w.length > 2); return n.length >= 2 && n.every(w => loc.includes(w)); });
+  return r ? clWaNum(r.tel) : '';
+}
+function clWaNum(tel){
+  let s = String(tel||'').split(/[,;\/]| - /)[0].replace(/[^\d+]/g,'');
+  if(s.startsWith('+')) s = s.slice(1); else if(s.startsWith('00')) s = s.slice(2);
+  else if(/^3\d{8,9}$/.test(s) || /^0\d{5,10}$/.test(s)) s = '39' + s;
+  return /^\d{8,15}$/.test(s) ? s : '';
+}
+function clWaText(email, ruolo){
+  const url = location.href.split('#')[0].split('?')[0];
+  const cosa = {cotitolare:'come co-titolare: puoi modificarlo insieme a me', collaboratore:'come collaboratore: puoi lavorarci sulle parti che ci siamo divisi', lettore:'in sola lettura: puoi lasciarmi suggerimenti sui percorsi'}[ruolo||'lettore'];
+  return `Ciao! Ti ho invitato sul progetto «${CL.ctx.anno} · ${CL.ctx.titolo}» nell'app PEE CNGEI, ${cosa}.\n\n1. Apri ${url}\n2. Accedi (o crea l'account) con questa email: ${email}\n3. Lo trovi in Archivio › Condivisi con me.`;
+}
+function clWaBtn(email, ruolo){
+  const n = clStaffTel(email);
+  const href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(clWaText(email, ruolo));
+  return `<a class="cl-btn ghost sm wa" style="text-decoration:none" href="${clEsc(href)}" target="_blank" rel="noopener" title="${n ? 'Apre la chat con il numero della tabella dello staff' : 'Numero non trovato nella tabella dello staff: sceglierai tu il contatto'}">Avvisa su WhatsApp</a>`;
+}
+async function clSetRole(mid, ruolo){
+  try{ await dbSetRole(mid, ruolo); clToast('Ruolo aggiornato: ' + CL_RUOLI[ruolo]); clLoadMem(); }
+  catch(e){ clToast('Errore: '+clErr(e)); clLoadMem(); }
 }
 async function clInvite(){
   const inp = $cl('cl-inv'); const email = clLc(inp && inp.value);
   if(!clEmailOk(email)){ clMsg('Scrivi un indirizzo email valido', 'err'); return; }
   if(email === clLc(CL.user.email)){ clMsg('Questo è il tuo indirizzo: il progetto è già tuo', 'err'); return; }
+  const ruolo = (($cl('cl-invr')||{}).value) || 'lettore';
   try{
-    await dbInvite(CL.ctx.id, email);
-    inp.value = ''; clMsg('Invitato. Il progetto gli comparirà in «Condivisi con me» quando accede con questa email.', 'ok'); clLoadMem();
+    await dbInvite(CL.ctx.id, email, ruolo);
+    inp.value = ''; clMsg('Invitato. Il progetto gli comparirà in «Condivisi con me» quando accede con questa email.', 'ok');
+    const w = $cl('cl-wanow'); if(w) w.innerHTML = `<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="cl-note" style="margin:0">Vuoi avvisarlo subito?</span>${clWaBtn(email, CL.roles ? ruolo : 'lettore')}</div>`;
+    clLoadMem();
   }catch(e){
     if(e.message === 'duplicate') clMsg('Questo collega è già stato invitato', 'err');
     else clMsg(clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : clErr(e), 'err');
@@ -9601,10 +9707,18 @@ async function clLoadShared(){
   try{
     const rows = await dbShared(); if(!rows.length){ box.innerHTML = ''; return; }
     const fmt = ts => ts ? new Date(ts).toLocaleString('it-IT',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-    box.innerHTML = `<div class="cl-sec"><h4>Condivisi con me</h4><p class="cl-note" style="margin:0 0 4px">Progetti dei tuoi colleghi: li vedi in sola lettura e puoi lasciare suggerimenti.</p>` + rows.map(r => `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(r.anno)} · ${clEsc(r.titolo)}</div><div class="s">di ${clEsc(r.owner||'un collega')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="cl-btn sm" onclick="clOpenShared('${r.id}')">Apri</button><button class="cl-btn ghost sm" onclick="clLeave('${r.mid}')">Rimuovi</button></div></div>`).join('') + `</div>`;
+    const roles = !!CL.roles;
+    const intro = roles ? 'Progetti dei tuoi colleghi. Come <strong>lettore</strong> li vedi e lasci suggerimenti; come <strong>co-titolare</strong> o <strong>collaboratore</strong> puoi modificarli.' : 'Progetti dei tuoi colleghi: li vedi in sola lettura e puoi lasciare suggerimenti.';
+    box.innerHTML = `<div class="cl-sec"><h4>Condivisi con me</h4><p class="cl-note" style="margin:0 0 4px">${intro}</p>` + rows.map(r => {
+      const isAct = CL.ctx && CL.ctx.id === r.id;
+      const ed = clEditRole(r.ruolo);
+      const tag = roles ? `<span class="cl-badge">${CL_RUOLI[r.ruolo]||'Lettore'}</span>${r.nuovo?'<span class="cl-badge" style="background:#fff3cd;color:#7a5b00">nuovo</span>':''}` : '';
+      const btn = isAct ? `<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>` : `<button class="cl-btn sm" onclick="clOpenShared('${r.id}')">${ed ? 'Apri e modifica' : 'Apri'}</button>`;
+      return `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un collega')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
+    }).join('') + `</div>`;
   }catch(e){ box.innerHTML = ''; }
 }
-async function clLeave(mid){ if(!confirm('Non vedrai più questo progetto. Chi lo ha condiviso potrà invitarti di nuovo. Continuare?')) return; try{ await dbRevoke(mid); clLoadShared(); }catch(e){ clToast('Errore: '+clErr(e)); } }
+async function clLeave(mid, id){ if(!confirm('Non vedrai più questo progetto. Chi lo ha condiviso potrà invitarti di nuovo. Continuare?')) return; try{ await dbRevoke(mid); if(CL.ctx && CL.ctx.id === id && CL.ctx.ruolo){ clDetach(); return; } clLoadShared(); }catch(e){ clToast('Errore: '+clErr(e)); } }
 
 // ── operazioni cloud ──
 async function clSaveCurrent(){
@@ -9629,15 +9743,17 @@ async function clNew(){
     location.reload();
   }catch(e){ clToast(e.message==='duplicate' ? 'Esiste già un progetto con questo titolo in quell\'anno' : 'Errore: '+clErr(e)); }
 }
-async function clOpenProject(id){
+async function clOpenProject(id, extra){
   if(!CL.ctx && clHasLocal() && !confirm('Il lavoro su questo dispositivo non è salvato nel cloud e verrà sostituito dal progetto scelto. Continuare?')) return;
   try{
     if(CL.ctx && CL.ctx.id !== id && CL.pending){ clToast('Salvo il lavoro attuale…'); await clPush(); }
     const r = await dbGet(id);
     if(!r){ clToast('Progetto non trovato'); return; }
-    try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+'. Il progetto precedente è salvato in archivio.'); }catch(e){}
+    // progetto di un collega aperto in modifica: si conserva il ruolo (anche quando si ricarica la versione del cloud)
+    const keep = extra || (CL.ctx && CL.ctx.id === id && CL.ctx.ruolo ? {ruolo:CL.ctx.ruolo, owner:CL.ctx.owner||''} : null);
+    try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un collega')+')' : '. Il progetto precedente è salvato in archivio.')); }catch(e){}
     localStorage.setItem(CL_LS, JSON.stringify(r.data||{}));
-    CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx();
+    CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
     location.reload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
