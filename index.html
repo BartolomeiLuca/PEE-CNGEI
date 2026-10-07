@@ -9221,9 +9221,10 @@ async function clInit(){
     else if(CL.user && CL.ctx){ clCheckRemoteNewer(); sgWatch(); sgLoad(); }
     else if(CL.user) clAutoOpen();
     if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); }
+    if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
   }catch(e){ clSetStatus('off'); }
   window.addEventListener('online', () => { if(CL.pending) clPush(); });
-  document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); } });
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); clRoleCheck(); } });
   window.addEventListener('beforeunload', e => { if(CL.pending && CL.user && CL.ctx){ e.preventDefault(); e.returnValue = ''; return ''; } });
 }
 
@@ -9521,6 +9522,55 @@ function roInit(){
   }
 }
 
+// ── il ruolo può cambiare mentre si lavora: lo ricontrollo e adeguo l'app ──
+let _rcBusy = false, _rcTimer = null;
+async function clRoleCheck(){
+  if(_rcBusy || !CL.sb || !CL.user || !CL.ctx) return;
+  const ro = !!window.BRO;
+  if(!ro && !CL.ctx.ruolo) return;
+  if(!(await clRolesOk())) return;
+  _rcBusy = true;
+  try{
+    const id = ro ? window.BRO.id : CL.ctx.id;
+    const it = (await dbShared()).find(x => x.id === id);
+    const msg = t => { try{ sessionStorage.setItem('bussola_opened_msg', t); }catch(e){} };
+    if(!it){
+      if(ro) return;  // la sola lettura gestisce già l'accesso tolto
+      clearTimeout(CL.timer); CL.pending = false;
+      CL.ctx = null; clSaveCtx(); localStorage.removeItem(CL_LS);
+      msg('Non hai più accesso a quel progetto: ti riporto ai tuoi PEE.');
+      location.reload(); return;
+    }
+    if(ro && clEditRole(it.ruolo)){
+      // promosso: da sola lettura a modifica
+      const r = await dbGet(id); if(!r) return;
+      localStorage.setItem('bussola_pee_v6', JSON.stringify(r.data||{}));
+      localStorage.setItem('bussola_cloud_ctx', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false, ruolo:it.ruolo, owner:it.owner||''}));
+      sessionStorage.removeItem('bussola_ro'); sessionStorage.setItem('bussola_autoresume','1');
+      msg('Ora puoi modificare questo progetto come ' + CL_RUOLI[it.ruolo].toLowerCase() + '.');
+      location.reload(); return;
+    }
+    if(!ro && !clEditRole(it.ruolo)){
+      // passato a lettore: il progetto si riapre in sola lettura
+      clearTimeout(CL.timer); CL.pending = false;
+      CL.ctx = null; clSaveCtx(); localStorage.removeItem(CL_LS);
+      const r = await dbGet(id); if(!r){ location.reload(); return; }
+      localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(r.data||{}));
+      localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}));
+      sessionStorage.setItem('bussola_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}));
+      sessionStorage.setItem('bussola_autoresume','1');
+      msg('Il tuo ruolo è cambiato: ora vedi questo progetto in sola lettura.');
+      location.reload(); return;
+    }
+    if(!ro && it.ruolo !== CL.ctx.ruolo){ CL.ctx.ruolo = it.ruolo; clSaveCtx(); edInit(); clToast('Il tuo ruolo è cambiato: ora sei ' + CL_RUOLI[it.ruolo].toLowerCase()); }
+  }catch(e){}
+  finally{ _rcBusy = false; }
+}
+function clRoleWatch(){
+  clearInterval(_rcTimer);
+  if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)) _rcTimer = setInterval(() => { if(document.visibilityState === 'visible') clRoleCheck(); }, 45000);
+}
+
 // ── progetto di un collega aperto in modifica (co-titolare o collaboratore) ──
 function edInit(){
   if(window.BRO || !CL.ctx || !CL.ctx.ruolo) { const old = document.getElementById('ed-bar'); if(old) old.remove(); return; }
@@ -9803,7 +9853,7 @@ async function clPush(force){
         await dbVersionPrune(CL.ctx.id);
       }
     }catch(e){}
-  }catch(e){ clSetStatus('off'); CL.pending = true; }
+  }catch(e){ clSetStatus('off'); CL.pending = true; if(CL.ctx && CL.ctx.ruolo) clRoleCheck(); }
   CL.busy = false;
 }
 // Stile Google Drive: dopo l'accesso c'è sempre un progetto attivo che si salva da solo.
