@@ -363,6 +363,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-spesa{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:4px 0}.ax-spesa>input:first-child{flex:1 1 200px}.ax-spesa>input[type=number]{width:90px}.ax-spesa>select{width:auto}
 @media (max-width:600px){.ax-rr{grid-template-columns:1fr 100px}.ax-ing{grid-template-columns:1fr 60px 28px}.ax-ing>select,.ax-ing>input:nth-child(4){grid-column:span 1}}
 .opt-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f5f5f;background:#e9e9e9;border-radius:999px;padding:2px 8px;margin-right:6px;vertical-align:1px;line-height:1.5;white-space:nowrap}
+.tl-all{margin:14px 0 6px;border:1.5px solid var(--border-light);border-radius:10px;background:var(--bg-card,#fff)}.tl-all>summary{cursor:pointer;padding:10px 14px;list-style:none}.tl-all>summary::-webkit-details-marker{display:none}.tl-all>summary:before{content:'▸ ';color:var(--ink-mid)}.tl-all[open]>summary:before{content:'▾ '}.tl-all-t{font-size:13px;font-weight:800;color:var(--ink)}.tl-all-s{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:2px;padding-left:14px}.tl-all-b{padding:0 14px 12px}.tl-leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 6px;font-size:11.5px;color:var(--ink-mid)}.tl-lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .tl-sum{font-size:11.5px;color:var(--ink-mid);margin:0 0 6px}.tl{position:relative;padding-left:4px}.tl-empty{font-size:12px;color:var(--ink-faint)}
 .tl-mese{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--green);margin:10px 0 4px}.tl-mese.tl-vuoto{color:var(--ink-faint);font-weight:600}
 .tl-it{display:flex;gap:10px;align-items:flex-start;margin:4px 0 4px 2px;padding-left:0}.tl-dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:3px;background:#bbb;box-shadow:0 0 0 3px var(--bg-card,#fff)}
@@ -6689,7 +6690,30 @@ function tlHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const
   const n={tot:items.length,ok:items.filter(o=>o.st.k==='ok').length,ver:items.filter(o=>o.st.k==='ver').length,nd:nod.length};
   const sum=[n.ok?n.ok+' verificat'+(n.ok===1?'a':'e'):'',n.ver?n.ver+' da verificare':'',n.nd?n.nd+' senza data':''].filter(Boolean).join(' · ');
   return `<div class="tl-sum">${n.tot} attività${sum?' · '+sum:''}${t.dal||t.al?' · percorso '+percTempoTxt(per):''}</div><div class="tl">${out.join('')}</div>`; }
-function tlRefresh(idx){ const b=document.getElementById('tl-'+idx); if(b) b.innerHTML=tlHTML(idx); }
+function tlRefresh(idx){ const b=document.getElementById('tl-all-wrap'); if(b) b.innerHTML=tlAllHTML(); }
+const TL_COL=['#2e7d32','#1565c0','#c2185b','#ef6c00','#6a1b9a','#00838f'];
+function tlAllHTML(){
+  const all=getAllPercorsi(), DBF=Object.values(DB).flat(), oggi=tlToday(), ym=d=>d.slice(0,7);
+  const items=[];
+  all.forEach((per,idx)=>(per.attivita||[]).forEach((a,j)=>{ const d=(a.ax||{}).data||''; if(d) items.push({idx,j,a,d,st:tlStato(a)}); }));
+  if(!items.length) return '';
+  items.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.idx-y.idx||x.j-y.j);
+  const pn=idx=>{ const per=all[idx]; const p=per&&DBF.find(x=>x.id===per.percorsoId); return 'Percorso '+(idx+1)+(p?' · '+p.name:''); };
+  const used=[...new Set(items.map(o=>o.idx))].sort((a,b)=>a-b);
+  const leg=used.map(i=>`<span class="tl-lg"><i style="background:${TL_COL[i%TL_COL.length]}"></i>${sEsc(pn(i))}</span>`).join('');
+  const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
+  const row=o=>{ const x=o.a.ax||{}; const c=TL_COL[o.idx%TL_COL.length];
+    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot" style="background:${c}"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${o.idx},${o.j})"><b>${sEsc(tlDataTxt(x))}</b> · ${sEsc(pn(o.idx).split(' · ')[0])}, attività ${o.j+1}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div></div></div>`; };
+  const out=[]; let [y,m]=ym(items[0].d).split('-').map(Number); const [y1,m1]=ym(items[items.length-1].d).split('-').map(Number); let guard=0, todayDone=false;
+  while((y<y1||(y===y1&&m<=m1))&&guard++<36){ const key=y+'-'+String(m).padStart(2,'0'); const inM=items.filter(o=>ym(o.d)===key);
+    out.push(`<div class="tl-mese${inM.length?'':' tl-vuoto'}">${TL_MESI[m-1]} ${y}</div>`);
+    inM.forEach(o=>{ if(!todayDone&&o.d>oggi&&ym(oggi)===key){ out.push('<div class="tl-oggi"><span>oggi</span></div>'); todayDone=true; } out.push(row(o)); });
+    if(!todayDone&&ym(oggi)===key){ out.push('<div class="tl-oggi"><span>oggi</span></div>'); todayDone=true; }
+    m++; if(m>12){ m=1; y++; } }
+  const n=items.length;
+  return `<details class="tl-all" ${window._tlOpen?'open':''} ontoggle="window._tlOpen=this.open"><summary><span class="tl-all-t">Linea del tempo dei percorsi ${OPT}</span><span class="tl-all-s">${n} ${n===1?'attività in calendario':'attività in calendario'} · le date si mettono nella scheda di ogni attività</span></summary>
+    <div class="tl-all-b"><div class="tl-leg">${leg}</div><div class="tl">${out.join('')}</div></div></details>`;
+}
 function tlSetDate(idx,j,v){ const x=axX(idx,j); x.data=v; if(x.dataFine&&v&&x.dataFine<v) x.dataFine=v; saveDataDebounced(); tlRefresh(idx); try{ axRe(idx,j); }catch(e){} }
 function tlGo(idx,j){ const d=document.getElementById('att-'+idx+'-'+j); if(!d) return; d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'}); }
 function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const t=percTempo(per); const warn=tmWarn(t.dal,t.al,false);
@@ -7199,8 +7223,7 @@ function renderSchedaC(root,selected){
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         <div id="perc-tm-${idx}">${percTempoHTML(idx)}</div>
       </td></tr>`;
-    html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Linea del tempo<br><small style="font-weight:400;color:var(--ink-faint)">le attività in ordine, con lo stato di ciascuna</small></td>
-      <td style="padding:8px 10px;border:1px solid var(--border-light)"><div id="tl-${idx}">${tlHTML(idx)}</div></td></tr>`;
+
 
     // Attività: Lancio · Sviluppo · Conclusione
     const attv = (per.attivita||[]).slice(); while(attv.length<3) attv.push({testo:''});
@@ -7243,6 +7266,9 @@ function renderSchedaC(root,selected){
 
     html+=`</table></div>`;
   });
+
+  // Linea del tempo di tutti i percorsi (facoltativa: compare solo se almeno un'attività ha una data)
+  html+=`<div id="tl-all-wrap">${tlAllHTML()}</div>`;
 
   // Bottone aggiungi percorso
   html+=`${sez3MoreHTML(selected)}${MODE==='giovani'?gPPStepHTML('sez3'):''}<div style="text-align:center;margin:12px 0">
