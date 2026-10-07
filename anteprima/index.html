@@ -949,6 +949,8 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 #ed-bar .grow{flex:1;min-width:220px;line-height:1.5}
 #ed-bar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #1b5e42;background:#fff;color:#1b5e42;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
 #cl-invbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(560px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:14px 16px;z-index:9000;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
+#cl-updbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(520px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px 16px;z-index:9001;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
+#cl-updbar .ib-t{font-weight:800;color:#1b5e42;margin-bottom:2px}#cl-updbar .ib-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}#cl-updbar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #1b5e42;background:#fff;color:#1b5e42;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}#cl-updbar button.pri{background:#1b5e42;color:#fff}
 #cl-invbar .ib-t{font-weight:800;color:#1b5e42;margin-bottom:4px}
 #cl-invbar .ib-r{padding:6px 0;border-top:1px solid #e3ece6}
 #cl-invbar .ib-r:first-of-type{border-top:none}
@@ -9229,9 +9231,10 @@ async function clInit(){
     if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); }
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
     if(CL.user && !window.BRO){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 120000); }
+    if(CL.user){ clRealtime(); setInterval(clPollRemote, 60000); }
   }catch(e){ clSetStatus('off'); }
   window.addEventListener('online', () => { if(CL.pending) clPush(); });
-  document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); clRoleCheck(); clPerTe(); } });
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); clRoleCheck(); clPerTe(); clPollRemote(); } });
   window.addEventListener('beforeunload', e => { if(CL.pending && CL.user && CL.ctx){ e.preventDefault(); e.returnValue = ''; return ''; } });
 }
 
@@ -9263,11 +9266,12 @@ function clShow(view){
     b.innerHTML = `<label class="cl-lb">Nuova password (almeno 8 caratteri)</label><input class="cl-in" id="cl-pw" type="password" autocomplete="new-password" onkeydown="if(event.key==='Enter')clSubmit('recovery')">
       <div style="margin-top:16px"><button class="cl-btn" id="cl-go" onclick="clSubmit('recovery')">Salva password</button></div><div class="cl-msg" id="cl-msg"></div>`;
   } else if(view === 'conflict'){
-    t.textContent = 'Versione più recente nel cloud';
-    b.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 14px">Questo progetto (<strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong>) è stato modificato ${CL.roles?'da un collega o ':''}da un altro dispositivo dopo l'ultima sincronizzazione.</p>
+    t.textContent = 'Ci sono modifiche più recenti';
+    b.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 10px">Mentre lavoravi, <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> è stato aggiornato ${CL.roles?'da un collega o ':''}da un tuo altro dispositivo.</p>
+      <p class="cl-note" style="margin:0 0 14px"><strong>Non si perde niente</strong>: qualunque cosa scegli, l'altra versione resta salvata in <em>Versioni precedenti</em> e la puoi recuperare quando vuoi.</p>
       <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="cl-btn" onclick="clOpenProject('${CL.ctx.id}')">Carica la versione del cloud (le modifiche locali non sincronizzate andranno perse)</button>
-      <button class="cl-btn ghost" onclick="clPush(true);clClose()">Tieni questa versione e sovrascrivi il cloud</button>
+      <button class="cl-btn" onclick="clConflict('cloud')">Prendi la versione più recente (consigliato)</button>
+      <button class="cl-btn ghost" onclick="clConflict('mine')">Continua con la versione che ho qui</button>
       <button class="cl-btn ghost" onclick="clClose()">Decido dopo</button></div>`;
   } else if(view === 'hist'){
     t.textContent = 'Versioni precedenti';
@@ -9318,7 +9322,7 @@ async function clSubmit(view){
       if(error) throw error;
       CL.user = data.user || (data.session && data.session.user) || CL.user;
       clSetStatus(CL.ctx ? 'ok' : '');
-      const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); }
+      const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); }
     } else if(view === 'signup'){
       if(pw.length < 8) throw new Error('La password deve avere almeno 8 caratteri.');
       const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back()}});
@@ -9412,7 +9416,8 @@ async function clLoadHist(){
       if(g !== last){ h += `<div class="cl-gh">${g}</div>`; last = g; }
       const auto = r.label === 'Automatica' || !r.label;
       const when = g === 'Oggi' || g === 'Ieri' ? hm(r.created_at) : full(r.created_at);
-      const name = auto ? 'Salvataggio automatico' : (r.label === 'Prima del ripristino' ? 'Prima del ripristino (copia di sicurezza)' : '★ ' + clEsc(r.label));
+      const SAFE = {'Prima del ripristino':'Prima del ripristino (copia di sicurezza)','Prima di aggiornare':'Il tuo lavoro prima di prendere la versione più recente','Versione sostituita':'Versione più recente che hai sostituito'};
+      const name = auto ? 'Salvataggio automatico' : (SAFE[r.label] || '★ ' + clEsc(r.label));
       h += `<div class="cl-row"><div style="min-width:0"><div class="t">${when}</div><div class="s">${name}</div></div><button class="cl-btn ghost sm" onclick="clRestoreVersion('${r.id}')">Ripristina</button></div>`;
     });
     box.innerHTML = h;
@@ -9533,6 +9538,159 @@ function roInit(){
     new MutationObserver(() => { clearTimeout(t); t = setTimeout(lock, 100); }).observe(app, {childList:true, subtree:true});
     lock();
   }
+}
+
+// ── modifiche fatte altrove: scelta serena (con copia di sicurezza) e aggiornamento in tempo reale ──
+async function clConflict(choice){
+  if(!CL.ctx) return clClose();
+  const id = CL.ctx.id;
+  try{
+    if(choice === 'cloud'){
+      if(typeof saveData==='function') saveData(true);
+      try{ await dbSnap(id, clSnapshot(), 'Prima di aggiornare'); }catch(e){}
+      CL.pending = false; CL.ctx.dirty = false; clSaveCtx();
+      await clOpenProject(id);
+    } else {
+      try{ const r = await dbGet(id); if(r) await dbSnap(id, r.data||{}, 'Versione sostituita'); }catch(e){}
+      clClose(); await clPush(true); clToast('Fatto: la versione sostituita è in Versioni precedenti');
+    }
+  }catch(e){ clToast('Errore: '+clErr(e)); }
+}
+function clUpdBar(show){
+  let bar = document.getElementById('cl-updbar');
+  if(!show){ if(bar) bar.remove(); return; }
+  if(!bar){ bar = document.createElement('div'); bar.id = 'cl-updbar'; bar.className = 'cl-updbar'; bar.setAttribute('role','status'); document.body.appendChild(bar); }
+  bar.innerHTML = `<div class="ib-t">Il progetto è stato aggiornato</div><div>Ci sono modifiche nuove ${CL.roles?'di un collega o ':''}da un tuo altro dispositivo.</div><div class="ib-a" style="justify-content:flex-end"><button onclick="clUpdBar(false)">Dopo</button><button class="pri" onclick="clUpdBar(false);clOpenProject(CL.ctx.id)">Aggiorna ora</button></div>`;
+}
+// ── lavoro insieme: le versioni si uniscono campo per campo ──
+// "base" = l'ultima versione condivisa con il cloud; confrontando base, la mia e quella del cloud
+// si tengono le modifiche di entrambi. Se lo stesso campo è cambiato da tutte e due le parti vince la mia
+// (l'ultima) e l'altra resta in Versioni precedenti.
+const CL_BASE = CL_CTX + '_base';
+function clBaseSet(d){ try{ localStorage.setItem(CL_BASE, JSON.stringify(d||{})); }catch(e){} }
+function clBaseGet(){ try{ const v = localStorage.getItem(CL_BASE); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+const clJ = v => JSON.stringify(v === undefined ? null : v);
+const clIsObj = v => v && typeof v === 'object' && !Array.isArray(v);
+function clMerge(base, mine, theirs, out, path){
+  path = path || '';
+  if(clJ(mine) === clJ(theirs)) return mine;
+  if(clJ(base) === clJ(mine)) return theirs;
+  if(clJ(base) === clJ(theirs)) return mine;
+  if(path === '/ts') return Math.max(+mine||0, +theirs||0);
+  if(clIsObj(mine) && clIsObj(theirs)){
+    const b = clIsObj(base) ? base : {}, r = {};
+    new Set([...Object.keys(mine), ...Object.keys(theirs)]).forEach(k => {
+      const v = clMerge(b[k], mine[k], theirs[k], out, path + '/' + k);
+      if(v !== undefined) r[k] = v;
+    });
+    return r;
+  }
+  if(Array.isArray(mine) && Array.isArray(theirs)){
+    const b = Array.isArray(base) ? base : [];
+    // si possono unire se nessuno ha tolto elementi: modifiche voce per voce + aggiunte di entrambi in coda
+    if(mine.length >= b.length && theirs.length >= b.length){
+      const r = [];
+      for(let k = 0; k < b.length; k++) r.push(clMerge(b[k], mine[k], theirs[k], out, path + '/' + k));
+      theirs.slice(b.length).forEach(x => r.push(x));
+      mine.slice(b.length).forEach(x => { if(!theirs.slice(b.length).some(y => clJ(y) === clJ(x))) r.push(x); });
+      return r;
+    }
+  }
+  out.conf.push(path);
+  return mine;
+}
+// "fermo": nessun campo attivo e nessuna battitura negli ultimi secondi (così non cambio la pagina sotto le dita)
+let _clLastIn = 0, _idleT = null, _idleFn = null;
+document.addEventListener('input', () => { _clLastIn = Date.now(); }, true);
+document.addEventListener('keydown', () => { _clLastIn = Date.now(); }, true);
+function clIdle(){
+  if(document.visibilityState === 'hidden') return true;
+  const a = document.activeElement;
+  if(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !a.closest('#cl-ov')) return false;
+  return Date.now() - _clLastIn > 2500;
+}
+function clWhenIdle(fn){
+  _idleFn = fn; clearTimeout(_idleT);
+  const tick = () => { if(clIdle()){ const f = _idleFn; _idleFn = null; f && f(); } else _idleT = setTimeout(tick, 1000); };
+  tick();
+}
+// ricarica restando nello stesso punto (sezione, schede aperte, posizione nella pagina)
+function clSoftReload(msg){
+  try{
+    const v = {y: window.scrollY, open: [...document.querySelectorAll('details[open][id]')].map(d => d.id).slice(0, 60)};
+    try{ if(MODE === 'giovani') v.k = gCur(); else v.n = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active')) || 1; }catch(e){}
+    sessionStorage.setItem('bussola_view', JSON.stringify(v));
+    sessionStorage.setItem('bussola_autoresume', '1');
+    if(msg) sessionStorage.setItem('bussola_opened_msg', msg);
+  }catch(e){}
+  CL.pending = false;
+  location.reload();
+}
+function clRestoreView(){
+  let v = null; try{ v = JSON.parse(sessionStorage.getItem('bussola_view')||'null'); sessionStorage.removeItem('bussola_view'); }catch(e){}
+  if(!v) return;
+  setTimeout(() => {
+    try{ if(v.k && MODE === 'giovani') gGo(v.k); else if(v.n && v.n > 1) goPhaseInternal(v.n); }catch(e){}
+    setTimeout(() => {
+      (v.open||[]).forEach(id => { const d = document.getElementById(id); if(d && d.tagName === 'DETAILS') d.open = true; });
+      window.scrollTo(0, v.y || 0);
+    }, 250);
+  }, 450);
+}
+// unisce la versione del cloud con la mia, salva e mostra il risultato
+async function clMergeNow(){
+  if(!CL.ctx || window.BRO) return;
+  const id = CL.ctx.id;
+  if(typeof saveData==='function') saveData(true);
+  const base = clBaseGet();
+  const r = await dbGet(id); if(!r) return;
+  const local = clSnapshot();
+  if(!base){ clSetStatus('off'); clShow('conflict'); return; }
+  const out = {conf:[]};
+  const merged = clMerge(base, local, r.data||{}, out);
+  if(out.conf.length){ try{ await dbSnap(id, r.data||{}, 'Versione sostituita'); }catch(e){} }
+  const ts = await dbUpdate(id, merged, clMeta(merged));
+  localStorage.setItem(CL_LS, JSON.stringify(merged));
+  CL.ctx.ts = ts; CL.ctx.dirty = false; clSaveCtx(); clBaseSet(merged);
+  const same = clJ(Object.assign({}, merged, {ts:0})) === clJ(Object.assign({}, local, {ts:0}));
+  if(same){ CL.pending = false; clSetStatus('ok'); return; }
+  clSoftReload(out.conf.length
+    ? 'Ho unito le modifiche. In ' + (out.conf.length === 1 ? '1 punto' : out.conf.length + ' punti') + ' avevate cambiato la stessa cosa: ho tenuto la tua, l\'altra è in Versioni precedenti.'
+    : 'Aggiornato con le modifiche arrivate ora');
+}
+// il progetto è cambiato altrove: appena sei fermo unisco (se hai modifiche) o aggiorno la pagina
+let _rmT = null;
+function clRemoteChanged(ts){
+  clearTimeout(_rmT);
+  _rmT = setTimeout(() => {
+    if(!CL.ctx || window.BRO) return;
+    if(CL.busy) return clRemoteChanged(ts);
+    if(!ts || ts <= (CL.ctx.ts||0)) return;
+    clSetStatus('sync');
+    clWhenIdle(() => { if(!CL.busy) clPush(); else clRemoteChanged(ts); });
+  }, 1200);
+}
+async function clPollRemote(){
+  if(!CL.sb || !CL.user || !CL.ctx || document.visibilityState !== 'visible') return;
+  try{ if(window.BRO){ roRefresh(false); return; } const ts = await dbTs(CL.ctx.id); if(ts) clRemoteChanged(ts); }catch(e){}
+}
+let _rt = null;
+function clRealtime(){
+  try{
+    if(!CL.sb || !CL.user || typeof CL.sb.channel !== 'function') return;
+    if(_rt){ try{ CL.sb.removeChannel(_rt); }catch(e){} _rt = null; }
+    const em = clLc(CL.user.email), id = CL.ctx && CL.ctx.id;
+    let ch = CL.sb.channel('pee-' + Math.random().toString(36).slice(2, 8));
+    if(id){
+      ch = ch.on('postgres_changes', {event:'UPDATE', schema:'public', table:'pee_archivi', filter:'id=eq.' + id}, p => {
+        const ts = clTs(p.new && p.new.updated_at);
+        if(window.BRO) roRefresh(false); else clRemoteChanged(ts);
+      });
+      ch = ch.on('postgres_changes', {event:'*', schema:'public', table:'pee_suggerimenti', filter:'archivio_id=eq.' + id}, () => { sgLoad(!!window.BRO); clPerTe(); });
+    }
+    if(em) ch = ch.on('postgres_changes', {event:'*', schema:'public', table:'pee_membri', filter:'email=eq.' + em}, () => { clPerTe(); clCheckInvites(); clRoleCheck(); });
+    _rt = ch.subscribe();
+  }catch(e){}
 }
 
 // ── "Per te": le cose che aspettano una tua azione (inviti nuovi, suggerimenti da leggere) ──
@@ -9708,7 +9866,7 @@ function sgRender(){
       });
     }
     if(ro && SG.form === tk){
-      let nm = ''; try{ nm = localStorage.getItem('bussola_nome')||''; }catch(e){}
+      const nm = sgMyName();
       h += `<div class="sg-box"><label class="sg-n">Il tuo nome (lo vedrà il capo)</label><input id="sg-nm-${tk}" maxlength="40" value="${clEsc(nm)}" placeholder="Es. Marco">
         <label class="sg-n" style="display:block;margin-top:8px">Il tuo suggerimento</label><textarea id="sg-ta-${tk}" maxlength="2000" oninput="SG.draft['${tk}']=this.value" placeholder="Cosa hai osservato? Descrivi il comportamento, senza dare voti alle persone.">${clEsc(SG.draft[tk]||'')}</textarea>
         <p class="sg-note">Non cambia il punteggio. Lo vedrà solo il capo unità, con il tuo nome.</p>
@@ -9717,6 +9875,17 @@ function sgRender(){
     if(!w){ w = document.createElement('div'); w.className = 'sg-wrap'; hd.insertAdjacentElement('afterend', w); }
     w.dataset.sig = sig; w.innerHTML = h;
   });
+}
+// nome di chi suggerisce, già pronto: quello usato l'ultima volta, oppure la riga della tabella dello staff con la sua email,
+// oppure il nome del proprio Progetto Personale, oppure ricavato dall'email (mario.rossi@… → Mario Rossi)
+function sgMyName(){
+  try{ const n = (localStorage.getItem('bussola_nome')||'').trim(); if(n) return n; }catch(e){}
+  const em = clLc(CL.user && CL.user.email);
+  try{ const t = (scheda && scheda.pp && Array.isArray(scheda.pp.staffTab)) ? scheda.pp.staffTab : [];
+       const r = t.find(x => clLc(x.mail).split(/[\s,;]+/).includes(em)); if(r && String(r.nome||'').trim()) return String(r.nome).trim(); }catch(e){}
+  try{ const own = JSON.parse(localStorage.getItem('bussola_pee_v6')||'{}'); const n = own.scheda && own.scheda.pp && String(own.scheda.pp.nome||'').trim(); if(n) return n; }catch(e){}
+  const loc = em.split('@')[0].replace(/\d+/g,'').split(/[._\-]+/).filter(w => w.length > 1);
+  return loc.length ? loc.map(w => w[0].toUpperCase() + w.slice(1)).join(' ') : '';
 }
 function sgToggle(tk){ SG.open[tk] = !SG.open[tk]; sgRender(); }
 function sgForm(tk){ SG.form = tk; sgRender(); setTimeout(() => { const t = document.getElementById('sg-ta-'+tk); if(t) t.focus(); }, 50); }
@@ -9853,7 +10022,7 @@ async function clOpenProject(id, extra){
     // progetto di un collega aperto in modifica: si conserva il ruolo (anche quando si ricarica la versione del cloud)
     const keep = extra || (CL.ctx && CL.ctx.id === id && CL.ctx.ruolo ? {ruolo:CL.ctx.ruolo, owner:CL.ctx.owner||''} : null);
     try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un collega')+')' : '. Il progetto precedente è salvato in archivio.')); }catch(e){}
-    localStorage.setItem(CL_LS, JSON.stringify(r.data||{}));
+    localStorage.setItem(CL_LS, JSON.stringify(r.data||{})); clBaseSet(r.data||{});
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
     location.reload();
@@ -9893,10 +10062,14 @@ async function clPush(force){
   try{
     if(!force){
       const cur = await dbTs(CL.ctx.id);
-      if(cur && cur > CL.ctx.ts){ CL.busy = false; clSetStatus('off'); clShow('conflict'); return; }
+      if(cur && cur > CL.ctx.ts){
+        if(!clIdle()){ CL.busy = false; clSetStatus('sync'); clWhenIdle(() => clPush()); return; }
+        try{ await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; }
+        CL.busy = false; return;
+      }
     }
     const d = clSnapshot();
-    CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d)); CL.ctx.dirty = false; clSaveCtx(); CL.pending = false; clSetStatus('ok');
+    CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d)); CL.ctx.dirty = false; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
     // una versione automatica ogni 30 minuti di lavoro (ne teniamo le ultime 10)
     try{
       if(!CL.ctx.lastSnap || Date.now() - CL.ctx.lastSnap > 30*60*1000){
@@ -9957,7 +10130,7 @@ async function clCheckRemoteNewer(){
   try{
     const ts = await dbTs(CL.ctx.id);
     if(ts === null){ CL.ctx = null; clSaveCtx(); clSetStatus(''); return; } // progetto eliminato altrove
-    if(ts > CL.ctx.ts){ if(CL.ctx.dirty) clShow('conflict'); else clOpenProject(CL.ctx.id); }
+    if(ts > CL.ctx.ts){ if(CL.ctx.dirty){ if(clBaseGet()) clRemoteChanged(ts); else clShow('conflict'); } else clOpenProject(CL.ctx.id); }
   }catch(e){}
 }
 
@@ -10086,7 +10259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pp0 = (d.scheda&&d.scheda.pp)||{};
     const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
       || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
-    if(hasWork && typeof resumeSession==='function') setTimeout(() => resumeSession(), 50);
+    if(hasWork && typeof resumeSession==='function'){ setTimeout(() => resumeSession(), 50); clRestoreView(); }
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
 });
