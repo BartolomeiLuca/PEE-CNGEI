@@ -6895,7 +6895,7 @@ function gRenderMotiv(){
 function fbOpen(){
   let ov=document.getElementById('fb-ov'); if(!ov){ ov=document.createElement('div'); ov.id='fb-ov'; ov.className='modal-overlay'; document.body.appendChild(ov); }
   const inS='width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:13px Montserrat,sans-serif;background:var(--surface,#fff);color:var(--ink)';
-  let nm=''; try{ nm=localStorage.getItem('bussola_nome')||''; }catch(e){}
+  let nm=''; try{ nm=(typeof clMyName==='function'&&CL.user&&clMyName())||localStorage.getItem('bussola_nome')||''; }catch(e){}
   ov.innerHTML=`<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:520px;width:calc(100% - 24px);max-height:92vh;overflow:auto;padding:18px">
     <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Suggerimenti?</div><button class="btn-ghost" onclick="fbClose()">✕</button></div>
     <p style="font-size:12px;color:var(--ink-mid);margin:6px 0 10px">PEE CNGEI è in fase di prova: idee, dubbi e problemi aiutano a migliorarlo. Il messaggio arriva direttamente a chi cura l’app.</p>
@@ -9226,7 +9226,7 @@ async function clInit(){
     CL.user = data.session ? data.session.user : null;
     clSetStatus(CL.user && CL.ctx ? 'ok' : '');
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); roRefresh(false); sgWatch(); sgLoad(true); }
-    else if(CL.user && CL.ctx){ clCheckRemoteNewer(); sgWatch(); sgLoad(); }
+    else if(CL.user && CL.ctx){ if(!clBaseGet() && !CL.ctx.dirty) clBaseSet(clSnapshot()); clCheckRemoteNewer(); sgWatch(); sgLoad(); }
     else if(CL.user) clAutoOpen();
     if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); }
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
@@ -9254,6 +9254,7 @@ function clShow(view){
     b.innerHTML = `
       <p class="cl-note" style="margin:0 0 12px">Accedi per ritrovare il tuo lavoro su qualsiasi dispositivo e conservare l'archivio dei tuoi PEE, anno per anno. Senza account l'app funziona comunque, salvando solo su questo dispositivo.</p>
       ${isR?'':`<div class="cl-tabs"><button class="cl-tab ${!isS?'on':''}" onclick="clShow('login')">Accedi</button><button class="cl-tab ${isS?'on':''}" onclick="clShow('signup')">Crea account</button></div>`}
+      ${isS?`<label class="cl-lb">Nome e cognome</label><input class="cl-in" id="cl-nome" type="text" autocomplete="name" maxlength="60" placeholder="Es. Marco Bianchi">`:''}
       <label class="cl-lb">Email</label><input class="cl-in" id="cl-email" type="email" autocomplete="email" placeholder="nome@esempio.it">
       ${isR?'':`<label class="cl-lb">Password ${isS?'(almeno 8 caratteri)':''}</label><input class="cl-in" id="cl-pw" type="password" autocomplete="${isS?'new-password':'current-password'}" onkeydown="if(event.key==='Enter')clSubmit('${view}')">`}
       <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="cl-btn" id="cl-go" onclick="clSubmit('${view}')">${isR?'Invia link di recupero':isS?'Crea account':'Accedi'}</button>
@@ -9285,6 +9286,7 @@ function clShow(view){
     if(CL.ctx.ruolo){ b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un collega')}</strong>: solo chi lo ha creato può invitare altre persone.</p><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button>`; return; }
     b.innerHTML = `<div id="cl-shintro"><p class="cl-note" style="margin:0 0 10px">Scrivi l'email di un collega: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p></div>
       <div class="cl-grid2"><input class="cl-in" id="cl-inv" type="email" autocomplete="off" placeholder="email del collega" onkeydown="if(event.key==='Enter')clInvite()"><button class="cl-btn" onclick="clInvite()">Invita</button></div>
+      <div id="cl-staffpick" style="margin-top:8px">${clStaffPickHTML([])}</div>
       <div id="cl-rolebox" style="display:none;margin-top:8px"><label class="cl-lb" for="cl-invr" style="margin-top:0">Come lo inviti</label><select class="cl-role" id="cl-invr">${clRoleOpts('lettore')}</select></div>
       <div class="cl-msg" id="cl-msg"></div><div id="cl-wanow"></div>
       <p class="cl-note">Il collega deve creare l'account (o accedere) con <strong>questa stessa email</strong>: poi il progetto gli compare in «Condivisi con me». Invita solo persone di cui ti fidi: vedranno le osservazioni.</p>
@@ -9324,8 +9326,10 @@ async function clSubmit(view){
       clSetStatus(CL.ctx ? 'ok' : '');
       const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); }
     } else if(view === 'signup'){
+      const nome = (($cl('cl-nome')||{}).value||'').trim().replace(/\s+/g,' ');
+      if(nome.length < 2) throw new Error('Scrivi il tuo nome e cognome: lo vedranno i colleghi con cui condividi il lavoro.');
       if(pw.length < 8) throw new Error('La password deve avere almeno 8 caratteri.');
-      const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back()}});
+      const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back(), data:{nome}}});
       if(error) throw error;
       if(data.session){
         CL.user = data.session.user; clSetStatus(CL.ctx ? 'ok' : '');
@@ -9363,8 +9367,9 @@ async function clRenderArchive(){
   const act = CL.ctx;
   const hasLocal = clHasLocal();
   let h = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
-      <div style="font-size:12px;color:#555">Account: <strong>${clEsc(CL.user.email)}</strong></div>
+      <div style="font-size:12px;color:#555">Account: ${clMyName()?`<strong>${clEsc(clMyName())}</strong> · `:''}<strong>${clEsc(CL.user.email)}</strong>${clMyName()?` · <a href="#" onclick="event.preventDefault();clAskNome()" style="color:#1b5e42">cambia nome</a>`:''}</div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
+  if(!clMyName()) h += clNomeBox();
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   if(act){
     h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
@@ -9465,7 +9470,8 @@ async function dbMembri(id){
   if(error) throw error; return data||[];
 }
 async function dbInvite(id, email, ruolo){
-  const row = {archivio_id:id, email, owner_email:(CL.user&&CL.user.email)||''};
+  const me = (CL.user&&CL.user.email)||'';
+  const row = {archivio_id:id, email, owner_email: clMyName() ? clMyName() + ' (' + me + ')' : me};
   if(ruolo && await clRolesOk()) row.ruolo = ruolo;
   const {error} = await CL.sb.from('pee_membri').insert(row);
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
@@ -9879,10 +9885,11 @@ function sgRender(){
 // nome di chi suggerisce, già pronto: quello usato l'ultima volta, oppure la riga della tabella dello staff con la sua email,
 // oppure il nome del proprio Progetto Personale, oppure ricavato dall'email (mario.rossi@… → Mario Rossi)
 function sgMyName(){
-  try{ const n = (localStorage.getItem('bussola_nome')||'').trim(); if(n) return n; }catch(e){}
   const em = clLc(CL.user && CL.user.email);
+  if(clMyName()) return clMyName();
   try{ const t = (scheda && scheda.pp && Array.isArray(scheda.pp.staffTab)) ? scheda.pp.staffTab : [];
        const r = t.find(x => clLc(x.mail).split(/[\s,;]+/).includes(em)); if(r && String(r.nome||'').trim()) return String(r.nome).trim(); }catch(e){}
+  try{ const n = (localStorage.getItem('bussola_nome:' + em)||'').trim(); if(n) return n; }catch(e){}
   try{ const own = JSON.parse(localStorage.getItem('bussola_pee_v6')||'{}'); const n = own.scheda && own.scheda.pp && String(own.scheda.pp.nome||'').trim(); if(n) return n; }catch(e){}
   const loc = em.split('@')[0].replace(/\d+/g,'').split(/[._\-]+/).filter(w => w.length > 1);
   return loc.length ? loc.map(w => w[0].toUpperCase() + w.slice(1)).join(' ') : '';
@@ -9898,7 +9905,7 @@ async function sgSend(tk){
   if(!testo){ clToast('Scrivi il suggerimento'); return; }
   try{
     await dbSgAdd(CL.ctx.id, pid, nome, testo);
-    try{ localStorage.setItem('bussola_nome', nome); }catch(e){}
+    try{ localStorage.setItem('bussola_nome:' + clLc(CL.user && CL.user.email), nome); }catch(e){}
     SG.form = null; SG.draft[tk] = ''; SG.open[tk] = true;
     await sgLoad(true); clToast('Suggerimento inviato');
   }catch(e){ clToast(clNoTable(e) ? 'Il database non è aggiornato: chiedi di rieseguire lo script SQL' : 'Non riesco a inviare: '+clErr(e)); }
@@ -9913,6 +9920,7 @@ async function clLoadMem(){
   try{
     const rows = await dbMembri(CL.ctx.id);
     const roles = !!CL.roles;
+    const sp = $cl('cl-staffpick'); if(sp) sp.innerHTML = clStaffPickHTML(rows.map(r => clLc(r.email)));
     if(roles){
       const rb = $cl('cl-rolebox'); if(rb) rb.style.display = '';
       const it = $cl('cl-shintro'); if(it) it.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Invita un collega su <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> e scegli come lavorerà:</p>
@@ -9923,11 +9931,52 @@ async function clLoadMem(){
       const ru = r.ruolo || 'lettore';
       const sel = roles ? `<select class="cl-role" aria-label="Ruolo di ${clEsc(r.email)}" onchange="clSetRole('${r.id}',this.value)">${clRoleOpts(ru)}</select>` : '';
       const stato = roles ? (r.visto_il ? 'ha già visto l\'invito' : 'non ha ancora aperto l\'invito') : 'sola lettura + suggerimenti';
-      return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div></div>
+      const nm = clStaffName(r.email);
+      return `<div class="cl-row"><div style="min-width:0"><div class="t">${nm ? clEsc(nm) + ' <span style="font-weight:500;color:#666">· ' + clEsc(r.email) + '</span>' : clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button></div></div>`;
     }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> apre un messaggio già scritto: se nella tabella dello staff (1.1) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
   }catch(e){ box.innerHTML = `<p class="cl-note">${clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : 'Elenco non disponibile: '+clEsc(clErr(e))}</p>`; }
 }
+// ── nome dell'account (salvato nel profilo: lo vedono i colleghi nei suggerimenti e negli inviti) ──
+function clMyName(){ return String((CL.user && CL.user.user_metadata && CL.user.user_metadata.nome) || '').trim(); }
+function clNomeBox(v){
+  return `<div class="cl-row" id="cl-nomebox" style="margin:0 0 10px;background:#fffbea;border-color:#f0d98a"><div style="min-width:0;flex:1"><div class="t">Come ti chiami?</div><div class="s">Il tuo nome compare nei suggerimenti e negli inviti ai colleghi.</div>
+    <div class="cl-grid2" style="margin-top:6px"><input class="cl-in" id="cl-myname" maxlength="60" autocomplete="name" placeholder="Nome e cognome" value="${clEsc(v||'')}" onkeydown="if(event.key==='Enter')clSaveNome()"><button class="cl-btn sm" onclick="clSaveNome()">Salva</button></div></div></div>`;
+}
+function clAskNome(){ const b = $cl('cl-body'); if(!b || $cl('cl-nomebox')) return; b.insertAdjacentHTML('afterbegin', clNomeBox(clMyName())); const i = $cl('cl-myname'); if(i) i.focus(); }
+async function clSaveNome(){
+  const nome = (($cl('cl-myname')||{}).value||'').trim().replace(/\s+/g,' ');
+  if(nome.length < 2){ clToast('Scrivi nome e cognome'); return; }
+  try{
+    const {data, error} = await CL.sb.auth.updateUser({data:{nome}});
+    if(error) throw error;
+    if(data && data.user) CL.user = data.user; else CL.user.user_metadata = Object.assign({}, CL.user.user_metadata, {nome});
+    clToast('Nome salvato'); clRenderArchive();
+  }catch(e){ clToast('Errore: '+clErr(e)); }
+}
+// persone dello staff (tabella 1.1) da invitare con un clic
+function clStaffRows(){
+  let t = []; try{ t = (typeof scheda !== 'undefined' && scheda && scheda.pp && Array.isArray(scheda.pp.staffTab)) ? scheda.pp.staffTab : []; }catch(e){}
+  const me = clLc(CL.user && CL.user.email);
+  return t.map(r => ({nome:String(r.nome||'').trim(), ruolo:String(r.ruolo||'').trim(), mail:clLc(String(r.mail||'').split(/[\s,;]+/)[0])}))
+          .filter(r => (r.nome || r.mail) && r.mail !== me);
+}
+function clStaffName(email){ const r = clStaffRows().find(x => x.mail === clLc(email)); return r ? r.nome : ''; }
+function clStaffPick(i){
+  const r = clStaffRows()[i]; if(!r) return;
+  const inp = $cl('cl-inv'); if(!inp) return;
+  const w = $cl('cl-wanow'); if(w) w.innerHTML = '';
+  if(!r.mail){ clMsg(`Nella tabella dello staff (1.1) manca l'email di ${r.nome}: scrivila qui sopra e premi Invita.`, 'err'); inp.value = ''; inp.focus(); return; }
+  inp.value = r.mail; clMsg(`Pronto: premi Invita per condividere con ${r.nome || r.mail}.`, 'ok'); inp.focus();
+}
+function clStaffPickHTML(invited){
+  const rows = clStaffRows(); if(!rows.length) return '';
+  return `<div style="margin:0 0 10px"><div class="cl-lb" style="margin-top:0">Dallo staff (tabella 1.1)</div><div style="display:flex;flex-wrap:wrap;gap:6px">` +
+    rows.map((r, i) => { const done = r.mail && invited.includes(r.mail);
+      return `<button class="cl-btn ghost sm" ${done?'disabled style="opacity:.55"':''} onclick="clStaffPick(${i})" title="${r.mail?clEsc(r.mail):'Email mancante nella tabella 1.1'}">${clEsc(r.nome || r.mail)}${r.ruolo?` <span style="font-weight:500">· ${clEsc(r.ruolo)}</span>`:''}${done?' ✓':(r.mail?'':' <span style="font-weight:500">· senza email</span>')}</button>`; }).join('') +
+    `</div><div class="cl-note" style="margin:6px 0 0">Oppure scrivi l'email di un'altra persona qui sopra.</div></div>`;
+}
+
 // WhatsApp: il numero si prende dalla tabella dello staff (1.1) cercando l'email o il nome; serve solo a comporre il link
 function clStaffTel(email){
   let t = []; try{ t = (typeof scheda !== 'undefined' && scheda && scheda.pp && Array.isArray(scheda.pp.staffTab)) ? scheda.pp.staffTab : []; }catch(e){}
@@ -9945,7 +9994,7 @@ function clWaNum(tel){
 function clWaText(email, ruolo){
   const url = location.href.split('#')[0].split('?')[0];
   const cosa = {cotitolare:'come co-titolare: puoi modificarlo insieme a me', collaboratore:'come collaboratore: puoi lavorarci sulle parti che ci siamo divisi', lettore:'in sola lettura: puoi lasciarmi suggerimenti sui percorsi'}[ruolo||'lettore'];
-  return `Ciao! Ti ho invitato sul progetto «${CL.ctx.anno} · ${CL.ctx.titolo}» nell'app PEE CNGEI, ${cosa}.\n\n1. Apri ${url}\n2. Accedi (o crea l'account) con questa email: ${email}\n3. Lo trovi in Archivio › Condivisi con me.`;
+  return `Ciao${clStaffName(email) ? ' ' + clStaffName(email).split(' ')[0] : ''}! ${clMyName() ? 'Sono ' + clMyName() + '. ' : ''}Ti ho invitato sul progetto «${CL.ctx.anno} · ${CL.ctx.titolo}» nell'app PEE CNGEI, ${cosa}.\n\n1. Apri ${url}\n2. Accedi (o crea l'account) con questa email: ${email}\n3. Lo trovi in Archivio › Condivisi con me.`;
 }
 function clWaBtn(email, ruolo){
   const n = clStaffTel(email);
