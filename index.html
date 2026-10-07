@@ -9618,6 +9618,8 @@ function clMerge(base, mine, theirs, out, path){
       return r;
     }
   }
+  const up = out.up || [];
+  if(out.up && !up.some(u => u === path || u.startsWith(path + '/') || path.startsWith(u + '/'))) return theirs;
   out.conf.push(path);
   return mine;
 }
@@ -9694,6 +9696,7 @@ async function clMergeNow(){
   if(!base){ clSetStatus('off'); clShow('conflict'); return; }
   const out = {conf:[]};
   const remote = r.data||{};
+  out.up = CL.ctx.upaths || [];
   const merged = clMerge(base, local, remote, out);
   let ts = r.ts;
   if(!clSameData(merged, remote)){
@@ -9702,7 +9705,7 @@ async function clMergeNow(){
     catch(e){ if(e.message === 'stale'){ CL.pending = true; setTimeout(() => clWhenIdle(() => clPush()), 300); return; } throw e; }
   }
   localStorage.setItem(CL_LS, JSON.stringify(merged));
-  CL.ctx.ts = ts; CL.ctx.dirty = false; clSaveCtx(); clBaseSet(merged);
+  CL.ctx.ts = ts; CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(merged);
   if(clSameData(merged, local)){ CL.pending = false; clSetStatus('ok'); return; }
   // se cambiano solo testi che l'app ricalcola da sola, li aggiorno senza ricaricare la pagina
   const dp = clDiffPaths(local, merged);
@@ -9710,6 +9713,18 @@ async function clMergeNow(){
   clSoftReload(out.conf.length
     ? 'Ho unito le modifiche. In ' + (out.conf.length === 1 ? '1 punto' : out.conf.length + ' punti') + ' avevate cambiato la stessa cosa: ho tenuto la tua, l\'altra è in Versioni precedenti.'
     : 'Aggiornato con le modifiche arrivate ora');
+}
+// prende la versione del cloud così com'è (nessuna modifica di una persona da unire)
+async function clAdoptRemote(){
+  if(!CL.ctx || window.BRO) return;
+  const r = await dbGet(CL.ctx.id); if(!r) return;
+  const local = clSnapshot(), remote = r.data||{};
+  CL.ctx.ts = r.ts; CL.ctx.dirty = false; CL.ctx.udirty = false; clSaveCtx(); clBaseSet(remote); CL.pending = false;
+  if(clSameData(remote, local)){ clSetStatus('ok'); return; }
+  const dp = clDiffPaths(local, remote);
+  localStorage.setItem(CL_LS, JSON.stringify(remote));
+  if(dp.length && dp.every(x => CL_QUIET.test(x)) && clApplyQuiet(remote, dp)){ clSetStatus('ok'); return; }
+  clSoftReload('Aggiornato con le modifiche arrivate ora');
 }
 // il progetto è cambiato altrove: appena sei fermo unisco (se hai modifiche) o aggiorno la pagina
 let _rmT = null;
@@ -10039,9 +10054,20 @@ function clWaNum(tel){
   return /^\d{8,15}$/.test(s) ? s : '';
 }
 function clWaText(email, ruolo){
-  const url = location.href.split('#')[0].split('?')[0];
-  const cosa = {cotitolare:'come co-titolare: puoi modificarlo insieme a me', collaboratore:'come collaboratore: puoi lavorarci sulle parti che ci siamo divisi', lettore:'in sola lettura: puoi lasciarmi suggerimenti sui percorsi'}[ruolo||'lettore'];
-  return `Ciao${clStaffName(email) ? ' ' + clStaffName(email).split(' ')[0] : ''}! ${clMyName() ? 'Sono ' + clMyName() + '. ' : ''}Ti ho invitato sul progetto «${CL.ctx.anno} · ${CL.ctx.titolo}» nell'app PEE CNGEI, ${cosa}.\n\n1. Apri ${url}\n2. Accedi (o crea l'account) con questa email: ${email}\n3. Lo trovi in Archivio › Condivisi con me.`;
+  const r = (ruolo === 'cotitolare' || ruolo === 'collaboratore') && clEditOn() ? ruolo : 'lettore';
+  const url = location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'') + (r !== 'lettore' ? '?ruoli=1' : '');
+  const first = n => String(n||'').trim().split(/\s+/)[0] || '';
+  const lui = first(clStaffName(email));
+  const io = first(clMyName() || clStaffName(CL.user && CL.user.email));
+  let chi = 'della nostra Unità';
+  try{ chi = MODE === 'staff' ? 'del nostro staff' : ({L:'dei nostri Lupetti e Lupette', E:'dei nostri Esploratori ed Esploratrici', R:'dei nostri Rover'}[FASCIA] || chi); }catch(e){}
+  const cosa = {
+    lettore: `in sola lettura, così puoi lasciarmi suggerimenti sui percorsi educativi ${chi}`,
+    cotitolare: `come co-titolare, così possiamo lavorare insieme sui percorsi educativi ${chi}: puoi modificare tutto il progetto`,
+    collaboratore: `come collaboratore, così puoi lavorare sulle parti che ci siamo divisi dei percorsi educativi ${chi}`
+  }[r];
+  return `Ciao${lui ? ' ' + lui : ''}!\n${io ? 'Sono ' + io + '. ' : ''}Ti ho invitato sul progetto «${CL.ctx.anno} · ${CL.ctx.titolo}» nell'app PEE CNGEI, ${cosa}.\n\n` +
+    `1. Apri ${url}\n2. Accedi (o crea l'account) con questa email: ${email} e inserisci la tua password (o creane una se è il primo accesso)\n3. Lo trovi in Archivio › Condivisi con me.`;
 }
 function clWaBtn(email, ruolo){
   const n = clStaffTel(email);
@@ -10145,8 +10171,29 @@ function clDetach(){ CL.ctx = null; clSaveCtx(); clSetStatus(''); if($cl('cl-ov'
 window.cloudDetach = clDetach;
 
 // salvataggio automatico (chiamato da saveData)
+// Si mandano al cloud solo le modifiche fatte da una persona. Quando la pagina si apre l'app ricalcola e
+// risalva da sola alcune cose (che possono venire diverse da un dispositivo all'altro): se le mandassimo,
+// due dispositivi aperti sullo stesso progetto si rincorrerebbero all'infinito.
+let _clTouched = false, _clUserAt = 0, _clLast = null;
+['input','change','click'].forEach(ev => document.addEventListener(ev, e => { if(e.isTrusted){ _clTouched = true; _clUserAt = Date.now(); } }, true));
+// annoto quali campi ha cambiato davvero la persona: servono a decidere chi vince quando due versioni toccano lo stesso campo
+function clNoteUserPaths(){
+  try{
+    const now = clSnapshot();
+    if(_clLast && CL.ctx && Date.now() - _clUserAt < 2000){
+      const up = new Set(CL.ctx.upaths || []);
+      clDiffPaths(_clLast, now).forEach(x => up.add(x));
+      CL.ctx.upaths = [...up].slice(-400);
+    }
+    _clLast = now;
+  }catch(e){}
+}
+try{ _clLast = clSnapshot(); }catch(e){}
 function clQueuePush(){
+  if(!window.BRO) clNoteUserPaths();
   if(window.BRO || !CL.sb || !CL.user || !CL.ctx) return;
+  if(_clTouched && !CL.ctx.udirty){ CL.ctx.udirty = true; clSaveCtx(); }
+  if(!_clTouched && !CL.ctx.udirty) return;
   CL.pending = true; clSetStatus('sync');
   if(!CL.ctx.dirty){ CL.ctx.dirty = true; clSaveCtx(); }
   clearTimeout(CL.timer); CL.timer = setTimeout(() => clPush(), 2500);
@@ -10159,6 +10206,14 @@ async function clPush(force){
   try{
     if(!force){
       const t0 = await dbTsRaw(CL.ctx.id); const cur = t0 && t0.ts; raw = t0 && t0.raw;
+      const mine = _clTouched || CL.ctx.udirty;
+      if(!mine){
+        // nessuna modifica fatta da una persona su questo dispositivo: non salvo, al massimo prendo le novità
+        CL.pending = false;
+        if(cur && cur > CL.ctx.ts){ if(!clIdle()){ CL.busy = false; clWhenIdle(() => clPush()); return; } await clAdoptRemote(); }
+        else clSetStatus('ok');
+        CL.busy = false; return;
+      }
       if(cur && cur > CL.ctx.ts){
         if(!clIdle()){ CL.busy = false; clSetStatus('sync'); clWhenIdle(() => clPush()); return; }
         try{ await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; }
@@ -10170,7 +10225,7 @@ async function clPush(force){
     if(!force && base && clSameData(d, base)){ CL.ctx.dirty = false; clSaveCtx(); CL.pending = false; clSetStatus('ok'); CL.busy = false; return; }
     try{ CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d), raw); }
     catch(e){ if(e.message === 'stale'){ CL.busy = false; CL.pending = true; clSetStatus('sync'); clWhenIdle(() => clPush()); return; } throw e; }
-    CL.ctx.dirty = false; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
+    CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
     // una versione automatica ogni 30 minuti di lavoro (ne teniamo le ultime 10)
     try{
       if(!CL.ctx.lastSnap || Date.now() - CL.ctx.lastSnap > 30*60*1000){
