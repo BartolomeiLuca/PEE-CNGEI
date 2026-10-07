@@ -958,6 +958,11 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 .cl-role{font:600 12px 'Montserrat',sans-serif;border:1.5px solid #c9d6ce;border-radius:8px;padding:6px 8px;background:#fff;color:#1f2a24;max-width:100%}
 .cl-badge{display:inline-block;font:700 10.5px 'Montserrat',sans-serif;padding:2px 8px;border-radius:10px;background:#eaf5ee;color:#1b5e42;margin-left:6px;vertical-align:middle}
 .cl-btn.wa{border-color:#1f9d55;color:#1f7a45}
+.cl-hdrbtn{position:relative}
+.cl-pt{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#d84315;color:#fff;font:800 10.5px/18px 'Montserrat',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff}
+.cl-perte{border:2px solid #d84315;border-radius:12px;padding:10px 12px;margin:0 0 12px;background:#fff8f5}
+.cl-perte h4{margin:0 0 6px;color:#b3360f;font:800 13px 'Montserrat',sans-serif}
+.cl-perte .cl-row{background:#fff}
 body.ro .hdr-save,body.ro #cl-histbtn,body.ro .member-tab.add-btn,body.ro .member-tab button,body.ro .staff-nav-tab[onclick*="autooss"],body.ro .autooss-notice{display:none!important}
 /* cronologia */
 .cl-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b6b64;margin:14px 0 6px}
@@ -9190,7 +9195,8 @@ function clSetStatus(s){
     const land = !!b.closest('.cl-land');
     const lbl = !CL.user ? 'Accedi' : (s === 'off' ? 'Non sincronizzato' : (land ? 'Il mio archivio' : 'Archivio'));
     b.title = tip + (!land && window._saveAt ? ' · Salvato alle '+window._saveAt : '');
-    b.innerHTML = `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}`;
+    b.innerHTML = `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&CL.perte&&CL.perte.length?`<span class="cl-pt" aria-label="${CL.perte.length} cose per te">${CL.perte.length}</span>`:''}`;
+    if(CL.user&&CL.perte&&CL.perte.length) b.title = CL.perte.length + (CL.perte.length===1?' cosa':' cose') + ' per te · ' + b.title;
   });
   try{ window.ptCheck&&ptCheck(); }catch(e){}
 }
@@ -9222,9 +9228,10 @@ async function clInit(){
     else if(CL.user) clAutoOpen();
     if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); }
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
+    if(CL.user && !window.BRO){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 120000); }
   }catch(e){ clSetStatus('off'); }
   window.addEventListener('online', () => { if(CL.pending) clPush(); });
-  document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); clRoleCheck(); } });
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && CL.pending) clPush(); else if(document.visibilityState==='visible' && CL.user && CL.ctx){ if(window.BRO) roRefresh(false); sgLoad(false); clRoleCheck(); clPerTe(); } });
   window.addEventListener('beforeunload', e => { if(CL.pending && CL.user && CL.ctx){ e.preventDefault(); e.returnValue = ''; return ''; } });
 }
 
@@ -9274,7 +9281,7 @@ function clShow(view){
     if(CL.ctx.ruolo){ b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un collega')}</strong>: solo chi lo ha creato può invitare altre persone.</p><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button>`; return; }
     b.innerHTML = `<div id="cl-shintro"><p class="cl-note" style="margin:0 0 10px">Scrivi l'email di un collega: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p></div>
       <div class="cl-grid2"><input class="cl-in" id="cl-inv" type="email" autocomplete="off" placeholder="email del collega" onkeydown="if(event.key==='Enter')clInvite()"><button class="cl-btn" onclick="clInvite()">Invita</button></div>
-      <div id="cl-rolebox" style="display:none;margin-top:8px"><label class="cl-lb" for="cl-invr" style="margin-top:0">Come lo inviti</label><select class="cl-role" id="cl-invr">${Object.keys(CL_RUOLI).map(k=>`<option value="${k}">${CL_RUOLI[k]}: ${CL_RUOLI_TXT[k]}</option>`).join('')}</select></div>
+      <div id="cl-rolebox" style="display:none;margin-top:8px"><label class="cl-lb" for="cl-invr" style="margin-top:0">Come lo inviti</label><select class="cl-role" id="cl-invr">${clRoleOpts('lettore')}</select></div>
       <div class="cl-msg" id="cl-msg"></div><div id="cl-wanow"></div>
       <p class="cl-note">Il collega deve creare l'account (o accedere) con <strong>questa stessa email</strong>: poi il progetto gli compare in «Condivisi con me». Invita solo persone di cui ti fidi: vedranno le osservazioni.</p>
       <div id="cl-mem" class="cl-hist"><p class="cl-note">Carico…</p></div>
@@ -9311,7 +9318,7 @@ async function clSubmit(view){
       if(error) throw error;
       CL.user = data.user || (data.session && data.session.user) || CL.user;
       clSetStatus(CL.ctx ? 'ok' : '');
-      const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); }
+      const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); }
     } else if(view === 'signup'){
       if(pw.length < 8) throw new Error('La password deve avere almeno 8 caratteri.');
       const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back()}});
@@ -9354,6 +9361,7 @@ async function clRenderArchive(){
   let h = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
       <div style="font-size:12px;color:#555">Account: <strong>${clEsc(CL.user.email)}</strong></div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
+  h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   if(act){
     h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
       <div class="s">${act.ruolo?`Progetto di <strong>${clEsc(act.owner||'un collega')}</strong> · sei ${clEsc((CL_RUOLI[act.ruolo]||'').toLowerCase())}. `:''}Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
@@ -9386,6 +9394,7 @@ async function clRenderArchive(){
       <div class="cl-msg" id="cl-msg"></div>${rows.length?`<p class="cl-note" style="margin:6px 0 0">${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}</p>`:''}</div>`;
   b.innerHTML = h;
   clLoadShared();
+  clPerTe().then(() => { const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); });
 }
 
 async function clLoadHist(){
@@ -9435,7 +9444,11 @@ const clNoTable = e => /42P01|does not exist|schema cache|relation/i.test((e&&(e
 // ruoli (attivi solo dopo l'aggiornamento del database: senza, tutto funziona come prima, in sola lettura)
 const CL_RUOLI = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
 const CL_RUOLI_TXT = {lettore:'vede il progetto in sola lettura e lascia suggerimenti', cotitolare:'modifica tutto il progetto insieme a te', collaboratore:'modifica il progetto, lavorando sulle parti che gli affidi'};
-const clEditRole = r => r === 'cotitolare' || r === 'collaboratore';
+// co-titolare e collaboratore sono "in arrivo": si provano aprendo l'app una volta con ?ruoli=1 (e si spengono con ?ruoli=0)
+try{ const q = new URLSearchParams(location.search).get('ruoli'); if(q === '1') localStorage.setItem('bussola_ruoli_test','1'); else if(q === '0') localStorage.removeItem('bussola_ruoli_test'); }catch(e){}
+const clEditOn = () => { try{ return localStorage.getItem('bussola_ruoli_test') === '1'; }catch(e){ return false; } };
+const clEditRole = r => clEditOn() && (r === 'cotitolare' || r === 'collaboratore');
+const clRoleOpts = sel => Object.keys(CL_RUOLI).map(k => { const off = k !== 'lettore' && !clEditOn(); return `<option value="${k}" ${k===sel?'selected':''} ${off?'disabled':''}>${CL_RUOLI[k]}${off?' (in arrivo)':''}</option>`; }).join('');
 async function clRolesOk(){
   if(CL.roles !== undefined) return CL.roles;
   try{ const {error} = await CL.sb.from('pee_membri').select('ruolo,visto_il').limit(1); CL.roles = !error; }catch(e){ CL.roles = false; }
@@ -9461,7 +9474,7 @@ async function dbShared(){
   if(error) throw error; const rows = data||[]; if(!rows.length) return [];
   const {data:ar, error:e2} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').in('id', rows.map(r=>r.archivio_id));
   if(e2) throw e2;
-  return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email, ruolo:(roles && r.ruolo) || 'lettore', nuovo:!!(roles && !r.visto_il)} : null; }).filter(Boolean);
+  return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email, ruolo:(roles && clEditRole(r.ruolo)) ? r.ruolo : 'lettore', nuovo:!!(roles && !r.visto_il)} : null; }).filter(Boolean);
 }
 async function dbSgList(id){
   const {data, error} = await CL.sb.from('pee_suggerimenti').select('id,percorso,autore_nome,testo,stato,created_at,user_id').eq('archivio_id', id).order('created_at');
@@ -9520,6 +9533,43 @@ function roInit(){
     new MutationObserver(() => { clearTimeout(t); t = setTimeout(lock, 100); }).observe(app, {childList:true, subtree:true});
     lock();
   }
+}
+
+// ── "Per te": le cose che aspettano una tua azione (inviti nuovi, suggerimenti da leggere) ──
+async function dbSgNuovi(){
+  const own = await dbList(); if(!own.length) return [];
+  const {data, error} = await CL.sb.from('pee_suggerimenti').select('archivio_id,stato').in('archivio_id', own.map(r => r.id)).eq('stato', 'nuovo');
+  if(error) return [];
+  const n = {}; (data||[]).forEach(x => n[x.archivio_id] = (n[x.archivio_id]||0) + 1);
+  return own.filter(r => n[r.id]).map(r => ({id:r.id, anno:r.anno, titolo:r.titolo, n:n[r.id]}));
+}
+let _ptBusy = false;
+async function clPerTe(){
+  if(window.BRO || !CL.sb || !CL.user || _ptBusy) return CL.perte || [];
+  _ptBusy = true;
+  const items = [];
+  try{
+    try{ (await dbShared()).filter(r => r.nuovo).forEach(r => items.push({k:'inv', id:r.id, mid:r.mid, owner:r.owner, anno:r.anno, titolo:r.titolo, ruolo:r.ruolo})); }catch(e){}
+    try{ (await dbSgNuovi()).forEach(r => items.push({k:'sg', id:r.id, anno:r.anno, titolo:r.titolo, n:r.n})); }catch(e){}
+    CL.perte = items; clSetStatus(CL.status);
+  }finally{ _ptBusy = false; }
+  return items;
+}
+function clPerTeHTML(){
+  const it = CL.perte || []; if(!it.length) return '';
+  const row = x => {
+    if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un collega')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
+    const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;
+    return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
+  };
+  return `<div class="cl-perte"><h4>Per te · ${it.length === 1 ? '1 cosa' : it.length + ' cose'} da fare</h4>${it.map(row).join('')}</div>`;
+}
+function clPtGoSg(){
+  clContinue();
+  setTimeout(() => {
+    try{ if(typeof gotoObs === 'function') gotoObs(); }catch(e){}
+    setTimeout(() => { const w = document.querySelector('.sg-pill.new'); if(w){ w.scrollIntoView({behavior:'smooth', block:'center'}); } clToast('I suggerimenti da leggere sono segnati in arancione sotto i percorsi'); }, 500);
+  }, 300);
 }
 
 // ── il ruolo può cambiare mentre si lavora: lo ricontrollo e adeguo l'app ──
@@ -9597,7 +9647,7 @@ async function clCheckInvites(){
       `${rows.length > 3 ? `<p style="margin:6px 0 0;font-size:12px">Gli altri li trovi in Archivio › Condivisi con me.</p>` : ''}<div class="ib-a" style="justify-content:flex-end"><button onclick="clInvLater()">Più tardi</button></div>`;
   }catch(e){}
 }
-function clInvLater(){ try{ sessionStorage.setItem('bussola_inv_later', '1'); }catch(e){} const b = document.getElementById('cl-invbar'); if(b) b.remove(); clToast('Lo ritrovi in Archivio › Condivisi con me'); }
+function clInvLater(){ try{ sessionStorage.setItem('bussola_inv_later', '1'); }catch(e){} const b = document.getElementById('cl-invbar'); if(b) b.remove(); clToast('Lo ritrovi nel pulsante dell\'archivio, in «Per te»'); }
 function clInvOpen(id){ const b = document.getElementById('cl-invbar'); if(b) b.remove(); clOpenShared(id); }
 window.edInit = edInit;
 
@@ -9610,6 +9660,7 @@ async function sgLoad(quiet){
     if(!window.BRO){
       const n = SG.list.filter(s => s.stato === 'nuovo').length;
       if(n > SG.announced && !quiet) clToast(n === 1 ? 'Hai 1 suggerimento nuovo da leggere' : `Hai ${n} suggerimenti nuovi da leggere`);
+      if(n !== SG.announced) clPerTe();
       SG.announced = n;
     }
   }catch(e){}
@@ -9683,7 +9734,7 @@ async function sgSend(tk){
     await sgLoad(true); clToast('Suggerimento inviato');
   }catch(e){ clToast(clNoTable(e) ? 'Il database non è aggiornato: chiedi di rieseguire lo script SQL' : 'Non riesco a inviare: '+clErr(e)); }
 }
-async function sgMark(id, stato){ try{ await dbSgSet(id, stato); await sgLoad(true); }catch(e){ clToast('Errore: '+clErr(e)); } }
+async function sgMark(id, stato){ try{ await dbSgSet(id, stato); await sgLoad(true); clPerTe(); }catch(e){ clToast('Errore: '+clErr(e)); } }
 async function sgDel(id){ if(!confirm('Eliminare questo suggerimento?')) return; try{ await dbSgDel(id); await sgLoad(true); }catch(e){ clToast('Errore: '+clErr(e)); } }
 window.sgWatch = sgWatch; window.roInit = roInit;
 
@@ -9696,12 +9747,12 @@ async function clLoadMem(){
     if(roles){
       const rb = $cl('cl-rolebox'); if(rb) rb.style.display = '';
       const it = $cl('cl-shintro'); if(it) it.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Invita un collega su <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> e scegli come lavorerà:</p>
-        <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>: ${CL_RUOLI_TXT[k]}.</li>`).join('')}</ul>`;
+        <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>: ${CL_RUOLI_TXT[k]}${k!=='lettore'&&!clEditOn()?' <em>(in arrivo)</em>':''}.</li>`).join('')}</ul>`;
     }
     if(!rows.length){ box.innerHTML = '<p class="cl-note" style="margin:8px 0 0">Non hai ancora invitato nessuno.</p>'; return; }
     box.innerHTML = '<div class="cl-year">Hanno accesso</div>' + rows.map(r => {
       const ru = r.ruolo || 'lettore';
-      const sel = roles ? `<select class="cl-role" aria-label="Ruolo di ${clEsc(r.email)}" onchange="clSetRole('${r.id}',this.value)">${Object.keys(CL_RUOLI).map(k=>`<option value="${k}" ${k===ru?'selected':''}>${CL_RUOLI[k]}</option>`).join('')}</select>` : '';
+      const sel = roles ? `<select class="cl-role" aria-label="Ruolo di ${clEsc(r.email)}" onchange="clSetRole('${r.id}',this.value)">${clRoleOpts(ru)}</select>` : '';
       const stato = roles ? (r.visto_il ? 'ha già visto l\'invito' : 'non ha ancora aperto l\'invito') : 'sola lettura + suggerimenti';
       return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button></div></div>`;
