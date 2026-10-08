@@ -382,7 +382,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .mv-sc-l{display:grid;grid-template-columns:minmax(0,.8fr) repeat(5,minmax(0,2fr));gap:3px;font-size:10px;color:var(--ink-faint);text-align:center;margin-top:3px}.mv-list{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink);margin-bottom:8px}.mv-list i{color:var(--ink-mid)}.mv-me{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:8px 10px}.mv-me label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}.mv-box .mv-storia>summary{background:none!important;color:var(--ink-mid)!important;padding:4px 0!important;border:0!important;min-height:0!important}.mv-me select{max-width:210px}.mv-me .mv-noteinp{flex:1;min-width:200px;margin:0}
 @media(max-width:600px){.mv-dots{display:none}.mv-sc-l{display:none}.mv-val{min-width:0;padding:3px 8px}.mv-val .l small{display:none}.mv-tg{padding:0 8px}}
 @media(max-width:420px){.mv-val{gap:6px}.mv-val .l{font-size:10.5px;max-width:74px}.mv-val .n{font-size:19px}.mv-tg .t{display:none}.mv-dots{display:none}}
-.mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.oss-resync{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:none;border:0;padding:6px 4px;cursor:pointer;text-decoration:underline}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
+.mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.ver-rip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 2px;font-size:11px;color:var(--ink-mid)}.ver-rip button{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 10px;min-height:30px;cursor:pointer}.ver-rip-n{font-size:11px;color:var(--ink-faint);margin-top:6px}.oss-resync{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:none;border:0;padding:6px 4px;cursor:pointer;text-decoration:underline}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
 .att-ver{margin:8px 0 4px;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f0d98a;font-size:12px;font-weight:600;color:#6b5200;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.att-ver .btn-ghost{font-size:11.5px;padding:5px 10px}
 .ver-idr{margin-top:10px;padding:8px 10px;border-radius:8px;background:#f5f6fb}.ver-idr-r{margin-top:6px}.ver-idr-t{font-size:11.5px;color:var(--ink)}.ver-idr-f{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .ver-flash{box-shadow:0 0 0 3px #f0c14b;transition:box-shadow .3s}
@@ -776,6 +776,7 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .member-tab.add-btn{border-style:dashed;color:var(--green)}
 .member-add-form{display:flex;gap:8px;margin:12px 0;align-items:center}
 .member-add-form input{min-width:0;flex:1 1 auto}
+#main-app,.modal-box,#g-modal{overflow-wrap:break-word}#main-app td,#main-app th{overflow-wrap:anywhere}
 @media(max-width:400px){.hdr-inner{gap:4px}.hdr-actions{gap:4px;min-width:0}body:not(.g-nav) .hdr-mode{display:none}.fb-btn .fb-lbl{font-size:10.5px}.hdr-btn{padding-left:7px!important;padding-right:7px!important}.pc-states{min-width:0}.obs-select{min-width:0!important;max-width:44vw}.pc-name{min-width:0;overflow-wrap:anywhere}}
 .member-add-form input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Montserrat',sans-serif}
 .profile-card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius);padding:20px;margin:16px 0}
@@ -6212,7 +6213,11 @@ function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); if(v){ const a=getAllPe
 function verParti(a){ if(!axShared(a)) return []; const x=a.ax||{}; return AX_REF.map(([k,l])=>({k,l,chi:axRef(x,k)})).filter(o=>o.chi); }
 function verPartiHTML(idx,j,a){ const P=verParti(a); if(!P.length) return ''; const V=a.vRef||{};
   return `<div class="ver-parti"><div class="ver-parti-t">Le parti affidate <span>· due righe da chi le ha seguite</span></div>`+P.map(o=>{ const me=affIsMe(o.chi);
-    return `<div class="ver-parte${me?' me':''}" data-vref="${sEsc(o.chi)}"><label style="${SC_LBL}">${sEsc(o.l)} · ${sEsc(String(o.chi).replace(/\s*\([^)]*\)\s*$/,''))}${me?' <span class="aff-chip me">la tua parte</span>':''}</label><textarea style="${SC_TA};min-height:44px" placeholder="Com'è andata questa parte? Cosa ha funzionato, cosa cambieresti." oninput="verRefSet(${idx},${j},'${o.k}',this.value)">${sEsc(V[o.k]||'')}</textarea></div>`; }).join('')+`</div>`; }
+    return `<div class="ver-parte${me?' me':''}" data-vref="${sEsc(o.chi)}"><label style="${SC_LBL}">${sEsc(o.l)} · ${sEsc(String(o.chi).replace(/\s*\([^)]*\)\s*$/,''))}${me?' <span class="aff-chip me">la tua parte</span>':''}</label><textarea style="${SC_TA};min-height:44px" placeholder="Com'è andata questa parte? Cosa ha funzionato, cosa cambieresti." oninput="verRefSet(${idx},${j},'${o.k}',this.value)">${sEsc(V[o.k]||'')}</textarea>${verCanMain(a)?`<div class="ver-rip"><span>Ha valore educativo? Riportala nella verifica:</span>${[['vBene','cosa è andato bene'],['vMigl','cosa migliorare'],['vAgg','aggiustamenti']].map(([f,l])=>`<button type="button" onclick="verRiporta(${idx},${j},'${o.k}','${f}')">${l}</button>`).join('')}</div>`:''}</div>`; }).join('')+`<div class="ver-rip-n">Nella Scheda di Programmazione compaiono solo i tre campi delle Linee Guida; queste note restano nell’app e nella scheda dell’attività per lo staff.</div></div>`; }
+function verCanMain(a){ try{ if(typeof CL==='undefined'||!CL.ctx||!CL.ctx.ruolo||CL.ctx.ruolo==='cotitolare') return true; return !!(a.aff&&affIsMe(a.aff)); }catch(e){ return true; } }
+function verRiporta(idx,j,k,f){ const per=getAllPercorsi()[idx]; const a=per&&per.attivita&&per.attivita[j]; if(!a) return; const t=String((a.vRef||{})[k]||'').trim(); if(!t){ showToast('Scrivi prima la nota di questa parte'); return; }
+  const cur=String(a[f]||'').trim(); if(cur.includes(t)){ showToast('È già riportata'); return; }
+  updateAttivita(idx,j,f,(cur?cur+'\n':'')+t); try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){} saveDataDebounced(); const v=clViewSaveSafe(); try{ renderValuation(); }catch(e){} clViewRestoreSafe(v); showToast('Riportata: puoi rileggerla e sistemarla nel campo'); }
 // IdR che l'attività voleva osservare ("Cosa osservo" nella scheda dell'attività): cosa si è visto. Alimenta la Sezione 5.
 const VER_C=[['','— Comportamento —'],['spontaneo','Spontaneo'],['stimolato','Stimolato'],['no','Non adottato']];
 function verIdrHTML(idx,j,a,per){ const x=a.ax||{}; const ids=axIdr(per).filter(o=>((x.oss||{})[o.k]||{}).on); if(!ids.length) return ''; const V=a.vIdr||{};
@@ -6317,6 +6322,8 @@ const APP_VERSION = '2026-10-08 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'8 ottobre 2026', t:'Osservazione condivisa più chiara e guida rinnovata', i:[
+    'Il <b>foglio del giorno</b> riporta anche i pasti con il menù e chi cucina, gli Indicatori da osservare con lo spazio per annotare e le note di giornata; si scarica anche <b>in Word</b>.',
+    'Nella <b>Scheda</b> la verifica delle attività riporta solo i tre campi delle Linee Guida; le note dei referenti restano nell’app e nella scheda dell’attività per lo staff, e con un clic si possono riportare nella verifica.',
     'Nell’osservazione condivisa, in testa a ogni percorso spicca il <b>valore del percorso</b>, nel colore della sua fascia (dal rosso al verde), con scritto se è deciso, da confrontare o il valore di mezzo.',
     'Con <b>Dettagli</b> si apre la scala da 1 a 10 con i pallini di chi ha osservato. Si apre da sola quando tocca a te: dare il tuo valore o decidere.',
     '<b>«Non osservato» è una risposta</b>: sblocca i valori degli altri e, se c’è chi l’ha osservato e chi no, il percorso va confrontato in staff.',
@@ -6549,38 +6556,68 @@ function icsFile(evs,name){
   const bl=new Blob([lines],{type:'text/calendar;charset=utf-8'}); const u=URL.createObjectURL(bl); const el=document.createElement('a'); el.href=u; el.download=name; document.body.appendChild(el); el.click(); setTimeout(()=>{ URL.revokeObjectURL(u); el.remove(); },1500);
 }
 // ── foglio del giorno: una pagina da stampare e portare con sé ──
-function fdgHTML(p,j){
-  const a=attGet(p,j)||{}; const x=a.ax||{}; const L=x.luogo||{}; const N=axN(x); const E=t=>axE(t);
+// ── Foglio del giorno: i contenuti in un'unica struttura, poi stampati in PDF o scaricati in Word ──
+function fdgData(p,j){
+  const a=attGet(p,j)||{}; const x=a.ax||{}; const L=x.luogo||{}; const N=axN(x);
   const per=getAllPercorsi()[p]||{}; const pp=Object.values(DB).flat().find(q=>q.id===per.percorsoId);
-  const tel=n=>{ try{ const nm=String(n||'').replace(/\s*\([^)]*\)\s*$/,'').trim().toLowerCase(); const r=staffTab().find(r=>String(r.nome||'').trim().toLowerCase()===nm); return r&&r.tel?String(r.tel):''; }catch(e){ return ''; } };
+  const noPar=n=>String(n||'').replace(/\s*\([^)]*\)\s*$/,'').trim();
+  const tel=n=>{ try{ const nm=noPar(n).toLowerCase(); const r=staffTab().find(r=>String(r.nome||'').trim().toLowerCase()===nm); return r&&r.tel?String(r.tel):''; }catch(e){ return ''; } };
   const cap=t=>t?t[0].toUpperCase()+t.slice(1):t; const dt=x.data?cap(new Date(x.data+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})):'Data da definire';
   const dt2=x.durata==='piu'&&x.dataFine&&x.dataFine>x.data?' – '+new Date(x.dataFine+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
-  const sec=(t,body)=>body?`<h2>${t}</h2>${body}`:'';
-  const kv=r=>r.filter(z=>z[1]).map(z=>`<tr><th>${z[0]}</th><td>${z[1]}</td></tr>`).join('');
-  let h=`<header><div class="u">${E([UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '))}</div><h1>${E((a.testo||'').trim()||'Attività '+(j+1))}</h1><div class="d">${E(dt)}${E(dt2)}</div></header>`;
-  h+=`<table class="kv">${kv([['Ritrovo',E([L.ritrovo?'ore '+L.ritrovo:'',axPlaceTxt(L,'ritrovoDove')].filter(Boolean).join(' · '))],['Rientro',E([L.rientro?'ore '+L.rientro:'',axPlaceTxt(L,'rientroDove')].filter(Boolean).join(' · '))],['Dove',E(L.tipo==='sede'?'In sede':(L.nomeAddr||L.nome||''))],['Presenti',N.tot?E(N.ad+(N.ad===1?' adulto':' adulti')+(((x.pres&&x.pres.ad)||[]).length?' ('+x.pres.ad.map(n=>String(n).replace(/\s*\([^)]*\)\s*$/,'')).join(', ')+')':'')+' e '+N.rag+' ragazzi'):'']])}</table>`;
-  // referenti
-  const R=[]; if(axShared(a)&&a.aff) R.push(['Referente dell’attività',affName(a.aff)]); if(axShared(a)) AX_REF.forEach(([k,l])=>{ const n=axRef(x,k); if(n) R.push([l,String(n).replace(/\s*\([^)]*\)\s*$/,'')]); });
-  h+=sec('Chi fa cosa', R.length?`<table class="kv">${R.map(r=>`<tr><th>${E(r[0])}</th><td>${E(r[1])}${tel(r[1])?' · tel. '+E(tel(r[1])):''}</td></tr>`).join('')}</table>`:'');
-  // scaletta
-  const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()||r.dur); let t=axMin((S[0]||{}).start);
-  h+=sec('Scaletta', S.length?`<table class="g"><tr><th>Ora</th><th>Durata</th><th>Cosa succede</th><th>Chi conduce</th></tr>`+S.map((r,i)=>{ const st=i===0?r.start:(t!=null?axHM(t):''); if(t!=null) t+=(Number(r.dur)||0); return `<tr><td>${E(st||'')}</td><td>${E(axDurTxt(r.dur))}</td><td>${E(r.cosa||'')}</td><td>${E(r.chi||'')}</td></tr>`; }).join('')+`</table>`:'');
-  // materiali
+  const S=[]; const add=(t,type,o)=>S.push(Object.assign({t,type},o));
+  const adulti=((x.pres&&x.pres.ad)||[]).map(noPar).filter(Boolean);
+  const top=[['Ritrovo',[L.ritrovo?'ore '+L.ritrovo:'',axPlaceTxt(L,'ritrovoDove')].filter(Boolean).join(' · ')],['Rientro',[L.rientro?'ore '+L.rientro:'',axPlaceTxt(L,'rientroDove')].filter(Boolean).join(' · ')],['Dove',L.tipo==='sede'?'In sede':(L.nomeAddr||L.nome||'')],['Presenti',N.tot?N.ad+(N.ad===1?' adulto':' adulti')+(adulti.length?' ('+adulti.join(', ')+')':'')+' e '+N.rag+' ragazzi':'']].filter(z=>z[1]);
+  if(top.length) add('','kv',{rows:top});
+  const R=[]; if(axShared(a)&&a.aff) R.push(['Referente dell’attività',affName(a.aff)]); if(axShared(a)) AX_REF.forEach(([k,l])=>{ const n=axRef(x,k); if(n) R.push([l,noPar(n)]); });
+  if(R.length) add('Chi fa cosa','kv',{rows:R.map(r=>[r[0], r[1]+(tel(r[1])?' · tel. '+tel(r[1]):'')])});
+  const SC=(x.tt2||[]).filter(r=>(r.cosa||'').trim()||r.dur); let t=axMin((SC[0]||{}).start);
+  if(SC.length) add('Scaletta','grid',{heads:['Ora','Durata','Cosa succede','Chi conduce'],w:[12,12,52,24],rows:SC.map((r,i)=>{ const st=i===0?r.start:(t!=null?axHM(t):''); if(t!=null) t+=(Number(r.dur)||0); return [st||'',axDurTxt(r.dur)||'',r.cosa||'',r.chi||'']; })});
   const M=(x.mat||[]).filter(r=>(r.cosa||'').trim()); const pv=Object.fromEntries(AX_PROV);
-  h+=sec('Materiali', M.length?`<table class="g"><tr><th style="width:22px"></th><th>Materiale</th><th>Quantità</th><th>Da dove · chi</th></tr>`+M.map(r=>`<tr><td>☐</td><td>${E(r.cosa)}</td><td>${E(String(axMatQty(r,N)||''))}</td><td>${E([pv[r.prov||'unita']||'',r.chi||''].filter(Boolean).join(' · '))}</td></tr>`).join('')+`</table>`:'');
-  // sicurezza, benessere, piano B
-  const S2=x.sic||{}; const PB=Object.entries(x.pb||{}).filter(([k,v])=>(v||'').trim()); const pbl=Object.fromEntries(AX_PB);
-  h+=sec('Sicurezza e primo soccorso', (S2.numeri||S2.rischi)?`<table class="kv">${kv([['Numeri utili',E(S2.numeri||'')],['Rischi e come li riduci',E(S2.rischi||'').replace(/\n/g,'<br>')]])}</table>`:'');
-  h+=sec('Benessere e inclusione', (a.incRischi||a.incAzioni)?`<table class="kv">${kv([['Attenzioni',E(a.incRischi||'').replace(/\n/g,'<br>')],['Accortezze',E(a.incAzioni||'').replace(/\n/g,'<br>')]])}</table>`:'');
-  h+=sec('Piano B', PB.length?`<table class="kv">${PB.map(([k,v])=>`<tr><th>${E((pbl[k]||k).replace('…',''))}</th><td>${E(v).replace(/\n/g,'<br>')}</td></tr>`).join('')}</table>`:'');
-  h+=`<h2>Appunti</h2><div class="note"></div><footer>Foglio del giorno · PEE CNGEI</footer>`;
-  return h;
+  if(M.length) add('Materiali','grid',{heads:['','Materiale','Quantità','Da dove · chi'],w:[5,45,15,35],rows:M.map(r=>['☐',r.cosa,String(axMatQty(r,N)||''),[pv[r.prov||'unita']||'',r.chi||''].filter(Boolean).join(' · ')])});
+  // pasti: menù del giorno, diete solo come numeri
+  try{ const PT=(x.piatti||[]).filter(pt=>(pt.nome||'').trim()&&!axPtSacco(x,pt)); const SAC=axSaccoList(x); const multi=axMulti(x); const so=axPastoSo;
+    if(PT.length||SAC.length){ const rows=PT.map(pt=>[pt.g||1, so(pt.pasto||'pranzo'), axPastoLab(x,pt.pasto||'pranzo'), plain(pt.nome)+(pt.unico?' (piatto unico)':''), pt.chi||'']).concat(SAC.map(o=>[o.g, so(o.m), o.lab, 'Al sacco: lo porta ciascuno', ''])).sort((a1,b1)=>a1[0]-b1[0]||a1[1]-b1[1]);
+      const dd=axDieteTxt(x); const pr=axRef(x,'camb');
+      add('Pasti','grid',{heads:multi?['Giorno','Pasto','Cosa si mangia','Chi cucina']:['Pasto','Cosa si mangia','Chi cucina'],w:multi?[12,18,45,25]:[20,52,28],rows:rows.map(r=>multi?['Giorno '+r[0],r[2],r[3],r[4]]:[r[2],r[3],r[4]]),
+        foot:[dd.length?'Diete speciali: '+dd.join(', '):'', pr?'Referente pasti e spesa: '+noPar(pr):''].filter(Boolean).join(' · ')}); } }catch(e){}
+  const S2=x.sic||{}; if(S2.numeri||S2.rischi) add('Sicurezza e primo soccorso','kv',{rows:[['Numeri utili',S2.numeri||''],['Rischi e come li riduci',S2.rischi||'']].filter(z=>z[1])});
+  if(a.incRischi||a.incAzioni) add('Benessere e inclusione','kv',{rows:[['Attenzioni',a.incRischi||''],['Accortezze',a.incAzioni||'']].filter(z=>z[1])});
+  const PB=Object.entries(x.pb||{}).filter(([k,v])=>(v||'').trim()); const pbl=Object.fromEntries(AX_PB);
+  if(PB.length) add('Piano B','kv',{rows:PB.map(([k,v])=>[(pbl[k]||k).replace('…',''),v])});
+  // da osservare oggi: gli Indicatori di Risultato scelti in «Durante l'attività»
+  try{ const ids=axIdr(per).filter(o=>((x.oss||{})[o.k]||{}).on); if(ids.length) add('Da osservare oggi','idr',{rows:ids.map(o=>o.t), sub:'Annota cosa vedi: ti servirà per la verifica e per la Sezione 5.'}); }catch(e){}
+  add('Note di giornata','blank',{rows:['Presenti effettivi','Imprevisti e come sono andati','Spese fatte (cosa · quanto · chi)']});
+  add('Appunti','note',{});
+  return {perc:pp?'Percorso: '+pp.name:'', unit:[UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '), title:(a.testo||'').trim()||'Attività '+(j+1), date:dt+dt2, sec:S};
 }
-const FDG_CSS=`body{font-family:Montserrat,Arial,sans-serif;color:#1f2a24;margin:0;padding:18mm 16mm;font-size:11pt}header{border-bottom:2px solid #1b5e42;padding-bottom:6px;margin-bottom:10px}.u{font-size:9pt;color:#555}h1{font-size:18pt;margin:2px 0}.d{font-size:11pt;font-weight:700;color:#1b5e42}h2{font-size:11pt;color:#1b5e42;margin:14px 0 4px;text-transform:uppercase;letter-spacing:.04em}table{border-collapse:collapse;width:100%}.kv th{text-align:left;vertical-align:top;width:32%;padding:3px 8px 3px 0;font-size:10pt;color:#444}.kv td{padding:3px 0;font-size:10.5pt}.g th,.g td{border:1px solid #cfd8d2;padding:4px 6px;font-size:10pt;text-align:left;vertical-align:top}.g th{background:#eaf5ee}.note{border:1px solid #cfd8d2;height:40mm;border-radius:4px}footer{margin-top:10px;font-size:8pt;color:#888;text-align:right}@page{size:A4;margin:0}`;
+function fdgHTML(p,j){
+  const D=fdgData(p,j); const E=t=>axE(t); const ml=t=>E(t).replace(/\n/g,'<br>');
+  let h=`<header><div class="u">${E(D.unit)}</div><h1>${E(D.title)}</h1><div class="d">${E(D.date)}</div></header>`;
+  D.sec.forEach(s=>{ if(s.t) h+=`<h2>${E(s.t)}</h2>`;
+    if(s.type==='kv') h+=`<table class="kv">${s.rows.map(r=>`<tr><th>${E(r[0])}</th><td>${ml(r[1])}</td></tr>`).join('')}</table>`;
+    else if(s.type==='grid') h+=`<table class="g"><tr>${s.heads.map((x,i)=>`<th style="width:${s.w[i]}%">${E(x)}</th>`).join('')}</tr>${s.rows.map(r=>`<tr>${r.map(c=>`<td>${ml(c)}</td>`).join('')}</tr>`).join('')}</table>${s.foot?`<div class="ft">${E(s.foot)}</div>`:''}`;
+    else if(s.type==='idr') h+=`${s.sub?`<div class="ft" style="margin:0 0 4px">${E(s.sub)}</div>`:''}${s.rows.map(r=>`<div class="idr"><b>${E(r)}</b><div class="ln"></div><div class="ln"></div></div>`).join('')}`;
+    else if(s.type==='blank') h+=`<table class="kv bl">${s.rows.map(r=>`<tr><th>${E(r)}</th><td></td></tr>`).join('')}</table>`;
+    else if(s.type==='note') h+=`<div class="note"></div>`; });
+  return h+`<footer>Foglio del giorno · PEE CNGEI</footer>`;
+}
+async function fdgDocx(){ const [p,j]=window._fdg||[]; if(p==null) return;
+  try{ showToast('Preparo il foglio in Word…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+  const D=fdgData(p,j); const ch=[...dTitleBlock(D.title, [D.date, D.perc].filter(Boolean).join(' · '))];
+  const blankRow=()=>dPara(' ',{size:18,after:0,borderBottom:{size:6,color:'BBBBBB'}});
+  D.sec.forEach(s=>{ if(s.t) ch.push(dH3(s.t));
+    if(s.type==='kv') ch.push(dKV(s.rows.map(r=>[r[0], dMulti(r[1])])));
+    else if(s.type==='grid'){ const tot=s.w.reduce((a,b)=>a+b,0); const w=s.w.map(v=>Math.round(CW*v/tot)); ch.push(dGridTable(s.heads, s.rows, w)); if(s.foot) ch.push(dPara(s.foot,{size:17,before:40,after:40})); }
+    else if(s.type==='idr'){ if(s.sub) ch.push(dPara(s.sub,{size:16,color:'666666',after:60})); s.rows.forEach(r=>{ ch.push(dPara(r,{size:19,bold:true,after:20})); ch.push(blankRow(),blankRow()); }); }
+    else if(s.type==='blank') ch.push(dKV(s.rows.map(r=>[r, [dPara(' ',{size:30,after:0})]])));
+    else if(s.type==='note') for(let i=0;i<6;i++) ch.push(blankRow()); });
+  await dSave(dDocument(ch,'Foglio del giorno'), 'Foglio_del_giorno_'+(D.title.replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx');
+}
+const FDG_CSS=`body{font-family:Montserrat,Arial,sans-serif;color:#1f2a24;margin:0;padding:18mm 16mm;font-size:11pt}header{border-bottom:2px solid #1b5e42;padding-bottom:6px;margin-bottom:10px}.u{font-size:9pt;color:#555}h1{font-size:18pt;margin:2px 0}.d{font-size:11pt;font-weight:700;color:#1b5e42}h2{font-size:11pt;color:#1b5e42;margin:14px 0 4px;text-transform:uppercase;letter-spacing:.04em}table{border-collapse:collapse;width:100%}.kv th{text-align:left;vertical-align:top;width:32%;padding:3px 8px 3px 0;font-size:10pt;color:#444}.kv td{padding:3px 0;font-size:10.5pt}.g th,.g td{border:1px solid #cfd8d2;padding:4px 6px;font-size:10pt;text-align:left;vertical-align:top}.g th{background:#eaf5ee}.note{border:1px solid #cfd8d2;height:34mm;border-radius:4px}.ft{font-size:9.5pt;color:#444;margin-top:4px}.idr{margin:4px 0 8px;font-size:10.5pt}.idr .ln{border-bottom:1px solid #bbb;height:7mm}.bl td{border-bottom:1px solid #bbb;height:9mm}footer{margin-top:10px;font-size:8pt;color:#888;text-align:right}@page{size:A4;margin:0}`;
 function fdgOpen(p,j){ const a=attGet(p,j); if(!a) return; window._fdg=[p,j];
   modalShow(`<h3 style="margin:0 0 4px;font-size:16px">Foglio del giorno</h3><p style="font-size:12px;color:var(--ink-mid);margin:0 0 10px">Una pagina da stampare e portare con sé: orari, chi fa cosa con i telefoni, scaletta, materiali da spuntare, sicurezza e piano B. Si compila da sola con quello che hai scritto nella scheda dell’attività.</p>
-    <div style="border:1px solid var(--border-light);border-radius:8px;max-height:52vh;overflow:auto;background:#fff;color:#1f2a24"><div style="transform-origin:top left"><style>.fdgp{font-family:Montserrat,Arial,sans-serif;padding:14px;font-size:12px}.fdgp h1{font-size:17px;margin:2px 0}.fdgp h2{font-size:12px;color:#1b5e42;margin:12px 0 4px;text-transform:uppercase}.fdgp table{border-collapse:collapse;width:100%}.fdgp .kv th{text-align:left;width:34%;padding:2px 8px 2px 0;color:#444;font-weight:600;vertical-align:top}.fdgp .g th,.fdgp .g td{border:1px solid #cfd8d2;padding:3px 5px;text-align:left}.fdgp .g th{background:#eaf5ee}.fdgp .note{border:1px solid #cfd8d2;height:60px;border-radius:4px}.fdgp header{border-bottom:2px solid #1b5e42;padding-bottom:4px}.fdgp .u{font-size:11px;color:#555}.fdgp .d{font-weight:700;color:#1b5e42}.fdgp footer{display:none}</style><div class="fdgp">${fdgHTML(p,j)}</div></div></div>
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn-primary" onclick="fdgPrint()">🖨 Stampa o salva in PDF</button><button class="btn-ghost" onclick="modalClose()">Chiudi</button></div>`); }
+    <div style="border:1px solid var(--border-light);border-radius:8px;max-height:52vh;overflow:auto;background:#fff;color:#1f2a24"><div style="transform-origin:top left"><style>.fdgp{font-family:Montserrat,Arial,sans-serif;padding:14px;font-size:12px}.fdgp h1{font-size:17px;margin:2px 0}.fdgp h2{font-size:12px;color:#1b5e42;margin:12px 0 4px;text-transform:uppercase}.fdgp table{border-collapse:collapse;width:100%}.fdgp .kv th{text-align:left;width:34%;padding:2px 8px 2px 0;color:#444;font-weight:600;vertical-align:top}.fdgp .g th,.fdgp .g td{border:1px solid #cfd8d2;padding:3px 5px;text-align:left}.fdgp .g th{background:#eaf5ee}.fdgp .note{border:1px solid #cfd8d2;height:60px;border-radius:4px}.fdgp header{border-bottom:2px solid #1b5e42;padding-bottom:4px}.fdgp .u{font-size:11px;color:#555}.fdgp .d{font-weight:700;color:#1b5e42}.fdgp footer{display:none}.fdgp .ft{font-size:11px;color:#444;margin-top:4px}.fdgp .idr{margin:4px 0 8px}.fdgp .idr .ln{border-bottom:1px solid #bbb;height:18px}.fdgp .bl td{border-bottom:1px solid #bbb;height:24px}</style><div class="fdgp">${fdgHTML(p,j)}</div></div></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn-primary" onclick="fdgPrint()">🖨 Stampa o salva in PDF</button><button class="btn-ghost" onclick="fdgDocx()">Scarica in Word</button><button class="btn-ghost" onclick="modalClose()">Chiudi</button></div>`); }
 function fdgPrint(){ const [p,j]=window._fdg||[]; if(p==null) return;
   let fr=document.getElementById('fdg-frame'); if(fr) fr.remove(); fr=document.createElement('iframe'); fr.id='fdg-frame'; fr.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(fr);
   const doc=fr.contentWindow.document; doc.open(); doc.write(`<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Foglio del giorno</title><style>${FDG_CSS}</style></head><body>${fdgHTML(p,j)}</body></html>`); doc.close();
@@ -6956,6 +6993,8 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   if(T_(a.incRischi)||T_(a.incAzioni)) kv3.push(['Benessere e inclusione',[T_(a.incRischi)?'Attenzioni: '+plain(a.incRischi):'',T_(a.incAzioni)?'Accortezze: '+plain(a.incAzioni):''].filter(Boolean).join('\n')]);
   if(a.link) kv3.push(['Link esterni',[dPara([dLink(a.link,{size:18,label:'link'})],{after:0})]]);
   if(kv3.length){ ch.push(dH3('Sicurezza, benessere e piano B')); ch.push(dKV(kv3.map(([l,v])=>[l, typeof v==='string'?dMulti(v,{size:18}):v]))); }
+  { const VP=verParti(a).filter(q=>T_((a.vRef||{})[q.k])); const F=[['Cosa è andato bene','vBene'],['Cosa è da migliorare','vMigl'],['Aggiustamenti necessari','vAgg']].filter(r=>T_(a[r[1]]));
+    if(F.length||VP.length){ ch.push(dH3('Verifica')); ch.push(dKV(F.map(r=>[r[0],dMulti(a[r[1]])]).concat(VP.map(q=>[q.l+' ('+String(q.chi).replace(/\s*\([^)]*\)\s*$/,'')+')', dMulti(a.vRef[q.k])])))); } }
   const doc=dDocument(ch,'Scheda attività'); await dSave(doc, 'Attivita_'+(((a.testo||'').trim()||'scheda').replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx'); }
 // ── Word: lista della spesa ──
 async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFoodList(x); if(!L.length){ showToast('Aggiungi prima piatti, ingredienti e presenti'); return; }
@@ -9176,7 +9215,7 @@ async function exportPPDocx(mode){
       ch.push(dH3(`Percorso ${i+1} — ${p.name}`));
       acts.forEach(({x,j}) => {
         ch.push(dPara(`Attività ${j+1}${T_(x.testo)?' — '+plain(x.testo):''}`,{size:19,bold:true,after:40,before:80,keepNext:true}));
-        ch.push(dKV([['Cosa è andato bene', dMulti(x.vBene)], ['Cosa è da migliorare', dMulti(x.vMigl)], ['Aggiustamenti necessari', dMulti(x.vAgg)]].concat(verParti(x).filter(q=>T_((x.vRef||{})[q.k])).map(q=>[q.l+' ('+String(q.chi).replace(/\s*\([^)]*\)\s*$/,'')+')', dMulti(x.vRef[q.k])]))));
+        ch.push(dKV([['Cosa è andato bene', dMulti(x.vBene)], ['Cosa è da migliorare', dMulti(x.vMigl)], ['Aggiustamenti necessari', dMulti(x.vAgg)]]));
       });
     });
     if(!any4) ch.push(dNote('Verifica delle attività non ancora compilata.'));
