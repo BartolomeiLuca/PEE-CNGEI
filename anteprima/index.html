@@ -372,6 +372,16 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .mv-box{padding:8px 14px 12px;border-top:1px dashed var(--border-light)}.mv-lock{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#3b4660;background:#f3f5f9;border-radius:8px;padding:8px 10px}
 .mv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}.mv-v{border:1px solid var(--border-light);border-radius:8px;padding:6px 9px;background:var(--bg-card,#fff)}.mv-v.me{border-color:var(--green)}.mv-n{font-size:10.5px;color:var(--ink-mid)}.mv-x{font-size:17px;font-weight:800}.mv-l{font-size:10.5px;color:var(--ink-mid)}.mv-note{font-size:11px;color:var(--ink);margin-top:3px;font-style:italic}
 .mv-noteinp{margin-top:6px;font-size:12px}.mv-st{margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink)}.mv-st span{color:var(--ink-faint)}.mv-ok{color:var(--green)}.mv-c{background:#fff8ef;border:1px solid #f1c48f;border-radius:8px;padding:8px 10px;color:#5a3a00}.mv-tag{display:inline-block;font-size:10.5px;font-weight:800;background:#fff3e0;color:#7a4300!important;border-radius:10px;padding:1px 8px;margin-right:4px}
+.mv-card .pc-states .obs-scale-wrap{display:none}.mv-card:not(.mv-open)>.mv-box{display:none}
+.mv-head{display:flex;align-items:center;gap:8px}.mv-dots{display:flex;gap:4px}.mv-dot{min-width:26px;height:26px;box-sizing:border-box;border-radius:13px;font-size:10.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 7px;background:#eef1f6;color:#24427a;white-space:nowrap}.mv-dot.me{background:#fff;border:1.5px solid #24427a}
+.mv-val{--c:#8a948e;display:flex;align-items:center;gap:8px;border-radius:10px;padding:3px 10px;min-height:40px;box-sizing:border-box;border:2px solid var(--c);background:#fff;color:var(--c);min-width:132px}.mv-val .n{font-size:22px;font-weight:800;line-height:1}.mv-val .l{display:flex;flex-direction:column;font-size:12px;font-weight:700;line-height:1.2;color:var(--ink)}.mv-val .l small{font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mid)}
+.mv-val.dec{background:var(--c);color:#fff}.mv-val.dec .l,.mv-val.dec .l small{color:#fff}.mv-val.dec.yl,.mv-val.dec.yl .l,.mv-val.dec.yl .l small{color:#2b2000}.mv-val.conf{border-style:dashed;border-color:#e65100;background:#fff8ef}.mv-val.conf .l small{color:#7a4300}.mv-val.none{border-color:var(--border);color:var(--ink-mid);min-width:0}
+.mv-tg{font:inherit;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:#fff;color:var(--green);border-radius:10px;min-height:40px;padding:0 10px;cursor:pointer;white-space:nowrap}.mv-open .mv-tg{background:#eaf5ee;border-color:var(--green)}
+.mv-sc{margin:6px 0 10px}.mv-sc-m,.mv-sc-b,.mv-sc-n{display:grid;grid-template-columns:minmax(0,.8fr) repeat(10,minmax(0,1fr));gap:3px}.mv-sc-m{align-items:end;min-height:30px;margin-bottom:4px}.mv-sc-m>div{display:flex;flex-wrap:wrap-reverse;justify-content:center;gap:2px}.mv-sc-m .mv-dot{min-width:0;width:26px;padding:0;font-size:10px}
+.mv-sc-b>div{height:9px}.mv-sc-b>div:first-child{border-radius:5px;margin-right:4px}.mv-sc-b>div:nth-child(2){border-radius:5px 0 0 5px}.mv-sc-b>div:last-child{border-radius:0 5px 5px 0}.mv-sc-n{margin-top:4px;font-size:11.5px;color:var(--ink-mid);text-align:center;align-items:center}.mv-sc-n>div{display:flex;justify-content:center}.mv-sf{width:32px;height:32px;border-radius:50%;border:2px solid var(--c);color:var(--c);background:#fff;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center}.mv-sf.dec{background:var(--c);color:#fff}.mv-sf.dec.yl{color:#2b2000}
+.mv-sc-l{display:grid;grid-template-columns:minmax(0,.8fr) repeat(5,minmax(0,2fr));gap:3px;font-size:10px;color:var(--ink-faint);text-align:center;margin-top:3px}.mv-list{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink);margin-bottom:8px}.mv-list i{color:var(--ink-mid)}.mv-me{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:8px 10px}.mv-me label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}.mv-box .mv-storia>summary{background:none!important;color:var(--ink-mid)!important;padding:4px 0!important;border:0!important;min-height:0!important}.mv-me select{max-width:210px}.mv-me .mv-noteinp{flex:1;min-width:200px;margin:0}
+@media(max-width:600px){.mv-dots{display:none}.mv-sc-l{display:none}.mv-val{min-width:0;padding:3px 8px}.mv-val .l small{display:none}.mv-tg{padding:0 8px}}
+@media(max-width:420px){.mv-val{gap:6px}.mv-val .l{font-size:10.5px;max-width:74px}.mv-val .n{font-size:19px}.mv-tg .t{display:none}.mv-dots{display:none}}
 .mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
 .att-ver{margin:8px 0 4px;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f0d98a;font-size:12px;font-weight:600;color:#6b5200;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.att-ver .btn-ghost{font-size:11.5px;padding:5px 10px}
 .ver-idr{margin-top:10px;padding:8px 10px;border-radius:8px;background:#f5f6fb}.ver-idr-r{margin-top:6px}.ver-idr-t{font-size:11.5px;color:var(--ink)}.ver-idr-f{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
@@ -929,7 +939,7 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .tour-steps{list-style:none;margin:0;padding:0}
 .tour-steps li{display:flex;gap:12px;align-items:flex-start;margin:0 0 12px}
 .tour-steps .ic{width:22px;height:22px;color:var(--green);margin-top:2px}
-.tour-steps b{display:block;color:var(--ink);font-size:14px}
+.tour-steps div>b{display:block;color:var(--ink);font-size:14px}.tour-steps span b{color:var(--ink)}
 .tour-steps span{font-size:13px}
 .tour-dots{display:flex;gap:7px;justify-content:center;margin:8px 0 16px}
 .tour-dots i{width:8px;height:8px;border-radius:50%;background:#d5d5d5}
@@ -1083,13 +1093,13 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <div class="istr-body">
 
         <h4>A cosa serve</h4>
-        <p>PEE CNGEI ti accompagna a scrivere la <strong>Scheda di Programmazione Educativa Esperienziale</strong> della tua Unità, seguendo passo passo le Linee Guida: parte da ciò che osservi nel tuo gruppo e arriva a un documento Word con le cinque Sezioni, pronto da condividere con lo staff o, se stai svolgendo il Progetto Personale, da inviare all’Incaricato al Centro della Formazione (ICdF). Si basa sui 24 percorsi del Progetto Educativo Esperienziale. Non è un test e non dà giudizi: è una mappa per guardare meglio e scegliere dove concentrarti.</p>
+        <p>PEE CNGEI ti accompagna a scrivere la <strong>Scheda di Programmazione Educativa Esperienziale</strong> della tua Unità, seguendo passo passo le Linee Guida: parte da ciò che osservi nel tuo gruppo e arriva a un documento Word con le cinque Sezioni, pronto da condividere con lo staff o, se stai svolgendo il Progetto Personale, da inviare all’Incaricato al Centro della Formazione (ICdF). Si basa sui 24 percorsi del Progetto Educativo Esperienziale. Ti aiuta anche a organizzare ogni attività del percorso e, se vuoi, a lavorare insieme allo staff sullo stesso progetto. Non è un test e non dà giudizi: è una mappa per guardare meglio e scegliere dove concentrarti.</p>
 
         <h4>Il cammino, passo dopo passo</h4>
         <ul>
           <li><strong>Sezione 1 · Osservazione del Gruppo di Pari e necessità educative</strong>, in quattro passi: <em>1.1 Contesto e KOS</em> (chi compila, contesto territoriale e di Sezione/Gruppo, occasioni di osservazione); <em>1.2 Scheda di osservazione</em> dei 24 percorsi; <em>1.3 Lettura del gruppo</em> (dinamiche, aspetti positivi, necessità, note sui singoli); <em>1.4 Priorità</em> (almeno una necessità per Ambito di Sviluppo e il perché della scelta).</li>
           <li><strong>Sezione 2 · Obiettivi e Indicatori di Risultato:</strong> per ogni priorità un obiettivo dal manuale PEE, almeno 1 indicatore (meglio 2) e la tempistica.</li>
-          <li><strong>Sezione 3 · Percorso Educativo Esperienziale:</strong> per gli obiettivi prioritari: strumenti del metodo declinati per la Branca, tempistiche, 3–4 attività (Lancio, Sviluppo, Conclusione) e la verifica delle 7 caratteristiche.</li>
+          <li><strong>Sezione 3 · Percorso Educativo Esperienziale:</strong> per gli obiettivi prioritari: strumenti del metodo declinati per la Branca, tempistiche, 3–4 attività (Lancio, Sviluppo, Conclusione) e la verifica delle 7 caratteristiche. Ogni attività si può poi organizzare nel dettaglio, con le sezioni facoltative: chi e quando, logistica, materiali, pasti e spesa, cassa e costi, sicurezza e primo soccorso, benessere e inclusione, piano B, circolare per le famiglie e foglio del giorno.</li>
           <li><strong>Sezione 4 · Verifica delle attività</strong> e <strong>Sezione 5 · Valutazione finale</strong>, dopo aver vissuto il percorso.</li>
           <li><strong>✓ Controllo e invio:</strong> che cosa manca ancora nella Scheda, il documento Word e, per chi svolge il Progetto Personale, il promemoria per l’invio all’ICdF.</li>
         </ul>
@@ -1104,7 +1114,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
         <div class="istr-livelli">
           <div class="istr-livello istr-livello-cu">
             <div class="istr-livello-tag">Capo Unità</div>
-            <p>Scegli <strong>La mia Unità</strong> (Branco, Reparto o Compagnia) per osservare il tuo gruppo e scrivere la Scheda di Programmazione Educativa Esperienziale. Con <strong>Il mio staff</strong> osservi il tuo team di educatori.</p>
+            <p>Scegli <strong>La mia Unità</strong> (Branco, Reparto o Compagnia) per osservare il tuo gruppo e scrivere la Scheda di Programmazione Educativa Esperienziale. Con <strong>Il mio staff</strong> osservi le persone del tuo staff.</p>
           </div>
           <div class="istr-livello istr-livello-cg">
             <div class="istr-livello-tag">Capo Gruppo</div>
@@ -1112,8 +1122,18 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
           </div>
         </div>
 
-        <h4>Salvataggio, archivio e condivisione</h4>
-        <p>Il lavoro si salva da solo, a ogni modifica. Senza account resta nel browser di questo dispositivo. Con un account (<strong>Accedi</strong>) lo ritrovi su ogni dispositivo, trovi l'archivio dei tuoi progetti e le versioni precedenti, e puoi condividerlo con un collega o con il Capo Gruppo, che lo legge e ti lascia suggerimenti, senza poterlo modificare. Per tenere una copia fuori dall'app: in <strong>Controllo e invio</strong> scarichi il Word della Scheda e l'Excel con i punteggi; in <strong>Archivio → Scarica tutti i miei progetti</strong> salvi in un unico file l'intero archivio, da ricaricare con <em>Carica file</em> se serve.</p>
+        <h4>Per conto tuo o con lo staff</h4>
+        <p>Puoi usare l’app <strong>per conto tuo</strong>: non devi attivare nulla e ogni scelta resta nelle tue mani. Oppure puoi lavorare <strong>con lo staff</strong> sullo stesso progetto. Ogni forma di condivisione è facoltativa e la attivi tu.</p>
+        <ul>
+          <li><strong>Invitare.</strong> Con un account, da <em>Archivio › Condividi</em> inviti le altre persone dello staff o il Capo Gruppo, anche con un clic dalla tabella dello staff (1.1), e le avvisi con un messaggio WhatsApp già scritto. Chi riceve l’invito trova il progetto in <em>Archivio › Condivisi con me</em>, lo legge e lascia suggerimenti firmati sui percorsi. Altri due ruoli, per modificare insieme tutto il progetto o solo le parti che si hanno in carico, sono in fase di prova.</li>
+          <li><strong>Lavorare in contemporanea.</strong> Le modifiche arrivano a tutte le persone in pochi secondi, senza ricaricare la pagina; se due persone cambiano lo stesso dato, la versione sostituita resta tra le versioni precedenti.</li>
+          <li><strong>Gestione condivisa delle attività.</strong> Per ogni attività puoi spuntare <em>Gestione condivisa con lo staff</em> e indicare un referente dell’attività e un referente per logistica, pasti e spesa, cassa e costi, sicurezza e primo soccorso, benessere e inclusione, circolare. Ciascun referente compila anche la verifica della propria parte. Se non la spunti, l’attività resta a chi ha creato il progetto.</li>
+          <li><strong>Osservazione condivisa.</strong> Nella 1.2 scegli tra <em>Osservo da solo/a</em> e <em>Osservazione condivisa</em>: ogni capo dà il proprio valore e vede quelli delle altre persone solo dopo aver dato il suo; i valori distanti vengono segnalati per il confronto in staff. Nel Word compaiono solo i valori condivisi.</li>
+          <li><strong>Per te.</strong> Un numerino sul pulsante con la nuvola segnala inviti, suggerimenti da leggere, attività o parti che hai in carico e verifiche da compilare.</li>
+        </ul>
+
+        <h4>Salvataggio e archivio</h4>
+        <p>Il lavoro si salva da solo, a ogni modifica. Senza account resta nel browser di questo dispositivo. Con un account (<strong>Accedi</strong>) lo ritrovi su ogni dispositivo, con l’archivio dei tuoi progetti e le versioni precedenti. Per tenere una copia fuori dall’app: in <strong>Controllo e invio</strong> scarichi il Word della Scheda e l’Excel con i punteggi; in <strong>Archivio → Scarica tutti i miei progetti</strong> salvi in un unico file l’intero archivio, da ricaricare con <em>Carica file</em> se serve. Per vedere un progetto già compilato, apri il <strong>progetto di esempio</strong> dalla pagina iniziale.</p>
 
         <h4>Come leggere i risultati</h4>
         <p>I percorsi poco presenti non sono fallimenti: sono le aree dove il tuo gruppo ha più da guadagnare. Meglio tre percorsi vissuti in profondità che otto sfiorati. Le letture che l'app propone sono spunti di riflessione, da calare nella storia del tuo gruppo e del tuo territorio.</p>
@@ -2958,7 +2978,7 @@ function applyTheme(){
 // ── PERSIST ──
 let _saveTimer = null;
 function saveData(silent) {
-  if(window.BRO){ if(!silent) showToast('Sola lettura: il progetto è del tuo collega'); return; }
+  if(window.BRO){ if(!silent) showToast('Sola lettura: il progetto è di un’altra persona dello staff'); return; }
   try {
     localStorage.setItem(LSK, JSON.stringify({
       obs,pris,vals,scheda,MODE,FASCIA,STAFF_TYPE,STAFF_RUOLO,
@@ -3120,27 +3140,34 @@ function zoomApp(dir){
 
 // ── giro guidato (prima apertura) ──
 const TOUR = [
-  {ic:'i-target', t:'Ti diamo il benvenuto nella PEE CNGEI', b:'<p>Ti accompagna a scrivere la <b>Scheda di Programmazione Educativa Esperienziale</b> passo dopo passo, come chiedono le Linee Guida.</p><p>Puoi lavorare sulla tua <b>Unità</b> (Branco, Reparto o Compagnia) oppure osservare il tuo <b>staff</b>. Bastano quattro schermate per capire come funziona.</p>'},
+  {ic:'i-target', t:'Ti diamo il benvenuto nella PEE CNGEI', b:'<p>Ti accompagna passo dopo passo nella <b>Scheda di Programmazione Educativa Esperienziale</b>, come chiedono le Linee Guida, e nell\'<b>organizzazione</b> di ogni attività.</p><p>Puoi lavorare sulla tua <b>Unità</b> (Branco, Reparto o Compagnia) oppure osservare il tuo <b>staff</b>, per conto tuo o insieme alle altre persone dello staff. Bastano cinque schermate per capire come funziona.</p>'},
   {ic:'i-chart', t:'Il cammino, dall\'osservazione al Word', b:'<ul class="tour-steps">'
     +'<li><svg class="ic"><use href="#i-eye"/></svg><div><b>1 · Osservazione</b><span>In quattro passi: contesto e attività del KOS, osservazione dei 24 percorsi, lettura del gruppo, priorità (una per ambito).</span></div></li>'
     +'<li><svg class="ic"><use href="#i-target"/></svg><div><b>2 · Obiettivi</b><span>Per ogni priorità scegli un obiettivo e i suoi indicatori di risultato.</span></div></li>'
-    +'<li><svg class="ic"><use href="#i-chart"/></svg><div><b>3 · Percorso</b><span>Strumenti del metodo della tua Branca, tempi e almeno 3 attività.</span></div></li>'
+    +'<li><svg class="ic"><use href="#i-chart"/></svg><div><b>3 · Percorso</b><span>Strumenti del metodo della tua Branca, tempi e almeno 3 attività, che puoi organizzare nel dettaglio: logistica, materiali, pasti, costi, sicurezza, circolare per le famiglie.</span></div></li>'
     +'<li><svg class="ic"><use href="#i-check"/></svg><div><b>4 · Verifica e 5 · Valutazione</b><span>Le compili dopo aver vissuto le attività. In «Controllo e invio» vedi cosa manca e scarichi il Word.</span></div></li></ul><p style="font-size:12px;margin-top:8px">Con lo <b>staff</b> il cammino è più breve: osservazione, riepilogo, priorità e valutazione.</p>'},
+  {ic:'i-users', t:'Per conto tuo o con lo staff', b:() => '<ul class="tour-steps">'
+    +'<li><svg class="ic"><use href="#i-usercheck"/></svg><div><b>Per conto tuo</b><span>Funziona anche senza account e salva su questo dispositivo. Non devi attivare nulla: ogni scelta resta nelle tue mani.</span></div></li>'
+    +'<li><svg class="ic"><use href="#i-users"/></svg><div><b>Con lo staff</b><span>Con un account inviti le altre persone dello staff da <b>Archivio › Condividi</b>, anche con un clic dalla tabella dello staff (1.1). '
+    +(typeof clEditOn === 'function' && clEditOn() ? 'In base al ruolo, chi riceve l’invito legge e lascia suggerimenti, modifica tutto il progetto o solo le parti che ha in carico. ' : 'Chi riceve l’invito legge il progetto e lascia suggerimenti sui percorsi. ')
+    +'Le modifiche arrivano a tutte le persone in pochi secondi.</span></div></li>'
+    +'<li><svg class="ic"><use href="#i-check"/></svg><div><b>Decidi tu quanto condividere</b><span>Per ogni attività puoi attivare la <b>gestione condivisa</b> e indicare chi segue logistica, sicurezza, pasti e le altre parti. Nella 1.2 scegli tra <b>Osservo da solo/a</b> e <b>Osservazione condivisa</b>. Se non attivi nulla, tutto resta a chi ha creato il progetto.</span></div></li></ul>'
+    +'<p style="font-size:12px;margin-top:8px"><b>Per te</b>: un numerino sul pulsante con la nuvola segnala inviti, suggerimenti da leggere e cose che hai in carico.</p>'},
   {ic:'i-eye', t:'Ti aiuta, non decide per te', b:'<p>L\'app ti mette a portata di mano percorsi, obiettivi, indicatori, KOS e strumenti del metodo. Ti mostra una <b>fotografia a colori</b> del gruppo e qualche <b>spunto di lettura</b>.</p><p>Sono domande, non verdetti: obiettivi, attività e scelte restano tue e del tuo staff.</p>'},
-  {ic:'i-cloud', t:'Il tuo lavoro è al sicuro', b:'<p><b>Si salva da solo</b>, a ogni modifica: lo vedi dalla spunta ✓ sul pulsante con la nuvola.</p><p>Con un <b>account gratuito</b> lo ritrovi su ogni dispositivo, tieni un archivio per anno e puoi condividerlo con un collega o con il Capo Gruppo.</p><p>Qualcosa non va o hai un\'idea? Scrivici con <b>Suggerimenti?</b> in alto.</p>'}
+  {ic:'i-cloud', t:'Il tuo lavoro è al sicuro', b:'<p><b>Si salva da solo</b>, a ogni modifica: lo vedi dalla spunta ✓ sul pulsante con la nuvola.</p><p>Con un <b>account gratuito</b> lo ritrovi su ogni dispositivo, con l\'archivio per anno e le versioni precedenti.</p><p>Vuoi vedere un progetto già compilato? Apri il <b>progetto di esempio</b> dalla pagina iniziale. Qualcosa non va o hai un\'idea? Scrivici con <b>Suggerimenti?</b> in alto.</p>'}
 ];
 let tourI = 0;
 function tourRender(){
   const t = TOUR[tourI];
   document.getElementById('tour-ic').innerHTML = '<svg class="ic"><use href="#'+t.ic+'"/></svg>';
   document.getElementById('tour-title').textContent = t.t;
-  document.getElementById('tour-body').innerHTML = t.b;
+  document.getElementById('tour-body').innerHTML = typeof t.b === 'function' ? t.b() : t.b;
   document.getElementById('tour-dots').innerHTML = TOUR.map((_,k)=>'<i class="'+(k===tourI?'on':'')+'"></i>').join('');
   document.getElementById('tour-prev').style.visibility = tourI===0 ? 'hidden' : 'visible';
   document.getElementById('tour-next').textContent = tourI===TOUR.length-1 ? 'Ho capito, inizia' : 'Avanti';
 }
 function tourStart(force){
-  try{ if(!force && localStorage.getItem('bussola_tour_v2')==='1') return; }catch(e){}
+  try{ if(!force && localStorage.getItem('bussola_tour_v3')==='1') return; }catch(e){}
   tourI = 0; tourRender(); document.getElementById('tour-ov').classList.add('show');
 }
 function tourGo(d){
@@ -3150,7 +3177,7 @@ function tourGo(d){
 }
 function tourEnd(){
   document.getElementById('tour-ov').classList.remove('show');
-  try{ localStorage.setItem('bussola_tour_v2','1'); }catch(e){}
+  try{ localStorage.setItem('bussola_tour_v3','1'); }catch(e){}
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape' && document.getElementById('tour-ov').classList.contains('show')) tourEnd(); });
 
@@ -4764,19 +4791,28 @@ function mvMe(){ try{ return (typeof CL!=='undefined' && CL.user) ? String(CL.us
 function mvMyName(){ try{ return (typeof clMyName==='function' && clMyName()) || (typeof sgMyName==='function' && sgMyName()) || mvMe(); }catch(e){ return mvMe(); } }
 function mvM(){ if(!scheda.mv) scheda.mv={on:false,by:{},dec:{},log:[]}; const M=scheda.mv; if(!M.by) M.by={}; if(!M.dec) M.dec={}; if(!M.log) M.log=[]; return M; }
 const mvNum=v=>(v==null||v===''||v==='n')?null:Number(v);
+// risposta di un capo su un percorso: undefined = non ha ancora risposto, 'n' = «Non osservato», numero = valore
+const mvAns=v=>(v==null||v==='')?undefined:(v==='n'?'n':Number(v));
+const mvShow=v=>v==='n'?'n.o.':v;
+const mvLbl=v=>v==='n'?'Non osservato':thresholdLabel(obsToThreshold(v));
 function mvObs(){ const M=scheda.mv||{}; return Object.entries(M.by||{}).map(([em,o])=>({em, nome:(o&&o.nome)||em, v:(o&&o.v)||{}, note:(o&&o.note)||{}})); }
-function mvVals(pid){ return mvObs().map(o=>({em:o.em,nome:o.nome,v:mvNum(o.v[pid]),note:o.note[pid]})).filter(x=>x.v!=null); }
+function mvAll(pid){ return mvObs().map(o=>({em:o.em,nome:o.nome,v:mvAns(o.v[pid]),note:o.note[pid]})).filter(x=>x.v!==undefined); }
+function mvVals(pid){ return mvAll(pid).filter(x=>x.v!=='n'); }
 function mvMedian(a){ a=a.slice().sort((x,y)=>x-y); const n=a.length; if(!n) return null; return Math.round(n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2); }
-function mvFinal(pid){ const d=((scheda.mv||{}).dec||{})[pid]; if(d&&d.v!=null) return d.v; const m=mvMedian(mvVals(pid).map(x=>x.v)); return m==null?'n':m; }
+function mvFinal(pid){ const d=((scheda.mv||{}).dec||{})[pid]; if(d&&d.v!=null&&d.v!=='') return d.v==='n'?'n':Number(d.v); const m=mvMedian(mvVals(pid).map(x=>x.v)); return m==null?'n':m; }
 function mvSpread(pid){ const v=mvVals(pid).map(x=>x.v); return v.length>1?Math.max(...v)-Math.min(...v):0; }
+function mvMixed(pid){ const all=mvAll(pid); return all.some(x=>x.v==='n') && all.some(x=>x.v!=='n'); }
+function mvConf(pid){ return mvSpread(pid)>=2 || mvMixed(pid); }
+function mvMineAns(pid){ const o=((scheda.mv||{}).by||{})[mvMe()]; return o&&o.v?mvAns(o.v[pid]):undefined; }
 function mvMine(pid){ const o=((scheda.mv||{}).by||{})[mvMe()]; return o&&o.v?mvNum(o.v[pid]):null; }
 function mvRecompute(){ if(!mvOn()) return; Object.values(DB).flat().forEach(p=>{ obs[p.id]=mvFinal(p.id); }); }
 function mvCanDecide(){ try{ return !CL.ctx || !CL.ctx.ruolo || CL.ctx.ruolo==='cotitolare'; }catch(e){ return true; } }
-function mvObservers(){ return mvObs().filter(o=>Object.values(o.v||{}).some(v=>mvNum(v)!=null)); }
+function mvObservers(){ return mvObs().filter(o=>Object.values(o.v||{}).some(v=>mvAns(v)!==undefined)); }
 function mvShared(){ try{ if(typeof CL==='undefined'||!CL.user||!CL.ctx) return false; if(CL.ctx.ruolo) return true;
   if(CL._nMem===undefined){ CL._nMem=null; dbMembri(CL.ctx.id).then(r=>{ CL._mem=r||[]; CL._nMem=(r||[]).length; mvDecorate(); }).catch(()=>{ CL._nMem=0; }); }
   return CL._nMem>0; }catch(e){ return false; } }
-function mvSetMine(id,s){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:'',v:{},note:{}}); o.nome=mvMyName(); if(!o.v) o.v={}; o.v[id]=(s==='n'?'n':Number(s)); }
+function mvSetMine(id,s){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:'',v:{},note:{}}); o.nome=mvMyName(); if(!o.v) o.v={};
+  if(s===''||s==null) delete o.v[id]; else o.v[id]=(s==='n'?'n':Number(s)); }
 function mvNote(pid,v){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:mvMyName(),v:{},note:{}}); if(!o.note) o.note={}; o.note[pid]=v; saveDataDebounced(); }
 function mvSetMode(on){
   if(!mvCanDecide()) return; const M=mvM(); const me=mvMe();
@@ -4785,7 +4821,7 @@ function mvSetMode(on){
   saveData(true); renderPhase1();
 }
 function mvDecide(pid,v,why){
-  const M=mvM(); const prev=M.dec[pid]; v=Number(v);
+  const M=mvM(); const prev=M.dec[pid]; v=(v==='n')?'n':Number(v);
   if(prev && prev.v!==v && !String(why||'').trim()){ showToast('Scrivi due righe sul perché cambi il valore'); return false; }
   if(prev && prev.v!==v) M.log.push({pid, da:prev.v, a:v, chi:mvMyName(), at:Date.now(), why:String(why||'').trim()});
   M.dec[pid]={v, chi:mvMyName(), at:Date.now()}; window._mvEdit=null;
@@ -4795,26 +4831,59 @@ function mvDecideForm(pid){ const sel=document.getElementById('mvv-'+pid), ta=do
 function mvEdit(pid){ window._mvEdit=pid; mvDecorate(); }
 const MV_LOCK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 16px"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>';
 function mvFmtD(t){ try{ return new Date(t).toLocaleDateString('it-IT',{day:'numeric',month:'short'}); }catch(e){ return ''; } }
+const MV_TINT=['#f6d5d5','#f6d5d5','#fbe0cc','#fbe0cc','#fdf0c8','#fdf0c8','#d7ead8','#d7ead8','#c7e0d1','#c7e0d1'];
+function mvIni(nome){ const w=String(nome||'').replace(/@.*/,'').trim().split(/[\s._-]+/).filter(Boolean); return ((w[0]||'?')[0]+((w[1]||'')[0]||'')).toUpperCase(); }
+// stato del valore del percorso: deciso, da confrontare, valore di mezzo, solo il tuo, da dare
+function mvState(pid){ const M=scheda.mv||{}, dec=(M.dec||{})[pid], all=mvAll(pid), nums=mvVals(pid).map(x=>x.v), med=mvMedian(nums);
+  if(mvMineAns(pid)===undefined) return {k:'none'};
+  if(dec&&dec.v!=null&&dec.v!=='') return {k:'dec',v:dec.v==='n'?'n':Number(dec.v),dec};
+  const v=med==null?'n':med;
+  if(mvConf(pid)) return {k:'conf',v}; return {k:all.length>1?'mid':'solo',v}; }
+function mvNeedsMe(pid){ const st=mvState(pid); return st.k==='none' || (st.k==='conf' && mvCanDecide()) || window._mvEdit===pid; }
+function mvIsOpen(pid){ const o=(window._mvOpen||{})[pid]; return o===undefined ? mvNeedsMe(pid) : o; }
+function mvToggle(pid){ window._mvOpen=window._mvOpen||{}; window._mvOpen[pid]=!mvIsOpen(pid); mvDecorate(); }
+function mvHeadHTML(p){
+  const pid=p.id, me=mvMe(), st=mvState(pid), all=mvAll(pid), open=mvIsOpen(pid);
+  let dots='';
+  if(st.k==='none') dots=all.filter(x=>x.em!==me).map(x=>`<span class="mv-dot" title="${sEsc(x.nome)} ha già osservato">${mvIni(x.nome)}</span>`).join('');
+  else dots=all.map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc((x.em===me?'Tu':x.nome)+': '+mvLbl(x.v))}">${x.em===me?'Tu':mvIni(x.nome)} ${x.v==='n'?'–':x.v}</span>`).join('');
+  let val;
+  if(st.k==='none') val=`<div class="mv-val none"><span class="l">Dai il tuo valore</span></div>`;
+  else { const t=obsToThreshold(st.v), c=thresholdColor(t), tag={dec:'deciso',conf:'da confrontare',mid:'valore di mezzo',solo:'per ora solo il tuo'}[st.k];
+    val=`<div class="mv-val ${st.k==='dec'?'dec':st.k==='conf'?'conf':'prop'}${t===3?' yl':''}" style="--c:${c}" title="Valore del percorso: ${tag}"><span class="n">${st.v==='n'?'–':st.v}</span><span class="l"><small>${tag}</small>${sEsc(mvLbl(st.v))}</span></div>`; }
+  return `<div class="mv-head"><div class="mv-dots">${dots}</div>${val}<button class="mv-tg" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'} i dettagli dell'osservazione" onclick="mvToggle('${pid}')"><span class="t">Dettagli </span>${open?'▴':'▾'}</button></div>`;
+}
+function mvScaleHTML(pid){
+  const me=mvMe(), all=mvAll(pid), st=mvState(pid);
+  const col=n=>`<div>${all.filter(x=>x.v===n).map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc(x.em===me?'Tu':x.nome)}">${x.em===me?'Tu':mvIni(x.nome)}</span>`).join('')}</div>`;
+  const num=n=>{ if(st.v===n){ const t=obsToThreshold(n); return `<div><span class="mv-sf${st.k==='dec'?' dec':''}${t===3?' yl':''}" style="--c:${thresholdColor(t)}" title="${st.k==='dec'?'Valore deciso':'Valore proposto'}">${n==='n'?'–':n}</span></div>`; } return `<div>${n==='n'?'n.o.':n}</div>`; };
+  const R=['n',1,2,3,4,5,6,7,8,9,10];
+  return `<div class="mv-sc" aria-label="Valori sulla scala da 1 a 10; n.o. = non osservato"><div class="mv-sc-m">${R.map(col).join('')}</div><div class="mv-sc-b">${R.map(n=>`<div style="background:${n==='n'?'#e9ece9':MV_TINT[n-1]}"></div>`).join('')}</div><div class="mv-sc-n">${R.map(num).join('')}</div><div class="mv-sc-l"><div></div><div>Non ancora emerso</div><div>Tracce iniziali</div><div>In sviluppo</div><div>Presente</div><div>Consolidato</div></div></div>`;
+}
 function mvCardHTML(p){
-  const pid=p.id, me=mvMe(), mine=mvMine(pid), vals=mvVals(pid), others=vals.filter(x=>x.em!==me), M=scheda.mv||{}, dec=(M.dec||{})[pid];
-  const lbl=n=>thresholdLabel(obsToThreshold(n));
-  if(mine==null){ if(!others.length) return ''; const nn=others.map(x=>x.nome.split(' ')[0]);
-    return `<div class="mv-lock">${MV_LOCK}<span><b>${sEsc(nn.join(nn.length>1?' e ':''))}</b> ${nn.length>1?'hanno':'ha'} già osservato questo percorso. I valori si vedono dopo che hai dato il tuo.</span></div>`; }
-  let h=`<div class="mv-grid">`+vals.map(x=>`<div class="mv-v${x.em===me?' me':''}"><div class="mv-n">${sEsc(x.em===me?'Tu':x.nome)}</div><div class="mv-x">${x.v}</div><div class="mv-l">${lbl(x.v)}</div>${x.note&&x.em!==me?`<div class="mv-note">«${sEsc(x.note)}»</div>`:''}</div>`).join('')+`</div>`;
-  h+=`<input class="ax-in mv-mine mv-noteinp" placeholder="Cosa hai visto? (facoltativo: aiuta nel confronto)" value="${sEsc(((M.by||{})[me]||{}).note&&M.by[me].note[pid]||'')}" oninput="mvNote('${pid}',this.value)">`;
-  const sp=mvSpread(pid), med=mvMedian(vals.map(x=>x.v)), can=mvCanDecide();
-  const opts=cur=>[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${n===cur?'selected':''}>${n} — ${lbl(n)}</option>`).join('');
+  const pid=p.id, me=mvMe(), mine=mvMineAns(pid), all=mvAll(pid), others=all.filter(x=>x.em!==me), M=scheda.mv||{}, dec=(M.dec||{})[pid];
+  const lbl=mvLbl;
+  const myOpts=[`<option value="" ${mine===undefined?'selected':''}>— Scegli —</option>`,`<option value="n" ${mine==='n'?'selected':''}>Non osservato</option>`].concat([1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${n===mine?'selected':''}>${n} — ${lbl(n)}</option>`)).join('');
+  const myRow=`<div class="mv-me"><label>Il tuo valore <select class="ax-in mv-mine" id="mvs-${pid}" onchange="this.blur();(window._mvOpen=window._mvOpen||{})['${pid}']=true;setObs('${pid}',this.value===''?'':(this.value==='n'?'n':Number(this.value)))">${myOpts}</select></label>${mine!==undefined?`<input class="ax-in mv-mine mv-noteinp" placeholder="Cosa hai visto? (facoltativo: aiuta nel confronto)" value="${sEsc(((M.by||{})[me]||{}).note&&M.by[me].note[pid]||'')}" oninput="mvNote('${pid}',this.value)">`:''}</div>`;
+  if(mine===undefined){ const nn=others.map(x=>x.nome.split(' ')[0]);
+    return (others.length?`<div class="mv-lock" style="margin-bottom:8px">${MV_LOCK}<span><b>${sEsc(nn.join(nn.length>1?' e ':''))}</b> ${nn.length>1?'hanno':'ha'} già risposto su questo percorso. Le risposte si vedono dopo che hai dato la tua, anche solo «Non osservato».</span></div>`:'')+myRow; }
+  let h=mvScaleHTML(pid)+`<div class="mv-list">`+all.map(x=>`<div><b>${sEsc(x.em===me?'Tu':x.nome)}</b>: ${x.v==='n'?'Non osservato':x.v+' · '+sEsc(lbl(x.v))}${x.note&&x.em!==me?` <i>«${sEsc(x.note)}»</i>`:''}</div>`).join('')+`</div>`+myRow;
+  const sp=mvSpread(pid), mix=mvMixed(pid), nums=mvVals(pid).map(x=>x.v), med=mvMedian(nums), prop=med==null?'n':med, can=mvCanDecide();
+  const pq=prop==='n'?"'n'":prop, pTxt=prop==='n'?'Non osservato':prop;
+  const opts=cur=>[`<option value="n" ${cur==='n'?'selected':''}>Non osservato</option>`].concat([1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${n===cur?'selected':''}>${n} — ${lbl(n)}</option>`)).join('');
+  const dv=dec?(dec.v==='n'?'n':Number(dec.v)):null;
   if(window._mvEdit===pid && can){
-    h+=`<div class="mv-st mv-c"><b>${dec?'Cambia il valore deciso':'Scegli il valore'}</b><div class="mv-row"><select class="ax-in" id="mvv-${pid}" style="max-width:220px">${opts(dec?dec.v:med)}</select></div>${dec?`<label class="mv-why">Perché lo cambi? <span>due righe: cosa hai visto, senza giudicare le persone. Senza motivazione il cambio non si salva.</span><textarea class="ax-ta" id="mvw-${pid}" style="min-height:52px"></textarea></label>`:''}<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecideForm('${pid}')">${dec?'Cambia e salva':'Conferma'}</button><button class="btn-ghost mv-b" onclick="window._mvEdit=null;mvDecorate()">Annulla</button></div></div>`;
+    h+=`<div class="mv-st mv-c"><b>${dec?'Cambia il valore deciso':'Scegli il valore'}</b><div class="mv-row"><select class="ax-in" id="mvv-${pid}" style="max-width:220px">${opts(dec?dv:prop)}</select></div>${dec?`<label class="mv-why">Perché lo cambi? <span>due righe: cosa hai visto, senza giudicare le persone. Senza motivazione il cambio non si salva.</span><textarea class="ax-ta" id="mvw-${pid}" style="min-height:52px"></textarea></label>`:''}<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecideForm('${pid}')">${dec?'Cambia e salva':'Conferma'}</button><button class="btn-ghost mv-b" onclick="window._mvEdit=null;mvDecorate()">Annulla</button></div></div>`;
   } else if(dec){
-    h+=`<div class="mv-st mv-ok">Valore deciso: <b>${dec.v}</b> · ${sEsc(lbl(dec.v))} <span>(${sEsc(dec.chi||'')}${dec.at?', '+mvFmtD(dec.at):''})</span>${can?` <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Cambia</button>`:''}</div>`;
-  } else if(sp>=2){
-    h+=`<div class="mv-st mv-c"><span class="mv-tag">da confrontare</span> Tra il valore più basso e il più alto ci sono ${sp} punti: vale la pena parlarne in staff. Proposta: <b>${med}</b> (il valore di mezzo).${can?`<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecide('${pid}',${med})">Tieni ${med}</button><button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button></div>`:'<div style="margin-top:4px">Decide chi ha il progetto, o un co-titolare.</div>'}</div>`;
-  } else if(vals.length>1){
-    h+=`<div class="mv-st mv-ok">Valori vicini: vale <b>${med}</b>, il valore di mezzo.</div>`;
-  } else h+=`<div class="mv-st">Per ora c'è solo il tuo valore.</div>`;
+    h+=`<div class="mv-st">Deciso da ${sEsc(dec.chi||'')}${dec.at?', '+mvFmtD(dec.at):''}.${can?` <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Cambia</button>`:''}</div>`;
+  } else if(sp>=2 || mix){
+    const why = mix ? `C’è chi l’ha osservato e chi no: forse qualcuno ha colto un’occasione sfuggita agli altri. Vale la pena parlarne in staff.` : `Tra il valore più basso e il più alto ci sono ${sp} punti: vale la pena parlarne in staff.`;
+    h+=`<div class="mv-st mv-c"><span class="mv-tag">da confrontare</span> ${why} Proposta: <b>${pTxt}</b>${prop==='n'?'':' (il valore di mezzo)'}.${can?`<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecide('${pid}',${pq})">Tieni ${pTxt}</button>${mix?`<button class="btn-ghost mv-b" onclick="mvDecide('${pid}','n')">Non osservato</button>`:''}<button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button></div>`:'<div style="margin-top:4px">Decide chi ha il progetto, o un co-titolare.</div>'}</div>`;
+  } else if(all.length>1){
+    h+=`<div class="mv-st">${prop==='n'?'Nessuno l’ha osservato: resta <b>Non osservato</b>.':`Valori vicini: vale <b>${prop}</b>, il valore di mezzo.`}${can?` <button class="btn-ghost mv-b" onclick="mvDecide('${pid}',${pq})">Conferma</button> <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button>`:''}</div>`;
+  } else h+=`<div class="mv-st" style="color:var(--ink-mid)">Per ora c'è solo la tua risposta.</div>`;
   const L=(M.log||[]).filter(x=>x.pid===pid);
-  if(L.length) h+=`<details class="mv-storia"><summary>Storia del valore (${L.length})</summary>${L.map(x=>`<div>${mvFmtD(x.at)} · ${sEsc(x.chi)}: <b>${x.da} → ${x.a}</b> «${sEsc(x.why)}»</div>`).join('')}</details>`;
+  if(L.length) h+=`<details class="mv-storia"><summary>Storia del valore (${L.length})</summary>${L.map(x=>`<div>${mvFmtD(x.at)} · ${sEsc(x.chi)}: <b>${mvShow(x.da)} → ${mvShow(x.a)}</b> «${sEsc(x.why)}»</div>`).join('')}</details>`;
   return h;
 }
 // chi è nel progetto (o nello staff, con email) e non ha ancora dato nessun valore
@@ -4834,7 +4903,7 @@ function mvModeHTML(){
     <button class="mv-opt${on?'':' on'}" ${can?'':'disabled'} onclick="mvSetMode(false)"><b>Osservo da solo/a</b><span>un solo valore per percorso, come sempre</span></button>
     <button class="mv-opt${on?' on':''}" ${can?'':'disabled'} onclick="mvSetMode(true)"><b>Osservazione condivisa</b><span>ogni capo del progetto dà il suo valore, poi vi confrontate</span></button></div>`;
   if(!can) h+=`<div class="mv-sub">La scelta la fa chi ha il progetto, o un co-titolare.</div>`;
-  if(on){ const all=Object.values(DB).flat(); const mieiN=all.filter(p=>mvMine(p.id)!=null).length; const conf=all.filter(p=>!((scheda.mv.dec||{})[p.id])&&mvSpread(p.id)>=2).length; const decN=Object.keys(scheda.mv.dec||{}).length;
+  if(on){ const all=Object.values(DB).flat(); const mieiN=all.filter(p=>mvMineAns(p.id)!==undefined).length; const conf=all.filter(p=>!((scheda.mv.dec||{})[p.id])&&mvConf(p.id)).length; const decN=Object.keys(scheda.mv.dec||{}).length;
     const ass=mvAssenti(ob);
     h+=`<div class="mv-chips"><span>${mieiN} / 24 con il tuo valore</span>${conf?`<span class="c">${conf} da confrontare</span>`:''}${decN?`<span class="d">${decN} decisi</span>`:''}</div><div class="mv-sub">Osservano: ${ob.length?sEsc(ob.map(o=>o.nome).join(', ')):'ancora nessuno'}. I valori degli altri su un percorso si vedono dopo che hai dato il tuo.</div>`+
       (ass.length?`<div class="mv-ass"><span>Non hanno ancora dato valori:</span> ${ass.map(a=>`<span class="mv-assn">${sEsc(a.nome)}${a.mail?` <a class="mv-wa" target="_blank" rel="noopener" href="${sEsc(mvWaHref(a))}">Ricordaglielo su WhatsApp</a>`:''}</span>`).join('')}</div>`:''); }
@@ -4852,10 +4921,13 @@ function mvDecorate(){
       const card=document.getElementById('card-'+p.id); if(!card) return;
       let box=card.querySelector(':scope > .mv-box');
       const sel=document.getElementById('sel-'+p.id), badge=document.getElementById('badge-'+p.id);
-      if(!mvOn()){ if(box) box.remove(); if(sel) sel.classList.remove('mv-mine'); return; }
+      const st=card.querySelector('.pc-states'); let head=st&&st.querySelector('.mv-head-w');
+      if(!mvOn()){ if(box) box.remove(); if(head) head.remove(); card.classList.remove('mv-card','mv-open'); if(sel) sel.classList.remove('mv-mine'); return; }
       if(ro){ if(badge){ const f=obs[p.id]; badge.textContent=f!=='n'&&f!=null?'Valore comune: '+f:'—'; } return; }
-      if(sel){ const mine=mvMine(p.id); sel.value=mine==null?'n':String(mine); sel.classList.add('mv-mine'); sel.title='Il tuo valore'; }
-      if(badge){ const f=obs[p.id]; badge.textContent=f!=='n'&&f!=null?'Valore comune: '+f:'—'; }
+      if(sel){ const mine=mvMineAns(p.id); sel.value=(mine===undefined||mine==='n')?'n':String(mine); sel.classList.add('mv-mine'); sel.title='Il tuo valore'; }
+      card.classList.add('mv-card'); card.classList.toggle('mv-open', mvIsOpen(p.id));
+      if(st){ const hd=mvHeadHTML(p); if(!head){ head=document.createElement('div'); head.className='mv-head-w'; st.appendChild(head); }
+        if(head.dataset.h!==hd){ head.innerHTML=hd; head.dataset.h=hd; } }
       const hh=mvCardHTML(p);
       if(!hh){ if(box) box.remove(); return; }
       if(!box){ box=document.createElement('div'); box.className='mv-box'; card.querySelector('.pc-hdr').insertAdjacentElement('afterend', box); }
@@ -6118,8 +6190,9 @@ function affPeopleOf(d){ const t=(d&&d.scheda&&d.scheda.pp&&Array.isArray(d.sche
 function verDaFare(list, people, owner){ const out=[]; (list||[]).forEach((per,idx)=>(per.attivita||[]).forEach((a,j)=>{ if(!a||!a.ax||!a.ax.data) return; if(tlStato(a).k!=='ver') return;
   const mia = axShared(a) && a.aff ? affIsMe(a.aff,people) : owner; if(mia) out.push({idx,j,t:(a.testo||'').trim()}); })); return out; }
 function affMine(list, people){ const out=[]; (list||[]).forEach((per,idx)=>(per.attivita||[]).forEach((a,j)=>{ if(!a||!axShared(a)||['vBene','vMigl'].some(k=>(a[k]||'').trim())) return;
-  if(affIsMe(a.aff,people)) out.push({idx,j,t:(a.testo||'').trim()});
-  else { const x=a.ax||{}; const parti=AX_REF.filter(([k])=>affIsMe(axRef(x,k),people)).map(([k,l])=>l); if(parti.length) out.push({idx,j,t:(a.testo||'').trim(),parti}); } })); return out; }
+  const d=(a.ax||{}).data||'';
+  if(affIsMe(a.aff,people)) out.push({idx,j,d,t:(a.testo||'').trim()});
+  else { const x=a.ax||{}; const parti=AX_REF.filter(([k])=>affIsMe(axRef(x,k),people)).map(([k,l])=>l); if(parti.length) out.push({idx,j,d,t:(a.testo||'').trim(),parti}); } })); return out; }
 function affRowHTML(idx,j,att){ const P=affPeople(); if(!P.length&&!att.aff) return '';
   const cur=att.aff||''; const has=P.some(r=>affNorm(affKey(r))===affNorm(cur));
   return `<div class="aff-row"><label>Referente dell’attività</label><select class="aff-sel" onchange="affSet(${idx},${j},this.value)"><option value="">— nessuno —</option>${P.map(r=>`<option value="${sEsc(affKey(r))}" ${affNorm(affKey(r))===affNorm(cur)?'selected':''}>${sEsc(r.nome)}</option>`).join('')}${cur&&!has?`<option value="${sEsc(cur)}" selected>${sEsc(cur)}</option>`:''}</select><span class="aff-note">la segue tutta: chi, quando, durante, materiali e piano B (persone dalla tabella 1.1)</span></div>`; }
@@ -6236,13 +6309,20 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-07 · beta';
+const APP_VERSION = '2026-10-08 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'8 ottobre 2026', t:'Osservazione condivisa più chiara e guida rinnovata', i:[
+    'Nell’osservazione condivisa, in testa a ogni percorso spicca il <b>valore del percorso</b>, nel colore della sua fascia (dal rosso al verde), con scritto se è deciso, da confrontare o il valore di mezzo.',
+    'Con <b>Dettagli</b> si apre la scala da 1 a 10 con i pallini di chi ha osservato. Si apre da sola quando tocca a te: dare il tuo valore o decidere.',
+    '<b>«Non osservato» è una risposta</b>: sblocca i valori degli altri e, se c’è chi l’ha osservato e chi no, il percorso va confrontato in staff.',
+    'Il numerino sulla nuvola si spegne quando apri un incarico e si riaccende quando l’attività è vicina (7 giorni).',
+    'Il giro guidato e la guida «Come usare PEE CNGEI» spiegano come lavorare <b>per conto tuo</b> o <b>con lo staff</b>, e quali condivisioni attivare (tutte facoltative).'
+  ]},
   {d:'7 ottobre 2026', t:'Lavorare insieme sullo stesso progetto', i:[
     'Condividi un progetto come <b>lettore</b>, <b>co-titolare</b> o <b>collaboratore</b> (i ruoli di modifica sono in prova).',
     'Nella finestra Condividi puoi invitare con un clic le persone della tabella dello staff (1.1) e avvisarle su <b>WhatsApp</b> con un messaggio già scritto.',
-    'Le modifiche dei colleghi compaiono da sole in pochi secondi, senza ricaricare la pagina e senza perdere il punto in cui sei.',
+    'Le modifiche delle altre persone dello staff compaiono da sole in pochi secondi, senza ricaricare la pagina e senza perdere il punto in cui sei.',
     '<b>Per te</b>: un numerino sul pulsante dell’archivio ti dice cosa ti aspetta (inviti, suggerimenti da leggere, attività o parti affidate a te).',
     '<b>Gestione condivisa delle attività</b>: referente dell’attività e referenti di logistica, sicurezza e primo soccorso, benessere e inclusione, pasti, cassa e circolare.',
     '<b>Osservazione condivisa</b> (facoltativa): ogni capo dà il suo valore, poi il confronto e il valore comune.',
@@ -9605,8 +9685,8 @@ function clSetStatus(s){
     const land = !!b.closest('.cl-land');
     const lbl = !CL.user ? 'Accedi' : (s === 'off' ? 'Non sincronizzato' : (land ? 'Il mio archivio' : 'Archivio'));
     b.title = tip + (!land && window._saveAt ? ' · Salvato alle '+window._saveAt : '');
-    b.innerHTML = `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&CL.perte&&CL.perte.length?`<span class="cl-pt" aria-label="${CL.perte.length} cose per te">${CL.perte.length}</span>`:''}`;
-    if(CL.user&&CL.perte&&CL.perte.length) b.title = CL.perte.length + (CL.perte.length===1?' cosa':' cose') + ' per te · ' + b.title;
+    b.innerHTML = `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`;
+    if(CL.user&&ptHot()) b.title = ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' + b.title;
   });
   try{ window.ptCheck&&ptCheck(); }catch(e){}
 }
@@ -9676,7 +9756,7 @@ function clShow(view){
       <div style="margin-top:16px"><button class="cl-btn" id="cl-go" onclick="clSubmit('recovery')">Salva password</button></div><div class="cl-msg" id="cl-msg"></div>`;
   } else if(view === 'conflict'){
     t.textContent = 'Ci sono modifiche più recenti';
-    b.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 10px">Mentre lavoravi, <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> è stato aggiornato ${CL.roles?'da un collega o ':''}da un tuo altro dispositivo.</p>
+    b.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 10px">Mentre lavoravi, <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> è stato aggiornato ${CL.roles?'da un’altra persona dello staff o ':''}da un tuo altro dispositivo.</p>
       <p class="cl-note" style="margin:0 0 14px"><strong>Non si perde niente</strong>: qualunque cosa scegli, l'altra versione resta salvata in <em>Versioni precedenti</em> e la puoi recuperare quando vuoi.</p>
       <div style="display:flex;flex-direction:column;gap:8px">
       <button class="cl-btn" onclick="clConflict('cloud')">Prendi la versione più recente (consigliato)</button>
@@ -9690,14 +9770,14 @@ function clShow(view){
       <div style="margin-top:12px"><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button></div>`;
     clLoadHist();
   } else if(view === 'share'){
-    t.textContent = 'Condividi con un collega';
-    if(CL.ctx.ruolo && CL.ctx.ruolo !== 'cotitolare'){ b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un collega')}</strong>: solo chi lo ha creato può invitare altre persone.</p><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button>`; return; }
-    b.innerHTML = `<div id="cl-shintro"><p class="cl-note" style="margin:0 0 10px">Scrivi l'email di un collega: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p></div>
-      <div class="cl-grid2"><input class="cl-in" id="cl-inv" type="email" autocomplete="off" placeholder="email del collega" onkeydown="if(event.key==='Enter')clInvite()"><button class="cl-btn" onclick="clInvite()">Invita</button></div>
+    t.textContent = 'Condividi con lo staff';
+    if(CL.ctx.ruolo && CL.ctx.ruolo !== 'cotitolare'){ b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un’altra persona')}</strong>: solo chi lo ha creato può invitare altre persone.</p><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button>`; return; }
+    b.innerHTML = `<div id="cl-shintro"><p class="cl-note" style="margin:0 0 10px">Scrivi l'email della persona da invitare: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p></div>
+      <div class="cl-grid2"><input class="cl-in" id="cl-inv" type="email" autocomplete="off" placeholder="email della persona" onkeydown="if(event.key==='Enter')clInvite()"><button class="cl-btn" onclick="clInvite()">Invita</button></div>
       <div id="cl-staffpick" style="margin-top:8px">${clStaffPickHTML([])}</div>
-      <div id="cl-rolebox" style="display:none;margin-top:8px"><label class="cl-lb" for="cl-invr" style="margin-top:0">Come lo inviti</label><select class="cl-role" id="cl-invr">${clRoleOpts('lettore')}</select></div>
+      <div id="cl-rolebox" style="display:none;margin-top:8px"><label class="cl-lb" for="cl-invr" style="margin-top:0">Con quale ruolo</label><select class="cl-role" id="cl-invr">${clRoleOpts('lettore')}</select></div>
       <div class="cl-msg" id="cl-msg"></div><div id="cl-wanow"></div>
-      <p class="cl-note">Il collega deve creare l'account (o accedere) con <strong>questa stessa email</strong>: poi il progetto gli compare in «Condivisi con me». Invita solo persone di cui ti fidi: vedranno le osservazioni.</p>
+      <p class="cl-note">La persona invitata deve creare l'account (o accedere) con <strong>questa stessa email</strong>: poi il progetto compare in «Condivisi con me». Invita solo persone di cui ti fidi: vedranno le osservazioni.</p>
       <div id="cl-mem" class="cl-hist"><p class="cl-note">Carico…</p></div>
       <div style="margin-top:12px"><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button></div>`;
     clLoadMem();
@@ -9790,7 +9870,7 @@ async function clRenderArchive(){
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   if(act){
     h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
-      <div class="s">${act.ruolo?`Progetto di <strong>${clEsc(act.owner||'un collega')}</strong> · sei ${clEsc((CL_RUOLI[act.ruolo]||'').toLowerCase())}. `:''}Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
+      <div class="s">${act.ruolo?`Progetto di <strong>${clEsc(act.owner||'un’altra persona')}</strong> · sei ${clEsc((CL_RUOLI[act.ruolo]||'').toLowerCase())}. `:''}Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clContinue()">Continua qui</button>${act.ruolo?'':`<button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button>`}<button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
   }
   if(act){
@@ -9985,7 +10065,7 @@ function clUpdBar(show){
   let bar = document.getElementById('cl-updbar');
   if(!show){ if(bar) bar.remove(); return; }
   if(!bar){ bar = document.createElement('div'); bar.id = 'cl-updbar'; bar.className = 'cl-updbar'; bar.setAttribute('role','status'); document.body.appendChild(bar); }
-  bar.innerHTML = `<div class="ib-t">Il progetto è stato aggiornato</div><div>Ci sono modifiche nuove ${CL.roles?'di un collega o ':''}da un tuo altro dispositivo.</div><div class="ib-a" style="justify-content:flex-end"><button onclick="clUpdBar(false)">Dopo</button><button class="pri" onclick="clUpdBar(false);clOpenProject(CL.ctx.id)">Aggiorna ora</button></div>`;
+  bar.innerHTML = `<div class="ib-t">Il progetto è stato aggiornato</div><div>Ci sono modifiche nuove ${CL.roles?'di un’altra persona dello staff o ':''}da un tuo altro dispositivo.</div><div class="ib-a" style="justify-content:flex-end"><button onclick="clUpdBar(false)">Dopo</button><button class="pri" onclick="clUpdBar(false);clOpenProject(CL.ctx.id)">Aggiorna ora</button></div>`;
 }
 // ── lavoro insieme: le versioni si uniscono campo per campo ──
 // "base" = l'ultima versione condivisa con il cloud; confrontando base, la mia e quella del cloud
@@ -10236,6 +10316,14 @@ async function dbSgNuovi(){
   return own.filter(r => n[r.id]).map(r => ({id:r.id, anno:r.anno, titolo:r.titolo, n:n[r.id]}));
 }
 let _ptBusy = false;
+// «Per te»: un incarico accende il pallino finché non lo apri; poi solo quando l'attività è entro 7 giorni
+function ptKey(x){ return [x.id,x.idx,x.j,(x.parti||[]).join(',')].join(':'); }
+function ptSeenSet(){ try{ return JSON.parse(localStorage.getItem('bussola_pt_visti_'+((CL.user&&CL.user.email)||''))||'[]'); }catch(e){ return []; } }
+function ptSeen(x){ return ptSeenSet().includes(ptKey(x)); }
+function ptMarkSeen(id,idx,j){ try{ const S=ptSeenSet(); (CL.perte||[]).filter(x=>x.k==='att'&&x.id===id&&(idx==null||(x.idx===idx&&x.j===j))).forEach(x=>{ const k=ptKey(x); if(!S.includes(k)) S.push(k); x.hot=ptSoon(x.d); });
+  localStorage.setItem('bussola_pt_visti_'+((CL.user&&CL.user.email)||''), JSON.stringify(S.slice(-300))); clSetStatus(CL.status); }catch(e){} }
+function ptSoon(d){ if(!d) return false; const t=new Date(String(d).slice(0,10)+'T12:00:00'); if(isNaN(t)) return false; const g=(t-Date.now())/864e5; return g>=-1 && g<=7; }
+function ptHot(){ return (CL.perte||[]).filter(x=>x.hot!==false).length; }
 async function clPerTe(){
   if(window.BRO || !CL.sb || !CL.user || _ptBusy) return CL.perte || [];
   _ptBusy = true;
@@ -10245,12 +10333,13 @@ async function clPerTe(){
     try{ (await dbSgNuovi()).forEach(r => items.push({k:'sg', id:r.id, anno:r.anno, titolo:r.titolo, n:r.n})); }catch(e){}
     // attività affidate a me: nel progetto aperto e nei progetti che posso modificare
     try{
-      if(CL.ctx){ affMine(getAllPercorsi()).forEach(a => items.push({k:'att', id:CL.ctx.id, cur:true, idx:a.idx, j:a.j, t:a.t, parti:a.parti, anno:CL.ctx.anno, titolo:CL.ctx.titolo}));
+      if(CL.ctx){ affMine(getAllPercorsi()).forEach(a => items.push({k:'att', id:CL.ctx.id, cur:true, idx:a.idx, j:a.j, d:a.d, t:a.t, parti:a.parti, anno:CL.ctx.anno, titolo:CL.ctx.titolo}));
         try{ verDaFare(getAllPercorsi(), null, !CL.ctx.ruolo || CL.ctx.ruolo==='cotitolare').forEach(a => items.push({k:'ver', id:CL.ctx.id, idx:a.idx, j:a.j, t:a.t, anno:CL.ctx.anno, titolo:CL.ctx.titolo})); }catch(e){} }
       const sh = (await dbShared()).filter(r => clEditRole(r.ruolo) && !(CL.ctx && CL.ctx.id === r.id)).slice(0, 6);
       for(const r of sh){ const g = await dbGet(r.id); const d = g && g.data || {}; const list = (d.scheda && d.scheda.percorsiExtra) || [];
-        affMine(list, affPeopleOf(d)).forEach(a => items.push({k:'att', id:r.id, cur:false, ruolo:r.ruolo, owner:r.owner, idx:a.idx, j:a.j, t:a.t, parti:a.parti, anno:r.anno, titolo:r.titolo})); }
+        affMine(list, affPeopleOf(d)).forEach(a => items.push({k:'att', id:r.id, cur:false, ruolo:r.ruolo, owner:r.owner, idx:a.idx, j:a.j, d:a.d, t:a.t, parti:a.parti, anno:r.anno, titolo:r.titolo})); }
     }catch(e){}
+    items.forEach(x => { x.hot = x.k !== 'att' || !ptSeen(x) || ptSoon(x.d); });
     CL.perte = items; clSetStatus(CL.status);
   }finally{ _ptBusy = false; }
   return items;
@@ -10258,13 +10347,14 @@ async function clPerTe(){
 function clPerTeHTML(){
   const it = CL.perte || []; if(!it.length) return '';
   const row = x => {
-    if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un collega')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
+    if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un’altra persona')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
     if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue();setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
-    if(x.k === 'att') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.parti?clEsc(x.parti.join(', '))+' di':'Attività affidata a te:'} ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}${x.parti?' · affidat'+(x.parti.length>1?'e':'a')+' a te':''}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}</div></div><button class="cl-btn sm" onclick="${x.cur?`clPtGoAtt(${x.idx},${x.j})`:`clOpenShared('${x.id}')`}">Apri</button></div>`;
+    if(x.k === 'att') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.parti?clEsc(x.parti.join(', '))+' di':'Attività affidata a te:'} ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}${x.parti?' · affidat'+(x.parti.length>1?'e':'a')+' a te':''}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${x.cur?`clPtGoAtt(${x.idx},${x.j})`:`clOpenShared('${x.id}')`}">Apri</button></div>`;
     const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;
     return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
   };
-  return `<div class="cl-perte"><h4>Per te · ${it.length === 1 ? '1 cosa' : it.length + ' cose'} da fare</h4>${it.map(row).join('')}</div>`;
+  const hot=it.filter(x=>x.hot!==false).length;
+  return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${it.map(row).join('')}${it.some(x=>x.hot===false)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
 }
 function clPtGoAtt(idx, j){
   clContinue();
@@ -10387,7 +10477,7 @@ function edInit(){
   let bar = document.getElementById('ed-bar');
   if(!bar){ bar = document.createElement('div'); bar.id = 'ed-bar'; app.insertAdjacentElement('afterbegin', bar); }
   const col = CL.ctx.ruolo === 'collaboratore';
-  bar.innerHTML = `<div class="grow">Stai lavorando su «${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}» di <strong>${clEsc(CL.ctx.owner||'un collega')}</strong> come <strong>${clEsc((CL_RUOLI[CL.ctx.ruolo]||'').toLowerCase())}</strong>. ${col ? 'Lavora sulle parti che vi siete divisi: le modifiche si salvano nel progetto comune.' : 'Le modifiche si salvano nel progetto comune.'} Evitate di modificare la stessa parte nello stesso momento.</div><button onclick="clOpen()">I miei PEE</button>`;
+  bar.innerHTML = `<div class="grow">Stai lavorando su «${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}» di <strong>${clEsc(CL.ctx.owner||'un’altra persona')}</strong> come <strong>${clEsc((CL_RUOLI[CL.ctx.ruolo]||'').toLowerCase())}</strong>. ${col ? 'Lavora sulle parti che vi siete divisi: le modifiche si salvano nel progetto comune.' : 'Le modifiche si salvano nel progetto comune.'} Evitate di modificare la stessa parte nello stesso momento.</div><button onclick="clOpen()">I miei PEE</button>`;
 }
 // avviso all'ingresso: inviti non ancora aperti
 async function clCheckInvites(){
@@ -10401,7 +10491,7 @@ async function clCheckInvites(){
     if(!bar){ bar = document.createElement('div'); bar.id = 'cl-invbar'; bar.setAttribute('role', 'status'); document.body.appendChild(bar); }
     const first = rows.slice(0, 3);
     bar.innerHTML = `<div class="ib-t">${rows.length === 1 ? 'Hai un invito nuovo' : `Hai ${rows.length} inviti nuovi`}</div>` + first.map(r =>
-      `<div class="ib-r"><strong>${clEsc(r.owner||'Un collega')}</strong> ti ha invitato su «${clEsc(r.anno)} · ${clEsc(r.titolo)}» come <strong>${clEsc((CL_RUOLI[r.ruolo]||'lettore').toLowerCase())}</strong>.
+      `<div class="ib-r"><strong>${clEsc(r.owner||'Un’altra persona')}</strong> ti ha invitato su «${clEsc(r.anno)} · ${clEsc(r.titolo)}» come <strong>${clEsc((CL_RUOLI[r.ruolo]||'lettore').toLowerCase())}</strong>.
         <div class="ib-a"><button class="pri" onclick="clInvOpen('${r.id}')">${clEditRole(r.ruolo) ? 'Apri e modifica' : 'Apri'}</button></div></div>`).join('') +
       `${rows.length > 3 ? `<p style="margin:6px 0 0;font-size:12px">Gli altri li trovi in Archivio › Condivisi con me.</p>` : ''}<div class="ib-a" style="justify-content:flex-end"><button onclick="clInvLater()">Più tardi</button></div>`;
   }catch(e){}
@@ -10454,7 +10544,7 @@ function sgRender(){
     let h = '';
     if(items.length){
       const label = ro ? (items.length === 1 ? 'Il tuo suggerimento' : `I tuoi ${items.length} suggerimenti`)
-        : (items.length === 1 ? `1 suggerimento di ${clEsc(items[0].autore_nome||'un collega')}` : `${items.length} suggerimenti` + (unread ? ` · ${unread} da leggere` : ''));
+        : (items.length === 1 ? `1 suggerimento di ${clEsc(items[0].autore_nome||'un’altra persona')}` : `${items.length} suggerimenti` + (unread ? ` · ${unread} da leggere` : ''));
       h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▴':'▾'}</button>`;
     }
     if(ro && SG.form !== tk) h += `<button class="sg-add" onclick="sgForm('${tk}')">+ Suggerisci</button>`;
@@ -10518,7 +10608,7 @@ async function clLoadMem(){
     const sp = $cl('cl-staffpick'); if(sp) sp.innerHTML = clStaffPickHTML(rows.map(r => clLc(r.email)));
     if(roles){
       const rb = $cl('cl-rolebox'); if(rb) rb.style.display = '';
-      const it = $cl('cl-shintro'); if(it) it.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Invita un collega su <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> e scegli come lavorerà:</p>
+      const it = $cl('cl-shintro'); if(it) it.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Invita una persona su <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> e scegli come lavorerà:</p>
         <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>: ${CL_RUOLI_TXT[k]}${k!=='lettore'&&!clEditOn()?' <em>(in arrivo)</em>':''}.</li>`).join('')}</ul>`;
     }
     if(!rows.length){ box.innerHTML = '<p class="cl-note" style="margin:8px 0 0">Non hai ancora invitato nessuno.</p>'; return; }
@@ -10653,24 +10743,24 @@ async function clInvite(){
     const w = $cl('cl-wanow'); if(w) w.innerHTML = `<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="cl-note" style="margin:0">Vuoi avvisarlo subito?</span>${clWaBtn(email, CL.roles ? ruolo : 'lettore')}</div>`;
     clLoadMem();
   }catch(e){
-    if(e.message === 'duplicate') clMsg('Questo collega è già stato invitato', 'err');
+    if(e.message === 'duplicate') clMsg('Questa persona è già stata invitata', 'err');
     else clMsg(clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : clErr(e), 'err');
   }
 }
-async function clRevoke(mid){ if(!confirm('Togliere l\'accesso a questo collega?')) return; try{ await dbRevoke(mid); clLoadMem(); }catch(e){ clToast('Errore: '+clErr(e)); } }
+async function clRevoke(mid){ if(!confirm('Togliere l\'accesso a questa persona?')) return; try{ await dbRevoke(mid); clLoadMem(); }catch(e){ clToast('Errore: '+clErr(e)); } }
 async function clLoadShared(){
   const box = $cl('cl-shared'); if(!box) return;
   try{
     const rows = await dbShared(); if(!rows.length){ box.innerHTML = ''; return; }
     const fmt = ts => ts ? new Date(ts).toLocaleString('it-IT',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
     const roles = !!CL.roles;
-    const intro = roles ? 'Progetti dei tuoi colleghi. Come <strong>lettore</strong> li vedi e lasci suggerimenti; come <strong>co-titolare</strong> o <strong>collaboratore</strong> puoi modificarli.' : 'Progetti dei tuoi colleghi: li vedi in sola lettura e puoi lasciare suggerimenti.';
+    const intro = roles ? 'Progetti condivisi con te dallo staff. Come <strong>lettore</strong> li vedi e lasci suggerimenti; come <strong>co-titolare</strong> o <strong>collaboratore</strong> puoi modificarli.' : 'Progetti condivisi con te dallo staff: li vedi in sola lettura e puoi lasciare suggerimenti.';
     box.innerHTML = `<div class="cl-sec"><h4>Condivisi con me</h4><p class="cl-note" style="margin:0 0 4px">${intro}</p>` + rows.map(r => {
       const isAct = CL.ctx && CL.ctx.id === r.id;
       const ed = clEditRole(r.ruolo);
       const tag = roles ? `<span class="cl-badge">${CL_RUOLI[r.ruolo]||'Lettore'}</span>${r.nuovo?'<span class="cl-badge" style="background:#fff3cd;color:#7a5b00">nuovo</span>':''}` : '';
       const btn = isAct ? `<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>` : `<button class="cl-btn sm" onclick="clOpenShared('${r.id}')">${ed ? 'Apri e modifica' : 'Apri'}</button>`;
-      return `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un collega')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
+      return `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un’altra persona')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
     }).join('') + `</div>`;
   }catch(e){ box.innerHTML = ''; }
 }
@@ -10707,7 +10797,7 @@ async function clOpenProject(id, extra){
     if(!r){ clToast('Progetto non trovato'); return; }
     // progetto di un collega aperto in modifica: si conserva il ruolo (anche quando si ricarica la versione del cloud)
     const keep = extra || (CL.ctx && CL.ctx.id === id && CL.ctx.ruolo ? {ruolo:CL.ctx.ruolo, owner:CL.ctx.owner||''} : null);
-    try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un collega')+')' : '. Il progetto precedente è salvato in archivio.')); }catch(e){}
+    try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un’altra persona')+')' : '. Il progetto precedente è salvato in archivio.')); }catch(e){}
     localStorage.setItem(CL_LS, JSON.stringify(r.data||{})); clBaseSet(r.data||{});
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
