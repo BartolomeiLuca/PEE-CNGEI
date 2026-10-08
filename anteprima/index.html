@@ -775,6 +775,8 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .member-tab.active{background:var(--green);border-color:var(--green);color:white}
 .member-tab.add-btn{border-style:dashed;color:var(--green)}
 .member-add-form{display:flex;gap:8px;margin:12px 0;align-items:center}
+.member-add-form input{min-width:0;flex:1 1 auto}
+@media(max-width:400px){.hdr-inner{gap:4px}.hdr-actions{gap:4px;min-width:0}body:not(.g-nav) .hdr-mode{display:none}.fb-btn .fb-lbl{font-size:10.5px}.hdr-btn{padding-left:7px!important;padding-right:7px!important}.pc-states{min-width:0}.obs-select{min-width:0!important;max-width:44vw}.pc-name{min-width:0;overflow-wrap:anywhere}}
 .member-add-form input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Montserrat',sans-serif}
 .profile-card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius);padding:20px;margin:16px 0}
 .profile-card-name{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:4px}
@@ -3033,6 +3035,9 @@ function loadSaved() {
       if(d.scheda.mv) scheda.mv = d.scheda.mv;
       if(d.scheda.esempio) scheda.esempio = true;
       if(d.scheda.chkPP) scheda.chkPP = Object.assign({partecipante:'',formatore:'',rev:'01',items:{}}, d.scheda.chkPP);
+      // tutte le altre chiavi salvate (es. testi riscritti a mano in 1.3, priorità scelta per la Sezione 3)
+      const _done=new Set(['osservazione','priorita','percorsiExtra','idrRaggiunto','idrComp','valCompl','riobs','pp','_p2Seen','mv','esempio','chkPP']);
+      Object.keys(d.scheda).forEach(k=>{ if(!_done.has(k) && d.scheda[k]!==undefined) scheda[k]=d.scheda[k]; });
     }
     if(d.STAFF_MEMBERS) STAFF_MEMBERS = d.STAFF_MEMBERS;
     if(d.staffObs) Object.assign(staffObs,d.staffObs);
@@ -4786,7 +4791,7 @@ function gotoObs(id){ try{ if(MODE==='giovani'&&typeof gGo==='function') gGo('1b
 function toggleCard(id){ document.getElementById('card-'+id).classList.toggle('expanded'); }
 
 // ── Osservazione a più voci (facoltativa, solo Unità): ognuno dà il suo valore, poi il confronto ──
-function mvOn(){ try{ return MODE==='giovani' && !!(scheda.mv && scheda.mv.on); }catch(e){ return false; } }
+function mvOn(){ try{ return MODE==='giovani' && !!(scheda.mv && scheda.mv.on) && (!!window.BRO || !!mvMe()); }catch(e){ return false; } }
 function mvMe(){ try{ return (typeof CL!=='undefined' && CL.user) ? String(CL.user.email||'').toLowerCase() : ''; }catch(e){ return ''; } }
 function mvMyName(){ try{ return (typeof clMyName==='function' && clMyName()) || (typeof sgMyName==='function' && sgMyName()) || mvMe(); }catch(e){ return mvMe(); } }
 function mvM(){ if(!scheda.mv) scheda.mv={on:false,by:{},dec:{},log:[]}; const M=scheda.mv; if(!M.by) M.by={}; if(!M.dec) M.dec={}; if(!M.log) M.log=[]; return M; }
@@ -4845,8 +4850,8 @@ function mvToggle(pid){ window._mvOpen=window._mvOpen||{}; window._mvOpen[pid]=!
 function mvHeadHTML(p){
   const pid=p.id, me=mvMe(), st=mvState(pid), all=mvAll(pid), open=mvIsOpen(pid);
   let dots='';
-  if(st.k==='none') dots=all.filter(x=>x.em!==me).map(x=>`<span class="mv-dot" title="${sEsc(x.nome)} ha già osservato">${mvIni(x.nome)}</span>`).join('');
-  else dots=all.map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc((x.em===me?'Tu':x.nome)+': '+mvLbl(x.v))}">${x.em===me?'Tu':mvIni(x.nome)} ${x.v==='n'?'–':x.v}</span>`).join('');
+  if(st.k==='none') dots=all.filter(x=>x.em!==me).map(x=>`<span class="mv-dot" title="${sEsc(x.nome)} ha già osservato">${sEsc(mvIni(x.nome))}</span>`).join('');
+  else dots=all.map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc((x.em===me?'Tu':x.nome)+': '+mvLbl(x.v))}">${x.em===me?'Tu':sEsc(mvIni(x.nome))} ${x.v==='n'?'–':x.v}</span>`).join('');
   let val;
   if(st.k==='none') val=`<div class="mv-val none"><span class="l">Dai il tuo valore</span></div>`;
   else { const t=obsToThreshold(st.v), c=thresholdColor(t), tag={dec:'deciso',conf:'da confrontare',mid:'valore di mezzo',solo:'per ora solo il tuo'}[st.k];
@@ -4855,7 +4860,7 @@ function mvHeadHTML(p){
 }
 function mvScaleHTML(pid){
   const me=mvMe(), all=mvAll(pid), st=mvState(pid);
-  const col=n=>`<div>${all.filter(x=>x.v===n).map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc(x.em===me?'Tu':x.nome)}">${x.em===me?'Tu':mvIni(x.nome)}</span>`).join('')}</div>`;
+  const col=n=>`<div>${all.filter(x=>x.v===n).map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc(x.em===me?'Tu':x.nome)}">${x.em===me?'Tu':sEsc(mvIni(x.nome))}</span>`).join('')}</div>`;
   const num=n=>{ if(st.v===n){ const t=obsToThreshold(n); return `<div><span class="mv-sf${st.k==='dec'?' dec':''}${t===3?' yl':''}" style="--c:${thresholdColor(t)}" title="${st.k==='dec'?'Valore deciso':'Valore proposto'}">${n==='n'?'–':n}</span></div>`; } return `<div>${n==='n'?'n.o.':n}</div>`; };
   const R=['n',1,2,3,4,5,6,7,8,9,10];
   return `<div class="mv-sc" aria-label="Valori sulla scala da 1 a 10; n.o. = non osservato"><div class="mv-sc-m">${R.map(col).join('')}</div><div class="mv-sc-b">${R.map(n=>`<div style="background:${n==='n'?'#e9ece9':MV_TINT[n-1]}"></div>`).join('')}</div><div class="mv-sc-n">${R.map(num).join('')}</div><div class="mv-sc-l"><div></div><div>Non ancora emerso</div><div>Tracce iniziali</div><div>In sviluppo</div><div>Presente</div><div>Consolidato</div></div></div>`;
@@ -4866,7 +4871,7 @@ function mvCardHTML(p){
   const myOpts=[`<option value="" ${mine===undefined?'selected':''}>— Scegli —</option>`,`<option value="n" ${mine==='n'?'selected':''}>Non osservato</option>`].concat([1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${n===mine?'selected':''}>${n} — ${lbl(n)}</option>`)).join('');
   const myRow=`<div class="mv-me"><label>Il tuo valore <select class="ax-in mv-mine" id="mvs-${pid}" onchange="this.blur();(window._mvOpen=window._mvOpen||{})['${pid}']=true;setObs('${pid}',this.value===''?'':(this.value==='n'?'n':Number(this.value)))">${myOpts}</select></label>${mine!==undefined?`<input class="ax-in mv-mine mv-noteinp" placeholder="Cosa hai visto? (facoltativo: aiuta nel confronto)" value="${sEsc(((M.by||{})[me]||{}).note&&M.by[me].note[pid]||'')}" oninput="mvNote('${pid}',this.value)">`:''}</div>`;
   if(mine===undefined){ const nn=others.map(x=>x.nome.split(' ')[0]);
-    return (others.length?`<div class="mv-lock" style="margin-bottom:8px">${MV_LOCK}<span><b>${sEsc(nn.join(nn.length>1?' e ':''))}</b> ${nn.length>1?'hanno':'ha'} già risposto su questo percorso. Le risposte si vedono dopo che hai dato la tua, anche solo «Non osservato».</span></div>`:'')+myRow; }
+    return (others.length?`<div class="mv-lock" style="margin-bottom:8px">${MV_LOCK}<span><b>${sEsc((nn.length>1?nn.slice(0,-1).join(', ')+' e '+nn[nn.length-1]:nn[0]))}</b> ${nn.length>1?'hanno':'ha'} già risposto su questo percorso. Le risposte si vedono dopo che hai dato la tua, anche solo «Non osservato».</span></div>`:'')+myRow; }
   let h=mvScaleHTML(pid)+`<div class="mv-list">`+all.map(x=>`<div><b>${sEsc(x.em===me?'Tu':x.nome)}</b>: ${x.v==='n'?'Non osservato':x.v+' · '+sEsc(lbl(x.v))}${x.note&&x.em!==me?` <i>«${sEsc(x.note)}»</i>`:''}</div>`).join('')+`</div>`+myRow;
   const sp=mvSpread(pid), mix=mvMixed(pid), nums=mvVals(pid).map(x=>x.v), med=mvMedian(nums), prop=med==null?'n':med, can=mvCanDecide();
   const pq=prop==='n'?"'n'":prop, pTxt=prop==='n'?'Non osservato':prop;
@@ -4878,7 +4883,7 @@ function mvCardHTML(p){
     h+=`<div class="mv-st">Deciso da ${sEsc(dec.chi||'')}${dec.at?', '+mvFmtD(dec.at):''}.${can?` <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Cambia</button>`:''}</div>`;
   } else if(sp>=2 || mix){
     const why = mix ? `C’è chi l’ha osservato e chi no: forse qualcuno ha colto un’occasione sfuggita agli altri. Vale la pena parlarne in staff.` : `Tra il valore più basso e il più alto ci sono ${sp} punti: vale la pena parlarne in staff.`;
-    h+=`<div class="mv-st mv-c"><span class="mv-tag">da confrontare</span> ${why} Proposta: <b>${pTxt}</b>${prop==='n'?'':' (il valore di mezzo)'}.${can?`<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecide('${pid}',${pq})">Tieni ${pTxt}</button>${mix?`<button class="btn-ghost mv-b" onclick="mvDecide('${pid}','n')">Non osservato</button>`:''}<button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button></div>`:'<div style="margin-top:4px">Decide chi ha il progetto, o un co-titolare.</div>'}</div>`;
+    h+=`<div class="mv-st mv-c"><span class="mv-tag">da confrontare</span> ${why} Proposta: <b>${pTxt}</b>${prop==='n'?'':' (il valore di mezzo)'}.${can?`<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecide('${pid}',${pq})">Tieni ${pTxt}</button>${mix?`<button class="btn-ghost mv-b" onclick="mvDecide('${pid}','n')">Non osservato</button>`:''}<button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button></div>`:'<div style="margin-top:4px">Decide chi ha il progetto o chi è co-titolare.</div>'}</div>`;
   } else if(all.length>1){
     h+=`<div class="mv-st">${prop==='n'?'Nessuno l’ha osservato: resta <b>Non osservato</b>.':`Valori vicini: vale <b>${prop}</b>, il valore di mezzo.`}${can?` <button class="btn-ghost mv-b" onclick="mvDecide('${pid}',${pq})">Conferma</button> <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button>`:''}</div>`;
   } else h+=`<div class="mv-st" style="color:var(--ink-mid)">Per ora c'è solo la tua risposta.</div>`;
@@ -4902,7 +4907,7 @@ function mvModeHTML(){
   let h=`<div class="mv-mode"><div class="mv-mode-t">Come osservate? ${OPT}</div><div class="mv-opts">
     <button class="mv-opt${on?'':' on'}" ${can?'':'disabled'} onclick="mvSetMode(false)"><b>Osservo da solo/a</b><span>un solo valore per percorso, come sempre</span></button>
     <button class="mv-opt${on?' on':''}" ${can?'':'disabled'} onclick="mvSetMode(true)"><b>Osservazione condivisa</b><span>ogni capo del progetto dà il suo valore, poi vi confrontate</span></button></div>`;
-  if(!can) h+=`<div class="mv-sub">La scelta la fa chi ha il progetto, o un co-titolare.</div>`;
+  if(!can) h+=`<div class="mv-sub">La scelta la fa chi ha il progetto o chi è co-titolare.</div>`;
   if(on){ const all=Object.values(DB).flat(); const mieiN=all.filter(p=>mvMineAns(p.id)!==undefined).length; const conf=all.filter(p=>!((scheda.mv.dec||{})[p.id])&&mvConf(p.id)).length; const decN=Object.keys(scheda.mv.dec||{}).length;
     const ass=mvAssenti(ob);
     h+=`<div class="mv-chips"><span>${mieiN} / 24 con il tuo valore</span>${conf?`<span class="c">${conf} da confrontare</span>`:''}${decN?`<span class="d">${decN} decisi</span>`:''}</div><div class="mv-sub">Osservano: ${ob.length?sEsc(ob.map(o=>o.nome).join(', ')):'ancora nessuno'}. I valori degli altri su un percorso si vedono dopo che hai dato il tuo.</div>`+
@@ -4941,10 +4946,10 @@ async function exStart(){
   try{
     if(typeof CL!=='undefined' && CL.sb && CL.user){
       if(!confirm(msg+'\n\nLo trovi nel tuo archivio; il lavoro attuale resta dove è. Continuare?')) return;
-      if(CL.ctx && CL.pending){ await clPush(); }
+      if(CL.ctx && CL.pending){ await clPush(); if(CL.pending){ showToast('Sto ancora salvando il lavoro attuale: riprova tra qualche secondo'); return; } }
       const rows=await dbList(); const yr=new Date().getFullYear(); const titolo=await clUniqueTitle(rows, yr, 'Esempio · Reparto Kontiki');
       const r=await dbInsert(yr, titolo, {}, {});
-      localStorage.removeItem(LSK); CL.ctx={id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}; clSaveCtx(); clBaseSet({});
+      localStorage.removeItem(LSK); CL.ctx={id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:true, udirty:true}; clSaveCtx(); clBaseSet({});
     } else {
       if(typeof clHasLocal==='function' && clHasLocal() && !confirm('Su questo dispositivo c’è già un lavoro: l’esempio lo sostituirebbe. Accedi al tuo spazio per tenerli tutti e due.\n\nSostituire comunque?')) return;
       if(!confirm(msg+'\n\nContinuare?')) return;
@@ -5009,6 +5014,7 @@ async function exDelete(){ if(!confirm('Eliminare il progetto di esempio?')) ret
 document.addEventListener('DOMContentLoaded',()=>{ let f=null; try{ f=sessionStorage.getItem('bussola_esempio'); sessionStorage.removeItem('bussola_esempio'); }catch(e){} if(f) setTimeout(exBuild, 400); });
 function setObs(id,s){
   if(mvOn() && !window.BRO && mvMe()){ mvSetMine(id,s); s=mvFinal(id); }
+  if(s==='' || s==null) s='n';
   // s può essere numero 1-10 oppure 'n'
   obs[id] = (s === 'n') ? 'n' : Number(s);
   // Aggiorna badge visivo in tempo reale
@@ -6517,8 +6523,8 @@ function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateSt
 function axTog(p,j,k,v){ const r=axArrP(p,j,k); const i=r.indexOf(v); if(i>=0) r.splice(i,1); else r.push(v); axSave(); axRe(p,j); }
 function axE(s){ return sEsc(s==null?'':String(s)); }
 // ── calendario (.ics): le attività con data, con luogo e link alla mappa ──
-function icsEsc(t){ return String(t==null?'':t).replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
-function icsFold(l){ const out=[]; let s=l; while(s.length>73){ out.push(s.slice(0,73)); s=' '+s.slice(73); } out.push(s); return out.join('\r\n'); }
+function icsEsc(t){ return String(t==null?'':t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
+function icsFold(l){ const out=[]; let a=Array.from(l); while(a.length>70){ out.push(a.slice(0,70).join('')); a=[' '].concat(a.slice(70)); } out.push(a.join('')); return out.join('\r\n'); }
 function icsDT(d,hm){ const D=d.replace(/-/g,''); if(!hm) return {v:D, all:true}; const [h,m]=hm.split(':'); return {v:D+'T'+String(h).padStart(2,'0')+String(m||'00').padStart(2,'0')+'00', all:false}; }
 function icsNext(d){ const t=new Date(d+'T12:00'); t.setDate(t.getDate()+1); return t.getFullYear()+String(t.getMonth()+1).padStart(2,'0')+String(t.getDate()).padStart(2,'0'); }
 function icsEvent(p,j){
@@ -6552,7 +6558,7 @@ function fdgHTML(p,j){
   const sec=(t,body)=>body?`<h2>${t}</h2>${body}`:'';
   const kv=r=>r.filter(z=>z[1]).map(z=>`<tr><th>${z[0]}</th><td>${z[1]}</td></tr>`).join('');
   let h=`<header><div class="u">${E([UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '))}</div><h1>${E((a.testo||'').trim()||'Attività '+(j+1))}</h1><div class="d">${E(dt)}${E(dt2)}</div></header>`;
-  h+=`<table class="kv">${kv([['Ritrovo',E([L.ritrovo?'ore '+L.ritrovo:'',axPlaceTxt(L,'ritrovoDove')].filter(Boolean).join(' · '))],['Rientro',E([L.rientro?'ore '+L.rientro:'',axPlaceTxt(L,'rientroDove')].filter(Boolean).join(' · '))],['Dove',E(L.tipo==='sede'?'In sede':(L.nomeAddr||L.nome||''))],['Presenti',N.tot?E(N.ad+(N.ad===1?' adulto (':' adulti (')+((x.pres&&x.pres.ad)||[]).map(n=>String(n).replace(/\s*\([^)]*\)\s*$/,'')).join(', ')+') e '+N.rag+' ragazzi'):'']])}</table>`;
+  h+=`<table class="kv">${kv([['Ritrovo',E([L.ritrovo?'ore '+L.ritrovo:'',axPlaceTxt(L,'ritrovoDove')].filter(Boolean).join(' · '))],['Rientro',E([L.rientro?'ore '+L.rientro:'',axPlaceTxt(L,'rientroDove')].filter(Boolean).join(' · '))],['Dove',E(L.tipo==='sede'?'In sede':(L.nomeAddr||L.nome||''))],['Presenti',N.tot?E(N.ad+(N.ad===1?' adulto':' adulti')+(((x.pres&&x.pres.ad)||[]).length?' ('+x.pres.ad.map(n=>String(n).replace(/\s*\([^)]*\)\s*$/,'')).join(', ')+')':'')+' e '+N.rag+' ragazzi'):'']])}</table>`;
   // referenti
   const R=[]; if(axShared(a)&&a.aff) R.push(['Referente dell’attività',affName(a.aff)]); if(axShared(a)) AX_REF.forEach(([k,l])=>{ const n=axRef(x,k); if(n) R.push([l,String(n).replace(/\s*\([^)]*\)\s*$/,'')]); });
   h+=sec('Chi fa cosa', R.length?`<table class="kv">${R.map(r=>`<tr><th>${E(r[0])}</th><td>${E(r[1])}${tel(r[1])?' · tel. '+E(tel(r[1])):''}</td></tr>`).join('')}</table>`:'');
@@ -6827,7 +6833,7 @@ function axMsgPlain(t){ return t.replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u
 function axMsgHtml(t){ return axE(t).replace(/\u0001([^\u0002]*)\u0002([^\u0003]*)\u0003/g,(m,a,b)=>'<a href="'+b+'">'+(axIsLinkTxt(a)?'mappa':a)+'</a>').replace(/\n/g,'<br>'); }
 function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d=axDateTxt(x); const mul=axMulti(x);
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
-  const amb=(x.ambient||'').trim(), cit=(x.citaz||'').trim(); const out=[...(cit?[cit,'']:[]),'Ciao a tutti!',...(amb?[amb,'']:[]),`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&(L.nome||'').trim()?' a '+axLk(axPlaceTxt(L,'nome'),axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
+  const amb=(x.ambient||'').trim(), cit=(x.citaz||'').trim(); const out=[...(cit?[cit,'']:[]),'Ciao a tutte e a tutti!',...(amb?[amb,'']:[]),`${d?d.charAt(0).toUpperCase()+d.slice(1)+' ':'Nella prossima attività '}${U}${tit?' vive “'+tit+'”':' ha un’attività speciale'}${L.tipo&&L.tipo!=='sede'&&(L.nome||'').trim()?' a '+axLk(axPlaceTxt(L,'nome'),axPlaceShort(L,'nome')):''}. Ecco le informazioni utili:`,''];
   if(L.ritrovo||L.ritrovoDove) out.push('• Ritrovo'+(mul?' '+axDt(x.data):'')+(L.ritrovo?' alle '+L.ritrovo:'')+(L.ritrovoDove?', '+axLk(axPlaceTxt(L,'ritrovoDove'),axPlaceShort(L,'ritrovoDove')):''));
   if(L.rientro||L.rientroDove) out.push('• Rientro'+(mul?' '+axDt(x.dataFine):'')+(L.rientro?' alle '+L.rientro:'')+(L.rientroDove?', '+axLk(axPlaceTxt(L,'rientroDove'),axPlaceShort(L,'rientroDove')):''));
   const mz=Object.fromEntries(AX_MEZZI); if(L.mezzo&&L.mezzo!=='piedi') out.push('• Ci spostiamo '+(L.mezzo==='altro'?(L.mezzoAltro||''):({bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto'}[L.mezzo]||mz[L.mezzo])));
@@ -7006,7 +7012,7 @@ async function axMsgDocx(p,j){
   const citz=(x.citaz||'').trim(); if(citz) b.push(P([R(citz,{i:true,color:'444444'})],{jc:'right',after:200}));
   b.push(P([R(tit||'Comunicazione per le famiglie',{b:true,sz:27,color:C})],{after:60}));
   const amb=(x.ambient||'').trim(); if(amb) b.push(P([R(amb,{i:true,color:'444444'})],{after:420}));
-  b.push(P([T('Ciao a tutti! ')].concat(tit?[T(U.charAt(0).toUpperCase()+U.slice(1)+' vive '),B('“'+tit+'”'),T('.')]:[T('Ecco le informazioni per la prossima attività.')]),{after:160}));
+  b.push(P([T('Ciao a tutte e a tutti! ')].concat(tit?[T(U.charAt(0).toUpperCase()+U.slice(1)+' vive '),B('“'+tit+'”'),T('.')]:[T('Ecco le informazioni per la prossima attività.')]),{after:160}));
   const dLong=axDateTxt(x,true), mul=axMulti(x);
   const tipo=Object.fromEntries(AX_TIPO), mzL={bici:'in bici',treno:'in treno',bus:'in pullman',auto:'in auto',piedi:'a piedi'};
   const q=axQuota(x), entro=axEntroTxt(x);
@@ -10316,7 +10322,7 @@ async function dbSgNuovi(){
 }
 let _ptBusy = false;
 // «Per te»: un incarico accende il pallino finché non lo apri; poi solo quando l'attività è entro 7 giorni
-function ptKey(x){ return [x.id,x.idx,x.j,(x.parti||[]).join(',')].join(':'); }
+function ptKey(x){ return [x.id,(x.t||'').slice(0,80)||('#'+x.j),(x.parti||[]).join(',')].join(':'); }
 function ptSeenSet(){ try{ return JSON.parse(localStorage.getItem('bussola_pt_visti_'+((CL.user&&CL.user.email)||''))||'[]'); }catch(e){ return []; } }
 function ptSeen(x){ return ptSeenSet().includes(ptKey(x)); }
 function ptMarkSeen(id,idx,j){ try{ const S=ptSeenSet(); (CL.perte||[]).filter(x=>x.k==='att'&&x.id===id&&(idx==null||(x.idx===idx&&x.j===j))).forEach(x=>{ const k=ptKey(x); if(!S.includes(k)) S.push(k); x.hot=ptSoon(x.d); });
@@ -10685,7 +10691,7 @@ async function clRefInvDo(wa){
   if(wa){ try{ window.open('https://wa.me/' + clStaffTel(R.mail) + '?text=' + encodeURIComponent(clWaText(R.mail, 'collaboratore', R.cosa)), '_blank', 'noopener'); }catch(e){} }
   try{
     if(R.mid) await dbSetRole(R.mid, 'collaboratore'); else await dbInvite(CL.ctx.id, R.mail, 'collaboratore'); CL._nMem = undefined;
-    clClose(); clToast(R.mid ? 'Fatto: ' + R.nome + ' ora è collaboratore' : 'Invito inviato a ' + R.nome + ' come collaboratore');
+    clClose(); clToast(R.mid ? 'Fatto: ' + R.nome + ' ora può collaborare alle parti affidate' : 'Invito a collaborare inviato a ' + R.nome);
   }catch(e){
     const deny = /row-level security|permission|42501/i.test(String(e && (e.message||e.code)));
     clMsg(deny ? 'Il tuo account non può ancora invitare: chiedi a chi ha creato il progetto di lanciare l’aggiornamento del database per i co-titolari.' : (e.message === 'duplicate' ? 'Questa persona è già stata invitata' : clErr(e)), 'err');
@@ -10737,7 +10743,7 @@ async function clInvite(){
   if(email === clLc(CL.user.email)){ clMsg('Questo è il tuo indirizzo: il progetto è già tuo', 'err'); return; }
   const ruolo = (($cl('cl-invr')||{}).value) || 'lettore';
   try{
-    await dbInvite(CL.ctx.id, email, ruolo);
+    await dbInvite(CL.ctx.id, email, ruolo); CL._nMem = undefined;
     CL._nMem = undefined; inp.value = ''; clMsg('Invitato. Il progetto gli comparirà in «Condivisi con me» quando accede con questa email.', 'ok');
     const w = $cl('cl-wanow'); if(w) w.innerHTML = `<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="cl-note" style="margin:0">Vuoi avvisarlo subito?</span>${clWaBtn(email, CL.roles ? ruolo : 'lettore')}</div>`;
     clLoadMem();
