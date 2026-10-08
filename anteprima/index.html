@@ -382,7 +382,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .mv-sc-l{display:grid;grid-template-columns:minmax(0,.8fr) repeat(5,minmax(0,2fr));gap:3px;font-size:10px;color:var(--ink-faint);text-align:center;margin-top:3px}.mv-list{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink);margin-bottom:8px}.mv-list i{color:var(--ink-mid)}.mv-me{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:8px 10px}.mv-me label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}.mv-box .mv-storia>summary{background:none!important;color:var(--ink-mid)!important;padding:4px 0!important;border:0!important;min-height:0!important}.mv-me select{max-width:210px}.mv-me .mv-noteinp{flex:1;min-width:200px;margin:0}
 @media(max-width:600px){.mv-dots{display:none}.mv-sc-l{display:none}.mv-val{min-width:0;padding:3px 8px}.mv-val .l small{display:none}.mv-tg{padding:0 8px}}
 @media(max-width:420px){.mv-val{gap:6px}.mv-val .l{font-size:10.5px;max-width:74px}.mv-val .n{font-size:19px}.mv-tg .t{display:none}.mv-dots{display:none}}
-.mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
+.mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.oss-resync{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:none;border:0;padding:6px 4px;cursor:pointer;text-decoration:underline}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
 .att-ver{margin:8px 0 4px;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f0d98a;font-size:12px;font-weight:600;color:#6b5200;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.att-ver .btn-ghost{font-size:11.5px;padding:5px 10px}
 .ver-idr{margin-top:10px;padding:8px 10px;border-radius:8px;background:#f5f6fb}.ver-idr-r{margin-top:6px}.ver-idr-t{font-size:11.5px;color:var(--ink)}.ver-idr-f{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .ver-flash{box-shadow:0 0 0 3px #f0c14b;transition:box-shadow .3s}
@@ -4825,7 +4825,7 @@ function mvDecide(pid,v,why){
   if(prev && prev.v!==v && !String(why||'').trim()){ showToast('Scrivi due righe sul perché cambi il valore'); return false; }
   if(prev && prev.v!==v) M.log.push({pid, da:prev.v, a:v, chi:mvMyName(), at:Date.now(), why:String(why||'').trim()});
   M.dec[pid]={v, chi:mvMyName(), at:Date.now()}; window._mvEdit=null;
-  obs[pid]=mvFinal(pid); refreshObs(); saveData(true); return true;
+  obs[pid]=mvFinal(pid); try{ ossAutoSync(pid[0]); }catch(e){} refreshObs(); saveData(true); return true;
 }
 function mvDecideForm(pid){ const sel=document.getElementById('mvv-'+pid), ta=document.getElementById('mvw-'+pid); if(!sel) return; mvDecide(pid, sel.value, ta?ta.value:''); }
 function mvEdit(pid){ window._mvEdit=pid; mvDecorate(); }
@@ -5022,17 +5022,8 @@ function setObs(id,s){
   }
   if(sel) sel.style.borderColor = thresholdColor(t);
   refreshObs();
-  // Se Step A attivo, aggiorna precompilazione
-  if(schedaStep==='A') {
-    const a = id[0];
-    if(!scheda._userEditedA) scheda._userEditedA = {};
-    if(!scheda._userEditedA[a+'_pos']) {
-      scheda.osservazione[a].positivi = posLines(DB[a].filter(p=>isPositive(obs[p.id])).map(p=>p.name), DB[a].filter(p=>obsToThreshold(obs[p.id])===3).map(p=>p.name));
-    }
-    if(!scheda._userEditedA[a+'_neg']) {
-      scheda.osservazione[a].necessita = DB[a].filter(p=>{const t=obsToThreshold(obs[p.id]);return t>0&&t<=2;}).map(p=>p.name).join(', ');
-    }
-  }
+  // aggiorna aspetti positivi e necessità (1.3) finché non li hai riscritti a mano
+  ossAutoSync(id[0]);
   saveDataDebounced();
 }
 
@@ -6135,17 +6126,24 @@ function lvlBarHTML(list,cls){ const c=lvlCounts(list), tot=list.length;
   return `<div class="${cls||'rbar-track-multi'}"${big?` title="${[5,4,3,2,1].filter(t=>c[t]).map(t=>thresholdLabel(t)+': '+c[t]).join(' · ')}${non?' · Non osservati: '+non:''}"`:''}>`+[5,4,3,2,1].map(t=>c[t]?`<div class="rbar-seg" title="${thresholdLabel(t)}: ${c[t]}" style="width:${c[t]/tot*100}%;background:${thresholdColor(t)}">${big?c[t]:''}</div>`:'').join('')+`</div>`; }
 function lvlTag(p){ const v=obsVal(p), t=obsToThreshold(v); if(!t) return `<span class="rie-row-tag tag-n" title="Non osservato">—</span>`;
   return `<span class="rie-row-tag" title="Punteggio ${obsNum(p)} su 10" style="color:${thresholdColor(t)};background:${thresholdColor(t)}14;cursor:help">${thresholdLabel(t)}</span>`; }
-function precompileScheda(selected){
-  const allP=Object.values(DB).flat();
-  ['P','C','S'].forEach(a=>{
+// Aspetti positivi e necessità educative seguono i valori dei percorsi, finché chi compila non li riscrive a mano
+function ossAutoSync(only){
+  if(!scheda || !scheda.osservazione) return; if(!scheda._userEditedA) scheda._userEditedA = {};
+  ['P','C','S'].forEach(a=>{ if(only && a!==only) return; const O=scheda.osservazione[a]; if(!O) return;
     const presenti=DB[a].filter(p=>obsToThreshold(obsVal(p))>=4).map(p=>p.name);
     const sviluppo=DB[a].filter(p=>obsToThreshold(obsVal(p))===3).map(p=>p.name);
     const assenti=DB[a].filter(p=>{const t=obsToThreshold(obsVal(p));return t>0&&t<=2;}).map(p=>p.name);
-    if(!scheda.osservazione[a].positivi&&(presenti.length>0||sviluppo.length>0))
-      scheda.osservazione[a].positivi=posLines(presenti,sviluppo);
-    if(!scheda.osservazione[a].necessita&&assenti.length>0)
-      scheda.osservazione[a].necessita=assenti.join(', ');
+    if(!scheda._userEditedA[a+'_pos']){ const v=(presenti.length||sviluppo.length)?posLines(presenti,sviluppo):''; if(O.positivi!==v) O.positivi=v; }
+    if(!scheda._userEditedA[a+'_neg']){ const v=assenti.join(', '); if(O.necessita!==v) O.necessita=v; }
   });
+}
+function ossResync(a,k,btn){ if(!confirm('Sostituisco il testo con quello proposto dai valori attuali dei percorsi? Quello che hai scritto qui andrà perso.')) return;
+  if(scheda._userEditedA) delete scheda._userEditedA[a+'_'+k]; ossAutoSync(a);
+  const ta=btn&&btn.previousElementSibling; if(ta&&ta.tagName==='TEXTAREA') ta.value=scheda.osservazione[a][k==='pos'?'positivi':'necessita']||'';
+  if(btn) btn.remove(); saveData(true); }
+function precompileScheda(selected){
+  const allP=Object.values(DB).flat();
+  ossAutoSync();
   selected.forEach((id,i)=>{
     if(i>=3) return;
     const p=allP.find(x=>x.id===id); if(!p) return;
@@ -6316,6 +6314,7 @@ const NOVITA = [
     'Nell’osservazione condivisa, in testa a ogni percorso spicca il <b>valore del percorso</b>, nel colore della sua fascia (dal rosso al verde), con scritto se è deciso, da confrontare o il valore di mezzo.',
     'Con <b>Dettagli</b> si apre la scala da 1 a 10 con i pallini di chi ha osservato. Si apre da sola quando tocca a te: dare il tuo valore o decidere.',
     '<b>«Non osservato» è una risposta</b>: sblocca i valori degli altri e, se c’è chi l’ha osservato e chi no, il percorso va confrontato in staff.',
+    'In 1.3 <b>aspetti positivi e necessità</b> seguono i valori dei percorsi anche quando ne cambi uno; se li hai riscritti a mano restano tuoi, con il link «Riprendi dai valori dei percorsi».',
     'Il numerino sulla nuvola si spegne quando apri un incarico e si riaccende quando l’attività è vicina (7 giorni).',
     'Il giro guidato e la guida «Come usare PEE CNGEI» spiegano come lavorare <b>per conto tuo</b> o <b>con lo staff</b>, e quali condivisioni attivare (tutte facoltative).'
   ]},
@@ -7336,8 +7335,8 @@ function gRenderLettura(){
   const lab={P:'Sviluppo Personale',C:'Sviluppo Comunitario',S:'Sviluppo Spirituale'};
   const rows=['P','C','S'].map(a=>`<tr>
       <td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:14%">${lab[a]}</td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea></td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea></td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Rimette il testo proposto dai valori attuali dei percorsi">↻ Riprendi dai valori dei percorsi</button>`:''}</td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Rimette il testo proposto dai valori attuali dei percorsi">↻ Riprendi dai valori dei percorsi</button>`:''}</td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Solo elementi rilevanti per il gruppo…" oninput="ppSetObs('${a}','singoli',this.value)">${sEsc(scheda.osservazione[a].singoli||'')}</textarea></td></tr>`).join('');
   const th=t=>`<th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:11px;text-align:left">${t}</th>`;
   box.innerHTML=`<div class="gblock"><h3>1.3 — Lettura del gruppo</h3>
@@ -7424,8 +7423,8 @@ function renderSchedaA(root,selected){
   const el=document.createElement('div');el.className='profile-card';
   const tbody = ['P','C','S'].map(a=>`<tr>
       <td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:14%">${ambitoLabel[a]}</td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea></td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea></td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Rimette il testo proposto dai valori attuali dei percorsi">↻ Riprendi dai valori dei percorsi</button>`:''}</td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Rimette il testo proposto dai valori attuali dei percorsi">↻ Riprendi dai valori dei percorsi</button>`:''}</td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Solo se rilevante per il gruppo…" oninput="ppSetObs('${a}','singoli',this.value)">${sEsc(scheda.osservazione[a].singoli||'')}</textarea></td>
     </tr>`).join('');
   const ST=MODE==='staff';
