@@ -6442,6 +6442,7 @@ const NOVITA = [
     'Le <b>necessità</b> scritte nella 1.3 si possono riprendere nella Sezione 2; quelle della Sezione 2 e quelle delle priorità nella Sezione 3 restano sempre allineate.',
     'Nella 1.3 il pulsante ora si chiama <b>Riproponi la bozza dalla 1.2</b> e non cancella più nulla se la 1.2 è vuota.',
     'Date, necessità e testi si aggiornano subito tra Sezione 2, Sezione 3 e documenti scaricati.',
+    'L’<b>archivio</b> si apre subito: mostra l’ultimo elenco noto e lo aggiorna appena arriva quello del cloud.',
     'Nuova iconcina del sito (giglio e trifoglio) nelle schede del browser; il sito ha il suo indirizzo: <b>pee-app.it</b>.']},
   {d:'12 ottobre 2026', t:'Programmare insieme allo staff', i:[
     'In testa alla 1.1, <b>Come programmi?</b>: <b>individuale</b> o <b>condivisa</b>. Con la condivisa spunti le persone nella tabella dello staff e scegli il loro ruolo; si accende anche l’osservazione condivisa della 1.2.',
@@ -9872,7 +9873,7 @@ async function dbTs(id){
   return data ? clTs(data.updated_at) : null;
 }
 async function dbInsert(anno, titolo, data, meta){
-  const {data:r, error} = await CL.sb.from('pee_archivi').insert({anno, titolo, data, meta}).select('id,anno,titolo,updated_at').single();
+  CL._arc = null; const {data:r, error} = await CL.sb.from('pee_archivi').insert({anno, titolo, data, meta}).select('id,anno,titolo,updated_at').single();
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
   return {id:r.id, anno:r.anno, titolo:r.titolo, ts:clTs(r.updated_at)};
 }
@@ -9895,7 +9896,7 @@ async function dbUpdate(id, data, meta, raw){
   return clTs(r[0].updated_at);
 }
 async function dbRename(id, titolo){
-  const {error} = await CL.sb.from('pee_archivi').update({titolo}).eq('id', id);
+  CL._arc = null; const {error} = await CL.sb.from('pee_archivi').update({titolo}).eq('id', id);
   if(error) throw error;
 }
 async function dbSnap(archId, data, label){
@@ -9924,7 +9925,7 @@ async function dbVersionPrune(archId){
   if(extra.length){ const {error} = await CL.sb.from('pee_versioni').delete().in('id', extra); if(error) throw error; }
 }
 async function dbDelete(id){
-  const {error} = await CL.sb.from('pee_archivi').delete().eq('id', id);
+  CL._arc = null; const {error} = await CL.sb.from('pee_archivi').delete().eq('id', id);
   if(error) throw error;
 }
 
@@ -9984,6 +9985,7 @@ async function clInit(){
     if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); if(CL.user && CL.ctx){ edWatch(); clPresence(); clMemLoad(); } }
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
     if(CL.user) await clEmailComplete();
+    if(CL.user) setTimeout(clArcPrefetch, 1500);
     if(CL.user){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 120000); }
     if(CL.user && CL.ctx && !window.BRO) ptAvPending();
     if(CL.user){ clRealtime(); setInterval(clPollRemote, 60000); }
@@ -10169,14 +10171,36 @@ async function clCtxGuard(){
 function clCreatoShow(email){ const b = $cl('cl-body'), t = $cl('cl-title'); if(!b) return; $cl('cl-ov').classList.add('show'); t.textContent = 'Account creato';
   b.innerHTML = `<p style="font-size:14px;line-height:1.6;margin:0 0 10px">✓ Il tuo account è pronto.</p><p style="font-size:13px;line-height:1.6;margin:0 0 10px">Ti abbiamo mandato una mail a <strong>${clEsc(email)}</strong> con le indicazioni per entrare. Se non la trovi, guarda anche nella cartella <strong>spam</strong>.</p><p class="cl-note" style="margin:0 0 14px">Per entrare usa sempre questa email e la password che hai scelto.</p><button class="cl-btn" onclick="clClose();clCheckInvites()">Inizia</button>`; }
 
-async function clRenderArchive(){
-  const b = $cl('cl-body');
-  let rows;
-  try{ rows = await dbList(); }
-  catch(e){ b.innerHTML = `<div class="cl-msg err" style="display:block">Non riesco a leggere l'archivio: ${clEsc(clErr(e))}<br>Controlla la connessione e riprova; se il problema resta, esci e rientra.</div>`; return; }
+// elenco dei progetti: la finestra si apre subito (con l'ultimo elenco noto) e si aggiorna appena arriva quello del cloud
+function clArcRowsHTML(rows){
+  const act = CL.ctx;
   const byYear = {}; rows.forEach(r => (byYear[r.anno] = byYear[r.anno]||[]).push(r));
   const years = Object.keys(byYear).sort((a,b)=>b-a);
   const fmt = ts => ts ? new Date(ts).toLocaleString('it-IT',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+  let h = '';
+  if(!years.length) h += `<p class="cl-note" style="margin:0">Nessun progetto salvato ancora.</p>`;
+  years.forEach(y => {
+    h += `<div class="cl-year">${y}</div>`;
+    byYear[y].forEach(r => {
+      const isAct = act && act.id === r.id;
+      h += `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
+        <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
+    });
+  });
+  return h;
+}
+function clArcCountHTML(rows){ return rows.length ? `${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}` : ''; }
+async function clRenderArchive(){
+  const b = $cl('cl-body');
+  const uid = CL.user && CL.user.id;
+  const cache = CL._arc && CL._arc.uid === uid ? CL._arc.rows : null;
+  const fetchRows = dbList().then(r => { CL._arc = {uid, rows:r}; return r; });
+  let rows = cache;
+  if(!rows){
+    try{ rows = await fetchRows; }
+    catch(e){ b.innerHTML = `<div class="cl-msg err" style="display:block">Non riesco a leggere l'archivio: ${clEsc(clErr(e))}<br>Controlla la connessione e riprova; se il problema resta, esci e rientra.</div>`; return; }
+  }
   const yNow = new Date().getFullYear();
   const yOpts = [yNow+1, yNow, yNow-1, yNow-2, yNow-3].map(y => `<option value="${y}" ${y===yNow?'selected':''}>${y}</option>`).join('');
   const act = CL.ctx;
@@ -10195,17 +10219,7 @@ async function clRenderArchive(){
   if(act){
     h += `<div class="cl-row" style="margin-top:8px"><div><div class="t">Versioni precedenti</div><div class="s">Torna a com'era il lavoro ieri, stamattina o in un momento che hai salvato.</div></div><button class="cl-btn ghost sm" onclick="clShow('hist')">Apri</button></div>`;
   }
-  h += `<div class="cl-sec"><h4>I miei PEE per anno</h4><p class="cl-note" style="margin:0 0 4px">Si salvano da soli: aprendo un progetto trovi sempre l'ultima versione.</p>`;
-  if(!years.length) h += `<p class="cl-note" style="margin:0">Nessun progetto salvato ancora.</p>`;
-  years.forEach(y => {
-    h += `<div class="cl-year">${y}</div>`;
-    byYear[y].forEach(r => {
-      const isAct = act && act.id === r.id;
-      h += `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
-        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
-        <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
-    });
-  });
+  h += `<div class="cl-sec"><h4>I miei PEE per anno</h4><p class="cl-note" style="margin:0 0 4px">Si salvano da soli: aprendo un progetto trovi sempre l'ultima versione.</p><div id="cl-arclist">${clArcRowsHTML(rows)}</div>`;
   h += `</div>
     <div class="cl-sec"><h4>Nuovo PEE</h4>
       <div class="cl-grid"><select class="cl-in" id="cl-ny">${yOpts}</select><input class="cl-in" id="cl-nt" placeholder="Titolo (facoltativo)" maxlength="80"></div>
@@ -10215,8 +10229,12 @@ async function clRenderArchive(){
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="cl-btn sm" id="cl-ball" onclick="clBackupAll()">↓ Scarica tutti i miei progetti</button>
       <button class="cl-btn ghost sm" onclick="clBackup()">↓ Solo il progetto aperto</button>
       <label class="cl-btn ghost sm" style="cursor:pointer">↑ Carica file .json<input type="file" accept=".json,application/json" style="display:none" onchange="clRestore(this)"></label></div>
-      <div class="cl-msg" id="cl-msg"></div>${rows.length?`<p class="cl-note" style="margin:6px 0 0">${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}</p>`:''}</div>`;
+      <div class="cl-msg" id="cl-msg"></div><p class="cl-note" id="cl-arccount" style="margin:6px 0 0">${clArcCountHTML(rows)}</p></div>`;
   b.innerHTML = h;
+  if(cache) fetchRows.then(r => {
+    if(JSON.stringify(r) === JSON.stringify(cache)) return;
+    const l = $cl('cl-arclist'), c = $cl('cl-arccount'); if(l) l.innerHTML = clArcRowsHTML(r); if(c) c.innerHTML = clArcCountHTML(r);
+  }).catch(() => {});
   clLoadShared();
   clPerTe().then(() => { const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); });
 }
@@ -11287,8 +11305,25 @@ async function clInvite(){
 async function clRevoke(mid){ if(!confirm('Togliere l\'accesso a questa persona?')) return; try{ await dbRevoke(mid); clLoadMem(); }catch(e){ clToast('Errore: '+clErr(e)); } }
 async function clLoadShared(){
   const box = $cl('cl-shared'); if(!box) return;
+  const uid = CL.user && CL.user.id;
+  if(CL._shr && CL._shr.uid === uid){ clSharedPaint(box, CL._shr.rows); }
   try{
-    const rows = await dbShared(); if(!rows.length){ box.innerHTML = ''; return; }
+    const rows = await dbShared();
+    const same = CL._shr && CL._shr.uid === uid && JSON.stringify(CL._shr.rows) === JSON.stringify(rows);
+    CL._shr = {uid, rows};
+    if(!same) clSharedPaint($cl('cl-shared'), rows);
+  }catch(e){ if(!(CL._shr && CL._shr.uid === uid)) box.innerHTML = ''; }
+}
+// in background dopo l'accesso: così la prima apertura dell'archivio è immediata
+function clArcPrefetch(){
+  if(!CL.user || window.BRO) return; const uid = CL.user.id;
+  dbList().then(r => { if(CL.user && CL.user.id === uid) CL._arc = {uid, rows:r}; }).catch(() => {});
+  dbShared().then(r => { if(CL.user && CL.user.id === uid) CL._shr = {uid, rows:r}; }).catch(() => {});
+}
+function clSharedPaint(box, rows){
+  if(!box) return;
+  try{
+    if(!rows.length){ box.innerHTML = ''; return; }
     const fmt = ts => ts ? new Date(ts).toLocaleString('it-IT',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
     const roles = !!CL.roles;
     const intro = roles ? 'Progetti condivisi con te dallo staff. Come <strong>lettore</strong> li vedi e lasci suggerimenti; come <strong>co-titolare</strong> o <strong>collaboratore</strong> puoi modificarli.' : 'Progetti condivisi con te dallo staff: li vedi in sola lettura e puoi lasciare suggerimenti.';
@@ -11301,7 +11336,7 @@ async function clLoadShared(){
     }).join('') + `</div>`;
   }catch(e){ box.innerHTML = ''; }
 }
-async function clLeave(mid, id){ if(!confirm('Non vedrai più questo progetto. Chi lo ha condiviso potrà invitarti di nuovo. Continuare?')) return; try{ await dbRevoke(mid); if(CL.ctx && CL.ctx.id === id && CL.ctx.ruolo){ clDetach(); return; } clLoadShared(); }catch(e){ clToast('Errore: '+clErr(e)); } }
+async function clLeave(mid, id){ CL._shr = null; if(!confirm('Non vedrai più questo progetto. Chi lo ha condiviso potrà invitarti di nuovo. Continuare?')) return; try{ await dbRevoke(mid); if(CL.ctx && CL.ctx.id === id && CL.ctx.ruolo){ clDetach(); return; } clLoadShared(); }catch(e){ clToast('Errore: '+clErr(e)); } }
 
 // ── operazioni cloud ──
 async function clSaveCurrent(){
