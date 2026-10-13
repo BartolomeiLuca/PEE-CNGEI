@@ -22,7 +22,7 @@ await P.fill('#cl-email', 'zeta@x.it'); await P.fill('#cl-pw', 'password123'); a
 ok(!(await P.isVisible('#main-app > .mov-strip')), 'nuovo indirizzo: dopo l’accesso l’avviso sparisce');
 await P.reload(); await sleep(2000);
 ok(!(await P.isVisible('#main-app > .mov-strip')), 'nuovo indirizzo: chi ha l’account non lo vede');
-await ev(() => clLogout()); await sleep(500);
+await ev(() => clLogout()).catch(() => {}); await sleep(2500);
 // modalità staff
 await ev(() => { confirmBackToLanding(); }); await sleep(300);
 await ev(() => { exReset(); selectMode('staff'); }); await sleep(300);

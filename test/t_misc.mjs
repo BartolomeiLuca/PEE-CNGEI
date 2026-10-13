@@ -27,11 +27,13 @@ ok(await ev(pe.page, () => document.getElementById('cl-pw').type === 'text'), '1
 await pe.page.click('#cl-go'); await sleep(500);
 ok(/non coincidono/.test(await pe.page.textContent('#cl-msg')), '1. password diverse: avviso');
 await pe.page.fill('#cl-pw2', 'segreta123'); await pe.page.click('#cl-go'); await sleep(2500);
+ok(/Account creato/.test(await pe.page.textContent('#cl-title')) && /mail a elena@x\.it/.test(await pe.page.textContent('#cl-body')) && /spam/.test(await pe.page.textContent('#cl-body')), '1. alla fine della registrazione: «ti abbiamo mandato una mail»');
+await pe.page.click('#cl-ov >> text=Inizia'); await sleep(1500);
 const pop = await ev(pe.page, () => ({show: document.getElementById('cl-ov').classList.contains('show'), t: document.getElementById('cl-title').textContent, strip: document.querySelectorAll('.cl-invstrip').length}));
 ok(pop.show && /Hai un invito su «/.test(pop.t) && pop.strip > 0, '1. appena registrata: finestra «' + pop.t + '» e striscia');
 await ev(pe.page, () => clClose());
 // password dimenticata: il link va a chi l'ha chiesto
-await ev(pe.page, () => clLogout()); await sleep(300);
+await ev(pe.page, () => clLogout()).catch(() => {}); await sleep(2500);
 await ev(pe.page, () => clOpen()); await sleep(300);
 await pe.page.click('#cl-ov >> text=Password dimenticata?');
 await pe.page.fill('#cl-email', 'elena@x.it'); await pe.page.click('#cl-go'); await sleep(500);

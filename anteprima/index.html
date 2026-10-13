@@ -9781,7 +9781,7 @@ const $cl = id => document.getElementById(id);
 
 function clLoadCtx(){ try{ CL.ctx = JSON.parse(localStorage.getItem(CL_CTX)||'null'); }catch(e){ CL.ctx = null; } }
 let _sgCtx = null;
-function clSaveCtx(){ try{ CL.ctx ? localStorage.setItem(CL_CTX, JSON.stringify(CL.ctx)) : localStorage.removeItem(CL_CTX); }catch(e){}
+function clSaveCtx(){ try{ if(CL.ctx && CL.user && !CL.ctx.uid && !window.BRO) CL.ctx.uid = CL.user.id; }catch(e){} try{ CL.ctx ? localStorage.setItem(CL_CTX, JSON.stringify(CL.ctx)) : localStorage.removeItem(CL_CTX); }catch(e){}
   const id = CL.ctx ? CL.ctx.id : null;
   if(id !== _sgCtx){ try{ _sgCtx = id; SG.list = []; SG.open = {}; SG.form = null; SG.announced = 0; sgRender(); if(id && !window.BRO) setTimeout(() => sgLoad(false), 0); }catch(e){} } }
 function clSnapshot(){ try{ return JSON.parse(localStorage.getItem(CL_LS)||'{}'); }catch(e){ return {}; } }
@@ -9915,6 +9915,8 @@ async function clInit(){
     });
     const {data} = await CL.sb.auth.getSession();
     CL.user = data.session ? data.session.user : null;
+    if(CL.user && !window.BRO && await clCtxGuard()){ location.reload(); return; }
+    try{ const cr = sessionStorage.getItem('bussola_creato'); if(cr){ sessionStorage.removeItem('bussola_creato'); if(CL.user) setTimeout(() => clCreatoShow(cr), 900); } }catch(e){}
     clSetStatus(CL.user && CL.ctx ? 'ok' : '');
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); roRefresh(false); sgWatch(); sgLoad(true); }
     else if(CL.user && CL.ctx){ if(!clBaseGet() && !CL.ctx.dirty) clBaseSet(clSnapshot()); clCheckRemoteNewer(); sgWatch(); sgLoad(); }
@@ -10045,6 +10047,7 @@ async function clSubmit(view){
       const {data, error} = await CL.sb.auth.signInWithPassword({email:em, password:pw});
       if(error) throw error;
       CL.user = data.user || (data.session && data.session.user) || CL.user;
+      if(await clCtxGuard()){ try{ sessionStorage.setItem('bussola_opened_msg', 'Accesso fatto: ti mostro i tuoi progetti.'); }catch(e){} location.reload(); return; }
       clSetStatus(CL.ctx ? 'ok' : '');
       try{ movStrip(); }catch(e){}
       const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); }
@@ -10056,9 +10059,13 @@ async function clSubmit(view){
       const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back(), data:{nome}}});
       if(error) throw error;
       if(data.session){
-        CL.user = data.session.user; clSetStatus(CL.ctx ? 'ok' : '');
-        const ao2 = await clAutoOpen(); if(ao2 !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); }
-      } else clMsg('Account creato. Controlla la posta: clicca il link di conferma e sarai dentro.', 'ok');
+        CL.user = data.session.user;
+        if(await clCtxGuard()){ try{ sessionStorage.setItem('bussola_creato', em); }catch(e){} location.reload(); return; }
+        clSetStatus(CL.ctx ? 'ok' : '');
+        const ao2 = await clAutoOpen();
+        if(ao2 === 'reload'){ try{ sessionStorage.setItem('bussola_creato', em); }catch(e){} }
+        else { clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); clCreatoShow(em); }
+      } else clMsg('Account creato. Ti abbiamo mandato una mail a ' + em + ': clicca il link di conferma e sarai dentro (se non la trovi, guarda nello spam).', 'ok');
     } else if(view === 'reset'){
       const {error} = await CL.sb.auth.resetPasswordForEmail(em, {redirectTo: back()});
       if(error) throw error;
@@ -10074,10 +10081,30 @@ async function clSubmit(view){
   if(go) go.disabled = false;
 }
 
+// uscendo dall'account il lavoro resta nel cloud e il browser si svuota (chi entra dopo non vede il progetto di un altro)
 async function clLogout(){
-  await CL.sb.auth.signOut(); CL.user = null; clSetStatus(''); clClose();
-  clToast('Disconnesso. Il lavoro resta su questo dispositivo.');
+  try{ if(typeof saveData === 'function' && !window.BRO) saveData(true); if(CL.ctx && (CL.pending || CL.ctx.dirty)) await clPush(true); }catch(e){}
+  if(CL.ctx && (CL.pending || CL.status === 'off') && !confirm('Alcune modifiche non sono ancora salvate nel cloud (controlla la connessione). Uscendo adesso andrebbero perse. Uscire comunque?')) return;
+  await CL.sb.auth.signOut(); CL.user = null;
+  clForget();
+  try{ sessionStorage.removeItem('bussola_ro'); sessionStorage.setItem('bussola_opened_msg', 'Sei uscito dall’account: il tuo lavoro è al sicuro nel cloud e lo ritrovi quando rientri.'); }catch(e){}
+  location.reload();
 }
+function clForget(){ CL.ctx = null; CL.pending = false; clearTimeout(CL.timer); clSaveCtx(); try{ localStorage.removeItem(CL_LS); localStorage.removeItem(CL_BASE); localStorage.removeItem('bussola_pee_ro_v1'); localStorage.removeItem('bussola_cloud_ctx_ro'); }catch(e){} }
+// progetto aperto in questo browser da un altro account: lo tolgo (resta al sicuro nel cloud di chi lo ha)
+async function clCtxGuard(){
+  try{
+    if(!CL.user || !CL.ctx || window.BRO) return false;
+    if(CL.ctx.uid === CL.user.id) return false;
+    let mine = false;
+    if(!CL.ctx.uid){ try{ mine = !!(await dbGet(CL.ctx.id)); }catch(e){ mine = true; } }   // dati di prima, senza proprietario: se lo vedo, è mio o condiviso con me
+    if(mine){ CL.ctx.uid = CL.user.id; clSaveCtx(); return false; }
+    clForget(); return true;
+  }catch(e){ return false; }
+}
+// dopo la registrazione: la mail è partita
+function clCreatoShow(email){ const b = $cl('cl-body'), t = $cl('cl-title'); if(!b) return; $cl('cl-ov').classList.add('show'); t.textContent = 'Account creato';
+  b.innerHTML = `<p style="font-size:14px;line-height:1.6;margin:0 0 10px">✓ Il tuo account è pronto.</p><p style="font-size:13px;line-height:1.6;margin:0 0 10px">Ti abbiamo mandato una mail a <strong>${clEsc(email)}</strong> con le indicazioni per entrare. Se non la trovi, guarda anche nella cartella <strong>spam</strong>.</p><p class="cl-note" style="margin:0 0 14px">Per entrare usa sempre questa email e la password che hai scelto.</p><button class="cl-btn" onclick="clClose();clCheckInvites()">Inizia</button>`; }
 
 async function clRenderArchive(){
   const b = $cl('cl-body');
