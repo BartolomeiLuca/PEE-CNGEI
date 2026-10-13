@@ -7427,11 +7427,15 @@ function gCrit(items){ return `<div class="g-crit"><b>Criteri di compilazione (L
 // ── «Come programmi?»: individuale o condivisa con lo staff (scelta dell'app: non va nel Word) ──
 function progMode(){ return ((scheda.pp||{}).prog)==='cond'?'cond':'ind'; }
 function progCan(){ try{ return !CL.ctx || !CL.ctx.ruolo || CL.ctx.ruolo==='cotitolare'; }catch(e){ return true; } }
-function progHTML(){ const c=progMode()==='cond', can=progCan()&&!window.BRO;
+// «Come programmi?» la sceglie solo chi ha creato il progetto (tornare a individuale toglie l'accesso a tutti)
+function progOwner(){ try{ return !CL.ctx || !CL.ctx.ruolo; }catch(e){ return true; } }
+// email di chi ha creato il progetto, vista da chi è stato invitato («Nome (email)» oppure solo l'email)
+function progOwnerMail(){ try{ const o = String((CL.ctx && CL.ctx.owner) || ''); const m = /\(([^)]+@[^)]+)\)\s*$/.exec(o); return clLc(m ? m[1] : (/@/.test(o) ? o : '')); }catch(e){ return ''; } }
+function progHTML(){ const c=progMode()==='cond', can=progOwner()&&!window.BRO;
   let h=`<div class="mv-mode prog-mode" id="prog-mode"><div class="mv-mode-t">Come programmi?</div><div class="mv-opts">
     <button class="mv-opt${c?'':' on'}" ${can?'':'disabled'} onclick="progSet('ind')"><b>Programmazione individuale</b><span>lavori per conto tuo; puoi sempre condividere più avanti</span></button>
     <button class="mv-opt${c?' on':''}" ${can?'':'disabled'} onclick="progSet('cond')"><b>Programmazione condivisa</b><span>inviti le persone dello staff, ognuna con il suo ruolo</span></button></div>`;
-  if(c) h+=`<div class="mv-sub">${(typeof CL!=='undefined'&&CL.user)?(can?'Nella tabella <b>Adulti in staff</b> qui sotto spunta le persone con cui condividere il progetto e scegli il loro ruolo: serve la loro email. L’osservazione condivisa della 1.2 è attiva: puoi spegnerla lì.':'La scelta e gli inviti li fa chi ha il progetto o chi è co-titolare.'):'Per condividere il progetto <a href="#" onclick="clOpen();return false">accedi o crea un account</a>.'}</div>`;
+  if(c) h+=`<div class="mv-sub">${(typeof CL!=='undefined'&&CL.user)?(progCan()&&!window.BRO?'Nella tabella <b>Adulti in staff</b> qui sotto spunta le persone con cui condividere il progetto e scegli il loro ruolo: serve la loro email. L’osservazione condivisa della 1.2 è attiva: puoi spegnerla lì.'+(can?'':' La scelta tra individuale e condivisa la fa chi ha creato il progetto.'):'La scelta e gli inviti li fa chi ha creato il progetto o chi è co-titolare.'):'Per condividere il progetto <a href="#" onclick="clOpen();return false">accedi o crea un account</a>.'}</div>`;
   return h+`</div>`; }
 function progRefresh(){ const el=document.getElementById('prog-mode'); if(el) el.outerHTML=progHTML(); staffTabRefresh(); }
 function staffTabRefresh(){ const b=document.getElementById('staff-tab'); if(!b) return; const a=document.activeElement;
@@ -7439,7 +7443,7 @@ function staffTabRefresh(){ const b=document.getElementById('staff-tab'); if(!b)
   const typing=a&&b.contains(a)&&(a.tagName==='TEXTAREA'||a.tagName==='SELECT'||(a.tagName==='INPUT'&&a.type!=='checkbox'));
   if(!typing) b.innerHTML=staffTabHTML(); }
 function progSet(m){
-  if(!progCan()||window.BRO) return;
+  if(!progOwner()||window.BRO) return;
   if(m==='cond'){
     if(typeof CL==='undefined'||!CL.user){ showToast('Per programmare insieme allo staff serve un account: accedi o crealo'); try{ clOpen(); }catch(e){} return; }
     if(progMode()==='cond') return;
@@ -7465,8 +7469,13 @@ async function clMemLoad(redraw){ try{ if(typeof CL==='undefined'||!CL.user||!CL
   try{ staffTabRefresh(); }catch(e){} try{ mvDecorate(); }catch(e){} try{ edLock(); }catch(e){} return CL._mem; }
 function staffMem(mail){ mail=String(mail||'').trim().toLowerCase().split(/[\s,;]+/)[0]; if(!mail) return null; return ((typeof CL!=='undefined'&&CL._mem)||[]).find(m=>String(m.email).toLowerCase()===mail)||null; }
 function staffShareCell(i,r){ const mail=String(r.mail||'').trim().toLowerCase().split(/[\s,;]+/)[0], me=(typeof CL!=='undefined'&&CL.user)?String(CL.user.email).toLowerCase():'';
-  if(mail&&mail===me) return `<span class="st-sh me">tu</span>`;
-  const m=staffMem(mail), can=progCan()&&!window.BRO&&typeof CL!=='undefined'&&!!CL.user&&!!CL.ctx;
+  const own=(typeof CL!=='undefined'&&CL.ctx&&!CL.ctx.ruolo)?me:progOwnerMail();
+  if(mail&&mail===me) return `<span class="st-sh me">tu</span>${mail===own?'<div class="st-shl">titolare</div>':''}`;
+  if(mail&&own&&mail===own) return `<span class="st-sh me" title="Ha creato il progetto">titolare</span>`;
+  const m=staffMem(mail);
+  // un co-titolare non può cambiare né togliere un altro co-titolare
+  if(m&&m.ruolo==='cotitolare'&&CL.ctx&&CL.ctx.ruolo==='cotitolare') return `<span class="st-sh me">✓</span><div class="st-shl">condiviso · co-titolare</div>`;
+  const can=progCan()&&!window.BRO&&typeof CL!=='undefined'&&!!CL.user&&!!CL.ctx;
   return `<label class="st-sh" title="${m?'Ha accesso al progetto: togli la spunta per togliere l’accesso':'Condividi il progetto con questa persona'}"><input type="checkbox" class="st-chk" ${m?'checked':''} ${can?'':'disabled'} onchange="staffShare(${i},this)"></label>${m?`<div class="st-shl">condiviso · ${sEsc((CL_RUOLI[m.ruolo||'lettore']||'lettore').toLowerCase())}</div>`:''}`; }
 async function staffShare(i,cb){ const r=staffTab()[i]; if(!r) return; const mail=String(r.mail||'').trim().toLowerCase().split(/[\s,;]+/)[0]; const nome=String(r.nome||'').trim()||mail;
   const m=staffMem(mail);
