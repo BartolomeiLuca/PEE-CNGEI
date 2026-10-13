@@ -989,6 +989,7 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 #cl-invbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(560px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:14px 16px;z-index:9000;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
 #cl-updbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(520px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px 16px;z-index:9001;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
 #cl-updbar .ib-t{font-weight:800;color:#1b5e42;margin-bottom:2px}#cl-updbar .ib-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}#cl-updbar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #1b5e42;background:#fff;color:#1b5e42;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}#cl-updbar button.pri{background:#1b5e42;color:#fff}
+.mov-strip{background:#fff8e1;border:1px solid #f0d98a;color:#5a4500;padding:10px 16px;font:500 12.5px/1.5 'Montserrat',sans-serif;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.mov-strip .grow{flex:1;min-width:220px}.mov-strip button{font:700 11.5px 'Montserrat',sans-serif;border:0;background:#1b5e42;color:#fff;border-radius:16px;padding:7px 13px;cursor:pointer;min-height:34px}.mov-strip button.gh{background:#fff;color:#1b5e42;border:1.5px solid #1b5e42}#welcome-screen > .mov-strip{border-radius:10px;margin:0 0 14px}
 .cl-invstrip{background:#1b5e42;color:#fff;padding:10px 16px;font:500 12.5px/1.5 'Montserrat',sans-serif;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.cl-invstrip .grow{flex:1;min-width:220px}.cl-invstrip button{font:700 12px 'Montserrat',sans-serif;border:0;background:#fff;color:#1b5e42;border-radius:16px;padding:7px 15px;cursor:pointer;min-height:34px}
 #welcome-screen > .cl-invstrip{border-radius:10px;margin:0 0 14px}
 #cl-invbar .ib-t{font-weight:800;color:#1b5e42;margin-bottom:4px}
@@ -9890,6 +9891,7 @@ function clSetStatus(s){
     if(CL.user&&ptHot()) b.title = ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' + b.title;
   });
   try{ window.ptCheck&&ptCheck(); }catch(e){}
+  try{ if(CL.user) document.querySelectorAll('.mov-strip').forEach(e => e.remove()); }catch(e){}
 }
 
 async function clInit(){
@@ -10044,6 +10046,7 @@ async function clSubmit(view){
       if(error) throw error;
       CL.user = data.user || (data.session && data.session.user) || CL.user;
       clSetStatus(CL.ctx ? 'ok' : '');
+      try{ movStrip(); }catch(e){}
       const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); }
     } else if(view === 'signup'){
       const nome = (($cl('cl-nome')||{}).value||'').trim().replace(/\s+/g,' ');
@@ -11373,6 +11376,19 @@ async function clCheckRemoteNewer(){
 }
 
 // ── copia su file ──
+// ── l'app sta per cambiare indirizzo (pee-app.it): chi lavora senza account rischia di non ritrovare il lavoro salvato nel browser ──
+function movStrip(){
+  try{
+    document.querySelectorAll('.mov-strip').forEach(e => e.remove());
+    if(/(^|\.)pee-app\.it$/.test(location.hostname) || window.BRO || (typeof CL !== 'undefined' && CL.user)) return;
+    if(!clHasLocal()) return;
+    if(sessionStorage.getItem('bussola_mov_dopo')) return;
+    const html = `<div class="grow"><b>L’app sta per cambiare indirizzo: diventerà pee-app.it.</b> Il lavoro che hai fatto senza account è salvato solo in questo browser e con il nuovo indirizzo non lo ritroveresti. Per tenerlo, <b>accedi o crea un account gratuito</b> (si salva da solo nel cloud), oppure scarica una copia.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="clOpen()">Accedi o crea un account</button><button class="gh" onclick="clBackup()">↓ Scarica una copia</button><button class="gh" onclick="movLater()">Più tardi</button></div>`;
+    ['welcome-screen', 'main-app'].forEach(id => { const h = document.getElementById(id); if(!h) return; const d = document.createElement('div'); d.className = 'mov-strip'; d.setAttribute('role', 'status'); d.innerHTML = html; h.prepend(d); });
+  }catch(e){}
+}
+function movLater(){ try{ sessionStorage.setItem('bussola_mov_dopo', '1'); }catch(e){} document.querySelectorAll('.mov-strip').forEach(e => e.remove()); }
 function clBackup(){
   const d = clSnapshot();
   const name = CL.ctx ? `PEE_${CL.ctx.anno}_${CL.ctx.titolo.replace(/[^\w\-]+/g,'_')}` : 'PEE_backup_'+new Date().toISOString().slice(0,10);
@@ -11488,7 +11504,7 @@ function clRestore(inp){
 document.addEventListener('DOMContentLoaded', () => {
   try{ const wb=document.getElementById('why-box'); if(wb && window.innerWidth>640) wb.open=true; }catch(e){}
   try{ if(typeof loadSaved==='function') loadSaved(); }catch(e){}
-  clInit();
+  clInit().then(() => setTimeout(movStrip, 600)).catch(() => {});
   try{ const m = sessionStorage.getItem('bussola_opened_msg'); if(m){ sessionStorage.removeItem('bussola_opened_msg'); setTimeout(() => clToast(m), 800); } }catch(e){}
   // Se c'è già un lavoro salvato si entra direttamente (niente pagina iniziale, niente "Riprendi")
   try{

@@ -13,6 +13,16 @@ await P.click('#prog-mode >> text=Programmazione condivisa'); await sleep(500);
 const r = await ev(() => ({prog: scheda.pp.prog || 'ind', login: document.getElementById('cl-ov').classList.contains('show') && /Accedi/.test(document.getElementById('cl-body').textContent)}));
 ok(r.prog === 'ind' && r.login, '9. senza account: «Condivisa» chiede di accedere');
 await ev(() => clClose());
+// avviso del nuovo indirizzo: solo a chi lavora senza account
+await P.reload(); await sleep(2000);
+ok(await P.isVisible('#main-app > .mov-strip'), 'nuovo indirizzo: avviso a chi lavora senza account');
+const db2 = db; const U = db2.addUser('zeta@x.it', 'password123', 'Zeta');
+await ev(() => clOpen()); await sleep(300);
+await P.fill('#cl-email', 'zeta@x.it'); await P.fill('#cl-pw', 'password123'); await P.click('#cl-go'); await sleep(2500);
+ok(!(await P.isVisible('#main-app > .mov-strip')), 'nuovo indirizzo: dopo l’accesso l’avviso sparisce');
+await P.reload(); await sleep(2000);
+ok(!(await P.isVisible('#main-app > .mov-strip')), 'nuovo indirizzo: chi ha l’account non lo vede');
+await ev(() => clLogout()); await sleep(500);
 // modalità staff
 await ev(() => { confirmBackToLanding(); }); await sleep(300);
 await ev(() => { exReset(); selectMode('staff'); }); await sleep(300);
