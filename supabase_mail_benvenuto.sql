@@ -27,7 +27,7 @@ language plpgsql security definer set search_path = public, extensions, vault as
 declare
   chiave   text;
   mittente text;
-  app      text := 'https://bartolomeiluca.github.io/PEE-CNGEI/';
+  app      text := 'https://pee-app.it/';
   nome     text := nullif(trim(coalesce(new.raw_user_meta_data->>'nome', '')), '');
   inviti   text := '';
   corpo    text;
