@@ -44,7 +44,11 @@
   }
   const client = {
     auth: {
-      async getSession(){ const s = getS(); if(s){ const r = await call({kind:'me'}); if(r && r.user){ s.user = r.user; setS(s); return {data:{session:s}}; } setS(null); } return {data:{session:null}}; },
+      async getSession(){
+        // link della mail: #access_token=<id>&type=recovery (come fa supabase-js con detectSessionInUrl)
+        const m = /access_token=([^&]+).*type=recovery/.exec(location.hash || '');
+        if(m){ const r = await window.__sb({kind:'me', uid:m[1]}); if(r && r.user){ const s0 = {user:r.user, access_token:'t'}; setS(s0); history.replaceState(null, '', location.pathname); setTimeout(() => { fire('SIGNED_IN', s0); fire('PASSWORD_RECOVERY', s0); }, 0); return {data:{session:s0}}; } }
+        const s = getS(); if(s){ const r = await call({kind:'me'}); if(r && r.user){ s.user = r.user; setS(s); return {data:{session:s}}; } setS(null); } return {data:{session:null}}; },
       onAuthStateChange(cb){ cbs.push(cb); return {data:{subscription:{unsubscribe(){}}}}; },
       async signInWithPassword(c){ const r = await window.__sb({kind:'login', email:c.email, password:c.password}); if(r.error) return {data:{}, error:r.error}; const s = {user:r.user, access_token:'t'}; setS(s); fire('SIGNED_IN', s); return {data:{user:r.user, session:s}, error:null}; },
       async signUp(c){ const r = await window.__sb({kind:'signup', email:c.email, password:c.password, data:(c.options||{}).data||{}}); if(r.error) return {data:{}, error:r.error}; const s = {user:r.user, access_token:'t'}; setS(s); fire('SIGNED_IN', s); return {data:{user:r.user, session:s}, error:null}; },

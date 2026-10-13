@@ -9896,6 +9896,11 @@ function clSetStatus(s){
 
 async function clInit(){
   clLoadCtx();
+  // arrivo dal link «scegli la nuova password» (o da un link scaduto): niente aperture automatiche finché non si è scelta
+  try{ const H = decodeURIComponent((location.hash || '') + '&' + (location.search || '').replace(/^\?/, '')).replace(/\+/g, ' ');
+    CL.recovery = /type=recovery/.test(H);
+    const er = /error_code=([^&]+)/.exec(H) || /[#&]error=([^&]+)/.exec(H);
+    if(er) CL.linkErr = er[1]; }catch(e){}
   if(!clOn()){ document.querySelectorAll('.cl-hdrbtn,.cl-land').forEach(e => e.style.display='none'); return; }
   try{
     await new Promise((res,rej) => {
@@ -9909,9 +9914,9 @@ async function clInit(){
     CL.sb.auth.onAuthStateChange((ev, session) => {
       const was = CL.user; CL.user = session ? session.user : null;
       clSetStatus(CL.user && CL.ctx ? 'ok' : '');
-      if(ev === 'PASSWORD_RECOVERY') setTimeout(() => clShow('recovery'), 0);
+      if(ev === 'PASSWORD_RECOVERY'){ CL.recovery = true; setTimeout(() => clShow('recovery'), 0); }
       // conferma email / accesso da altra scheda: parte da solo il progetto attivo
-      else if(ev === 'SIGNED_IN' && CL.user && !was && !CL.ctx) setTimeout(() => clAutoOpen().then(r => { if(r !== 'reload' && $cl('cl-ov').classList.contains('show')) clClose(); }), 0);
+      else if(ev === 'SIGNED_IN' && CL.user && !was && !CL.ctx && !CL.recovery) setTimeout(() => clAutoOpen().then(r => { if(r !== 'reload' && $cl('cl-ov').classList.contains('show')) clClose(); }), 0);
     });
     const {data} = await CL.sb.auth.getSession();
     CL.user = data.session ? data.session.user : null;
@@ -9919,8 +9924,10 @@ async function clInit(){
     try{ const cr = sessionStorage.getItem('bussola_creato'); if(cr){ sessionStorage.removeItem('bussola_creato'); if(CL.user) setTimeout(() => clCreatoShow(cr), 900); } }catch(e){}
     clSetStatus(CL.user && CL.ctx ? 'ok' : '');
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); roRefresh(false); sgWatch(); sgLoad(true); }
+    else if(CL.user && CL.recovery){ clShow('recovery'); }
     else if(CL.user && CL.ctx){ if(!clBaseGet() && !CL.ctx.dirty) clBaseSet(clSnapshot()); clCheckRemoteNewer(); sgWatch(); sgLoad(); }
     else if(CL.user) clAutoOpen();
+    if(CL.linkErr && !CL.user){ $cl('cl-ov').classList.add('show'); clShow('reset'); clMsg(/expired|invalid|access_denied/i.test(CL.linkErr) ? 'Il link non è più valido: è scaduto o è già stato usato (a volte la posta lo «apre» da sola per controllarlo). Scrivi qui la tua email e te ne mandiamo uno nuovo: aprilo appena arriva.' : 'Il link non ha funzionato. Scrivi la tua email e te ne mandiamo uno nuovo.', 'err'); try{ history.replaceState(null, '', location.pathname); }catch(e){} }
     if(!window.BRO){ edInit(); if(CL.user) clCheckInvites(); if(CL.user && CL.ctx){ edWatch(); clPresence(); clMemLoad(); } }
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
     if(CL.user) await clEmailComplete();
@@ -9966,7 +9973,7 @@ function clShow(view){
       <div class="cl-msg" id="cl-msg"></div>`;
     setTimeout(() => { const i = $cl('cl-newmail'); if(i) i.focus(); }, 50);
   } else if(view === 'recovery'){
-    t.textContent = 'Nuova password';
+    t.textContent = CL.recovery ? 'Scegli la nuova password' : 'Cambia password';
     b.innerHTML = `<label class="cl-lb">Nuova password (almeno 8 caratteri)</label>${clPwHTML('cl-pw','new-password','')}<label class="cl-lb">Riscrivi la password</label>${clPwHTML('cl-pw2','new-password',`clSubmit('recovery')`)}
       <div style="margin-top:16px"><button class="cl-btn" id="cl-go" onclick="clSubmit('recovery')">Salva password</button></div><div class="cl-msg" id="cl-msg"></div>`;
   } else if(view === 'conflict'){
@@ -10074,8 +10081,11 @@ async function clSubmit(view){
       if(pw.length < 8) throw new Error('La password deve avere almeno 8 caratteri.');
       if(pw !== (($cl('cl-pw2')||{}).value||'')) throw new Error('Le due password non coincidono: riscrivila uguale.');
       const {error} = await CL.sb.auth.updateUser({password:pw});
-      if(error) throw error;
-      clMsg('Password aggiornata.', 'ok'); setTimeout(() => { clClose(); }, 1000);
+      if(error) throw /different from the old|same.*password/i.test(error.message||'') ? new Error('È uguale alla password di prima: scegline una diversa.') : error;
+      const wasRec = CL.recovery; CL.recovery = false;
+      try{ if(/access_token|type=recovery|[?&]code=/.test(location.href)) history.replaceState(null, '', location.pathname); }catch(e){}
+      clMsg('Password aggiornata: da adesso entri con quella nuova.', 'ok');
+      setTimeout(() => { clClose(); if(wasRec && CL.user){ if(CL.ctx) clCheckRemoteNewer(); else clAutoOpen(); } }, 1400);
     }
   }catch(e){ clMsg(clErr(e), 'err'); }
   if(go) go.disabled = false;
@@ -10119,7 +10129,7 @@ async function clRenderArchive(){
   const act = CL.ctx;
   const hasLocal = clHasLocal();
   let h = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
-      <div style="font-size:12px;color:#555">Account: ${clMyName()?`<strong>${clEsc(clMyName())}</strong> · `:''}<strong>${clEsc(CL.user.email)}</strong>${clMyName()?` · <a href="#" onclick="event.preventDefault();clAskNome()" style="color:#1b5e42">cambia nome</a>`:''} · <a href="#" onclick="event.preventDefault();clShow('email')" style="color:#1b5e42">cambia email</a>${CL.user.new_email?`<br><span style="color:#8a4b00">In attesa di conferma: ${clEsc(CL.user.new_email)}</span>`:''}</div>
+      <div style="font-size:12px;color:#555">Account: ${clMyName()?`<strong>${clEsc(clMyName())}</strong> · `:''}<strong>${clEsc(CL.user.email)}</strong>${clMyName()?` · <a href="#" onclick="event.preventDefault();clAskNome()" style="color:#1b5e42">cambia nome</a>`:''} · <a href="#" onclick="event.preventDefault();clShow('email')" style="color:#1b5e42">cambia email</a> · <a href="#" onclick="event.preventDefault();clShow('recovery')" style="color:#1b5e42">cambia password</a>${CL.user.new_email?`<br><span style="color:#8a4b00">In attesa di conferma: ${clEsc(CL.user.new_email)}</span>`:''}</div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
   if(!clMyName()) h += clNomeBox();
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
@@ -10629,6 +10639,7 @@ async function clPerTe(){
         ptCollect(items, {id:r.id, cur:false, ruolo:r.ruolo, owner:r.owner, anno:r.anno, titolo:r.titolo}, list, affPeopleOf(d), d, false); }
     }catch(e){}
     items.forEach(x => { x.hot = (x.k !== 'att' && x.k !== 'mat') || !ptSeen(x) || ptSoon(x.d); });
+    { const sk = new Set(); for(let i = items.length - 1; i >= 0; i--){ const x = items[i]; const k = [x.k, x.id, x.mid, x.idx, x.j, x.av, x.prima, x.email, (x.parti||x.cose||[]).join(',')].join('|'); if(sk.has(k)) items.splice(i, 1); else sk.add(k); } }
     CL.perte = items; clSetStatus(CL.status);
     try{ const pt = $cl('cl-perte'); if(pt && $cl('cl-ov').classList.contains('show')) pt.innerHTML = clPerTeHTML(); }catch(e){}
   }finally{ _ptBusy = false; }
@@ -11063,8 +11074,9 @@ async function dbMemChanged(){
   const own = await dbList(); if(!own.length) return [];
   const {data, error} = await CL.sb.from('pee_membri').select('id,archivio_id,email,email_prima').in('archivio_id', own.map(r => r.id));
   if(error) return [];
-  const out = [];
-  for(const m of (data||[]).filter(m => m.email_prima)){ const a = own.find(r => r.id === m.archivio_id) || {};
+  const out = [], seen = new Set();
+  for(const m of (data||[]).filter(m => m.email_prima)){
+    const k = m.archivio_id + '|' + m.email_prima + '|' + m.email; if(seen.has(k)) continue; seen.add(k); const a = own.find(r => r.id === m.archivio_id) || {};
     let nome = '';
     try{ const t = (CL.ctx && CL.ctx.id === m.archivio_id) ? ((scheda.pp||{}).staffTab||[]) : ((((await dbGet(m.archivio_id))||{}).data||{}).scheda||{}).pp?.staffTab || [];
       const r = t.find(x => clLc(x.mail).includes(m.email_prima) || clLc(x.mail).includes(m.email)); nome = r ? String(r.nome||'').trim() : ''; }catch(e){}
@@ -11082,8 +11094,10 @@ async function clMailFix(mid){
     let res = {n:0, chi:''};
     if(cur){ res = swap({scheda}); if(res.n){ _clTouched = true; _clUserAt = Date.now(); saveData(true); try{ staffTabRefresh(); }catch(e){} } }
     else { const g = await dbGet(it.id); if(g){ const d = g.data || {}; res = swap(d); if(res.n) await dbUpdate(it.id, d, clMeta(d), g.raw); } }
+    // l'avviso si chiude per questa persona in tutti i miei progetti
     await CL.sb.from('pee_membri').update({email_prima:null}).eq('id', mid);
-    CL.perte = (CL.perte||[]).filter(x => x !== it); clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML();
+    try{ await CL.sb.from('pee_membri').update({email_prima:null}).eq('email', it.email).eq('email_prima', it.prima); }catch(e){}
+    CL.perte = (CL.perte||[]).filter(x => !(x.k === 'email' && x.id === it.id && x.prima === it.prima)); clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML();
     try{ clMemLoad(); }catch(e){}
     const prj = '«' + it.anno + ' · ' + it.titolo + '»', nm = res.chi || it.nome || it.email;
     const apri = cur ? `clClose();modalClose();gGo('1a');setTimeout(()=>{const e=document.getElementById('staff-tab');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});},400)` : `modalClose();clOpenProject('${it.id}')`;

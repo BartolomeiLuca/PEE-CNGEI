@@ -21,12 +21,14 @@ await PB.evaluate(() => sessionStorage.removeItem('bussola_mail_ok')); await PB.
 ok(db.t.pee_membri.some(m => m.email === 'bruno.nuovo@x.it' && m.email_prima === 'bruno@x.it'), 'invito passato alla nuova email');
 const bctx = await PB.evaluate(() => CL.ctx && {id: CL.ctx.id, ruolo: CL.ctx.ruolo});
 ok(bctx && bctx.id === pid && bctx.ruolo === 'collaboratore', 'Bruno, dopo il cambio, lavora ancora sul progetto: ' + JSON.stringify(bctx));
+if(process.argv[5] === 'doppio'){ const m = db.t.pee_membri.find(x => x.email === 'bruno.nuovo@x.it'); db.t.pee_membri.push(Object.assign({}, m, {id: 'dup1'})); }
 // Anna: «Per te» → aggiorna
 if(process.argv[3] === 'altro'){ await PA.evaluate(() => exStart()); await sleep(3000); console.log('Anna ha aperto un altro progetto: ' + await PA.evaluate(() => CL.ctx.titolo)); }
 await PA.evaluate(() => { gGo('1a'); }); await sleep(500);
 await PA.evaluate(() => clPerTe()); await sleep(1500);
 await PA.evaluate(() => clOpen()); await sleep(1500);
 const pt = await PA.evaluate(() => (document.getElementById('cl-perte')||{}).textContent || '');
+ok((pt.match(/ha cambiato email/g)||[]).length === 1, 'un solo avviso di cambio email');
 ok(/Bruno Verdi ha cambiato email/.test(pt), '«Per te» di Anna: ' + pt.slice(0, 120));
 await PA.click('#cl-perte >> text=Aggiorna nella tabella dello staff'); await sleep(1500);
 ok(/Tabella dello staff aggiornata/.test(await PA.textContent('#g-modal')), 'finestra di conferma: «Tabella dello staff aggiornata»');
