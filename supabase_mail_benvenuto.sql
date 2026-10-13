@@ -18,12 +18,12 @@ create extension if not exists pg_net with schema extensions;
 
 -- testo sicuro dentro l'HTML
 create or replace function public.pee_html(t text) returns text
-language sql immutable as $$
+language sql immutable as $fn$
   select replace(replace(replace(replace(coalesce(t, ''), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;')
-$$;
+$fn$;
 
 create or replace function public.pee_mail_benvenuto() returns trigger
-language plpgsql security definer set search_path = public, extensions, vault as $$
+language plpgsql security definer set search_path = public, extensions, vault as $fn$
 declare
   chiave   text;
   mittente text;
@@ -46,7 +46,7 @@ begin
       order by m.created_at limit 5
     loop
       inviti := inviti || '<li><b>' || pee_html(r.anno::text || ' · ' || r.titolo) || '</b>'
-        || coalesce(', da ' || pee_html(nullif(regexp_replace(r.owner_email, '\s*\(.*\)\s*$', ''), '')), '')
+        || coalesce(', da ' || pee_html(nullif(trim(split_part(r.owner_email, ' (', 1)), '')), '')
         || ' — come ' || case r.ruolo when 'cotitolare' then 'co-titolare' when 'collaboratore' then 'collaboratore' else 'lettore' end || '</li>';
     end loop;
 
@@ -79,7 +79,7 @@ begin
     raise warning 'pee_mail_benvenuto: %', sqlerrm;
   end;
   return new;
-end $$;
+end $fn$;
 
 revoke all on function public.pee_mail_benvenuto() from public, anon, authenticated;
 
