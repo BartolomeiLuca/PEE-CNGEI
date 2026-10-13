@@ -53,7 +53,7 @@ begin
     corpo :=
       '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#222;max-width:560px">'
       || '<h2 style="color:#1b5e42;margin:0 0 12px">Ciao' || coalesce(' ' || pee_html(split_part(nome, ' ', 1)), '') || '!</h2>'
-      || '<p>Il tuo account su <b>PEE CNGEI</b> è pronto. Ti accompagna nella Scheda di Programmazione Educativa Esperienziale e nell’organizzazione delle attività, da solo o con il tuo staff.</p>'
+      || '<p>Il tuo account su <b>PEE CNGEI</b> è pronto. Ti accompagna nella Scheda di Programmazione Educativa Esperienziale e nell’organizzazione delle attività, per conto tuo o con il tuo staff.</p>'
       || '<p style="background:#f1f8f4;border:1px solid #cfe6d8;border-radius:8px;padding:10px 14px;margin:14px 0">'
       || 'Per entrare usa sempre questa email: <b>' || pee_html(new.email) || '</b><br>e la password che hai scelto quando hai creato l’account.</p>'
       || case when inviti <> '' then '<p><b>Ti aspettano già questi progetti condivisi con te:</b></p><ul style="padding-left:18px;margin:0 0 12px">' || inviti
@@ -61,7 +61,7 @@ begin
       || '<p style="margin:18px 0"><a href="' || app || '" style="background:#1b5e42;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Apri PEE CNGEI</a></p>'
       || '<p>Se dimentichi la password, nella schermata di accesso premi <b>«Password dimenticata?»</b>: ti arriva un link per sceglierne una nuova.</p>'
       || '<p>Dubbi o idee? Dentro l’app c’è <b>Suggerimenti?</b>: il messaggio arriva direttamente a chi la cura.</p>'
-      || '<p style="color:#777;font-size:12px;margin-top:20px">Hai ricevuto questa mail perché è stato creato un account PEE CNGEI con questo indirizzo. Se non sei stato tu, ignorala o scrivi a luca.bartolomei@cngei.it.</p>'
+      || '<p style="color:#777;font-size:12px;margin-top:20px">Hai ricevuto questa mail perché è stato creato un account PEE CNGEI con questo indirizzo. Se non hai creato tu l’account, ignorala o scrivi a luca.bartolomei@cngei.it.</p>'
       || '</div>';
 
     perform net.http_post(
@@ -71,7 +71,7 @@ begin
         'sender',      jsonb_build_object('name', 'PEE CNGEI', 'email', mittente),
         'replyTo',     jsonb_build_object('email', 'luca.bartolomei@cngei.it', 'name', 'PEE CNGEI'),
         'to',          jsonb_build_array(jsonb_build_object('email', new.email, 'name', coalesce(nome, new.email))),
-        'subject',     'Benvenuto su PEE CNGEI: il tuo account è pronto',
+        'subject',     'PEE CNGEI: il tuo account è pronto',
         'htmlContent', corpo),
       timeout_milliseconds := 5000);
   exception when others then
