@@ -56,7 +56,7 @@ async function share(i, ruolo){
 }
 await share(0, 'Collaboratore'); await share(1, 'Lettore'); await share(2, 'Co-titolare');
 const lbl = await ev(pa.page, () => [...document.querySelectorAll('#staff-tab .st-shl')].map(e => e.textContent));
-ok(JSON.stringify(lbl) === JSON.stringify(['condiviso · collaboratore','condiviso · lettore','condiviso · co-titolare']), '9. nella riga «condiviso · ruolo»: ' + JSON.stringify(lbl));
+ok(JSON.stringify(lbl) === JSON.stringify(['titolare','condiviso · collaboratore','condiviso · lettore','condiviso · co-titolare']), '9. nella riga «condiviso · ruolo»: ' + JSON.stringify(lbl));
 ok(db.t.pee_membri.length === 3, '9. tre inviti nel database');
 const pid = saved.id;
 
