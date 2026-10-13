@@ -224,6 +224,8 @@ const em = await ev(pa.page, () => (document.getElementById('cl-perte')||{}).tex
 ok(/Carla Neri ha cambiato email/.test(em) && /Aggiorna nella tabella dello staff/.test(em), '2. Anna: «Carla Neri ha cambiato email» in «Per te»');
 await pa.page.click('#cl-perte >> text=Aggiorna nella tabella dello staff');
 await sleep(1200);
+ok(/Tabella dello staff aggiornata/.test(await pa.page.textContent('#g-modal')), '2. finestra di conferma dell’aggiornamento');
+await ev(pa.page, () => modalClose());
 const newMail = await ev(pa.page, () => scheda.pp.staffTab.find(r => r.nome === 'Carla Neri').mail);
 ok(newMail === 'carla.nuova@x.it', '2. tabella dello staff aggiornata: ' + newMail);
 ok(!db.t.pee_membri.find(m => m.email === 'carla.nuova@x.it').email_prima, '2. avviso chiuso');
