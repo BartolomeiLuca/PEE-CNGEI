@@ -11063,21 +11063,33 @@ async function dbMemChanged(){
   const own = await dbList(); if(!own.length) return [];
   const {data, error} = await CL.sb.from('pee_membri').select('id,archivio_id,email,email_prima').in('archivio_id', own.map(r => r.id));
   if(error) return [];
-  return (data||[]).filter(m => m.email_prima).map(m => { const a = own.find(r => r.id === m.archivio_id) || {};
-    return {k:'email', mid:m.id, id:m.archivio_id, email:m.email, prima:m.email_prima, nome:(CL.ctx && CL.ctx.id === m.archivio_id) ? clStaffName(m.email_prima) : '', anno:a.anno, titolo:a.titolo}; });
+  const out = [];
+  for(const m of (data||[]).filter(m => m.email_prima)){ const a = own.find(r => r.id === m.archivio_id) || {};
+    let nome = '';
+    try{ const t = (CL.ctx && CL.ctx.id === m.archivio_id) ? ((scheda.pp||{}).staffTab||[]) : ((((await dbGet(m.archivio_id))||{}).data||{}).scheda||{}).pp?.staffTab || [];
+      const r = t.find(x => clLc(x.mail).includes(m.email_prima) || clLc(x.mail).includes(m.email)); nome = r ? String(r.nome||'').trim() : ''; }catch(e){}
+    out.push({k:'email', mid:m.id, id:m.archivio_id, email:m.email, prima:m.email_prima, nome, anno:a.anno, titolo:a.titolo}); }
+  return out;
 }
 async function clMailFix(mid){
   const it = (CL.perte||[]).find(x => x.k === 'email' && x.mid === mid); if(!it) return;
-  const swap = d => { const t = (d && d.scheda && d.scheda.pp && Array.isArray(d.scheda.pp.staffTab)) ? d.scheda.pp.staffTab : []; let n = 0;
-    t.forEach(r => { const L = String(r.mail||'').split(/([\s,;]+)/); let ch = false; const out = L.map(x => clLc(x) === it.prima ? (ch = true, it.email) : x); if(ch){ r.mail = out.join(''); n++; } }); return n; };
+  const esc = t => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // la vecchia email si sostituisce ovunque compaia nella cella (anche «Nome <email>», maiuscole, più indirizzi)
+  const swap = d => { const t = (d && d.scheda && d.scheda.pp && Array.isArray(d.scheda.pp.staffTab)) ? d.scheda.pp.staffTab : []; let n = 0, chi = '';
+    t.forEach(r => { const v = String(r.mail||''); const re = new RegExp(esc(it.prima), 'ig'); if(re.test(v)){ r.mail = v.replace(new RegExp(esc(it.prima), 'ig'), it.email); n++; chi = chi || String(r.nome||'').trim(); } }); return {n, chi}; };
+  const cur = CL.ctx && CL.ctx.id === it.id && !CL.ctx.ruolo;
   try{
-    let n = 0;
-    if(CL.ctx && CL.ctx.id === it.id && !CL.ctx.ruolo){ n = swap({scheda}); if(n){ _clTouched = true; _clUserAt = Date.now(); saveData(true); try{ staffTabRefresh(); }catch(e){} } }
-    else { const g = await dbGet(it.id); if(g){ const d = g.data || {}; n = swap(d); if(n) await dbUpdate(it.id, d, clMeta(d), g.raw); } }
+    let res = {n:0, chi:''};
+    if(cur){ res = swap({scheda}); if(res.n){ _clTouched = true; _clUserAt = Date.now(); saveData(true); try{ staffTabRefresh(); }catch(e){} } }
+    else { const g = await dbGet(it.id); if(g){ const d = g.data || {}; res = swap(d); if(res.n) await dbUpdate(it.id, d, clMeta(d), g.raw); } }
     await CL.sb.from('pee_membri').update({email_prima:null}).eq('id', mid);
     CL.perte = (CL.perte||[]).filter(x => x !== it); clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML();
     try{ clMemLoad(); }catch(e){}
-    clToast(n ? 'Tabella dello staff aggiornata con la nuova email' : 'Fatto. Nella tabella dello staff non c’era la vecchia email: controllala tu');
+    const prj = '«' + it.anno + ' · ' + it.titolo + '»', nm = res.chi || it.nome || it.email;
+    const apri = cur ? `clClose();modalClose();gGo('1a');setTimeout(()=>{const e=document.getElementById('staff-tab');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});},400)` : `modalClose();clOpenProject('${it.id}')`;
+    modalShow(res.n
+      ? `<div style="font-size:15px;font-weight:800;margin-bottom:8px">Tabella dello staff aggiornata</div><p style="font-size:13px;line-height:1.55;margin:0 0 12px">In ${clEsc(prj)} la riga di <b>${clEsc(nm)}</b> ora ha <b>${clEsc(it.email)}</b> al posto di ${clEsc(it.prima)}.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-primary" onclick="${apri}">${cur ? 'Guarda la tabella' : 'Apri il progetto'}</button><button class="btn-ghost" onclick="modalClose()">Chiudi</button></div>`
+      : `<div style="font-size:15px;font-weight:800;margin-bottom:8px">Da sistemare a mano</div><p style="font-size:13px;line-height:1.55;margin:0 0 12px">Nella tabella dello staff di ${clEsc(prj)} non ho trovato <b>${clEsc(it.prima)}</b>. L’invito è già passato alla nuova email; scrivi <b>${clEsc(it.email)}</b> nella colonna Email della riga di ${clEsc(nm)}.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-primary" onclick="${apri}">${cur ? 'Vai alla tabella' : 'Apri il progetto'}</button><button class="btn-ghost" onclick="modalClose()">Chiudi</button></div>`);
   }catch(e){ clToast('Non riesco ad aggiornare: ' + clErr(e)); }
 }
 
