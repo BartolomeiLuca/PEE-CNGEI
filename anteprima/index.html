@@ -1006,9 +1006,9 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 .cl-btn.wa{border-color:#1f9d55;color:#1f7a45}
 .cl-hdrbtn{position:relative}
 .cl-type{display:inline-block;font:800 10px 'Montserrat',sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:6px;margin-right:7px;vertical-align:1px}
-.cl-type.u{background:#2a7a4b;color:#fff!important;opacity:1}.cl-type.s{background:#2f5f96;color:#fff!important;opacity:1}.cl-type.n{background:#eee;color:#666}
-.cl-row.cl-k-staff{box-shadow:inset 5px 0 0 #2f5f96;background:#f3f7fc}.cl-row.cl-k-giovani{box-shadow:inset 5px 0 0 #2a7a4b}
-.cl-row.cl-k-staff.act{background:#e8f0fa}
+.cl-type.kE{background:#25734e;color:#fff!important}.cl-type.kR{background:#c4231f;color:#fff!important}.cl-type.kL{background:#f0e603;color:#4a4400!important}.cl-type.kS{background:#1d4f8f;color:#fff!important}.cl-type.kn{background:#eee;color:#666}
+.cl-row.cl-kE{box-shadow:inset 5px 0 0 #25734e}.cl-row.cl-kR{box-shadow:inset 5px 0 0 #c4231f}.cl-row.cl-kL{box-shadow:inset 5px 0 0 #e0d500}.cl-row.cl-kS{box-shadow:inset 5px 0 0 #1d4f8f}
+.cl-row.cl-kE.act{background:#e6f3ec}.cl-row.cl-kR.act{background:#fdecea}.cl-row.cl-kL.act{background:#fffbd0}.cl-row.cl-kS.act{background:#e8f0fa}
 .vid-list{padding:6px 12px 10px}
 .faq-home{padding:4px 20px 16px}
 @media(max-width:420px){.hdr .save-mini{display:none}.hdr-actions{gap:4px}.hdr-actions .hdr-btn{padding:6px 7px;min-width:36px}.hdr .cl-hdrbtn .cl-word,.hdr .fb-lbl{font-size:11.5px}}
@@ -6514,6 +6514,8 @@ const APP_VERSION = '2026-10-14 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 ottobre 2026', t:'Video, domande frequenti, archivio', i:[
+    'In archivio ogni progetto ha il colore della sua branca (Branco giallo, Reparto verde, Compagnia rosso, Staff blu).',
+    'Uscite: «Servono documenti da parte dei genitori?» (va nella circolare), chi li raccoglie si sceglie dallo staff; i permessi del Comune vanno tra le cose da fare prima.',
     '<b>Unità e staff sono sempre due progetti distinti</b>: scegliendo «Il mio staff» si apre (o si crea) il progetto dello staff dell’anno, senza toccare quello dell’Unità, e viceversa. In archivio li riconosci dalle etichette <b>Unità</b> e <b>Staff</b>. I progetti in cui erano finiti insieme sono stati separati in automatico.',
     '<b>Otto video</b> da un minuto circa: li trovi nella schermata iniziale (riquadro «Videotutorial»), nei riquadri «Come funziona» di ogni sezione (si apre quello giusto), nell’archivio e nella finestra degli inviti.',
     '<b>Domande frequenti</b>, con la ricerca e il pulsante «Portami lì»: pulsante <b>FAQ</b> in alto, riquadro nella schermata iniziale e link nei riquadri «Come funziona».',
@@ -6978,11 +6980,11 @@ function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPerc
     h+=`<div class="ax-row3"><div><div class="ax-sub">Data di partenza</div><input class="ax-in" type="date" value="${axE(x.data)}" onchange="axSet(${p},${j},'data',this.value,true)"></div><div><div class="ax-sub">Data di rientro</div><input class="ax-in" type="date" min="${axE(x.data)}" value="${axE(x.dataFine)}" onchange="axSet(${p},${j},'dataFine',this.value,true)"></div><div></div></div>`
       +(bad?`<div class="ax-warn">La data di rientro deve venire dopo la partenza.</div>`:axMulti(x)?`<div class="ax-hint">${axNGiorni(x)} giorni, ${axNGiorni(x)-1} nott${axNGiorni(x)-1===1?'e':'i'}. Il menù parte già con ${axNGiorni(x)} giorni.</div>`:'')+`<span class="ax-warn">${axDateWarn(per,x.data)}</span>`; }
   else h+=axLbl('Data')+`<input class="ax-in" type="date" style="max-width:190px" value="${axE(x.data)}" onchange="axSet(${p},${j},'data',this.value,true)"><span class="ax-warn">${axDateWarn(per,x.data)}</span>`;
-  h+=`<label class="ax-check"><input type="checkbox" ${L.permessi?'checked':''} onchange="axSet(${p},${j},'luogo.permessi',this.checked,true)"> Servono permessi o autorizzazioni per partecipare all’uscita</label>`;
-  if(L.permessi) h+=`<div class="ax-perm"><div class="ax-sub">Di cosa si tratta</div>${axIN(p,j,'luogo.permCosa','es. autorizzazione dei genitori, permesso del Comune per il parco',L.permCosa)}<div class="ax-row2"><div><div class="ax-sub">Referente</div>${axIN(p,j,'luogo.permRef','es. ufficio del Comune, custode del rifugio',L.permRef)}</div><div><div class="ax-sub">Link al modulo o al documento</div><div style="display:flex;gap:6px;align-items:center"><input class="ax-in" inputmode="url" value="${axE(L.permLink)}" oninput="axSet(${p},${j},'luogo.permLink',this.value);axLinkUpd(this)"><a class="att-link-open" target="_blank" rel="noopener" href="${axE(linkNorm(L.permLink||''))}" style="${axIsUrl(L.permLink)?'':'display:none'}">Apri ↗</a></div></div></div></div>`;
+  h+=`<label class="ax-check"><input type="checkbox" ${L.permessi?'checked':''} onchange="axSet(${p},${j},'luogo.permessi',this.checked,true)"> Servono documenti da parte dei genitori? <span class="ax-sub" style="display:inline;font-weight:400">(es. autorizzazione all’uscita, autocertificazione) · se spunti, va nella circolare</span></label>`;
+  if(L.permessi) h+=`<div class="ax-perm"><div class="ax-sub">Di cosa si tratta</div>${axIN(p,j,'luogo.permCosa','es. autorizzazione all’uscita, autocertificazione, delega al ritiro',L.permCosa)}<div class="ax-row2"><div><div class="ax-sub">Chi li raccoglie</div>${axPersonSel(L.permRef||'',`axSet(${p},${j},'luogo.permRef',@V,true)`)}</div><div><div class="ax-sub">Link al modulo o al documento</div><div style="display:flex;gap:6px;align-items:center"><input class="ax-in" inputmode="url" value="${axE(L.permLink)}" oninput="axSet(${p},${j},'luogo.permLink',this.value);axLinkUpd(this)"><a class="att-link-open" target="_blank" rel="noopener" href="${axE(linkNorm(L.permLink||''))}" style="${axIsUrl(L.permLink)?'':'display:none'}">Apri ↗</a></div></div></div></div>`;
   const T=axArrP(p,j,'todo'); const trs=T.length?T:[{}];
   if(axShared(a)){ const RA=x.refAltro||[]; h+=axLbl('Altri incarichi','oltre ai referenti dei settori')+`<div class="ax-refg">`+RA.map((r,i)=>`<input class="ax-in" placeholder="Altro ruolo" value="${axE(r.r)}" oninput="axRowSet(${p},${j},'refAltro',${i},'r',this.value)"><div style="display:flex;gap:6px">${axPersonSel(r.chi,`axRowSet(${p},${j},'refAltro',${i},'chi',@V,true)`)}<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'refAltro',${i})">×</button></div>`).join('')+`</div><button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'refAltro',{})">+ Altro ruolo</button><div class="ax-hint" style="margin-top:6px">Per chi fa il primo soccorso: ${AX_VADE}</div>`; }
-  h+=axLbl('Cose da fare prima')+trs.map((r,i)=>`<div class="ax-todo"><input type="checkbox" ${r.fatto?'checked':''} onchange="axRowSet(${p},${j},'todo',${i},'fatto',this.checked,true)"><input class="ax-in" placeholder="es. prenotare il posto, chiedere i permessi" value="${axE(r.cosa)}" oninput="axRowSet(${p},${j},'todo',${i},'cosa',this.value)">${axPersonSel(r.chi,`axRowSet(${p},${j},'todo',${i},'chi',@V,true)`)}<input class="ax-in" type="date" value="${axE(r.entro)}" title="Entro quando" onchange="axRowSet(${p},${j},'todo',${i},'entro',this.value)">${T.length?`<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'todo',${i})">×</button>`:''}</div>`).join('')+`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'todo',{})">+ Aggiungi</button>`;
+  h+=axLbl('Cose da fare prima')+trs.map((r,i)=>`<div class="ax-todo"><input type="checkbox" ${r.fatto?'checked':''} onchange="axRowSet(${p},${j},'todo',${i},'fatto',this.checked,true)"><input class="ax-in" placeholder="es. permesso del Comune, prenotare la casa" value="${axE(r.cosa)}" oninput="axRowSet(${p},${j},'todo',${i},'cosa',this.value)">${axPersonSel(r.chi,`axRowSet(${p},${j},'todo',${i},'chi',@V,true)`)}<input class="ax-in" type="date" value="${axE(r.entro)}" title="Entro quando" onchange="axRowSet(${p},${j},'todo',${i},'entro',this.value)">${T.length?`<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'todo',${i})">×</button>`:''}</div>`).join('')+`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'todo',{})">+ Aggiungi</button>`;
   return h; }
 function axLog(p,j,a,x){ const L=x.luogo||{}; const N=axN(x); let h='';
   h+=axLbl('Ritrovo e rientro')+`<div class="ax-rr"><div><div class="ax-sub">Luogo di ritrovo</div>${axPlaceField(p,j,L,'ritrovoDove','es. in sede, piazza del Popolo')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.ritrovo',this.value)">${axTimeOpts(L.ritrovo)}</select></div></div>
@@ -7267,7 +7269,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
     if(st.length) kv.push(['Staff'+(N.ad&&N.ad!==st.length?' ('+N.ad+' adulti)':''), st.map(n=>dPara([dTxt(n,{size:19,bold:true}),...(roles[n]?[dTxt('  ·  '+roles[n].join(', '),{size:17,color:'666666'})]:[])],{after:30}))]);
     else if(N.ad) kv.push(['Staff', N.ad+' adulti']);
     if(N.rag) kv.push(['Ragazzi', N.rag+((x.pres.ragF||x.pres.ragM)?' ('+[x.pres.ragF?x.pres.ragF+' ragazze':'',x.pres.ragM?x.pres.ragM+' ragazzi':''].filter(Boolean).join(', ')+')':'')]); }
-  if(L.permessi) kv.push(['Permessi',[L.permCosa||'da definire',L.permRef?'referente: '+L.permRef:''].filter(Boolean).join(' · ')+(axIsUrl(L.permLink)?' · modulo: '+linkNorm(L.permLink):'')]);
+  if(L.permessi) kv.push(['Documenti dei genitori',[L.permCosa||'da definire',L.permRef?'referente: '+L.permRef:''].filter(Boolean).join(' · ')+(axIsUrl(L.permLink)?' · modulo: '+linkNorm(L.permLink):'')]);
   if(kv.length){ ch.push(dH3('In breve')); ch.push(dKV(kv)); }
   // Svolgimento
   const fasi=['lancio','sviluppo','conclusione'].filter(k=>T_(a[k])); if(fasi.length){ ch.push(dH3('Svolgimento')); ch.push(dKV(fasi.map(k=>[k[0].toUpperCase()+k.slice(1),plain(a[k])]))); }
@@ -10351,7 +10353,7 @@ function clArcRowsHTML(rows){
     const ord = r => ({giovani:0, staff:1})[(r.meta||{}).mode] ?? 2;
     byYear[y].slice().sort((a, b) => ord(a) - ord(b)).forEach(r => {
       const isAct = act && act.id === r.id;
-      h += `<div class="cl-row ${isAct?'act':''} cl-k-${(r.meta||{}).mode||'n'}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clTypeTag(r.meta)}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
+      h += `<div class="cl-row ${isAct?'act':''} cl-k${clKind(r.meta)}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clTypeTag(r.meta)}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
         <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
     });
@@ -10429,7 +10431,9 @@ async function pjSplitAll(){
     }
   }catch(e){ console.warn('pjSplitAll', e); }
 }
-function clTypeTag(m){ const t = (m||{}).mode; return t === 'staff' ? '<span class="cl-type s">Staff</span>' : t === 'giovani' ? '<span class="cl-type u">Unità</span>' : '<span class="cl-type n">Da iniziare</span>'; }
+// colore e nome secondo la branca del progetto (Lupetti giallo, Esploratori verde, Rover rosso, staff blu)
+function clKind(m){ m = m||{}; return m.mode === 'staff' ? 'S' : m.mode === 'giovani' ? (['L','E','R'].includes(m.fascia) ? m.fascia : 'E') : 'n'; }
+function clTypeTag(m){ const k = clKind(m); return `<span class="cl-type k${k}">${({S:'Staff', L:'Branco', E:'Reparto', R:'Compagnia', n:'Da iniziare'})[k]}</span>`; }
 async function clRenderArchive(){
   const b = $cl('cl-body');
   const uid = CL.user && CL.user.id;
@@ -11575,7 +11579,7 @@ function clSharedPaint(box, rows){
       const ed = clEditRole(r.ruolo);
       const tag = roles ? `<span class="cl-badge">${CL_RUOLI[r.ruolo]||'Lettore'}</span>${r.nuovo?'<span class="cl-badge" style="background:#fff3cd;color:#7a5b00">nuovo</span>':''}` : '';
       const btn = isAct ? `<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>` : `<button class="cl-btn sm" onclick="clOpenShared('${r.id}')">${ed ? 'Apri e modifica' : 'Apri'}</button>`;
-      return `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clTypeTag(r.meta)}${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un’altra persona')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
+      return `<div class="cl-row ${isAct?'act':''} cl-k${clKind(r.meta)}"><div style="min-width:0"><div class="t">${clTypeTag(r.meta)}${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un’altra persona')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
     }).join('') + `</div>`;
   }catch(e){ box.innerHTML = ''; }
 }

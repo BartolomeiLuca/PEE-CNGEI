@@ -1,0 +1,12 @@
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+const base = await serve(); const db = new FakeDB(); const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const br = await launch(engine); const pa = await person(br, db), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500);
+const i = await ev(() => getAllPercorsi().findIndex(p => p.percorsoId === 'S3'));
+await ev(i => { axSet(i, 1, 'tipo', 'uscita'); axSet(i, 1, 'luogo.permessi', true, true); axSet(i, 1, 'luogo.permCosa', 'autocertificazione'); gGo('3'); }, i); await sleep(800);
+const r = await ev(i => ({msg: axMsgText(i, 1), lbl: /documenti da parte dei genitori/.test(document.body.innerHTML), sel: document.body.innerHTML.includes("luogo.permRef")}), i);
+ok(/autocertificazione/.test(r.msg), 'nella circolare: documenti dei genitori');
+ok(r.lbl, 'nuova dicitura nel modulo'); ok(r.sel, 'referente a tendina presente');
+ok(!pa.errors.length, 'nessun errore ' + pa.errors.slice(0,2).join('|'));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);

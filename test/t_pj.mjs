@@ -30,7 +30,7 @@ ok((stD.STAFF_MEMBERS||[]).length === 1 && !Object.values(stD.obs||{}).some(v =>
 // 3. archivio: etichette distinte
 await ev(P, () => clOpen()); await sleep(1500);
 const tags = await ev(P, () => [...document.querySelectorAll('#cl-arclist .cl-row')].map(r => (r.querySelector('.cl-type')||{}).textContent + ':' + r.querySelector('.t').textContent.slice(0, 40)));
-ok(tags.some(t => /^Unità:/.test(t)) && tags.some(t => /^Staff:/.test(t)), 'archivio: etichette Unità e Staff ' + JSON.stringify(tags));
+ok(tags.some(t => /^Reparto:/.test(t)) && tags.some(t => /^Staff:/.test(t)), 'archivio: etichette Unità e Staff ' + JSON.stringify(tags));
 await ev(P, () => clClose());
 // 4. progetto misto già esistente → separato in automatico
 const mix = db.t.pee_archivi.find(r => r.id === ex.id);
