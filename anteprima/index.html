@@ -1005,6 +1005,25 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 .cl-badge{display:inline-block;font:700 10.5px 'Montserrat',sans-serif;padding:2px 8px;border-radius:10px;background:#eaf5ee;color:#1b5e42;margin-left:6px;vertical-align:middle}
 .cl-btn.wa{border-color:#1f9d55;color:#1f7a45}
 .cl-hdrbtn{position:relative}
+.vid-home{margin:0 0 20px;text-align:left}.vid-hh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 8px}.vid-hh b{font-size:14px}.vid-hh span{font-size:12px;color:var(--ink-mid)}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.vid-tile{display:flex;flex-direction:column;gap:5px;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font:inherit}
+.vid-th{position:relative;display:block;aspect-ratio:16/9;border-radius:8px;background:#e9ece9 center/cover no-repeat;border:1px solid var(--border,#e2e2e2)}
+.vid-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:rgba(27,94,66,.88);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;padding-left:2px}
+.vid-du{position:absolute;right:5px;bottom:5px;background:rgba(0,0,0,.65);color:#fff;font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 5px}
+.vid-tt{font-size:12px;line-height:1.35}.vid-tt b{color:var(--green)}
+.vid-tile:hover .vid-th,.vid-tile:focus-visible .vid-th{outline:2px solid var(--green);outline-offset:1px}
+.vid-hd{margin:0 34px 10px 0}.vid-k{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase}.vid-hd h3{margin:2px 0 0;font-size:16px}
+.vid-v{width:100%;border-radius:8px;background:#000;display:block;aspect-ratio:16/9}
+.vid-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.vid-lk{font-weight:700;white-space:nowrap;color:var(--green)!important;text-decoration:none}.vid-lk:hover{text-decoration:underline}
+.vid-nav .btn-ghost,.vid-nav .btn-primary{width:auto;flex:1 1 0;min-width:0;padding:8px 10px;font-size:13px;margin:0}
+.faq-it summary{list-style:none;position:relative;padding-left:18px}.faq-it summary::-webkit-details-marker{display:none}.faq-it summary::before{content:'▸';position:absolute;left:2px;color:var(--green)}.faq-it[open] summary::before{content:'▾'}
+.faq-g{margin:10px 0 0}.faq-gh{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase;margin:0 0 4px}
+.faq-it{border-bottom:1px solid var(--border,#e5e5e5)}.faq-it summary{cursor:pointer;padding:9px 2px 9px 18px;font-size:13.5px;font-weight:700;list-style-position:outside}
+.faq-a{font-size:12.8px;line-height:1.55;padding:0 2px 10px;color:var(--ink)}
+.faq-lk{font-size:12px;margin:8px 0 0;color:var(--ink-mid)}
+.cl-hdrbtn .cl-word{font-size:12px;font-weight:700;white-space:nowrap;letter-spacing:.01em}
 .cl-pt{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#d84315;color:#fff;font:800 10.5px/18px 'Montserrat',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff}
 .cl-perte{border:2px solid #d84315;border-radius:12px;padding:10px 12px;margin:0 0 12px;background:#fff8f5}
 .cl-perte h4{margin:0 0 6px;color:#b3360f;font:800 13px 'Montserrat',sans-serif}
@@ -1081,7 +1100,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     <div class="hdr-actions">
       <button class="hdr-btn fb-btn" onclick="fbOpen()" title="Scrivi un suggerimento o segnala un problema"><span class="fb-lbl">Suggerimenti?</span></button>
       <button class="hdr-btn" id="cl-histbtn" onclick="clOpenHist()" style="display:none" title="Versioni precedenti: torna a com'era il lavoro prima"><svg class="ic"><use href="#i-history"/></svg><span class="hdr-lbl"> Versioni</span></button>
-      <button class="hdr-btn cl-hdrbtn" onclick="clOpen()" title="Account e archivio dei tuoi PEE · il lavoro si salva da solo"><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Accedi</span><span class="save-mini"></span></button>
+      <button class="hdr-btn cl-hdrbtn" onclick="clOpen()" title="Account e archivio dei tuoi PEE · il lavoro si salva da solo"><span class="cl-word">Accedi</span><span class="save-mini"></span></button>
       <button class="hdr-btn hdr-zoom" onclick="zoomApp(0)" title="Cambia la dimensione del testo" aria-label="Cambia la dimensione del testo">A<small>a</small></button>
       <button class="hdr-btn hdr-save" onclick="saveData()" title="Il lavoro si salva da solo. Premi per salvare subito."><span id="save-ind">Salva</span></button>
     </div>
@@ -1096,6 +1115,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     <div class="welcome-sub">Uno strumento per osservare i 24 percorsi del Progetto Educativo Esperienziale CNGEI.</div>
 
 
+    <div id="vid-home" class="vid-home"></div>
     <!-- ISTRUZIONI -->
     <details class="istr-box" style="text-align:left;margin-bottom:24px">
       <summary>
@@ -1105,6 +1125,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       </summary>
       <div class="istr-body">
 
+        <p style="font-size:12.5px;margin:0 0 10px">Hai un dubbio veloce? Guarda le <a href="#" onclick="faqOpen();return false">Domande frequenti</a>.</p>
         <h4>A cosa serve</h4>
         <p>PEE CNGEI ti accompagna a scrivere la <strong>Scheda di Programmazione Educativa Esperienziale</strong> della tua Unità, seguendo passo passo le Linee Guida: parte da ciò che osservi nel tuo gruppo e arriva a un documento Word con le cinque Sezioni, pronto da condividere con lo staff o, se stai svolgendo il Progetto Personale, da inviare all’Incaricato al Centro della Formazione (ICdF). Si basa sui 24 percorsi del Progetto Educativo Esperienziale. Ti aiuta anche a organizzare ogni attività del percorso e, se vuoi, a lavorare insieme allo staff sullo stesso progetto. Non è un test e non dà giudizi: è una mappa per guardare meglio e scegliere dove concentrarti.</p>
 
@@ -1156,7 +1177,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     </details>
 
 
-    <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Suggerimenti?</a> · <a href="#" id="nov-link" onclick="novOpen();return false">Novità</a><span id="nov-dot" class="nov-dot" style="display:none" aria-label="ci sono novità"></span></p>
+    <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Suggerimenti?</a> · <a href="#" onclick="faqOpen();return false">Domande frequenti</a> · <a href="#" id="nov-link" onclick="novOpen();return false">Novità</a><span id="nov-dot" class="nov-dot" style="display:none" aria-label="ci sono novità"></span></p>
     <p style="text-align:center;font-size:10.5px;color:var(--ink-faint);margin:4px 0 0" id="app-ver"></p>
 
     <div class="tour-linkbox"><button class="tour-link" onclick="tourStart(true)">▶ Vedi il giro guidato (1 minuto)</button> <button class="tour-link" style="margin-left:14px" onclick="exStart()">Apri un progetto di esempio</button> <button class="tour-link" style="margin-left:14px;font-weight:500;opacity:.7" onclick="openModal()">Ricomincia da zero</button></div>
@@ -2628,11 +2649,12 @@ function kosPromInfo(){
     <p style="font-size:12px;line-height:1.5;color:var(--ink-mid);margin:0">In nessun caso l'aggancio cambia il focus osservativo o la meccanica dell'attività. I tre incontri del KOS coprono solo una parte del Percorso Promessa del ${BR}: le altre riunioni e i contenuti previsti dal Regolamento vanno programmati a parte.</p>`);
 }
 function modalShow(html){
+  { const o=document.getElementById('g-modal'); if(o) o.querySelectorAll('video').forEach(v => { try{ v.pause(); }catch(e){} }); }
   let ov=document.getElementById('g-modal'); if(!ov){ ov=document.createElement('div'); ov.id='g-modal'; ov.className='modal-overlay'; ov.onclick=e=>{ if(e.target===ov) modalClose(); }; document.body.appendChild(ov); }
   ov.innerHTML=`<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:520px;width:calc(100% - 24px);max-height:90vh;overflow:auto;padding:18px;position:relative"><button class="modal-x" aria-label="Chiudi" onclick="modalClose()">✕</button>${html}</div>`;
   ov.classList.add('show');
 }
-function modalClose(){ const ov=document.getElementById('g-modal'); if(ov) ov.classList.remove('show'); }
+function modalClose(){ const ov=document.getElementById('g-modal'); if(ov){ ov.querySelectorAll('video').forEach(v => { try{ v.pause(); }catch(e){} }); ov.classList.remove('show'); } }
 
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, contratto)']];
@@ -4851,8 +4873,29 @@ const mvNum=v=>(v==null||v===''||v==='n')?null:Number(v);
 const mvAns=v=>(v==null||v==='')?undefined:(v==='n'?'n':Number(v));
 const mvShow=v=>v==='n'?'n.o.':v;
 const mvLbl=v=>v==='n'?'Non osservato':thresholdLabel(obsToThreshold(v));
-function mvObs(){ const M=scheda.mv||{}; return Object.entries(M.by||{}).map(([em,o])=>({em, nome:(o&&o.nome)||em, v:(o&&o.v)||{}, note:(o&&o.note)||{}})); }
-function mvAll(pid){ return mvObs().map(o=>({em:o.em,nome:o.nome,v:mvAns(o.v[pid]),note:o.note[pid]})).filter(x=>x.v!==undefined); }
+function mvObs(){ const M=scheda.mv||{}; return Object.entries(M.by||{}).map(([em,o])=>({em, nome:(o&&o.nome)||em, v:(o&&o.v)||{}, note:(o&&o.note)||{}, at:(o&&o.at)||{}})); }
+function mvAll(pid){ return mvObs().map(o=>({em:o.em,nome:o.nome,v:mvAns(o.v[pid]),note:o.note[pid],at:o.at[pid]||0})).filter(x=>x.v!==undefined); }
+// «da riguardare»: dopo la decisione qualcuno ha dato o cambiato il suo valore, lontano dal deciso (2 punti o più) oppure con una nota
+function mvRevHit(x, dec){ if(!dec || !x || !(x.at > (dec.ok || dec.at || 0))) return false;
+  const a = x.v, b = dec.v === 'n' ? 'n' : Number(dec.v);
+  return (a !== 'n' && b !== 'n' && Math.abs(a - b) >= 2) || (a === 'n') !== (b === 'n') || !!String(x.note || '').trim(); }
+function mvRev(pid){ const dec = ((scheda.mv||{}).dec||{})[pid]; if(!dec) return []; const me = mvMe(); return mvAll(pid).filter(x => x.em !== me && mvRevHit(x, dec)); }
+function mvAvDone(pid){ try{ (scheda.avvisi||[]).forEach(a => { if(a && !a.letto && a.tipo === 'mv' && a.pid === pid) a.letto = true; }); }catch(e){} }
+function mvConfirm(pid){ const M = mvM(), dec = M.dec[pid]; if(!dec) return; dec.ok = Date.now(); mvAvDone(pid); window._mvOpen = window._mvOpen || {}; window._mvOpen[pid] = false; try{ _clTouched = true; _clUserAt = Date.now(); }catch(e){} refreshObs(); saveData(true); }
+// avviso in «Per te» a chi decide (chi ha il progetto e i co-titolari), uno per percorso e per persona
+function mvRevNotify(pid){ clearTimeout((window._mvRN = window._mvRN || {})[pid]); window._mvRN[pid] = setTimeout(() => { try{
+  if(window.BRO || typeof CL === 'undefined' || !CL.ctx || !CL.ctx.ruolo) return;   // chi ha il progetto non avvisa sé stesso
+  const dec = ((scheda.mv||{}).dec||{})[pid], me = mvMe(); const mine = mvAll(pid).find(x => x.em === me);
+  if(!mvRevHit(mine, dec)) return;
+  const to = new Set(); const ow = progOwnerMail(); if(ow) to.add(ow);
+  (CL._mem||[]).forEach(m => { if(m.ruolo === 'cotitolare' && m.email) to.add(clLc(m.email)); }); to.delete(me);
+  const per = [].concat(DB.P||[], DB.C||[], DB.S||[]).find(p => p && p.id === pid);
+  const dove = (per ? per.name : pid) + ' (1.2 Scheda di osservazione)';
+  const testo = 'Il suo valore: ' + (mine.v === 'n' ? 'Non osservato' : mine.v) + ' · deciso: ' + (dec.v === 'n' ? 'Non osservato' : dec.v) + (String(mine.note||'').trim() ? ' — «' + String(mine.note).trim() + '»' : '');
+  to.forEach(a => { const ex = (scheda.avvisi||[]).find(v => v && !v.letto && v.tipo === 'mv' && v.pid === pid && v.a === a && v.em === me);
+    if(ex){ ex.testo = testo; ex.at = Date.now(); try{ _clTouched = true; _clUserAt = Date.now(); }catch(e){} saveData(true); }
+    else edAvAdd({tipo:'mv', a, pid, em:me, dove, testo}); });
+}catch(e){} }, 1500); }
 function mvVals(pid){ return mvAll(pid).filter(x=>x.v!=='n'); }
 function mvMedian(a){ a=a.slice().sort((x,y)=>x-y); const n=a.length; if(!n) return null; return Math.round(n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2); }
 function mvFinal(pid){ const d=((scheda.mv||{}).dec||{})[pid]; if(d&&d.v!=null&&d.v!=='') return d.v==='n'?'n':Number(d.v); const m=mvMedian(mvVals(pid).map(x=>x.v)); return m==null?'n':m; }
@@ -4868,8 +4911,8 @@ function mvShared(){ try{ if(typeof CL==='undefined'||!CL.user||!CL.ctx) return 
   if(CL._nMem===undefined){ CL._nMem=null; dbMembri(CL.ctx.id).then(r=>{ CL._mem=r||[]; CL._nMem=(r||[]).length; mvDecorate(); }).catch(()=>{ CL._nMem=0; }); }
   return CL._nMem>0; }catch(e){ return false; } }
 function mvSetMine(id,s){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:'',v:{},note:{}}); o.nome=mvMyName(); if(!o.v) o.v={};
-  if(s===''||s==null) delete o.v[id]; else o.v[id]=(s==='n'?'n':Number(s)); }
-function mvNote(pid,v){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:mvMyName(),v:{},note:{}}); if(!o.note) o.note={}; o.note[pid]=v; saveDataDebounced(); }
+  if(s===''||s==null) delete o.v[id]; else o.v[id]=(s==='n'?'n':Number(s)); if(!o.at) o.at={}; o.at[id]=Date.now(); mvRevNotify(id); }
+function mvNote(pid,v){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:mvMyName(),v:{},note:{}}); if(!o.note) o.note={}; o.note[pid]=v; if(!o.at) o.at={}; o.at[pid]=Date.now(); mvRevNotify(pid); saveDataDebounced(); }
 function mvSetMode(on){
   if(!mvCanDecide()) return; const M=mvM(); const me=mvMe();
   if(on){ if(me && !(M.by[me]&&Object.keys(M.by[me].v||{}).length)){ const v={}; Object.values(DB).flat().forEach(p=>{ const n=mvNum(obs[p.id]); if(n!=null) v[p.id]=n; }); M.by[me]={nome:mvMyName(),v,note:{}}; } M.on=true; }
@@ -4880,7 +4923,7 @@ function mvDecide(pid,v,why){
   const M=mvM(); const prev=M.dec[pid]; v=(v==='n')?'n':Number(v);
   if(prev && prev.v!==v && !String(why||'').trim()){ showToast('Scrivi due righe sul perché cambi il valore'); return false; }
   if(prev && prev.v!==v) M.log.push({pid, da:prev.v, a:v, chi:mvMyName(), at:Date.now(), why:String(why||'').trim()});
-  M.dec[pid]={v, chi:mvMyName(), at:Date.now()}; window._mvEdit=null;
+  M.dec[pid]={v, chi:mvMyName(), at:Date.now()}; window._mvEdit=null; mvAvDone(pid);
   obs[pid]=mvFinal(pid); try{ ossAutoSync(pid[0]); }catch(e){} refreshObs(); saveData(true); return true;
 }
 function mvDecideForm(pid){ const sel=document.getElementById('mvv-'+pid), ta=document.getElementById('mvw-'+pid); if(!sel) return; mvDecide(pid, sel.value, ta?ta.value:''); }
@@ -4892,10 +4935,10 @@ function mvIni(nome){ const w=String(nome||'').replace(/@.*/,'').trim().split(/[
 // stato del valore del percorso: deciso, da confrontare, valore di mezzo, solo il tuo, da dare
 function mvState(pid){ const M=scheda.mv||{}, dec=(M.dec||{})[pid], all=mvAll(pid), nums=mvVals(pid).map(x=>x.v), med=mvMedian(nums);
   if(mvMineAns(pid)===undefined) return {k:'none'};
-  if(dec&&dec.v!=null&&dec.v!=='') return {k:'dec',v:dec.v==='n'?'n':Number(dec.v),dec};
+  if(dec&&dec.v!=null&&dec.v!=='') return {k:(mvCanDecide()&&mvRev(pid).length)?'rev':'dec',v:dec.v==='n'?'n':Number(dec.v),dec};
   const v=med==null?'n':med;
   if(mvConf(pid)) return {k:'conf',v}; return {k:all.length>1?'mid':'solo',v}; }
-function mvNeedsMe(pid){ const st=mvState(pid); return st.k==='none' || (st.k==='conf' && mvCanDecide()) || window._mvEdit===pid; }
+function mvNeedsMe(pid){ const st=mvState(pid); return st.k==='none' || st.k==='rev' || (st.k==='conf' && mvCanDecide()) || window._mvEdit===pid; }
 function mvIsOpen(pid){ const o=(window._mvOpen||{})[pid]; return o===undefined ? mvNeedsMe(pid) : o; }
 function mvToggle(pid){ window._mvOpen=window._mvOpen||{}; window._mvOpen[pid]=!mvIsOpen(pid); mvDecorate(); }
 function mvHeadHTML(p){
@@ -4905,8 +4948,8 @@ function mvHeadHTML(p){
   else dots=all.map(x=>`<span class="mv-dot${x.em===me?' me':''}" title="${sEsc((x.em===me?'Tu':x.nome)+': '+mvLbl(x.v))}">${x.em===me?'Tu':sEsc(mvIni(x.nome))} ${x.v==='n'?'–':x.v}</span>`).join('');
   let val;
   if(st.k==='none') val=`<div class="mv-val none"><span class="l">Dai il tuo valore</span></div>`;
-  else { const t=obsToThreshold(st.v), c=thresholdColor(t), tag={dec:'deciso',conf:'da confrontare',mid:'valore di mezzo',solo:'per ora solo il tuo'}[st.k];
-    val=`<div class="mv-val ${st.k==='dec'?'dec':st.k==='conf'?'conf':'prop'}${t===3?' yl':''}" style="--c:${c}" title="Valore del percorso: ${tag}"><span class="n">${st.v==='n'?'–':st.v}</span><span class="l"><small>${tag}</small>${sEsc(mvLbl(st.v))}</span></div>`; }
+  else { const t=obsToThreshold(st.v), c=thresholdColor(t), tag={dec:'deciso',rev:'da riguardare',conf:'da confrontare',mid:'valore di mezzo',solo:'per ora solo il tuo'}[st.k];
+    val=`<div class="mv-val ${st.k==='dec'?'dec':(st.k==='conf'||st.k==='rev')?'conf':'prop'}${t===3?' yl':''}" style="--c:${c}" title="Valore del percorso: ${tag}"><span class="n">${st.v==='n'?'–':st.v}</span><span class="l"><small>${tag}</small>${sEsc(mvLbl(st.v))}</span></div>`; }
   return `<div class="mv-head"><div class="mv-dots">${dots}</div>${val}<button class="mv-tg" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'} i dettagli dell'osservazione" onclick="mvToggle('${pid}')"><span class="t">Dettagli </span>${open?'▴':'▾'}</button></div>`;
 }
 function mvScaleHTML(pid){
@@ -4931,7 +4974,10 @@ function mvCardHTML(p){
   if(window._mvEdit===pid && can){
     h+=`<div class="mv-st mv-c"><b>${dec?'Cambia il valore deciso':'Scegli il valore'}</b><div class="mv-row"><select class="ax-in" id="mvv-${pid}" style="max-width:220px">${opts(dec?dv:prop)}</select></div>${dec?`<label class="mv-why">Perché lo cambi? <span>due righe: cosa hai visto, senza giudicare le persone. Senza motivazione il cambio non si salva.</span><textarea class="ax-ta" id="mvw-${pid}" style="min-height:52px"></textarea></label>`:''}<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecideForm('${pid}')">${dec?'Cambia e salva':'Conferma'}</button><button class="btn-ghost mv-b" onclick="window._mvEdit=null;mvDecorate()">Annulla</button></div></div>`;
   } else if(dec){
-    h+=`<div class="mv-st">Deciso da ${sEsc(dec.chi||'')}${dec.at?', '+mvFmtD(dec.at):''}.${can?` <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Cambia</button>`:''}</div>`;
+    const rv = can ? mvRev(pid) : [], dTxt = dv==='n'?'Non osservato':dv;
+    if(rv.length) h+=`<div class="mv-st mv-c"><span class="mv-tag">da riguardare</span> Dopo la decisione (${sEsc(dec.chi||'')}${dec.at?', '+mvFmtD(dec.at):''}) è arrivato un valore diverso:${rv.map(x=>`<div style="margin:4px 0 0"><b>${sEsc(x.nome)}</b>: ${x.v==='n'?'Non osservato':x.v+' · '+sEsc(lbl(x.v))}${String(x.note||'').trim()?` <i>«${sEsc(x.note)}»</i>`:''}</div>`).join('')}<div class="mv-row"><button class="btn-primary mv-b" onclick="mvConfirm('${pid}')">Confermo ${dTxt}</button><button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Cambia</button></div></div>`;
+    else h+=`<div class="mv-st">Deciso da ${sEsc(dec.chi||'')}${dec.at?', '+mvFmtD(dec.at):''}.${can?` <button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Cambia</button>`:''}</div>`;
+    if(!can){ const my = all.find(x => x.em === me); if(mvRevHit(my, dec)) h+=`<div class="mv-st" style="color:var(--ink-mid)">Il tuo valore arriva a chi decide: lo trova segnato «da riguardare» e può confermare o cambiare il valore del percorso.</div>`; }
   } else if(sp>=2 || mix){
     const why = mix ? `C’è chi l’ha osservato e chi no: forse qualcuno ha colto un’occasione sfuggita agli altri. Vale la pena parlarne in staff.` : `Tra il valore più basso e il più alto ci sono ${sp} punti: vale la pena parlarne in staff.`;
     h+=`<div class="mv-st mv-c"><span class="mv-tag">da confrontare</span> ${why} Proposta: <b>${pTxt}</b>${prop==='n'?'':' (il valore di mezzo)'}.${can?`<div class="mv-row"><button class="btn-primary mv-b" onclick="mvDecide('${pid}',${pq})">Tieni ${pTxt}</button>${mix?`<button class="btn-ghost mv-b" onclick="mvDecide('${pid}','n')">Non osservato</button>`:''}<button class="btn-ghost mv-b" onclick="mvEdit('${pid}')">Scegli un altro valore</button></div>`:'<div style="margin-top:4px">Decide chi ha il progetto o chi è co-titolare.</div>'}</div>`;
@@ -6434,9 +6480,14 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-13 · beta';
+const APP_VERSION = '2026-10-14 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'14 ottobre 2026', t:'Video, domande frequenti, archivio', i:[
+    '<b>Otto video</b> da un minuto circa: li trovi nella schermata iniziale («Guarda come funziona»), nei riquadri «Come funziona» di ogni sezione (si apre quello giusto), nell’archivio e nella finestra degli inviti.',
+    '<b>Domande frequenti</b>, con la ricerca e il pulsante «Portami lì»: in fondo alla schermata iniziale e nei riquadri «Come funziona».',
+    'In alto il pulsante si chiama <b>Archivio</b> (prima c’era solo la nuvola); il pallino verde e la ✓ dicono che è tutto salvato.',
+    'Osservazione condivisa: se dopo la decisione qualcuno dà un valore lontano dal deciso o lo accompagna con una nota, il percorso diventa <b>da riguardare</b> per chi decide, con un avviso in «Per te»: <b>Confermo</b> o <b>Cambia</b>.']},
   {d:'13 ottobre 2026', t:'Priorità in ordine e rimandi tra le sezioni', i:[
     'Ambiti sempre nello stesso ordine, ovunque: <b>Personale, Comunitario, Spirituale</b> (io, gli altri, il mio dentro), anche nei percorsi.',
     'Le <b>necessità</b> scritte nella 1.3 si possono riprendere nella Sezione 2; quelle della Sezione 2 e quelle delle priorità nella Sezione 3 restano sempre allineate.',
@@ -6482,6 +6533,86 @@ const NOVITA = [
     'Vademecum della cassetta di primo soccorso da scaricare.',
     'Materiale comune per i Rover, consigli per lo zaino, lista della spesa.']}
 ];
+// ── Video tutorial: otto capitoli brevi, nella cartella /video del sito ──
+const VIDEOS = [
+  {n:1, t:'Da dove si parte', d:'1:18'},
+  {n:2, t:'Il tuo spazio: account, archivio, copie di sicurezza', d:'0:51'},
+  {n:3, t:'Programmare con lo staff', d:'0:50'},
+  {n:4, t:'Sezione 1: conoscere il gruppo', d:'0:45'},
+  {n:5, t:'Sezione 2: percorsi, obiettivi, indicatori', d:'0:34'},
+  {n:6, t:'Sezione 3: dalle idee alle attività', d:'0:40'},
+  {n:7, t:'Sezioni 4 e 5: verifica, valutazione, documento finale', d:'0:41'},
+  {n:8, t:'Ti hanno invitato? Cosa puoi fare', d:'0:34'}
+];
+function vidSrc(n){ return '/video/pee-' + n + '.mp4'; }
+function vidOpen(n){
+  const v = VIDEOS.find(x => x.n === n) || VIDEOS[0], nx = VIDEOS.find(x => x.n === v.n + 1);
+  modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length}</span><h3>${v.t}</h3></div>
+    <video class="vid-v" src="${vidSrc(v.n)}" poster="/video/pee-${v.n}.jpg" controls autoplay playsinline preload="metadata"></video>
+    <div class="vid-nav">${v.n > 1 ? `<button class="btn-ghost" onclick="vidOpen(${v.n - 1})">‹ Precedente</button>` : '<span></span>'}<button class="btn-ghost" onclick="vidList()">Tutti i video</button>${nx ? `<button class="btn-primary" onclick="vidOpen(${nx.n})">Prossimo ›</button>` : '<span></span>'}</div>`);
+  vidWide(true);
+}
+function vidList(){
+  modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Video: come funziona</h3><div class="vid-grid">${VIDEOS.map(vidTile).join('')}</div>`);
+  vidWide(true);
+}
+function vidTile(v){ return `<button class="vid-tile" onclick="vidOpen(${v.n})"><span class="vid-th" style="background-image:url('/video/pee-${v.n}.jpg')"><span class="vid-play">▶</span><span class="vid-du">${v.d}</span></span><span class="vid-tt"><b>${v.n}</b> ${v.t}</span></button>`; }
+function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !ov.firstElementChild) return; ov.firstElementChild.style.maxWidth = on ? '860px' : ''; }
+// quale video per la parte dell'app in cui ti trovi
+function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 3; const k = gCur(); return ({'1a':4,'1b':4,'1c':4,'1d':4,'2':5,'3':6,'4':7,'5':7,'chk':7})[k] || 4; }catch(e){ return 1; } }
+function vidLink(n, txt){ return `<a href="#" class="vid-lk" onclick="vidOpen(${n});return false">▶ ${txt || 'Guarda il video'}</a>`; }
+function vidHome(){ const h = document.getElementById('vid-home'); if(!h) return;
+  h.innerHTML = `<div class="vid-hh"><b>Guarda come funziona</b><span>otto video da un minuto circa</span></div><div class="vid-grid">${VIDEOS.map(vidTile).join('')}</div>`; }
+
+// ── Domande frequenti: cerca, apri la risposta, «Portami lì» ──
+const FAQ = [
+  ['Per cominciare','A cosa serve PEE CNGEI?','Ti accompagna nella Programmazione Educativa Esperienziale della tua Unità: osservare il gruppo, scegliere le priorità, costruire percorsi e attività, verificare e valutare. Ti risparmia le parti ripetitive; le scelte educative restano tue.'],
+  ['Per cominciare','Serve per il Progetto Personale o per la programmazione dell’Unità?','Per entrambi: la struttura è quella delle Linee Guida. Quello che serve solo per una programmazione più ampia è segnato come <b>facoltativo</b>.'],
+  ['Per cominciare','Posso provarla senza fare danni?','Sì: nella schermata iniziale premi <b>Apri un progetto di esempio</b>. È un Reparto già compilato: esplora e modifica liberamente, poi lo elimini con un clic.'],
+  ['Per cominciare','Funziona su telefono e tablet?','Sì. Per scrivere molto il computer o il tablet sono più comodi, ma il lavoro è lo stesso su ogni dispositivo (con un account).'],
+  ['Account e salvataggio','Devo per forza creare un account?','No: senza account il lavoro resta solo nel browser di questo dispositivo. Con l’account lo ritrovi ovunque e puoi lavorare con lo staff.','clOpen()'],
+  ['Account e salvataggio','Come si salva il lavoro?','Da solo, a ogni modifica. Nel pulsante <b>Archivio</b> in alto il pallino verde e la spunta ✓ dicono che è tutto salvato.'],
+  ['Account e salvataggio','Ho sbagliato e ho perso qualcosa: posso tornare indietro?','Sì: <b>Archivio › Versioni precedenti</b> (o il pulsante con l’orologio in alto) ti riporta a com’era il lavoro qualche ora o qualche giorno prima.','clOpenHist()'],
+  ['Account e salvataggio','Come faccio una copia di sicurezza?','<b>Archivio › Scarica tutti i miei progetti</b>: ottieni un file da conservare sul computer o su Drive. Con <b>Carica file .json</b> li rimetti in archivio.','clOpen()'],
+  ['Account e salvataggio','Ho dimenticato la password.','Nella schermata di accesso premi <b>Password dimenticata?</b>: ti arriva una mail con il link per sceglierne una nuova. Se non la trovi, guarda nello spam.'],
+  ['Account e salvataggio','Posso cambiare l’email dell’account?','Sì, da <b>Archivio › cambia email</b>. Ti arriva un link di conferma al nuovo indirizzo; i progetti condivisi con te ti seguono.','clOpen()'],
+  ['Lavorare con lo staff','Come invito lo staff?','Nella 1.1 scegli <b>Programmazione condivisa</b>, spunta le persone nella tabella dello staff e scegli il loro ruolo. Puoi avvisarle con un messaggio WhatsApp già scritto.','gGo(\'1a\')'],
+  ['Lavorare con lo staff','Che differenza c’è tra co-titolare, collaboratore e lettore?','Il <b>co-titolare</b> lavora su tutto, come chi ha il progetto. Il <b>collaboratore</b> modifica le parti di cui è referente e dà il suo valore nell’osservazione. Il <b>lettore</b> vede tutto e lascia suggerimenti firmati.'],
+  ['Lavorare con lo staff','Mi hanno invitato ma non vedo il progetto.','Crea l’account (o entra) con la <b>stessa email</b> a cui è arrivato l’invito: lo trovi in <b>Archivio › Condivisi con me</b>.','clOpen()'],
+  ['Lavorare con lo staff','Cosa succede se lavoriamo in due nello stesso momento?','Le modifiche arrivano a tutte le persone in tempo reale. Se qualcuno sta modificando un’attività la vedi segnata: aspetta che finisca, poi tocca a te.'],
+  ['Lavorare con lo staff','Cos’è «Per te»?','Raccoglie quello che riguarda te: parti affidate, materiali da procurare («tocca a te»), suggerimenti ricevuti, verifiche da fare. Lo trovi in <b>Archivio</b>; il numerino sul pulsante dice quante cose ci sono.','clOpen()'],
+  ['Lavorare con lo staff','Come funziona l’osservazione condivisa?','Nella 1.2 ognuno dà il proprio valore senza vedere quello degli altri; poi i valori si confrontano e chi ha il progetto, o è co-titolare, decide il valore del percorso.','gGo(\'1b\')'],
+  ['La programmazione','In che ordine compaiono gli ambiti?','Sempre Personale, Comunitario, Spirituale, in tutte le sezioni e nel documento.'],
+  ['La programmazione','L’app scrive la programmazione al posto mio?','No. Ti propone bozze da cui partire, per esempio nella 1.3 a partire dall’osservazione, ma le parole e le scelte sono tue.','gGo(\'1c\')'],
+  ['La programmazione','Cambio una data: devo correggerla dappertutto?','No: circolare, messaggio alle famiglie, calendario e foglio del giorno si aggiornano da soli.','gGo(\'3\')'],
+  ['La programmazione','Cosa sono gli Indicatori di Raggiungimento?','I segnali concreti che ti dicono se il gruppo è cresciuto nell’obiettivo. Li scegli nella Sezione 2; le verifiche delle attività ti aiutano a vederli nella Sezione 5.','gGo(\'2\')'],
+  ['Documenti','Come ottengo il documento da consegnare?','Con <b>↓ Scarica la Scheda (Word)</b>, in fondo a ogni sezione o in <b>Controllo e invio</b>: ha la stessa struttura delle Linee Guida.','gGo(\'chk\')'],
+  ['Documenti','A chi va consegnato?','Il Progetto Personale va all’Incaricato del Centro della Formazione, con in copia il Capo Gruppo e il Commissario di Sezione. La programmazione dell’Unità va al Capo Gruppo.','gGo(\'chk\')'],
+  ['Documenti','Il Word si apre anche con Pages o Google Documenti?','Sì.'],
+  ['Se qualcosa non va','Vedo una versione vecchia o la pagina non si aggiorna.','Ricarica la pagina; se resta così, esci dall’account e rientra.'],
+  ['Se qualcosa non va','Ho trovato un errore o ho un’idea.','Premi <b>Suggerimenti?</b>: il messaggio arriva direttamente a chi cura l’app.','fbOpen()']
+];
+const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':2, 'Lavorare con lo staff':3, 'La programmazione':4, 'Documenti':7};
+function faqOpen(){
+  const inApp = () => { const m = document.getElementById('main-app'); return m && m.style.display !== 'none' && typeof MODE !== 'undefined' && MODE === 'giovani'; };
+  const groups = [...new Set(FAQ.map(f => f[0]))];
+  const item = (f, i) => { const go = f[3] && (/^gGo/.test(f[3]) ? inApp() : true) ? `<button class="btn-ghost" style="margin-top:8px;font-size:12px;padding:6px 12px" onclick="faqGo(${i})">Portami lì →</button>` : '';
+    return `<details class="faq-it" data-q="${sEsc((f[1]+' '+f[2]).replace(/<[^>]+>/g,'').toLowerCase())}"><summary>${f[1]}</summary><div class="faq-a">${f[2]}${go?'<div>'+go+'</div>':''}</div></details>`; };
+  modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Domande frequenti</h3>
+    <input class="ax-in faq-q" id="faq-q" type="search" placeholder="Cerca una domanda…" oninput="faqFilter(this.value)" style="width:100%;margin:8px 0 6px">
+    <div id="faq-list">${groups.map(g => `<div class="faq-g"><div class="faq-gh">${g}${FAQ_VID[g]?` <a href="#" class="vid-lk" style="text-transform:none;letter-spacing:0;font-size:11.5px" onclick="vidOpen(${FAQ_VID[g]});return false">▶ video</a>`:''}</div>${FAQ.map((f,i)=>f[0]===g?item(f,i):'').join('')}</div>`).join('')}</div>
+    <p class="faq-none" id="faq-none" style="display:none">Nessuna domanda trovata.</p>
+    <p style="font-size:12px;color:var(--ink-mid);margin:14px 0 0">Non hai trovato la risposta? Scrivici da <a href="#" onclick="modalClose();fbOpen();return false">Suggerimenti?</a>: le domande che arrivano diventano nuove risposte.</p>`);
+}
+function faqFilter(v){
+  const t = String(v||'').toLowerCase().trim().split(/\s+/).filter(Boolean); let n = 0;
+  document.querySelectorAll('#faq-list .faq-it').forEach(d => { const ok = t.every(w => d.dataset.q.includes(w)); d.style.display = ok ? '' : 'none'; if(ok) n++; if(t.length && ok) d.open = n <= 2; });
+  document.querySelectorAll('#faq-list .faq-g').forEach(g => { g.style.display = [...g.querySelectorAll('.faq-it')].some(d => d.style.display !== 'none') ? '' : 'none'; });
+  const e = document.getElementById('faq-none'); if(e) e.style.display = n ? 'none' : '';
+}
+function faqGo(i){ const f = FAQ[i]; if(!f || !f[3]) return; modalClose(); setTimeout(() => { try{ (new Function(f[3]))(); }catch(e){} }, 50); }
+// link «Domande frequenti» in fondo ai riquadri «Come funziona»
+function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = '<a href="#" class="vid-lk" onclick="vidOpen(vidHere());return false">▶ Guarda il video (1 min)</a> · Hai un dubbio? <a href="#" onclick="faqOpen();return false">Domande frequenti</a>'; b.appendChild(p); }); }
 function novOpen(){
   modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Novità</h3><p style="font-size:12px;color:var(--ink-mid);margin:0 0 12px">Versione ${APP_VERSION}. Qualcosa non va o hai un’idea? Scrivici da “Suggerimenti?”.</p>`+
     NOVITA.map(n=>`<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase">${n.d}</div><div style="font-size:14px;font-weight:800;margin:2px 0 6px">${n.t}</div><ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.55">${n.i.map(x=>`<li style="margin:3px 0">${x}</li>`).join('')}</ul></div>`).join(''));
@@ -6490,7 +6621,7 @@ function novOpen(){
 function novDot(){ let seen=''; try{ seen=localStorage.getItem('bussola_nov_vista')||''; }catch(e){}
   const d=document.getElementById('nov-dot'); if(d) d.style.display = seen===NOVITA[0].d ? 'none' : 'inline-block';
   const v=document.getElementById('app-ver'); if(v) v.textContent='Versione '+APP_VERSION; }
-document.addEventListener('DOMContentLoaded', novDot);
+document.addEventListener('DOMContentLoaded', () => { novDot(); faqLinks(); vidHome(); });
 const STRUM_GRUPPI = ['Legge e Promessa','Programmi Progressivi e Stimolanti','Gruppo di Pari','Simbolismo e Tradizioni','Imparare Facendo',"Vita all'Aria Aperta",'Servizio'];
 // Fonte: "Strumenti del Metodo declinati per fasce d'età" (CNGEI)
 const STRUM_BRANCA = {
@@ -9937,11 +10068,12 @@ function clSetStatus(s){
     (CL.ctx ? ({ok:'Salvato nel cloud', sync:'Salvataggio in corso…', off:'Non sincronizzato: controlla la connessione'}[s] || 'Il mio archivio') + ' · ' + CL.ctx.anno + ' ' + CL.ctx.titolo : 'Il mio archivio PEE');
   const hb = $cl('cl-histbtn'); if(hb) hb.style.display = (CL.user && CL.ctx && !window.BRO) ? '' : 'none';
   document.querySelectorAll('.cl-hdrbtn').forEach(b => {
-    if(window.BRO){ b.title = (CL.user&&ptHot() ? ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' : '') + 'Sola lettura'; b.innerHTML = `<span class="cl-dot ok"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Sola lettura</span>${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`; return; }
+    if(window.BRO){ b.title = (CL.user&&ptHot() ? ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' : '') + 'Sola lettura'; b.innerHTML = b.closest('.cl-land') ? `<span class="cl-dot ok"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Sola lettura</span>` : `<span class="cl-dot ok"></span><span class="cl-word">Sola lettura</span>`; b.innerHTML += `${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`; return; }
     const land = !!b.closest('.cl-land');
     const lbl = !CL.user ? 'Accedi' : (s === 'off' ? 'Non sincronizzato' : (land ? 'Il mio archivio' : 'Archivio'));
     b.title = tip + (!land && window._saveAt ? ' · Salvato alle '+window._saveAt : '');
-    b.innerHTML = `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`;
+    // nell'intestazione la parola «Archivio» (come nei video) al posto della nuvola; il pallino dice se è tutto salvato
+    b.innerHTML = land ? `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>` : `<span class="cl-dot ${cls}"></span><span class="cl-word">${CL.user ? 'Archivio' : 'Accedi'}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`;
     if(CL.user&&ptHot()) b.title = ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' + b.title;
   });
   try{ window.ptCheck&&ptCheck(); }catch(e){}
@@ -10019,6 +10151,7 @@ function clShow(view){
       ${view==='login'?`<button class="cl-btn ghost" onclick="clShow('reset')">Password dimenticata?</button>`:''}
       ${isR?`<button class="cl-btn ghost" onclick="clShow('login')">Indietro</button>`:''}</div>
       <div class="cl-msg" id="cl-msg"></div>
+      <p class="cl-note" style="margin:10px 0 0"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: account e archivio (1 min)</a></p>
       <p class="cl-note">In questo strumento possono esserci osservazioni su persone reali: usa nomi in forma abbreviata o di fantasia per i ragazzi. Solo tu vedi i tuoi dati.</p>`;
   } else if(view === 'email'){
     t.textContent = 'Cambia email';
@@ -10073,7 +10206,7 @@ function clShow(view){
     t.textContent = rows.length === 1 ? 'Hai un invito su «' + r.anno + ' · ' + r.titolo + '»' : 'Hai ' + rows.length + ' inviti';
     b.innerHTML = rows.slice(0, 4).map(x => `<div class="cl-row"><div style="min-width:0"><div class="t" style="font-weight:500;line-height:1.5">${clInvTxt(x)}.</div><div class="s">${clEsc(CL_RUOLI_TXT[x.ruolo] || CL_RUOLI_TXT.lettore)}</div></div><button class="cl-btn sm" onclick="clInvOpen('${x.id}')">${clEditRole(x.ruolo) ? 'Apri e modifica' : 'Apri'}</button></div>`).join('')
       + (rows.length > 4 ? `<p class="cl-note" style="margin:6px 0 0">Gli altri li trovi in Archivio › Condivisi con me.</p>` : '')
-      + `<p class="cl-note">Il tuo lavoro resta dove è: lo ritrovi nel tuo archivio.</p><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="cl-btn ghost" onclick="clInvLater()">Più tardi</button></div>`;
+      + `<p class="cl-note">Il tuo lavoro resta dove è: lo ritrovi nel tuo archivio. <a href="#" class="vid-lk" onclick="clClose();vidOpen(8);return false">▶ Video: cosa puoi fare</a></p><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="cl-btn ghost" onclick="clInvLater()">Più tardi</button></div>`;
   } else if(view === 'ro'){
     t.textContent = 'Sola lettura';
     b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Stai guardando un progetto condiviso con te${window.BRO&&window.BRO.owner?' da <strong>'+clEsc(window.BRO.owner)+'</strong>':''}. Per aprire i tuoi PEE torna al tuo lavoro.</p>
@@ -10209,6 +10342,7 @@ async function clRenderArchive(){
       <div style="font-size:12px;color:#555">Account: ${clMyName()?`<strong>${clEsc(clMyName())}</strong> · `:''}<strong>${clEsc(CL.user.email)}</strong>${clMyName()?` · <a href="#" onclick="event.preventDefault();clAskNome()" style="color:#1b5e42">cambia nome</a>`:''} · <a href="#" onclick="event.preventDefault();clShow('email')" style="color:#1b5e42">cambia email</a> · <a href="#" onclick="event.preventDefault();clShow('recovery')" style="color:#1b5e42">cambia password</a>${CL.user.new_email?`<br><span style="color:#8a4b00">In attesa di conferma: ${clEsc(CL.user.new_email)}</span>`:''}</div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
   if(!clMyName()) h += clNomeBox();
+  h += `<p class="cl-note" style="margin:0 0 8px"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: il tuo spazio</a> · <a href="#" class="vid-lk" onclick="clClose();vidOpen(3);return false">▶ Video: programmare con lo staff</a></p>`;
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   h += '<div id="cl-shared"></div>';
   if(act){
@@ -10718,7 +10852,9 @@ async function clPerTe(){
 }
 // un avviso aperto: lo segno come letto (nel progetto aperto) e porto all'attività
 function ptAvGo(id, av, cur, idx, j){
-  if(cur){ if(!window.BRO) ptAvRead(av); clPtGoAtt(idx, j); return; }
+  if(cur){ const A = (scheda.avvisi||[]).find(x => x && x.id === av);
+    if(A && A.tipo === 'mv'){ try{ clClose(); }catch(e){} (window._mvOpen = window._mvOpen || {})[A.pid] = true; gotoObs(A.pid); return; }
+    if(!window.BRO) ptAvRead(av); clPtGoAtt(idx, j); return; }
   try{ sessionStorage.setItem('bussola_av_letto', av); }catch(e){} clOpenShared(id); }
 function ptAvRead(av){ try{ const a = (scheda.avvisi||[]).find(x => x.id === av); if(a && !a.letto){ a.letto = true; _clTouched = true; _clUserAt = Date.now(); saveData(true); } }catch(e){}
   CL.perte = (CL.perte||[]).filter(x => !(x.k === 'av' && x.av === av)); clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); }
@@ -10732,7 +10868,7 @@ function clPerTeHTML(){
     const go = x.cur ? `clPtGoAtt(${x.idx},${x.j})` : `clOpenShared('${x.id}')`;
     const tt = x.t ? '«'+clEsc(x.t.slice(0,60))+'»' : 'attività '+((x.j||0)+1);
     if(x.k === 'mat') return `<div class="cl-row"><div style="min-width:0"><div class="t">Materiali da procurare, tocca a te: ${clEsc(x.cose.slice(0,4).join(', '))}${x.cose.length>4?'…':''}</div><div class="s">per ${tt} · ${pr}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${go}">Apri</button></div>`;
-    if(x.k === 'av') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.tipo==='mod'?clEsc(x.da||'Chi ha il progetto')+' ha modificato '+clEsc(x.dove||'una parte affidata a te'):'Suggerimento di '+clEsc(x.da||'chi ha il progetto')+' su '+clEsc(x.dove||'una parte affidata a te')}</div><div class="s">${x.testo?'«'+clEsc(String(x.testo).slice(0,140))+'» · ':''}${pr}</div></div><div style="display:flex;gap:6px;flex-shrink:0">${x.cur&&!x.ro?`<button class="cl-btn ghost sm" onclick="ptAvRead('${x.av}')">Letto</button>`:''}<button class="cl-btn sm" onclick="ptAvGo('${x.id}','${x.av}',${x.cur?'true':'false'},${x.idx==null?'null':x.idx},${x.j==null?'null':x.j})">Apri</button></div></div>`;
+    if(x.k === 'av') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.tipo==='mv'?clEsc(x.da||'Una persona dello staff')+' ha dato il suo valore su '+clEsc(x.dove||'un percorso')+' · da riguardare':x.tipo==='mod'?clEsc(x.da||'Chi ha il progetto')+' ha modificato '+clEsc(x.dove||'una parte affidata a te'):'Suggerimento di '+clEsc(x.da||'chi ha il progetto')+' su '+clEsc(x.dove||'una parte affidata a te')}</div><div class="s">${x.testo?'«'+clEsc(String(x.testo).slice(0,140))+'» · ':''}${pr}</div></div><div style="display:flex;gap:6px;flex-shrink:0">${x.cur&&!x.ro?`<button class="cl-btn ghost sm" onclick="ptAvRead('${x.av}')">Letto</button>`:''}<button class="cl-btn sm" onclick="ptAvGo('${x.id}','${x.av}',${x.cur?'true':'false'},${x.idx==null?'null':x.idx},${x.j==null?'null':x.j})">Apri</button></div></div>`;
     if(x.k === 'email') return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(x.nome||x.email)} ha cambiato email</div><div class="s">${clEsc(x.prima)} → ${clEsc(x.email)} · ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div></div><button class="cl-btn sm" onclick="clMailFix('${x.mid}')">Aggiorna nella tabella dello staff</button></div>`;
     if(x.k === 'att') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.parti?clEsc(x.parti.join(', '))+' di':'Attività affidata a te:'} ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}${x.parti?' · affidat'+(x.parti.length>1?'e':'a')+' a te':''}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${x.cur?`clPtGoAtt(${x.idx},${x.j})`:`clOpenShared('${x.id}')`}">Apri</button></div>`;
     const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;

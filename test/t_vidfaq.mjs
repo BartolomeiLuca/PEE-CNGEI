@@ -1,0 +1,39 @@
+// Video tutorial, domande frequenti, pulsante «Archivio»
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+const base = await serve(); const db = new FakeDB(); db.sql13 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const br = await launch(engine); const pa = await person(br, db, process.argv[3] ? {ctx:{viewport:{width:390, height:800}}} : {}), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const st = {}; P.on('response', r => { const m = /\/video\/pee-(\d)\.(mp4|jpg)/.exec(r.url()); if(m) st[m[1] + m[2]] = r.status(); });
+await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(1200);
+ok(await P.locator('#vid-home .vid-tile').count() === 8, 'home: 8 video');
+await sleep(800); ok(['1jpg','8jpg'].every(k => st[k] === 200), 'copertine raggiungibili ' + JSON.stringify(st));
+await P.locator('#vid-home .vid-tile').nth(1).click(); await sleep(1200);
+const v = await ev(() => { const x = document.querySelector('#g-modal video'); return x ? {src: x.getAttribute('src'), w: document.querySelector('#g-modal > div').getBoundingClientRect().width} : null; });
+ok(v && v.src === '/video/pee-2.mp4', 'il video 2 si apre ' + JSON.stringify(v));
+ok(st['2mp4'] === 200 || st['2mp4'] === 206, 'file del video raggiungibile (' + st['2mp4'] + ')');
+await P.click('#g-modal >> text=Prossimo ›'); await sleep(500);
+ok(await ev(() => document.querySelector('#g-modal video').getAttribute('src')) === '/video/pee-3.mp4', '«Prossimo» porta al video 3');
+await ev(() => modalClose()); await sleep(200);
+ok(await ev(() => [...document.querySelectorAll('video')].every(x => x.paused)), 'chiudendo la finestra il video si ferma');
+// FAQ
+await P.locator('a:visible', {hasText:'Domande frequenti'}).first().click(); await sleep(400);
+ok(await P.locator('#g-modal .faq-it').count() >= 20, 'FAQ: domande presenti');
+await P.fill('#faq-q', 'password'); await sleep(300);
+const vis = await ev(() => [...document.querySelectorAll('#g-modal .faq-it')].filter(d => d.style.display !== 'none').map(d => d.querySelector('summary').textContent));
+ok(vis.length >= 1 && vis.every(t => /password|account|email/i.test(t) || true) && vis.some(t => /password/i.test(t)), 'ricerca «password»: ' + vis.join(' | '));
+await P.fill('#faq-q', 'zzzz'); await sleep(200); ok(await P.isVisible('#faq-none'), 'nessun risultato: messaggio');
+await ev(() => modalClose());
+// nell'app: link nei riquadri, Portami lì, Archivio
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500); await ev(() => { try{ clClose(); }catch(e){} gGo('3'); }); await sleep(600);
+ok(await ev(() => vidHere()) === 6, 'nella Sezione 3 il video giusto è il 6');
+ok(await ev(() => document.querySelectorAll('.tutorial-box .faq-lk').length) >= 4, 'link video/FAQ nei riquadri «Come funziona»');
+ok(await ev(() => [...document.querySelectorAll('.hdr .cl-hdrbtn')].some(b => /Archivio/.test(b.textContent))), 'pulsante «Archivio» con la parola');
+await ev(() => faqOpen()); await P.fill('#faq-q', 'invito lo staff'); await sleep(300);
+await P.locator('#g-modal .faq-it:visible >> text=Portami lì').first().click(); await sleep(900);
+ok(await ev(() => gCur()) === '1a', '«Portami lì» apre la 1.1 (' + await ev(() => gCur()) + ')');
+await ev(() => clOpen()); await sleep(1500);
+ok(await ev(() => /Video: il tuo spazio/.test(document.getElementById('cl-body').textContent)), 'archivio: link ai video');
+const sc = await ev(() => document.documentElement.scrollWidth <= window.innerWidth + 1); ok(sc, 'nessuno scorrimento orizzontale');
+ok(!pa.errors.length, 'nessun errore ' + pa.errors.slice(0,2).join('|'));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);

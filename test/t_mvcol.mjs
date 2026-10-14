@@ -1,0 +1,55 @@
+// Osservazione condivisa: il valore personale del collaboratore arriva a chi ha il progetto
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+const base = await serve(); const db = new FakeDB(); db.sql13 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const B = db.addUser('bruno@x.it', 'password123', 'Bruno Verdi');
+const D = db.addUser('dario@x.it', 'password123', 'Dario Blu');
+const br = await launch(engine); const ev = (p, f, a) => p.evaluate(f, a);
+const pa = await person(br, db); await loginAs(pa.page, base, A);
+await ev(pa.page, () => exStart()); await sleep(2500);
+await ev(pa.page, () => { scheda.pp.staffTab = [{ruolo:'CU',nome:'Anna Rossi',mail:'anna@x.it'},{ruolo:'VCU',nome:'Bruno Verdi',mail:'bruno@x.it'},{ruolo:'VCU',nome:'Dario Blu',mail:'dario@x.it'}]; _clTouched = true; _clUserAt = Date.now(); saveData(true); gGo('1a'); });
+await sleep(800);
+await pa.page.click('#prog-mode >> text=Programmazione condivisa'); await sleep(800);
+async function share(i, ruolo){ await pa.page.locator('#staff-tab .st-chk').nth(i).check(); await pa.page.waitForSelector('#g-modal.show'); await pa.page.click(`#g-modal >> text=${ruolo}`); await sleep(700); await ev(pa.page, () => modalClose()); }
+await share(0, 'Co-titolare'); await share(1, 'Co-titolare'); await sleep(2000);
+const pid = db.t.pee_archivi.find(r => /Esempio/.test(r.titolo)).id;
+const pb = await person(br, db); await loginAs(pb.page, base, B); await sleep(1500);
+await ev(pb.page, id => clOpenShared(id), pid).catch(() => {}); await sleep(3000);
+console.log('Bruno ruolo:', await ev(pb.page, () => CL.ctx && CL.ctx.ruolo));
+// Dario co-titolare declassa Bruno a collaboratore
+const pd = await person(br, db); await loginAs(pd.page, base, D); await sleep(1500);
+await ev(pd.page, id => clOpenShared(id), pid).catch(() => {}); await sleep(3000);
+const m = db.t.pee_membri.find(x => x.email === 'bruno@x.it'); m.ruolo = 'collaboratore';
+await sleep(500);
+await ev(pb.page, () => { try{ clRoleCheck(); }catch(e){} }); await sleep(2500);
+console.log('Bruno ruolo dopo:', await ev(pb.page, () => CL.ctx && CL.ctx.ruolo));
+// Bruno dà il suo valore in 1.2
+const P0 = await ev(pb.page, () => { gGo('1b'); return getAllPercorsi ? null : null; });
+const pidObs = await ev(pb.page, () => { const k = Object.keys(obs||{})[0] || 'P1'; return k; });
+await ev(pa.page, k => { _clTouched = true; _clUserAt = Date.now(); setObs(k, 6); mvDecide(k, 6, ''); }, pidObs); await sleep(4000);
+console.log('Bruno vede deciso:', await ev(pb.page, k => mvState(k).k, pidObs));
+await ev(pb.page, k => { _clTouched = true; _clUserAt = Date.now(); setObs(k, 3); mvNote(k, 'credo che sia più giusto'); }, pidObs);
+await sleep(4000);
+const sv = db.t.pee_archivi.find(r => r.id === pid).data;
+const inDb = sv.scheda && sv.scheda.mv && sv.scheda.mv.by && sv.scheda.mv.by['bruno@x.it'];
+ok(inDb && inDb.v && inDb.v[pidObs] == 3, 'nel cloud c’è il valore di Bruno: ' + JSON.stringify(inDb && inDb.v && inDb.v[pidObs]));
+const seenA = await ev(pa.page, k => { const o = (scheda.mv.by||{})['bruno@x.it']; return o && o.v && o.v[k]; }, pidObs);
+ok(seenA == 3, 'Anna vede il valore di Bruno: ' + seenA);
+await ev(pa.page, () => gGo('1b')); await sleep(800); console.log('DOM Anna:', await ev(pa.page, k => { const h = document.querySelector('[data-mv="'+k+'"]') || [...document.querySelectorAll('.mv-head')].find(e => e.closest('[id*="'+k+'"]')); return h ? h.textContent.replace(/\s+/g,' ').slice(0,200) : 'non trovato'; }, pidObs));
+await sleep(3000);
+const st = await ev(pa.page, k => ({k: mvState(k).k, av: (scheda.avvisi||[]).filter(a => a.tipo === 'mv' && !a.letto).map(a => a.a + ':' + a.testo)}), pidObs);
+ok(st.k === 'rev', 'Anna: percorso «da riguardare» (' + st.k + ')');
+ok(st.av.length === 2 && st.av.some(a => /^anna@x.it/.test(a)) && st.av.some(a => /^dario@x.it/.test(a)) && /3/.test(st.av[0]) && /più giusto/.test(st.av[0]), 'avviso a Anna: ' + JSON.stringify(st.av));
+await ev(pa.page, () => clPerTe()); await sleep(1500);
+const pt = await ev(pa.page, () => (CL.perte||[]).filter(x => x.k === 'av' && x.tipo === 'mv').length);
+ok(pt === 1, '«Per te» di Anna mostra l’avviso (' + pt + ')');
+const card = await ev(pa.page, k => { gGo('1b'); return new Promise(r => setTimeout(() => { const t = document.body.innerText; r(/da riguardare/.test(t) && /Confermo 6/.test(t)); }, 800)); }, pidObs);
+ok(card, 'Anna vede «da riguardare» e «Confermo 6»');
+const lineB = await ev(pb.page, k => { gGo('1b'); (window._mvOpen = window._mvOpen || {})[k] = true; mvDecorate(); return new Promise(r => setTimeout(() => r(/arriva a chi decide/.test(document.body.innerText)), 600)); }, pidObs);
+ok(lineB, 'Bruno legge che il suo valore arriva a chi decide');
+await ev(pa.page, k => mvConfirm(k), pidObs); await sleep(1500);
+const after = await ev(pa.page, k => ({k: mvState(k).k, av: (scheda.avvisi||[]).filter(a => a.tipo === 'mv' && !a.letto).length}), pidObs);
+ok(after.k === 'dec' && after.av === 0, 'Confermo: torna «deciso» e l’avviso è letto ' + JSON.stringify(after));
+const errs = [...pa.errors, ...pb.errors]; ok(!errs.length, 'nessun errore ' + errs.slice(0,2).join('|'));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);

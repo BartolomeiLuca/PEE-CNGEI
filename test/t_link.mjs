@@ -5,6 +5,7 @@ const base = await serve(); const db = new FakeDB(); db.sql13 = true;
 const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
 const br = await launch(engine); const pa = await person(br, db), P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500);
+if(process.env.FASCIA){ await ev(f => { FASCIA = f; try{ saveData(true); }catch(e){} try{ renderSchedaC(); }catch(e){} }, process.env.FASCIA); await sleep(500); }
 const iS = await ev(() => getAllPercorsi().findIndex(p => p.percorsoId === 'S3'));
 // data dell'attività → circolare, calendario, foglio del giorno, stato
 for(const [d, giorno] of [['2026-11-14', 'sabato 14 novembre'], ['2026-11-21', 'sabato 21 novembre']]){
