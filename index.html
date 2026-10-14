@@ -992,6 +992,9 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 #cl-invbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(560px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:14px 16px;z-index:9000;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
 #cl-updbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(520px,calc(100% - 32px));box-sizing:border-box;background:#fff;border:2px solid #1b5e42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px 16px;z-index:9001;font:500 13px/1.5 'Montserrat',sans-serif;color:#1f2a24}
 #cl-updbar .ib-t{font-weight:800;color:#1b5e42;margin-bottom:2px}#cl-updbar .ib-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}#cl-updbar button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid #1b5e42;background:#fff;color:#1b5e42;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}#cl-updbar button.pri{background:#1b5e42;color:#fff}
+.cl-hdrbtn.cl-out{background:#ffc83d!important;color:#4a3800!important;border-color:#e0a800!important;border-radius:16px}.cl-hdrbtn.cl-out .cl-word{color:#4a3800}.cl-hdrbtn.cl-in .cl-word{max-width:190px;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){.cl-hdrbtn .cl-arc{display:none}}
+@media(max-width:560px){.cl-hdrbtn.cl-out .cl-pre{display:none}}
 .mov-strip{background:#fff8e1;border:1px solid #f0d98a;color:#5a4500;padding:10px 16px;font:500 12.5px/1.5 'Montserrat',sans-serif;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.mov-strip .grow{flex:1;min-width:220px}.mov-strip button{font:700 11.5px 'Montserrat',sans-serif;border:0;background:#1b5e42;color:#fff;border-radius:16px;padding:7px 13px;cursor:pointer;min-height:34px}.mov-strip button.gh{background:#fff;color:#1b5e42;border:1.5px solid #1b5e42}#welcome-screen > .mov-strip{border-radius:10px;margin:0 0 14px}
 .cl-invstrip{background:#1b5e42;color:#fff;padding:10px 16px;font:500 12.5px/1.5 'Montserrat',sans-serif;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.cl-invstrip .grow{flex:1;min-width:220px}.cl-invstrip button{font:700 12px 'Montserrat',sans-serif;border:0;background:#fff;color:#1b5e42;border-radius:16px;padding:7px 15px;cursor:pointer;min-height:34px}
 #welcome-screen > .cl-invstrip{border-radius:10px;margin:0 0 14px}
@@ -1062,6 +1065,57 @@ body[data-theme="L"] .hdr-btn:hover{background:rgba(0,0,0,.08)}
 body[data-theme="L"] .hdr .back-landing-btn{background:rgba(0,0,0,.07);color:#2b2800;border-color:rgba(0,0,0,.3)}
 body[data-theme="L"] .hdr .back-landing-btn:hover{background:rgba(0,0,0,.14);color:#2b2800}
 body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2800}
+/* ── STAFF: colonna persone + passaggi (stesso linguaggio dell'Unità, in blu) ── */
+body[data-mode="staff"] #tab3,body[data-mode="staff"] #tab4,body[data-mode="staff"] #mnav3,body[data-mode="staff"] #mnav4{display:none!important}
+body[data-mode="staff"] #panel1 .prog-wrap{display:none}
+body[data-mode="staff"] #panel2 .foot-nav .btn-primary[onclick="goPhase(3)"]{display:none}
+.st-wrap{display:grid;grid-template-columns:232px minmax(0,1fr);gap:16px;align-items:start;margin-top:12px}
+.st-side{position:sticky;top:calc(var(--hdr-h,56px) + 76px);display:flex;flex-direction:column;gap:6px;background:var(--bg-card,#fff);border:1px solid var(--border-light);border-radius:12px;padding:10px;max-height:calc(100vh - var(--hdr-h,56px) - 92px);overflow:auto}
+.st-cap{font:800 10px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);margin:8px 2px 0}
+.st-item{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;width:100%;border:1.5px solid var(--border-light);background:transparent;border-radius:9px;padding:8px 10px;cursor:pointer;font:600 12.5px 'Montserrat',sans-serif;color:var(--ink)}
+.st-item:hover{border-color:var(--green-light)}
+.st-item.on{border-color:var(--green);background:var(--green-pale);font-weight:800}
+.st-nm{overflow-wrap:anywhere}.st-sub{font-size:10.5px;color:var(--ink-mid);font-weight:600}
+.st-pg{display:block;height:4px;width:100%;background:var(--border-light);border-radius:3px;overflow:hidden;margin-top:2px}.st-pg i{display:block;height:100%;background:var(--green)}
+.st-item small{font-size:10px;color:var(--ink-faint);font-weight:700}.st-item.done small{color:var(--green)}
+.st-add{border:1.5px dashed var(--green-light);background:transparent;border-radius:9px;padding:8px 10px;cursor:pointer;font:700 12px 'Montserrat',sans-serif;color:var(--green);margin-top:4px}
+.st-add.on,.st-add:hover{background:var(--green-pale)}
+.st-main{min-width:0}
+.st-card{background:var(--bg-card,#fff);border:1px solid var(--border-light);border-radius:12px;padding:16px;margin-bottom:12px}
+.st-ct{font-size:15px;font-weight:800;margin-bottom:10px;color:var(--ink)}
+.st-note{font-size:12.5px;line-height:1.55;color:var(--ink-mid);background:var(--bg,#f5f6f3);border-radius:9px;padding:9px 12px;margin:0 0 12px}
+.st-note.link{background:var(--green-pale);color:var(--ink)}.st-note.priv{background:#fff6e5;color:var(--ink)}.st-note.ok{background:#e8f5e9;color:#1b5e20}
+.st-lnk{border:none;background:none;color:var(--green);font:700 12px 'Montserrat',sans-serif;cursor:pointer;text-decoration:underline;padding:0 0 0 4px}
+.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:10px}
+.st-f.w{grid-column:1/-1}
+.st-lb{display:block;font:700 10px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid);margin:0 0 4px}
+.st-f input,.st-f select,.st-row input,.st-row select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm,8px);font:inherit;font-size:13px;background:#fff;box-sizing:border-box}
+.st-ro{background:var(--green-pale);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}.st-dash{color:var(--ink-faint)}
+.st-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.st-row>input,.st-row>select{flex:1;min-width:180px;width:auto}
+.st-addfoot{margin:4px 0 0}.btn-ghost.sm{font-size:11px;padding:5px 9px}
+.st-actions{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin:14px 0}
+.btn-ghost.danger{color:#b3261e;border-color:#e5b5b1}
+.st-intro{margin-bottom:10px}
+.st-sec{margin:0 0 20px}.st-sech{font:800 11px 'Montserrat',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--green-pale)}
+.st-miss{background:var(--bg-card,#fff);border:1px solid var(--border-light);border-radius:12px;padding:12px 14px;margin-top:10px}
+.st-miss-t{font-weight:800;font-size:13px;margin-bottom:6px}.st-miss-g{margin-bottom:8px}
+.st-miss-a{font:800 10px 'Montserrat',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;display:inline-block;margin:4px 0}
+.st-miss-r{display:grid;grid-template-columns:34px 1fr;gap:0 8px;width:100%;text-align:left;border:none;border-top:1px solid var(--border-light);background:transparent;padding:7px 4px;cursor:pointer;font:inherit;color:var(--ink)}
+.st-miss-r:hover{background:var(--green-pale)}.st-miss-r b{grid-row:1/3;font-size:11px;color:var(--ink-faint);align-self:center}.st-miss-r .nm{font-weight:700;font-size:13px}.st-miss-r .wh{font-size:11px;color:var(--ink-mid)}
+.st-fold{border:1px solid var(--border-light);border-radius:10px;background:var(--bg-card,#fff);margin:8px 0}
+.st-fold>summary{cursor:pointer;padding:11px 14px;font:700 13px 'Montserrat',sans-serif;list-style:none;display:flex;gap:8px;align-items:center}
+.st-fold>summary::-webkit-details-marker{display:none}
+.st-fold>summary::before{content:'▶';font-size:10px;color:var(--green);transition:transform .15s;flex:none}
+.st-fold[open]>summary::before{transform:rotate(90deg)}
+.st-foldb{padding:2px 14px 14px;font-size:13px;line-height:1.6}
+.st-pill{background:var(--green-pale);color:var(--green);font-size:10px;font-weight:800;border-radius:999px;padding:2px 8px;text-transform:uppercase;letter-spacing:.04em}
+.st-cnt{margin-left:auto;font-size:11px;color:var(--ink-faint);font-weight:600}
+@media(max-width:820px){
+  .st-wrap{grid-template-columns:1fr;gap:10px}
+  .st-side{position:static;flex-direction:row;overflow-x:auto;max-height:none;padding:8px;gap:8px;-webkit-overflow-scrolling:touch}
+  .st-cap{display:none}.st-item{width:auto;min-width:128px;flex:none}.st-add{flex:none;white-space:nowrap}
+  .st-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -1211,7 +1265,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
 
     <div class="tour-linkbox"><button class="tour-link" onclick="tourStart(true)">▶ Vedi il giro guidato (1 minuto)</button> <button class="tour-link" style="margin-left:14px" onclick="exStart()">Apri un progetto di esempio</button> <button class="tour-link" style="margin-left:14px;font-weight:500;opacity:.7" onclick="openModal()">Ricomincia da zero</button></div>
 
-    <div class="cl-land"><button class="cl-hdrbtn" onclick="clOpen()"><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Accedi</span></button></div>
+    <div class="cl-land"><button class="cl-hdrbtn" onclick="clOpen()"><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Accedi o crea un account</span></button><div class="cl-nolog" id="cl-nolog">Si salva da solo nel cloud e lo ritrovi su ogni dispositivo. <a href="#" onclick="clNoAcc();return false">Continua senza account</a> (il lavoro resta solo su questo computer).</div></div>
 
 
 
@@ -1321,7 +1375,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <ul class="tutorial-list tm-staff">
         <li>Per ogni percorso indica il livello di presenza osservato: usa la <strong>scala 1–10</strong> (1 = non ancora emerso, 10 = pienamente presente) oppure spunta <strong>"Non osservato"</strong> se non hai ancora abbastanza elementi.</li>
         <li>Espandi ogni scheda con il pulsante <strong>▼ Espandi</strong> per leggere gli obiettivi e le domande guida.</li>
-        <li class="tm-staff">Puoi passare da un membro dello staff all'altro coi tab in alto.</li>
+        <li class="tm-staff">Nell’elenco delle persone (a sinistra, sul telefono in alto) scegli chi osservare o la tua <strong>Auto osservazione</strong>; in alto i passaggi: Profilo, Scheda di osservazione, Lettura individuale, Evoluzione.</li>
         <li>Il lavoro si salva da solo: non serve premere Salva. Con un account lo ritrovi su ogni dispositivo.</li>
       </ul>
     </div>
@@ -1357,8 +1411,8 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
         <li>Il riepilogo mostra la <strong>fotografia dell'osservazione</strong>: barre per ambito, elenco percorsi, lettura diagnostica.</li>
         <li>I percorsi con punteggio basso (1–4, <em>Non ancora emerso</em> o <em>Tracce iniziali</em>) sono le <strong>aree di maggiore necessità</strong> — quelle su cui costruire le priorità <span class="tm-unit">educative</span><span class="tm-staff">formative</span>.</li>
         <li class="tm-unit">I percorsi <em>In sviluppo</em> (5–6) meritano attenzione: sono quelli in cui un intervento mirato può fare la differenza.</li>
-        <li class="tm-staff">Trovi anche la <strong>vista aggregata</strong> di tutto il team e le attività formative suggerite.</li>
-        <li class="tm-staff">Puoi leggere le indicazioni di percorso individuali per ogni membro dello staff.</li>
+        <li class="tm-staff">Qui il quadro è quello di <strong>tutto lo staff</strong> (media delle persone osservate): copertura per ambito, profilo con i percorsi ancora da osservare, ambito più scoperto, spazio sicuro e attività formative.</li>
+        <li class="tm-staff">Le letture individuali restano nella Fase 1, al passaggio «Lettura individuale» di ogni persona.</li>
       </ul>
     </div>
     <div class="disclaimer-box">
@@ -1371,8 +1425,6 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       </details>
     </div>
     <div id="rie-alert"></div>
-    <!-- Pannello aggregata + attività staff (visibile solo in modalità staff) -->
-    <div id="rie-staff-extra" style="display:none"></div>
   <details class="cucg-section" id="cucg-section">
       <summary>Dall'osservazione all'azione — cosa puoi fare tu</summary>
       <div class="cucg-inner" id="cucg-inner"></div>
@@ -1385,6 +1437,8 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
       <div class="radar-bars" id="rie-bars"></div>
     </div>
     <div class="rie-grid" id="rie-grid"></div>
+    <!-- Riepilogo staff: profilo, ambito più scoperto, spazio sicuro, attività (solo staff) -->
+    <div id="rie-staff-extra" style="display:none"></div>
     <div id="g-lettura"></div>
       <div class="foot-nav">
       <button class="btn-ghost" onclick="goPhase(1)">← Torna all'osservazione</button>
@@ -1655,7 +1709,8 @@ const obs = {};   // id → 'n'|'p'|'a' (giovani/staff) oppure 'n'|'v'|'c'|'o' (
 function obsVal(p) {
   const pid = typeof p === 'string' ? p : p.id;
   let v;
-  if(MODE === 'staff' && CURRENT_MEMBER) v = (staffObs[CURRENT_MEMBER]||{})[pid];
+  if(MODE === 'staff' && STAFF_AGG) v = stAvgVal(pid);
+  else if(MODE === 'staff' && CURRENT_MEMBER) v = (staffObs[CURRENT_MEMBER]||{})[pid];
   else v = obs[pid];
   // Retrocompatibilità: converte valori vecchi P/A in numerici
   if(v === 'p') return 8;
@@ -3520,6 +3575,7 @@ function goPhase(n){
 }
 
 function goPhaseInternal(n){
+  if(MODE==='staff' && n>2) n=2;   // lo staff si ferma al Riepilogo
   try{ setTimeout(() => { try{ clMyAttCheck(); }catch(e){} }, 300); }catch(e){}
   // Prima di cambiare panel, salva i campi contenteditable attivi
   document.querySelectorAll('[contenteditable="true"]').forEach(el => {
@@ -3541,6 +3597,7 @@ function goPhaseInternal(n){
   if(n===3) renderPriority();
   if(n===4) renderValuation();
   try{ if(MODE==='giovani'){ if(n===2) gRenderLettura(); if(n===3) gRenderMotiv(); } else { ['g-lettura','g-motiv'].forEach(i=>{const e=document.getElementById(i); if(e) e.innerHTML='';}); } gSync(); }catch(e){ console.error(e); }
+  try{ if(MODE==='staff') stSync(); }catch(e){ console.error(e); }
   if(!window._clApplying) window.scrollTo({top:0,behavior:'smooth'});
   saveData(true);
 
@@ -3835,201 +3892,334 @@ function getCdGAgenda() {
   return punti;
 }
 
-function renderStaffPhase1() {
-  if(MODE !== 'staff') return;
-  const root = document.getElementById('percorsi-root');
-  if(!root) return;
+// ══════════════════════════════════════════════════════════════════
+// STAFF — nuova disposizione: colonna delle persone + passaggi in alto
+// (Profilo · Scheda di osservazione · Lettura individuale · Evoluzione); Riepilogo di staff.
+// I dati anagrafici arrivano dalla tabella «Adulti in staff» dell'Unità (sola lettura).
+// ══════════════════════════════════════════════════════════════════
+const ST_STEPS = [['prof','1','Profilo'],['oss','2','Scheda di osservazione'],['let','3','Lettura individuale'],['evo','4','Evoluzione']];
+const ST_RUOLI = {CU:'Capo Unità',VCU:'Vice Capo Unità',SiS:'Senior in Servizio',CG:'Capo Gruppo',CB:'Capo Branco',VCB:'Vice Capo Branco',CC:'Capo Compagnia',VCC:'Vice Capo Compagnia'};
+const ST_ESP = {basso:'Bassa (0–2 anni)',medio:'Media (3–6 anni)',alto:'Alta (7+ anni)'};
+const ST_FORM = {nessuna:'Nessuna',base:'Base',tdm:'Testa di Moro',wb:'Wood Badge'};
+const ST_UNIT = {rows:null, key:'', src:'', titolo:'', busy:null, tried:false};
+let STAFF_AGG = false;   // true mentre si disegna il Riepilogo: obsVal() legge la media dello staff
+let _stAdd = false;      // pannello «Aggiungi persona» aperto
 
-  if(STAFF_MEMBERS.length === 0) {
-    root.innerHTML = `
-      <div class="profile-card">
-        <div class="staff-section-header">Aggiungi i membri dello staff</div>
-        <p style="font-size:13px;color:var(--ink-mid);margin-bottom:12px">
-          ${STAFF_RUOLO === 'CG' ? 'Aggiungi i Capi Unità del Gruppo che vuoi osservare.' : 'Aggiungi i membri del tuo staff (VCU, SiS, ecc.).'}
-        </p>
-        <div class="member-add-form">
-          <input type="text" id="new-member-input" placeholder="Nome del membro..."
-            onkeydown="if(event.key==='Enter')addMember()">
-          <button class="btn-primary" onclick="addMember()" style="white-space:nowrap">Aggiungi</button>
-        </div>
-        <div class="autooss-notice">
-          Prima di osservare lo staff puoi fare un'auto osservazione. Resta privata e ti aiuta a calibrare il tuo sguardo.
-          <button class="btn-ghost" style="margin-left:auto;font-size:11px;white-space:nowrap" onclick="showAutoOss()">Fai l'auto osservazione →</button>
-        </div>
-      </div>`;
-    return;
-  }
+function stNorm(s){ return String(s==null?'':s).trim().toLowerCase(); }
+function stMail(r){ return stNorm(String((r&&r.mail)||'').split(/[\s,;]+/)[0]); }
+function stMyMail(){ try{ return (typeof CL!=='undefined' && CL.user) ? stNorm(CL.user.email) : ''; }catch(e){ return ''; } }
+function stRuoloCode(t){ const s=String(t||'').trim(); if(!s) return ''; const u=s.toUpperCase().replace(/[.\s]/g,''); if(u==='SIS') return 'SiS'; return ST_RUOLI[u] ? u : s; }
+function stFormCode(t){ const s=stNorm(t); if(!s) return ''; if(/wood|\bwb\b/.test(s)) return 'wb'; if(/testa di moro|\btdm\b/.test(s)) return 'tdm'; if(/\bbase\b/.test(s)) return 'base'; if(/nessun|^no$/.test(s)) return 'nessuna'; return ''; }
+function stSrcOf(r){ const o={}; ['nome','ruolo','eta','form','car','prof','ruoli','disp','varie','mail','tel'].forEach(k=>{ o[k]=String((r&&r[k])||'').trim(); }); o.mail=stMail(r); return o; }
 
-  // Tab membri + navigazione viste (senza aggregata — va nel riepilogo)
-  let html = `
-    <div class="staff-nav-tabs">
-      <div class="staff-nav-tab ${STAFF_VIEW==='osservazione'?'active':''}" onclick="setStaffView('osservazione')">Osservazione</div>
-      <div class="staff-nav-tab ${STAFF_VIEW==='timeline'?'active':''}" onclick="setStaffView('timeline')">Evoluzione nel tempo</div>
-      <div class="staff-nav-tab ${STAFF_VIEW==='autooss'?'active':''}" onclick="setStaffView('autooss')" title="La tua auto osservazione personale">La mia auto oss.</div>
-      ${STAFF_RUOLO==='CG'?`<div class="staff-nav-tab ${STAFF_VIEW==='cdg'?'active':''}" onclick="setStaffView('cdg')">Agenda CdG</div>`:''}
-    </div>`;
-
-  // ── VISTA OSSERVAZIONE ──
-  html += `<div class="staff-panel ${STAFF_VIEW==='osservazione'?'active':''}">`;
-
-  // Tab per ogni membro
-
-  // Tab per ogni membro con pulsante elimina
-  html += `<div class="member-tabs">`;
-  STAFF_MEMBERS.forEach(m => {
-    const pct = getMemberCompletionPct(m);
-    const isActive = CURRENT_MEMBER===m;
-    html += `<div class="member-tab ${isActive?'active':''}" style="display:flex;align-items:center;gap:5px;padding-right:6px">
-      <span onclick="selectMember('${m.replace(/'/g,"\\'")}')" style="cursor:pointer">${m} <span style="font-size:10px;opacity:.6">${pct}%</span></span>
-      <button onclick="event.stopPropagation();deleteMember('${m.replace(/'/g,"\\'")}') "
-        title="Rimuovi ${m}" style="background:none;border:none;color:${isActive?'rgba(255,255,255,.7)':'var(--ink-faint)'};cursor:pointer;font-size:14px;padding:0;line-height:1;margin-left:2px">×</button>
-    </div>`;
-  });
-  html += `<div class="member-tab add-btn" onclick="promptAddMember()">+ Aggiungi</div></div>`;
-
-  if(!CURRENT_MEMBER) CURRENT_MEMBER = STAFF_MEMBERS[0];
-  const memberObs = getStaffObs(CURRENT_MEMBER);
-  const prof = staffProfiles[CURRENT_MEMBER] || {};
-
-
-  // Scheda anagrafica membro — nome editabile, età da 19, formazione
-  const mem_esc = CURRENT_MEMBER.replace(/'/g,"\\'");
-  html += `<div class="profile-card" style="margin:12px 0">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-      <input type="text" value="${CURRENT_MEMBER.replace(/"/g,'&quot;')}"
-        style="font-size:17px;font-weight:800;color:var(--ink);border:none;border-bottom:2px dashed var(--border);background:transparent;font-family:inherit;flex:1;padding:2px 4px"
-        title="Modifica nome" onchange="renameMember('${mem_esc}',this.value)">
-      <span style="font-size:11px;color:var(--ink-faint)">✎</span>
-    </div>
-    <div class="profile-card-role">${STAFF_RUOLO==='CG'?'Capo Unità osservato':'Membro dello staff'}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">
-      <div>
-        <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Età</label>
-        <input type="number" min="19" max="99" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;box-sizing:border-box"
-          placeholder="es. 24" value="${prof.eta||''}"
-          oninput="if(!staffProfiles['${mem_esc}'])staffProfiles['${mem_esc}']={};staffProfiles['${mem_esc}'].eta=this.value;saveDataDebounced()">
-      </div>
-      <div>
-        <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Ruolo</label>
-        <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:white;box-sizing:border-box"
-          onchange="if(!staffProfiles['${mem_esc}'])staffProfiles['${mem_esc}']={};staffProfiles['${mem_esc}'].ruolo=this.value;saveDataDebounced()">
-          <option value="">— scegli —</option>
-          <option value="CU" ${prof.ruolo==='CU'?'selected':''}>Capo Unità</option>
-          <option value="VCU" ${prof.ruolo==='VCU'?'selected':''}>Vice Capo Unità</option>
-          <option value="SiS" ${prof.ruolo==='SiS'?'selected':''}>Senior in Servizio</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Esperienza</label>
-        <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:white;box-sizing:border-box"
-          onchange="if(!staffProfiles['${mem_esc}'])staffProfiles['${mem_esc}']={};staffProfiles['${mem_esc}'].esperienza=this.value;saveDataDebounced()">
-          <option value="">— scegli —</option>
-          <option value="basso" ${prof.esperienza==='basso'?'selected':''}>Bassa (0–2 anni)</option>
-          <option value="medio" ${prof.esperienza==='medio'?'selected':''}>Media (3–6 anni)</option>
-          <option value="alto" ${prof.esperienza==='alto'?'selected':''}>Alta (7+ anni)</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Formazione</label>
-        <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:white;box-sizing:border-box"
-          onchange="if(!staffProfiles['${mem_esc}'])staffProfiles['${mem_esc}']={};staffProfiles['${mem_esc}'].formazione=this.value;saveDataDebounced()">
-          <option value="">— scegli —</option>
-          <option value="nessuna" ${prof.formazione==='nessuna'?'selected':''}>Nessuna</option>
-          <option value="base" ${prof.formazione==='base'?'selected':''}>Base</option>
-          <option value="tdm" ${prof.formazione==='tdm'?'selected':''}>Testa di Moro</option>
-          <option value="wb" ${prof.formazione==='wb'?'selected':''}>Wood Badge</option>
-        </select>
-      </div>
-    </div>`;
-
-  // Barre ambito
-  html += `<div class="profile-ambiti">`;
-  Object.entries(DB).forEach(([a, percorsi]) => {
-    const pCount = percorsi.filter(p => obsToThreshold(memberObs[p.id] !== undefined && memberObs[p.id] !== 'n' ? Number(memberObs[p.id])||0 : 'n') >= 4).length;
-    const total = percorsi.length;
-    const pct = Math.round(pCount/total*100);
-    const colors = {P:'var(--P)',C:'var(--C)',S:'var(--S)'};
-    html += `<div class="profile-ambito">
-      <div class="profile-ambito-label" style="color:${colors[a]}">${AMBITI[a]?.nome||a}</div>
-      <div class="profile-ambito-bar"><div class="profile-ambito-fill" style="width:${pct}%;background:${colors[a]}"></div></div>
-      <div class="profile-ambito-pct">${pCount}/${total}</div>
-    </div>`;
-  });
-  html += `</div></div>`;
-
-  // Osservazione percorsi per membro corrente
-  Object.entries(DB).forEach(([a, percorsi]) => {
-    html += `<div class="ambito-sec">
-      <div class="ambito-hdr ah-${a}">
-        <span>${AMBITI[a]?.full||a}</span>
-        <span class="ah-count">${percorsi.filter(p=>memberObs[p.id]&&memberObs[p.id]!=='n').length} / ${percorsi.length}</span>
-      </div>`;
-    percorsi.forEach((p,i) => {
-      const v = memberObs[p.id] || 'n';
-      const mem = CURRENT_MEMBER.replace(/'/g,"\\'");
-      const layer = (typeof LAYER_CUCG !== 'undefined') ? LAYER_CUCG[p.id] : null;
-      const layerTxt = layer ? (STAFF_RUOLO==='CG' ? layer.cg : layer.cu) : '';
-      const numV = (v && v !== 'n') ? Number(v)||0 : 0;
-      const tV = obsToThreshold(v && v !== 'n' ? numV : 'n');
-      const deepTxt = (typeof KOS_STAFF_DEEP !== 'undefined') ? KOS_STAFF_DEEP[p.id] || '' : '';
-
-      html += `<div class="pc" style="margin-bottom:4px">
-        <div class="pc-hdr" style="display:flex;align-items:center;gap:10px;padding:10px 14px">
-          <span class="pc-num" style="flex-shrink:0">${i+1}</span>
-          <span class="pc-name" style="flex:1;font-size:13px;font-weight:600">${p.name}</span>
-          <div class="obs-scale-wrap" data-staffobs-member="${CURRENT_MEMBER}" data-staffobs-id="${p.id}">
-            <select class="obs-select obs-select-staff" style="min-width:160px;border-color:${numV?thresholdColor(tV):'var(--border)'}"
-              onchange="setStaffObsBtn('${mem}','${p.id}',this.value==='n'?'n':Number(this.value))">
-              <option value="n" ${!numV?'selected':''}>— Non osservato</option>
-              ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${numV===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}
-            </select>
-            <span class="obs-badge obs-badge-staff" style="color:${thresholdColor(tV)}">${numV?numV+' · '+thresholdLabel(tV):'—'}</span>
-          </div>
-        </div>
-        ${layerTxt ? `<details class="kos-details" style="margin:0 14px 0">
-          <summary>▼  Come Capo Gruppo — strategia di osservazione</summary>
-          <div style="font-size:12px;line-height:1.65;color:var(--ink-mid);padding:10px 14px">${layerTxt}</div>
-        </details>` : ''}
-        ${deepTxt ? `<details class="kos-details" style="margin:0 14px 8px">
-          <summary style="background:#5c6bc0!important">▼  Come leggere questa persona — indicatori individuali</summary>
-          <div style="font-size:12px;line-height:1.75;color:var(--ink);padding:10px 14px">${deepTxt}</div>
-        </details>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
-  });
-
-  // Indicazione di percorso strutturata — con id per aggiornamento dinamico
-  html += `<div id="indicazione-wrap-${CURRENT_MEMBER.replace(/\s/g,'_')}">${generateIndicazioneHTML(CURRENT_MEMBER)}</div>`;
-
-  html += `</div>`; // fine vista osservazione
-
-  // ── VISTA TIMELINE ──
-  html += renderTimelineHTML();
-
-  // ── VISTA AGENDA CdG ──
-  if(STAFF_RUOLO === 'CG') {
-    html += `<div class="staff-panel ${STAFF_VIEW==='cdg'?'active':''}">`;
-    const agenda = getCdGAgenda();
-    if(agenda.length === 0) {
-      html += `<p style="padding:16px;font-size:13px;color:var(--ink-mid)">Completa l'osservazione di almeno 1 CU per generare l'agenda CdG.</p>`;
-    } else {
-      html += `<div class="cdg-box"><h4>Cosa porto in CdG</h4>`;
-      agenda.forEach(p => {
-        html += `<div class="cdg-item"><strong>${p.titolo}:</strong> ${p.contenuto}</div>`;
-      });
-      html += `</div>`;
-    }
-    html += `</div>`;
-  }
-
-  // ── VISTA AUTO OSSERVAZIONE ──
-  html += `<div class="staff-panel ${STAFF_VIEW==='autooss'?'active':''}">`;
-  html += renderAutoOssPanel();
-  html += `</div>`;
-
-  root.innerHTML = html;
+// ── lettura (sola lettura) della tabella staff dell'Unità dello stesso anno ──
+function stUnitKey(){ try{ return (CL.ctx && CL.ctx.id) ? 'c' + CL.ctx.id : 'local'; }catch(e){ return 'local'; } }
+async function stUnitLoad(force){
+  const key = stUnitKey();
+  if(!force && ST_UNIT.tried && ST_UNIT.key === key) return ST_UNIT.rows;
+  if(ST_UNIT.busy) return ST_UNIT.busy;
+  ST_UNIT.busy = (async () => {
+    let rows = null, src = '', titolo = '';
+    try{
+      if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
+        const anno = (CL.ctx && CL.ctx.anno) || new Date().getFullYear();
+        const list = await dbList();
+        const ex = list.find(r => r.anno === anno && (r.meta||{}).mode === 'giovani');
+        if(ex){ const g = await dbGet(ex.id); const t = ((((g||{}).data||{}).scheda||{}).pp||{}).staffTab; if(Array.isArray(t)){ rows = t; src = 'cloud'; titolo = ex.titolo; } }
+      } else {
+        const s = localStorage.getItem('bussola_slot_giovani');
+        if(s){ const d = JSON.parse(s); const t = (((d||{}).scheda||{}).pp||{}).staffTab; if(Array.isArray(t)){ rows = t; src = 'local'; titolo = d.UNIT_NAME || 'Unità'; } }
+      }
+    }catch(e){ console.warn('stUnitLoad', e); }
+    ST_UNIT.rows = rows ? rows.map(stSrcOf).filter(r => r.nome || r.mail) : null; ST_UNIT.src = src; ST_UNIT.titolo = titolo; ST_UNIT.key = key; ST_UNIT.tried = true; ST_UNIT.busy = null;
+    return ST_UNIT.rows;
+  })();
+  return ST_UNIT.busy;
 }
+function stLinkRow(link){
+  const rows = ST_UNIT.rows || []; if(!link) return null; let r = null;
+  if(link.mail) r = rows.find(x => x.mail === link.mail);
+  if(!r && link.nome) r = rows.find(x => stNorm(x.nome) === stNorm(link.nome));
+  return r || null;
+}
+function stRename(o, n){
+  const i = STAFF_MEMBERS.indexOf(o); if(i < 0 || !n || STAFF_MEMBERS.includes(n)) return false;
+  STAFF_MEMBERS[i] = n;
+  [staffObs, staffProfiles, staffTimeline].forEach(m => { if(m[o] !== undefined){ m[n] = m[o]; delete m[o]; } });
+  if(CURRENT_MEMBER === o) CURRENT_MEMBER = n;
+  return true;
+}
+// riallinea le persone collegate (e l'auto osservazione) alla tabella dell'Unità; true se qualcosa è cambiato
+function stLinkApply(){
+  if(!ST_UNIT.rows) return false; let ch = false;
+  const set = (o, k, v) => { if(o[k] !== v){ o[k] = v; ch = true; } };
+  STAFF_MEMBERS.slice().forEach(name0 => {
+    let name = name0; const p = staffProfiles[name]; if(!p || !p.link) return;
+    const r = stLinkRow(p.link);
+    if(!r){ if(!p.link.gone){ p.link.gone = true; ch = true; } return; }
+    if(p.link.gone){ delete p.link.gone; ch = true; }
+    if(JSON.stringify(p.src) !== JSON.stringify(r)){ p.src = r; ch = true; }
+    if(r.mail) set(p.link, 'mail', r.mail); if(r.nome) set(p.link, 'nome', r.nome);
+    set(p, 'eta', r.eta); set(p, 'ruolo', stRuoloCode(r.ruolo)); set(p, 'formazione', stFormCode(r.form));
+    const nn = r.nome || r.mail;
+    if(nn && nn !== name && stRename(name, nn)){ ch = true; name = nn; }
+  });
+  // l'auto osservazione è la riga della persona che usa l'app (stessa email o stesso nome)
+  const me = stMyMail(); let myName = ''; try{ myName = stNorm(autoProfile.nome || (typeof clMyName==='function' ? clMyName() : '')); }catch(e){}
+  let ar = autoProfile.link ? stLinkRow(autoProfile.link) : null;
+  if(!autoProfile.link){
+    ar = (me && ST_UNIT.rows.find(x => x.mail === me)) || (myName && ST_UNIT.rows.find(x => stNorm(x.nome) === myName)) || null;
+    if(ar){ autoProfile.link = {mail: ar.mail, nome: ar.nome}; ch = true; }
+  }
+  if(autoProfile.link){
+    if(!ar){ if(!autoProfile.link.gone){ autoProfile.link.gone = true; ch = true; } }
+    else {
+      if(autoProfile.link.gone){ delete autoProfile.link.gone; ch = true; }
+      if(JSON.stringify(autoProfile.src) !== JSON.stringify(ar)){ autoProfile.src = ar; ch = true; }
+      if(ar.mail) set(autoProfile.link, 'mail', ar.mail); if(ar.nome) set(autoProfile.link, 'nome', ar.nome);
+      set(autoProfile, 'nome', ar.nome); set(autoProfile, 'eta', ar.eta); set(autoProfile, 'ruolo', stRuoloCode(ar.ruolo)); set(autoProfile, 'formazione', stFormCode(ar.form));
+    }
+  }
+  return ch;
+}
+function stUnitKick(force){
+  if(MODE !== 'staff') return;
+  if(!force && ST_UNIT.tried && ST_UNIT.key === stUnitKey()) return;
+  stUnitLoad(force).then(() => {
+    if(MODE !== 'staff') return;
+    const ch = stLinkApply(); if(ch) saveDataDebounced();
+    const a = document.activeElement;
+    if(a && a.closest && a.closest('#st-main') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !force) return;   // non interrompo chi sta scrivendo
+    renderStaffPhase1();
+  });
+}
+function stUnitRefresh(){ ST_UNIT.tried = false; stUnitKick(true); showToast('Leggo di nuovo la tabella dello staff dell’Unità…'); }
+function stFreeRows(){   // persone della tabella dell'Unità non ancora nello staff (e non io)
+  const me = stMyMail(), used = STAFF_MEMBERS.map(n => staffProfiles[n] && staffProfiles[n].link).filter(Boolean);
+  return (ST_UNIT.rows || []).map((r, i) => ({r, i})).filter(({r}) => {
+    if(me && r.mail === me) return false; if(autoProfile.link && stLinkRow(autoProfile.link) === r) return false;
+    return !used.some(l => (l.mail && l.mail === r.mail) || (!l.mail && stNorm(l.nome) === stNorm(r.nome)));
+  });
+}
+
+// ── stato: persona scelta e passaggio ──
+function stSel(){
+  let v = String(STAFF_VIEW||''), auto = false;
+  if(v === 'autooss'){ auto = true; v = 'oss'; } else if(/^a:/.test(v)){ auto = true; v = v.slice(2); }
+  if(v === 'osservazione' || v === 'cdg') v = 'oss'; if(v === 'timeline') v = 'evo';
+  if(!ST_STEPS.some(s => s[0] === v)) v = 'oss';
+  if(auto && v === 'evo') v = 'oss';
+  return {auto, step: v};
+}
+function stGo(step){ const s = stSel(); STAFF_VIEW = (s.auto ? 'a:' : '') + step; renderStaffPhase1(); window.scrollTo({top:0, behavior:'smooth'}); }
+function stPick(i){
+  const s = stSel(); _stAdd = false;
+  if(i === 'auto') STAFF_VIEW = 'a:' + s.step; else { CURRENT_MEMBER = STAFF_MEMBERS[i]; STAFF_VIEW = s.step; }
+  renderStaffPhase1();
+}
+function stDone(o){ return Object.values(o || {}).filter(v => v !== undefined && v !== null && v !== 'n').length; }
+function stMemIdx(){ const i = STAFF_MEMBERS.indexOf(CURRENT_MEMBER); return i; }
+function stRuoloTxt(c){ return ST_RUOLI[c] || c || ''; }
+
+// ── colonna delle persone ──
+function stSideHTML(sel){
+  const aD = stDone(autoObs), cg = STAFF_RUOLO === 'CG';
+  const item = (on, click, nm, sub, done) => `<button type="button" class="st-item${on?' on':''}${done>=24?' done':''}" onclick="${click}"><span class="st-nm">${nm}</span>${sub?`<span class="st-sub">${sub}</span>`:''}<span class="st-pg"><i style="width:${Math.round(done/24*100)}%"></i></span><small>${done>=24?'✓ completa':done+' / 24'}</small></button>`;
+  let h = item(sel.auto, `stPick('auto')`, 'Auto osservazione', 'privata', aD);
+  h += `<div class="st-cap">${cg ? 'Capi Unità' : 'Staff'}</div>`;
+  STAFF_MEMBERS.forEach((m, i) => { const p = staffProfiles[m] || {}; h += item(!sel.auto && m === CURRENT_MEMBER, `stPick(${i})`, sEsc(m), sEsc(stRuoloTxt(p.ruolo)), stDone(staffObs[m])); });
+  h += `<button type="button" class="st-add${_stAdd?' on':''}" onclick="stAddToggle()">+ Aggiungi persona</button>`;
+  return h;
+}
+function stSideRefresh(){ const e = document.getElementById('st-side'); if(e) e.innerHTML = stSideHTML(stSel()); }
+
+// ── aggiunta persone ──
+function stAddToggle(){ _stAdd = !_stAdd; renderStaffPhase1(); if(_stAdd) stUnitKick(true); }
+function stAddHTML(first){
+  const free = stFreeRows(); let unit = '';
+  if(ST_UNIT.rows && ST_UNIT.rows.length){
+    unit = free.length
+      ? `<label class="st-lb" for="st-pick">Prendi dalla tabella dello staff dell’Unità</label><div class="st-row"><select id="st-pick"><option value="">— scegli una persona —</option>${free.map(({r, i}) => `<option value="${i}">${sEsc(r.nome || r.mail)}${r.ruolo ? ' · ' + sEsc(r.ruolo) : ''}</option>`).join('')}</select><button class="btn-primary" onclick="stAddFromUnit()">Aggiungi</button>${free.length > 1 ? `<button class="btn-ghost" onclick="stAddAll()">Aggiungi tutte (${free.length})</button>` : ''}</div>`
+      : `<div class="st-note">Tutte le persone della tabella dello staff dell’Unità sono già qui.</div>`;
+  } else if(!ST_UNIT.tried || ST_UNIT.busy){
+    unit = `<div class="st-note">Leggo la tabella dello staff dell’Unità…</div>`;
+  } else {
+    unit = `<div class="st-note">Non trovo persone nella tabella dello staff dell’Unità di quest’anno. Compila «Adulti in staff» nella Sezione 1.1 dell’Unità: le ritroverai qui con età, ruolo e formazione. Oppure aggiungi una persona a mano.</div>`;
+  }
+  return `<div class="st-card st-addcard"><div class="st-ct">${first ? 'Chi vuoi osservare?' : 'Aggiungi una persona allo staff'}</div>${unit}
+    <label class="st-lb" for="new-member-input">Altra persona</label><div class="st-row"><input type="text" id="new-member-input" placeholder="Nome e cognome" maxlength="60" onkeydown="if(event.key==='Enter')addMember()"><button class="btn-primary" onclick="addMember()">Aggiungi</button></div>
+    <div class="st-row st-addfoot"><button class="btn-ghost sm" onclick="stUnitRefresh()" title="Rilegge la tabella dello staff dell’Unità">↻ Aggiorna dall’Unità</button>${first ? '' : `<button class="btn-ghost sm" onclick="stAddToggle()">Chiudi</button>`}</div></div>`;
+}
+function stAddedGo(name){ _stAdd = false; CURRENT_MEMBER = name; STAFF_VIEW = 'prof'; saveData(true); renderStaffPhase1(); window.scrollTo({top:0, behavior:'smooth'}); }
+function stAddFromUnit(){
+  const sel = document.getElementById('st-pick'); if(!sel || sel.value === '') { showToast('Scegli una persona dall’elenco'); return; }
+  const r = (ST_UNIT.rows || [])[Number(sel.value)]; if(!r) return;
+  const name = stAddRow(r); if(name) stAddedGo(name);
+}
+function stAddRow(r){
+  let name = r.nome || r.mail; if(!name) return null;
+  if(STAFF_MEMBERS.includes(name)){ let k = 2; while(STAFF_MEMBERS.includes(name + ' (' + k + ')')) k++; name = name + ' (' + k + ')'; }
+  STAFF_MEMBERS.push(name); staffProfiles[name] = {link:{mail:r.mail, nome:r.nome}, src:r, eta:r.eta, ruolo:stRuoloCode(r.ruolo), formazione:stFormCode(r.form)};
+  return name;
+}
+function stAddAll(){ let last = null; stFreeRows().forEach(({r}) => { const n = stAddRow(r); if(n) last = n; }); if(last) stAddedGo(last); }
+
+// ── schede (profilo, osservazione) ──
+function stField(lb, inner, wide){ return `<div class="st-f${wide?' w':''}"><label class="st-lb">${lb}</label>${inner}</div>`; }
+function stRO(v){ return `<div class="st-ro">${v ? sEsc(v) : '<span class="st-dash">—</span>'}</div>`; }
+function stProfHTML(auto){
+  const i = stMemIdx(); const name = auto ? (autoProfile.nome || '') : STAFF_MEMBERS[i];
+  const P = auto ? autoProfile : (staffProfiles[name] || (staffProfiles[name] = {}));
+  const link = P.link, src = P.src || {}, linked = !!link;
+  const set = (k, v) => auto ? `autoProfile.${k}=${v};saveDataDebounced()` : `stProfSet(${i},'${k}',${v})`;
+  const ruoli = Object.entries(ST_RUOLI).filter(([k]) => auto || k !== 'CG' || STAFF_RUOLO === 'CG');
+  const selR = `<select onchange="${set('ruolo','this.value')}"><option value="">— scegli —</option>${ruoli.map(([k, v]) => `<option value="${k}"${P.ruolo === k ? ' selected' : ''}>${v}</option>`).join('')}${P.ruolo && !ST_RUOLI[P.ruolo] ? `<option selected>${sEsc(P.ruolo)}</option>` : ''}</select>`;
+  const selF = `<select onchange="${set('formazione','this.value')}"><option value="">— scegli —</option>${Object.entries(ST_FORM).map(([k, v]) => `<option value="${k}"${P.formazione === k ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
+  const selE = `<select onchange="${set('esperienza','this.value')}"><option value="">— scegli —</option>${Object.entries(ST_ESP).map(([k, v]) => `<option value="${k}"${P.esperienza === k ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
+  let h = `<div class="st-card"><div class="st-ct">${auto ? 'Il mio profilo' : 'Profilo · ' + sEsc(name)}</div>`;
+  if(auto) h += `<div class="st-note priv">L’auto osservazione è privata: non compare nel Riepilogo dello staff né nei calcoli di insieme.</div>`;
+  if(linked){
+    h += `<div class="st-note link">${link.gone ? 'Questa persona non c’è più nella tabella dello staff dell’Unità: restano i dati dell’ultima copia.' : 'Questi dati arrivano dalla tabella <b>Adulti in staff</b> dell’Unità (Sezione 1.1) e si modificano <b>lì</b>: si aggiornano da soli quando apri il progetto.'} <button class="st-lnk" onclick="stUnitRefresh()">↻ Aggiorna ora</button></div>`;
+    h += `<div class="st-grid">${stField('Nome', stRO(src.nome || name))}${stField('Ruolo', stRO(src.ruolo || stRuoloTxt(P.ruolo)))}${stField('Età', stRO(src.eta))}${stField('Formazione', stRO(src.form))}</div>`;
+    const more = [['Caratteristiche personali','car'],['Professioni, competenze esterne','prof'],['Ruoli passati','ruoli'],['Disponibilità','disp'],['Varie (dinamiche di staff, contratto)','varie'],['Email','mail'],['Telefono','tel']].filter(([, k]) => src[k]);
+    if(more.length) h += `<div class="st-grid">${more.map(([lb, k]) => stField(lb, stRO(src[k]), ['car','prof','ruoli','disp','varie'].includes(k))).join('')}</div>`;
+  } else {
+    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF)}</div>`;
+  }
+  h += `<div class="st-grid">${stField('Esperienza come educatore', selE)}</div>`;
+  h += `<div class="st-actions">${auto ? '' : `<button class="btn-ghost danger" onclick="stDel(${i})">Rimuovi dallo staff</button>`}<button class="btn-primary" onclick="stGo('oss')">Avanti — Scheda di osservazione →</button></div></div>`;
+  return h;
+}
+function stProfSet(i, k, v){ const n = STAFF_MEMBERS[i]; if(n === undefined) return; (staffProfiles[n] || (staffProfiles[n] = {}))[k] = v; saveDataDebounced(); if(k === 'ruolo') stSideRefresh(); }
+function stRen(i, v){ const o = STAFF_MEMBERS[i]; v = String(v || '').trim(); if(o === undefined || !v || v === o) return; if(STAFF_MEMBERS.includes(v)){ showToast('Nome già presente nello staff'); renderStaffPhase1(); return; } stRename(o, v); saveData(true); renderStaffPhase1(); }
+function stDel(i){ const n = STAFF_MEMBERS[i]; if(n !== undefined) deleteMember(n); }
+
+function stCardsHTML(auto){
+  const i = stMemIdx(), name = STAFF_MEMBERS[i], o = auto ? autoObs : getStaffObs(name);
+  const hints = (typeof AUTO_OBS_HINTS !== 'undefined') ? AUTO_OBS_HINTS : {};
+  let h = `<div class="st-card st-intro"><div class="st-ct">${auto ? 'Auto osservazione — i 24 percorsi' : 'Scheda di osservazione · ' + sEsc(name)}</div><div class="st-note">Per ogni percorso scegli un livello da <b>1</b> a <b>10</b> (1–2 non ancora emerso · 3–4 tracce iniziali · 5–6 in sviluppo · 7–8 presente · 9–10 consolidato) oppure lascia <b>Non osservato</b>. ${auto ? 'Guardati come educatore: nessuno vede queste risposte.' : 'Apri la scheda (▼) per leggere obiettivi, domande guida e cosa osservare.'}</div></div>`;
+  Object.entries(DB).forEach(([a, percorsi]) => {
+    h += `<div class="ambito-sec"><div class="ambito-hdr ah-${a}"><span>${AMBITI[a].full}</span><span class="ah-count" id="ahc-${a}">${percorsi.filter(p => o[p.id] !== undefined && o[p.id] !== 'n').length} / ${percorsi.length} osservati</span></div>`;
+    percorsi.forEach((p, k) => {
+      const v = o[p.id], num = (v !== undefined && v !== 'n' && v !== null) ? Number(v) || 0 : 0, t = obsToThreshold(num ? num : 'n');
+      const on = auto ? `stSetAuto('${p.id}',this.value)` : `stSetObs(${i},'${p.id}',this.value)`;
+      let body = `<div><div class="body-lbl">Obiettivi del percorso</div>${p.obiettivi.map(x => `<div class="obj-item">${x}</div>`).join('')}</div>`;
+      if(auto){ const ht = hints[p.id]; if(ht) body += `<div><div class="body-lbl">Come mi osservo in questo percorso</div><div class="domande-item">${ht}</div></div>`; }
+      else {
+        const dm = (typeof DOMANDE_STAFF !== 'undefined' && DOMANDE_STAFF[p.id]) || [];
+        if(dm.length) body += `<div><div class="body-lbl">Domande per lo staff</div>${dm.map(d => `<div class="domande-item">${d}</div>`).join('')}</div>`;
+        const deep = (typeof KOS_STAFF_DEEP !== 'undefined') ? KOS_STAFF_DEEP[p.id] : ''; if(deep) body += `<div><div class="body-lbl">Come leggere questa persona — indicatori individuali</div><div class="kos-sub-txt kos-sub-txt-staff">${deep}</div></div>`;
+        const kd = (typeof KOS_OBS !== 'undefined') ? KOS_OBS[p.id] : null;
+        if(kd && (kd.staff || kd.protagonismo)) body += `<details class="kos-details"><summary>Cosa osservare nello staff</summary><div class="kos-details-body">${kd.staff ? `<div class="kos-sub"><div class="kos-sub-lbl">Dinamiche del team</div><div class="kos-sub-txt kos-sub-txt-staff">${kd.staff}</div></div>` : ''}${kd.protagonismo ? `<div class="kos-sub" style="margin-top:10px"><div class="kos-sub-lbl">Protagonismo e distributed leadership</div><div class="kos-sub-txt kos-sub-txt-prot">${kd.protagonismo}</div></div>` : ''}</div></details>`;
+      }
+      h += `<div class="pc" id="card-${p.id}"><div class="pc-hdr" onclick="toggleCard('${p.id}')"><span class="pc-num">${k + 1}</span><span class="pc-name">${p.name}</span><div class="pc-states" onclick="event.stopPropagation()"><div class="obs-scale-wrap"><select class="obs-select" id="sel-${p.id}" style="border-color:${num ? thresholdColor(t) : 'var(--border)'}" onchange="${on}"><option value="n"${!num ? ' selected' : ''}>— Non osservato</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}"${num === n ? ' selected' : ''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select><span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(t)}">${num ? num + ' · ' + thresholdLabel(t) : '—'}</span></div></div><span class="pc-chev">▼</span></div><div class="pc-body"><div class="pc-body-inner">${body}</div></div></div>`;
+    });
+    h += `</div>`;
+  });
+  h += `<div class="st-actions"><button class="btn-ghost" onclick="stGo('prof')">← Profilo</button><button class="btn-primary" onclick="stGo('let')">Avanti — Lettura individuale →</button></div>`;
+  return h;
+}
+function stPaint(pid, v){
+  const num = (v === 'n') ? 0 : Number(v), t = obsToThreshold(num ? num : 'n');
+  const sel = document.getElementById('sel-' + pid), b = document.getElementById('badge-' + pid);
+  if(sel){ sel.value = num ? String(num) : 'n'; sel.style.borderColor = num ? thresholdColor(t) : 'var(--border)'; }
+  if(b){ b.textContent = num ? num + ' · ' + thresholdLabel(t) : '—'; b.style.color = thresholdColor(t); }
+  const o = stSel().auto ? autoObs : getStaffObs(CURRENT_MEMBER);
+  Object.keys(DB).forEach(a => { const e = document.getElementById('ahc-' + a); if(e) e.textContent = DB[a].filter(p => o[p.id] !== undefined && o[p.id] !== 'n').length + ' / ' + DB[a].length + ' osservati'; });
+}
+function stSetObs(i, pid, val){ const m = STAFF_MEMBERS[i]; if(m === undefined) return; const v = (val === 'n') ? 'n' : Number(val); getStaffObs(m)[pid] = v; stPaint(pid, v); stSideRefresh(); saveDataDebounced(); }
+function stSetAuto(pid, val){ const v = (val === 'n') ? 'n' : Number(val); autoObs[pid] = v; stPaint(pid, v); stSideRefresh(); saveDataDebounced(); }
+
+function stLetHTML(auto){
+  const nav = `<div class="st-actions"><button class="btn-ghost" onclick="stGo('oss')">← Scheda di osservazione</button>${auto ? '' : `<button class="btn-primary" onclick="stGo('evo')">Avanti — Evoluzione →</button>`}</div>`;
+  if(auto) return `<div class="st-card st-intro"><div class="st-ct">Lettura della mia auto osservazione</div></div>${renderAutoOssPanel()}${nav}`;
+  const n = STAFF_MEMBERS[stMemIdx()];
+  return `<div class="st-card st-intro"><div class="st-ct">Lettura individuale · ${sEsc(n)}</div><div class="st-note">È una lettura di partenza per il dialogo con la persona: non un giudizio. Si aggiorna da sola con la scheda di osservazione.</div></div><div id="indicazione-wrap-${n.replace(/\s/g, '_')}">${generateIndicazioneHTML(n)}</div>${nav}`;
+}
+function stEvoHTML(){
+  return renderTimelineHTML() + `<div class="st-actions"><button class="btn-ghost" onclick="stGo('let')">← Lettura individuale</button><button class="btn-primary" onclick="goPhase(2)">Vedi il Riepilogo →</button></div>`;
+}
+
+// ── barra dei passaggi in alto (stessa grafica della Sezione 1 dell'Unità) ──
+function stSync(){
+  if(MODE !== 'staff') return;
+  const sn = document.getElementById('g-subnav'); if(!sn) return;
+  const on = document.getElementById('panel1') && document.getElementById('panel1').classList.contains('active');
+  const sel = stSel(), has = sel.auto || !!CURRENT_MEMBER;
+  if(!on || !has){ sn.style.display = 'none'; sn.innerHTML = ''; return; }
+  const steps = sel.auto ? ST_STEPS.filter(s => s[0] !== 'evo') : ST_STEPS, i = steps.findIndex(s => s[0] === sel.step);
+  const who = sel.auto ? 'Auto osservazione' : sEsc(CURRENT_MEMBER || '');
+  sn.style.display = '';
+  sn.innerHTML = `<div class="gsn-wrap"><div class="gsn-title">Osservazione dello staff · ${who}</div><div class="gsn-steps">${steps.map(([k, n, l], j) => `<button class="gsn-step ${k === sel.step ? 'on' : ''} ${j < i ? 'done' : ''}" onclick="stGo('${k}')"><b>${n}</b>${l}</button>`).join('')}</div></div>`;
+}
+
+// ── disegno della Fase 1 dello staff ──
+function renderStaffPhase1(){
+  if(MODE !== 'staff') return;
+  const root = document.getElementById('percorsi-root'); if(!root) return;
+  stUnitKick();
+  if(ST_UNIT.rows) { try{ if(stLinkApply()) saveDataDebounced(); }catch(e){} }
+  if(!CURRENT_MEMBER || !STAFF_MEMBERS.includes(CURRENT_MEMBER)) CURRENT_MEMBER = STAFF_MEMBERS[0] || null;
+  const sel = stSel(); let main = '';
+  const noMem = !STAFF_MEMBERS.length;
+  if(_stAdd || (noMem && !sel.auto)) main += stAddHTML(noMem && !sel.auto);
+  if(sel.auto){
+    main += sel.step === 'prof' ? stProfHTML(true) : sel.step === 'let' ? stLetHTML(true) : stCardsHTML(true);
+  } else if(!noMem){
+    main += sel.step === 'prof' ? stProfHTML(false) : sel.step === 'let' ? stLetHTML(false) : sel.step === 'evo' ? stEvoHTML() : stCardsHTML(false);
+  } else if(!_stAdd){
+    main += `<div class="st-note">Prima di osservare lo staff puoi fare l’<b>Auto osservazione</b> (colonna a sinistra): resta privata e ti aiuta a calibrare lo sguardo.</div>`;
+  }
+  root.innerHTML = `<div class="st-wrap"><aside class="st-side" id="st-side" aria-label="Persone dello staff">${stSideHTML(sel)}</aside><div class="st-main" id="st-main">${main}</div></div>`;
+  stSync(); refreshObs();
+}
+function stGoto(pid, i){
+  if(i === undefined){ const k = STAFF_MEMBERS.findIndex(m => { const v = (staffObs[m] || {})[pid]; return v === undefined || v === 'n' || v === null; }); i = k >= 0 ? k : stMemIdx(); }
+  if(STAFF_MEMBERS[i] !== undefined) CURRENT_MEMBER = STAFF_MEMBERS[i];
+  _stAdd = false; STAFF_VIEW = 'oss'; renderStaffPhase1(); goPhaseInternal(1);
+  setTimeout(() => { const c = document.getElementById('card-' + pid); if(c){ c.classList.add('expanded'); c.scrollIntoView({behavior:'smooth', block:'center'}); } }, 200);
+}
+
+// ── Riepilogo dello staff ──
+function stStatTxt(a){ return {
+  P:'Nello staff i percorsi di sviluppo personale sono i più scoperti. Spesso chi educa dà tutto all’Unità e mette da parte la propria crescita. Se ognuno coltiva anche la propria vita personale, non solo il ruolo, il clima educativo cambia davvero.',
+  C:'Nello staff i percorsi comunitari sono i più scoperti. Forse siete bravi singolarmente, ma lavorare come squadra costa fatica. Serve un progetto comune che richieda davvero tutti: non la somma dei contributi di ciascuno.',
+  S:'Nello staff i percorsi spirituali sono i più scoperti. Spesso si salta il discorso sul senso perché manca il tempo o sembra «roba leggera». Ma uno staff che si chiede perché fa quello che fa trova direzione. Bastano 20 minuti a riunione di confronto vero, non organizzativo.'}[a]; }
+function stScoperto(){
+  const rows = ['P','C','S'].map(a => { const vals = DB[a].map(p => obsNum(p)).filter(v => v > 0); return {a, n: vals.length, avg: vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : null}; });
+  if(rows.some(r => r.avg === null)) return `<div class="diag-card diag-gold"><div class="diag-tag">Ambito più scoperto</div><div class="diag-title">Servono osservazioni in tutti e tre gli ambiti</div><div class="diag-body">Quando ci saranno osservazioni in Personale, Comunitario e Spirituale, qui vedrai quale ambito ha più spazio per crescere.</div></div>`;
+  const sorted = rows.slice().sort((x, y) => x.avg - y.avg);
+  if(sorted[2].avg - sorted[0].avg < 0.6) return `<div class="diag-card diag-ok"><div class="diag-tag">Ambito più scoperto</div><div class="diag-title">I tre ambiti sono alla pari</div><div class="diag-body">Nessun ambito si distingue: puoi scegliere dove lavorare partendo dai percorsi che lo staff sente più importanti.</div></div>`;
+  const w = sorted[0];
+  return `<div class="diag-card diag-info"><div class="diag-tag">Ambito più scoperto</div><div class="diag-title">${AMBITI[w.a].full}</div><div class="diag-body">${stStatTxt(w.a)}</div></div>`;
+}
+function stMissingHTML(){
+  const groups = ['P','C','S'].map(a => ({a, list: DB[a].map(p => ({p, who: STAFF_MEMBERS.map((m, i) => ({m, i})).filter(({m}) => { const v = (staffObs[m] || {})[p.id]; return v === undefined || v === null || v === 'n'; })})).filter(x => x.who.length)})).filter(g => g.list.length);
+  if(!groups.length) return `<div class="st-note ok">✓ Tutti i percorsi sono stati osservati per tutte le persone dello staff.</div>`;
+  const n = STAFF_MEMBERS.length;
+  return `<div class="st-miss"><div class="st-miss-t">Percorsi ancora da osservare</div>${groups.map(g => `<div class="st-miss-g"><div class="st-miss-a ah-${g.a}">${AMBITI[g.a].full}</div>${g.list.map(({p, who}) => `<button type="button" class="st-miss-r" onclick="stGoto('${p.id}',${who[0].i})"><b>${p.id}</b><span class="nm">${p.name}</span><span class="wh">${who.length === n ? 'nessuno' : (n - who.length) + ' su ' + n} osservat${who.length === n ? 'o' : 'e'}${who.length < n && who.length <= 3 ? ' · manca: ' + who.map(x => sEsc(x.m)).join(', ') : ''}</span></button>`).join('')}</div>`).join('')}</div>`;
+}
+function stRiepExtra(alertHTML){
+  if(!STAFF_MEMBERS.length) return `<div class="st-card"><div class="st-note">Nessuna persona osservata ancora. Aggiungi le persone dello staff e compila la loro scheda: qui comparirà la fotografia dello staff. <button class="btn-primary" onclick="goPhase(1)">Vai all’osservazione →</button></div></div>`;
+  const box = document.createElement('div'); box.innerHTML = alertHTML || '';
+  const take = sel => { const e = [...box.querySelectorAll(sel)]; e.forEach(x => x.remove()); return e; };
+  const folds = [...take('.safe-space-block'), ...take('.prot-block'), ...take('.brave-space-block')];
+  const kids = [...box.children]; let prof = '', rest = '';
+  kids.forEach((k, j) => { const tag = ((k.querySelector && k.querySelector('.diag-tag')) || {}).textContent || '';
+    if(/^Ambito più scoperto/.test(tag)) return;
+    if(j === 0 && /^(Profilo|In attesa)/.test(tag)) prof = k.outerHTML; else rest += k.outerHTML; });
+  let h = `<div class="st-sec"><div class="st-sech">Profilo</div>${prof}${rest}${stMissingHTML()}</div>`;
+  h += `<div class="st-sec"><div class="st-sech">Ambito più scoperto</div>${stScoperto()}</div>`;
+  if(folds.length) h += `<div class="st-sec"><div class="st-sech">Spazio sicuro e simili</div>${folds.map(f => { const t = (f.querySelector('[class$="-title"]') || {}).textContent || 'Approfondimento', b = (f.querySelector('[class$="-body"]') || {}).innerHTML || ''; return `<details class="st-fold"><summary>${sEsc(t)}</summary><div class="st-foldb">${b}</div></details>`; }).join('')}</div>`;
+  const act = new Set(getSituazioniAttive().map(s => s.id)), catLabel = {tb:'Team Building', af:'Affiliativa', ps:'Problem Solving', ri:'Riflessione profonda'}, catClass = {tb:'tag-tb', af:'tag-af', ps:'tag-ps', ri:'tag-ri'};
+  const sit = SITUAZIONI_STAFF.slice().sort((x, y) => (act.has(y.id) ? 1 : 0) - (act.has(x.id) ? 1 : 0));
+  h += `<div class="st-sec"><div class="st-sech">Attività formative per lo staff</div><div class="st-note">Divise per area. Quelle segnate «consigliata» partono dai percorsi meno presenti nello staff.</div>${sit.map(s => `<details class="st-fold"><summary>${sEsc(s.label)}${act.has(s.id) ? '<span class="st-pill">consigliata</span>' : ''}<span class="st-cnt">${s.attivita.length} attività</span></summary><div class="st-foldb">${s.attivita.map(a => `<div class="attivita-card"><div class="attivita-card-name">${a.nome} <span class="attivita-tag ${catClass[a.cat] || ''}">${catLabel[a.cat] || a.cat}</span></div><div class="attivita-card-desc">${a.desc}</div><div class="attivita-card-source">Fonte: ${a.fonte} · ${a.durata}</div></div>`).join('')}</div></details>`).join('')}</div>`;
+  if(STAFF_RUOLO === 'CG'){ const ag = getCdGAgenda(); if(ag.length) h += `<div class="st-sec"><div class="st-sech">Agenda CdG</div><details class="st-fold"><summary>Cosa porto in CdG</summary><div class="st-foldb">${ag.map(p => `<div class="cdg-item"><strong>${p.titolo}:</strong> ${p.contenuto}</div>`).join('')}</div></details></div>`; }
+  return h;
+}
+
+// media dello staff per un percorso (solo nel Riepilogo)
+function stAvgVal(pid){ const v=STAFF_MEMBERS.map(m=>(staffObs[m]||{})[pid]).filter(x=>x!==undefined&&x!==null&&x!=='n').map(Number).filter(x=>x>0); return v.length ? Math.round(v.reduce((x,y)=>x+y,0)/v.length*10)/10 : 'n'; }
 
 function renderAutoOssPanel() {
   const totObs = Object.values(autoObs).filter(v=>v!=='n').length;
@@ -4401,7 +4591,7 @@ function generateIndicazioneHTML(member) {
 }
 
 function renderTimelineHTML() {
-  const html_parts = [`<div class="staff-panel ${STAFF_VIEW==='timeline'?'active':''}">`];
+  const html_parts = [`<div class="staff-panel active">`];
 
   if(!CURRENT_MEMBER) {
     html_parts.push(`<p style="padding:16px;font-size:13px;color:var(--ink-mid)">Seleziona un membro per vedere la sua evoluzione nel tempo.</p>`);
@@ -4624,137 +4814,21 @@ function addMember() {
   const input = document.getElementById('new-member-input');
   if(!input) return;
   const name = input.value.trim();
-  if(name && !STAFF_MEMBERS.includes(name)) {
-    STAFF_MEMBERS.push(name);
-    if(!CURRENT_MEMBER) CURRENT_MEMBER = name;
-    staffProfiles[name] = {};
-    input.value = '';
-    renderStaffPhase1();
-  }
+  if(!name){ showToast('Scrivi il nome della persona'); return; }
+  if(STAFF_MEMBERS.includes(name)){ showToast('Nome già presente nello staff'); return; }
+  STAFF_MEMBERS.push(name); staffProfiles[name] = {};
+  stAddedGo(name);
 }
+function promptAddMember() { stAddToggle(); }
 
-function promptAddMember() {
-  const name = prompt('Nome del nuovo membro:');
-  if(name && name.trim() && !STAFF_MEMBERS.includes(name.trim())) {
-    STAFF_MEMBERS.push(name.trim());
-    CURRENT_MEMBER = name.trim();
-    staffProfiles[name.trim()] = {};
-    renderStaffPhase1();
-  }
-}
-
-function showAutoOss() {
-  const root = document.getElementById('percorsi-root');
-
-  // Usa AUTO_OBS_HINTS con testi introspettivi in prima persona
-  function getAutoOssHint(pid) {
-    return (typeof AUTO_OBS_HINTS !== 'undefined') ? (AUTO_OBS_HINTS[pid] || '') : '';
-  }
-
-  let html = `
-    <div class="autooss-notice">L'auto osservazione è privata — non viene mostrata agli altri membri né inclusa nei calcoli aggregati dello staff. Alimenta solo le tue indicazioni personali e la tua timeline formativa.</div>
-
-    <div class="profile-card" style="margin-bottom:16px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">Il mio profilo</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div>
-          <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Nome</label>
-          <input type="text" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;box-sizing:border-box"
-            placeholder="Il tuo nome..." value="${autoProfile.nome||''}"
-            oninput="autoProfile.nome=this.value;saveDataDebounced()">
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Età</label>
-          <input type="number" min="19" max="99" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;box-sizing:border-box"
-            placeholder="es. 32" value="${autoProfile.eta||''}"
-            oninput="autoProfile.eta=this.value;saveDataDebounced()">
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Ruolo</label>
-          <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:white;box-sizing:border-box"
-            onchange="autoProfile.ruolo=this.value;saveDataDebounced()">
-            <option value="">— scegli —</option>
-            <option value="CU" ${autoProfile.ruolo==='CU'?'selected':''}>Capo Unità</option>
-            <option value="VCU" ${autoProfile.ruolo==='VCU'?'selected':''}>Vice Capo Unità</option>
-            <option value="SiS" ${autoProfile.ruolo==='SiS'?'selected':''}>Senior in Servizio</option>
-            <option value="CG" ${autoProfile.ruolo==='CG'?'selected':''}>Capo Gruppo</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Esperienza</label>
-          <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:white;box-sizing:border-box"
-            onchange="autoProfile.esperienza=this.value;saveDataDebounced()">
-            <option value="">— scegli —</option>
-            <option value="basso" ${autoProfile.esperienza==='basso'?'selected':''}>Bassa (0–2 anni)</option>
-            <option value="medio" ${autoProfile.esperienza==='medio'?'selected':''}>Media (3–6 anni)</option>
-            <option value="alto" ${autoProfile.esperienza==='alto'?'selected':''}>Alta (7+ anni)</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:4px">Formazione</label>
-          <select style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:white;box-sizing:border-box"
-            onchange="autoProfile.formazione=this.value;saveDataDebounced()">
-            <option value="">— scegli —</option>
-            <option value="nessuna" ${autoProfile.formazione==='nessuna'?'selected':''}>Nessuna</option>
-            <option value="base" ${autoProfile.formazione==='base'?'selected':''}>Base</option>
-            <option value="tdm" ${autoProfile.formazione==='tdm'?'selected':''}>Testa di Moro</option>
-            <option value="wb" ${autoProfile.formazione==='wb'?'selected':''}>Wood Badge</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="staff-section-header">Osservo me stesso — i 24 percorsi PEE</div>
-    <p style="font-size:12px;color:var(--ink-mid);margin-bottom:16px">Per ogni percorso indica se lo vivi nella tua pratica educativa. Espandi la descrizione per capire cosa guardare in te stesso.</p>
-
-    ${Object.entries(DB).map(([a,percorsi]) => `
-      <div class="ambito-sec">
-        <div class="ambito-hdr ah-${a}"><span>${AMBITI[a]?.full||a}</span></div>
-        ${percorsi.map((p,i) => {
-          const v = autoObs[p.id];
-          const numV = (v !== undefined && v !== 'n') ? Number(v)||0 : 0;
-          const tV = obsToThreshold(numV ? numV : 'n');
-          const hint = getAutoOssHint(p.id);
-          const autoHint = hint;
-          return `<div class="pc" style="margin-bottom:4px">
-            <div class="pc-hdr" style="display:flex;align-items:center;gap:10px;padding:10px 14px">
-              <span class="pc-num" style="flex-shrink:0">${i+1}</span>
-              <span class="pc-name" style="flex:1;font-size:13px;font-weight:600">${p.name}</span>
-              <div class="obs-scale-wrap">
-                <select class="obs-select obs-select-staff" style="min-width:160px;border-color:${numV?thresholdColor(tV):'var(--border)'}"
-                  onchange="setAutoObsBtn('${p.id}',this.value==='n'?'n':Number(this.value))">
-                  <option value="n" ${!numV?'selected':''}>— Non osservato</option>
-                  ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${numV===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}
-                </select>
-                <span style="font-size:11px;font-weight:700;color:${thresholdColor(tV)}">${numV?numV+' · '+thresholdLabel(tV):'—'}</span>
-              </div>
-            </div>
-            ${autoHint ? `<details style="margin:0 14px 8px;border-top:1px solid var(--border-light)">
-              <summary style="font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green);padding:6px 2px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px">
-                ▼ Come mi osservo in questo percorso
-              </summary>
-              <div style="font-size:12px;line-height:1.65;color:var(--ink-mid);padding:8px 4px 4px">${autoHint}</div>
-            </details>` : ''}
-          </div>`;
-        }).join('')}
-      </div>`).join('')}
-
-    <div class="foot-nav" style="margin-top:16px">
-      <button class="btn-primary" onclick="finishAutoOss()">Fatto — vai all'osservazione dello staff →</button>
-    </div>`;
-
-  root.innerHTML = html;
-}
+function showAutoOss() { _stAdd = false; STAFF_VIEW = 'a:oss'; renderStaffPhase1(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function setAutoObsBtn(id, val) {
   autoObs[id] = (val === 'n') ? 'n' : Number(val);
   saveDataDebounced();
 }
 
-function finishAutoOss() {
-  // Dopo l'auto osservazione, aggiungi una voce nella tab staff dove appare come "La mia osservazione"
-  renderStaffPhase1();
-}
+function finishAutoOss() { STAFF_VIEW = 'a:let'; renderStaffPhase1(); }
 
 
 // ── FASE 1 — OSSERVAZIONE ──
@@ -4762,9 +4836,7 @@ function renderPhase1(){
   // Se modalità staff, usa renderStaffPhase1
   if(MODE === 'staff') {
     document.getElementById('hero-title1').textContent = STAFF_RUOLO==='CG' ? 'Osservazione dei Capi Unità' : 'Osservazione dello staff'; refreshUnitName();
-    document.getElementById('hero-desc1').innerHTML = STAFF_RUOLO==='CG'
-      ? 'Osserva ogni Capo Unità del Gruppo sui 24 percorsi PEE. Poi consulta la vista aggregata, le attività suggerite e l\'agenda per il prossimo CdG.'
-      : 'Osserva ogni membro del tuo staff (VCU, SiS) sui 24 percorsi PEE. Poi consulta le indicazioni di percorso individualizzate e le attività suggerite per il team.';
+    document.getElementById('hero-desc1').innerHTML = (STAFF_RUOLO==='CG' ? 'Scegli un Capo Unità' : 'Scegli una persona dello staff') + ' nell’elenco (o la tua Auto osservazione) e segui i passaggi in alto: Profilo, Scheda di osservazione, Lettura individuale, Evoluzione. Poi apri il Riepilogo per la fotografia dello staff.';
     renderStaffPhase1();
     return;
   }
@@ -4892,7 +4964,7 @@ function renderPhase1(){
   refreshObs();
 }
 
-function gotoObs(id){ try{ if(MODE==='giovani'&&typeof gGo==='function') gGo('1b'); else goPhaseInternal(1); }catch(e){ goPhaseInternal(1); }
+function gotoObs(id){ if(MODE==='staff'){ stGoto(id); return; } try{ if(MODE==='giovani'&&typeof gGo==='function') gGo('1b'); else goPhaseInternal(1); }catch(e){ goPhaseInternal(1); }
   setTimeout(()=>{ const c=document.getElementById('card-'+id); if(c){ c.classList.add('expanded'); c.scrollIntoView({behavior:'smooth',block:'center'}); } },150); }
 function toggleCard(id){ document.getElementById('card-'+id).classList.toggle('expanded'); }
 
@@ -5082,7 +5154,7 @@ async function exStart(){
       try{ CL._mem=[]; CL._nMem=0; edInit(); clRealtime(); clPresence(); }catch(e){}
     } else {
       if(typeof clHasLocal==='function' && clHasLocal() && !confirm('Su questo dispositivo c’è già un lavoro: l’esempio lo sostituirebbe. Accedi al tuo spazio per tenerli tutti e due.\n\nSostituire comunque?')) return;
-      localStorage.removeItem(LSK);
+      localStorage.removeItem(LSK); window._exNoAcc = true;
     }
     exReset(); exBuild();
   }catch(e){ showToast('Non riesco a creare l’esempio: '+(e&&e.message||e)); }
@@ -5150,7 +5222,7 @@ function exBar(){ const app=document.getElementById('main-app'); if(!app) return
 async function exDelete(){ if(!confirm('Eliminare il progetto di esempio?')) return;
   try{ if(typeof CL!=='undefined' && CL.sb && CL.user && CL.ctx){ const id=CL.ctx.id; CL.pending=false; clearTimeout(CL.timer); await dbDelete(id); CL.ctx=null; clSaveCtx(); }
   }catch(e){}
-  localStorage.removeItem(LSK); location.reload(); }
+  localStorage.removeItem(LSK); appReload(); }
 document.addEventListener('DOMContentLoaded',()=>{ let f=null; try{ f=sessionStorage.getItem('bussola_esempio'); sessionStorage.removeItem('bussola_esempio'); }catch(e){} if(f) setTimeout(exBuild, 400); });
 function setObs(id,s){
   if(mvOn() && !window.BRO && mvMe()){ mvSetMine(id,s); s=mvFinal(id); }
@@ -5300,6 +5372,10 @@ function renderStaffRiepilogoExtra() {
 
 // ── FASE 1.5 — RIEPILOGO ──
 function renderRiepilogo(){
+  const wasAgg=STAFF_AGG; if(MODE==='staff') STAFF_AGG=true;
+  try{ renderRiepilogoBody(); } finally{ STAFF_AGG=wasAgg; }
+}
+function renderRiepilogoBody(){
   const allP=Object.values(DB).flat();
   const isPersonale = MODE==='personale';
   const isStaff = MODE==='staff';
@@ -5314,12 +5390,6 @@ function renderRiepilogo(){
     if(disclaimerEl) disclaimerEl.innerHTML = `Le riflessioni di questa pagina si basano sul <strong>Progetto Educativo Esperienziale CNGEI (rev. 2025)</strong> e sui suoi 24 percorsi di sviluppo, applicati qui come strumento di osservazione della crescita degli <em>adulti educatori</em> — non dei giovani. I riferimenti metodologici integrano il <strong>KOS (Kit Osservazione e Scoperta)</strong> rev. 2025, lo <strong>Sciroppo del Capo Gruppo</strong> CNGEI, e la letteratura internazionale sull'<strong>Adult Learning</strong> (Knowles, Mezirow) e sullo <strong>sviluppo personale degli educatori</strong>.<br><br>
     Le osservazioni formative non sono giudizi — sono strumenti di orientamento. Nascono da ciò che è emerso in un contesto specifico e in un momento preciso. Usale come punto di partenza per un dialogo aperto con ogni membro dello staff, non come valutazioni definitive.`;
 
-    // Pannello aggregata + attività nel riepilogo staff
-    const staffExtra = document.getElementById('rie-staff-extra');
-    if(staffExtra) {
-      staffExtra.style.display = '';
-      staffExtra.innerHTML = renderStaffRiepilogoExtra();
-    }
   } else {
     const staffExtra = document.getElementById('rie-staff-extra');
     if(staffExtra) staffExtra.style.display = 'none';
@@ -5386,7 +5456,7 @@ function renderRiepilogo(){
   if(isPersonale){
     alertEl.innerHTML = buildAlertPersonale(totPos,totMed,totNeg,totObs,pV,pC,pO,cV,cC,cO,sV,sC,sO);
   } else {
-    alertEl.innerHTML = buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP);
+    { const _ah = buildAlertGruppo(totPos,totNeg,totObs,pV,pA,cV,cA,sV,sA,allP); if(isStaff){ alertEl.innerHTML=''; window._stAlertHTML=_ah; } else alertEl.innerHTML=_ah; }
   }
 
   renderCUCG();
@@ -5420,6 +5490,7 @@ function renderRiepilogo(){
       </div>`;
     grid.appendChild(card);
   });
+  if(isStaff){ const se=document.getElementById('rie-staff-extra'); if(se){ se.style.display=''; se.innerHTML=stRiepExtra(window._stAlertHTML||''); } }
 }
 
 // ── ALERT GRUPPI (giovani + staff) ──
@@ -6513,9 +6584,13 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-14 · beta';
+const APP_VERSION = '2026-10-15 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'15 ottobre 2026', t:'Staff rifatto, accesso più chiaro', i:[
+    '<b>Modalità staff rinnovata</b>: a sinistra l’elenco con «Auto osservazione» e le persone dello staff, in alto i passaggi (Profilo · Scheda di osservazione · Lettura individuale · Evoluzione). Puoi prendere nome, età, ruolo e contatti dalla tabella dello staff della tua Unità (si aggiornano da soli). Il lavoro dello staff finisce nel Riepilogo, con i percorsi mancanti, l’ambito più scoperto e le attività formative.',
+    '<b>Si vede se hai fatto l’accesso</b>: col tuo account in alto compare il tuo nome; senza account il pulsante è giallo e una striscia ti avvisa che il lavoro resta solo su questo computer. Se esci dall’account per errore ti avvisiamo, e chiudendo la pagina senza account ti chiediamo conferma.',
+  ]},
   {d:'14 ottobre 2026', t:'Video, domande frequenti, archivio', i:[
     'In archivio ogni progetto ha il colore della sua branca (Branco giallo, Reparto verde, Compagnia rosso, Staff blu).',
     'Uscite: «Servono documenti da parte dei genitori?» (va nella circolare), chi li raccoglie si sceglie dallo staff; i permessi del Comune vanno tra le cose da fare prima.',
@@ -7578,6 +7653,7 @@ function gInitNav(){
   if(!G_ORIG) G_ORIG={pt:pt?pt.innerHTML:'', mn:mn?mn.innerHTML:'', h3:[document.getElementById('hero-eye3')?.innerHTML, document.getElementById('hero-title3')?.innerHTML, document.getElementById('hero-desc3')?.innerHTML], p3n:document.getElementById('p3-next')?.textContent};
   document.body.classList.toggle('g-nav', MODE==='giovani');
   if(MODE!=='giovani'){
+    if(MODE==='staff'){ try{ stSync(); }catch(e){} }
     if(pt) pt.innerHTML=G_ORIG.pt; if(mn) mn.innerHTML=G_ORIG.mn; if(sn){ sn.style.display='none'; sn.innerHTML=''; }
     ['hero-eye3','hero-title3','hero-desc3'].forEach((id,i)=>{ const e=document.getElementById(id); if(e&&G_ORIG.h3[i]!=null) e.innerHTML=G_ORIG.h3[i]; });
     const b=document.getElementById('p3-next'); if(b&&G_ORIG.p3n) b.textContent=G_ORIG.p3n;
@@ -9182,7 +9258,7 @@ async function exportExcel(){
   }
 
   // ── Priorità e percorsi ──
-  const selected = priSel();
+  const selected = isStaff ? [] : priSel();
   if(selected.length){
     const ws = sheet(isStaff?'Priorità formative':'Priorità', [9, 34, 40, 55, 55]);
     title(ws, T.prio, meta, 5);
@@ -9203,7 +9279,7 @@ async function exportExcel(){
   }
 
   // ── Valutazione IDR ──
-  const perc = getAllPercorsi().filter(x=>x.percorsoId);
+  const perc = isStaff ? [] : getAllPercorsi().filter(x=>x.percorsoId);
   if(perc.length){
     const ws = sheet('Valutazione IDR', [30, 70, 12, 20]);
     title(ws, 'Valutazione degli Indicatori di Risultato (IDR)', meta, 4);
@@ -9704,10 +9780,10 @@ async function exportSchedaDocxLegacy(){
   });
   ch.push(dPara(`Scala 1–10 · 1–2 Non ancora emerso · 3–4 Tracce iniziali · 5–6 In sviluppo · 7–8 Presente · 9–10 Consolidato`, {size:15, italics:true, color:'888888', before:100}));
 
-  // B — priorità
-  ch.push(dH2(`Sezione B — ${T.prio}`));
-  const selected = priSel();
-  if(!selected.length) ch.push(dNote('Nessuna priorità selezionata.'));
+  // B — priorità (lo staff si ferma al Riepilogo)
+  const selected = isStaff ? [] : priSel();
+  if(!isStaff) ch.push(dH2(`Sezione B — ${T.prio}`));
+  if(!selected.length && !isStaff) ch.push(dNote('Nessuna priorità selezionata.'));
   selected.slice(0,3).forEach((id,i) => {
     const p = allP.find(x=>x.id===id); if(!p) return;
     const a = id[0]; const pr = scheda.priorita[i] || {};
@@ -9723,9 +9799,9 @@ async function exportSchedaDocxLegacy(){
   });
 
   // C — percorsi
-  ch.push(dH2(`Sezione C — ${T.perc}`));
-  const perc = getAllPercorsi().filter(x=>x.percorsoId);
-  if(!perc.length) ch.push(dNote('Nessun percorso configurato.'));
+  const perc = isStaff ? [] : getAllPercorsi().filter(x=>x.percorsoId);
+  if(!isStaff) ch.push(dH2(`Sezione C — ${T.perc}`));
+  if(!perc.length && !isStaff) ch.push(dNote('Nessun percorso configurato.'));
   perc.forEach((per,i) => {
     const pid = per.percorsoId; const p = allP.find(x=>x.id===pid); if(!p) return;
     const a = pid[0];
@@ -9746,7 +9822,7 @@ async function exportSchedaDocxLegacy(){
   });
 
   // D — valutazione IDR
-  ch.push(dH2('Sezione D — Valutazione degli Indicatori di Risultato'));
+  if(!isStaff) ch.push(dH2('Sezione D — Valutazione degli Indicatori di Risultato'));
   const ambM = {P:[],C:[],S:[]}; const allM = [];
   const blocksD = [];
   perc.forEach(per => {
@@ -9760,7 +9836,8 @@ async function exportSchedaDocxLegacy(){
     if(m>0){ ambM[a].push(m); allM.push(m); }
     blocksD.push({a, p, list, sc, m});
   });
-  if(!blocksD.length || !allM.length) ch.push(dNote('Valutazione IDR non ancora compilata.'));
+  if(isStaff){}
+  else if(!blocksD.length || !allM.length) ch.push(dNote('Valutazione IDR non ancora compilata.'));
   else {
     const g = Math.round(allM.reduce((x,y)=>x+y,0)/allM.length*10)/10;
     const wg = [2600, 2346, 2346, 2346];
@@ -9780,13 +9857,13 @@ async function exportSchedaDocxLegacy(){
     ]), w));
   });
 
-  // E — evoluzione
-  ch.push(dH2('Sezione E — Evoluzione nel tempo'));
+  // E — evoluzione (non per lo staff: resta nella scheda di ogni persona)
+  if(!isStaff) ch.push(dH2('Sezione E — Evoluzione nel tempo'));
   const tl = [];
   if(isStaff) STAFF_MEMBERS.forEach(m => (staffTimeline[m]||[]).forEach(e => tl.push({who:m, ...e})));
   (staffTimeline['__autooss__']||[]).forEach(e => tl.push({who:'Auto osservazione', ...e}));
-  if(!tl.length) ch.push(dNote('Nessuna voce nella timeline.'));
-  tl.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(e => {
+  if(!tl.length && !isStaff) ch.push(dNote('Nessuna voce nella timeline.'));
+  if(!isStaff) tl.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(e => {
     const d = e.data ? new Date(e.data+'T12:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) : '—';
     ch.push(dPara([dTxt(e.who||'',{size:19,bold:true,color:GREEN}), dTxt('   '+d,{size:17,color:'777777'})],{before:120,after:40,keepNext:true}));
     ch.push(dPara(plain(e.note)||'—',{size:19,after:40}));
@@ -9980,7 +10057,7 @@ if('serviceWorker' in navigator){
 .cl-grid{display:grid;grid-template-columns:110px 1fr;gap:10px}
 .cl-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#bbb;margin-right:5px;vertical-align:middle}
 .cl-dot.ok{background:#66bb6a}.cl-dot.sync{background:#ffca28}.cl-dot.off{background:#ef5350}
-.cl-land{margin:0 0 14px;text-align:center}
+.cl-land{margin:0 0 14px;text-align:center}.cl-land .cl-main{background:#1b5e42;color:#fff;padding:11px 22px;font-size:13px}.cl-nolog{font:500 11px/1.5 'Montserrat',sans-serif;color:#6b6b6b;margin-top:7px}.cl-nolog a{color:#6b6b6b}
 .cl-land button{padding:9px 16px;border:1.5px solid #1b5e42;color:#1b5e42;background:#fff;border-radius:20px;font:700 12px 'Montserrat',sans-serif;cursor:pointer}
 .cl-land button:hover{background:#1b5e42;color:#fff}
 </style>
@@ -10099,6 +10176,10 @@ async function dbDelete(id){
 }
 
 // stato visibile nel pulsante d'intestazione
+function appReload(){ window._appReload = true; location.reload(); }
+function clShortName(){
+  try{ const n = clMyName().split(/\s+/)[0]; if(n) return n; const m = String((CL.user && CL.user.email) || '').split('@')[0]; return m ? m.charAt(0).toUpperCase() + m.slice(1) : 'Archivio'; }catch(e){ return 'Archivio'; }
+}
 function clSetStatus(s){
   CL.status = s;
   const cls = {ok:'ok', sync:'sync', off:'off'}[s] || '';
@@ -10108,14 +10189,16 @@ function clSetStatus(s){
   document.querySelectorAll('.cl-hdrbtn').forEach(b => {
     if(window.BRO){ b.title = (CL.user&&ptHot() ? ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' : '') + 'Sola lettura'; b.innerHTML = b.closest('.cl-land') ? `<span class="cl-dot ok"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Sola lettura</span>` : `<span class="cl-dot ok"></span><span class="cl-word">Sola lettura</span>`; b.innerHTML += `${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`; return; }
     const land = !!b.closest('.cl-land');
-    const lbl = !CL.user ? 'Accedi' : (s === 'off' ? 'Non sincronizzato' : (land ? 'Il mio archivio' : 'Archivio'));
-    b.title = tip + (!land && window._saveAt ? ' · Salvato alle '+window._saveAt : '');
+    b.classList.toggle('cl-main', !CL.user && land); const nl = document.getElementById('cl-nolog'); if(nl && CL.user) nl.style.display = 'none';
+    b.classList.toggle('cl-out', !CL.user && !land); b.classList.toggle('cl-in', !!CL.user && !land);
+    const lbl = !CL.user ? (land ? 'Accedi o crea un account' : 'Accedi') : (s === 'off' ? 'Non sincronizzato' : (land ? 'Il mio archivio' : 'Archivio'));
+    b.title = (CL.user && !land ? 'Accesso fatto come ' + clShortName() + ' · ' : '') + tip + (!land && window._saveAt ? ' · Salvato alle '+window._saveAt : '');
     // nell'intestazione la parola «Archivio» (come nei video) al posto della nuvola; il pallino dice se è tutto salvato
-    b.innerHTML = land ? `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>` : `<span class="cl-dot ${cls}"></span><span class="cl-word">${CL.user ? 'Archivio' : 'Accedi'}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`;
+    b.innerHTML = land ? `<span class="cl-dot ${cls}"></span><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> ${lbl}</span>` : `<span class="cl-dot ${cls}"></span><span class="cl-word">${CL.user ? clShortName() + '<span class="cl-arc"> · Archivio</span>' : '<span class="cl-pre">Non hai fatto l’accesso · </span>Accedi'}</span>${land?'':`<span class="save-mini">${window._saveAt?'✓':''}</span>`}${CL.user&&ptHot()?`<span class="cl-pt" aria-label="${ptHot()} cose per te">${ptHot()}</span>`:''}`;
     if(CL.user&&ptHot()) b.title = ptHot() + (ptHot()===1?' cosa':' cose') + ' per te · ' + b.title;
   });
   try{ window.ptCheck&&ptCheck(); }catch(e){}
-  try{ if(CL.user) document.querySelectorAll('.mov-strip').forEach(e => e.remove()); }catch(e){}
+  try{ if(CL.user) document.querySelectorAll('.mov-strip').forEach(e => e.remove()); else nacStrip(); }catch(e){}
 }
 
 async function clInit(){
@@ -10137,6 +10220,8 @@ async function clInit(){
     CL.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
     CL.sb.auth.onAuthStateChange((ev, session) => {
       const was = CL.user; CL.user = session ? session.user : null;
+      if(ev === 'SIGNED_OUT' && was && !CL._manualOut && !window.BRO){ window._nacOut = true; setTimeout(() => { try{ nacStrip(); clToast('Sei uscita/o dall’account: il lavoro non va più nel cloud. Rientra per salvarlo.'); }catch(e){} }, 0); }
+      if(CL.user) window._nacOut = false;
       clSetStatus(CL.user && CL.ctx ? 'ok' : '');
       if(ev === 'PASSWORD_RECOVERY'){ CL.recovery = true; setTimeout(() => clShow('recovery'), 0); }
       // conferma email / accesso da altra scheda: parte da solo il progetto attivo
@@ -10144,7 +10229,7 @@ async function clInit(){
     });
     const {data} = await CL.sb.auth.getSession();
     CL.user = data.session ? data.session.user : null;
-    if(CL.user && !window.BRO && await clCtxGuard()){ location.reload(); return; }
+    if(CL.user && !window.BRO && await clCtxGuard()){ appReload(); return; }
     try{ const cr = sessionStorage.getItem('bussola_creato'); if(cr){ sessionStorage.removeItem('bussola_creato'); if(CL.user) setTimeout(() => clCreatoShow(cr), 900); } }catch(e){}
     clSetStatus(CL.user && CL.ctx ? 'ok' : '');
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); roRefresh(false); sgWatch(); sgLoad(true); }
@@ -10167,6 +10252,7 @@ async function clInit(){
 }
 
 // ── UI ──
+function clNoAcc(){ const e = document.getElementById('cl-nolog'); if(e) e.style.display = 'none'; try{ document.getElementById('step1').scrollIntoView({behavior:'smooth'}); }catch(x){} }
 function clOpen(){ if(!clOn()){ return; } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
 function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
@@ -10281,7 +10367,7 @@ async function clSubmit(view){
       const {data, error} = await CL.sb.auth.signInWithPassword({email:em, password:pw});
       if(error) throw error;
       CL.user = data.user || (data.session && data.session.user) || CL.user;
-      if(await clCtxGuard()){ try{ sessionStorage.setItem('bussola_opened_msg', 'Accesso fatto: ti mostro i tuoi progetti.'); }catch(e){} location.reload(); return; }
+      if(await clCtxGuard()){ try{ sessionStorage.setItem('bussola_opened_msg', 'Accesso fatto: ti mostro i tuoi progetti.'); }catch(e){} appReload(); return; }
       clSetStatus(CL.ctx ? 'ok' : '');
       try{ movStrip(); }catch(e){}
       const ao = await clAutoOpen(); if(ao !== 'reload'){ clClose(); edInit(); clCheckInvites(); clPerTe(); clRealtime(); }
@@ -10294,7 +10380,7 @@ async function clSubmit(view){
       if(error) throw error;
       if(data.session){
         CL.user = data.session.user;
-        if(await clCtxGuard()){ try{ sessionStorage.setItem('bussola_creato', em); }catch(e){} location.reload(); return; }
+        if(await clCtxGuard()){ try{ sessionStorage.setItem('bussola_creato', em); }catch(e){} appReload(); return; }
         clSetStatus(CL.ctx ? 'ok' : '');
         const ao2 = await clAutoOpen();
         if(ao2 === 'reload'){ try{ sessionStorage.setItem('bussola_creato', em); }catch(e){} }
@@ -10322,10 +10408,10 @@ async function clSubmit(view){
 async function clLogout(){
   try{ if(typeof saveData === 'function' && !window.BRO) saveData(true); if(CL.ctx && (CL.pending || CL.ctx.dirty)) await clPush(true); }catch(e){}
   if(CL.ctx && (CL.pending || CL.status === 'off') && !confirm('Alcune modifiche non sono ancora salvate nel cloud (controlla la connessione). Uscendo adesso andrebbero perse. Uscire comunque?')) return;
-  await CL.sb.auth.signOut(); CL.user = null;
+  CL._manualOut = true; await CL.sb.auth.signOut(); CL.user = null;
   clForget();
   try{ sessionStorage.removeItem('bussola_ro'); sessionStorage.setItem('bussola_opened_msg', 'Sei uscito dall’account: il tuo lavoro è al sicuro nel cloud e lo ritrovi quando rientri.'); }catch(e){}
-  location.reload();
+  appReload();
 }
 function clForget(){ CL.ctx = null; CL.pending = false; clearTimeout(CL.timer); clSaveCtx(); try{ localStorage.removeItem(CL_LS); localStorage.removeItem(CL_BASE); localStorage.removeItem('bussola_pee_ro_v1'); localStorage.removeItem('bussola_cloud_ctx_ro'); }catch(e){} }
 // progetto aperto in questo browser da un altro account: lo tolgo (resta al sicuro nel cloud di chi lo ha)
@@ -10392,7 +10478,7 @@ async function pjSwitch(){
       localStorage.setItem(CL_LS, JSON.stringify(fresh)); clBaseSet(fresh);
       CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx(); CL._arc = null;
       try{ sessionStorage.setItem('bussola_opened_msg', 'Nuovo progetto per ' + pjLabel(target) + ': ' + anno + ' · ' + titolo + '. ' + (t0 ? 'Quello per ' + pjLabel(t0) + ' resta in archivio.' : '')); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
-      location.reload();
+      appReload();
     }catch(e){ clToast('Non riesco ad aprire il progetto: ' + clErr(e)); }
     return;
   }
@@ -10404,7 +10490,7 @@ async function pjSwitch(){
     sessionStorage.setItem('bussola_opened_msg', 'Il lavoro per ' + pjLabel(t0) + ' resta su questo dispositivo: lo ritrovi scegliendo «' + (t0==='staff' ? 'Il mio staff' : 'La mia Unità') + '». Con un account li tieni nell’archivio.');
     sessionStorage.setItem('bussola_autoresume','1');
   }catch(e){}
-  location.reload();
+  appReload();
 }
 // progetti in cui Unità e staff sono finiti insieme: li separo in due progetti (una volta, in automatico)
 async function pjSplitAll(){
@@ -10432,10 +10518,10 @@ async function pjSplitAll(){
       const ts = await dbUpdate(r.id, keep, clMeta(keep));
       if(isCur){ localStorage.setItem(CL_LS, JSON.stringify(keep)); clBaseSet(keep); CL.ctx.ts = ts; CL.ctx.dirty = false; CL.pending = false; clSaveCtx(); changedCur = true; }
     }
-    if(changedCur && !made.length){ location.reload(); return; }
+    if(changedCur && !made.length){ appReload(); return; }
     if(made.length){ CL._arc = null;
       const msg = 'Ho separato Unità e staff in progetti distinti: in archivio trovi ' + made.map(t => '«' + t + '»').join(', ') + '.';
-      if(changedCur){ try{ sessionStorage.setItem('bussola_opened_msg', msg); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){} location.reload(); }
+      if(changedCur){ try{ sessionStorage.setItem('bussola_opened_msg', msg); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){} appReload(); }
       else clToast(msg);
     }
   }catch(e){ console.warn('pjSplitAll', e); }
@@ -10545,7 +10631,7 @@ async function clRestoreVersion(vid){
     await dbSnap(CL.ctx.id, clSnapshot(), 'Prima del ripristino');
     localStorage.setItem(CL_LS, JSON.stringify(v.data||{}));
     CL.ctx.ts = await dbUpdate(CL.ctx.id, v.data||{}, clMeta(v.data||{})); CL.ctx.dirty = false; clSaveCtx(); clBaseSet(v.data||{});
-    location.reload();
+    appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
 
@@ -10602,7 +10688,7 @@ async function dbSgSet(id, stato){ const {error} = await CL.sb.from('pee_suggeri
 async function dbSgDel(id){ const {error} = await CL.sb.from('pee_suggerimenti').delete().eq('id', id); if(error) throw error; }
 
 // ── sola lettura (progetto di un collega) ──
-function roExit(){ try{ sessionStorage.removeItem('bussola_ro'); }catch(e){} location.reload(); }
+function roExit(){ try{ sessionStorage.removeItem('bussola_ro'); }catch(e){} appReload(); }
 async function clOpenShared(id){
   try{
     const list = await dbShared(); const it = list.find(x => x.id === id);
@@ -10614,7 +10700,7 @@ async function clOpenShared(id){
     localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}));
     sessionStorage.setItem('bussola_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}));
     sessionStorage.setItem('bussola_autoresume','1');
-    location.reload();
+    appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
 async function roRefresh(manual){
@@ -10629,7 +10715,7 @@ async function roRefresh(manual){
       if(document.getElementById('main-app').style.display !== 'none' && clApplyInPlace(d.data||{})){ if(manual) clToast('Aggiornato'); return; }
       localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(d.data||{}));
       sessionStorage.setItem('bussola_autoresume','1');
-      location.reload();
+      appReload();
     } else if(manual){ clToast('Già aggiornato'); }
   }catch(e){}
 }
@@ -10841,7 +10927,7 @@ function clSoftReload(msg){
     sessionStorage.setItem('bussola_autoresume', '1');
     if(msg) sessionStorage.setItem('bussola_opened_msg', msg);
   }catch(e){}
-  location.reload();
+  appReload();
 }
 function clRestoreView(){
   let v = null; try{ v = JSON.parse(sessionStorage.getItem('bussola_view')||'null'); sessionStorage.removeItem('bussola_view'); }catch(e){}
@@ -11045,7 +11131,7 @@ async function clRoleCheck(){
       clearTimeout(CL.timer); CL.pending = false;
       CL.ctx = null; clSaveCtx(); localStorage.removeItem(CL_LS);
       msg('Non hai più accesso a quel progetto: ti riporto ai tuoi PEE.');
-      location.reload(); return;
+      appReload(); return;
     }
     if(ro && clEditRole(it.ruolo)){
       // promosso: da sola lettura a modifica
@@ -11054,19 +11140,19 @@ async function clRoleCheck(){
       localStorage.setItem('bussola_cloud_ctx', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false, ruolo:it.ruolo, owner:it.owner||''}));
       sessionStorage.removeItem('bussola_ro'); sessionStorage.setItem('bussola_autoresume','1');
       msg('Ora puoi modificare questo progetto come ' + CL_RUOLI[it.ruolo].toLowerCase() + '.');
-      location.reload(); return;
+      appReload(); return;
     }
     if(!ro && !clEditRole(it.ruolo)){
       // passato a lettore: il progetto si riapre in sola lettura
       clearTimeout(CL.timer); CL.pending = false;
       CL.ctx = null; clSaveCtx(); localStorage.removeItem(CL_LS);
-      const r = await dbGet(id); if(!r){ location.reload(); return; }
+      const r = await dbGet(id); if(!r){ appReload(); return; }
       localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(r.data||{}));
       localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}));
       sessionStorage.setItem('bussola_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}));
       sessionStorage.setItem('bussola_autoresume','1');
       msg('Il tuo ruolo è cambiato: ora vedi questo progetto in sola lettura.');
-      location.reload(); return;
+      appReload(); return;
     }
     if(!ro && it.ruolo !== CL.ctx.ruolo){ CL.ctx.ruolo = it.ruolo; clSaveCtx(); edInit(); clToast('Il tuo ruolo è cambiato: ora sei ' + CL_RUOLI[it.ruolo].toLowerCase()); }
   }catch(e){}
@@ -11631,7 +11717,7 @@ async function clNew(){
     const r = await dbInsert(anno, titolo, {}, {});
     localStorage.removeItem(CL_LS);
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx();
-    location.reload();
+    appReload();
   }catch(e){ clToast(e.message==='duplicate' ? 'Esiste già un progetto con questo titolo in quell\'anno' : 'Errore: '+clErr(e)); }
 }
 async function clOpenProject(id, extra){
@@ -11646,7 +11732,7 @@ async function clOpenProject(id, extra){
     localStorage.setItem(CL_LS, JSON.stringify(r.data||{})); clBaseSet(r.data||{});
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
-    location.reload();
+    appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
 async function clRename(id){
@@ -11803,6 +11889,22 @@ function movStrip(){
     ['welcome-screen', 'main-app'].forEach(id => { const h = document.getElementById(id); if(!h) return; const d = document.createElement('div'); d.className = 'mov-strip'; d.setAttribute('role', 'status'); d.innerHTML = html; h.prepend(d); });
   }catch(e){}
 }
+// ── chi lavora senza account deve accorgersene: striscia gialla + avviso alla chiusura ──
+function nacWork(){ try{ return !CL.user && !window.BRO && !window._exNoAcc && clHasLocal(); }catch(e){ return false; } }
+function nacStrip(){
+  try{
+    document.querySelectorAll('.nac-strip').forEach(e => e.remove());
+    if(!nacWork() || !(typeof clOn==='function' && clOn())) return;
+    if(sessionStorage.getItem('bussola_nac_dopo')) return;
+    if(document.querySelector('.mov-strip')) return;
+    const out = window._nacOut ? '<b>Sei uscita/o dall’account.</b> Da adesso il lavoro non va più nel cloud: resta solo su questo computer.' : '<b>Stai lavorando senza account.</b> Il lavoro resta solo su questo computer e può andare perso (altro browser, dati cancellati, altro dispositivo).';
+    const html = `<div class="grow">${out} Accedi o crea un account gratuito: si salva da solo nel cloud.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="clOpen()">Accedi</button><button class="gh" onclick="clBackup()">↓ Scarica una copia</button><button class="gh" onclick="nacLater()">Più tardi</button></div>`;
+    ['welcome-screen', 'main-app'].forEach(id => { const h = document.getElementById(id); if(!h) return; const d = document.createElement('div'); d.className = 'mov-strip nac-strip'; d.setAttribute('role', 'status'); d.innerHTML = html; h.prepend(d); });
+  }catch(e){}
+}
+function nacLater(){ try{ sessionStorage.setItem('bussola_nac_dopo', '1'); }catch(e){} document.querySelectorAll('.nac-strip').forEach(e => e.remove()); }
+window.addEventListener('beforeunload', ev => { if(window._appReload || !nacWork()) return; ev.preventDefault(); ev.returnValue = ''; return ''; });
 function movLater(){ try{ sessionStorage.setItem('bussola_mov_dopo', '1'); }catch(e){} document.querySelectorAll('.mov-strip').forEach(e => e.remove()); }
 function clBackup(){
   const d = clSnapshot();
@@ -11893,7 +11995,7 @@ function clOpenFromBundle(i){
   if(!confirm('Il progetto scelto sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
   localStorage.setItem(CL_LS, JSON.stringify(p.data||{}));
   try{ if((p.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
-  location.reload();
+  appReload();
 }
 function clRestore(inp){
   const f = inp.files && inp.files[0]; if(!f) return;
@@ -11910,7 +12012,7 @@ function clRestore(inp){
       if(!confirm('Il file sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
       localStorage.setItem(CL_LS, JSON.stringify(d));
       try{ if(d.MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
-      location.reload();
+      appReload();
     }catch(e){ clMsg('File non valido: '+e.message, 'err'); }
   };
   r.readAsText(f);
