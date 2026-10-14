@@ -1005,7 +1005,16 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 .cl-badge{display:inline-block;font:700 10.5px 'Montserrat',sans-serif;padding:2px 8px;border-radius:10px;background:#eaf5ee;color:#1b5e42;margin-left:6px;vertical-align:middle}
 .cl-btn.wa{border-color:#1f9d55;color:#1f7a45}
 .cl-hdrbtn{position:relative}
-.vid-home{margin:0 0 20px;text-align:left}.vid-hh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 8px}.vid-hh b{font-size:14px}.vid-hh span{font-size:12px;color:var(--ink-mid)}
+.vid-list{padding:6px 12px 10px}
+.faq-home{padding:4px 20px 16px}
+@media(max-width:420px){.hdr .save-mini{display:none}.hdr-actions{gap:4px}.hdr-actions .hdr-btn{padding:6px 7px;min-width:36px}.hdr .cl-hdrbtn .cl-word,.hdr .fb-lbl{font-size:11.5px}}
+.vid-row{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--border-light);padding:10px 8px;cursor:pointer;text-align:left;font:inherit;color:var(--ink);border-radius:8px}
+.vid-row:last-of-type{border-bottom:0}.vid-row:hover,.vid-row:focus-visible{background:var(--green-pale)}
+.vid-ic{flex:0 0 28px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;padding-left:2px;transition:background .15s,color .15s}
+.vid-row:hover .vid-ic{background:var(--green);color:#fff}
+.vid-rt{flex:1;font-size:13px;line-height:1.35}.vid-rt b{color:var(--green);margin-right:2px}
+.vid-rd{flex-shrink:0;font-size:11.5px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.vid-note{font-size:11.5px;color:var(--ink-mid);margin:8px 8px 2px}.vid-hh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 8px}.vid-hh b{font-size:14px}.vid-hh span{font-size:12px;color:var(--ink-mid)}
 .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .vid-tile{display:flex;flex-direction:column;gap:5px;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font:inherit}
 .vid-th{position:relative;display:block;aspect-ratio:16/9;border-radius:8px;background:#e9ece9 center/cover no-repeat;border:1px solid var(--border,#e2e2e2)}
@@ -1099,6 +1108,7 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     </div>
     <div class="hdr-actions">
       <button class="hdr-btn fb-btn" onclick="fbOpen()" title="Scrivi un suggerimento o segnala un problema"><span class="fb-lbl">Suggerimenti?</span></button>
+      <button class="hdr-btn fb-btn faq-btn" onclick="faqOpen()" title="Domande frequenti"><span class="fb-lbl">FAQ</span></button>
       <button class="hdr-btn" id="cl-histbtn" onclick="clOpenHist()" style="display:none" title="Versioni precedenti: torna a com'era il lavoro prima"><svg class="ic"><use href="#i-history"/></svg><span class="hdr-lbl"> Versioni</span></button>
       <button class="hdr-btn cl-hdrbtn" onclick="clOpen()" title="Account e archivio dei tuoi PEE · il lavoro si salva da solo"><span class="cl-word">Accedi</span><span class="save-mini"></span></button>
       <button class="hdr-btn hdr-zoom" onclick="zoomApp(0)" title="Cambia la dimensione del testo" aria-label="Cambia la dimensione del testo">A<small>a</small></button>
@@ -1115,9 +1125,16 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
     <div class="welcome-sub">Uno strumento per osservare i 24 percorsi del Progetto Educativo Esperienziale CNGEI.</div>
 
 
-    <div id="vid-home" class="vid-home"></div>
+    <details class="istr-box vid-box" id="vid-box" style="text-align:left;margin-bottom:14px">
+      <summary>
+        <span class="istr-pill">Videotutorial</span>
+        <span class="istr-title">Scopri come funziona l’app</span>
+        <span class="istr-chev">▼</span>
+      </summary>
+      <div class="vid-list" id="vid-home"></div>
+    </details>
     <!-- ISTRUZIONI -->
-    <details class="istr-box" style="text-align:left;margin-bottom:24px">
+    <details class="istr-box" style="text-align:left;margin-bottom:14px">
       <summary>
         <span class="istr-pill">Guida</span>
         <span class="istr-title">Come usare PEE CNGEI</span>
@@ -1174,6 +1191,14 @@ body[data-theme="L"] .hdr .cl-st,body[data-theme="L"] .hdr #cl-status{color:#2b2
         <p>I percorsi poco presenti non sono fallimenti: sono le aree dove il tuo gruppo ha più da guadagnare. Meglio tre percorsi vissuti in profondità che otto sfiorati. Le letture che l'app propone sono spunti di riflessione, da calare nella storia del tuo gruppo e del tuo territorio.</p>
 
       </div>
+    </details>
+    <details class="istr-box faq-box" id="faq-box" style="text-align:left;margin-bottom:24px">
+      <summary>
+        <span class="istr-pill">FAQ</span>
+        <span class="istr-title">Domande frequenti</span>
+        <span class="istr-chev">▼</span>
+      </summary>
+      <div class="faq-home" id="faq-home"></div>
     </details>
 
 
@@ -6484,8 +6509,8 @@ const APP_VERSION = '2026-10-14 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 ottobre 2026', t:'Video, domande frequenti, archivio', i:[
-    '<b>Otto video</b> da un minuto circa: li trovi nella schermata iniziale («Guarda come funziona»), nei riquadri «Come funziona» di ogni sezione (si apre quello giusto), nell’archivio e nella finestra degli inviti.',
-    '<b>Domande frequenti</b>, con la ricerca e il pulsante «Portami lì»: in fondo alla schermata iniziale e nei riquadri «Come funziona».',
+    '<b>Otto video</b> da un minuto circa: li trovi nella schermata iniziale (riquadro «Videotutorial»), nei riquadri «Come funziona» di ogni sezione (si apre quello giusto), nell’archivio e nella finestra degli inviti.',
+    '<b>Domande frequenti</b>, con la ricerca e il pulsante «Portami lì»: pulsante <b>FAQ</b> in alto, riquadro nella schermata iniziale e link nei riquadri «Come funziona».',
     'In alto il pulsante si chiama <b>Archivio</b> (prima c’era solo la nuvola); il pallino verde e la ✓ dicono che è tutto salvato.',
     'Osservazione condivisa: se dopo la decisione qualcuno dà un valore lontano dal deciso o lo accompagna con una nota, il percorso diventa <b>da riguardare</b> per chi decide, con un avviso in «Per te»: <b>Confermo</b> o <b>Cambia</b>.']},
   {d:'13 ottobre 2026', t:'Priorità in ordine e rimandi tra le sezioni', i:[
@@ -6562,7 +6587,8 @@ function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !
 function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 3; const k = gCur(); return ({'1a':4,'1b':4,'1c':4,'1d':4,'2':5,'3':6,'4':7,'5':7,'chk':7})[k] || 4; }catch(e){ return 1; } }
 function vidLink(n, txt){ return `<a href="#" class="vid-lk" onclick="vidOpen(${n});return false">▶ ${txt || 'Guarda il video'}</a>`; }
 function vidHome(){ const h = document.getElementById('vid-home'); if(!h) return;
-  h.innerHTML = `<div class="vid-hh"><b>Guarda come funziona</b><span>otto video da un minuto circa</span></div><div class="vid-grid">${VIDEOS.map(vidTile).join('')}</div>`; }
+  h.innerHTML = VIDEOS.map(v => `<button class="vid-row" onclick="vidOpen(${v.n})"><span class="vid-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span><span class="vid-rt"><b>${v.n}</b> ${v.t}</span><span class="vid-rd">${v.d}</span></button>`).join('')
+    + `<p class="vid-note">Otto video da un minuto circa. Li ritrovi anche nei riquadri «Come funziona» di ogni sezione.</p>`; }
 
 // ── Domande frequenti: cerca, apri la risposta, «Portami lì» ──
 const FAQ = [
@@ -6593,22 +6619,23 @@ const FAQ = [
   ['Se qualcosa non va','Ho trovato un errore o ho un’idea.','Premi <b>Suggerimenti?</b>: il messaggio arriva direttamente a chi cura l’app.','fbOpen()']
 ];
 const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':2, 'Lavorare con lo staff':3, 'La programmazione':4, 'Documenti':7};
-function faqOpen(){
+function faqHTML(k){
   const inApp = () => { const m = document.getElementById('main-app'); return m && m.style.display !== 'none' && typeof MODE !== 'undefined' && MODE === 'giovani'; };
   const groups = [...new Set(FAQ.map(f => f[0]))];
   const item = (f, i) => { const go = f[3] && (/^gGo/.test(f[3]) ? inApp() : true) ? `<button class="btn-ghost" style="margin-top:8px;font-size:12px;padding:6px 12px" onclick="faqGo(${i})">Portami lì →</button>` : '';
     return `<details class="faq-it" data-q="${sEsc((f[1]+' '+f[2]).replace(/<[^>]+>/g,'').toLowerCase())}"><summary>${f[1]}</summary><div class="faq-a">${f[2]}${go?'<div>'+go+'</div>':''}</div></details>`; };
-  modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Domande frequenti</h3>
-    <input class="ax-in faq-q" id="faq-q" type="search" placeholder="Cerca una domanda…" oninput="faqFilter(this.value)" style="width:100%;margin:8px 0 6px">
-    <div id="faq-list">${groups.map(g => `<div class="faq-g"><div class="faq-gh">${g}${FAQ_VID[g]?` <a href="#" class="vid-lk" style="text-transform:none;letter-spacing:0;font-size:11.5px" onclick="vidOpen(${FAQ_VID[g]});return false">▶ video</a>`:''}</div>${FAQ.map((f,i)=>f[0]===g?item(f,i):'').join('')}</div>`).join('')}</div>
-    <p class="faq-none" id="faq-none" style="display:none">Nessuna domanda trovata.</p>
-    <p style="font-size:12px;color:var(--ink-mid);margin:14px 0 0">Non hai trovato la risposta? Scrivici da <a href="#" onclick="modalClose();fbOpen();return false">Suggerimenti?</a>: le domande che arrivano diventano nuove risposte.</p>`);
+  return `<input class="ax-in faq-q" id="faq-q${k}" type="search" placeholder="Cerca una domanda…" oninput="faqFilter(this.value,'${k}')" style="width:100%;margin:8px 0 6px">
+    <div id="faq-list${k}">${groups.map(g => `<div class="faq-g"><div class="faq-gh">${g}${FAQ_VID[g]?` <a href="#" class="vid-lk" style="text-transform:none;letter-spacing:0;font-size:11.5px" onclick="vidOpen(${FAQ_VID[g]});return false">▶ video</a>`:''}</div>${FAQ.map((f,i)=>f[0]===g?item(f,i):'').join('')}</div>`).join('')}</div>
+    <p class="faq-none" id="faq-none${k}" style="display:none">Nessuna domanda trovata.</p>
+    <p style="font-size:12px;color:var(--ink-mid);margin:14px 0 0">Non hai trovato la risposta? Scrivici da <a href="#" onclick="modalClose();fbOpen();return false">Suggerimenti?</a>: le domande che arrivano diventano nuove risposte.</p>`;
 }
-function faqFilter(v){
+function faqOpen(){ modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Domande frequenti</h3>` + faqHTML('')); }
+function faqHome(){ const h = document.getElementById('faq-home'); if(h && !h.innerHTML) h.innerHTML = faqHTML('-h'); }
+function faqFilter(v, k){ k = k || '';
   const t = String(v||'').toLowerCase().trim().split(/\s+/).filter(Boolean); let n = 0;
-  document.querySelectorAll('#faq-list .faq-it').forEach(d => { const ok = t.every(w => d.dataset.q.includes(w)); d.style.display = ok ? '' : 'none'; if(ok) n++; if(t.length && ok) d.open = n <= 2; });
-  document.querySelectorAll('#faq-list .faq-g').forEach(g => { g.style.display = [...g.querySelectorAll('.faq-it')].some(d => d.style.display !== 'none') ? '' : 'none'; });
-  const e = document.getElementById('faq-none'); if(e) e.style.display = n ? 'none' : '';
+  document.querySelectorAll('#faq-list' + k + ' .faq-it').forEach(d => { const ok = t.every(w => d.dataset.q.includes(w)); d.style.display = ok ? '' : 'none'; if(ok) n++; if(t.length && ok) d.open = n <= 2; });
+  document.querySelectorAll('#faq-list' + k + ' .faq-g').forEach(g => { g.style.display = [...g.querySelectorAll('.faq-it')].some(d => d.style.display !== 'none') ? '' : 'none'; });
+  const e = document.getElementById('faq-none' + k); if(e) e.style.display = n ? 'none' : '';
 }
 function faqGo(i){ const f = FAQ[i]; if(!f || !f[3]) return; modalClose(); setTimeout(() => { try{ (new Function(f[3]))(); }catch(e){} }, 50); }
 // link «Domande frequenti» in fondo ai riquadri «Come funziona»
@@ -6621,7 +6648,7 @@ function novOpen(){
 function novDot(){ let seen=''; try{ seen=localStorage.getItem('bussola_nov_vista')||''; }catch(e){}
   const d=document.getElementById('nov-dot'); if(d) d.style.display = seen===NOVITA[0].d ? 'none' : 'inline-block';
   const v=document.getElementById('app-ver'); if(v) v.textContent='Versione '+APP_VERSION; }
-document.addEventListener('DOMContentLoaded', () => { novDot(); faqLinks(); vidHome(); });
+document.addEventListener('DOMContentLoaded', () => { novDot(); faqLinks(); vidHome(); faqHome(); });
 const STRUM_GRUPPI = ['Legge e Promessa','Programmi Progressivi e Stimolanti','Gruppo di Pari','Simbolismo e Tradizioni','Imparare Facendo',"Vita all'Aria Aperta",'Servizio'];
 // Fonte: "Strumenti del Metodo declinati per fasce d'età" (CNGEI)
 const STRUM_BRANCA = {

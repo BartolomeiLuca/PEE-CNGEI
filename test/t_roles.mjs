@@ -20,7 +20,7 @@ await sleep(300);
 const welcome = await ev(pa.page, () => document.getElementById('welcome-screen').style.display !== 'none');
 ok(welcome, '5. torna alla schermata iniziale senza conferma');
 ok(!(pa.page.__dialogs||[]).length, '5. nessuna finestra di conferma');
-await pa.page.click('text=Apri un progetto di esempio');
+await pa.page.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click();
 await sleep(1500);
 const ex = await ev(pa.page, () => ({main: document.getElementById('main-app').style.display, ex: !!document.getElementById('ex-bar'), unit: UNIT_NAME, ctx: CL.ctx && CL.ctx.titolo}));
 ok(reloads === 0, '4. esempio aperto senza ricaricare la pagina (navigazioni: ' + reloads + ')');
