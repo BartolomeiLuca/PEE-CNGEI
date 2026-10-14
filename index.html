@@ -2994,7 +2994,7 @@ const AMBITO_LABELS = {P:'Personale',C:'Comunitario',S:'Spirituale'};
 
 // ── WELCOME LOGIC ──
 function selectMode(mode) {
-  MODE = mode;
+  MODE = mode; window._pjPick = true;
   ['giovani','staff'].forEach(m => {
     document.getElementById('mc-'+m).classList.toggle('selected', m===mode);
   });
@@ -3044,7 +3044,9 @@ function checkReady() {
 }
 
 function startTool() {
-  if(!window.BRO && (MODE==='giovani' || MODE==='staff')){ const t0 = pjType(clSnapshot()); if(t0 && t0 !== MODE){ pjSwitch(); return; } }
+  // solo quando la persona ha appena scelto dalla schermata iniziale un tipo diverso da quello del progetto aperto
+  if(window._pjPick && !window.BRO && (MODE==='giovani' || MODE==='staff')){ window._pjPick = false; const t0 = pjType(clSnapshot()); if(t0 && t0 !== MODE){ pjSwitch(); return; } }
+  window._pjPick = false;
   document.getElementById('welcome-screen').style.display='none';
   document.getElementById('hdr').style.display='block';
   document.getElementById('main-app').style.display='block';
@@ -3084,6 +3086,7 @@ function applyTheme(){
 // ── PERSIST ──
 let _saveTimer = null;
 function saveData(silent) {
+  if(window._pjBusy) return;   // separazione Unità/staff in corso: niente salvataggi dalla memoria della pagina
   if(window.BRO){ if(!silent) showToast('Sola lettura: il progetto è di un’altra persona dello staff'); return; }
   try {
     localStorage.setItem(LSK, JSON.stringify({
@@ -5097,7 +5100,7 @@ function exReset(){
 }
 function exBuild(){
   try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){}
-  selectMode('giovani'); selectFascia('E'); startTool();
+  selectMode('giovani'); window._pjPick = false; selectFascia('E'); startTool();
   UNIT_NAME='Reparto Kontiki'; scheda.esempio=true;
   const pp=scheda.pp; Object.assign(pp,{nome:'Capo di esempio', sezione:'Pesaro',
     ctxTerr:'Quartiere residenziale vicino al centro, con un grande parco e la collina a dieci minuti a piedi. Molti ragazzi arrivano in bicicletta; la sede è condivisa con altre associazioni il sabato mattina.',
@@ -10407,7 +10410,11 @@ async function pjSwitch(){
 async function pjSplitAll(){
   if(window.BRO || !CL.sb || !CL.user || CL._pjSplit) return; CL._pjSplit = true;
   let changedCur = false;
+  // se il progetto aperto è misto, da subito niente salvataggi: la pagina ha ancora in memoria i dati insieme
+  { const d0 = clSnapshot(); if(CL.ctx && !CL.ctx.ruolo && pjUnitHas(d0) && pjStaffHas(d0)) window._pjBusy = true; }
+  const core = d => pjCanon(Object.assign({}, d, {ts:0, v:0}));
   try{
+    await pjDedupe();
     const rows = await dbList(); const made = [];
     for(const r of rows.slice(0, 40)){
       const isCur = CL.ctx && !CL.ctx.ruolo && CL.ctx.id === r.id;
@@ -10418,18 +10425,37 @@ async function pjSplitAll(){
       const keep = prim === 'giovani' ? pjUnitPart(d, true) : pjStaffPart(d, true, true);
       const other = prim === 'giovani' ? pjStaffPart(d, false, false) : pjUnitPart(d, false);
       const all = await dbList();
-      const titolo = await clUniqueTitle(all, r.anno, (prim === 'giovani' ? 'Staff ' : 'PEE ') + r.anno);
-      await dbInsert(r.anno, titolo, other, clMeta(other));
+      // c'è già un progetto dell'altro tipo con gli stessi dati? allora non ne creo un altro
+      let dup = false;
+      for(const o of all.filter(x => x.anno === r.anno && x.id !== r.id && (x.meta||{}).mode === other.MODE)){ const g = await dbGet(o.id); if(g && core(g.data||{}) === core(other)){ dup = true; break; } }
+      if(!dup){ const titolo = await clUniqueTitle(all, r.anno, (prim === 'giovani' ? 'Staff ' : 'PEE ') + r.anno); await dbInsert(r.anno, titolo, other, clMeta(other)); made.push(titolo); }
       const ts = await dbUpdate(r.id, keep, clMeta(keep));
-      made.push(titolo);
       if(isCur){ localStorage.setItem(CL_LS, JSON.stringify(keep)); clBaseSet(keep); CL.ctx.ts = ts; CL.ctx.dirty = false; CL.pending = false; clSaveCtx(); changedCur = true; }
     }
+    if(changedCur && !made.length){ location.reload(); return; }
     if(made.length){ CL._arc = null;
       const msg = 'Ho separato Unità e staff in progetti distinti: in archivio trovi ' + made.map(t => '«' + t + '»').join(', ') + '.';
       if(changedCur){ try{ sessionStorage.setItem('bussola_opened_msg', msg); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){} location.reload(); }
       else clToast(msg);
     }
   }catch(e){ console.warn('pjSplitAll', e); }
+  if(!changedCur) window._pjBusy = false;
+}
+function pjCanon(x){ return x && typeof x === 'object' ? (Array.isArray(x) ? '[' + x.map(pjCanon).join(',') + ']' : '{' + Object.keys(x).sort().map(k => JSON.stringify(k) + ':' + pjCanon(x[k])).join(',') + '}') : JSON.stringify(x === undefined ? null : x); }
+// copie identiche dello stesso progetto (stesso anno, stesso tipo, stessi dati): tengo la più vecchia (o quella aperta)
+async function pjDedupe(){
+  try{
+    const rows = await dbList(); const core = d => pjCanon(Object.assign({}, d, {ts:0, v:0}));
+    const groups = {}; rows.forEach(r => { const k = r.anno + '|' + ((r.meta||{}).mode||'') + '|' + JSON.stringify(r.meta||{}); (groups[k] = groups[k] || []).push(r); });
+    let n = 0;
+    for(const g of Object.values(groups)){ if(g.length < 2 || !(g[0].meta||{}).mode) continue;
+      const full = []; for(const r of g){ const x = await dbGet(r.id); if(x) full.push({r, c: core(x.data||{})}); }
+      const seen = {};
+      full.sort((a, b) => (CL.ctx && a.r.id === CL.ctx.id ? -1 : CL.ctx && b.r.id === CL.ctx.id ? 1 : a.r.ts - b.r.ts));
+      for(const f of full){ if(seen[f.c]){ if(!(CL.ctx && f.r.id === CL.ctx.id)){ await dbDelete(f.r.id); n++; } } else seen[f.c] = true; }
+    }
+    if(n){ CL._arc = null; clToast('Ho tolto ' + n + (n === 1 ? ' copia identica' : ' copie identiche') + ' dello stesso progetto dall’archivio.'); }
+  }catch(e){ console.warn('pjDedupe', e); }
 }
 // colore e nome secondo la branca del progetto (Lupetti giallo, Esploratori verde, Rover rosso, staff blu)
 function clKind(m){ m = m||{}; return m.mode === 'staff' ? 'S' : m.mode === 'giovani' ? (['L','E','R'].includes(m.fascia) ? m.fascia : 'E') : 'n'; }
@@ -11673,6 +11699,7 @@ function clQueuePush(){
 }
 window.cloudQueuePush = clQueuePush;
 async function clPush(force){
+  if(window._pjBusy) return;
   if(window.BRO || !CL.sb || !CL.user || !CL.ctx || CL.busy) return;
   CL.busy = true; clearTimeout(CL.timer);
   let raw = null;
