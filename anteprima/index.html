@@ -1005,6 +1005,10 @@ body[data-theme="L"] .sg-a button.ok{background:#7a7100}
 .cl-badge{display:inline-block;font:700 10.5px 'Montserrat',sans-serif;padding:2px 8px;border-radius:10px;background:#eaf5ee;color:#1b5e42;margin-left:6px;vertical-align:middle}
 .cl-btn.wa{border-color:#1f9d55;color:#1f7a45}
 .cl-hdrbtn{position:relative}
+.cl-type{display:inline-block;font:800 10px 'Montserrat',sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:6px;margin-right:7px;vertical-align:1px}
+.cl-type.u{background:#2a7a4b;color:#fff!important;opacity:1}.cl-type.s{background:#2f5f96;color:#fff!important;opacity:1}.cl-type.n{background:#eee;color:#666}
+.cl-row.cl-k-staff{box-shadow:inset 5px 0 0 #2f5f96;background:#f3f7fc}.cl-row.cl-k-giovani{box-shadow:inset 5px 0 0 #2a7a4b}
+.cl-row.cl-k-staff.act{background:#e8f0fa}
 .vid-list{padding:6px 12px 10px}
 .faq-home{padding:4px 20px 16px}
 @media(max-width:420px){.hdr .save-mini{display:none}.hdr-actions{gap:4px}.hdr-actions .hdr-btn{padding:6px 7px;min-width:36px}.hdr .cl-hdrbtn .cl-word,.hdr .fb-lbl{font-size:11.5px}}
@@ -3040,6 +3044,7 @@ function checkReady() {
 }
 
 function startTool() {
+  if(!window.BRO && (MODE==='giovani' || MODE==='staff')){ const t0 = pjType(clSnapshot()); if(t0 && t0 !== MODE){ pjSwitch(); return; } }
   document.getElementById('welcome-screen').style.display='none';
   document.getElementById('hdr').style.display='block';
   document.getElementById('main-app').style.display='block';
@@ -6509,6 +6514,7 @@ const APP_VERSION = '2026-10-14 · beta';
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 ottobre 2026', t:'Video, domande frequenti, archivio', i:[
+    '<b>Unità e staff sono sempre due progetti distinti</b>: scegliendo «Il mio staff» si apre (o si crea) il progetto dello staff dell’anno, senza toccare quello dell’Unità, e viceversa. In archivio li riconosci dalle etichette <b>Unità</b> e <b>Staff</b>. I progetti in cui erano finiti insieme sono stati separati in automatico.',
     '<b>Otto video</b> da un minuto circa: li trovi nella schermata iniziale (riquadro «Videotutorial»), nei riquadri «Come funziona» di ogni sezione (si apre quello giusto), nell’archivio e nella finestra degli inviti.',
     '<b>Domande frequenti</b>, con la ricerca e il pulsante «Portami lì»: pulsante <b>FAQ</b> in alto, riquadro nella schermata iniziale e link nei riquadri «Come funziona».',
     'In alto il pulsante si chiama <b>Archivio</b> (prima c’era solo la nuvola); il pallino verde e la ✓ dicono che è tutto salvato.',
@@ -10145,6 +10151,7 @@ async function clInit(){
     if(CL.user && CL.ctx && (CL.ctx.ruolo || window.BRO)){ clRoleCheck(); clRoleWatch(); }
     if(CL.user) await clEmailComplete();
     if(CL.user) setTimeout(clArcPrefetch, 1500);
+    if(CL.user && !window.BRO) setTimeout(pjSplitAll, 2500);
     if(CL.user){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 120000); }
     if(CL.user && CL.ctx && !window.BRO) ptAvPending();
     if(CL.user){ clRealtime(); setInterval(clPollRemote, 60000); }
@@ -10157,7 +10164,7 @@ async function clInit(){
 // ── UI ──
 function clOpen(){ if(!clOn()){ return; } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
-function clClose(){ $cl('cl-ov').classList.remove('show'); }
+function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
 // "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
 function clContinue(){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function') resumeSession(); }catch(e){} }
 function clMsg(t, kind){ const m = $cl('cl-msg'); if(!m) return; m.className = 'cl-msg ' + (kind||'err'); m.textContent = t; }
@@ -10341,9 +10348,10 @@ function clArcRowsHTML(rows){
   if(!years.length) h += `<p class="cl-note" style="margin:0">Nessun progetto salvato ancora.</p>`;
   years.forEach(y => {
     h += `<div class="cl-year">${y}</div>`;
-    byYear[y].forEach(r => {
+    const ord = r => ({giovani:0, staff:1})[(r.meta||{}).mode] ?? 2;
+    byYear[y].slice().sort((a, b) => ord(a) - ord(b)).forEach(r => {
       const isAct = act && act.id === r.id;
-      h += `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
+      h += `<div class="cl-row ${isAct?'act':''} cl-k-${(r.meta||{}).mode||'n'}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clTypeTag(r.meta)}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
         <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
     });
@@ -10351,6 +10359,77 @@ function clArcRowsHTML(rows){
   return h;
 }
 function clArcCountHTML(rows){ return rows.length ? `${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}` : ''; }
+// ── Unità e staff: sempre due progetti distinti (uno per anno ciascuno) ──
+function pjUnitHas(d){ d=d||{}; const pp=(d.scheda&&d.scheda.pp)||{};
+  return Object.values(d.obs||{}).some(v=>v&&v!=='n') || ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k=>String(pp[k]||'').trim())
+    || ((d.scheda&&d.scheda.priorita)||[]).some(p=>p&&(p.percorso||String(p.necessita||'').trim())) || ((d.scheda&&d.scheda.percorsiExtra)||[]).length>0; }
+function pjStaffHas(d){ d=d||{}; return (d.STAFF_MEMBERS||[]).length>0 || Object.values(d.staffObs||{}).some(o=>Object.values(o||{}).some(v=>v&&v!=='n')) || Object.values(d.autoObs||{}).some(v=>v&&v!=='n'); }
+function pjType(d){ d=d||{}; if(d.MODE==='giovani'||d.MODE==='staff') return d.MODE; return pjUnitHas(d)?'giovani':(pjStaffHas(d)?'staff':null); }
+const PJ_STAFF_KEYS=['STAFF_TYPE','STAFF_RUOLO','STAFF_MEMBERS','staffObs','staffProfiles','staffTimeline','autoObs','autoProfile','CURRENT_MEMBER'];
+function pjStaffPart(d, keepName, keepPri){ const o={v:1, MODE:'staff', UNIT_NAME: keepName ? (d.UNIT_NAME||'') : ''}; PJ_STAFF_KEYS.forEach(k=>{ if(d[k]!==undefined) o[k]=d[k]; }); if(!o.STAFF_RUOLO) o.STAFF_RUOLO='CU';
+  if(keepPri){ if(d.pris) o.pris=d.pris; if(d.vals) o.vals=d.vals; } return o; }
+function pjUnitPart(d, keepName){ const o={v:1, MODE:'giovani', FASCIA:d.FASCIA||'E', UNIT_NAME: keepName ? (d.UNIT_NAME||'') : ''}; ['obs','pris','vals','scheda'].forEach(k=>{ if(d[k]!==undefined) o[k]=d[k]; }); return o; }
+function pjLabel(t){ return t==='staff' ? 'lo staff' : 'l’Unità'; }
+// scelta dalla schermata iniziale di un tipo diverso dal progetto aperto: apre (o crea) il progetto giusto, senza toccare l'altro
+async function pjSwitch(){
+  const target = MODE, cur = clSnapshot(), t0 = pjType(cur);
+  const fresh = target==='staff' ? {v:1, MODE:'staff', STAFF_TYPE, STAFF_RUOLO:STAFF_RUOLO||'CU', UNIT_NAME:''} : {v:1, MODE:'giovani', FASCIA:FASCIA||'E', UNIT_NAME:''};
+  showToast('Apro il progetto per ' + pjLabel(target) + '…');
+  if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
+    try{
+      if(CL.ctx && !CL.ctx.ruolo && CL.pending) await clPush(true);
+      const anno = (CL.ctx && CL.ctx.anno) || new Date().getFullYear();
+      const rows = await dbList();
+      const ex = rows.find(r => r.anno === anno && (r.meta||{}).mode === target);
+      if(ex){ await clOpenProject(ex.id); return; }
+      const titolo = await clUniqueTitle(rows, anno, (target==='staff' ? 'Staff ' : 'PEE ') + anno);
+      const r = await dbInsert(anno, titolo, fresh, clMeta(fresh));
+      localStorage.setItem(CL_LS, JSON.stringify(fresh)); clBaseSet(fresh);
+      CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx(); CL._arc = null;
+      try{ sessionStorage.setItem('bussola_opened_msg', 'Nuovo progetto per ' + pjLabel(target) + ': ' + anno + ' · ' + titolo + '. ' + (t0 ? 'Quello per ' + pjLabel(t0) + ' resta in archivio.' : '')); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
+      location.reload();
+    }catch(e){ clToast('Non riesco ad aprire il progetto: ' + clErr(e)); }
+    return;
+  }
+  // senza account: su questo dispositivo uno spazio per l'Unità e uno per lo staff
+  try{
+    if(t0) localStorage.setItem('bussola_slot_' + t0, JSON.stringify(cur));
+    const slot = localStorage.getItem('bussola_slot_' + target);
+    localStorage.setItem(CL_LS, slot || JSON.stringify(fresh));
+    sessionStorage.setItem('bussola_opened_msg', 'Il lavoro per ' + pjLabel(t0) + ' resta su questo dispositivo: lo ritrovi scegliendo «' + (t0==='staff' ? 'Il mio staff' : 'La mia Unità') + '». Con un account li tieni nell’archivio.');
+    sessionStorage.setItem('bussola_autoresume','1');
+  }catch(e){}
+  location.reload();
+}
+// progetti in cui Unità e staff sono finiti insieme: li separo in due progetti (una volta, in automatico)
+async function pjSplitAll(){
+  if(window.BRO || !CL.sb || !CL.user || CL._pjSplit) return; CL._pjSplit = true;
+  let changedCur = false;
+  try{
+    const rows = await dbList(); const made = [];
+    for(const r of rows.slice(0, 40)){
+      const isCur = CL.ctx && !CL.ctx.ruolo && CL.ctx.id === r.id;
+      let d;
+      if(isCur){ d = clSnapshot(); } else { if(!r.meta || (!r.meta.staff && r.meta.mode !== 'staff')) continue; const g = await dbGet(r.id); d = g && g.data || {}; }
+      if(!(pjUnitHas(d) && pjStaffHas(d))) continue;
+      const prim = d.MODE === 'staff' ? 'staff' : 'giovani';
+      const keep = prim === 'giovani' ? pjUnitPart(d, true) : pjStaffPart(d, true, true);
+      const other = prim === 'giovani' ? pjStaffPart(d, false, false) : pjUnitPart(d, false);
+      const all = await dbList();
+      const titolo = await clUniqueTitle(all, r.anno, (prim === 'giovani' ? 'Staff ' : 'PEE ') + r.anno);
+      await dbInsert(r.anno, titolo, other, clMeta(other));
+      const ts = await dbUpdate(r.id, keep, clMeta(keep));
+      made.push(titolo);
+      if(isCur){ localStorage.setItem(CL_LS, JSON.stringify(keep)); clBaseSet(keep); CL.ctx.ts = ts; CL.ctx.dirty = false; CL.pending = false; clSaveCtx(); changedCur = true; }
+    }
+    if(made.length){ CL._arc = null;
+      const msg = 'Ho separato Unità e staff in progetti distinti: in archivio trovi ' + made.map(t => '«' + t + '»').join(', ') + '.';
+      if(changedCur){ try{ sessionStorage.setItem('bussola_opened_msg', msg); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){} location.reload(); }
+      else clToast(msg);
+    }
+  }catch(e){ console.warn('pjSplitAll', e); }
+}
+function clTypeTag(m){ const t = (m||{}).mode; return t === 'staff' ? '<span class="cl-type s">Staff</span>' : t === 'giovani' ? '<span class="cl-type u">Unità</span>' : '<span class="cl-type n">Da iniziare</span>'; }
 async function clRenderArchive(){
   const b = $cl('cl-body');
   const uid = CL.user && CL.user.id;
@@ -10373,7 +10452,7 @@ async function clRenderArchive(){
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   h += '<div id="cl-shared"></div>';
   if(act){
-    h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
+    h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clTypeTag(clMeta(clSnapshot()))}${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
       <div class="s">${act.ruolo?`Progetto di <strong>${clEsc(act.owner||'un’altra persona')}</strong> · sei ${clEsc((CL_RUOLI[act.ruolo]||'').toLowerCase())}. `:''}Ogni modifica viene salvata automaticamente nel cloud. Per tornare al lavoro chiudi questa finestra o premi “Continua qui”.</div></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="cl-btn sm" onclick="clContinue()">Continua qui</button>${act.ruolo?'':`<button class="cl-btn ghost sm" onclick="clShow('share')">Condividi</button>`}<button class="cl-btn ghost sm" onclick="clPush(true).then(()=>clRenderArchive())">Salva ora</button></div></div>`;
   }
@@ -11110,7 +11189,7 @@ async function clCheckInvites(){
     let seen = ''; try{ seen = sessionStorage.getItem('bussola_inv_pop') || ''; }catch(e){}
     if(seen === sig) return;
     const ov = $cl('cl-ov'); if(ov && ov.classList.contains('show')) return;
-    try{ sessionStorage.setItem('bussola_inv_pop', sig); }catch(e){}
+    CL._invSig = sig;   // segnato come visto solo quando la persona chiude o apre (se la pagina si ricarica prima, la finestra ricompare)
     clShow('invito');
   }catch(e){}
 }
@@ -11122,7 +11201,8 @@ function clInvStrip(rows){
   const html = `<div class="grow"><b>${rows.length === 1 ? 'Hai un invito' : 'Hai ' + rows.length + ' inviti'}</b> · ${clInvTxt(r)}${rows.length > 1 ? ` (e ${rows.length === 2 ? 'un altro' : 'altri ' + (rows.length - 1)} in Archivio › Condivisi con me)` : ''}.</div><button onclick="clInvOpen('${r.id}')">${clEditRole(r.ruolo) ? 'Apri e modifica' : 'Apri'}</button>`;
   ['welcome-screen', 'main-app'].forEach(id => { const host = document.getElementById(id); if(!host) return; const d = document.createElement('div'); d.className = 'cl-invstrip'; d.setAttribute('role', 'status'); d.innerHTML = html; host.prepend(d); });
 }
-function clInvLater(){ clClose(); clToast('L’invito resta in alto e in «Per te», finché non lo apri'); }
+function clInvSeen(){ try{ if(CL._invSig) sessionStorage.setItem('bussola_inv_pop', CL._invSig); }catch(e){} }
+function clInvLater(){ clInvSeen(); clClose(); clToast('L’invito resta in alto e in «Per te», finché non lo apri'); }
 function clInvOpen(id){ document.querySelectorAll('.cl-invstrip').forEach(e => e.remove()); clClose(); clOpenShared(id); }
 window.edInit = edInit;
 
@@ -11495,7 +11575,7 @@ function clSharedPaint(box, rows){
       const ed = clEditRole(r.ruolo);
       const tag = roles ? `<span class="cl-badge">${CL_RUOLI[r.ruolo]||'Lettore'}</span>${r.nuovo?'<span class="cl-badge" style="background:#fff3cd;color:#7a5b00">nuovo</span>':''}` : '';
       const btn = isAct ? `<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>` : `<button class="cl-btn sm" onclick="clOpenShared('${r.id}')">${ed ? 'Apri e modifica' : 'Apri'}</button>`;
-      return `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un’altra persona')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
+      return `<div class="cl-row ${isAct?'act':''}"><div style="min-width:0"><div class="t">${clTypeTag(r.meta)}${clEsc(r.anno)} · ${clEsc(r.titolo)}${tag}</div><div class="s">di ${clEsc(r.owner||'un’altra persona')} · ${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div><div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${btn}<button class="cl-btn ghost sm" onclick="clLeave('${r.mid}','${r.id}')">Rimuovi</button></div></div>`;
     }).join('') + `</div>`;
   }catch(e){ box.innerHTML = ''; }
 }
@@ -11812,12 +11892,12 @@ document.addEventListener('DOMContentLoaded', () => {
   try{ const m = sessionStorage.getItem('bussola_opened_msg'); if(m){ sessionStorage.removeItem('bussola_opened_msg'); setTimeout(() => clToast(m), 800); } }catch(e){}
   // Se c'è già un lavoro salvato si entra direttamente (niente pagina iniziale, niente "Riprendi")
   try{
-    sessionStorage.removeItem('bussola_autoresume');
+    const ar = sessionStorage.getItem('bussola_autoresume'); sessionStorage.removeItem('bussola_autoresume');
     const d = clSnapshot();
     const pp0 = (d.scheda&&d.scheda.pp)||{};
     const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
       || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
-    if(hasWork && typeof resumeSession==='function'){ setTimeout(() => resumeSession(), 50); clRestoreView(); }
+    if((hasWork || (ar && (d.MODE === 'giovani' || d.MODE === 'staff'))) && typeof resumeSession==='function'){ setTimeout(() => resumeSession(), 50); clRestoreView(); }
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
 });

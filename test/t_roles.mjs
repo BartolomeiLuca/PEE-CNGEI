@@ -106,7 +106,7 @@ await sleep(2000);
 // ── Bruno (collaboratore): finestra dell'invito, striscia in home, permessi ──
 const pb = await person(br, db);
 await loginAs(pb.page, base, B);
-await sleep(1200);
+await pb.page.waitForFunction(() => /Hai un invito/.test(document.getElementById('cl-title').textContent) && document.getElementById('cl-ov').classList.contains('show'), null, {timeout:6000}).catch(() => {});
 const popB = await ev(pb.page, () => ({show: document.getElementById('cl-ov').classList.contains('show'), t: document.getElementById('cl-title').textContent, strip: document.querySelectorAll('.cl-invstrip').length}));
 ok(popB.show && /Hai un invito su «/.test(popB.t), '1. finestra «' + popB.t + '»');
 ok(popB.strip >= 1, '1. striscia dell’invito in home');
