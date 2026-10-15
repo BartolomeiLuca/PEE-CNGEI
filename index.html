@@ -4386,7 +4386,8 @@ async function stUnitLoad(force){
 }
 // nome, sezione e gruppo si riprendono dall'Unità, ma restano modificabili: si aggiorna solo se il campo è vuoto o è ancora quello preso l'ultima volta
 function stUnitDefaults(u){
-  if(!u || MODE !== 'staff') return;
+  if(!u || MODE !== 'staff' || window._pjBusy || (CL.user && !CL._pjSplit)) return; // con l’account aspetta che pjSplitAll abbia controllato che il progetto non sia misto
+  try{ if(Object.values(obs || {}).some(v => v && v !== 'n')) return; }catch(e){} // progetto ancora misto (dati dell’Unità): non toccarlo, lo separa prima pjSplitAll
   const pp = scheda.pp || (scheda.pp = {}), au = pp._auto || (pp._auto = {});
   let ch = false;
   const put = (get, set, key, val) => { if(!val) return; const cur = get(); if(!cur || cur === au[key]){ if(cur !== val){ set(val); ch = true; } au[key] = val; } };
@@ -7087,8 +7088,15 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-15 · beta';
+const APP_BUILD='dev'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
+    '<b>Versione nuova senza ricaricare</b>: l’app controlla ogni tanto se c’è un aggiornamento. Se la pagina è in secondo piano si aggiorna da sola dopo aver salvato; se la stai usando compare una striscia «Versione nuova disponibile · Aggiorna ora» e scegli tu quando.',
+    '<b>Più calma</b>: percorsi e attività si aprono con un clic (il triangolo), così vedi subito l’indice della pagina senza tutto il testo aperto. Quello che hai scritto non si perde.',
+    '<b>Staff</b>: nome dell’Unità, Sezione e Gruppo arrivano dalla tabella dello staff e restano modificabili; l’evoluzione nel tempo è più chiara, con i valori a colori; il Word dello staff ha l’opzione «Scarica tutto» (singoli e riepilogo in un solo file).',
+    '<b>Spiegazioni più semplici</b>: la restituzione usa parole di tutti i giorni e dice cosa fare; la sezione «Fonti» è più completa; ogni attività formativa dello staff ha «Come si fa →» con la spiegazione passo passo.'
+  ]},
   {d:'15 ottobre 2026', t:'Staff rifatto, accesso più chiaro', i:[
     '<b>Modalità staff rinnovata</b>: a sinistra l’elenco con «Auto osservazione» e le persone dello staff, in alto i passaggi (Profilo · Scheda di osservazione · Lettura individuale · Evoluzione). Puoi prendere nome, età, ruolo e contatti dalla tabella dello staff della tua Unità (si aggiornano da soli). Il lavoro dello staff finisce nel Riepilogo, con i percorsi mancanti, l’ambito più scoperto e le attività formative.',
     '<b>Si vede se hai fatto l’accesso</b>: col tuo account in alto compare il tuo nome; senza account il pulsante è giallo e una striscia ti avvisa che il lavoro resta solo su questo computer. Se esci dall’account per errore ti avvisiamo, e chiudendo la pagina senza account ti chiediamo conferma.',
@@ -10968,7 +10976,7 @@ function clArcRowsHTML(rows){
 function clArcCountHTML(rows){ return rows.length ? `${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}` : ''; }
 // ── Unità e staff: sempre due progetti distinti (uno per anno ciascuno) ──
 function pjUnitHas(d){ d=d||{}; const pp=(d.scheda&&d.scheda.pp)||{};
-  return Object.values(d.obs||{}).some(v=>v&&v!=='n') || ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k=>String(pp[k]||'').trim())
+  return Object.values(d.obs||{}).some(v=>v&&v!=='n') || (d.MODE==='staff'?['ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta']:['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta']).some(k=>String(pp[k]||'').trim())
     || ((d.scheda&&d.scheda.priorita)||[]).some(p=>p&&(p.percorso||String(p.necessita||'').trim())) || ((d.scheda&&d.scheda.percorsiExtra)||[]).length>0; }
 function pjStaffHas(d){ d=d||{}; return (d.STAFF_MEMBERS||[]).length>0 || Object.values(d.staffObs||{}).some(o=>Object.values(o||{}).some(v=>v&&v!=='n')) || Object.values(d.autoObs||{}).some(v=>v&&v!=='n'); }
 function pjType(d){ d=d||{}; if(d.MODE==='giovani'||d.MODE==='staff') return d.MODE; return pjUnitHas(d)?'giovani':(pjStaffHas(d)?'staff':null); }
@@ -12419,6 +12427,29 @@ function nacStrip(){
     ['welcome-screen', 'main-app'].forEach(id => { const h = document.getElementById(id); if(!h) return; const d = document.createElement('div'); d.className = 'mov-strip nac-strip'; d.setAttribute('role', 'status'); d.innerHTML = html; h.prepend(d); });
   }catch(e){}
 }
+// ── Aggiornamento automatico: controlla se è uscita una versione nuova ──
+function updSafe(){ try{ const a=document.activeElement; return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !window._pjBusy; }catch(e){ return true; } }
+function updNow(){ try{ clearTimeout(_saveTimer); saveData(true); }catch(e){} setTimeout(appReload, 700); }
+async function updCheck(){
+  try{
+    if(APP_BUILD==='dev' || window._updFound || !navigator.onLine) return;
+    const u = location.href.split('#')[0].split('?')[0];
+    const r = await fetch(u + (u.endsWith('/') ? '' : '') + '?c=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) return;
+    const m = (await r.text()).match(/const APP_BUILD='([^']+)'/);
+    if(!m || m[1] === APP_BUILD) return;
+    window._updFound = true;
+    if(document.hidden && updSafe()){ updNow(); return; }
+    updStrip();
+  }catch(e){}
+}
+function updStrip(){
+  ['welcome-screen', 'main-app'].forEach(id => { const h = document.getElementById(id); if(!h || h.querySelector('.upd-strip')) return; const d = document.createElement('div'); d.className = 'mov-strip upd-strip'; d.setAttribute('role', 'status');
+    d.innerHTML = '<div class="grow"><b>È disponibile una versione nuova.</b> Il tuo lavoro viene salvato prima di aggiornare.</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="updNow()">Aggiorna ora</button><button class="gh" onclick="document.querySelectorAll(\'.upd-strip\').forEach(e=>e.remove())">Più tardi</button></div>'; h.prepend(d); });
+}
+setTimeout(updCheck, 6000);
+setInterval(updCheck, 20*60*1000);
+document.addEventListener('visibilitychange', () => { if(document.hidden){ if(window._updFound && updSafe()) updNow(); } else { window._updFound ? updStrip() : updCheck(); } });
 function nacLater(){ try{ sessionStorage.setItem('bussola_nac_dopo', '1'); }catch(e){} document.querySelectorAll('.nac-strip').forEach(e => e.remove()); }
 window.addEventListener('beforeunload', ev => { if(window._appReload || !nacWork()) return; ev.preventDefault(); ev.returnValue = ''; return ''; });
 function movLater(){ try{ sessionStorage.setItem('bussola_mov_dopo', '1'); }catch(e){} document.querySelectorAll('.mov-strip').forEach(e => e.remove()); }
