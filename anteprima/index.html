@@ -122,6 +122,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 /* ── PERCORSO CARD ── */
 .pc{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-sm);margin-bottom:5px;transition:border-color .15s,box-shadow .15s;overflow:hidden}
 .pc:hover,.pc.expanded{border-color:var(--border);box-shadow:var(--shadow)}
+.pcx-hd:hover{background:var(--bg-card)!important}.pcx-chev{font-size:11px;color:var(--ink-faint);transition:transform .2s;transform:rotate(180deg)}.pcx.closed .pcx-chev{transform:none}.pcx.closed .pcx-body{display:none}.pcx.closed .pcx-hd{border-bottom:0!important}.pcx-sum{display:block;font-weight:500;font-size:11.5px;color:var(--ink-mid);margin-top:2px}
 .pc-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none}
 .pc-num{font-size:10px;font-weight:700;color:var(--ink-faint);min-width:16px}
 .pc-name{font-size:13px;font-weight:600;flex:1}
@@ -7593,7 +7594,9 @@ function tlAllHTML(){
     <div class="tl-all-b"><div class="tl-leg">${leg}</div><div class="tl">${out.join('')}</div><button type="button" class="btn-ghost" style="margin-top:10px;font-size:11.5px" onclick="icsAll()">📅 Tutte le attività nel calendario (.ics)</button></div></details>`;
 }
 function tlSetDate(idx,j,v){ const x=axX(idx,j); x.data=v; if(x.dataFine&&v&&x.dataFine<v) x.dataFine=v; saveDataDebounced(); tlRefresh(idx); try{ axRe(idx,j); }catch(e){} }
-function tlGo(idx,j){ const d=document.getElementById('att-'+idx+'-'+j); if(!d) return; d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'}); }
+function pcxToggle(i){ const c=document.getElementById('pc-card-'+i); if(!c) return; c.classList.toggle('closed'); (window._pcOpen=window._pcOpen||{})[i]=!c.classList.contains('closed'); }
+function pcxOpen(i){ const c=document.getElementById('pc-card-'+i); if(c){ c.classList.remove('closed'); (window._pcOpen=window._pcOpen||{})[i]=true; } }
+function tlGo(idx,j){ const d=document.getElementById('att-'+idx+'-'+j); if(!d) return; pcxOpen(idx); d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'}); }
 function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const t=percTempo(per); const warn=tmWarn(t.dal,t.al,false);
   const note = t.own ? (typeof per.prioritaIdx==='number'?`<a href="#" style="font-size:11px;color:var(--green);margin-left:6px" onclick="percTempoReset(${idx});return false">↺ riprendi dalla Sezione 2</a>`:'')
     : `<span style="font-size:11px;color:var(--ink-faint);margin-left:6px">ripresa dalla Sezione 2 · cambiala se il percorso dura meno</span>`;
@@ -8059,17 +8062,20 @@ function renderSchedaC(root,selected){
     const sez3main = sez3pp && per.prioritaIdx===sez3Chosen(Math.min(selected.length,3));
     const percorsoLabel = `Percorso ${idx+1}${p?' — '+a+(numP||'')+' '+p.name:''}${sez3pp?(sez3main?' <span style="font-weight:600;font-size:11px;color:var(--green)">· obiettivo scelto</span>':' <span style="font-weight:600;font-size:11px;color:var(--ink-faint)">· facoltativo</span>'):''}`;
 
-    html+=`<div id="pc-card-${idx}" style="border:1px solid var(--border-light);border-radius:var(--radius);margin-bottom:16px;overflow:hidden">
-      <div style="background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px">
-        <span style="font-weight:800;font-size:14px;flex:1">${percorsoLabel}</span>
-        <div style="display:flex;gap:4px">
+    const pcN = (per.attivita||[]).filter(x => ['testo','lancio','sviluppo','conclusione'].some(k => (x[k]||'').trim())).length;
+    const pcOpen = !!(window._pcOpen && window._pcOpen[idx]);
+    html+=`<div id="pc-card-${idx}" class="pcx${pcOpen?'':' closed'}" style="border:1px solid var(--border-light);border-radius:var(--radius);margin-bottom:16px;overflow:hidden">
+      <div class="pcx-hd" onclick="pcxToggle(${idx})" style="background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;cursor:pointer">
+        <span class="pcx-chev" aria-hidden="true">▼</span>
+        <span style="font-weight:800;font-size:14px;flex:1">${percorsoLabel}<small class="pcx-sum">${pcN ? pcN + (pcN===1?' attività scritta':' attività scritte') : 'da iniziare'}</small></span>
+        <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
           ${idx>0?`<button onclick="movePercorso(${idx},-1);renderValuation()" title="Sposta su" style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:14px">↑</button>`:''}
           ${idx<totalPercorsi-1?`<button onclick="movePercorso(${idx},1);renderValuation()" title="Sposta giù" style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:14px">↓</button>`:''}
           ${sez3pp&&!sez3main?`<button onclick="sez3Hide(${per.prioritaIdx})" title="Togli dalla Scheda" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--ink-mid)">Togli</button>`:''}
           ${!isPriority?`<button onclick="removePercorso(${idx})" title="Rimuovi" style="background:none;border:1px solid var(--red);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:12px;color:var(--red)">✕</button>`:''}
         </div>
       </div>
-      <table class="perc-tab" style="width:100%;border-collapse:collapse">`;
+      <div class="pcx-body"><table class="perc-tab" style="width:100%;border-collapse:collapse">`;
 
     // Ambito (solo per extra)
     if(!isPriority){
@@ -8175,7 +8181,7 @@ function renderSchedaC(root,selected){
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
         ${attv.map((att,j)=>{
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
-          return `<details id="att-${idx}-${j}" data-aff="${sEsc(axShared(att)?(att.aff||''):'')}" ${has||j<3?'open':''} style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
+          return `<details id="att-${idx}-${j}" data-aff="${sEsc(axShared(att)?(att.aff||''):'')}" ${window._attOpen&&window._attOpen[idx+'-'+j]?'open':''} ontoggle="(window._attOpen=window._attOpen||{})['${idx}-${j}']=this.open" style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
             <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${att.aff&&axShared(att)?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
             <div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
@@ -8209,7 +8215,7 @@ function renderSchedaC(root,selected){
         </div>`).join('')}
       </td></tr>`;
 
-    html+=`</table></div>`;
+    html+=`</table></div></div>`;
   });
 
   // Linea del tempo di tutti i percorsi (facoltativa: compare solo se almeno un'attività ha una data)
