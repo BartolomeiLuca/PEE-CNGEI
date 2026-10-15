@@ -7089,13 +7089,14 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-15 · beta';
-const APP_BUILD='202610151450'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610151559'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
     '<b>Versione nuova senza ricaricare</b>: l’app controlla ogni tanto se c’è un aggiornamento. Se la pagina è in secondo piano si aggiorna da sola dopo aver salvato; se la stai usando compare una striscia «Versione nuova disponibile · Aggiorna ora» e scegli tu quando.',
     '<b>Più calma</b>: percorsi e attività si aprono con un clic (il triangolo), così vedi subito l’indice della pagina senza tutto il testo aperto. Quello che hai scritto non si perde.',
     '<b>Staff</b>: nome dell’Unità, Sezione e Gruppo arrivano dalla tabella dello staff e restano modificabili; l’evoluzione nel tempo è più chiara, con i valori a colori; il Word dello staff ha l’opzione «Scarica tutto» (singoli e riepilogo in un solo file).',
+    '<b>Numeri dell’Unità</b> (facoltativo, in 1.1): totale, maschi e femmine, e quanti per ogni anno di Branca. Compaiono nell’intestazione del Word della Scheda.',
     '<b>Spiegazioni più semplici</b>: la restituzione usa parole di tutti i giorni e dice cosa fare; la sezione «Fonti» è più completa; ogni attività formativa dello staff ha «Come si fa →» con la spiegazione passo passo.'
   ]},
   {d:'15 ottobre 2026', t:'Staff rifatto, accesso più chiaro', i:[
@@ -8310,6 +8311,45 @@ async function staffShareGo(ruolo){ const S=window._stShare; window._stShare=nul
   }catch(e){ if(S.cb) S.cb.checked=false; if(e.message==='duplicate'){ clMemLoad(); showToast(S.nome+' era già nel progetto'); } else showToast('Non riesco a invitare: '+clErr(e)); } }
 function staffMailBad(i,on){ const B=window._stBad=window._stBad||{}; if(on) B[i]=1; else delete B[i]; staffTabRefresh(); }
 
+// Numeri dell'Unità (facoltativi): totale, maschi/femmine, annate (4 per Branco e Reparto, 3 per Compagnia)
+function numeriUnitaHTML(pp, IN){
+  const nA = FASCIA === 'R' ? 3 : 4, ann = pp.numAnn || [];
+  const num = (v, oninp, extra) => `<input type="number" inputmode="numeric" min="0" max="99" style="${IN};display:block;width:90px;max-width:100%" value="${sEsc(v == null ? '' : v)}" oninput="${oninp}" ${extra||''}>`;
+  const sum = ['numM','numF'].reduce((t,k) => t + (parseInt(pp[k],10) || 0), 0), tot = parseInt(pp.numTot,10) || 0;
+  const sumA = ann.slice(0, nA).reduce((t,v) => t + (parseInt(v,10) || 0), 0);
+  const hasAny = pp.numTot || pp.numM || pp.numF || ann.some(v => v);
+  const chip = hasAny ? `<span class="ax-sumd">${tot ? tot + ' tra ragazzi e ragazze' : 'da completare'}</span>` : '<span class="ax-sumd">Quanti sono, quanti maschi e femmine, quanti per ogni anno.</span>';
+  return `<details class="att-extra" style="margin-top:12px"><summary>${OPT}Numeri dell’Unità${chip}</summary>
+    <div style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+      <label style="${SC_LBL}">Totale${num(pp.numTot,"ppSet('numTot',this.value);numeriCheck()")}</label>
+      <label style="${SC_LBL}">di cui maschi${num(pp.numM,"ppSet('numM',this.value);numeriCheck()")}</label>
+      <label style="${SC_LBL}">di cui femmine${num(pp.numF,"ppSet('numF',this.value);numeriCheck()")}</label>
+    </div>
+    <div style="font-size:12px;font-weight:800;margin:12px 0 2px;color:var(--ink)">Per anno di ${FASCIA==='L'?'Branco':FASCIA==='R'?'Compagnia':'Reparto'}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">
+      ${Array.from({length:nA},(_,i) => `<label style="${SC_LBL}">${i+1}° anno${num(ann[i],"ppSetAnn("+i+",this.value);numeriCheck()")}</label>`).join('')}
+    </div>
+    <div id="num-check" style="font-size:11.5px;color:var(--ink-mid);margin-top:8px;min-height:16px">${numeriCheckTxt(pp)}</div>
+    <div style="font-size:11.5px;color:var(--ink-faint);margin-top:2px">Solo numeri, senza nomi. Compaiono nell’intestazione del documento Word della Scheda.</div></details>`;
+}
+function numeriUnitaTxt(pp){
+  pp = pp || {}; const nA = FASCIA === 'R' ? 3 : 4, g = v => (v === undefined || v === null || String(v).trim() === '') ? null : parseInt(v, 10);
+  const tot = g(pp.numTot), m = g(pp.numM), f = g(pp.numF), out = [];
+  const sx = [m !== null && !isNaN(m) ? m + (m === 1 ? ' maschio' : ' maschi') : null, f !== null && !isNaN(f) ? f + (f === 1 ? ' femmina' : ' femmine') : null].filter(Boolean).join(', ');
+  if(tot !== null && !isNaN(tot)) out.push(tot + ' in totale' + (sx ? ' (' + sx + ')' : '')); else if(sx) out.push(sx);
+  const an = (pp.numAnn || []).slice(0, nA).map((v, i) => { const x = g(v); return x !== null && !isNaN(x) ? (i + 1) + '° anno: ' + x : null; }).filter(Boolean);
+  if(an.length) out.push(an.join(' · '));
+  return out.join(' — ');
+}
+function numeriCheckTxt(pp){
+  const nA = FASCIA === 'R' ? 3 : 4, tot = parseInt(pp.numTot,10) || 0, mf = (parseInt(pp.numM,10) || 0) + (parseInt(pp.numF,10) || 0);
+  const sa = (pp.numAnn || []).slice(0, nA).reduce((t,v) => t + (parseInt(v,10) || 0), 0), out = [];
+  if(tot && (pp.numM || pp.numF) && mf !== tot) out.push('maschi e femmine fanno ' + mf + ', il totale è ' + tot);
+  if(tot && sa && sa !== tot) out.push('gli anni fanno ' + sa + ', il totale è ' + tot);
+  return out.length ? 'Controlla: ' + out.join('; ') + '.' : '';
+}
+function numeriCheck(){ const e = document.getElementById('num-check'); if(e) e.textContent = numeriCheckTxt(scheda.pp || {}); }
+function ppSetAnn(i, v){ if(!scheda.pp) scheda.pp = {}; const a = scheda.pp.numAnn = scheda.pp.numAnn || []; a[i] = v; saveDataDebounced(); }
 // Sezione 1.1 — chi compila, contesto, osservazione con il KOS
 function renderSchedaCtx(root){
   const pp=scheda.pp||(scheda.pp={});
@@ -8331,6 +8371,7 @@ function renderSchedaCtx(root){
       <label style="${SC_LBL}">Sito della Sezione<input style="${IN}" maxlength="80" placeholder="es. pesaro.cngei.it" value="${sEsc(pp.sedeSito)}" oninput="ppSet('sedeSito',this.value)"></label>
       <label style="${SC_LBL}">Profilo social<input style="${IN}" maxlength="60" placeholder="es. @cngeipesaro" value="${sEsc(pp.sedeSocial)}" oninput="ppSet('sedeSocial',this.value)"></label>
       <label style="${SC_LBL}">Codice fiscale della Sezione<input style="${IN}" maxlength="20" value="${sEsc(pp.sedeCF)}" oninput="ppSet('sedeCF',this.value)"></label></div></details>`:''}
+    ${MODE==='giovani'?numeriUnitaHTML(pp,IN):''}
     <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
     <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
     <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Unità, rapporti con il Consiglio di Gruppo…</span></label>
@@ -10068,7 +10109,7 @@ async function exportPPDocx(mode){
     ['Gruppo', plain(grpLabel(pp.gruppo))||'—'],
     ['Unità', plain(UNIT_NAME)||'—'],
     ['Branca', FASCIA_LABEL||'—'],
-  ]));
+  ].concat(numeriUnitaTxt(pp) ? [['Numeri dell’Unità', numeriUnitaTxt(pp)]] : [])));
 
   // ── Sezione 1 ──
   ch.push(dH2('Sezione 1 — Osservazione del Gruppo di Pari & Identificazione e Priorizzazione delle Necessità Educative'));

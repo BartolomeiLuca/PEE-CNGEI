@@ -46,7 +46,8 @@ try{ const c = await dl(() => axDocx(0, 0)); const t = await xml(c.buf); ok(c.si
 catch(e){ ok(false, 'Word dell’attività: ' + e.message); }
 try{ await ev(() => fdgOpen(0, 0)); await sleep(500); const c = await dl(() => fdgDocx()); ok(c.size > 4000, 'Word del foglio del giorno: ' + c.name + ' (' + Math.round(c.size/1024) + ' KB)'); await ev(() => { try{ modalClose(); }catch(e){} document.querySelectorAll('.modal-overlay.show').forEach(o => o.classList.remove('show')); }); }
 catch(e){ ok(false, 'Word del foglio del giorno: ' + e.message); }
-try{ await ev(() => { scheda.pp.prog = 'cond'; saveData(true); }); const c = await dl(() => exportSchedaDocx()); const t = await xml(c.buf);
+try{ await ev(() => { scheda.pp.prog = 'cond'; scheda.pp.numTot = '24'; scheda.pp.numM = '13'; scheda.pp.numF = '11'; scheda.pp.numAnn = ['6','6','6','6']; saveData(true); }); const c = await dl(() => exportSchedaDocx()); const t = await xml(c.buf);
+  ok(/Numeri dell’Unità/.test(t) && /24 in totale/.test(t), 'Word della Scheda: numeri dell’Unità nell’intestazione');
   ok(c.size > 10000 && /Sezione/.test(t) && !/Come programmi|Programmazione condivisa|Programmazione individuale/.test(t), 'Word della Scheda: ' + c.name + ' (' + Math.round(c.size/1024) + ' KB), senza «Come programmi?»'); }
 catch(e){ ok(false, 'Word della Scheda: ' + e.message); }
 try{ const c = await dl(() => exportExcel()); ok(c.size > 4000, 'Excel: ' + c.name + ' (' + Math.round(c.size/1024) + ' KB)'); }
