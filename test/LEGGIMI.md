@@ -13,3 +13,14 @@ Banco di prova con un finto Supabase in memoria (più persone, ruoli, tempo real
 - `node t_noacc.mjs <motore>` — senza account e modalità staff
 
 `SITE=/percorso` prova un'altra copia del sito (predefinita: la cartella del repo).
+
+Giro completo consigliato (i processi in background vengono interrotti: lanciare in primo piano, gruppi da max 10 minuti):
+
+    ./grp.sh chromium t_roles t_misc t_staff t_login t_calm t_noacc t_switch t_mail t_pw
+    ./grp.sh chromium t_cot t_pri t_link t_json t_pj t_loop t_mvcol t_vidfaq t_perm t_arch t_upd t_num t_fasce t_compat t_sv
+    (poi webkit e firefox) e t_flow sui 12 profili.
+
+- t_upd: aggiornamento automatico (grp.sh prepara la copia con APP_BUILD='b1'). Tenere APP_BUILD='dev' nel repo mentre si prova.
+- t_num: Numeri dell'Unità. t_fasce: Branco e Compagnia. t_compat: dati salvati con la versione del 14 ottobre (serve /tmp/site_leg/index.html = git show 3de992f:index.html).
+- t_sv: domande di feedback (SV=1; negli altri test sono spente dal harness).
+- t_json e t_arch stampano dati diagnostici senza riepilogo: va bene se non ci sono ✗.

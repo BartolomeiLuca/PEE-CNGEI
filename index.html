@@ -149,6 +149,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .sch-s{margin:14px 0 4px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}.sch p{margin:0 0 6px}.sch ul,.sch ol{margin:0 0 4px;padding-left:20px}.sch li{margin:4px 0}
 .sch-box{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.sch-box>div{background:var(--bg);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:9px 11px;font-size:12px}@media(max-width:560px){.sch-box{grid-template-columns:1fr}}
 .ver-hd{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:2px}.ver-tt{flex:1;min-width:0}.ver-chev{font-size:11px;color:var(--ink-faint);transform:rotate(180deg);transition:transform .2s}.ver-c.closed .ver-chev{transform:none}.ver-st{font-size:10.5px;font-weight:600;color:var(--ink-faint)}.ver-c.closed .ver-b{display:none}.ver-c.closed .ver-hd{margin-bottom:0}
+.sv-box{font-family:'Montserrat',sans-serif;max-width:460px}.sv-k{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+.sv-q{display:block;font-size:12.5px;font-weight:700;margin:12px 0 6px;color:var(--ink)}.sv-q span{font-weight:400;color:var(--ink-faint)}
+.sv-scale{display:flex;gap:8px}.sv-v{flex:1;height:42px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);font-weight:800;font-size:15px;cursor:pointer;color:var(--ink)}.sv-v.on{background:var(--green);border-color:var(--green);color:#fff}
+.sv-ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:3px}
+.sv-box textarea,.sv-box input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:13px}
+.sv-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}.sv-never{background:none;border:none;color:var(--ink-faint);font-size:11.5px;text-decoration:underline;cursor:pointer;margin-left:auto}
+.sv-priv{font-size:10.5px;color:var(--ink-faint);margin-top:10px;line-height:1.45}
 .pc-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none}
 .pc-num{font-size:10px;font-weight:700;color:var(--ink-faint);min-width:16px}
 .pc-name{font-size:13px;font-weight:600;flex:1}
@@ -2764,7 +2771,8 @@ function modalShow(html){
   ov.innerHTML=`<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:520px;width:calc(100% - 24px);max-height:90vh;overflow:auto;padding:18px;position:relative"><button class="modal-x" aria-label="Chiudi" onclick="modalClose()">✕</button>${html}</div>`;
   ov.classList.add('show');
 }
-function modalClose(){ const ov=document.getElementById('g-modal'); if(ov){ ov.querySelectorAll('video').forEach(v => { try{ v.pause(); }catch(e){} }); ov.classList.remove('show'); } }
+function modalClose(){ try{ if(window._svMom && !window._svDone && document.querySelector('#g-modal.show .sv-box')){ window._svDone = true; const n = parseInt(svGet(window._svMom) || '0', 10) || 0; if(svGet(window._svMom) !== 'fatto') svSet(window._svMom, String(n + 1)); } }catch(e){}
+  const ov=document.getElementById('g-modal'); if(ov){ ov.querySelectorAll('video').forEach(v => { try{ v.pause(); }catch(e){} }); ov.classList.remove('show'); } }
 
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, contratto)']];
@@ -7089,13 +7097,14 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-15 · beta';
-const APP_BUILD='202610151559'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610151707'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
     '<b>Versione nuova senza ricaricare</b>: l’app controlla ogni tanto se c’è un aggiornamento. Se la pagina è in secondo piano si aggiorna da sola dopo aver salvato; se la stai usando compare una striscia «Versione nuova disponibile · Aggiorna ora» e scegli tu quando.',
     '<b>Più calma</b>: percorsi e attività si aprono con un clic (il triangolo), così vedi subito l’indice della pagina senza tutto il testo aperto. Quello che hai scritto non si perde.',
     '<b>Staff</b>: nome dell’Unità, Sezione e Gruppo arrivano dalla tabella dello staff e restano modificabili; l’evoluzione nel tempo è più chiara, con i valori a colori; il Word dello staff ha l’opzione «Scarica tutto» (singoli e riepilogo in un solo file).',
+    '<b>Ci dici com’è andata?</b> In due o tre momenti (dopo le prime attività, dopo aver scaricato la Scheda o le schede dello staff) ti chiediamo con una domanda veloce quanto ti è utile l’app e cosa ti manca. Si può saltare, una volta sola per momento.',
     '<b>Numeri dell’Unità</b> (facoltativo, in 1.1): totale, maschi e femmine, e quanti per ogni anno di Branca. Compaiono nell’intestazione del Word della Scheda.',
     '<b>Spiegazioni più semplici</b>: la restituzione usa parole di tutti i giorni e dice cosa fare; la sezione «Fonti» è più completa; ogni attività formativa dello staff ha «Come si fa →» con la spiegazione passo passo.'
   ]},
@@ -8185,6 +8194,7 @@ function gInitNav(){
 }
 function gGo(k){
   if(MODE!=='giovani') return;
+  if(['4','5','chk'].includes(k) && svAttCount() >= 3) svAfter('sez3');
   if(k==='1') k=gLast1||'1a';
   if(k==='1a'){ schedaStep='ctx'; goPhaseInternal(4); return; }
   if(k==='1b'){ goPhaseInternal(1); return; }
@@ -8478,6 +8488,69 @@ async function fbSend(){
     msg('Grazie! Il tuo messaggio è arrivato.', true); const tx=$f('fb-txt'); if(tx) tx.value=''; setTimeout(fbClose,1800);
   }catch(e){ msg('Non riesco a inviarlo adesso (controlla la connessione). Usa “Copia testo” e incollalo in una mail a luca.bartolomei@cngei.it.', false); }
   finally{ if(btn){ btn.disabled=false; btn.textContent='Invia'; } }
+}
+// ── Domande di feedback per la prova (una volta per momento, saltabili; risposte per mail a Luca) ──
+const SV_MOM = {
+  sez3: {t:'Hai progettato le prime attività', q:'Quanto ti è stata utile l’app per arrivare fin qui?'},
+  word: {t:'Hai scaricato la Scheda', q:'Quanto ti è stata utile l’app per compilare la Scheda?'},
+  staff: {t:'Hai scaricato le schede dello staff', q:'Quanto ti è stata utile l’osservazione dello staff?'}
+};
+function svGet(k){ try{ return localStorage.getItem('bussola_sv_' + k); }catch(e){ return '1'; } }
+function svSet(k, v){ try{ localStorage.setItem('bussola_sv_' + k, v); }catch(e){} }
+function svIsExample(){ try{ return !!window._exNoAcc || /^Esempio/.test((CL.ctx || {}).titolo || '') || UNIT_NAME === 'Reparto Kontiki'; }catch(e){ return false; } }
+function svAttCount(){ try{ return getAllPercorsi().reduce((t, p) => t + ((p && p.attivita) || []).filter(a => a && String(a.testo || '').trim()).length, 0); }catch(e){ return 0; } }
+function svAfter(mom, delay){
+  try{
+    if(window.BRO || svGet('off') || svIsExample() || !SV_MOM[mom]) return;
+    const st = svGet(mom); if(st === 'fatto' || st === 'no') return;
+    const n = parseInt(st || '0', 10) || 0; if(n >= 2) return; // «Non ora» al massimo due volte
+    if(window._svShown) return; window._svShown = true; // una sola domanda per visita
+    setTimeout(() => { if(document.querySelector('.modal-overlay.show, .cl-ov.show')) { window._svShown = false; return; } svOpen(mom); }, delay == null ? 1800 : delay);
+  }catch(e){}
+}
+function svOpen(mom){
+  const m = SV_MOM[mom]; window._svMom = mom; window._svVoto = 0; window._svDone = false;
+  let nome = ''; try{ nome = localStorage.getItem('bussola_nome') || ''; }catch(e){}
+  modalShow(`<div class="sv-box"><div class="sv-k">Ci aiuti a migliorarla? · 1 minuto</div>
+    <h3 style="margin:2px 0 10px;font-size:17px">${m.t}</h3>
+    <div class="sv-q">${m.q}</div>
+    <div class="sv-scale" role="group" aria-label="Da 1 a 5">${[1,2,3,4,5].map(v => `<button type="button" class="sv-v" data-v="${v}" onclick="svVote(${v})">${v}</button>`).join('')}</div>
+    <div class="sv-ends"><span>per niente</span><span>moltissimo</span></div>
+    <label class="sv-q" for="sv-a">Cosa ti ha aiutato di più? <span>facoltativo</span></label>
+    <textarea id="sv-a" rows="2" maxlength="800"></textarea>
+    <label class="sv-q" for="sv-b">Cosa ti è mancato o ti ha messo in difficoltà? <span>facoltativo</span></label>
+    <textarea id="sv-b" rows="2" maxlength="800"></textarea>
+    <label class="sv-q" for="sv-n">Il tuo nome, se vuoi essere ricontattata/o <span>facoltativo</span></label>
+    <input id="sv-n" maxlength="60" value="${sEsc(nome)}">
+    <div id="sv-msg" class="cl-msg" style="display:none"></div>
+    <div class="sv-btns"><button class="btn-primary" id="sv-go" onclick="svSend()">Invia</button><button class="btn-ghost" onclick="svLater()">Non ora</button><button class="sv-never" onclick="svNever()">Non chiedermelo più</button></div>
+    <div class="sv-priv">Le risposte arrivano a chi sviluppa l’app, con il tipo di dispositivo e la versione. Nessun dato del tuo progetto.</div></div>`);
+}
+function svVote(v){ window._svVoto = v; document.querySelectorAll('.sv-v').forEach(b => b.classList.toggle('on', +b.dataset.v === v)); }
+function svLater(){ window._svDone = true; const k = window._svMom; if(k){ const n = parseInt(svGet(k) || '0', 10) || 0; svSet(k, String(n + 1)); } modalClose(); }
+function svNever(){ window._svDone = true; svSet('off', '1'); modalClose(); showToast('Va bene, non te lo chiediamo più. Puoi sempre scriverci da «Suggerimenti?».'); }
+async function svSend(){
+  const $ = id => document.getElementById(id), k = window._svMom, m = SV_MOM[k] || {};
+  const a = ($('sv-a').value || '').trim(), b = ($('sv-b').value || '').trim(), n = ($('sv-n').value || '').trim(), v = window._svVoto || 0;
+  const msg = (t, ok) => { const e = $('sv-msg'); e.style.display = 'block'; e.className = 'cl-msg ' + (ok ? 'ok' : 'err'); e.textContent = t; };
+  if(!v && !a && !b){ msg('Scegli almeno un numero o scrivi una riga.', false); return; }
+  if(n){ try{ localStorage.setItem('bussola_nome', n); }catch(e){} }
+  const ua = navigator.userAgent, disp = /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|Android|iPhone/i.test(ua) ? 'telefono' : 'computer';
+  const brw = /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'altro';
+  const body = [
+    'Momento: ' + (m.t || k), 'Domanda: ' + (m.q || ''), 'Utilità (1-5): ' + (v || '—'), '',
+    'Cosa ha aiutato di più:', a || '—', '', 'Cosa è mancato / difficoltà:', b || '—', '',
+    '— — —', 'Modalità: ' + (MODE === 'giovani' ? 'Unità ' + ({L:'Branco', E:'Reparto', R:'Compagnia'}[FASCIA] || '') : MODE === 'staff' ? 'Staff' : (MODE || '—')),
+    'Progetto Personale: ' + (typeof isPP === 'function' && isPP() ? 'sì' : 'no'), 'Account: ' + ((typeof CL !== 'undefined' && CL.user) ? 'sì' : 'no'),
+    'Dispositivo: ' + disp + ' · ' + brw, 'Versione: ' + APP_VERSION + ' (' + APP_BUILD + ')', n ? 'Da: ' + n : 'Anonimo'
+  ].join('\n');
+  const btn = $('sv-go'); btn.disabled = true; btn.textContent = 'Invio…';
+  try{
+    const fd = new FormData(); fd.append('access_key', FB_KEY); fd.append('subject', '[PEE CNGEI · Feedback] ' + (m.t || k) + ' — ' + (v ? v + '/5' : 'senza voto')); fd.append('from_name', n || 'Tester PEE CNGEI'); fd.append('message', body);
+    const r = await fetch('https://api.web3forms.com/submit', {method:'POST', body:fd}); const j = await r.json().catch(() => ({}));
+    if(!r.ok || j.success === false) throw new Error(j.message || ('errore ' + r.status));
+    window._svDone = true; svSet(k, 'fatto'); msg('Grazie! La tua risposta è arrivata.', true); setTimeout(modalClose, 1500);
+  }catch(e){ msg('Non riesco a inviarla adesso (controlla la connessione). Te la richiediamo un’altra volta.', false); btn.disabled = false; btn.textContent = 'Invia'; }
 }
 function fbCopy(){ const {sub,body}=fbCompose(); const t='A: luca.bartolomei@cngei.it\nOggetto: '+sub+'\n\n'+body;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>showToast('Testo copiato: incollalo in una mail a luca.bartolomei@cngei.it')).catch(()=>{ prompt('Copia il testo:', t); }); }
@@ -9591,6 +9664,7 @@ function showExportDialog() {
 }
 
 function executeExport() {
+  setTimeout(() => svAfter('staff', 2500), 0);
   const dialog = document.getElementById('export-dialog');
   const type = dialog.querySelector('input[name="exp-type"]:checked')?.value || 'tutto';
   let membersToExport = [];
@@ -10087,7 +10161,7 @@ function dMulti(text, o={}){
   return t.split(/\n+/).map(l => dPara(l,{size:o.size||19,after:40}));
 }
 async function exportSchedaDocx(mode){
-  if(MODE==='giovani') return exportPPDocx(mode);
+  if(MODE==='giovani'){ const r = await exportPPDocx(mode); svAfter('word', 2500); return r; }
   return exportSchedaDocxLegacy();
 }
 // ── Progetto Personale (Linee Guida PEE): copertina + Sezioni 1–5 + allegati ──

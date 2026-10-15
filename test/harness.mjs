@@ -158,6 +158,8 @@ export async function person(browser, db, opts = {}){
   await ctx.route(/fonts\.(googleapis|gstatic)\.com|api\.web3forms\.com|nominatim|osrm|maps\.google|www\.google\.com/, r => r.abort());
   // di norma i percorsi e le attività si presentano chiusi: i test li aprono da soli (KEEPCLOSED=1 per vederli chiusi)
   if(!process.env.KEEPCLOSED) await ctx.addInitScript(() => { const all = new Proxy({}, {get: () => true, set: () => true}); window._attOpen = all; window._pcOpen = all; window._verOpen = all; });
+  // le domande di feedback non devono comparire nei test (SV=1 per provarle)
+  if(!process.env.SV) await ctx.addInitScript(() => { try{ localStorage.setItem('bussola_sv_off', '1'); }catch(e){} });
   await ctx.exposeBinding('__sb', (src, req) => db.handle(req, src.page));
   const errors = [];
   ctx.on('page', p => wire(p));
