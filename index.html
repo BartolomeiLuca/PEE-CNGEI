@@ -4386,7 +4386,8 @@ async function stUnitLoad(force){
 }
 // nome, sezione e gruppo si riprendono dall'Unità, ma restano modificabili: si aggiorna solo se il campo è vuoto o è ancora quello preso l'ultima volta
 function stUnitDefaults(u){
-  if(!u || MODE !== 'staff' || window._pjBusy || (CL.user && !CL._pjSplit)) return; // con l’account aspetta che pjSplitAll abbia controllato che il progetto non sia misto
+  if(!u || MODE !== 'staff') return;
+  if(window._pjBusy || (CL.user && !CL._pjSplit)){ if((u._try = (u._try || 0) + 1) < 8) setTimeout(() => { try{ stUnitDefaults(u); }catch(e){} }, 1500); return; } // con l’account aspetta che pjSplitAll abbia controllato che il progetto non sia misto
   try{ if(Object.values(obs || {}).some(v => v && v !== 'n')) return; }catch(e){} // progetto ancora misto (dati dell’Unità): non toccarlo, lo separa prima pjSplitAll
   const pp = scheda.pp || (scheda.pp = {}), au = pp._auto || (pp._auto = {});
   let ch = false;
@@ -7088,7 +7089,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-15 · beta';
-const APP_BUILD='dev'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610151450'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
