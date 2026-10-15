@@ -13,11 +13,15 @@ ok(!!ex, 'progetto Unità di esempio creato');
 await ev(P, () => { scheda.pp.staffTab = [
   {ruolo:'CU', nome:'Anna Rossi', mail:'anna@x.it', eta:'34', form:'Wood Badge'},
   {ruolo:'VCU', nome:'Paolo Riva', mail:'paolo@x.it', eta:'24', form:'corso Base', tel:'3331112222', car:'Creativo'},
-  {ruolo:'SiS', nome:'Elena Sarti', mail:'elena@x.it', eta:'19', form:'nessuna'}]; _clTouched = true; _clUserAt = Date.now(); saveData(true); }); await sleep(3500);
+  {ruolo:'SiS', nome:'Elena Sarti', mail:'elena@x.it', eta:'19', form:'nessuna'}]; scheda.pp.sezione = 'Pesaro'; scheda.pp.gruppo = 'Gruppo Pesaro'; UNIT_NAME = 'Reparto Kontiki'; _clTouched = true; _clUserAt = Date.now(); saveData(true); }); await sleep(3500);
 const unitBefore = JSON.stringify(db.t.pee_archivi.find(r => r.id === ex.id).data);
 await toStaff(P);
 const st = db.t.pee_archivi.find(r => r.user_id === A.id && r.meta && r.meta.mode === 'staff');
 ok(!!st && await ev(P, () => MODE === 'staff'), 'si apre il progetto staff');
+const un = await ev(P, () => ({n: UNIT_NAME, s: scheda.pp.sezione, g: scheda.pp.gruppo}));
+ok(un.n === 'Staff Reparto Kontiki' && un.s === 'Pesaro' && un.g === 'Gruppo Pesaro', 'nome, sezione e gruppo ripresi dall’Unità ' + JSON.stringify(un));
+await ev(P, () => { setUnitName('Staff Mio'); }); await ev(P, () => stUnitLoad(true)); await sleep(500);
+ok(await ev(P, () => UNIT_NAME) === 'Staff Mio', 'quello che scrivo a mano non viene più sovrascritto');
 ok(await ev(P, () => JSON.stringify((ST_UNIT.rows||[]).map(r => r.nome))) === '["Anna Rossi","Paolo Riva","Elena Sarti"]', 'legge la tabella dello staff dell’Unità dello stesso anno');
 // niente priorità/valutazione per lo staff
 const vis = await ev(P, () => ['tab3', 'tab4', 'mnav3', 'mnav4'].map(i => { const e = document.getElementById(i); return !e || e.offsetParent === null; }));
@@ -82,6 +86,22 @@ await ev(P, () => exportExcel()); await sleep(3500);
 ok(dl.some(f => /\.xlsx$/.test(f)), 'Excel dello staff scaricato ' + dl.join(','));
 await ev(P, () => { showExportDialog(); document.querySelector('input[value="aggregated"]').checked = true; executeExport(); }); await sleep(3500);
 ok(dl.some(f => /VistaAggregata/.test(f)), 'Word (vista aggregata) scaricato');
+// «Scarica tutto»: un unico Word con l'aggregata e poi gli individuali
+{ const waitDl = P.waitForEvent('download');
+  await ev(P, () => { showExportDialog(); executeExport(); });
+  const d = await waitDl; const fp = '/tmp/staff_tutto.docx'; await d.saveAs(fp);
+  const { execSync } = await import('child_process');
+  const xml = execSync('unzip -p ' + fp + ' word/document.xml').toString().replace(/<[^>]+>/g, ' ');
+  const names = await ev(P, () => STAFF_MEMBERS.slice());
+  ok(/Vista aggregata/.test(xml) && names.length > 0 && names.every(n => xml.includes(n)), 'Word «Scarica tutto»: aggregata + tutti i membri (' + names.join(', ') + ')');
+  ok(xml.indexOf('Vista aggregata') < xml.indexOf(names[0]), 'Word «Scarica tutto»: prima l’aggregata, poi gli individuali'); }
+// evoluzione: scatto, colori dei cambi, eliminazione che ripristina
+await ev(P, () => { CURRENT_MEMBER = STAFF_MEMBERS[0]; staffObs[CURRENT_MEMBER] = Object.assign(staffObs[CURRENT_MEMBER] || {}, {P1: 4}); staffTimeline[CURRENT_MEMBER] = []; STAFF_VIEW = 'evo'; renderStaffPhase1(); });
+await sleep(300);
+const evo = await ev(P, () => { document.getElementById('tl-obs-P1').value = '8'; tlRowPaint('P1'); const up = document.getElementById('tl-row-P1').classList.contains('tl-up'); addTimelineEntry(CURRENT_MEMBER); return {up, now: staffObs[CURRENT_MEMBER].P1, chip: !!document.querySelector('.tl-ch.up')}; });
+ok(evo.up && evo.now === 8 && evo.chip, 'scatto: la riga e il cambiamento si colorano di verde se migliora ' + JSON.stringify(evo));
+await ev(P, () => removeTimelineEntry(CURRENT_MEMBER, 0)); await sleep(300);
+ok(await ev(P, () => staffObs[CURRENT_MEMBER].P1) === 4, 'scatto eliminato: il percorso torna al valore di prima (4)');
 // telefono: la colonna diventa una fila da scorrere
 const pb = await person(br, db, {ctx: {viewport: {width: 390, height: 844}}}); await loginAs(pb.page, base, A);
 await ev(pb.page, () => clOpenProject && 0); await sleep(300);
