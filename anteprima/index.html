@@ -4395,15 +4395,16 @@ async function stUnitLoad(force){
 // nome, sezione e gruppo si riprendono dall'Unità, ma restano modificabili: si aggiorna solo se il campo è vuoto o è ancora quello preso l'ultima volta
 function stUnitDefaults(u){
   if(!u || MODE !== 'staff') return;
-  if(window._pjBusy || (CL.user && !CL._pjSplit)){ if((u._try = (u._try || 0) + 1) < 8) setTimeout(() => { try{ stUnitDefaults(u); }catch(e){} }, 1500); return; } // con l’account aspetta che pjSplitAll abbia controllato che il progetto non sia misto
-  try{ if(Object.values(obs || {}).some(v => v && v !== 'n')) return; }catch(e){} // progetto ancora misto (dati dell’Unità): non toccarlo, lo separa prima pjSplitAll
+  if(window._pjBusy || (CL.user && !CL._pjSplit)){ if((u._try = (u._try || 0) + 1) < 8) setTimeout(() => { try{ stUnitDefaults(u); }catch(e){} }, 1500); return; } // con l’account aspetto il controllo di pjSplitAll (progetti misti)
+  try{ if(pjUnitHas(clSnapshot())) return; }catch(e){} // progetto ancora misto (dati dell’Unità): non lo tocco, lo separa prima pjSplitAll
   const pp = scheda.pp || (scheda.pp = {}), au = pp._auto || (pp._auto = {});
   let ch = false;
   const put = (get, set, key, val) => { if(!val) return; const cur = get(); if(!cur || cur === au[key]){ if(cur !== val){ set(val); ch = true; } au[key] = val; } };
   if(STAFF_RUOLO !== 'CG') put(() => UNIT_NAME, v => { UNIT_NAME = v; }, 'nome', u.nome ? ('Staff ' + u.nome.replace(/^staff\s+/i, '')) : '');
   put(() => pp.sezione, v => { pp.sezione = v; }, 'sezione', u.sezione);
   put(() => pp.gruppo, v => { pp.gruppo = v; }, 'gruppo', u.gruppo);
-  if(ch){ try{ refreshUnitName(); }catch(e){} saveDataDebounced(); }
+  if(ch){ try{ refreshUnitName(); }catch(e){} saveDataDebounced();
+    try{ const ae = document.activeElement; if(!(ae && ae.closest && ae.closest('#st-main') && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) && (document.getElementById('panel1') || {classList:{contains:()=>false}}).classList.contains('active')) renderStaffPhase1(); }catch(e){} }
 }
 function stLinkRow(link){
   const rows = ST_UNIT.rows || []; if(!link) return null; let r = null;
@@ -7096,10 +7097,14 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-15 · beta';
-const APP_BUILD='202610151707'; // sostituito a ogni pubblicazione
+const APP_VERSION = '2026-10-16 · beta';
+const APP_BUILD='202610160729'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'16 ottobre 2026', t:'Video per lo staff e correzioni', i:[
+    '<b>Nuovo video «La modalità staff»</b> e video 2 rifatto (accesso e archivio): li trovi nella schermata iniziale e nei riquadri «Come funziona»; nelle pagine dello staff si apre quello sullo staff.',
+    '<b>Staff più affidabile</b>: un nuovo progetto staff nasce già con il nome, la Sezione e il Gruppo della tua Unità e compare subito in archivio; se elimini il progetto che hai aperto, quello nuovo parte pulito, senza i dati del precedente.'
+  ]},
   {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
     '<b>Versione nuova senza ricaricare</b>: l’app controlla ogni tanto se c’è un aggiornamento. Se la pagina è in secondo piano si aggiorna da sola dopo aver salvato; se la stai usando compare una striscia «Versione nuova disponibile · Aggiorna ora» e scegli tu quando.',
     '<b>Più calma</b>: percorsi e attività si aprono con un clic (il triangolo), così vedi subito l’indice della pagina senza tutto il testo aperto. Quello che hai scritto non si perde.',
@@ -7168,19 +7173,21 @@ const NOVITA = [
 // ── Video tutorial: otto capitoli brevi, nella cartella /video del sito ──
 const VIDEOS = [
   {n:1, t:'Da dove si parte', d:'1:18'},
-  {n:2, t:'Il tuo spazio: account, archivio, copie di sicurezza', d:'0:51'},
+  {n:2, t:'Il tuo spazio: account, archivio, copie di sicurezza', d:'0:32', v:'b'},
   {n:3, t:'Programmare con lo staff', d:'0:50'},
   {n:4, t:'Sezione 1: conoscere il gruppo', d:'0:45'},
   {n:5, t:'Sezione 2: percorsi, obiettivi, indicatori', d:'0:34'},
   {n:6, t:'Sezione 3: dalle idee alle attività', d:'0:40'},
   {n:7, t:'Sezioni 4 e 5: verifica, valutazione, documento finale', d:'0:41'},
-  {n:8, t:'Ti hanno invitato? Cosa puoi fare', d:'0:34'}
+  {n:8, t:'Ti hanno invitato? Cosa puoi fare', d:'0:34'},
+  {n:9, t:'La modalità staff', d:'1:01'}
 ];
-function vidSrc(n){ return '/video/pee-' + n + '.mp4'; }
+function vidVer(n){ const v = VIDEOS.find(x => x.n === n); return v && v.v ? '?v=' + v.v : ''; }
+function vidSrc(n){ return '/video/pee-' + n + '.mp4' + vidVer(n); }
 function vidOpen(n){
   const v = VIDEOS.find(x => x.n === n) || VIDEOS[0], nx = VIDEOS.find(x => x.n === v.n + 1);
   modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length}</span><h3>${v.t}</h3></div>
-    <video class="vid-v" src="${vidSrc(v.n)}" poster="/video/pee-${v.n}.jpg" controls autoplay playsinline preload="metadata"></video>
+    <video class="vid-v" src="${vidSrc(v.n)}" poster="/video/pee-${v.n}.jpg${vidVer(v.n)}" controls autoplay playsinline preload="metadata"></video>
     <div class="vid-nav">${v.n > 1 ? `<button class="btn-ghost" onclick="vidOpen(${v.n - 1})">‹ Precedente</button>` : '<span></span>'}<button class="btn-ghost" onclick="vidList()">Tutti i video</button>${nx ? `<button class="btn-primary" onclick="vidOpen(${nx.n})">Prossimo ›</button>` : '<span></span>'}</div>`);
   vidWide(true);
 }
@@ -7188,14 +7195,14 @@ function vidList(){
   modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Video: come funziona</h3><div class="vid-grid">${VIDEOS.map(vidTile).join('')}</div>`);
   vidWide(true);
 }
-function vidTile(v){ return `<button class="vid-tile" onclick="vidOpen(${v.n})"><span class="vid-th" style="background-image:url('/video/pee-${v.n}.jpg')"><span class="vid-play">▶</span><span class="vid-du">${v.d}</span></span><span class="vid-tt"><b>${v.n}</b> ${v.t}</span></button>`; }
+function vidTile(v){ return `<button class="vid-tile" onclick="vidOpen(${v.n})"><span class="vid-th" style="background-image:url('/video/pee-${v.n}.jpg${vidVer(v.n)}')"><span class="vid-play">▶</span><span class="vid-du">${v.d}</span></span><span class="vid-tt"><b>${v.n}</b> ${v.t}</span></button>`; }
 function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !ov.firstElementChild) return; ov.firstElementChild.style.maxWidth = on ? '860px' : ''; }
 // quale video per la parte dell'app in cui ti trovi
-function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 3; const k = gCur(); return ({'1a':4,'1b':4,'1c':4,'1d':4,'2':5,'3':6,'4':7,'5':7,'chk':7})[k] || 4; }catch(e){ return 1; } }
+function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE === 'staff') return 9; if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 3; const k = gCur(); return ({'1a':4,'1b':4,'1c':4,'1d':4,'2':5,'3':6,'4':7,'5':7,'chk':7})[k] || 4; }catch(e){ return 1; } }
 function vidLink(n, txt){ return `<a href="#" class="vid-lk" onclick="vidOpen(${n});return false">▶ ${txt || 'Guarda il video'}</a>`; }
 function vidHome(){ const h = document.getElementById('vid-home'); if(!h) return;
   h.innerHTML = VIDEOS.map(v => `<button class="vid-row" onclick="vidOpen(${v.n})"><span class="vid-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span><span class="vid-rt"><b>${v.n}</b> ${v.t}</span><span class="vid-rd">${v.d}</span></button>`).join('')
-    + `<p class="vid-note">Otto video da un minuto circa. Li ritrovi anche nei riquadri «Come funziona» di ogni sezione.</p>`; }
+    + `<p class="vid-note">Nove video da un minuto circa. Li ritrovi anche nei riquadri «Come funziona» di ogni sezione.</p>`; }
 
 // ── Domande frequenti: cerca, apri la risposta, «Portami lì» ──
 const FAQ = [
@@ -11102,6 +11109,14 @@ function pjStaffPart(d, keepName, keepPri){ const o={v:1, MODE:'staff', UNIT_NAM
 function pjUnitPart(d, keepName){ const o={v:1, MODE:'giovani', FASCIA:d.FASCIA||'E', UNIT_NAME: keepName ? (d.UNIT_NAME||'') : ''}; ['obs','pris','vals','scheda'].forEach(k=>{ if(d[k]!==undefined) o[k]=d[k]; }); return o; }
 function pjLabel(t){ return t==='staff' ? 'lo staff' : 'l’Unità'; }
 // scelta dalla schermata iniziale di un tipo diverso dal progetto aperto: apre (o crea) il progetto giusto, senza toccare l'altro
+// nuovo progetto staff: nome, Sezione e Gruppo presi subito dall'Unità (restano modificabili, come in stUnitDefaults)
+function pjStaffSeed(fresh, ud){
+  if(!ud) return; const pp = ((ud.scheda||{}).pp) || {}, nome = String(ud.UNIT_NAME || '').trim(), au = {}, sp = {};
+  if(nome && (fresh.STAFF_RUOLO || 'CU') !== 'CG'){ fresh.UNIT_NAME = 'Staff ' + nome.replace(/^staff\s+/i, ''); au.nome = fresh.UNIT_NAME; }
+  if(pp.sezione){ sp.sezione = pp.sezione; au.sezione = pp.sezione; }
+  if(pp.gruppo){ sp.gruppo = pp.gruppo; au.gruppo = pp.gruppo; }
+  if(Object.keys(au).length){ sp._auto = au; fresh.scheda = {pp: sp}; }
+}
 async function pjSwitch(){
   const target = MODE, cur = clSnapshot(), t0 = pjType(cur);
   const fresh = target==='staff' ? {v:1, MODE:'staff', STAFF_TYPE, STAFF_RUOLO:STAFF_RUOLO||'CU', UNIT_NAME:''} : {v:1, MODE:'giovani', FASCIA:FASCIA||'E', UNIT_NAME:''};
@@ -11114,6 +11129,7 @@ async function pjSwitch(){
       const ex = rows.find(r => r.anno === anno && (r.meta||{}).mode === target);
       if(ex){ await clOpenProject(ex.id); return; }
       const titolo = await clUniqueTitle(rows, anno, (target==='staff' ? 'Staff ' : 'PEE ') + anno);
+      if(target === 'staff'){ try{ const u = rows.find(x => x.anno === anno && (x.meta||{}).mode === 'giovani'); if(u){ const g = await dbGet(u.id); pjStaffSeed(fresh, (g||{}).data); } }catch(e){} }
       const r = await dbInsert(anno, titolo, fresh, clMeta(fresh));
       localStorage.setItem(CL_LS, JSON.stringify(fresh)); clBaseSet(fresh);
       CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx(); CL._arc = null;
@@ -11126,6 +11142,7 @@ async function pjSwitch(){
   try{
     if(t0) localStorage.setItem('bussola_slot_' + t0, JSON.stringify(cur));
     const slot = localStorage.getItem('bussola_slot_' + target);
+    if(!slot && target === 'staff'){ try{ pjStaffSeed(fresh, t0 === 'giovani' ? cur : JSON.parse(localStorage.getItem('bussola_slot_giovani') || 'null')); }catch(e){} }
     localStorage.setItem(CL_LS, slot || JSON.stringify(fresh));
     sessionStorage.setItem('bussola_opened_msg', 'Il lavoro per ' + pjLabel(t0) + ' resta su questo dispositivo: lo ritrovi scegliendo «' + (t0==='staff' ? 'Il mio staff' : 'La mia Unità') + '». Con un account li tieni nell’archivio.');
     sessionStorage.setItem('bussola_autoresume','1');
@@ -11138,7 +11155,7 @@ async function pjSplitAll(){
   let changedCur = false;
   // se il progetto aperto è misto, da subito niente salvataggi: la pagina ha ancora in memoria i dati insieme
   { const d0 = clSnapshot(); if(CL.ctx && !CL.ctx.ruolo && pjUnitHas(d0) && pjStaffHas(d0)) window._pjBusy = true; }
-  const core = d => pjCanon(Object.assign({}, d, {ts:0, v:0}));
+  const core = pjCore;
   try{
     await pjDedupe();
     const rows = await dbList(); const made = [];
@@ -11167,11 +11184,13 @@ async function pjSplitAll(){
   }catch(e){ console.warn('pjSplitAll', e); }
   if(!changedCur) window._pjBusy = false;
 }
+// confronto tra copie: si ignorano i campi tecnici (ts, v) e i valori ripresi in automatico dall'Unità (pp._auto)
+function pjCore(d){ const x = Object.assign({}, d, {ts:0, v:0}); if(x.scheda && x.scheda.pp && x.scheda.pp._auto){ x.scheda = Object.assign({}, x.scheda, {pp: Object.assign({}, x.scheda.pp)}); delete x.scheda.pp._auto; } return pjCanon(x); }
 function pjCanon(x){ return x && typeof x === 'object' ? (Array.isArray(x) ? '[' + x.map(pjCanon).join(',') + ']' : '{' + Object.keys(x).sort().map(k => JSON.stringify(k) + ':' + pjCanon(x[k])).join(',') + '}') : JSON.stringify(x === undefined ? null : x); }
 // copie identiche dello stesso progetto (stesso anno, stesso tipo, stessi dati): tengo la più vecchia (o quella aperta)
 async function pjDedupe(){
   try{
-    const rows = await dbList(); const core = d => pjCanon(Object.assign({}, d, {ts:0, v:0}));
+    const rows = await dbList(); const core = pjCore;
     const groups = {}; rows.forEach(r => { const k = r.anno + '|' + ((r.meta||{}).mode||'') + '|' + JSON.stringify(r.meta||{}); (groups[k] = groups[k] || []).push(r); });
     let n = 0;
     for(const g of Object.values(groups)){ if(g.length < 2 || !(g[0].meta||{}).mode) continue;
@@ -12389,7 +12408,13 @@ async function clRename(id){
 async function clDelete(id){
   if(!confirm('Eliminare definitivamente questo progetto dal cloud?')) return;
   try{ await dbDelete(id); }catch(e){ clToast('Errore: '+clErr(e)); return; }
-  if(CL.ctx && CL.ctx.id === id){ CL.ctx = null; clSaveCtx(); clSetStatus(''); }
+  if(CL.ctx && CL.ctx.id === id){
+    // era il progetto aperto: tolgo anche la copia di lavoro di questo dispositivo, così un nuovo progetto parte pulito
+    window._pjBusy = true; clearTimeout(_saveTimer);
+    CL.ctx = null; clSaveCtx(); clSetStatus('');
+    try{ localStorage.removeItem(CL_LS); clBaseSet({}); CL.pending = false; sessionStorage.removeItem('bussola_autoresume'); sessionStorage.setItem('bussola_opened_msg', 'Progetto eliminato. Scegli da dove ripartire: puoi aprirne un altro dall’archivio o iniziarne uno nuovo.'); }catch(e){}
+    appReload(); return;
+  }
   clRenderArchive();
 }
 function clDetach(){ CL.ctx = null; clSaveCtx(); clSetStatus(''); if($cl('cl-ov').classList.contains('show') && CL.user) clRenderArchive(); }
