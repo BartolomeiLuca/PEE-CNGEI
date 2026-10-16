@@ -4373,7 +4373,8 @@ async function stUnitLoad(force){
   const key = stUnitKey();
   if(!force && ST_UNIT.tried && ST_UNIT.key === key) return ST_UNIT.rows;
   if(ST_UNIT.busy) return ST_UNIT.busy;
-  ST_UNIT.busy = (async () => {
+  // il lavoro asincrono si registra PRIMA di partire: se finisce subito (senza account) non resta un «busy» vecchio che fa girare la pagina all'infinito
+  const job = (async () => { await null;
     let rows = null, src = '', titolo = '', unit = null;
     try{
       if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
@@ -4386,11 +4387,13 @@ async function stUnitLoad(force){
         if(s){ const d = JSON.parse(s); const t = (((d||{}).scheda||{}).pp||{}).staffTab; if(Array.isArray(t)){ rows = t; src = 'local'; titolo = d.UNIT_NAME || 'Unità'; const gp = ((d.scheda||{}).pp)||{}; unit = {nome: d.UNIT_NAME || '', sezione: gp.sezione || '', gruppo: gp.gruppo || ''}; } }
       }
     }catch(e){ console.warn('stUnitLoad', e); }
-    ST_UNIT.rows = rows ? rows.map(stSrcOf).filter(r => r.nome || r.mail) : null; ST_UNIT.src = src; ST_UNIT.titolo = titolo; ST_UNIT.key = key; ST_UNIT.tried = true; ST_UNIT.busy = null;
+    ST_UNIT.rows = rows ? rows.map(stSrcOf).filter(r => r.nome || r.mail) : null; ST_UNIT.src = src; ST_UNIT.titolo = titolo; ST_UNIT.key = key; ST_UNIT.tried = true;
     try{ stUnitDefaults(unit); }catch(e){ console.warn('stUnitDefaults', e); }
     return ST_UNIT.rows;
   })();
-  return ST_UNIT.busy;
+  ST_UNIT.busy = job;
+  job.finally(() => { if(ST_UNIT.busy === job) ST_UNIT.busy = null; });
+  return job;
 }
 // nome, sezione e gruppo si riprendono dall'Unità, ma restano modificabili: si aggiorna solo se il campo è vuoto o è ancora quello preso l'ultima volta
 function stUnitDefaults(u){
@@ -4457,6 +4460,7 @@ function stUnitKick(force){
   if(!force && ST_UNIT.tried && ST_UNIT.key === stUnitKey()) return;
   stUnitLoad(force).then(() => {
     if(MODE !== 'staff') return;
+    ST_UNIT.tried = true; ST_UNIT.key = stUnitKey();
     const ch = stLinkApply(); if(ch) saveDataDebounced();
     const a = document.activeElement;
     if(a && a.closest && a.closest('#st-main') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !force) return;   // non interrompo chi sta scrivendo
@@ -7098,12 +7102,12 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-16 · beta';
-const APP_BUILD='202610161146'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610161304'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'16 ottobre 2026', t:'Video per lo staff e correzioni', i:[
     '<b>Nuovo video «La modalità staff»</b> e video 2 rifatto (accesso e archivio): li trovi nella schermata iniziale e nei riquadri «Come funziona»; nelle pagine dello staff si apre quello sullo staff.',
-    '<b>Staff più affidabile</b>: un nuovo progetto staff nasce già con il nome, la Sezione e il Gruppo della tua Unità e compare subito in archivio; se elimini il progetto che hai aperto, quello nuovo parte pulito, senza i dati del precedente. Nome, Sezione, Gruppo e persone arrivano dalla tua Unità, mai dal progetto di esempio.'
+    '<b>Staff più affidabile</b>: un nuovo progetto staff nasce già con il nome, la Sezione e il Gruppo della tua Unità e compare subito in archivio; se elimini il progetto che hai aperto, quello nuovo parte pulito, senza i dati del precedente. Nome, Sezione, Gruppo e persone arrivano dalla tua Unità, mai dal progetto di esempio. Risolto anche un blocco della pagina dello staff (senza account) premendo «Rileggi la tabella».'
   ]},
   {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
     '<b>Versione nuova senza ricaricare</b>: l’app controlla ogni tanto se c’è un aggiornamento. Se la pagina è in secondo piano si aggiorna da sola dopo aver salvato; se la stai usando compare una striscia «Versione nuova disponibile · Aggiorna ora» e scegli tu quando.',
