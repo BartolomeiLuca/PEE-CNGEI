@@ -52,6 +52,7 @@ export class FakeDB {
   emit(table, event, row, old){ for(const p of this.pages){ try{ const uid = p.__uid && p.__uid(); if(!uid || !this.canSee(uid, table, row)) continue; p.evaluate(m => window.__sbEmit && window.__sbEmit(m), {kind:'pg', table, event, row, old}).catch(() => {}); }catch(e){} } }
   async handle(req, page){
     const uid = req.uid;
+    if(this.offline) return {error:{message:'TypeError: Failed to fetch'}}; // rete assente (test t_offline)
     this.log.push(req.kind + (req.q ? ':' + req.q.op + ':' + req.q.table : '') + (req.name ? ':' + req.name : ''));
     if(req.kind === 'login'){ const u = this.users.find(x => x.email === String(req.email).toLowerCase() && x.password === req.password); return u ? {user:this.pubUser(u)} : {error:{message:'Invalid login credentials'}}; }
     if(req.kind === 'signup'){ if(this.users.some(x => x.email === String(req.email).toLowerCase())) return {error:{message:'User already registered'}}; const u = this.addUser(req.email, req.password, (req.data||{}).nome); return {user:this.pubUser(u)}; }

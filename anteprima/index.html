@@ -4379,7 +4379,7 @@ async function stUnitLoad(force){
       if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
         const anno = (CL.ctx && CL.ctx.anno) || new Date().getFullYear();
         const list = await dbList();
-        const ex = list.find(r => r.anno === anno && (r.meta||{}).mode === 'giovani');
+        const ex = pjUnitPick(list, anno);
         if(ex){ const g = await dbGet(ex.id); const t = ((((g||{}).data||{}).scheda||{}).pp||{}).staffTab; if(Array.isArray(t)){ rows = t; src = 'cloud'; titolo = ex.titolo; const gd = (g||{}).data || {}, gp = ((gd.scheda||{}).pp)||{}; unit = {nome: gd.UNIT_NAME || '', sezione: gp.sezione || '', gruppo: gp.gruppo || ''}; } }
       } else {
         const s = localStorage.getItem('bussola_slot_giovani');
@@ -7098,12 +7098,12 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-16 · beta';
-const APP_BUILD='202610160729'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610161146'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'16 ottobre 2026', t:'Video per lo staff e correzioni', i:[
     '<b>Nuovo video «La modalità staff»</b> e video 2 rifatto (accesso e archivio): li trovi nella schermata iniziale e nei riquadri «Come funziona»; nelle pagine dello staff si apre quello sullo staff.',
-    '<b>Staff più affidabile</b>: un nuovo progetto staff nasce già con il nome, la Sezione e il Gruppo della tua Unità e compare subito in archivio; se elimini il progetto che hai aperto, quello nuovo parte pulito, senza i dati del precedente.'
+    '<b>Staff più affidabile</b>: un nuovo progetto staff nasce già con il nome, la Sezione e il Gruppo della tua Unità e compare subito in archivio; se elimini il progetto che hai aperto, quello nuovo parte pulito, senza i dati del precedente. Nome, Sezione, Gruppo e persone arrivano dalla tua Unità, mai dal progetto di esempio.'
   ]},
   {d:'15 ottobre 2026 · sera', t:'Aggiornamenti che arrivano da soli, interfaccia più calma', i:[
     '<b>Versione nuova senza ricaricare</b>: l’app controlla ogni tanto se c’è un aggiornamento. Se la pagina è in secondo piano si aggiorna da sola dopo aver salvato; se la stai usando compare una striscia «Versione nuova disponibile · Aggiorna ora» e scegli tu quando.',
@@ -11109,6 +11109,12 @@ function pjStaffPart(d, keepName, keepPri){ const o={v:1, MODE:'staff', UNIT_NAM
 function pjUnitPart(d, keepName){ const o={v:1, MODE:'giovani', FASCIA:d.FASCIA||'E', UNIT_NAME: keepName ? (d.UNIT_NAME||'') : ''}; ['obs','pris','vals','scheda'].forEach(k=>{ if(d[k]!==undefined) o[k]=d[k]; }); return o; }
 function pjLabel(t){ return t==='staff' ? 'lo staff' : 'l’Unità'; }
 // scelta dalla schermata iniziale di un tipo diverso dal progetto aperto: apre (o crea) il progetto giusto, senza toccare l'altro
+// quale progetto dell'Unità usare per lo staff: quello aperto per ultimo, altrimenti il più recente che non sia il progetto di esempio
+function pjUnitPick(rows, anno){
+  const g = (rows || []).filter(r => r.anno === anno && (r.meta||{}).mode === 'giovani');
+  let last = ''; try{ last = localStorage.getItem('bussola_last_unit') || ''; }catch(e){}
+  return g.find(r => r.id === last) || g.find(r => !/^Esempio/i.test(r.titolo || '')) || g[0] || null;
+}
 // nuovo progetto staff: nome, Sezione e Gruppo presi subito dall'Unità (restano modificabili, come in stUnitDefaults)
 function pjStaffSeed(fresh, ud){
   if(!ud) return; const pp = ((ud.scheda||{}).pp) || {}, nome = String(ud.UNIT_NAME || '').trim(), au = {}, sp = {};
@@ -11119,6 +11125,7 @@ function pjStaffSeed(fresh, ud){
 }
 async function pjSwitch(){
   const target = MODE, cur = clSnapshot(), t0 = pjType(cur);
+  try{ if(t0 === 'giovani' && CL && CL.ctx && !CL.ctx.ruolo && !/^Esempio/i.test(CL.ctx.titolo || '')) localStorage.setItem('bussola_last_unit', CL.ctx.id); }catch(e){}
   const fresh = target==='staff' ? {v:1, MODE:'staff', STAFF_TYPE, STAFF_RUOLO:STAFF_RUOLO||'CU', UNIT_NAME:''} : {v:1, MODE:'giovani', FASCIA:FASCIA||'E', UNIT_NAME:''};
   showToast('Apro il progetto per ' + pjLabel(target) + '…');
   if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
@@ -11129,7 +11136,7 @@ async function pjSwitch(){
       const ex = rows.find(r => r.anno === anno && (r.meta||{}).mode === target);
       if(ex){ await clOpenProject(ex.id); return; }
       const titolo = await clUniqueTitle(rows, anno, (target==='staff' ? 'Staff ' : 'PEE ') + anno);
-      if(target === 'staff'){ try{ const u = rows.find(x => x.anno === anno && (x.meta||{}).mode === 'giovani'); if(u){ const g = await dbGet(u.id); pjStaffSeed(fresh, (g||{}).data); } }catch(e){} }
+      if(target === 'staff'){ try{ const u = pjUnitPick(rows, anno); if(u){ const g = await dbGet(u.id); pjStaffSeed(fresh, (g||{}).data); } }catch(e){} }
       const r = await dbInsert(anno, titolo, fresh, clMeta(fresh));
       localStorage.setItem(CL_LS, JSON.stringify(fresh)); clBaseSet(fresh);
       CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx(); CL._arc = null;
@@ -12389,6 +12396,7 @@ async function clOpenProject(id, extra){
     const keep = extra || (CL.ctx && CL.ctx.id === id && CL.ctx.ruolo ? {ruolo:CL.ctx.ruolo, owner:CL.ctx.owner||''} : null);
     try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un’altra persona')+')' : '. Il progetto precedente è salvato in archivio.')); }catch(e){}
     localStorage.setItem(CL_LS, JSON.stringify(r.data||{})); clBaseSet(r.data||{});
+    try{ if((r.data||{}).MODE === 'giovani' && !extra && !/^Esempio/i.test(r.titolo || '')) localStorage.setItem('bussola_last_unit', r.id); }catch(e){}
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
     appReload();
