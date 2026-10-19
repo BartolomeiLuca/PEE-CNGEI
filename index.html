@@ -378,7 +378,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-in,.ax-ta{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-light);border-radius:5px;font:inherit;font-size:12px;background:var(--bg-card,#fff);color:var(--ink);min-width:0}.ax-ta{resize:vertical;line-height:1.45}
 .ax-chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0}.ax-chip{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card,#fff);color:var(--ink-mid);cursor:pointer}.ax-chip.on{background:var(--green);border-color:var(--green);color:#fff}
 .ax-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ax-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}@media (max-width:600px){.ax-row2,.ax-row3{grid-template-columns:1fr}}
-.ax-geo{display:flex;gap:6px}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
+.ax-geo{display:flex;gap:6px}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
 .ax-co2{font-size:12px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--green-pale,#EEF6EE)}.ax-check{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:6px;cursor:pointer}.ax-warn{font-size:11px;color:#C77700;margin-left:6px}
 .ax-mat{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:5px 0;display:grid;gap:4px}.ax-mat1{display:grid;grid-template-columns:1fr 150px 28px;gap:5px}.ax-mat2{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ax-mat2 .ax-in{flex:1;min-width:120px}.ax-x{padding:0 7px!important;font-size:13px;width:auto!important}
 .ax-add{font-size:11px!important;margin-top:4px;border-style:dashed!important;width:auto!important}.ax-tot{font-size:12px;margin-top:6px}.ax-quota{font-size:12px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ax-eco{font-size:11.5px;color:var(--green);margin-top:4px}
@@ -7372,7 +7372,7 @@ function axA(p,j){ const a=attGet(p,j); if(a && !a.ax) a.ax={}; return a; }
 function axX(p,j){ const a=axA(p,j); return a?a.ax:{}; }
 function axSave(){ saveDataDebounced(); }
 function axRe(p,j){ const el=document.getElementById('ax-'+p+'-'+j); if(!el) return; [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open); el.innerHTML=axBody(p,j); axCount(p,j); }
-function axSet(p,j,path,v,re){ if(/^(data|dataFine|durata)$/.test(path)) setTimeout(()=>tlRefresh(p),0); const x=axX(p,j); const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
+function axSet(p,j,path,v,re){ if(/^(data|dataFine|durata)$/.test(path)) setTimeout(()=>tlRefresh(p),0); const x=axX(p,j); if(/^luogo\.(from|nome|rientroDove|mezzo|tipo)$/.test(path)) setTimeout(()=>axKmSoon(p,j),0); if(path==='luogo.ritrovoDove'){ const L0=x.luogo||{}; if(axRientroStesso(L0)){ if(!x.luogo) x.luogo={}; x.luogo.rientroStesso=true; setTimeout(()=>{ const L=(axX(p,j).luogo)||{}; if(axRientroStesso(L)){ axRientroCopy(L); axSave(); const ro=document.querySelector('#ax-'+p+'-'+j+' .ax-ro'); if(ro) ro.textContent=L.ritrovoDove||'come il ritrovo'; } },0); } } const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
 function axGet(x,path){ return String(path).split('.').reduce((o,k)=>o==null?undefined:o[k],x); }
 function axArrP(p,j,path){ const x=axX(p,j); let v=axGet(x,path); if(!Array.isArray(v)){ axSetQuiet(x,path,[]); v=axGet(x,path); } return v; }
 function axSetQuiet(x,path,v){ const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; }
@@ -7598,7 +7598,8 @@ function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPerc
   return h; }
 function axLog(p,j,a,x){ const L=x.luogo||{}; const N=axN(x); let h='';
   h+=axLbl('Ritrovo e rientro')+`<div class="ax-rr"><div><div class="ax-sub">Luogo di ritrovo</div>${axPlaceField(p,j,L,'ritrovoDove','es. in sede, piazza del Popolo')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.ritrovo',this.value)">${axTimeOpts(L.ritrovo)}</select></div></div>
-    <div class="ax-rr"><div><div class="ax-sub">Luogo di rientro</div>${axPlaceField(p,j,L,'rientroDove','es. in sede, stazione')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.rientro',this.value)">${axTimeOpts(L.rientro)}</select></div></div>`;
+    <label class="ax-same"><input type="checkbox" id="ax-same-${p}-${j}" ${axRientroStesso(L)?'checked':''} onchange="axRientroSet(${p},${j},this.checked)"> Rientro nello stesso luogo della partenza</label>
+    <div class="ax-rr"><div><div class="ax-sub">Luogo di rientro</div>${axRientroStesso(L)?`<div class="ax-in ax-ro">${axE(L.ritrovoDove||'come il ritrovo')}</div>`:axPlaceField(p,j,L,'rientroDove','es. in sede, stazione')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.rientro',this.value)">${axTimeOpts(L.rientro)}</select></div></div>`;
   h+=axLbl('Dove si svolge')+axChips(AX_TIPO,L.tipo,v=>`axSet(${p},${j},'luogo.tipo',axD('${v}'),true)`);
   if(L.tipo==='altro') h+=axIN(p,j,'luogo.tipoAltro','Specifica',L.tipoAltro);
   if(L.tipo&&L.tipo!=='sede'){
@@ -7607,7 +7608,7 @@ function axLog(p,j,a,x){ const L=x.luogo||{}; const N=axN(x); let h='';
     h+=`<div class="ax-sub" style="margin-top:6px">Come vi spostate</div>`+axChips(AX_MEZZI,L.mezzo,v=>`axSet(${p},${j},'luogo.mezzo',axD('${v}'),true)`);
     if(L.mezzo==='altro') h+=axIN(p,j,'luogo.mezzoAltro','Specifica il mezzo',L.mezzoAltro);
     if(L.mezzo&&L.mezzo!=='piedi'&&L.mezzo!=='bici'){
-      h+=`<div class="ax-row3"><div><div class="ax-sub">Km andata e ritorno</div><input class="ax-in" type="number" min="0" value="${axE(L.km)}" oninput="axSet(${p},${j},'luogo.km',this.value)"></div>${L.mezzo==='auto'?`<div><div class="ax-sub">Persone per auto</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.perAuto',this.value)">${axNumOpts(L.perAuto||4,9).replace('<option value="0" >0</option>','')}</select></div>`:'<div></div>'}<div></div></div>`;
+      h+=`<div class="ax-row3"><div><div class="ax-sub">Km andata e ritorno</div><div class="ax-geo"><input class="ax-in" id="ax-km-${p}-${j}" type="number" min="0" value="${axE(L.km)}" oninput="axSet(${p},${j},'luogo.km',this.value)"><button type="button" class="btn-ghost ax-btn" onclick="axKmCalc(${p},${j})">Calcola distanza</button></div></div>${L.mezzo==='auto'?`<div><div class="ax-sub">Persone per auto</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.perAuto',this.value)">${axNumOpts(L.perAuto||4,9).replace('<option value="0" >0</option>','')}</select></div>`:'<div></div>'}<div></div></div>`;
       h+=`<div class="ax-co2" id="ax-co2-${p}-${j}">${axCO2(L,N.tot)}</div>`;
     }
   }
@@ -7639,14 +7640,14 @@ function axPlaceField(p,j,L,k,ph,extra){ const u=axPlaceUrl(L,k), ad=L[k+'Addr']
    +`<div id="ax-geo-${k}-${p}-${j}"></div>`; }
 function axPlaceIn(p,j,k,inp){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo;
   axSet(p,j,'luogo.'+k,inp.value); if(k==='nome'&&L.lat&&!L.nomeAddr){ delete L.lat; delete L.lon; } }
-function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Addr']; delete L[k+'Lat']; delete L[k+'Lon']; if(k==='nome'){ delete L.lat; delete L.lon; } axSave(); axRe(p,j); }
+function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Addr']; delete L[k+'Lat']; delete L[k+'Lon']; if(k==='nome'){ delete L.lat; delete L.lon; } if(k==='ritrovoDove'&&axRientroStesso(L)) axRientroCopy(L); axSave(); axRe(p,j); }
 async function axGeoK(p,j,k){ const L=(axX(p,j).luogo)||{}; const box=document.getElementById('ax-geo-'+k+'-'+p+'-'+j); const q=String(L[k]||'').trim();
   if(!q||axIsLinkTxt(q)){ showToast('Scrivi prima il nome o l’indirizzo del luogo'); return; } box.innerHTML='<span class="ax-sub">Cerco…</span>';
   try{ const sez=((scheda.pp&&scheda.pp.sezione)||'').trim(); let res=sez&&!/,/.test(q)?await axGeoQ(q+', '+sez):[]; if(!res.length) res=await axGeoQ(q);
     if(!res.length){ box.innerHTML='<span class="ax-sub">Non lo trovo: prova con via e città, oppure incolla qui il link di Google Maps.</span>'; return; }
     window._axResK=res; box.innerHTML='<div class="ax-sub">Scegli l’indirizzo giusto:</div>'+res.map((r,i)=>`<button type="button" class="ax-res" onclick="axPickK(${p},${j},'${k}',${i})">${axE(axAddrFmt(r))}<br><span class="ax-opt">${axE(r.display_name)}</span></button>`).join('');
   }catch(e){ box.innerHTML='<span class="ax-sub">Ricerca non disponibile ora (serve internet).</span>'; } }
-function axPickK(p,j,k,i){ const r=(window._axResK||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L[k+'Addr']=axAddrFmt(r); L[k+'Lat']=+r.lat; L[k+'Lon']=+r.lon; axSave(); axRe(p,j); }
+function axPickK(p,j,k,i){ const r=(window._axResK||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L[k+'Addr']=axAddrFmt(r); L[k+'Lat']=+r.lat; L[k+'Lon']=+r.lon; if(k==='ritrovoDove'&&axRientroStesso(L)) axRientroCopy(L); axSave(); axRe(p,j); }
 function axMapA(q,L,id){ const u=axMapUrl(q,L); return `<a class="att-link-open ax-map" ${id?`id="${id}"`:''} target="_blank" rel="noopener" href="${axE(u)}" style="${u?'':'display:none'}">Maps ↗</a>`; }
 function axMapUpd(inp){ const a=inp.parentElement.querySelector('.ax-map'); if(!a) return; const u=axMapUrl(inp.value); a.style.display=u?'':'none'; if(u) a.href=u; }
 function axCO2(L,n){ const km=Number(L.km)||0; if(!km||!n) return '<span class="ax-sub">Indica i presenti e i km per stimare l’impronta ecologica del viaggio.</span>';
@@ -7662,13 +7663,34 @@ async function axGeo(p,j){ const x=axX(p,j); const L=x.luogo||{}; const box=docu
     window._axRes=res; box.innerHTML='<div class="ax-sub">Scegli il luogo giusto:</div>'+res.map((r,i)=>`<button type="button" class="ax-res" onclick="axPick(${p},${j},${i})">${axE(r.display_name)}</button>`).join('');
   }catch(e){ box.innerHTML='<span class="ax-sub">Ricerca non disponibile ora (serve internet). Puoi inserire i km a mano.</span>'; } }
 async function axPick(p,j,i){ const r=(window._axRes||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L.nome=r.display_name.split(',').slice(0,3).join(','); L.lat=+r.lat; L.lon=+r.lon; L.nomeAddr=axAddrFmt(r); L.nomeLat=+r.lat; L.nomeLon=+r.lon; axSave();
-  const box=document.getElementById('ax-geo-r-'+p+'-'+j); box.innerHTML='<span class="ax-sub">Calcolo la distanza…</span>';
-  try{ const from=(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim(); if(!from) throw new Error('nofrom'); const fr=await axGeoQ(from); if(!fr.length) throw new Error('nofrom');
-    const a={lat:+fr[0].lat,lon:+fr[0].lon}; let km=null, how='';
-    if(L.mezzo!=='treno'){ try{ const rr=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${L.lon},${L.lat}?overview=false`); const jj=await rr.json(); if(jj.routes&&jj.routes[0]){ km=Math.round(jj.routes[0].distance/1000*2); how='su strada'; } }catch(e){} }
-    if(km==null){ km=Math.round(axHav(a,L)*2*1.25); how=L.mezzo==='treno'?'stimati per il treno (linea d’aria + 25%)':'stimati (linea d’aria + 25%)'; }
-    L.km=km; axSave(); axRe(p,j); const b2=document.getElementById('ax-geo-r-'+p+'-'+j); if(b2) b2.innerHTML=`<span class="ax-sub">Da ${axE(from)}: ${km} km andata e ritorno, ${how}. Puoi correggerli.</span>`;
-  }catch(e){ axRe(p,j); const b2=document.getElementById('ax-geo-r-'+p+'-'+j); if(b2) b2.innerHTML='<span class="ax-sub">Non riesco a calcolare la distanza: indica la partenza o inserisci i km a mano.</span>'; } }
+  axRe(p,j); await axKmCalc(p,j); }
+// rientro nello stesso luogo del ritrovo: se non è mai stato scelto, vale sì quando i due luoghi coincidono (anche vuoti)
+function axRientroStesso(L){ L=L||{}; return L.rientroStesso!=null ? !!L.rientroStesso : String(L.rientroDove||'').trim()===String(L.ritrovoDove||'').trim(); }
+function axRientroCopy(L){ ['','Addr','Lat','Lon'].forEach(s=>{ if(L['ritrovoDove'+s]!=null && L['ritrovoDove'+s]!=='') L['rientroDove'+s]=L['ritrovoDove'+s]; else delete L['rientroDove'+s]; }); }
+function axRientroSet(p,j,on){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L.rientroStesso=!!on; if(on) axRientroCopy(L); axSave(); axRe(p,j); axKmSoon(p,j); }
+// distanza: partenza → luogo dell'attività → rientro (se diverso), su strada se possibile
+async function axPt(q, lat, lon){ if(lat!=null && lon!=null && !isNaN(lat)) return {lat:+lat, lon:+lon}; q=String(q||'').trim(); if(!q || axIsLinkTxt(q)) return null; const r=await axGeoQ(q); return r.length ? {lat:+r[0].lat, lon:+r[0].lon} : null; }
+async function axLeg(a,b,treno){ if(!treno){ try{ const rr=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`); const jj=await rr.json(); if(jj.routes&&jj.routes[0]) return {km:jj.routes[0].distance/1000, strada:true}; }catch(e){} } return {km:axHav(a,b)*1.25, strada:false}; }
+let _axKmT={};
+function axKmNeeded(L){ return L && L.tipo && L.tipo!=='sede' && L.mezzo && L.mezzo!=='piedi' && L.mezzo!=='bici'; }
+function axKmSoon(p,j){ const k=p+'-'+j; clearTimeout(_axKmT[k]); _axKmT[k]=setTimeout(()=>{ const L=(axX(p,j).luogo)||{}; if(axKmNeeded(L) && String(L.nome||'').trim() && String(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim()) axKmCalc(p,j,true); }, 1500); }
+async function axKmCalc(p,j,auto){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo;
+  const msg=h=>{ const b=document.getElementById('ax-geo-r-'+p+'-'+j); if(b) b.innerHTML='<span class="ax-sub">'+h+'</span>'; };
+  const from=String(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim(), dest=String(L.nome||'').trim();
+  if(!dest){ if(!auto) showToast('Scrivi prima il luogo dell’attività'); return; }
+  if(!from){ msg('Indica la partenza per calcolare la distanza.'); return; }
+  msg('Calcolo la distanza…'); const sig=[from,dest,axRientroStesso(L)?'':L.rientroDove||'',L.mezzo].join('|');
+  try{ const a=await axPt(from); if(!a) throw new Error('nofrom');
+    const b=await axPt(dest, L.lat, L.lon); if(!b) throw new Error('nodest');
+    const treno=L.mezzo==='treno'; const g1=await axLeg(a,b,treno); let g2=g1, rTxt='';
+    if(!axRientroStesso(L) && String(L.rientroDove||'').trim()){ const c=await axPt(L.rientroDove, L.rientroDoveLat, L.rientroDoveLon).catch(()=>null); if(c){ g2=await axLeg(b,c,treno); rTxt=' (ritorno fino a '+axE(L.rientroDove)+')'; } }
+    const cur=(axX(p,j).luogo)||{}; if([String(cur.from||(scheda.pp&&scheda.pp.sezione)||'').trim(),String(cur.nome||'').trim(),axRientroStesso(cur)?'':cur.rientroDove||'',cur.mezzo].join('|')!==sig) return; // nel frattempo è cambiato qualcosa: ci pensa il calcolo successivo
+    const km=Math.round(g1.km+g2.km), how=(g1.strada&&g2.strada)?'su strada':(treno?'stimati per il treno (linea d’aria + 25%)':'stimati (linea d’aria + 25%)');
+    L.km=km; L.kmSig=sig; axSave();
+    const inp=document.getElementById('ax-km-'+p+'-'+j); if(inp) inp.value=km; else axRe(p,j);
+    axLive(p,j);
+    msg(`${auto?'Km aggiornati: ':''}da ${axE(from)}: ${km} km andata e ritorno${rTxt}, ${how}. Puoi correggerli.`);
+  }catch(e){ msg(e&&e.message==='nofrom'?'Non trovo la partenza: scrivila in un altro modo o inserisci i km a mano.':e&&e.message==='nodest'?'Non trovo il luogo dell’attività: usa «Cerca» o inserisci i km a mano.':'Non riesco a calcolare la distanza ora (serve internet): inserisci i km a mano.'); } }
 function axHav(a,b){ const R=6371, t=Math.PI/180; const dl=(b.lat-a.lat)*t, dn=(b.lon-a.lon)*t; const h=Math.sin(dl/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
 
 // ── 2. MATERIALI, PASTI E COSTI ──
@@ -7734,21 +7756,39 @@ function axSpesaShow(p,j){ const x=axX(p,j); const box=document.getElementById('
 // altre spese e riepilogo
 function axSpese(p,j,x){ const S=axArrP(p,j,'spese'); const rows=S.length?S:[{}]; const N=axN(x);
   return rows.map((r,i)=>`<div class="ax-spesa"><input class="ax-in" placeholder="es. casa per la notte, pullman, ingressi" value="${axE(r.voce)}" oninput="axRowSet(${p},${j},'spese',${i},'voce',this.value)"><input class="ax-in" type="number" min="0" step="0.01" placeholder="€" value="${axE(r.importo)}" oninput="axRowSet(${p},${j},'spese',${i},'importo',this.value)"><select class="ax-in" onchange="axRowSet(${p},${j},'spese',${i},'modo',this.value,true)">${axOpt(AX_SPMODO,r.modo||'forfait')}</select>${r.modo==='notte'?`<input class="ax-in" type="number" min="1" placeholder="notti" value="${axE(r.notti)}" oninput="axRowSet(${p},${j},'spese',${i},'notti',this.value)">`:''}<select class="ax-in" onchange="axRowSet(${p},${j},'spese',${i},'carico',this.value,true)">${axOpt(AX_CARICO,r.carico)}</select>${S.length?`<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'spese',${i})">×</button>`:''}${r.modo&&r.modo!=='forfait'&&Number(r.importo)?`<span class="ax-hint">→ ${axEur(axSpesaCost(r,N))}</span>`:''}</div>`).join('')+`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'spese',{modo:'forfait'})">+ Aggiungi spesa</button>`; }
-function axCosti(x){ const N=axN(x); const items=[]; (x.mat||[]).forEach(r=>{ const c=axMatCost(r,N); if(c) items.push({voce:(r.cosa||'materiale').trim(),c,k:r.carico||''}); });
-  const fc=axFoodCost(x); if(fc) items.push({voce:'Cibo (stima)',c:fc,k:(x.cibo||{}).carico||''}); (x.spese||[]).forEach(r=>{ const c=axSpesaCost(r,N); if(c) items.push({voce:(r.voce||'spesa').trim(),c,k:r.carico||''}); }); return items; }
+// costi: una spesa «a persona» a carico dei ragazzi si divide tra la parte dei ragazzi (nella quota)
+// e la parte dei capi, che compare a parte «da attribuire» (o a carico di chi si sceglie in x.capiCarico)
+function axCosti(x){ const N=axN(x); const items=[]; const ck=x.capiCarico||'';
+  const add=(voce,c,k,unit)=>{ if(!c) return;   // unit = costo a testa quando la spesa è «a persona»
+    if(k==='ragazzi' && unit!=null && N.ad && N.rag && ck!=='ragazzi'){ const cr=unit*N.rag, ca=c-cr;
+      items.push({voce,c:cr,k,unit}); if(ca>0.0001) items.push({voce:voce+' · parte dei capi',c:ca,k:ck,capi:true}); return; }
+    items.push(unit!=null&&k==='ragazzi'&&ck!=='ragazzi'?{voce,c,k,unit}:{voce,c,k}); };
+  (x.mat||[]).forEach(r=>{ const c=axMatCost(r,N); if(!c) return; const v=(r.cosa||'materiale').trim(); const q=Number(r.q==null||r.q===''?1:r.q)||0;
+    add(v,c,r.carico||'',r.qm==='pers'?(Number(r.prezzo)||0)*q:null); });
+  const fc=axFoodCost(x); if(fc) add('Cibo (stima)',fc,(x.cibo||{}).carico||'',N.tot?fc/N.tot:null);
+  (x.spese||[]).forEach(r=>{ const c=axSpesaCost(r,N); if(!c) return; const v=Number(r.importo)||0;
+    add((r.voce||'spesa').trim(),c,r.carico||'',r.modo==='pers'?v:r.modo==='notte'?v*(Number(r.notti)||1):null); });
+  return items; }
+// il conto della quota in chiaro: «Casa 100 € ÷ 20 = 5 € + Pullman 50 € a testa = 55 € a testa»
+function axQuotaConto(x){ const N=axN(x); const R=axCosti(x).filter(i=>i.k==='ragazzi'); if(!R.length||!N.rag) return '';
+  const tot=R.reduce((a,i)=>a+i.c,0); const parts=R.map(i=>i.unit!=null?`${i.voce} ${axEur(i.unit)} a testa`:`${i.voce} ${axEur(i.c)} ÷ ${N.rag} = ${axEur(i.c/N.rag)}`);
+  return parts.join(' + ')+` = ${axEur(tot/N.rag)} a testa`; }
 function axTot(x){ const items=axCosti(x); const N=axN(x); const mono=(x.mat||[]).filter(r=>r.eco==='monouso'&&(r.cosa||'').trim()).length; let s='';
-  if(items.length){ const lab=Object.fromEntries(AX_CARICO); const by={}; items.forEach(it=>{ (by[it.k]=by[it.k]||[]).push(it); });
+  if(items.length){ const by={}; items.forEach(it=>{ (by[it.k]=by[it.k]||[]).push(it); });
     const tot=items.reduce((t,i)=>t+i.c,0); s+=`<div><b>Spesa complessiva: ${axEur(tot)}</b></div>`;
     Object.keys(by).filter(k=>k!=='ragazzi').forEach(k=>{ const t=by[k].reduce((a,i)=>a+i.c,0); s+=`<div>${k?'A carico '+(k==='altro'?'di altri':(k==='unita'?'dell’Unità':k==='gruppo'?'del Gruppo':'della Sezione')):'Ancora da attribuire'}: ${axEur(t)} <span class="ax-hint">(${by[k].map(i=>i.voce).join(', ')})</span></div>`; });
-    if(by.ragazzi){ const t=by.ragazzi.reduce((a,i)=>a+i.c,0); s+=`<div class="ax-quota-box">Quota dei ragazzi: <b>${axEur(t)}</b>${N.rag?` → <b>${axEur(t/N.rag)} a testa</b> (${N.rag} ragazzi)`:' · indica i ragazzi presenti per la quota a testa'}<div class="ax-hint">${by.ragazzi.map(i=>i.voce+' '+axEur(i.c)).join(' · ')}</div></div>`; } }
+    if(by.ragazzi){ const t=by.ragazzi.reduce((a,i)=>a+i.c,0); s+=`<div class="ax-quota-box">Quota dei ragazzi: <b>${axEur(t)}</b>${N.rag?` → <b>${axEur(t/N.rag)} a testa</b> (${N.rag} ragazzi)`:' · indica i ragazzi presenti per la quota a testa'}<div class="ax-hint ax-conto">${N.rag?axE(axQuotaConto(x)):by.ragazzi.map(i=>i.voce+' '+axEur(i.c)).join(' · ')}</div></div>`; } }
   if(mono) s+=`<div class="ax-eco">${mono} material${mono>1?'i':'e'} monouso: si ${mono>1?'possono':'può'} sostituire con qualcosa di riutilizzabile o di recupero?</div>`;
   return s; }
 function axQuota(x){ const N=axN(x); const t=axCosti(x).filter(i=>i.k==='ragazzi').reduce((a,i)=>a+i.c,0); return N.rag&&t?t/N.rag:0; }
+// c'è una parte dei capi dentro spese «a persona» pagate dai ragazzi?
+function axHasCapi(x){ const y=Object.assign({},x,{capiCarico:''}); return axCosti(y).some(i=>i.capi); }
 function axMat(p,j,a,x){ const M=axArrP(p,j,'mat'); M.forEach(r=>{ if(r.link&&!r.dove){ r.dove=r.link; delete r.link; } }); const rows=M.length?M:[{}]; const N=axN(x);
   let h=axLbl('Materiali')+`<div class="ax-mats">${rows.map((r,i)=>axMatRow(p,j,r,i,M.length,N)).join('')}</div><button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'mat',{prov:'unita',q:1,qm:'fissa'})">+ Aggiungi materiale</button>`;
   if((a.materiali||'').trim()) h+=axLbl('Altre note sui materiali')+`<textarea class="ax-ta" oninput="updateAttivita(${p},${j},'materiali',this.value);saveDataDebounced()">${axE(a.materiali)}</textarea>`;
   return h; }
 function axCosti2(p,j,a,x){ let h=`<div class="ax-hint" style="margin-bottom:6px">Somma di materiali, pasti e altre spese.</div>`+`<div class="ax-tot" id="ax-tot-${p}-${j}">${axTot(x)||'<span class="ax-hint">Qui compaiono i totali quando inserisci prezzi o spese.</span>'}</div>`;
+  if(axHasCapi(x)||x.capiCarico) h+=`<div class="ax-capi"><div class="ax-sub">Nelle spese «a persona» c’è anche la parte dei capi: chi la paga?</div><select class="ax-in" id="ax-capi-${p}-${j}" onchange="axSet(${p},${j},'capiCarico',this.value,true)">${axOpt([['','Da attribuire'],['unita','Unità'],['gruppo','Gruppo'],['sezione','Sezione'],['ragazzi','La dividono i ragazzi (nella quota)'],['altro','Altro']],x.capiCarico||'')}</select></div>`;
   return h; }
 
 // ── 3. DURANTE ──
@@ -7849,7 +7889,7 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
     +`<div class="ax-sub" style="margin-top:10px">Si parte con addosso <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_ADDOSSO().map(v=>[v,v]),x.addosso||[],v=>`axTog(${p},${j},'addosso',axD('${v}'))`,true)
     +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
     +(FASCIA!=='E'?`<div class="ax-sub" style="margin-top:8px">${FASCIA==='L'?'Consigli per le famiglie':'Consigli per lo zaino'} <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true):'');
-  h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>
+  h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>${axQuota(x)&&axQuotaConto(x)?`<div class="ax-hint">${axE(axQuotaConto(x))}</div>`:''}
     ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
     <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
   h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi e quando”.</div>`);
@@ -7905,7 +7945,8 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   if(SP.length){ ch.push(dH3('Altre spese')); ch.push(dGridTable(['Voce','Come si calcola','Totale','A carico di'],SP.map(r=>[plain(r.voce)||'—', axEur(r.importo)+' '+smo[r.modo||'forfait']+(r.modo==='notte'?' × '+(r.notti||1)+' notti':''), axEur(axSpesaCost(r,N)), r.carico?cr[r.carico].replace(' (quota)',''):'—']),[3600,2600,1500,1938])); }
   const items=axCosti(x); if(items.length){ ch.push(dH3('Riepilogo dei costi')); const lab=k=>k?cr[k].replace(' (quota)',''):'Da attribuire'; const rows=items.map(i=>[i.voce.charAt(0).toUpperCase()+i.voce.slice(1), lab(i.k), axEur(i.c)]);
     const by={}; items.forEach(it=>{ by[it.k]=(by[it.k]||0)+it.c; }); Object.keys(by).forEach(k=>rows.push(['Totale a carico: '+lab(k), '', axEur(by[k])+(k==='ragazzi'&&N.rag?' → '+axEur(by[k]/N.rag)+' a testa':'')]));
-    rows.push(['Totale complessivo','',axEur(items.reduce((s2,i)=>s2+i.c,0))]); ch.push(dGridTable(['Voce','A carico di','Importo'],rows,[4438,2400,2800])); }
+    rows.push(['Totale complessivo','',axEur(items.reduce((s2,i)=>s2+i.c,0))]); ch.push(dGridTable(['Voce','A carico di','Importo'],rows,[4438,2400,2800]));
+    { const cq=axQuotaConto(x); if(cq) ch.push(dPara([dTxt('Come si calcola la quota: ',{size:17,bold:true,color:GREEN}),dTxt(cq,{size:17})],{before:40,after:40})); } }
   const TD=(x.todo||[]).filter(r=>(r.cosa||'').trim()); if(TD.length){ ch.push(dH3('Cose da fare prima')); ch.push(dGridTable(['Stato','Cosa','Chi','Entro'],TD.map(r=>[r.fatto?'Fatto':'Da fare', plain(r.cosa), r.chi||'—', r.entro?r.entro.split('-').reverse().join('/'):'—']),[900,5038,2200,1500])); }
   // Imprevisti e attenzioni
   const kv3=[]; const pbl=Object.fromEntries(AX_PB); const PB=Object.entries(x.pb||{}).filter(([k,v])=>(v||'').trim()); if(PB.length||T_(a.pianoB)) kv3.push(['Piano B',[...PB.map(([k,v])=>dPara([dTxt(pbl[k].replace('…','')+': ',{size:18,bold:true}),dTxt(plain(v),{size:18})],{after:30})), ...(T_(a.pianoB)?[dPara(plain(a.pianoB),{size:18,after:30})]:[])]]);
