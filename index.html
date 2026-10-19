@@ -3633,7 +3633,7 @@ function goPhaseInternal(n){
   try{ if(MODE==='giovani'){ if(n===2) gRenderLettura(); if(n===3) gRenderMotiv(); } else { ['g-lettura','g-motiv'].forEach(i=>{const e=document.getElementById(i); if(e) e.innerHTML='';}); } gSync(); }catch(e){ console.error(e); }
   try{ if(MODE==='staff') stSync(); }catch(e){ console.error(e); }
   if(!window._clApplying && !window._posHold){ pageTop(); requestAnimationFrame(() => { if(!window._clApplying && !window._posHold) pageTop(); }); }
-  saveData(true); posSaveSoon();
+  saveData(true); posSaveSoon(); try{ requestAnimationFrame(() => window.taFitAll && taFitAll()); }catch(e){}
 
 }
 
@@ -8329,6 +8329,30 @@ function gGo(k){
   if(k==='1d'){ goPhaseInternal(3); return; }
   schedaStep=({'2':'B','3':'C','4':'ver','5':'val','chk':'chk'})[k]||'B'; goPhaseInternal(4);
 }
+// ── campi di testo che si allungano da soli (tutta l'app, anche quelli creati dopo) ──
+(function(){
+  const ok = el => el && el.tagName === 'TEXTAREA' && !el.hasAttribute('data-noauto');
+  function fit(el){ if(!ok(el) || !el.isConnected || el.offsetParent === null) return;
+    const cs = getComputedStyle(el); const bord = (parseFloat(cs.borderTopWidth)||0) + (parseFloat(cs.borderBottomWidth)||0);
+    const need = el.scrollHeight + bord;
+    if(need > el.offsetHeight + 1){ el.style.height = need + 'px'; el.style.overflowY = 'hidden'; return; }   // cresce: nessun salto
+    if(!el.value && !el.style.height) return;
+    // può accorciarsi: misuro tenendo ferma l'altezza della pagina (Safari/iPhone non salta)
+    const de = document.documentElement, y = window.scrollY, mh = de.style.minHeight; de.style.minHeight = de.scrollHeight + 'px';
+    const h0 = el.style.height; el.style.height = 'auto'; const n = el.scrollHeight + bord; el.style.height = (n > 0 ? n : h0) + 'px'; el.style.overflowY = 'hidden';
+    de.style.minHeight = mh; if(window.scrollY !== y) window.scrollTo(0, y); }
+  function fitIn(root){ try{ (root && root.querySelectorAll ? root : document).querySelectorAll('textarea').forEach(fit); }catch(e){} }
+  window.taFit = fit; window.taFitAll = () => fitIn(document);
+  document.addEventListener('input', e => { if(ok(e.target)) fit(e.target); }, true);
+  document.addEventListener('toggle', e => { if(e.target && e.target.open) requestAnimationFrame(() => fitIn(e.target)); }, true);
+  let raf = 0, pend = new Set();
+  const mo = new MutationObserver(ms => { ms.forEach(m => m.addedNodes && m.addedNodes.forEach(n => { if(n.nodeType === 1) pend.add(n); }));
+    if(!raf) raf = requestAnimationFrame(() => { raf = 0; const L = [...pend]; pend.clear(); L.forEach(n => { if(n.tagName === 'TEXTAREA') fit(n); else fitIn(n); }); }); });
+  const start = () => { try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){} fitIn(document); };
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { document.querySelectorAll('textarea').forEach(el => { if(ok(el)){ el.style.height = ''; } }); fitIn(document); }, 150); });
+  document.addEventListener('click', e => { const t = e.target && e.target.closest && e.target.closest('.ptab,.mnav-btn,.gsn-step,summary,[onclick*="gGo"],[onclick*="stPick"],[onclick*="stGo"]'); if(t) setTimeout(() => fitIn(document), 60); }, true);
+})();
 // ── dove si era rimasti (per progetto e per dispositivo) ──
 function posKey(){ let id = 'loc'; try{ const c = JSON.parse(localStorage.getItem(typeof CL_CTX !== 'undefined' ? CL_CTX : 'bussola_cloud_ctx')||'null'); if(c && c.id) id = c.id; }catch(e){} return 'bussola_pos:' + id + ':' + (MODE||''); }
 let _posT = 0;
@@ -8855,8 +8879,6 @@ function renderSchedaC(root,selected){
         <span class="pcx-chev" aria-hidden="true">▼</span>
         <span style="font-weight:800;font-size:14px;flex:1">${percorsoLabel}<small class="pcx-sum">${pcN ? pcN + (pcN===1?' attività scritta':' attività scritte') : 'da iniziare'}</small></span>
         <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
-          ${idx>0?`<button onclick="movePercorso(${idx},-1);renderValuation()" title="Sposta su" style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:14px">↑</button>`:''}
-          ${idx<totalPercorsi-1?`<button onclick="movePercorso(${idx},1);renderValuation()" title="Sposta giù" style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:14px">↓</button>`:''}
           ${sez3pp&&!sez3main?`<button onclick="sez3Hide(${per.prioritaIdx})" title="Togli dalla Scheda" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--ink-mid)">Togli</button>`:''}
           ${!isPriority?`<button onclick="removePercorso(${idx})" title="Rimuovi" style="background:none;border:1px solid var(--red);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:12px;color:var(--red)">✕</button>`:''}
         </div>
@@ -8995,9 +9017,9 @@ function renderSchedaC(root,selected){
             <div style="font-size:12px;font-weight:700;min-width:110px">${clLabels[key]}</div>
             <div class="cl3" id="cl3-${idx}-${key}">${cl3HTML(idx,key,cl3Val(cl[key]))}</div>
           </div>
-          <input type="text" style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:4px;font-family:inherit;font-size:11.5px;margin-top:4px;box-sizing:border-box"
-            placeholder="${CL3_PH[key]||'Perché? In quale attività si vede?'}" value="${sEsc(cl[key]?.note||'')}"
-            oninput="updateChecklist(${idx},'${key}','note',this.value);saveDataDebounced()">
+          <textarea rows="1" class="cl3-note" style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:4px;font-family:inherit;font-size:11.5px;line-height:1.45;margin-top:4px;box-sizing:border-box;resize:vertical;min-height:30px;display:block"
+            placeholder="${CL3_PH[key]||'Perché? In quale attività si vede?'}"
+            oninput="updateChecklist(${idx},'${key}','note',this.value);saveDataDebounced()">${sEsc(cl[key]?.note||'')}</textarea>
         </div>`).join('')}
       </td></tr>`;
 
