@@ -4,7 +4,7 @@ Banco di prova con un finto Supabase in memoria (più persone, ruoli, tempo real
 
     mkdir -p /home/claude/work && cp test/* /home/claude/work/ && cd /home/claude/work
     npm i playwright@1.56.0 && PLAYWRIGHT_BROWSERS_PATH=/home/claude/pw npx playwright install webkit firefox
-    (cd libs && npm init -y && npm i docx@8.5.0 exceljs@4.4.0 jszip@3.10.1)   # dentro /home/claude/work/libs
+    (cd libs && npm init -y && npm i docx@8.5.0 exceljs@4.4.0 jszip@3.10.1 jspdf@2.5.1)   # dentro /home/claude/work/libs
     export PLAYWRIGHT_BROWSERS_PATH=/home/claude/pw   # con chromium-1194 collegato da /opt/pw-browsers
 
 - `node t_roles.mjs chromium|webkit|firefox` — titolare, collaboratore, lettrice, co-titolare (61 controlli)
@@ -24,3 +24,9 @@ Giro completo consigliato (i processi in background vengono interrotti: lanciare
 - t_num: Numeri dell'Unità. t_fasce: Branco e Compagnia. t_compat: dati salvati con la versione del 14 ottobre (serve /tmp/site_leg/index.html = git show 3de992f:index.html).
 - t_sv: domande di feedback (SV=1; negli altri test sono spente dal harness).
 - t_json e t_arch stampano dati diagnostici senza riepilogo: va bene se non ci sono ✗.
+
+Test aggiunti il 19 ottobre (correzioni della sezione B):
+- t_pos (1-3: riapertura dove si era rimasti, archivio da 1.1, pagina dall'alto), t_ax (4-6: distanza, rientro, quota con la parte dei capi),
+  t_circ (7-8: contatti e firma, intestazione semplice, PDF; usa LibreOffice e pdftotext se ci sono), t_grow (10), t_move (11, anche con due persone),
+  t_dup (12), t_spell (9 e 13), t_num aggiornato (14 e 17), t_live (15), t_links (16).
+    ./grp.sh chromium t_pos t_ax t_circ t_grow t_move t_dup t_spell t_live t_links
