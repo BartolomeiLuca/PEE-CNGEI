@@ -3632,8 +3632,8 @@ function goPhaseInternal(n){
   if(n===4) renderValuation();
   try{ if(MODE==='giovani'){ if(n===2) gRenderLettura(); if(n===3) gRenderMotiv(); } else { ['g-lettura','g-motiv'].forEach(i=>{const e=document.getElementById(i); if(e) e.innerHTML='';}); } gSync(); }catch(e){ console.error(e); }
   try{ if(MODE==='staff') stSync(); }catch(e){ console.error(e); }
-  if(!window._clApplying) window.scrollTo({top:0,behavior:'smooth'});
-  saveData(true);
+  if(!window._clApplying && !window._posHold){ pageTop(); requestAnimationFrame(() => { if(!window._clApplying && !window._posHold) pageTop(); }); }
+  saveData(true); posSaveSoon();
 
 }
 
@@ -4485,11 +4485,11 @@ function stSel(){
   if(auto && v === 'evo') v = 'oss';
   return {auto, step: v};
 }
-function stGo(step){ const s = stSel(); STAFF_VIEW = (s.auto ? 'a:' : '') + step; renderStaffPhase1(); window.scrollTo({top:0, behavior:'smooth'}); }
+function stGo(step){ const s = stSel(); STAFF_VIEW = (s.auto ? 'a:' : '') + step; renderStaffPhase1(); pageTop(); posSaveSoon(); }
 function stPick(i){
   const s = stSel(); _stAdd = false;
   if(i === 'auto') STAFF_VIEW = 'a:' + s.step; else { CURRENT_MEMBER = STAFF_MEMBERS[i]; STAFF_VIEW = s.step; }
-  renderStaffPhase1();
+  renderStaffPhase1(); posSaveSoon();
 }
 function stDone(o){ return Object.values(o || {}).filter(v => v !== undefined && v !== null && v !== 'n').length; }
 function stMemIdx(){ const i = STAFF_MEMBERS.indexOf(CURRENT_MEMBER); return i; }
@@ -4524,7 +4524,7 @@ function stAddHTML(first){
     <label class="st-lb" for="new-member-input">Altra persona</label><div class="st-row"><input type="text" id="new-member-input" placeholder="Nome e cognome" maxlength="60" onkeydown="if(event.key==='Enter')addMember()"><button class="btn-primary" onclick="addMember()">Aggiungi</button></div>
     <div class="st-row st-addfoot"><button class="btn-ghost sm" onclick="stUnitRefresh()" title="Rilegge la tabella dello staff dell’Unità">↻ Aggiorna dall’Unità</button>${first ? '' : `<button class="btn-ghost sm" onclick="stAddToggle()">Chiudi</button>`}</div></div>`;
 }
-function stAddedGo(name){ _stAdd = false; CURRENT_MEMBER = name; STAFF_VIEW = 'prof'; saveData(true); renderStaffPhase1(); window.scrollTo({top:0, behavior:'smooth'}); }
+function stAddedGo(name){ _stAdd = false; CURRENT_MEMBER = name; STAFF_VIEW = 'prof'; saveData(true); renderStaffPhase1(); pageTop(); posSaveSoon(); }
 function stAddFromUnit(){
   const sel = document.getElementById('st-pick'); if(!sel || sel.value === '') { showToast('Scegli una persona dall’elenco'); return; }
   const r = (ST_UNIT.rows || [])[Number(sel.value)]; if(!r) return;
@@ -5231,7 +5231,7 @@ function getMemberCompletionPct(member) {
 
 function selectMember(name) {
   CURRENT_MEMBER = name;
-  renderStaffPhase1();
+  renderStaffPhase1(); posSaveSoon();
 }
 
 function setStaffView(view) {
@@ -5280,7 +5280,7 @@ function addMember() {
 }
 function promptAddMember() { stAddToggle(); }
 
-function showAutoOss() { _stAdd = false; STAFF_VIEW = 'a:oss'; renderStaffPhase1(); window.scrollTo({top:0,behavior:'smooth'}); }
+function showAutoOss() { _stAdd = false; STAFF_VIEW = 'a:oss'; renderStaffPhase1(); pageTop(); posSaveSoon(); }
 
 function setAutoObsBtn(id, val) {
   autoObs[id] = (val === 'n') ? 'n' : Number(val);
@@ -5627,7 +5627,7 @@ function exReset(){
   scheda=JSON.parse(SCHEDA_DEFAULT); schedaStep='A'; MODE=null; FASCIA=null; STAFF_TYPE=null; STAFF_RUOLO=null;
   try{ SG.list=[]; SG.open={}; SG.form=null; }catch(e){}
   try{ document.querySelectorAll('#ed-bar,#ro-bar').forEach(e=>e.remove()); }catch(e){}
-  window.scrollTo(0,0);
+  pageTop();
 }
 function exBuild(){
   try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){}
@@ -5671,7 +5671,7 @@ function exBuild(){
   scheda.pp.occasioni=''; saveData(true);
   try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
   try{ gGo('1b'); }catch(e){}
-  exBar(); window.scrollTo(0,0);
+  exBar(); pageTop();
   showToast('Ecco il progetto di esempio (Reparto Kontiki, immaginario): esploralo, modificalo e poi eliminalo');
 }
 function exBar(){ const app=document.getElementById('main-app'); if(!app) return; let b=document.getElementById('ex-bar');
@@ -8201,7 +8201,8 @@ function gInitNav(){
   const b=document.getElementById('p3-next'); if(b) b.textContent='Avanti — Sezione 2 →';
   // primo ingresso: se manca il contesto, si parte dalla Sezione 1.1
   // finché non c'è osservazione dei percorsi si riparte dalla Sezione 1.1
-  if(!Object.values(obs||{}).some(v=>v&&v!=='n')) gGo('1a'); else gSync();
+  // si apre sempre dalla Sezione 1.1 (il punto in cui si era rimasti lo rimette posRestore)
+  gGo('1a');
 }
 function gGo(k){
   if(MODE!=='giovani') return;
@@ -8213,6 +8214,41 @@ function gGo(k){
   if(k==='1d'){ goPhaseInternal(3); return; }
   schedaStep=({'2':'B','3':'C','4':'ver','5':'val','chk':'chk'})[k]||'B'; goPhaseInternal(4);
 }
+// ── dove si era rimasti (per progetto e per dispositivo) ──
+function posKey(){ let id = 'loc'; try{ const c = JSON.parse(localStorage.getItem(typeof CL_CTX !== 'undefined' ? CL_CTX : 'bussola_cloud_ctx')||'null'); if(c && c.id) id = c.id; }catch(e){} return 'bussola_pos:' + id + ':' + (MODE||''); }
+let _posT = 0;
+function posSave(){
+  try{
+    if(window._posHold || window._appReload || !MODE || window._clApplying) return;
+    const app = document.getElementById('main-app'); if(!app || app.style.display === 'none') return;
+    const n = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active')) || 1;
+    const v = {n, step: schedaStep, y: Math.round(window.scrollY), t: Date.now()};
+    if(MODE === 'giovani') v.k = gCur();
+    if(MODE === 'staff'){ try{ v.sview = STAFF_VIEW; v.member = CURRENT_MEMBER; }catch(e){} }
+    localStorage.setItem(posKey(), JSON.stringify(v));
+  }catch(e){}
+}
+function posSaveSoon(){ clearTimeout(_posT); _posT = setTimeout(posSave, 400); }
+function posRestore(){
+  let v = null; try{ v = JSON.parse(localStorage.getItem(posKey())||'null'); }catch(e){}
+  if(!v) return false;
+  window._posHold = true;
+  try{
+    if(MODE === 'giovani' && v.k) gGo(v.k);
+    else if(MODE === 'staff'){
+      try{ if(v.member && (STAFF_MEMBERS||[]).includes(v.member)) CURRENT_MEMBER = v.member; if(v.sview) STAFF_VIEW = v.sview; }catch(e){}
+      if(v.n && v.n > 1) goPhaseInternal(v.n); else { try{ renderStaffPhase1(); }catch(e){} }
+    }
+  }catch(e){ console.error(e); }
+  const y = v.y || 0, go = () => { try{ document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, y); document.documentElement.style.scrollBehavior = ''; }catch(e){} };
+  setTimeout(go, 120); setTimeout(go, 450); setTimeout(() => { go(); window._posHold = false; }, 900);
+  return true;
+}
+window.addEventListener('scroll', () => { if(!window._posHold) posSaveSoon(); }, {passive:true});
+window.addEventListener('pagehide', posSave);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') posSave(); });
+// in cima alla pagina, subito (niente scorrimento lento che su pagine lunghe si ferma a metà o in fondo)
+function pageTop(){ try{ const h = document.documentElement; h.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); h.style.scrollBehavior = ''; }catch(e){ try{ window.scrollTo(0,0); }catch(x){} } }
 function gCur(){
   const n=[1,2,3,4].find(i=>document.getElementById('panel'+i)?.classList.contains('active'))||1;
   if(n===1) return '1b'; if(n===2) return '1c'; if(n===3) return '1d';
@@ -12730,7 +12766,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pp0 = (d.scheda&&d.scheda.pp)||{};
     const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
       || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
-    if((hasWork || (ar && (d.MODE === 'giovani' || d.MODE === 'staff'))) && typeof resumeSession==='function'){ setTimeout(() => resumeSession(), 50); clRestoreView(); }
+    if((hasWork || (ar && (d.MODE === 'giovani' || d.MODE === 'staff'))) && typeof resumeSession==='function'){ let hv = false; try{ hv = !!sessionStorage.getItem('bussola_view'); }catch(e){} setTimeout(() => { resumeSession(); if(!hv) setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); }, 50); clRestoreView(); }
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
 });
