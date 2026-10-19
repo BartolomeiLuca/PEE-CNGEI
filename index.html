@@ -378,7 +378,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-in,.ax-ta{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-light);border-radius:5px;font:inherit;font-size:12px;background:var(--bg-card,#fff);color:var(--ink);min-width:0}.ax-ta{resize:vertical;line-height:1.45}
 .ax-chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0}.ax-chip{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card,#fff);color:var(--ink-mid);cursor:pointer}.ax-chip.on{background:var(--green);border-color:var(--green);color:#fff}
 .ax-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ax-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}@media (max-width:600px){.ax-row2,.ax-row3{grid-template-columns:1fr}}
-.ax-geo{display:flex;gap:6px}.ax-ask{margin-top:8px;padding:8px 10px;border:1px solid #f0c36d;background:#fff8e1;border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
+.ax-geo{display:flex;gap:6px}.att-mv{display:inline-flex;gap:2px;margin-right:6px;vertical-align:1px}.att-mv button{padding:0 6px!important;font-size:12px!important;line-height:18px;min-width:22px}details.att-moved{outline:2px solid var(--green-light);transition:outline .3s}.ax-ask{margin-top:8px;padding:8px 10px;border:1px solid #f0c36d;background:#fff8e1;border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
 .ax-co2{font-size:12px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--green-pale,#EEF6EE)}.ax-check{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:6px;cursor:pointer}.ax-warn{font-size:11px;color:#C77700;margin-left:6px}
 .ax-mat{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:5px 0;display:grid;gap:4px}.ax-mat1{display:grid;grid-template-columns:1fr 150px 28px;gap:5px}.ax-mat2{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ax-mat2 .ax-in{flex:1;min-width:120px}.ax-x{padding:0 7px!important;font-size:13px;width:auto!important}
 .ax-add{font-size:11px!important;margin-top:4px;border-style:dashed!important;width:auto!important}.ax-tot{font-size:12px;margin-top:6px}.ax-quota{font-size:12px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ax-eco{font-size:11.5px;color:var(--green);margin-top:4px}
@@ -6988,7 +6988,7 @@ function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); if(v){ const a=getAllPe
 function verParti(a){ if(!axShared(a)) return []; const x=a.ax||{}; return AX_REF.map(([k,l])=>({k,l,chi:axRef(x,k)})).filter(o=>o.chi); }
 function verPartiHTML(idx,j,a){ const P=verParti(a); if(!P.length) return ''; const V=a.vRef||{};
   return `<div class="ver-parti"><div class="ver-parti-t">Le parti affidate <span>· due righe da chi le ha seguite</span></div>`+P.map(o=>{ const me=affIsMe(o.chi);
-    return `<div class="ver-parte${me?' me':''}" data-vref="${sEsc(o.chi)}" data-vk="${o.k}"><label style="${SC_LBL}">${sEsc(o.l)} · ${sEsc(String(o.chi).replace(/\s*\([^)]*\)\s*$/,''))}${me?' <span class="aff-chip me">la tua parte</span>':''}</label>${!me&&!String(V[o.k]||'').trim()&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di questa parte. ${verWA(o.chi, o.l.toLowerCase()+' di «'+((a.testo||'').trim()||'Attività '+(j+1))+'»')}</div>`:''}<textarea style="${SC_TA};min-height:44px" placeholder="Com'è andata questa parte? Cosa ha funzionato, cosa cambieresti." oninput="verRefSet(${idx},${j},'${o.k}',this.value)">${sEsc(V[o.k]||'')}</textarea>${verCanMain(a)?`<div class="ver-rip"><span>Ha valore educativo? Riportala nella verifica:</span>${[['vBene','cosa è andato bene'],['vMigl','cosa migliorare'],['vAgg','aggiustamenti']].map(([f,l])=>`<button type="button" onclick="verRiporta(${idx},${j},'${o.k}','${f}')">${l}</button>`).join('')}</div>`:''}</div>`; }).join('')+`<div class="ver-rip-n">Nella Scheda di Programmazione compaiono solo i tre campi delle Linee Guida; queste note restano nell’app e nella scheda dell’attività per lo staff.</div></div>`; }
+    return `<div class="ver-parte${me?' me':''}" data-vref="${sEsc(o.chi)}" data-vk="${o.k}"><label style="${SC_LBL}">${sEsc(o.l)} · ${sEsc(String(o.chi).replace(/\s*\([^)]*\)\s*$/,''))}${me?' <span class="aff-chip me">la tua parte</span>':''}</label>${!me&&!String(V[o.k]||'').trim()&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di questa parte. ${verWA(o.chi, o.l.toLowerCase()+' di «'+((a.testo||'').trim()||'Attività '+attNum(idx,j))+'»')}</div>`:''}<textarea style="${SC_TA};min-height:44px" placeholder="Com'è andata questa parte? Cosa ha funzionato, cosa cambieresti." oninput="verRefSet(${idx},${j},'${o.k}',this.value)">${sEsc(V[o.k]||'')}</textarea>${verCanMain(a)?`<div class="ver-rip"><span>Ha valore educativo? Riportala nella verifica:</span>${[['vBene','cosa è andato bene'],['vMigl','cosa migliorare'],['vAgg','aggiustamenti']].map(([f,l])=>`<button type="button" onclick="verRiporta(${idx},${j},'${o.k}','${f}')">${l}</button>`).join('')}</div>`:''}</div>`; }).join('')+`<div class="ver-rip-n">Nella Scheda di Programmazione compaiono solo i tre campi delle Linee Guida; queste note restano nell’app e nella scheda dell’attività per lo staff.</div></div>`; }
 // verifica che manca a chi aveva in carico l'attività o una parte: promemoria su WhatsApp (messaggio già scritto)
 function verWA(who, cosa){ try{ if(!who || affIsMe(who)) return ''; const mail=affMail(who), tel=(typeof clStaffTel==='function'&&mail)?clStaffTel(mail):''; const first=n=>String(n||'').trim().split(/\s+/)[0]||'';
   const io=first((typeof clMyName==='function'&&clMyName())||(typeof sgMyName==='function'&&CL.user&&sgMyName())||'');
@@ -7011,7 +7011,7 @@ function verIdrSet(idx,j,k,f,v){ const per=getAllPercorsi()[idx]; if(!per||!per.
   if(f==='c' && v && per.percorsoId){ const pid=per.percorsoId; const cur=(scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][k])||{}; if(!cur.c||cur.auto){ if(!scheda.idrComp) scheda.idrComp={}; if(!scheda.idrComp[pid]) scheda.idrComp[pid]={}; scheda.idrComp[pid][k]=Object.assign({c:'',note:''},cur,{c:v,auto:true}); } }
   saveDataDebounced(); try{ ppRefreshReady(); }catch(e){} }
 function verIdrDa(pid,k){ const L0=scheda.percorsiExtra||[]; const per=L0.find(x=>x.percorsoId===pid&&typeof x.prioritaIdx!=='string')||L0.find(x=>x.percorsoId===pid); if(!per) return []; const L={spontaneo:'spontaneo',stimolato:'stimolato',no:'non adottato'};
-  return (per.attivita||[]).map((a,j)=>({a,j})).filter(o=>o.a&&o.a.vIdr&&o.a.vIdr[k]&&o.a.vIdr[k].c).map(o=>'«'+((o.a.testo||'').trim()||'Attività '+(o.j+1))+'» '+L[o.a.vIdr[k].c]); }
+  return (per.attivita||[]).map((a,j)=>({a,j})).filter(o=>o.a&&o.a.vIdr&&o.a.vIdr[k]&&o.a.vIdr[k].c).map(o=>'«'+((o.a.testo||'').trim()||'Attività '+attNum(per,o.j))+'» '+L[o.a.vIdr[k].c]); }
 function verGo(idx,j){ try{ if(MODE==='giovani') gGo('4'); else { schedaStep='ver'; renderValuation(); } }catch(e){}
   setTimeout(()=>{ const c=document.querySelector('[data-verat="'+idx+'-'+j+'"]'); if(c){ c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('ver-flash'); setTimeout(()=>c.classList.remove('ver-flash'),1800); } },400); }
 function verRefSet(idx,j,k,v){ const per=getAllPercorsi()[idx]; if(!per||!per.attivita||!per.attivita[j]) return; const a=per.attivita[j]; if(!a.vRef) a.vRef={}; a.vRef[k]=v; saveDataDebounced(); }
@@ -7025,9 +7025,28 @@ function cl3HTML(idx,key,v){ return CL3.map(([k,l])=>`<button type="button" oncl
 function cl3Set(idx,key,k){ const per=getAllPercorsi()[idx]; if(!per) return; if(!per.checklist) per.checklist={}; if(!per.checklist[key]) per.checklist[key]={checked:false,note:''};
   const c=per.checklist[key]; c.val = (cl3Val(c)===k)?'':k; c.checked = c.val==='si'; saveDataDebounced(); const b=document.getElementById('cl3-'+idx+'-'+key); if(b) b.innerHTML=cl3HTML(idx,key,c.val); }
 function updateChecklist(pidx,key,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.checklist)per.checklist={};if(!per.checklist[key])per.checklist[key]={checked:false,note:''};per.checklist[key][field]=val;}
+// ── ordine delle attività ──
+// Le attività NON cambiano posto nell'elenco dei dati (così l'unione «dato per dato» tra più persone, che lavora per posizione,
+// non mescola mai due attività). L'ordine in cui si vedono e la numerazione stanno in per.attOrder (codici fissi delle attività).
+function attOrd(per,n){ const A=(per&&per.attivita)||[]; if(n==null) n=A.length; const pos=new Map(); A.forEach((a,j)=>{ if(a&&a.aid&&!pos.has(a.aid)) pos.set(a.aid,j); });
+  const seen=new Set(), out=[]; ((per&&Array.isArray(per.attOrder))?per.attOrder:[]).forEach(id=>{ const j=pos.get(id); if(j!=null&&j<n&&!seen.has(j)){ seen.add(j); out.push(j); } });
+  for(let j=0;j<n;j++) if(!seen.has(j)) out.push(j); return out; }
+function attNum(pidx,j){ const per=typeof pidx==='object'?pidx:getAllPercorsi()[pidx]; if(!per) return j+1; const n=Math.max(3,((per.attivita)||[]).length,j+1); const k=attOrd(per,n).indexOf(j); return k<0?j+1:k+1; }
+function attSorted(per,list){ const o=attOrd(per,Math.max(3,((per&&per.attivita)||[]).length)); return list.slice().sort((a,b)=>o.indexOf(a.j)-o.indexOf(b.j)); }
+// codice fisso: per le attività che non lo hanno ancora si ricava dalla posizione (uguale su tutti i dispositivi)
+function attIdsEnsure(per){ const A=per.attivita||[]; A.forEach((a,j)=>{ if(a&&!a.aid){ let id='m'+j; while(A.some(x=>x&&x.aid===id)) id+='b'; a.aid=id; } }); }
+function attMove(pidx,j,dir){ const per=getAllPercorsi()[pidx]; if(!per||window.BRO) return;
+  const n=Math.max(3,(per.attivita||[]).length); const ord=attOrd(per,n); const k=ord.indexOf(j), t=k+dir; if(k<0||t<0||t>=n) return;
+  // non si sposta un'attività che un'altra persona sta modificando
+  try{ const me=clLc(CL.user&&CL.user.email); const busy=Object.entries(_pres||{}).some(([em,v])=>em!==me&&v&&(v.att===pidx+'-'+j||v.att===pidx+'-'+ord[t])); if(busy){ showToast('Un’altra persona sta modificando una di queste attività: spostala quando ha finito'); return; } }catch(e){}
+  attGet(pidx,n-1); attIdsEnsure(per);
+  [ord[k],ord[t]]=[ord[t],ord[k]]; per.attOrder=ord.map(jj=>per.attivita[jj].aid);
+  saveData(true); renderValuation();
+  setTimeout(()=>{ const d=document.getElementById('att-'+pidx+'-'+j); if(d){ d.scrollIntoView({block:'nearest'}); d.classList.add('att-moved'); setTimeout(()=>d.classList.remove('att-moved'),900); const b=d.querySelector(dir<0?'.att-mv-up':'.att-mv-dn')||d.querySelector('.att-mv-up,.att-mv-dn'); if(b) try{ b.focus({preventScroll:true}); }catch(e){} } },60); }
+function attCanMove(){ try{ if(window.BRO) return false; if(typeof CL!=='undefined'&&CL.ctx&&CL.ctx.ruolo==='collaboratore') return false; }catch(e){} return true; }
 function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
-function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx<3) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
-  if(has && !confirm('Vuoi togliere l’Attività '+(aidx+1)+' e quello che hai scritto?')) return; per.attivita.splice(aidx,1); saveDataDebounced(); renderValuation(); }
+function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||per.attivita.length<=3||aidx>=per.attivita.length) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
+  if(has && !confirm('Vuoi togliere l’Attività '+attNum(pidx,aidx)+' e quello che hai scritto?')) return; per.attivita.splice(aidx,1); saveDataDebounced(); renderValuation(); }
 function addPercorsoExtra(){scheda.percorsiExtra.push(newPercorso(null));renderValuation();}
 function removePercorso(idx){const all=getAllPercorsi();const per=all[idx];if(!per||per.prioritaIdx!==null)return;const i=scheda.percorsiExtra.indexOf(per);if(i>=0)scheda.percorsiExtra.splice(i,1);renderValuation();}
 function movePercorso(idx,dir){
@@ -7455,7 +7474,7 @@ function icsEvent(p,j){
   const a=attGet(p,j); if(!a) return null; const x=a.ax||{}; if(!x.data) return null; const L=x.luogo||{};
   const multi=x.durata==='piu'&&x.dataFine&&x.dataFine>x.data; const d2=multi?x.dataFine:x.data;
   const st=icsDT(x.data, L.ritrovo||''), en=icsDT(d2, L.rientro||''); const per=getAllPercorsi()[p]||{}; const pp=Object.values(DB).flat().find(q=>q.id===per.percorsoId);
-  const tit=((a.testo||'').trim()||'Attività '+(j+1))+(UNIT_NAME?' · '+UNIT_NAME:'');
+  const tit=((a.testo||'').trim()||'Attività '+attNum(p,j))+(UNIT_NAME?' · '+UNIT_NAME:'');
   const luogo=L.tipo==='sede'?'In sede'+(scheda.pp&&scheda.pp.sezione?' · '+scheda.pp.sezione:''):(L.nomeAddr||L.nome||'');
   const mapU=axPlaceUrl(L,'nome')||'';
   const desc=[pp?'Percorso: '+pp.name:'', L.ritrovo||L.ritrovoDove?'Ritrovo: '+[L.ritrovo?'ore '+L.ritrovo:'',axPlaceTxt(L,'ritrovoDove')].filter(Boolean).join(' · '):'', axPlaceUrl(L,'ritrovoDove')?'Mappa del ritrovo: '+axPlaceUrl(L,'ritrovoDove'):'',
@@ -7505,7 +7524,7 @@ function fdgData(p,j){
   try{ const ids=axIdr(per).filter(o=>((x.oss||{})[o.k]||{}).on); if(ids.length) add('Da osservare oggi','idr',{rows:ids.map(o=>{ const v=(x.oss||{})[o.k]||{}; return {t:o.t, comp:(v.comp||'').trim(), chi:noPar(v.chi)}; }), sub:'Annota cosa vedi: ti servirà per la verifica e per la Sezione 5.'}); }catch(e){}
   add('Note di giornata','blank',{rows:['Presenti effettivi','Imprevisti e come sono andati','Spese fatte (cosa · quanto · chi)']});
   add('Appunti','note',{});
-  return {perc:pp?'Percorso: '+pp.name:'', unit:[UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '), title:(a.testo||'').trim()||'Attività '+(j+1), date:dt+dt2, sec:S};
+  return {perc:pp?'Percorso: '+pp.name:'', unit:[UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '), title:(a.testo||'').trim()||'Attività '+attNum(p,j), date:dt+dt2, sec:S};
 }
 function fdgHTML(p,j){
   const D=fdgData(p,j); const E=t=>axE(t); const ml=t=>E(t).replace(/\n/g,'<br>');
@@ -7902,7 +7921,7 @@ function attExtraHTML(p,j,a){ const n=axFilledN(a);
 // ── Word: scheda della singola attività ──
 async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
   const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, N=axN(x); const per=getAllPercorsi()[p]; const T_=t=>(t||'').trim().length>0; const P=Object.values(DB).flat().find(q=>q.id===(per&&per.percorsoId));
-  const D=dxLib(); const ch=[...dTitleBlock((a.testo||'').trim()||'Attività '+(j+1), (P?'Percorso: '+P.name+' · ':'')+'Scheda dell’attività')];
+  const D=dxLib(); const ch=[...dTitleBlock((a.testo||'').trim()||'Attività '+attNum(p,j), (P?'Percorso: '+P.name+' · ':'')+'Scheda dell’attività')];
   const cellLink=(u,label)=>dCell([dPara([dLink(u,{size:16,label:label||'link'})],{after:0})],{w:0});
   // In breve
   const tipo=Object.fromEntries(AX_TIPO), mz=Object.fromEntries(AX_MEZZI);
@@ -7960,7 +7979,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
 // ── Word: lista della spesa ──
 async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFoodList(x); if(!L.length){ showToast('Aggiungi prima piatti, ingredienti e presenti'); return; }
   try{ await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
-  const N=axN(x); const ch=[...dTitleBlock('Lista della spesa', ((a.testo||'').trim()||'Attività '+(j+1))+(x.data?' · '+x.data.split('-').reverse().join('/')+(axMulti(x)?'–'+x.dataFine.split('-').reverse().join('/'):''):'')+' · '+N.tot+' persone')];
+  const N=axN(x); const ch=[...dTitleBlock('Lista della spesa', ((a.testo||'').trim()||'Attività '+attNum(p,j))+(x.data?' · '+x.data.split('-').reverse().join('/')+(axMulti(x)?'–'+x.dataFine.split('-').reverse().join('/'):''):'')+' · '+N.tot+' persone')];
   ch.push(dGridTable(['Alimento','Quantità','Prezzo indicativo','Costo stimato'],L.map(r=>[r.nome, r.qtxt, r.prezzo!=null&&r.prezzo!==''?axEur(r.prezzo)+(r.um==='pz'?' /pz':r.um==='ml'?' /l':' /kg'):'—', r.cost!=null?axEur(r.cost):'—']),[3438,2200,2000,2000]));
   const tot=L.reduce((t,r)=>t+(r.cost||0),0); if(tot) ch.push(dPara('Spesa stimata: '+axEur(tot),{size:19,bold:true,before:100}));
   const dd=axDieteTxt(x); if(dd.length) ch.push(dPara('Diete speciali: '+dd.join(', '),{size:18,before:60}));
@@ -8201,7 +8220,7 @@ function tlHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const
   let a0=[t.dal,...dated.map(o=>ym(o.d))].filter(Boolean).sort()[0], a1=[t.al,...dated.map(o=>ym(o.d))].filter(Boolean).sort().pop();
   const out=[]; const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
   const row=o=>{ const x=o.a.ax||{}; const fuori=o.d&&((t.dal&&ym(o.d)<t.dal)||(t.al&&ym(o.d)>t.al));
-    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${idx},${o.j})">Attività ${o.j+1}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div>
+    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${idx},${o.j})">Attività ${attNum(idx,o.j)}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div>
       <div class="tl-meta">${o.d&&x.durata==='piu'&&x.dataFine&&x.dataFine!==x.data?'<b>'+tlDataTxt(x)+'</b>':''}<input type="date" class="tl-date" value="${sEsc(o.d)}" title="Data dell’attività" onchange="tlSetDate(${idx},${o.j},this.value)">${o.st.k==='ver'?`<a href="javascript:void(0)" class="tl-act" onclick="gGo('4')">Vai alla verifica →</a>`:''}</div>
       ${fuori?'<div class="tl-warn">Fuori dalle tempistiche del percorso ('+percTempoTxt(per)+').</div>':''}</div></div>`; };
   if(a0&&a1&&a0<=a1){ let [y,m]=a0.split('-').map(Number); const [y1,m1]=a1.split('-').map(Number); let guard=0; let todayDone=false;
@@ -8228,7 +8247,7 @@ function tlAllHTML(){
   const leg=used.map(i=>`<span class="tl-lg"><i style="background:${TL_COL[i%TL_COL.length]}"></i>${sEsc(pn(i))}</span>`).join('');
   const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
   const row=o=>{ const x=o.a.ax||{}; const c=TL_COL[o.idx%TL_COL.length];
-    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot" style="background:${c}"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${o.idx},${o.j})"><b>${sEsc(tlDataTxt(x))}</b> · ${sEsc(pn(o.idx).split(' · ')[0])}, attività ${o.j+1}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div></div></div>`; };
+    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot" style="background:${c}"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${o.idx},${o.j})"><b>${sEsc(tlDataTxt(x))}</b> · ${sEsc(pn(o.idx).split(' · ')[0])}, attività ${attNum(o.idx,o.j)}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div></div></div>`; };
   const out=[]; let [y,m]=ym(items[0].d).split('-').map(Number); const [y1,m1]=ym(items[items.length-1].d).split('-').map(Number); let guard=0, todayDone=false;
   while((y<y1||(y===y1&&m<=m1))&&guard++<36){ const key=y+'-'+String(m).padStart(2,'0'); const inM=items.filter(o=>ym(o.d)===key);
     out.push(`<div class="tl-mese${inM.length?'':' tl-vuoto'}">${TL_MESI[m-1]} ${y}</div>`);
@@ -8987,10 +9006,10 @@ function renderSchedaC(root,selected){
     const attv = (per.attivita||[]).slice(); while(attv.length<3) attv.push({testo:''});
     html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Attività<br><small style="font-weight:400;color:var(--ink-faint)">almeno 3, coerenti tra loro</small>${MODE==='giovani'?'<br>'+attSpuntiLink('Come costruirle')+'<br>'+protSpuntiLink('Protagonismo')+'<br>'+tecSpuntiLink('Attività tecniche'):''}</td>
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
-        ${attv.map((att,j)=>{
+        ${attOrd(per,attv.length).map((j,pos)=>{ const att=attv[j];
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
           return `<details id="att-${idx}-${j}" data-aff="${sEsc(axShared(att)?(att.aff||''):'')}" ${window._attOpen&&window._attOpen[idx+'-'+j]?'open':''} ontoggle="(window._attOpen=window._attOpen||{})['${idx}-${j}']=this.open" style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
-            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${att.aff&&axShared(att)?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
+            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)"><span class="att-mv">${pos>0&&attCanMove()?`<button type="button" class="btn-ghost att-mv-up" title="Sposta su" aria-label="Sposta su l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},-1)">↑</button>`:''}${pos<attv.length-1&&attCanMove()?`<button type="button" class="btn-ghost att-mv-dn" title="Sposta giù" aria-label="Sposta giù l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},1)">↓</button>`:''}</span><span class="att-sumt" id="att-sumt-${idx}-${j}">Attività ${pos+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}</span>${att.aff&&axShared(att)?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${attv.length>3&&j<(per.attivita||[]).length&&pos>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
             <div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             ${attTipiHTML(idx,j,att)}
@@ -9473,14 +9492,14 @@ function renderSchedaVer(root,selected){
   let n=0;
   getAllPercorsi().forEach((per,idx)=>{
     const p=per.percorsoId?allP.find(x=>x.id===per.percorsoId):null; if(!p) return;
-    const acts=(per.attivita||[]).map((a,j)=>({a,j})).filter(x=>['testo','lancio','sviluppo','conclusione'].some(k=>(x.a[k]||'').trim()));
+    const acts=attSorted(per,(per.attivita||[]).map((a,j)=>({a,j})).filter(x=>['testo','lancio','sviluppo','conclusione'].some(k=>(x.a[k]||'').trim())));
     if(!acts.length) return;
     h+=`<div style="margin:16px 0 6px;font-size:12px;font-weight:800;color:var(--ink)">Percorso ${idx+1} — ${per.percorsoId[0]}${DB[per.percorsoId[0]].findIndex(x=>x.id===per.percorsoId)+1} ${sEsc(p.name)}</div>`;
     acts.forEach(({a,j})=>{
       n++;
       const shV=axShared(a);
       h+=`<div class="ver-c${window._verOpen&&window._verOpen[idx+'-'+j]?'':' closed'}" id="ver-c-${idx}-${j}" data-verat="${idx}-${j}" data-aff="${sEsc(shV?(a.aff||''):'')}" style="border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;margin:8px 0;background:var(--bg-card)">
-        <div class="ver-hd" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${j+1}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+(j+1))+'»')}</div>`:''}<div class="ver-b">
+        <div class="ver-hd" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${attNum(per,j)}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+attNum(per,j))+'»')}</div>`:''}<div class="ver-b">
         <label style="${SC_LBL}">Cosa è andato bene <span style="font-weight:400;color:var(--ink-faint)">— aspetti positivi, coinvolgimento dei ragazzi, efficacia rispetto all'obiettivo</span></label>
         <textarea style="${SC_TA}" oninput="updateAttivita(${idx},${j},'vBene',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vBene)}</textarea>
         <label style="${SC_LBL}">Cosa è da migliorare <span style="font-weight:400;color:var(--ink-faint)">— criticità, elementi da modificare, imprevisti</span></label>
@@ -10462,9 +10481,9 @@ async function exportPPDocx(mode){
     const pid = per.percorsoId; const p = allP.find(x=>x.id===pid); if(!p) return; const a = pid[0];
     const ob = typeof per.prioritaIdx==='number' ? (scheda.priorita[per.prioritaIdx]?.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean) : (per.obiettiviExtra||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const cl = per.checklist || {};
-    const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k])));
+    const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
-      dPara([dTxt(`${j+1}. ${plain(x.testo)||'Attività '+(j+1)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
+      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).map(k => dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240})),
       dPara('',{after:40})
     ]) : '—';
@@ -10487,11 +10506,11 @@ async function exportPPDocx(mode){
     let any4 = false;
     perc.forEach((per,i) => {
       const p = allP.find(x=>x.id===per.percorsoId); if(!p) return;
-      const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>T_(o.x.vBene)||T_(o.x.vMigl)||T_(o.x.vAgg)||verParti(o.x).some(q=>T_((o.x.vRef||{})[q.k])));
+      const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>T_(o.x.vBene)||T_(o.x.vMigl)||T_(o.x.vAgg)||verParti(o.x).some(q=>T_((o.x.vRef||{})[q.k]))));
       if(!acts.length) return; any4 = true;
       ch.push(dH3(`Percorso ${i+1} — ${p.name}`));
       acts.forEach(({x,j}) => {
-        ch.push(dPara(`Attività ${j+1}${T_(x.testo)?' — '+plain(x.testo):''}`,{size:19,bold:true,after:40,before:80,keepNext:true}));
+        ch.push(dPara(`Attività ${attNum(per,j)}${T_(x.testo)?' — '+plain(x.testo):''}`,{size:19,bold:true,after:40,before:80,keepNext:true}));
         ch.push(dKV([['Cosa è andato bene', dMulti(x.vBene)], ['Cosa è da migliorare', dMulti(x.vMigl)], ['Aggiustamenti necessari', dMulti(x.vAgg)]]));
       });
     });
@@ -10628,7 +10647,7 @@ async function exportSchedaDocxLegacy(){
     const a = pid[0];
     const idr = per.idrSelezionati?.length ? per.idrSelezionati.map(j=>p.idr?.[j]).filter(Boolean) : (p.idr||[]);
     const cl = per.checklist || {};
-    const att = (per.attivita||[]).filter(x=>x.testo);
+    const att = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j}))).map(o=>o.x).filter(x=>x.testo);
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}`));
     ch.push(dKV([
       [T.necessita, plain(per.necessita)||'—'],
@@ -11620,6 +11639,8 @@ function clMerge(base, mine, theirs, out, path){
   if(clJ(base) === clJ(mine)) return theirs;
   if(clJ(base) === clJ(theirs)) return (out.up && !clCovers(out.up, path)) ? theirs : mine;
   if(path === '/ts') return Math.max(+mine||0, +theirs||0);
+  // ordine delle attività (Sezione 3): se l'hanno cambiato tutte e due le parti vale il mio, senza segnalare un conflitto
+  if(/\/attOrder$/.test(path)) return mine;
   // testi riempiti in automatico dall'app (sintesi dell'osservazione): se nascono da tutte e due le parti si tiene quello già condiviso
   if(/^\/scheda\/osservazione\/[PCS]\/(positivi|necessita)$/.test(path) && !base) return theirs;
   if(clIsObj(mine) && clIsObj(theirs)){
@@ -12031,7 +12052,7 @@ function edLabel(z){
   try{ const at = z.el.closest('details[id^="att-"]') || z.el.closest('[data-verat]'); let idx, j;
     if(at){ const k = at.id ? at.id.slice(4) : at.dataset.verat; [idx, j] = k.split('-').map(Number); }
     const a = (idx != null) ? (getAllPercorsi()[idx].attivita||[])[j] : null;
-    const t = a ? '«' + (((a.testo||'').trim()) || 'Attività ' + (j+1)) + '»' : 'questa parte';
+    const t = a ? '«' + (((a.testo||'').trim()) || 'Attività ' + attNum(idx,j)) + '»' : 'questa parte';
     const parte = z.k === 'g' ? ((z.el.querySelector('summary')||{}).firstChild||{}).textContent : z.k === 'v' ? ((z.el.querySelector('label')||{}).firstChild||{}).textContent : z.k === 'va' ? 'verifica' : '';
     return {idx, j, txt: (parte ? String(parte).trim().replace(/\s*·.*$/,'') + ' di ' : '') + t}; }catch(e){ return {txt:'questa parte'}; } }
 function edBanner(z, on){

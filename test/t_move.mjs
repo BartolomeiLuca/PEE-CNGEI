@@ -1,0 +1,70 @@
+// Correzione 11: attività riordinabili (Sposta su/giù), numerazione aggiornata, sicure con la condivisione
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+import fs from 'fs';
+const engine = process.argv[2] || 'chromium';
+const base = await serve(); const db = new FakeDB(); db.sql13 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi'), D = db.addUser('dario@x.it', 'password123', 'Dario Blu');
+const br = await launch(engine);
+const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default;
+const pa = await person(br, db), PA = pa.page; const ea = (f, a) => PA.evaluate(f, a);
+await loginAs(PA, base, A); await ea(() => exStart()); await sleep(2500);
+await ea(() => gGo('3')); await sleep(900);
+const iP = await ea(() => getAllPercorsi().findIndex(p => p.percorsoId === 'P5'));
+const titles = (P, i) => P.evaluate(i => [...document.querySelectorAll('#pc-card-' + i + ' details[id^="att-' + i + '-"] .att-sumt')].map(e => e.textContent.trim()), i);
+const t0 = await titles(PA, iP);
+const dataBefore = await ea(i => JSON.stringify(getAllPercorsi()[i].attivita.map(a => [a.testo, a.lancio])), iP);
+ok(t0.length >= 3 && /^Attività 1 — /.test(t0[0]), 'Sezione 3: attività numerate ' + JSON.stringify(t0.map(t => t.slice(0, 30))));
+ok(await PA.locator(`#att-${iP}-0 .att-mv-up`).count() === 0 && await PA.locator(`#att-${iP}-0 .att-mv-dn`).count() === 1, 'la prima ha solo «Sposta giù»');
+await PA.locator(`#att-${iP}-0 .att-mv-dn`).click(); await sleep(500);
+const t1 = await titles(PA, iP);
+const nm = s => s.replace(/^Attività \d+ — /, '');
+ok(nm(t1[0]) === nm(t0[1]) && nm(t1[1]) === nm(t0[0]) && /^Attività 1 /.test(t1[0]) && /^Attività 2 /.test(t1[1]), 'dopo «Sposta giù» l’ordine cambia e la numerazione si aggiorna ' + JSON.stringify(t1.map(t => t.slice(0, 30))));
+ok(await ea(i => JSON.stringify(getAllPercorsi()[i].attivita.map(a => [a.testo, a.lancio])), iP) === dataBefore, 'ogni attività si sposta intera: testi, Lancio/Sviluppo/Conclusione restano insieme (dati intatti)');
+await PA.locator(`#att-${iP}-0 .att-mv-up`).click(); await sleep(400);
+ok(JSON.stringify((await titles(PA, iP)).map(nm)) === JSON.stringify(t0.map(nm)), '«Sposta su» la riporta al suo posto');
+await PA.locator(`#att-${iP}-2 .att-mv-up`).click(); await sleep(400); await PA.locator(`#att-${iP}-2 .att-mv-up`).click(); await sleep(400);
+const t2 = (await titles(PA, iP)).map(nm);
+ok(t2[0] === nm(t0[2]) && t2[1] === nm(t0[0]) && t2[2] === nm(t0[1]), 'la terza portata in cima: ' + JSON.stringify(t2.map(t => t.slice(0, 20))));
+// Sezione 4 e Word seguono l'ordine
+await ea(() => gGo('4')); await sleep(800);
+const v4 = await ea(i => [...document.querySelectorAll('[id^="ver-c-' + i + '-"] .ver-tt')].map(e => e.textContent.trim().slice(0, 40)), iP);
+ok(v4.length && v4[0].startsWith('Attività 1 — ' + t2[0].slice(0, 20)), 'Sezione 4: stesso ordine e stessi numeri ' + JSON.stringify(v4));
+{ const [d] = await Promise.all([PA.waitForEvent('download', {timeout:30000}), ea(() => exportSchedaDocx())]);
+  const t = (await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')).replace(/<[^>]+>/g, '');
+  const i1 = t.indexOf('1. ' + t2[0].slice(0, 15)), i2 = t.indexOf('2. ' + t2[1].slice(0, 15));
+  ok(i1 > 0 && i2 > i1, 'Word della Scheda: attività nel nuovo ordine'); }
+await sleep(2500);
+await PA.reload(); await sleep(3000); await ea(() => gGo('3')); await sleep(900);
+ok(JSON.stringify((await titles(PA, iP)).map(nm)) === JSON.stringify(t2), 'l’ordine resta dopo il ricaricamento');
+// lavoro insieme: Dario (co-titolare) scrive mentre Anna sposta
+await ea(async () => { await dbInvite(CL.ctx.id, 'dario@x.it', 'cotitolare'); await clMemLoad(); }); await sleep(800);
+const pd = await person(br, db), PD = pd.page; const ed = (f, a) => PD.evaluate(f, a);
+await loginAs(PD, base, D); await sleep(1200);
+await ed(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(3500);
+await ed(() => gGo('3')); await sleep(1200);
+ok(JSON.stringify((await titles(PD, iP)).map(nm)) === JSON.stringify(t2), 'Dario vede lo stesso ordine');
+// Dario lavora sull'attività in cima: Anna non può spostarla in quel momento
+const top = await ea(i => attOrd(getAllPercorsi()[i], 3)[0], iP), sec = await ea(i => attOrd(getAllPercorsi()[i], 3)[1], iP), third = await ea(i => attOrd(getAllPercorsi()[i], 3)[2], iP);
+await PD.locator(`#att-${iP}-${top} textarea[oninput*="'lancio'"]`).click(); await PD.keyboard.type(' (scritto da Dario)'); await sleep(2500);
+ok(await PA.locator(`#att-${iP}-${top} .att-mv-dn`).isDisabled(), 'mentre Dario la modifica, «Sposta» è bloccato su quella attività');
+await PA.locator(`#att-${iP}-${sec} .att-mv-up`).click(); await sleep(600);
+ok(JSON.stringify((await titles(PA, iP)).map(nm)) === JSON.stringify(t2), 'e non si può nemmeno scavalcarla dall’attività accanto');
+// Dario passa a un'altra attività; Anna sposta le prime due mentre lui scrive nella terza
+await PD.locator(`#att-${iP}-${third} textarea[oninput*="'conclusione'"]`).click(); await sleep(5500);
+await PD.keyboard.type(' (conclusione di Dario)');
+await PA.locator(`#att-${iP}-${top} .att-mv-dn`).click(); await sleep(300);
+await PA.locator(`#att-${iP}-${sec} textarea[oninput*="'sviluppo'"]`).click(); await PA.keyboard.type(' (Anna)');
+await PD.locator('body').click({position:{x:5, y:5}}); await PA.locator('body').click({position:{x:5, y:5}});
+await sleep(14000);
+const snap = P => P.evaluate(i => { const per = getAllPercorsi()[i]; return {ord: attOrd(per, 3), att: per.attivita.slice(0, 3).map(a => ({t:a.testo, l:a.lancio, s:a.sviluppo, c:a.conclusione}))}; }, iP);
+const sa = await snap(PA), sd = await snap(PD);
+console.log(JSON.stringify(sa.ord), JSON.stringify(sd.ord));
+ok(JSON.stringify(sa) === JSON.stringify(sd), 'alla fine Anna e Dario hanno gli stessi dati');
+ok(sa.ord[0] === sec && sa.ord[1] === top, 'lo spostamento di Anna è arrivato anche a Dario');
+const before = JSON.parse(dataBefore);
+ok(/scritto da Dario/.test(sa.att[top].l) && sa.att[top].t === before[top][0], 'il Lancio scritto da Dario è nella sua attività (' + sa.att[top].t + ')');
+ok(/conclusione di Dario/.test(sa.att[third].c) && sa.att[third].t === before[third][0], 'la Conclusione di Dario è nella sua attività');
+ok(/\(Anna\)/.test(sa.att[sec].s) && sa.att[sec].t === before[sec][0], 'lo Sviluppo scritto da Anna è nella sua attività');
+ok(sa.att.every((a, j) => a.t === before[j][0]), 'nessuna attività si è mescolata con un’altra');
+ok(!pa.errors.length && !pd.errors.length, 'nessun errore JS' + pa.errors.concat(pd.errors).slice(0, 3).join(' | '));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);
