@@ -4558,13 +4558,14 @@ function stProfHTML(auto){
     const more = [['Caratteristiche personali','car'],['Professioni, competenze esterne','prof'],['Ruoli passati','ruoli'],['Disponibilità','disp'],['Varie (dinamiche di staff, contratto)','varie'],['Email','mail'],['Telefono','tel']].filter(([, k]) => src[k]);
     if(more.length) h += `<div class="st-grid">${more.map(([lb, k]) => stField(lb, stRO(src[k]), ['car','prof','ruoli','disp','varie'].includes(k))).join('')}</div>`;
   } else {
-    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF)}</div>`;
+    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `oninput="stNameLive(${i},this.value)" onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF)}</div>`;
   }
   h += `<div class="st-grid">${stField('Esperienza come educatore', selE)}</div>`;
   h += `<div class="st-actions">${auto ? '' : `<button class="btn-ghost danger" onclick="stDel(${i})">Rimuovi dallo staff</button>`}<button class="btn-primary" onclick="stGo('oss')">Avanti — Scheda di osservazione →</button></div></div>`;
   return h;
 }
 function stProfSet(i, k, v){ const n = STAFF_MEMBERS[i]; if(n === undefined) return; (staffProfiles[n] || (staffProfiles[n] = {}))[k] = v; saveDataDebounced(); if(k === 'ruolo') stSideRefresh(); }
+function stNameLive(i, v){ try{ const it=document.querySelectorAll('#st-side .st-item')[i+1]; const nm=it&&it.querySelector('.st-nm'); if(nm) nm.textContent=String(v||'').trim()||STAFF_MEMBERS[i]||''; document.querySelectorAll('[data-stname="'+i+'"]').forEach(e=>{ e.textContent=String(v||'').trim()||STAFF_MEMBERS[i]||''; }); }catch(e){} }
 function stRen(i, v){ const o = STAFF_MEMBERS[i]; v = String(v || '').trim(); if(o === undefined || !v || v === o) return; if(STAFF_MEMBERS.includes(v)){ showToast('Nome già presente nello staff'); renderStaffPhase1(); return; } stRename(o, v); saveData(true); renderStaffPhase1(); }
 function stDel(i){ const n = STAFF_MEMBERS[i]; if(n !== undefined) deleteMember(n); }
 
@@ -7015,7 +7016,14 @@ function verIdrDa(pid,k){ const L0=scheda.percorsiExtra||[]; const per=L0.find(x
 function verGo(idx,j){ try{ if(MODE==='giovani') gGo('4'); else { schedaStep='ver'; renderValuation(); } }catch(e){}
   setTimeout(()=>{ const c=document.querySelector('[data-verat="'+idx+'-'+j+'"]'); if(c){ c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('ver-flash'); setTimeout(()=>c.classList.remove('ver-flash'),1800); } },400); }
 function verRefSet(idx,j,k,v){ const per=getAllPercorsi()[idx]; if(!per||!per.attivita||!per.attivita[j]) return; const a=per.attivita[j]; if(!a.vRef) a.vRef={}; a.vRef[k]=v; saveDataDebounced(); }
-function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;}
+function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;if(['testo','lancio','sviluppo','conclusione'].includes(field))attLive(pidx,aidx);}
+// testi che si aggiornano mentre si scrive (titolo dell'attività chiusa, conteggio del percorso, linea del tempo, verifica)
+function attLive(pidx,aidx){ try{ const per=getAllPercorsi()[pidx]; if(!per) return; const a=(per.attivita||[])[aidx]||{}; const n=attNum(pidx,aidx), t=(a.testo||'').trim();
+  const st=document.getElementById('att-sumt-'+pidx+'-'+aidx); if(st){ const v='Attività '+n+(t?' — '+t.slice(0,50):''); if(st.textContent!==v) st.textContent=v; }
+  const card=document.getElementById('pc-card-'+pidx); const sm=card&&card.querySelector('.pcx-sum'); if(sm){ const k=(per.attivita||[]).filter(x=>['testo','lancio','sviluppo','conclusione'].some(f=>(x[f]||'').trim())).length; const v=k?k+(k===1?' attività scritta':' attività scritte'):'da iniziare'; if(sm.textContent!==v) sm.textContent=v; }
+  const vt=document.querySelector('#ver-c-'+pidx+'-'+aidx+' .ver-tt'); if(vt&&vt.firstChild&&vt.firstChild.nodeType===3){ vt.firstChild.textContent='Attività '+n+(t?' — '+t:''); }
+  clearTimeout(window._tlLiveT); window._tlLiveT=setTimeout(()=>{ const w=document.getElementById('tl-all-wrap'); if(w&&!w.contains(document.activeElement)) try{ w.innerHTML=tlAllHTML(); }catch(e){} },500);
+}catch(e){} }
 function attLinkBtn(inp){ const a=inp.parentElement&&inp.parentElement.querySelector('.att-link-open'); if(!a) return; const u=linkNorm(inp.value); const ok=/^(https?:|mailto:)/i.test(u); a.style.display=ok?'':'none'; if(ok) a.href=u; }
 const CL3=[['si','Sì'],['parte','In parte'],['no','Non ancora']];
 const CL3_COL={si:'#2e7d32',parte:'#E0A100',no:'#c62828'};
