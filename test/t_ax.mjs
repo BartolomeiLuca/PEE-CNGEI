@@ -24,6 +24,7 @@ await P.locator(`${AX} input[oninput*="luogo.from"]`).fill('Pesaro'); await slee
 await P.locator(`${AX} button:visible`, {hasText:'Calcola distanza'}).click(); await sleep(1200);
 const k1 = await km(); const exp1 = String(Math.round(2 * (0.11 * 111 + 0.51 * 80)));
 ok(k1 === exp1, '«Calcola distanza»: km andata e ritorno su strada (' + k1 + ', atteso ' + exp1 + ')');
+for(let i = 0; i < 15 && !/km andata e ritorno/.test(await P.locator(`#ax-geo-r-${p}-${j}`).textContent()); i++) await sleep(300);   // su Firefox il ricalcolo automatico può arrivare subito dopo
 ok(/Pesaro: \d+ km andata e ritorno, su strada/.test(await P.locator(`#ax-geo-r-${p}-${j}`).textContent()), 'spiega da dove e come li ha calcolati');
 await P.locator(`${AX} input[oninput*="luogo.from"]`).fill('Fano'); await sleep(2600);
 const k2 = await km(); const exp2 = String(Math.round(2 * (0.04 * 111 + 0.62 * 80)));

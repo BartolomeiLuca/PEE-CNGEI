@@ -30,3 +30,10 @@ Test aggiunti il 19 ottobre (correzioni della sezione B):
   t_circ (7-8: contatti e firma, intestazione semplice, PDF; usa LibreOffice e pdftotext se ci sono), t_grow (10), t_move (11, anche con due persone),
   t_dup (12), t_spell (9 e 13), t_num aggiornato (14 e 17), t_live (15), t_links (16).
     ./grp.sh chromium t_pos t_ax t_circ t_grow t_move t_dup t_spell t_live t_links
+
+Uscite e campi (anteprima del 19 ottobre, sera): solo in `anteprima/index.html`, il sito principale non cambia.
+- t_usc: crea un campo, giornate dalle date, attività dalla Sezione 3 e momenti in ordine di ora, «Sposta a», modifica dell'attività dall'uscita,
+  totali con i materiali delle attività, circolare (testo, Word, PDF), moduli tolti/rimessi e moduli propri, «Fa parte di», foglio della giornata,
+  ricarica, archivio, due persone insieme, «Per te», lettrice, versione principale che apre e salva senza perdere le uscite.
+  Per provare l'anteprima: `SITE=` una cartella con l'anteprima come index.html (es. copia di anteprima/ con circolare/, video/, favicon).
+- t_ax: su Firefox aspetta il messaggio dei km (il ricalcolo automatico può arrivare subito dopo il clic).
