@@ -378,7 +378,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-in,.ax-ta{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-light);border-radius:5px;font:inherit;font-size:12px;background:var(--bg-card,#fff);color:var(--ink);min-width:0}.ax-ta{resize:vertical;line-height:1.45}
 .ax-chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0}.ax-chip{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card,#fff);color:var(--ink-mid);cursor:pointer}.ax-chip.on{background:var(--green);border-color:var(--green);color:#fff}
 .ax-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ax-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}@media (max-width:600px){.ax-row2,.ax-row3{grid-template-columns:1fr}}
-.ax-geo{display:flex;gap:6px}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
+.ax-geo{display:flex;gap:6px}.ax-ask{margin-top:8px;padding:8px 10px;border:1px solid #f0c36d;background:#fff8e1;border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
 .ax-co2{font-size:12px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--green-pale,#EEF6EE)}.ax-check{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:6px;cursor:pointer}.ax-warn{font-size:11px;color:#C77700;margin-left:6px}
 .ax-mat{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:5px 0;display:grid;gap:4px}.ax-mat1{display:grid;grid-template-columns:1fr 150px 28px;gap:5px}.ax-mat2{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ax-mat2 .ax-in{flex:1;min-width:120px}.ax-x{padding:0 7px!important;font-size:13px;width:auto!important}
 .ax-add{font-size:11px!important;margin-top:4px;border-style:dashed!important;width:auto!important}.ax-tot{font-size:12px;margin-top:6px}.ax-quota{font-size:12px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ax-eco{font-size:11.5px;color:var(--green);margin-top:4px}
@@ -7893,7 +7893,7 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
     ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
     <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
   h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi e quando”.</div>`);
-  h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button></div><div id="ax-msg-${p}-${j}"></div>`;
+  h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgPdf(${p},${j})">↓ Scarica in PDF</button></div>${axCuTelAsk(p,j)}<div id="ax-msg-${p}-${j}"></div>`;
   return h; }
 function attExtraHTML(p,j,a){ const n=axFilledN(a);
   if(!document.getElementById('ax-food-dl')){ const dl=document.createElement('datalist'); dl.id='ax-food-dl'; dl.innerHTML=Object.keys(AX_FOOD).map(k=>`<option value="${k}">`).join(''); document.body.appendChild(dl); }
@@ -7969,7 +7969,15 @@ async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFood
 
 function axCapoUnita(){ const t=staffTab()||[]; const r=t.find(r=>/^(CU|CB|CC|CR)$/i.test(String(r.ruolo||'').trim())&&(String(r.nome||'').trim()||r.giungla))||t.find(r=>String(r.nome||'').trim()); if(!r) return null;
   const lab={L:'Capo Branco',E:'Capo Reparto',R:'Capo Compagnia'}[FASCIA]||'Capo Unità'; const nm=FASCIA==='L'?(staffGiungla(r)||String(r.nome||'').trim()):String(r.nome||'').trim(); return {nome:nm,ruolo:lab,mail:String(r.mail||'').trim(),tel:String(r.tel||'').trim()}; }
-function axStaffContatti(){ const out=[], seen=new Set(); (staffTab()||[]).forEach(r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; if(!f&&!String(r&&r.giungla||'').trim()) return; const gj=FASCIA==='L'?staffGiungla(r):''; const v=gj||f; if(!v||seen.has(v)) return; seen.add(v); out.push({n:v,tel:String(r.tel||'').trim()}); }); return out; }
+// contatti nella circolare: il Capo Unità sempre (con il telefono, che si chiede se manca), gli altri solo se hanno il telefono
+function axStaffContatti(){ const out=[], seen=new Set(); const cu=axCapoUnitaRow(); const t=staffTab()||[];
+  const nm=r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; const gj=FASCIA==='L'?staffGiungla(r):''; return gj||f; };
+  const rows=cu?[cu.r].concat(t.filter(r=>r!==cu.r)):t;
+  rows.forEach(r=>{ const v=nm(r); if(!v||seen.has(v)) return; const tel=String(r.tel||'').trim(); const isCu=cu&&r===cu.r; if(!isCu&&!tel) return; seen.add(v); out.push({n:v,tel,cu:isCu}); }); return out; }
+function axCapoUnitaRow(){ const t=staffTab()||[]; let i=t.findIndex(r=>/^(CU|CB|CC|CR|CRep)$/i.test(String(r.ruolo||'').trim())&&(String(r.nome||'').trim()||r.giungla)); if(i<0) i=t.findIndex(r=>String(r.nome||'').trim()); return i<0?null:{i,r:t[i]}; }
+function axCuTelAsk(p,j){ const cu=axCapoUnitaRow(); if(!cu) return `<div class="ax-ask">Nella tabella dello staff (Sezione 1.1) manca il Capo Unità: la circolare deve riportare il suo telefono. <button type="button" class="btn-ghost ax-btn" onclick="gGo('1a')">Vai alla 1.1</button></div>`;
+  if(String(cu.r.tel||'').trim()) return '';
+  return `<div class="ax-ask" id="ax-cutel-${p}-${j}">Manca il telefono di <b>${axE(String(cu.r.nome||'').trim()||'Capo Unità')}</b> (Capo Unità): nella circolare c’è sempre. <input class="ax-in" type="tel" placeholder="Telefono" style="max-width:180px" onchange="staffTabSet(${cu.i},'tel',this.value.trim());saveDataDebounced();showToast('Telefono salvato anche nella tabella dello staff');const b=document.getElementById('ax-cutel-${p}-${j}');if(b&&this.value.trim())b.style.display='none'"></div>`; }
 function axStaffNomi(){ const n=[]; (staffTab()||[]).forEach(r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; if(!f&&!String(r&&r.giungla||'').trim()) return; const gj=FASCIA==='L'?staffGiungla(r):''; const v=gj||f; if(v&&!n.includes(v)) n.push(v); }); return n; }
 // Loghi di Sezione per il messaggio ai genitori (da caricare): { 'pesaro': 'data:image/png;base64,...' }
 const SEZ_LOGHI={};
@@ -7984,31 +7992,23 @@ function cxBuilder(){ const rels=[]; let n=0;
   const LK=(t,url,o={})=>{ if(!url) return R(t,o); const id='rIdCx'+(++n); rels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="'+cxE(url)+'" TargetMode="External"/>'); return '<w:hyperlink r:id="'+id+'" w:history="1">'+R(t,Object.assign({},o,{color:'1155CC',u:true}))+'</w:hyperlink>'; };
   const P=(runs,o={})=>'<w:p><w:pPr>'+(o.keepNext?'<w:keepNext/>':'')+(o.border?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="2" w:color="'+o.border+'"/></w:pBdr>':'')+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?160:o.after)+'" w:line="'+(o.line||312)+'" w:lineRule="auto"/>'+(o.ind?'<w:ind w:left="'+o.ind+'"'+(o.hang?' w:hanging="'+o.hang+'"':'')+'/>':'')+'<w:jc w:val="'+(o.jc||'left')+'"/></w:pPr>'+(Array.isArray(runs)?runs.join(''):runs)+'</w:p>';
   return {R,LK,P,rels}; }
-async function axMsgDocx(p,j){
-  if((attGet(p,j).ax||{}).ambientProp||(attGet(p,j).ax||{}).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
-  showToast('Preparo la circolare…');
-  try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+// ── Circolare: un solo contenuto (modello a paragrafi), due uscite: Word e PDF ──
+// intestazione semplice in alto (loghi in linea, niente colonna laterale): si apre bene anche nell'anteprima di Google Drive su iPad
+async function axCircModel(p,j){
   const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, pp=scheda.pp||{}; const sez=axSezFile(((pp.sezione)||'').trim());
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
   const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
   const get=async u=>{ try{ const r=await fetch(u); return r.ok?await r.arrayBuffer():null; }catch(e){ return null; } };
-  const [tpl,lgS,lgB]=await Promise.all([get(base+'circolare/base.docx'),get(base+'circolare/sezioni/'+encodeURIComponent(sez)+'.png'),get(base+'circolare/branca/'+FASCIA+'.png')]);
-  if(!tpl){ showToast('Non riesco a scaricare la carta intestata: serve la connessione'); return; }
-  const zip=await JSZip.loadAsync(tpl);
-  if(lgS) zip.file('word/media/image2.png',lgS); if(lgB) zip.file('word/media/branca.png',lgB);
-  // intestazione: contatti del Capo Unità e dati della Sezione
-  const cu=axCapoUnita()||{}; const val={CONT_H:'Contatti',CU_NOME:cu.nome||'',CU_RUOLO:cu.nome?cu.ruolo:'',CU_MAIL:cu.mail||'',CU_TEL:cu.tel?'T '+cu.tel:'',CU_FAX:'',
-    SEZ_NOME:sez?'CNGEI '+sez:'',SEZ_VIA:(pp.sedeVia||'').trim(),SEZ_CITTA:(pp.sedeCitta||'').trim(),SEZ_CF:(pp.sedeCF||'').trim()?'C.F. '+pp.sedeCF.trim():'',SEZ_SITO:(pp.sedeSito||'').trim(),SEZ_SOCIAL:(pp.sedeSocial||'').trim()};
-  if(!val.CU_NOME&&!val.CU_MAIL&&!val.CU_TEL) val.CONT_H=''; val.SOCIAL_H=(val.SEZ_SITO||val.SEZ_SOCIAL)?'Social':'';
-  let hx=await zip.file('word/header3.xml').async('string');
-  hx=hx.replace(/<w:p\b(?:(?!<w:p\b)[\s\S])*?\{\{(\w+)\}\}[\s\S]*?<\/w:p>/g,(m,k)=>val[k]?m.replace('{{'+k+'}}',cxE(val[k])):'');
-  let side=''; hx=hx.replace(/<!--CXSIDE-->([\s\S]*?)<!--\/CXSIDE-->/,(m,g)=>{ side=g; return ''; });
-  zip.file('word/header3.xml',hx);
-  // corpo
-  const {R,LK,P,rels}=cxBuilder(); const C=GREEN; const b=[];
-  const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE}));
+  const [lgS,lgB]=await Promise.all([sez?get(base+'circolare/sezioni/'+encodeURIComponent(sez)+'.png'):null,get(base+'circolare/branca/'+FASCIA+'.png')]);
+  const cu=axCapoUnita()||{};
+  const head={sez:sez?'CNGEI '+sez:'CNGEI', ente:'Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani · Associazione Scout Laica di Promozione Sociale',
+    addr:[(pp.sedeVia||'').trim(),(pp.sedeCitta||'').trim(),(pp.sedeCF||'').trim()?'C.F. '+pp.sedeCF.trim():''].filter(Boolean).join(' · '),
+    cont:cu.nome?[cu.ruolo+': '+cu.nome, cu.tel?'tel. '+cu.tel:'', cu.mail||''].filter(Boolean).join(' · '):'',
+    web:[(pp.sedeSito||'').trim(),(pp.sedeSocial||'').trim()].filter(Boolean).join(' · ')};
+  const b=[]; const R=(t,o={})=>({k:'r',t:String(t==null?'':t),o}), LK=(t,url,o={})=>url?{k:'lk',t:String(t),url,o}:R(t,o), P=(runs,o={})=>({runs:Array.isArray(runs)?runs:[runs],o});
+  const C=GREEN; const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE,h:true}));
   const oggi=new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
-  b.push('<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+R((sez?sez+', ':'')+oggi,{b:true})+'</w:p>');
+  b.push(P([R((sez?sez+', ':'')+oggi,{b:true})],{luogo:true,after:225}));
   const citz=(x.citaz||'').trim(); if(citz) b.push(P([R(citz,{i:true,color:'444444'})],{jc:'right',after:200}));
   b.push(P([R(tit||'Comunicazione per le famiglie',{b:true,sz:27,color:C})],{after:60}));
   const amb=(x.ambient||'').trim(); if(amb) b.push(P([R(amb,{i:true,color:'444444'})],{after:420}));
@@ -8030,34 +8030,108 @@ async function axMsgDocx(p,j){
   if(port.length||sac.length||add.length||sqL.length){ H('Cosa portare');
     if(add.length) b.push(P([B('Alla partenza, addosso: '),T(add.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '))],{after:100}));
     if(port.length&&add.length) b.push(P([B('Nello zaino:')],{after:40,keepNext:true}));
-    port.forEach(t=>b.push(P([T('•  '+t.charAt(0).toUpperCase()+t.slice(1))],{after:40,ind:360,hang:220})));
+    port.forEach(t=>b.push(P([T('•  '+t.charAt(0).toUpperCase()+t.slice(1))],{after:40,ind:360,hang:220})));
     if(sac.length) b.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '))],{before:80}));
     if(sqL.length) b.push(P([B(axSq().lab+': '),T(sqL.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')],{before:80}));
     cons.forEach(t=>b.push(P([R('→ '+t+'.',{i:true,color:'555555'})],{after:40}))); }
   if(casa.length){ H('Da lasciare a casa'); b.push(P([T(casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')])); }
   const bon=q&&x.paga!=='partenza';
   if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
-  const med=true, libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
-  if(bon||L.permessi||med){ H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
-    if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
-      b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
-      b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
-      b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
-    if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
-      b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
-    if(med){ b.push(P([T('☐  '),B('Solo se servono farmaci: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
-      b.push(P([LK('Link al documento',libUrl)],{ind:420})); } }
+  const libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
+  H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
+  if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
+    b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
+    b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
+    b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
+  if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
+    b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
+  b.push(P([T('☐  '),B('Solo se servono farmaci: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
+  b.push(P([LK('Link al documento',libUrl)],{ind:420}));
   H('Contatti'); b.push(P([T('Per qualsiasi dubbio potete contattarci:')],{after:80}));
-  const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
+  const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+(c.r?' ('+c.r+')':'')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
   b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
+  return {b, head, lgS, lgB, tit, nm:'Circolare_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))}; }
+function axPngSize(buf){ try{ const d=new DataView(buf); if(d.getUint32(0)===0x89504E47) return {w:d.getUint32(16),h:d.getUint32(20)}; }catch(e){} return {w:1,h:1}; }
+function axDownload(blob,nm){ const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+function axCircCheck(p,j){ const a=attGet(p,j)||{}, x=a.ax||{}; if(x.ambientProp||x.citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare'); }
+async function axMsgDocx(p,j){
+  axCircCheck(p,j); showToast('Preparo la circolare…');
+  try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+  const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
+  let tpl=null; try{ const r=await fetch(base+'circolare/base.docx'); tpl=r.ok?await r.arrayBuffer():null; }catch(e){}
+  if(!tpl){ showToast('Non riesco a scaricare il modello della circolare: serve la connessione'); return; }
+  const M=await axCircModel(p,j); const zip=await JSZip.loadAsync(tpl);
+  const {R,LK,P,rels}=cxBuilder();
+  // corpo
+  const run=r=>r.k==='lk'?LK(r.t,r.url,r.o):R(r.t,r.o);
+  const bx=M.b.map(par=>par.o.luogo?'<w:p>'+LUOGO_PPR+par.runs.map(run).join('')+'</w:p>':P(par.runs.map(run),par.o)).join('');
+  // intestazione semplice: tabella senza bordi con i due loghi in linea e i dati al centro, filetto sotto
+  const hrels=[]; let nImg=0;
+  const img=(buf,name,cm)=>{ if(!buf) return ''; const id='rIdCxH'+(++nImg); zip.file('word/media/'+name,buf); hrels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+name+'"/>');
+    const sz=axPngSize(buf), H0=Math.round(cm*360000), W0=Math.round(H0*sz.w/Math.max(1,sz.h)), W=Math.min(W0,Math.round(4.2*360000)), Hh=Math.round(W*sz.h/Math.max(1,sz.w));
+    return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+W+'" cy="'+Hh+'"/><wp:docPr id="'+(900+nImg)+'" name="'+name+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+(900+nImg)+'" name="'+name+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+id+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+W+'" cy="'+Hh+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>'; };
+  const hp=(runs,o={})=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+(o.after||0)+'" w:line="240" w:lineRule="auto"/><w:jc w:val="'+(o.jc||'center')+'"/></w:pPr>'+runs+'</w:p>';
+  const hr=(t,o={})=>R(t,Object.assign({sz:16,color:'444444'},o));
+  const cell=(w,inner,jc)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+(inner||hp(''))+'</w:tc>';
+  const H=M.head; const mid=hp(R(H.sez,{b:true,sz:24,color:GREEN}),{after:20})+hp(hr(H.ente,{sz:14}),{after:20})+(H.addr?hp(hr(H.addr)):'')+(H.cont?hp(hr(H.cont,{color:'222222'})):'')+(H.web?hp(hr(H.web)):'');
+  const nob='<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="single" w:sz="8" w:space="0" w:color="'+GREEN+'"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>';
+  const hdr='<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:jc w:val="center"/>'+nob+'<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="1900"/><w:gridCol w:w="5838"/><w:gridCol w:w="1900"/></w:tblGrid><w:tr>'
+    +cell(1900,hp(img(M.lgS,'cx_sez.png',1.7),{jc:'left'}))+cell(5838,mid)+cell(1900,hp(img(M.lgB,'cx_branca.png',1.7),{jc:'right'}))+'</w:tr></w:tbl>'+hp('',{after:120});
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  const pnum='<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r></w:p>';
+  const doc0='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  zip.file('word/header3.xml',doc0+'<w:hdr '+NS+'>'+hdr+'</w:hdr>');
+  zip.file('word/_rels/header3.xml.rels',doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+hrels.join('')+'</Relationships>');
+  ['header1.xml','header2.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:hdr '+NS+'><w:p/></w:hdr>'));
+  ['header1.xml.rels','header2.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
+  ['footer1.xml','footer2.xml','footer3.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:ftr '+NS+'>'+(f==='footer3.xml'?'<w:p/>':pnum)+'</w:ftr>'));
+  ['footer1.xml.rels','footer2.xml.rels','footer3.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
+  ['image1.jpg','image3.jpg','image4.png','image2.png','branca.png'].forEach(f=>{ try{ zip.remove('word/media/'+f); }catch(e){} });
   let dx=await zip.file('word/document.xml').async('string');
-  let bx=b.join(''); if(side){ const k=bx.indexOf('</w:pPr>'); bx=k>0?bx.slice(0,k+8)+side+bx.slice(k+8):bx; rels.push('<Relationship Id="rIdCxSoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image3.jpg"/>'); }
-  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx);
+  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx).replace(/<w:pgMar [^>]*\/>/,'<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/>');
   zip.file('word/document.xml',dx);
   if(rels.length){ let rx=await zip.file('word/_rels/document.xml.rels').async('string'); rx=rx.replace('</Relationships>',rels.join('')+'</Relationships>'); zip.file('word/_rels/document.xml.rels',rx); }
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-  const nm='Circolare_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx';
-  const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); showToast('Circolare pronta'); }
+  axDownload(blob,M.nm+'.docx'); showToast('Circolare pronta'); }
+// PDF: stessi contenuti, impaginati in A4 con jsPDF (testo vero, link cliccabili)
+function axPdfTxt(t){ return String(t==null?'':t).replace(/→/g,'»').replace(/[☐☑]/g,'').replace(/[   ]/g,' ').replace(/[^\u0000-ÿ€“”‘’–—•…‚„‹›™Œœ]/g,''); }
+async function axMsgPdf(p,j){
+  axCircCheck(p,j); showToast('Preparo il PDF…');
+  try{ await loadLib(LIB_URLS.jspdf,()=>!!(window.jspdf&&window.jspdf.jsPDF)); exportTheme(); }catch(e){ showToast('Impossibile generare il PDF: '+e.message); return; }
+  const M=await axCircModel(p,j); const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  const W=210, HH=297, ML=20, MR=20, MT=16, MB=18, CWm=W-ML-MR; let y=MT;
+  const hex=h=>[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  const tw=t=>t/56.7; // twip → mm
+  const b64=buf=>{ let s=''; const u=new Uint8Array(buf); for(let i=0;i<u.length;i+=8192) s+=String.fromCharCode.apply(null,u.subarray(i,i+8192)); return btoa(s); };
+  const logo=(buf,x,right)=>{ if(!buf) return 0; try{ const sz=axPngSize(buf); let h=17, w=h*sz.w/Math.max(1,sz.h); if(w>40){ w=40; h=w*sz.h/sz.w; } doc.addImage('data:image/png;base64,'+b64(buf),'PNG',right?x-w:x,y,w,h); return h; }catch(e){ return 0; } };
+  const H=M.head; const h1=logo(M.lgS,ML,false), h2=logo(M.lgB,W-MR,true);
+  let ty=y+4; const ctr=(t,sz,st,col)=>{ doc.setFont('helvetica',st); doc.setFontSize(sz); doc.setTextColor(...hex(col)); doc.splitTextToSize(axPdfTxt(t),CWm-80).forEach(l=>{ doc.text(l,W/2,ty,{align:'center'}); ty+=sz*0.42; }); };
+  ctr(H.sez,12,'bold',GREEN); ty+=0.6; ctr(H.ente,7,'normal','444444'); if(H.addr) ctr(H.addr,8,'normal','444444'); if(H.cont) ctr(H.cont,8,'normal','222222'); if(H.web) ctr(H.web,8,'normal','444444');
+  y=Math.max(y+h1,y+h2,ty)+2; doc.setDrawColor(...hex(GREEN)); doc.setLineWidth(0.5); doc.line(ML,y,W-MR,y); y+=7;
+  const st=o=>o.b&&o.i?'bolditalic':o.b?'bold':o.i?'italic':'normal';
+  const newPage=()=>{ doc.addPage(); y=MT; };
+  M.b.forEach((par,pi)=>{ const o=par.o||{}; const ind=tw(o.ind||0), hang=tw(o.hang||0); y+=tw(o.before||0);
+    // parole con il loro stile
+    const words=[]; par.runs.forEach(r=>{ const ro=r.o||{}; const box=/^☐/.test(r.t); const t=axPdfTxt(r.t); if(box) words.push({box:true,o:ro});
+      t.split(/(\s+)/).forEach(w=>{ if(w!=='') words.push({t:w,o:ro,url:r.k==='lk'?r.url:null}); }); });
+    const size=w=>((w.o.sz||20)/2); const lh=Math.max(...words.map(size).concat([10]))*0.3528*1.35;
+    if(o.keepNext && y+lh*3>HH-MB) newPage();
+    const lines=[]; let cur=[], x=0; const first=ML+ind-hang, rest=ML+ind;
+    words.forEach(w=>{ let ww; if(w.box) ww=4.2; else { doc.setFont('helvetica',st(w.o)); doc.setFontSize(size(w)); ww=doc.getTextWidth(w.t); }
+      const maxW=W-MR-(lines.length?rest:first); if(x+ww>maxW && cur.length && !/^\s+$/.test(w.t||'')){ lines.push(cur); cur=[]; x=0; }
+      if(!cur.length && /^\s+$/.test(w.t||'')) return; cur.push(Object.assign({},w,{ww})); x+=ww; });
+    if(cur.length) lines.push(cur);
+    lines.forEach((ln,li)=>{ if(y+lh>HH-MB) newPage(); const lw=ln.reduce((s1,w)=>s1+w.ww,0); let xx=(li?rest:first); if(o.jc==='right') xx=W-MR-lw; else if(o.jc==='center') xx=(W-lw)/2;
+      const base=y+lh*0.75;
+      ln.forEach(w=>{ if(w.box){ doc.setDrawColor(60,60,60); doc.setLineWidth(0.3); doc.rect(xx+0.3,base-3,3,3); xx+=w.ww; return; }
+        doc.setFont('helvetica',st(w.o)); doc.setFontSize(size(w)); const col=w.url?'1155CC':(w.o.color||'1A1A18'); doc.setTextColor(...hex(col));
+        doc.text(w.t,xx,base); if(w.url){ doc.setDrawColor(...hex('1155CC')); doc.setLineWidth(0.2); doc.line(xx,base+0.6,xx+w.ww,base+0.6); doc.link(xx,base-size(w)*0.3528,w.ww,size(w)*0.3528*1.2,{url:w.url}); }
+        xx+=w.ww; });
+      y+=lh; });
+    if(o.border){ doc.setDrawColor(...hex(o.border==='PALE'?PALE:o.border)); doc.setLineWidth(0.4); doc.line(ML,y+0.5,W-MR,y+0.5); y+=1.5; }
+    y+=tw(o.after==null?160:o.after); });
+  const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(136,136,136); doc.text(String(i),W/2,HH-8,{align:'center'}); }
+  axDownload(doc.output('blob'),M.nm+'.pdf'); showToast('PDF pronto'); }
 function axFirma(){ const n=axStaffNomi();
   if(!n.length) return UNIT_NAME?'lo staff di '+UNIT_NAME:'lo staff';
   return n.length===1?n[0]:n.slice(0,-1).join(', ')+' e '+n[n.length-1]; }
@@ -9782,7 +9856,8 @@ const MF = 'Montserrat';
 const LIB_URLS = {
   exceljs: 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
   docx: 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
-  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+  jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 };
 function loadLib(url, check){
   return new Promise((res, rej) => {

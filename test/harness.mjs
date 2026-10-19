@@ -156,6 +156,7 @@ export async function person(browser, db, opts = {}){
   await ctx.route(/docx@8\.5\.0\/build\/index\.umd\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'docx/build/index.umd.js')}));
   await ctx.route(/exceljs\/4\.4\.0\/exceljs\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'exceljs/dist/exceljs.min.js')}));
   await ctx.route(/jszip\/3\.10\.1\/jszip\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'jszip/dist/jszip.min.js')}));
+  await ctx.route(/jspdf\/2\.5\.1\/jspdf\.umd\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'jspdf/dist/jspdf.umd.min.js')}));
   await ctx.route(/fonts\.(googleapis|gstatic)\.com|api\.web3forms\.com|nominatim|osrm|maps\.google|www\.google\.com/, r => r.abort());
   // di norma i percorsi e le attività si presentano chiusi: i test li aprono da soli (KEEPCLOSED=1 per vederli chiusi)
   if(!process.env.KEEPCLOSED) await ctx.addInitScript(() => { const all = new Proxy({}, {get: () => true, set: () => true}); window._attOpen = all; window._pcOpen = all; window._verOpen = all; });
