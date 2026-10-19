@@ -8447,7 +8447,7 @@ function posRestore(){
       if(v.n && v.n > 1) goPhaseInternal(v.n); else { try{ renderStaffPhase1(); }catch(e){} }
     }
   }catch(e){ console.error(e); }
-  const y = v.y || 0, go = () => { try{ document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, y); document.documentElement.style.scrollBehavior = ''; }catch(e){} };
+  const y = v.y || 0, go = () => { try{ const h = document.documentElement; h.style.scrollBehavior = 'auto'; try{ window.scrollTo({top:y, left:0, behavior:'instant'}); }catch(e){ window.scrollTo(0, y); } setTimeout(() => { h.style.scrollBehavior = ''; }, 80); }catch(e){} };
   setTimeout(go, 120); setTimeout(go, 450); setTimeout(() => { go(); window._posHold = false; }, 900);
   return true;
 }
@@ -8455,7 +8455,7 @@ window.addEventListener('scroll', () => { if(!window._posHold) posSaveSoon(); },
 window.addEventListener('pagehide', posSave);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') posSave(); });
 // in cima alla pagina, subito (niente scorrimento lento che su pagine lunghe si ferma a metà o in fondo)
-function pageTop(){ try{ const h = document.documentElement; h.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); h.style.scrollBehavior = ''; }catch(e){ try{ window.scrollTo(0,0); }catch(x){} } }
+function pageTop(){ try{ const h = document.documentElement; h.style.scrollBehavior = 'auto'; try{ window.scrollTo({top:0, left:0, behavior:'instant'}); }catch(e){ window.scrollTo(0, 0); } if(window.scrollY) window.scrollTo(0, 0); clearTimeout(window._ptT); window._ptT = setTimeout(() => { h.style.scrollBehavior = ''; }, 80); }catch(e){ try{ window.scrollTo(0,0); }catch(x){} } }
 function gCur(){
   const n=[1,2,3,4].find(i=>document.getElementById('panel'+i)?.classList.contains('active'))||1;
   if(n===1) return '1b'; if(n===2) return '1c'; if(n===3) return '1d';
