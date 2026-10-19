@@ -378,7 +378,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-in,.ax-ta{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-light);border-radius:5px;font:inherit;font-size:12px;background:var(--bg-card,#fff);color:var(--ink);min-width:0}.ax-ta{resize:vertical;line-height:1.45}
 .ax-chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0}.ax-chip{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card,#fff);color:var(--ink-mid);cursor:pointer}.ax-chip.on{background:var(--green);border-color:var(--green);color:#fff}
 .ax-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ax-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}@media (max-width:600px){.ax-row2,.ax-row3{grid-template-columns:1fr}}
-.ax-geo{display:flex;gap:6px}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
+.ax-geo{display:flex;gap:6px}.att-links{margin:10px 0 6px;padding:8px 10px;border:1px solid var(--border-light);border-radius:8px;background:var(--bg)}.att-links-h{font-size:12px;font-weight:800;color:var(--ink);display:flex;gap:8px;align-items:center}.lk-row{display:flex;gap:6px;align-items:center;margin:5px 0;flex-wrap:wrap}.lk-row input{font:inherit;font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);min-width:0}.lk-n{flex:1 1 150px}.lk-u{flex:2 1 220px}.lk-open{font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap}.lk-x{padding:0 7px!important;font-size:13px}.lk-add{font-size:11.5px;border-style:dashed}.lk-ic{flex:0 0 auto;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:3px 6px;border-radius:5px;background:#eee;color:#555;min-width:44px;text-align:center}.lk-drive{background:#e7f0fe;color:#1a56b8}.lk-canva{background:#e8f8fb;color:#00839a}.lk-video{background:#fdecea;color:#c4231f}.lk-foto{background:#fff3e0;color:#a65c00}.lk-pdf{background:#fdecea;color:#8b2216}.lk-sito{background:#e8f5ee;color:#1b5e42}.lk-row.ro a{font-size:12.5px;font-weight:600;color:#1155cc}.lk-opt{margin-left:0}.cl-dup{margin:-2px 0 8px 14px;padding:9px 11px;border:1px dashed #b8c7bd;border-radius:9px;background:#f7faf8}.att-mv{display:inline-flex;gap:2px;margin-right:6px;vertical-align:1px}.att-mv button{padding:0 6px!important;font-size:12px!important;line-height:18px;min-width:22px}details.att-moved{outline:2px solid var(--green-light);transition:outline .3s}.ax-ask{margin-top:8px;padding:8px 10px;border:1px solid #f0c36d;background:#fff8e1;border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
 .ax-co2{font-size:12px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--green-pale,#EEF6EE)}.ax-check{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:6px;cursor:pointer}.ax-warn{font-size:11px;color:#C77700;margin-left:6px}
 .ax-mat{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:5px 0;display:grid;gap:4px}.ax-mat1{display:grid;grid-template-columns:1fr 150px 28px;gap:5px}.ax-mat2{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ax-mat2 .ax-in{flex:1;min-width:120px}.ax-x{padding:0 7px!important;font-size:13px;width:auto!important}
 .ax-add{font-size:11px!important;margin-top:4px;border-style:dashed!important;width:auto!important}.ax-tot{font-size:12px;margin-top:6px}.ax-quota{font-size:12px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ax-eco{font-size:11.5px;color:var(--green);margin-top:4px}
@@ -3632,8 +3632,8 @@ function goPhaseInternal(n){
   if(n===4) renderValuation();
   try{ if(MODE==='giovani'){ if(n===2) gRenderLettura(); if(n===3) gRenderMotiv(); } else { ['g-lettura','g-motiv'].forEach(i=>{const e=document.getElementById(i); if(e) e.innerHTML='';}); } gSync(); }catch(e){ console.error(e); }
   try{ if(MODE==='staff') stSync(); }catch(e){ console.error(e); }
-  if(!window._clApplying) window.scrollTo({top:0,behavior:'smooth'});
-  saveData(true);
+  if(!window._clApplying && !window._posHold){ pageTop(); requestAnimationFrame(() => { if(!window._clApplying && !window._posHold) pageTop(); }); }
+  saveData(true); posSaveSoon(); try{ requestAnimationFrame(() => window.taFitAll && taFitAll()); }catch(e){}
 
 }
 
@@ -4485,11 +4485,11 @@ function stSel(){
   if(auto && v === 'evo') v = 'oss';
   return {auto, step: v};
 }
-function stGo(step){ const s = stSel(); STAFF_VIEW = (s.auto ? 'a:' : '') + step; renderStaffPhase1(); window.scrollTo({top:0, behavior:'smooth'}); }
+function stGo(step){ const s = stSel(); STAFF_VIEW = (s.auto ? 'a:' : '') + step; renderStaffPhase1(); pageTop(); posSaveSoon(); }
 function stPick(i){
   const s = stSel(); _stAdd = false;
   if(i === 'auto') STAFF_VIEW = 'a:' + s.step; else { CURRENT_MEMBER = STAFF_MEMBERS[i]; STAFF_VIEW = s.step; }
-  renderStaffPhase1();
+  renderStaffPhase1(); posSaveSoon();
 }
 function stDone(o){ return Object.values(o || {}).filter(v => v !== undefined && v !== null && v !== 'n').length; }
 function stMemIdx(){ const i = STAFF_MEMBERS.indexOf(CURRENT_MEMBER); return i; }
@@ -4524,7 +4524,7 @@ function stAddHTML(first){
     <label class="st-lb" for="new-member-input">Altra persona</label><div class="st-row"><input type="text" id="new-member-input" placeholder="Nome e cognome" maxlength="60" onkeydown="if(event.key==='Enter')addMember()"><button class="btn-primary" onclick="addMember()">Aggiungi</button></div>
     <div class="st-row st-addfoot"><button class="btn-ghost sm" onclick="stUnitRefresh()" title="Rilegge la tabella dello staff dell’Unità">↻ Aggiorna dall’Unità</button>${first ? '' : `<button class="btn-ghost sm" onclick="stAddToggle()">Chiudi</button>`}</div></div>`;
 }
-function stAddedGo(name){ _stAdd = false; CURRENT_MEMBER = name; STAFF_VIEW = 'prof'; saveData(true); renderStaffPhase1(); window.scrollTo({top:0, behavior:'smooth'}); }
+function stAddedGo(name){ _stAdd = false; CURRENT_MEMBER = name; STAFF_VIEW = 'prof'; saveData(true); renderStaffPhase1(); pageTop(); posSaveSoon(); }
 function stAddFromUnit(){
   const sel = document.getElementById('st-pick'); if(!sel || sel.value === '') { showToast('Scegli una persona dall’elenco'); return; }
   const r = (ST_UNIT.rows || [])[Number(sel.value)]; if(!r) return;
@@ -4558,13 +4558,14 @@ function stProfHTML(auto){
     const more = [['Caratteristiche personali','car'],['Professioni, competenze esterne','prof'],['Ruoli passati','ruoli'],['Disponibilità','disp'],['Varie (dinamiche di staff, contratto)','varie'],['Email','mail'],['Telefono','tel']].filter(([, k]) => src[k]);
     if(more.length) h += `<div class="st-grid">${more.map(([lb, k]) => stField(lb, stRO(src[k]), ['car','prof','ruoli','disp','varie'].includes(k))).join('')}</div>`;
   } else {
-    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF)}</div>`;
+    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `oninput="stNameLive(${i},this.value)" onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF)}</div>`;
   }
   h += `<div class="st-grid">${stField('Esperienza come educatore', selE)}</div>`;
   h += `<div class="st-actions">${auto ? '' : `<button class="btn-ghost danger" onclick="stDel(${i})">Rimuovi dallo staff</button>`}<button class="btn-primary" onclick="stGo('oss')">Avanti — Scheda di osservazione →</button></div></div>`;
   return h;
 }
 function stProfSet(i, k, v){ const n = STAFF_MEMBERS[i]; if(n === undefined) return; (staffProfiles[n] || (staffProfiles[n] = {}))[k] = v; saveDataDebounced(); if(k === 'ruolo') stSideRefresh(); }
+function stNameLive(i, v){ try{ const it=document.querySelectorAll('#st-side .st-item')[i+1]; const nm=it&&it.querySelector('.st-nm'); if(nm) nm.textContent=String(v||'').trim()||STAFF_MEMBERS[i]||''; document.querySelectorAll('[data-stname="'+i+'"]').forEach(e=>{ e.textContent=String(v||'').trim()||STAFF_MEMBERS[i]||''; }); }catch(e){} }
 function stRen(i, v){ const o = STAFF_MEMBERS[i]; v = String(v || '').trim(); if(o === undefined || !v || v === o) return; if(STAFF_MEMBERS.includes(v)){ showToast('Nome già presente nello staff'); renderStaffPhase1(); return; } stRename(o, v); saveData(true); renderStaffPhase1(); }
 function stDel(i){ const n = STAFF_MEMBERS[i]; if(n !== undefined) deleteMember(n); }
 
@@ -5231,7 +5232,7 @@ function getMemberCompletionPct(member) {
 
 function selectMember(name) {
   CURRENT_MEMBER = name;
-  renderStaffPhase1();
+  renderStaffPhase1(); posSaveSoon();
 }
 
 function setStaffView(view) {
@@ -5280,7 +5281,7 @@ function addMember() {
 }
 function promptAddMember() { stAddToggle(); }
 
-function showAutoOss() { _stAdd = false; STAFF_VIEW = 'a:oss'; renderStaffPhase1(); window.scrollTo({top:0,behavior:'smooth'}); }
+function showAutoOss() { _stAdd = false; STAFF_VIEW = 'a:oss'; renderStaffPhase1(); pageTop(); posSaveSoon(); }
 
 function setAutoObsBtn(id, val) {
   autoObs[id] = (val === 'n') ? 'n' : Number(val);
@@ -5627,7 +5628,7 @@ function exReset(){
   scheda=JSON.parse(SCHEDA_DEFAULT); schedaStep='A'; MODE=null; FASCIA=null; STAFF_TYPE=null; STAFF_RUOLO=null;
   try{ SG.list=[]; SG.open={}; SG.form=null; }catch(e){}
   try{ document.querySelectorAll('#ed-bar,#ro-bar').forEach(e=>e.remove()); }catch(e){}
-  window.scrollTo(0,0);
+  pageTop();
 }
 function exBuild(){
   try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){}
@@ -5671,7 +5672,7 @@ function exBuild(){
   scheda.pp.occasioni=''; saveData(true);
   try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
   try{ gGo('1b'); }catch(e){}
-  exBar(); window.scrollTo(0,0);
+  exBar(); pageTop();
   showToast('Ecco il progetto di esempio (Reparto Kontiki, immaginario): esploralo, modificalo e poi eliminalo');
 }
 function exBar(){ const app=document.getElementById('main-app'); if(!app) return; let b=document.getElementById('ex-bar');
@@ -6988,7 +6989,7 @@ function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); if(v){ const a=getAllPe
 function verParti(a){ if(!axShared(a)) return []; const x=a.ax||{}; return AX_REF.map(([k,l])=>({k,l,chi:axRef(x,k)})).filter(o=>o.chi); }
 function verPartiHTML(idx,j,a){ const P=verParti(a); if(!P.length) return ''; const V=a.vRef||{};
   return `<div class="ver-parti"><div class="ver-parti-t">Le parti affidate <span>· due righe da chi le ha seguite</span></div>`+P.map(o=>{ const me=affIsMe(o.chi);
-    return `<div class="ver-parte${me?' me':''}" data-vref="${sEsc(o.chi)}" data-vk="${o.k}"><label style="${SC_LBL}">${sEsc(o.l)} · ${sEsc(String(o.chi).replace(/\s*\([^)]*\)\s*$/,''))}${me?' <span class="aff-chip me">la tua parte</span>':''}</label>${!me&&!String(V[o.k]||'').trim()&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di questa parte. ${verWA(o.chi, o.l.toLowerCase()+' di «'+((a.testo||'').trim()||'Attività '+(j+1))+'»')}</div>`:''}<textarea style="${SC_TA};min-height:44px" placeholder="Com'è andata questa parte? Cosa ha funzionato, cosa cambieresti." oninput="verRefSet(${idx},${j},'${o.k}',this.value)">${sEsc(V[o.k]||'')}</textarea>${verCanMain(a)?`<div class="ver-rip"><span>Ha valore educativo? Riportala nella verifica:</span>${[['vBene','cosa è andato bene'],['vMigl','cosa migliorare'],['vAgg','aggiustamenti']].map(([f,l])=>`<button type="button" onclick="verRiporta(${idx},${j},'${o.k}','${f}')">${l}</button>`).join('')}</div>`:''}</div>`; }).join('')+`<div class="ver-rip-n">Nella Scheda di Programmazione compaiono solo i tre campi delle Linee Guida; queste note restano nell’app e nella scheda dell’attività per lo staff.</div></div>`; }
+    return `<div class="ver-parte${me?' me':''}" data-vref="${sEsc(o.chi)}" data-vk="${o.k}"><label style="${SC_LBL}">${sEsc(o.l)} · ${sEsc(String(o.chi).replace(/\s*\([^)]*\)\s*$/,''))}${me?' <span class="aff-chip me">la tua parte</span>':''}</label>${!me&&!String(V[o.k]||'').trim()&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di questa parte. ${verWA(o.chi, o.l.toLowerCase()+' di «'+((a.testo||'').trim()||'Attività '+attNum(idx,j))+'»')}</div>`:''}<textarea style="${SC_TA};min-height:44px" placeholder="Com'è andata questa parte? Cosa ha funzionato, cosa cambieresti." oninput="verRefSet(${idx},${j},'${o.k}',this.value)">${sEsc(V[o.k]||'')}</textarea>${verCanMain(a)?`<div class="ver-rip"><span>Ha valore educativo? Riportala nella verifica:</span>${[['vBene','cosa è andato bene'],['vMigl','cosa migliorare'],['vAgg','aggiustamenti']].map(([f,l])=>`<button type="button" onclick="verRiporta(${idx},${j},'${o.k}','${f}')">${l}</button>`).join('')}</div>`:''}</div>`; }).join('')+`<div class="ver-rip-n">Nella Scheda di Programmazione compaiono solo i tre campi delle Linee Guida; queste note restano nell’app e nella scheda dell’attività per lo staff.</div></div>`; }
 // verifica che manca a chi aveva in carico l'attività o una parte: promemoria su WhatsApp (messaggio già scritto)
 function verWA(who, cosa){ try{ if(!who || affIsMe(who)) return ''; const mail=affMail(who), tel=(typeof clStaffTel==='function'&&mail)?clStaffTel(mail):''; const first=n=>String(n||'').trim().split(/\s+/)[0]||'';
   const io=first((typeof clMyName==='function'&&clMyName())||(typeof sgMyName==='function'&&CL.user&&sgMyName())||'');
@@ -7011,11 +7012,18 @@ function verIdrSet(idx,j,k,f,v){ const per=getAllPercorsi()[idx]; if(!per||!per.
   if(f==='c' && v && per.percorsoId){ const pid=per.percorsoId; const cur=(scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][k])||{}; if(!cur.c||cur.auto){ if(!scheda.idrComp) scheda.idrComp={}; if(!scheda.idrComp[pid]) scheda.idrComp[pid]={}; scheda.idrComp[pid][k]=Object.assign({c:'',note:''},cur,{c:v,auto:true}); } }
   saveDataDebounced(); try{ ppRefreshReady(); }catch(e){} }
 function verIdrDa(pid,k){ const L0=scheda.percorsiExtra||[]; const per=L0.find(x=>x.percorsoId===pid&&typeof x.prioritaIdx!=='string')||L0.find(x=>x.percorsoId===pid); if(!per) return []; const L={spontaneo:'spontaneo',stimolato:'stimolato',no:'non adottato'};
-  return (per.attivita||[]).map((a,j)=>({a,j})).filter(o=>o.a&&o.a.vIdr&&o.a.vIdr[k]&&o.a.vIdr[k].c).map(o=>'«'+((o.a.testo||'').trim()||'Attività '+(o.j+1))+'» '+L[o.a.vIdr[k].c]); }
+  return (per.attivita||[]).map((a,j)=>({a,j})).filter(o=>o.a&&o.a.vIdr&&o.a.vIdr[k]&&o.a.vIdr[k].c).map(o=>'«'+((o.a.testo||'').trim()||'Attività '+attNum(per,o.j))+'» '+L[o.a.vIdr[k].c]); }
 function verGo(idx,j){ try{ if(MODE==='giovani') gGo('4'); else { schedaStep='ver'; renderValuation(); } }catch(e){}
   setTimeout(()=>{ const c=document.querySelector('[data-verat="'+idx+'-'+j+'"]'); if(c){ c.scrollIntoView({behavior:'smooth',block:'start'}); c.classList.add('ver-flash'); setTimeout(()=>c.classList.remove('ver-flash'),1800); } },400); }
 function verRefSet(idx,j,k,v){ const per=getAllPercorsi()[idx]; if(!per||!per.attivita||!per.attivita[j]) return; const a=per.attivita[j]; if(!a.vRef) a.vRef={}; a.vRef[k]=v; saveDataDebounced(); }
-function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;}
+function updateAttivita(pidx,aidx,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.attivita)per.attivita=[];if(!per.attivita[aidx])per.attivita[aidx]={testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''};per.attivita[aidx][field]=val;if(['testo','lancio','sviluppo','conclusione'].includes(field))attLive(pidx,aidx);}
+// testi che si aggiornano mentre si scrive (titolo dell'attività chiusa, conteggio del percorso, linea del tempo, verifica)
+function attLive(pidx,aidx){ try{ const per=getAllPercorsi()[pidx]; if(!per) return; const a=(per.attivita||[])[aidx]||{}; const n=attNum(pidx,aidx), t=(a.testo||'').trim();
+  const st=document.getElementById('att-sumt-'+pidx+'-'+aidx); if(st){ const v='Attività '+n+(t?' — '+t.slice(0,50):''); if(st.textContent!==v) st.textContent=v; }
+  const card=document.getElementById('pc-card-'+pidx); const sm=card&&card.querySelector('.pcx-sum'); if(sm){ const k=(per.attivita||[]).filter(x=>['testo','lancio','sviluppo','conclusione'].some(f=>(x[f]||'').trim())).length; const v=k?k+(k===1?' attività scritta':' attività scritte'):'da iniziare'; if(sm.textContent!==v) sm.textContent=v; }
+  const vt=document.querySelector('#ver-c-'+pidx+'-'+aidx+' .ver-tt'); if(vt&&vt.firstChild&&vt.firstChild.nodeType===3){ vt.firstChild.textContent='Attività '+n+(t?' — '+t:''); }
+  clearTimeout(window._tlLiveT); window._tlLiveT=setTimeout(()=>{ const w=document.getElementById('tl-all-wrap'); if(w&&!w.contains(document.activeElement)) try{ w.innerHTML=tlAllHTML(); }catch(e){} },500);
+}catch(e){} }
 function attLinkBtn(inp){ const a=inp.parentElement&&inp.parentElement.querySelector('.att-link-open'); if(!a) return; const u=linkNorm(inp.value); const ok=/^(https?:|mailto:)/i.test(u); a.style.display=ok?'':'none'; if(ok) a.href=u; }
 const CL3=[['si','Sì'],['parte','In parte'],['no','Non ancora']];
 const CL3_COL={si:'#2e7d32',parte:'#E0A100',no:'#c62828'};
@@ -7025,9 +7033,28 @@ function cl3HTML(idx,key,v){ return CL3.map(([k,l])=>`<button type="button" oncl
 function cl3Set(idx,key,k){ const per=getAllPercorsi()[idx]; if(!per) return; if(!per.checklist) per.checklist={}; if(!per.checklist[key]) per.checklist[key]={checked:false,note:''};
   const c=per.checklist[key]; c.val = (cl3Val(c)===k)?'':k; c.checked = c.val==='si'; saveDataDebounced(); const b=document.getElementById('cl3-'+idx+'-'+key); if(b) b.innerHTML=cl3HTML(idx,key,c.val); }
 function updateChecklist(pidx,key,field,val){const per=getAllPercorsi()[pidx];if(!per)return;if(!per.checklist)per.checklist={};if(!per.checklist[key])per.checklist[key]={checked:false,note:''};per.checklist[key][field]=val;}
+// ── ordine delle attività ──
+// Le attività NON cambiano posto nell'elenco dei dati (così l'unione «dato per dato» tra più persone, che lavora per posizione,
+// non mescola mai due attività). L'ordine in cui si vedono e la numerazione stanno in per.attOrder (codici fissi delle attività).
+function attOrd(per,n){ const A=(per&&per.attivita)||[]; if(n==null) n=A.length; const pos=new Map(); A.forEach((a,j)=>{ if(a&&a.aid&&!pos.has(a.aid)) pos.set(a.aid,j); });
+  const seen=new Set(), out=[]; ((per&&Array.isArray(per.attOrder))?per.attOrder:[]).forEach(id=>{ const j=pos.get(id); if(j!=null&&j<n&&!seen.has(j)){ seen.add(j); out.push(j); } });
+  for(let j=0;j<n;j++) if(!seen.has(j)) out.push(j); return out; }
+function attNum(pidx,j){ const per=typeof pidx==='object'?pidx:getAllPercorsi()[pidx]; if(!per) return j+1; const n=Math.max(3,((per.attivita)||[]).length,j+1); const k=attOrd(per,n).indexOf(j); return k<0?j+1:k+1; }
+function attSorted(per,list){ const o=attOrd(per,Math.max(3,((per&&per.attivita)||[]).length)); return list.slice().sort((a,b)=>o.indexOf(a.j)-o.indexOf(b.j)); }
+// codice fisso: per le attività che non lo hanno ancora si ricava dalla posizione (uguale su tutti i dispositivi)
+function attIdsEnsure(per){ const A=per.attivita||[]; A.forEach((a,j)=>{ if(a&&!a.aid){ let id='m'+j; while(A.some(x=>x&&x.aid===id)) id+='b'; a.aid=id; } }); }
+function attMove(pidx,j,dir){ const per=getAllPercorsi()[pidx]; if(!per||window.BRO) return;
+  const n=Math.max(3,(per.attivita||[]).length); const ord=attOrd(per,n); const k=ord.indexOf(j), t=k+dir; if(k<0||t<0||t>=n) return;
+  // non si sposta un'attività che un'altra persona sta modificando
+  try{ const me=clLc(CL.user&&CL.user.email); const busy=Object.entries(_pres||{}).some(([em,v])=>em!==me&&v&&(v.att===pidx+'-'+j||v.att===pidx+'-'+ord[t])); if(busy){ showToast('Un’altra persona sta modificando una di queste attività: spostala quando ha finito'); return; } }catch(e){}
+  attGet(pidx,n-1); attIdsEnsure(per);
+  [ord[k],ord[t]]=[ord[t],ord[k]]; per.attOrder=ord.map(jj=>per.attivita[jj].aid);
+  saveData(true); renderValuation();
+  setTimeout(()=>{ const d=document.getElementById('att-'+pidx+'-'+j); if(d){ d.scrollIntoView({block:'nearest'}); d.classList.add('att-moved'); setTimeout(()=>d.classList.remove('att-moved'),900); const b=d.querySelector(dir<0?'.att-mv-up':'.att-mv-dn')||d.querySelector('.att-mv-up,.att-mv-dn'); if(b) try{ b.focus({preventScroll:true}); }catch(e){} } },60); }
+function attCanMove(){ try{ if(window.BRO) return false; if(typeof CL!=='undefined'&&CL.ctx&&CL.ctx.ruolo==='collaboratore') return false; }catch(e){} return true; }
 function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
-function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx<3) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
-  if(has && !confirm('Vuoi togliere l’Attività '+(aidx+1)+' e quello che hai scritto?')) return; per.attivita.splice(aidx,1); saveDataDebounced(); renderValuation(); }
+function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||per.attivita.length<=3||aidx>=per.attivita.length) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
+  if(has && !confirm('Vuoi togliere l’Attività '+attNum(pidx,aidx)+' e quello che hai scritto?')) return; per.attivita.splice(aidx,1); saveDataDebounced(); renderValuation(); }
 function addPercorsoExtra(){scheda.percorsiExtra.push(newPercorso(null));renderValuation();}
 function removePercorso(idx){const all=getAllPercorsi();const per=all[idx];if(!per||per.prioritaIdx!==null)return;const i=scheda.percorsiExtra.indexOf(per);if(i>=0)scheda.percorsiExtra.splice(i,1);renderValuation();}
 function movePercorso(idx,dir){
@@ -7101,10 +7128,17 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-16 · beta';
-const APP_BUILD='202610161304'; // sostituito a ogni pubblicazione
+const APP_VERSION = '2026-10-19 · beta';
+const APP_BUILD='202610191809'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'19 ottobre 2026', t:'Diciassette miglioramenti chiesti dai capi', i:[
+    '<b>Riprendi da dove eri</b>: riaprendo l’app torni alla sezione e al punto della pagina in cui eri (su questo dispositivo); un progetto aperto per la prima volta dall’archivio parte dalla 1.1; cambiando sezione la pagina si apre dall’alto.',
+    '<b>Attività</b>: si riordinano con «Sposta su / Sposta giù» (la numerazione segue); nuova sezione <b>Allegati e link</b> (Drive, Canva, video, foto, PDF) che nel Word diventano link cliccabili; titoli e conteggi si aggiornano mentre scrivi; i campi di testo si allungano da soli, anche le note dei 7 punti.',
+    '<b>Organizzazione</b>: pulsante «Calcola distanza» e km ricalcolati quando cambiano partenza o luogo; spunta «Rientro nello stesso luogo della partenza»; nella quota la parte dei capi delle spese «a persona» compare a parte, da attribuire, con il conto in chiaro.',
+    '<b>Circolare</b>: firmata da tutto lo staff della 1.1, con il telefono del Capo Unità sempre; intestazione semplice e nuovo <b>↓ Scarica in PDF</b>, che si legge bene anche da Google Drive su iPad.',
+    '<b>Altro</b>: «Duplica» in archivio; controllo ortografico del browser in italiano; nel Word della Scheda il capitolo «Composizione dell’Unità»; i Numeri dell’Unità ora si compilano come gli altri campi della 1.1; tolte le frecce accanto ai percorsi.'
+  ]},
   {d:'16 ottobre 2026', t:'Video per lo staff e correzioni', i:[
     '<b>Nuovo video «La modalità staff»</b> e video 2 rifatto (accesso e archivio): li trovi nella schermata iniziale e nei riquadri «Come funziona»; nelle pagine dello staff si apre quello sullo staff.',
     '<b>Staff più affidabile</b>: un nuovo progetto staff nasce già con il nome, la Sezione e il Gruppo della tua Unità e compare subito in archivio; se elimini il progetto che hai aperto, quello nuovo parte pulito, senza i dati del precedente. Nome, Sezione, Gruppo e persone arrivano dalla tua Unità, mai dal progetto di esempio. Risolto anche un blocco della pagina dello staff (senza account) premendo «Rileggi la tabella».'
@@ -7114,7 +7148,7 @@ const NOVITA = [
     '<b>Più calma</b>: percorsi e attività si aprono con un clic (il triangolo), così vedi subito l’indice della pagina senza tutto il testo aperto. Quello che hai scritto non si perde.',
     '<b>Staff</b>: nome dell’Unità, Sezione e Gruppo arrivano dalla tabella dello staff e restano modificabili; l’evoluzione nel tempo è più chiara, con i valori a colori; il Word dello staff ha l’opzione «Scarica tutto» (singoli e riepilogo in un solo file).',
     '<b>Ci dici com’è andata?</b> In due o tre momenti (dopo le prime attività, dopo aver scaricato la Scheda o le schede dello staff) ti chiediamo con una domanda veloce quanto ti è utile l’app e cosa ti manca. Si può saltare, una volta sola per momento.',
-    '<b>Numeri dell’Unità</b> (facoltativo, in 1.1): totale, maschi e femmine, e quanti per ogni anno di Branca. Compaiono nell’intestazione del Word della Scheda.',
+    '<b>Numeri dell’Unità</b> (in 1.1, da compilare): totale, maschi e femmine, e quanti per ogni anno di Branca. Nel Word della Scheda hanno un capitolo, «Composizione dell’Unità».',
     '<b>Spiegazioni più semplici</b>: la restituzione usa parole di tutti i giorni e dice cosa fare; la sezione «Fonti» è più completa; ogni attività formativa dello staff ha «Come si fa →» con la spiegazione passo passo.'
   ]},
   {d:'15 ottobre 2026', t:'Staff rifatto, accesso più chiaro', i:[
@@ -7233,6 +7267,8 @@ const FAQ = [
   ['Documenti','Come ottengo il documento da consegnare?','Con <b>↓ Scarica la Scheda (Word)</b>, in fondo a ogni sezione o in <b>Controllo e invio</b>: ha la stessa struttura delle Linee Guida.','gGo(\'chk\')'],
   ['Documenti','A chi va consegnato?','Il Progetto Personale va all’Incaricato del Centro della Formazione, con in copia il Capo Gruppo e il Commissario di Sezione. La programmazione dell’Unità va al Capo Gruppo.','gGo(\'chk\')'],
   ['Documenti','Il Word si apre anche con Pages o Google Documenti?','Sì.'],
+  ['La programmazione','C’è il controllo ortografico?','Sì, quello del tuo browser o dispositivo: le parole sbagliate vengono sottolineate in rosso e con il tasto destro (o tenendo premuto sul telefono) trovi i suggerimenti. Su <b>Safari per Mac</b> va attivato da <i>Modifica › Ortografia e grammatica › Controlla ortografia durante la digitazione</i>; su <b>Firefox</b> serve il dizionario italiano (tasto destro su un campo › Lingue › Aggiungi dizionari). Indirizzi, mail e telefoni non vengono controllati.'],
+  ['Documenti','La circolare si apre male su iPad o da Google Drive.','Usa <b>↓ Scarica in PDF</b> accanto al Word della circolare: il PDF si legge uguale ovunque, anche nell’anteprima di Google Drive. Anche il Word ora ha un’intestazione semplice, senza colonna laterale.'],
   ['Se qualcosa non va','Vedo una versione vecchia o la pagina non si aggiorna.','Ricarica la pagina; se resta così, esci dall’account e rientra.'],
   ['Se qualcosa non va','Ho trovato un errore o ho un’idea.','Premi <b>Suggerimenti?</b>: il messaggio arriva direttamente a chi cura l’app.','fbOpen()']
 ];
@@ -7372,7 +7408,7 @@ function axA(p,j){ const a=attGet(p,j); if(a && !a.ax) a.ax={}; return a; }
 function axX(p,j){ const a=axA(p,j); return a?a.ax:{}; }
 function axSave(){ saveDataDebounced(); }
 function axRe(p,j){ const el=document.getElementById('ax-'+p+'-'+j); if(!el) return; [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open); el.innerHTML=axBody(p,j); axCount(p,j); }
-function axSet(p,j,path,v,re){ if(/^(data|dataFine|durata)$/.test(path)) setTimeout(()=>tlRefresh(p),0); const x=axX(p,j); const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
+function axSet(p,j,path,v,re){ if(/^(data|dataFine|durata)$/.test(path)) setTimeout(()=>tlRefresh(p),0); const x=axX(p,j); if(/^luogo\.(from|nome|rientroDove|mezzo|tipo)$/.test(path)) setTimeout(()=>axKmSoon(p,j),0); if(path==='luogo.ritrovoDove'){ const L0=x.luogo||{}; if(axRientroStesso(L0)){ if(!x.luogo) x.luogo={}; x.luogo.rientroStesso=true; setTimeout(()=>{ const L=(axX(p,j).luogo)||{}; if(axRientroStesso(L)){ axRientroCopy(L); axSave(); const ro=document.querySelector('#ax-'+p+'-'+j+' .ax-ro'); if(ro) ro.textContent=L.ritrovoDove||'come il ritrovo'; } },0); } } const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
 function axGet(x,path){ return String(path).split('.').reduce((o,k)=>o==null?undefined:o[k],x); }
 function axArrP(p,j,path){ const x=axX(p,j); let v=axGet(x,path); if(!Array.isArray(v)){ axSetQuiet(x,path,[]); v=axGet(x,path); } return v; }
 function axSetQuiet(x,path,v){ const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; }
@@ -7455,7 +7491,7 @@ function icsEvent(p,j){
   const a=attGet(p,j); if(!a) return null; const x=a.ax||{}; if(!x.data) return null; const L=x.luogo||{};
   const multi=x.durata==='piu'&&x.dataFine&&x.dataFine>x.data; const d2=multi?x.dataFine:x.data;
   const st=icsDT(x.data, L.ritrovo||''), en=icsDT(d2, L.rientro||''); const per=getAllPercorsi()[p]||{}; const pp=Object.values(DB).flat().find(q=>q.id===per.percorsoId);
-  const tit=((a.testo||'').trim()||'Attività '+(j+1))+(UNIT_NAME?' · '+UNIT_NAME:'');
+  const tit=((a.testo||'').trim()||'Attività '+attNum(p,j))+(UNIT_NAME?' · '+UNIT_NAME:'');
   const luogo=L.tipo==='sede'?'In sede'+(scheda.pp&&scheda.pp.sezione?' · '+scheda.pp.sezione:''):(L.nomeAddr||L.nome||'');
   const mapU=axPlaceUrl(L,'nome')||'';
   const desc=[pp?'Percorso: '+pp.name:'', L.ritrovo||L.ritrovoDove?'Ritrovo: '+[L.ritrovo?'ore '+L.ritrovo:'',axPlaceTxt(L,'ritrovoDove')].filter(Boolean).join(' · '):'', axPlaceUrl(L,'ritrovoDove')?'Mappa del ritrovo: '+axPlaceUrl(L,'ritrovoDove'):'',
@@ -7505,7 +7541,7 @@ function fdgData(p,j){
   try{ const ids=axIdr(per).filter(o=>((x.oss||{})[o.k]||{}).on); if(ids.length) add('Da osservare oggi','idr',{rows:ids.map(o=>{ const v=(x.oss||{})[o.k]||{}; return {t:o.t, comp:(v.comp||'').trim(), chi:noPar(v.chi)}; }), sub:'Annota cosa vedi: ti servirà per la verifica e per la Sezione 5.'}); }catch(e){}
   add('Note di giornata','blank',{rows:['Presenti effettivi','Imprevisti e come sono andati','Spese fatte (cosa · quanto · chi)']});
   add('Appunti','note',{});
-  return {perc:pp?'Percorso: '+pp.name:'', unit:[UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '), title:(a.testo||'').trim()||'Attività '+(j+1), date:dt+dt2, sec:S};
+  return {perc:pp?'Percorso: '+pp.name:'', unit:[UNIT_NAME||'',pp?'Percorso: '+pp.name:''].filter(Boolean).join(' · '), title:(a.testo||'').trim()||'Attività '+attNum(p,j), date:dt+dt2, sec:S};
 }
 function fdgHTML(p,j){
   const D=fdgData(p,j); const E=t=>axE(t); const ml=t=>E(t).replace(/\n/g,'<br>');
@@ -7598,7 +7634,8 @@ function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPerc
   return h; }
 function axLog(p,j,a,x){ const L=x.luogo||{}; const N=axN(x); let h='';
   h+=axLbl('Ritrovo e rientro')+`<div class="ax-rr"><div><div class="ax-sub">Luogo di ritrovo</div>${axPlaceField(p,j,L,'ritrovoDove','es. in sede, piazza del Popolo')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.ritrovo',this.value)">${axTimeOpts(L.ritrovo)}</select></div></div>
-    <div class="ax-rr"><div><div class="ax-sub">Luogo di rientro</div>${axPlaceField(p,j,L,'rientroDove','es. in sede, stazione')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.rientro',this.value)">${axTimeOpts(L.rientro)}</select></div></div>`;
+    <label class="ax-same"><input type="checkbox" id="ax-same-${p}-${j}" ${axRientroStesso(L)?'checked':''} onchange="axRientroSet(${p},${j},this.checked)"> Rientro nello stesso luogo della partenza</label>
+    <div class="ax-rr"><div><div class="ax-sub">Luogo di rientro</div>${axRientroStesso(L)?`<div class="ax-in ax-ro">${axE(L.ritrovoDove||'come il ritrovo')}</div>`:axPlaceField(p,j,L,'rientroDove','es. in sede, stazione')}</div><div><div class="ax-sub">Ora</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.rientro',this.value)">${axTimeOpts(L.rientro)}</select></div></div>`;
   h+=axLbl('Dove si svolge')+axChips(AX_TIPO,L.tipo,v=>`axSet(${p},${j},'luogo.tipo',axD('${v}'),true)`);
   if(L.tipo==='altro') h+=axIN(p,j,'luogo.tipoAltro','Specifica',L.tipoAltro);
   if(L.tipo&&L.tipo!=='sede'){
@@ -7607,7 +7644,7 @@ function axLog(p,j,a,x){ const L=x.luogo||{}; const N=axN(x); let h='';
     h+=`<div class="ax-sub" style="margin-top:6px">Come vi spostate</div>`+axChips(AX_MEZZI,L.mezzo,v=>`axSet(${p},${j},'luogo.mezzo',axD('${v}'),true)`);
     if(L.mezzo==='altro') h+=axIN(p,j,'luogo.mezzoAltro','Specifica il mezzo',L.mezzoAltro);
     if(L.mezzo&&L.mezzo!=='piedi'&&L.mezzo!=='bici'){
-      h+=`<div class="ax-row3"><div><div class="ax-sub">Km andata e ritorno</div><input class="ax-in" type="number" min="0" value="${axE(L.km)}" oninput="axSet(${p},${j},'luogo.km',this.value)"></div>${L.mezzo==='auto'?`<div><div class="ax-sub">Persone per auto</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.perAuto',this.value)">${axNumOpts(L.perAuto||4,9).replace('<option value="0" >0</option>','')}</select></div>`:'<div></div>'}<div></div></div>`;
+      h+=`<div class="ax-row3"><div><div class="ax-sub">Km andata e ritorno</div><div class="ax-geo"><input class="ax-in" id="ax-km-${p}-${j}" type="number" min="0" value="${axE(L.km)}" oninput="axSet(${p},${j},'luogo.km',this.value)"><button type="button" class="btn-ghost ax-btn" onclick="axKmCalc(${p},${j})">Calcola distanza</button></div></div>${L.mezzo==='auto'?`<div><div class="ax-sub">Persone per auto</div><select class="ax-in" onchange="axSet(${p},${j},'luogo.perAuto',this.value)">${axNumOpts(L.perAuto||4,9).replace('<option value="0" >0</option>','')}</select></div>`:'<div></div>'}<div></div></div>`;
       h+=`<div class="ax-co2" id="ax-co2-${p}-${j}">${axCO2(L,N.tot)}</div>`;
     }
   }
@@ -7639,14 +7676,14 @@ function axPlaceField(p,j,L,k,ph,extra){ const u=axPlaceUrl(L,k), ad=L[k+'Addr']
    +`<div id="ax-geo-${k}-${p}-${j}"></div>`; }
 function axPlaceIn(p,j,k,inp){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo;
   axSet(p,j,'luogo.'+k,inp.value); if(k==='nome'&&L.lat&&!L.nomeAddr){ delete L.lat; delete L.lon; } }
-function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Addr']; delete L[k+'Lat']; delete L[k+'Lon']; if(k==='nome'){ delete L.lat; delete L.lon; } axSave(); axRe(p,j); }
+function axPlaceUnlink(p,j,k){ const L=(axX(p,j).luogo)||{}; delete L[k+'Addr']; delete L[k+'Lat']; delete L[k+'Lon']; if(k==='nome'){ delete L.lat; delete L.lon; } if(k==='ritrovoDove'&&axRientroStesso(L)) axRientroCopy(L); axSave(); axRe(p,j); }
 async function axGeoK(p,j,k){ const L=(axX(p,j).luogo)||{}; const box=document.getElementById('ax-geo-'+k+'-'+p+'-'+j); const q=String(L[k]||'').trim();
   if(!q||axIsLinkTxt(q)){ showToast('Scrivi prima il nome o l’indirizzo del luogo'); return; } box.innerHTML='<span class="ax-sub">Cerco…</span>';
   try{ const sez=((scheda.pp&&scheda.pp.sezione)||'').trim(); let res=sez&&!/,/.test(q)?await axGeoQ(q+', '+sez):[]; if(!res.length) res=await axGeoQ(q);
     if(!res.length){ box.innerHTML='<span class="ax-sub">Non lo trovo: prova con via e città, oppure incolla qui il link di Google Maps.</span>'; return; }
     window._axResK=res; box.innerHTML='<div class="ax-sub">Scegli l’indirizzo giusto:</div>'+res.map((r,i)=>`<button type="button" class="ax-res" onclick="axPickK(${p},${j},'${k}',${i})">${axE(axAddrFmt(r))}<br><span class="ax-opt">${axE(r.display_name)}</span></button>`).join('');
   }catch(e){ box.innerHTML='<span class="ax-sub">Ricerca non disponibile ora (serve internet).</span>'; } }
-function axPickK(p,j,k,i){ const r=(window._axResK||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L[k+'Addr']=axAddrFmt(r); L[k+'Lat']=+r.lat; L[k+'Lon']=+r.lon; axSave(); axRe(p,j); }
+function axPickK(p,j,k,i){ const r=(window._axResK||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L[k+'Addr']=axAddrFmt(r); L[k+'Lat']=+r.lat; L[k+'Lon']=+r.lon; if(k==='ritrovoDove'&&axRientroStesso(L)) axRientroCopy(L); axSave(); axRe(p,j); }
 function axMapA(q,L,id){ const u=axMapUrl(q,L); return `<a class="att-link-open ax-map" ${id?`id="${id}"`:''} target="_blank" rel="noopener" href="${axE(u)}" style="${u?'':'display:none'}">Maps ↗</a>`; }
 function axMapUpd(inp){ const a=inp.parentElement.querySelector('.ax-map'); if(!a) return; const u=axMapUrl(inp.value); a.style.display=u?'':'none'; if(u) a.href=u; }
 function axCO2(L,n){ const km=Number(L.km)||0; if(!km||!n) return '<span class="ax-sub">Indica i presenti e i km per stimare l’impronta ecologica del viaggio.</span>';
@@ -7662,13 +7699,34 @@ async function axGeo(p,j){ const x=axX(p,j); const L=x.luogo||{}; const box=docu
     window._axRes=res; box.innerHTML='<div class="ax-sub">Scegli il luogo giusto:</div>'+res.map((r,i)=>`<button type="button" class="ax-res" onclick="axPick(${p},${j},${i})">${axE(r.display_name)}</button>`).join('');
   }catch(e){ box.innerHTML='<span class="ax-sub">Ricerca non disponibile ora (serve internet). Puoi inserire i km a mano.</span>'; } }
 async function axPick(p,j,i){ const r=(window._axRes||[])[i]; if(!r) return; const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L.nome=r.display_name.split(',').slice(0,3).join(','); L.lat=+r.lat; L.lon=+r.lon; L.nomeAddr=axAddrFmt(r); L.nomeLat=+r.lat; L.nomeLon=+r.lon; axSave();
-  const box=document.getElementById('ax-geo-r-'+p+'-'+j); box.innerHTML='<span class="ax-sub">Calcolo la distanza…</span>';
-  try{ const from=(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim(); if(!from) throw new Error('nofrom'); const fr=await axGeoQ(from); if(!fr.length) throw new Error('nofrom');
-    const a={lat:+fr[0].lat,lon:+fr[0].lon}; let km=null, how='';
-    if(L.mezzo!=='treno'){ try{ const rr=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${L.lon},${L.lat}?overview=false`); const jj=await rr.json(); if(jj.routes&&jj.routes[0]){ km=Math.round(jj.routes[0].distance/1000*2); how='su strada'; } }catch(e){} }
-    if(km==null){ km=Math.round(axHav(a,L)*2*1.25); how=L.mezzo==='treno'?'stimati per il treno (linea d’aria + 25%)':'stimati (linea d’aria + 25%)'; }
-    L.km=km; axSave(); axRe(p,j); const b2=document.getElementById('ax-geo-r-'+p+'-'+j); if(b2) b2.innerHTML=`<span class="ax-sub">Da ${axE(from)}: ${km} km andata e ritorno, ${how}. Puoi correggerli.</span>`;
-  }catch(e){ axRe(p,j); const b2=document.getElementById('ax-geo-r-'+p+'-'+j); if(b2) b2.innerHTML='<span class="ax-sub">Non riesco a calcolare la distanza: indica la partenza o inserisci i km a mano.</span>'; } }
+  axRe(p,j); await axKmCalc(p,j); }
+// rientro nello stesso luogo del ritrovo: se non è mai stato scelto, vale sì quando i due luoghi coincidono (anche vuoti)
+function axRientroStesso(L){ L=L||{}; return L.rientroStesso!=null ? !!L.rientroStesso : String(L.rientroDove||'').trim()===String(L.ritrovoDove||'').trim(); }
+function axRientroCopy(L){ ['','Addr','Lat','Lon'].forEach(s=>{ if(L['ritrovoDove'+s]!=null && L['ritrovoDove'+s]!=='') L['rientroDove'+s]=L['ritrovoDove'+s]; else delete L['rientroDove'+s]; }); }
+function axRientroSet(p,j,on){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo; L.rientroStesso=!!on; if(on) axRientroCopy(L); axSave(); axRe(p,j); axKmSoon(p,j); }
+// distanza: partenza → luogo dell'attività → rientro (se diverso), su strada se possibile
+async function axPt(q, lat, lon){ if(lat!=null && lon!=null && !isNaN(lat)) return {lat:+lat, lon:+lon}; q=String(q||'').trim(); if(!q || axIsLinkTxt(q)) return null; const r=await axGeoQ(q); return r.length ? {lat:+r[0].lat, lon:+r[0].lon} : null; }
+async function axLeg(a,b,treno){ if(!treno){ try{ const rr=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`); const jj=await rr.json(); if(jj.routes&&jj.routes[0]) return {km:jj.routes[0].distance/1000, strada:true}; }catch(e){} } return {km:axHav(a,b)*1.25, strada:false}; }
+let _axKmT={};
+function axKmNeeded(L){ return L && L.tipo && L.tipo!=='sede' && L.mezzo && L.mezzo!=='piedi' && L.mezzo!=='bici'; }
+function axKmSoon(p,j){ const k=p+'-'+j; clearTimeout(_axKmT[k]); _axKmT[k]=setTimeout(()=>{ const L=(axX(p,j).luogo)||{}; if(axKmNeeded(L) && String(L.nome||'').trim() && String(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim()) axKmCalc(p,j,true); }, 1500); }
+async function axKmCalc(p,j,auto){ const x=axX(p,j); if(!x.luogo) x.luogo={}; const L=x.luogo;
+  const msg=h=>{ const b=document.getElementById('ax-geo-r-'+p+'-'+j); if(b) b.innerHTML='<span class="ax-sub">'+h+'</span>'; };
+  const from=String(L.from||(scheda.pp&&scheda.pp.sezione)||'').trim(), dest=String(L.nome||'').trim();
+  if(!dest){ if(!auto) showToast('Scrivi prima il luogo dell’attività'); return; }
+  if(!from){ msg('Indica la partenza per calcolare la distanza.'); return; }
+  msg('Calcolo la distanza…'); const sig=[from,dest,axRientroStesso(L)?'':L.rientroDove||'',L.mezzo].join('|');
+  try{ const a=await axPt(from); if(!a) throw new Error('nofrom');
+    const b=await axPt(dest, L.lat, L.lon); if(!b) throw new Error('nodest');
+    const treno=L.mezzo==='treno'; const g1=await axLeg(a,b,treno); let g2=g1, rTxt='';
+    if(!axRientroStesso(L) && String(L.rientroDove||'').trim()){ const c=await axPt(L.rientroDove, L.rientroDoveLat, L.rientroDoveLon).catch(()=>null); if(c){ g2=await axLeg(b,c,treno); rTxt=' (ritorno fino a '+axE(L.rientroDove)+')'; } }
+    const cur=(axX(p,j).luogo)||{}; if([String(cur.from||(scheda.pp&&scheda.pp.sezione)||'').trim(),String(cur.nome||'').trim(),axRientroStesso(cur)?'':cur.rientroDove||'',cur.mezzo].join('|')!==sig) return; // nel frattempo è cambiato qualcosa: ci pensa il calcolo successivo
+    const km=Math.round(g1.km+g2.km), how=(g1.strada&&g2.strada)?'su strada':(treno?'stimati per il treno (linea d’aria + 25%)':'stimati (linea d’aria + 25%)');
+    L.km=km; L.kmSig=sig; axSave();
+    const inp=document.getElementById('ax-km-'+p+'-'+j); if(inp) inp.value=km; else axRe(p,j);
+    axLive(p,j);
+    msg(`${auto?'Km aggiornati: ':''}da ${axE(from)}: ${km} km andata e ritorno${rTxt}, ${how}. Puoi correggerli.`);
+  }catch(e){ msg(e&&e.message==='nofrom'?'Non trovo la partenza: scrivila in un altro modo o inserisci i km a mano.':e&&e.message==='nodest'?'Non trovo il luogo dell’attività: usa «Cerca» o inserisci i km a mano.':'Non riesco a calcolare la distanza ora (serve internet): inserisci i km a mano.'); } }
 function axHav(a,b){ const R=6371, t=Math.PI/180; const dl=(b.lat-a.lat)*t, dn=(b.lon-a.lon)*t; const h=Math.sin(dl/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
 
 // ── 2. MATERIALI, PASTI E COSTI ──
@@ -7734,21 +7792,39 @@ function axSpesaShow(p,j){ const x=axX(p,j); const box=document.getElementById('
 // altre spese e riepilogo
 function axSpese(p,j,x){ const S=axArrP(p,j,'spese'); const rows=S.length?S:[{}]; const N=axN(x);
   return rows.map((r,i)=>`<div class="ax-spesa"><input class="ax-in" placeholder="es. casa per la notte, pullman, ingressi" value="${axE(r.voce)}" oninput="axRowSet(${p},${j},'spese',${i},'voce',this.value)"><input class="ax-in" type="number" min="0" step="0.01" placeholder="€" value="${axE(r.importo)}" oninput="axRowSet(${p},${j},'spese',${i},'importo',this.value)"><select class="ax-in" onchange="axRowSet(${p},${j},'spese',${i},'modo',this.value,true)">${axOpt(AX_SPMODO,r.modo||'forfait')}</select>${r.modo==='notte'?`<input class="ax-in" type="number" min="1" placeholder="notti" value="${axE(r.notti)}" oninput="axRowSet(${p},${j},'spese',${i},'notti',this.value)">`:''}<select class="ax-in" onchange="axRowSet(${p},${j},'spese',${i},'carico',this.value,true)">${axOpt(AX_CARICO,r.carico)}</select>${S.length?`<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'spese',${i})">×</button>`:''}${r.modo&&r.modo!=='forfait'&&Number(r.importo)?`<span class="ax-hint">→ ${axEur(axSpesaCost(r,N))}</span>`:''}</div>`).join('')+`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'spese',{modo:'forfait'})">+ Aggiungi spesa</button>`; }
-function axCosti(x){ const N=axN(x); const items=[]; (x.mat||[]).forEach(r=>{ const c=axMatCost(r,N); if(c) items.push({voce:(r.cosa||'materiale').trim(),c,k:r.carico||''}); });
-  const fc=axFoodCost(x); if(fc) items.push({voce:'Cibo (stima)',c:fc,k:(x.cibo||{}).carico||''}); (x.spese||[]).forEach(r=>{ const c=axSpesaCost(r,N); if(c) items.push({voce:(r.voce||'spesa').trim(),c,k:r.carico||''}); }); return items; }
+// costi: una spesa «a persona» a carico dei ragazzi si divide tra la parte dei ragazzi (nella quota)
+// e la parte dei capi, che compare a parte «da attribuire» (o a carico di chi si sceglie in x.capiCarico)
+function axCosti(x){ const N=axN(x); const items=[]; const ck=x.capiCarico||'';
+  const add=(voce,c,k,unit)=>{ if(!c) return;   // unit = costo a testa quando la spesa è «a persona»
+    if(k==='ragazzi' && unit!=null && N.ad && N.rag && ck!=='ragazzi'){ const cr=unit*N.rag, ca=c-cr;
+      items.push({voce,c:cr,k,unit}); if(ca>0.0001) items.push({voce:voce+' · parte dei capi',c:ca,k:ck,capi:true}); return; }
+    items.push(unit!=null&&k==='ragazzi'&&ck!=='ragazzi'?{voce,c,k,unit}:{voce,c,k}); };
+  (x.mat||[]).forEach(r=>{ const c=axMatCost(r,N); if(!c) return; const v=(r.cosa||'materiale').trim(); const q=Number(r.q==null||r.q===''?1:r.q)||0;
+    add(v,c,r.carico||'',r.qm==='pers'?(Number(r.prezzo)||0)*q:null); });
+  const fc=axFoodCost(x); if(fc) add('Cibo (stima)',fc,(x.cibo||{}).carico||'',N.tot?fc/N.tot:null);
+  (x.spese||[]).forEach(r=>{ const c=axSpesaCost(r,N); if(!c) return; const v=Number(r.importo)||0;
+    add((r.voce||'spesa').trim(),c,r.carico||'',r.modo==='pers'?v:r.modo==='notte'?v*(Number(r.notti)||1):null); });
+  return items; }
+// il conto della quota in chiaro: «Casa 100 € ÷ 20 = 5 € + Pullman 50 € a testa = 55 € a testa»
+function axQuotaConto(x){ const N=axN(x); const R=axCosti(x).filter(i=>i.k==='ragazzi'); if(!R.length||!N.rag) return '';
+  const tot=R.reduce((a,i)=>a+i.c,0); const parts=R.map(i=>i.unit!=null?`${i.voce} ${axEur(i.unit)} a testa`:`${i.voce} ${axEur(i.c)} ÷ ${N.rag} = ${axEur(i.c/N.rag)}`);
+  return parts.join(' + ')+` = ${axEur(tot/N.rag)} a testa`; }
 function axTot(x){ const items=axCosti(x); const N=axN(x); const mono=(x.mat||[]).filter(r=>r.eco==='monouso'&&(r.cosa||'').trim()).length; let s='';
-  if(items.length){ const lab=Object.fromEntries(AX_CARICO); const by={}; items.forEach(it=>{ (by[it.k]=by[it.k]||[]).push(it); });
+  if(items.length){ const by={}; items.forEach(it=>{ (by[it.k]=by[it.k]||[]).push(it); });
     const tot=items.reduce((t,i)=>t+i.c,0); s+=`<div><b>Spesa complessiva: ${axEur(tot)}</b></div>`;
     Object.keys(by).filter(k=>k!=='ragazzi').forEach(k=>{ const t=by[k].reduce((a,i)=>a+i.c,0); s+=`<div>${k?'A carico '+(k==='altro'?'di altri':(k==='unita'?'dell’Unità':k==='gruppo'?'del Gruppo':'della Sezione')):'Ancora da attribuire'}: ${axEur(t)} <span class="ax-hint">(${by[k].map(i=>i.voce).join(', ')})</span></div>`; });
-    if(by.ragazzi){ const t=by.ragazzi.reduce((a,i)=>a+i.c,0); s+=`<div class="ax-quota-box">Quota dei ragazzi: <b>${axEur(t)}</b>${N.rag?` → <b>${axEur(t/N.rag)} a testa</b> (${N.rag} ragazzi)`:' · indica i ragazzi presenti per la quota a testa'}<div class="ax-hint">${by.ragazzi.map(i=>i.voce+' '+axEur(i.c)).join(' · ')}</div></div>`; } }
+    if(by.ragazzi){ const t=by.ragazzi.reduce((a,i)=>a+i.c,0); s+=`<div class="ax-quota-box">Quota dei ragazzi: <b>${axEur(t)}</b>${N.rag?` → <b>${axEur(t/N.rag)} a testa</b> (${N.rag} ragazzi)`:' · indica i ragazzi presenti per la quota a testa'}<div class="ax-hint ax-conto">${N.rag?axE(axQuotaConto(x)):by.ragazzi.map(i=>i.voce+' '+axEur(i.c)).join(' · ')}</div></div>`; } }
   if(mono) s+=`<div class="ax-eco">${mono} material${mono>1?'i':'e'} monouso: si ${mono>1?'possono':'può'} sostituire con qualcosa di riutilizzabile o di recupero?</div>`;
   return s; }
 function axQuota(x){ const N=axN(x); const t=axCosti(x).filter(i=>i.k==='ragazzi').reduce((a,i)=>a+i.c,0); return N.rag&&t?t/N.rag:0; }
+// c'è una parte dei capi dentro spese «a persona» pagate dai ragazzi?
+function axHasCapi(x){ const y=Object.assign({},x,{capiCarico:''}); return axCosti(y).some(i=>i.capi); }
 function axMat(p,j,a,x){ const M=axArrP(p,j,'mat'); M.forEach(r=>{ if(r.link&&!r.dove){ r.dove=r.link; delete r.link; } }); const rows=M.length?M:[{}]; const N=axN(x);
   let h=axLbl('Materiali')+`<div class="ax-mats">${rows.map((r,i)=>axMatRow(p,j,r,i,M.length,N)).join('')}</div><button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'mat',{prov:'unita',q:1,qm:'fissa'})">+ Aggiungi materiale</button>`;
   if((a.materiali||'').trim()) h+=axLbl('Altre note sui materiali')+`<textarea class="ax-ta" oninput="updateAttivita(${p},${j},'materiali',this.value);saveDataDebounced()">${axE(a.materiali)}</textarea>`;
   return h; }
 function axCosti2(p,j,a,x){ let h=`<div class="ax-hint" style="margin-bottom:6px">Somma di materiali, pasti e altre spese.</div>`+`<div class="ax-tot" id="ax-tot-${p}-${j}">${axTot(x)||'<span class="ax-hint">Qui compaiono i totali quando inserisci prezzi o spese.</span>'}</div>`;
+  if(axHasCapi(x)||x.capiCarico) h+=`<div class="ax-capi"><div class="ax-sub">Nelle spese «a persona» c’è anche la parte dei capi: chi la paga?</div><select class="ax-in" id="ax-capi-${p}-${j}" onchange="axSet(${p},${j},'capiCarico',this.value,true)">${axOpt([['','Da attribuire'],['unita','Unità'],['gruppo','Gruppo'],['sezione','Sezione'],['ragazzi','La dividono i ragazzi (nella quota)'],['altro','Altro']],x.capiCarico||'')}</select></div>`;
   return h; }
 
 // ── 3. DURANTE ──
@@ -7776,8 +7852,34 @@ function axSic(p,j,a,x){ const N=axN(x); const S=x.sic||{};
     `<div class="ax-sub">Rischi specifici e come li riduci</div>${axTA(p,j,'sic.rischi','es. attraversamento della strada, acqua, attrezzi da taglio…',S.rischi)}<div class="ax-row2"><div><div class="ax-sub">Numeri utili</div>${axIN(p,j,'sic.numeri','es. 112, guardia medica, referente del luogo',S.numeri)}</div><div><div class="ax-sub">Cassetta di primo soccorso</div><div class="ax-hint">${AX_VADE}</div></div></div>`; }
 function axBen(p,j,a,x){
   return `<div class="att-inc"><div><div class="att-sub">A cosa fare attenzione</div><textarea class="ax-ta" placeholder="es. un ragazzo con difficoltà motorie, chi non sa nuotare, chi ha paura del buio, chi è appena arrivato, chi si espone poco…" oninput="updateAttivita(${p},${j},'incRischi',this.value);saveDataDebounced();axLive(${p},${j})">${axE(a.incRischi)}</textarea></div><div><div class="att-sub">Accortezze che metti in campo</div><textarea class="ax-ta" placeholder="es. un ruolo alternativo di pari valore, un percorso più corto, una coppia di riferimento, la possibilità di dire “passo” senza giudizio…" oninput="updateAttivita(${p},${j},'incAzioni',this.value);saveDataDebounced();axLive(${p},${j})">${axE(a.incAzioni)}</textarea></div></div><div class="att-note">Descrivi le situazioni senza nomi e senza dati sanitari: questa parte finisce nella scheda dell’attività che condividi.</div>`; }
-function axLinkEst(p,j,a){
-  return axLbl('Eventuali link esterni','schede, video, materiali online')+`<div style="display:flex;gap:8px;align-items:center"><input type="text" inputmode="url" autocomplete="off" class="ax-in" style="flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${axE(a.link)}" oninput="updateAttivita(${p},${j},'link',this.value);attLinkBtn(this);saveDataDebounced();axLive(${p},${j})"><a class="att-link-open" href="${axE(linkNorm(a.link||''))}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(a.link||''))?'':'display:none'}">Apri ↗</a></div>`; }
+function axLinkEst(p,j,a){ const n=attLinks(a).filter(l=>(l.u||'').trim()).length;
+  return axLbl('Allegati e link')+`<div class="ax-hint">${n?n+(n===1?' link':' link')+' nella sezione «Allegati e link» dell’attività, sotto la Conclusione.':'I link (Drive, Canva, video, album, PDF…) si aggiungono in «Allegati e link», sotto la Conclusione.'}</div>`; }
+// ── Allegati e link: elenco riusabile (nome + indirizzo, icona secondo il tipo) ──
+// Nell'attività: a.links = [{n, u}]; a.link resta uguale al primo indirizzo (lo leggono le versioni precedenti dell'app)
+function lkType(u){ u=String(u||'').toLowerCase();
+  if(/drive\.google|docs\.google|sheets\.google|slides\.google/.test(u)) return ['drive','Drive'];
+  if(/canva\.(com|link)/.test(u)) return ['canva','Canva']; if(/youtube\.com|youtu\.be|vimeo\.com/.test(u)) return ['video','Video'];
+  if(/photos\.google|photos\.app\.goo|flickr|icloud\.com\/(photos|sharedalbum)|onedrive\.live\.com.*photo|album/.test(u)) return ['foto','Foto'];
+  if(/\.pdf(\?|#|$)/.test(u)) return ['pdf','PDF']; if(/\S/.test(u)) return ['sito','Sito']; return ['vuoto','Link']; }
+function lkRowHTML(id,i,l,fn){ const u=linkNorm(l.u||''), ok=/^(https?:|mailto:)/i.test(u), t=lkType(l.u);
+  return `<div class="lk-row" data-i="${i}"><span class="lk-ic lk-${t[0]}" aria-hidden="true">${t[1]}</span><input type="text" class="lk-n" placeholder="Nome (es. Scheda di gioco)" value="${sEsc(l.n||'')}" oninput="${fn}(${id},${i},'n',this.value)"><input type="text" class="lk-u" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Indirizzo (es. drive.google.com/…)" value="${sEsc(l.u||'')}" oninput="${fn}(${id},${i},'u',this.value)"><a class="lk-open" href="${sEsc(u)}" target="_blank" rel="noopener" ${ok?'':'hidden'}>Apri ↗</a><button type="button" class="btn-ghost lk-x" title="Togli il link" aria-label="Togli il link" onclick="${fn}(${id},${i},'del')">×</button></div>`; }
+function lkListHTML(id,list,fn,ro){ const L=list.length?list:[];
+  if(ro) return L.filter(l=>(l.u||'').trim()).map(l=>{ const u=linkNorm(l.u), t=lkType(l.u); return `<div class="lk-row ro"><span class="lk-ic lk-${t[0]}" aria-hidden="true">${t[1]}</span><a href="${sEsc(u)}" target="_blank" rel="noopener">${sEsc((l.n||'').trim()||l.u)}</a></div>`; }).join('')||'<div class="ax-hint">Nessun link.</div>';
+  return L.map((l,i)=>lkRowHTML(id,i,l,fn)).join('')+`<button type="button" class="btn-ghost lk-add" onclick="${fn}(${id},-1,'add')">+ Aggiungi un link</button>`; }
+function attLinks(a){ if(!a) return []; if(Array.isArray(a.links)) return a.links; return (a.link||'').trim()?[{n:'',u:a.link}]:[]; }
+function attLinksHTML(idx,j,a){ const L=attLinks(a); const n=L.filter(l=>(l.u||'').trim()).length;
+  return `<div class="att-links" id="att-links-${idx}-${j}"><div class="att-links-h">${OPT}Allegati e link${n?` <span class="ax-opt">· ${n} link</span>`:''}</div><div class="ax-hint" style="margin:0 0 4px">Schede, video, foto, documenti su Drive o Canva: si aprono con un tocco e finiscono nel Word come link cliccabili.</div><div class="lk-list">${lkListHTML("'"+idx+'-'+j+"'",L,'attLk',window.BRO)}</div></div>`; }
+function attLk(key,i,k,v){ const [p,j]=String(key).split('-').map(Number); const a=attGet(p,j); if(!a) return;
+  if(!Array.isArray(a.links)) a.links=attLinks(a).map(l=>({n:l.n||'',u:l.u||''}));
+  const box=document.getElementById('att-links-'+p+'-'+j);
+  if(k==='add'){ a.links.push({n:'',u:''}); }
+  else if(k==='del'){ const l=a.links[i]; if(l&&((l.n||'').trim()||(l.u||'').trim())&&!confirm('Togliere il link «'+((l.n||'').trim()||l.u)+'»?')) return; a.links.splice(i,1); }
+  else { if(!a.links[i]) return; a.links[i][k]=v; }
+  a.link=((a.links.find(l=>(l.u||'').trim())||{}).u)||'';
+  saveDataDebounced();
+  if(k==='add'||k==='del'){ if(box){ box.outerHTML=attLinksHTML(p,j,a); if(k==='add'){ const r=[...document.querySelectorAll('#att-links-'+p+'-'+j+' .lk-n')].pop(); if(r) r.focus(); } } return; }
+  const row=box&&box.querySelector('.lk-row[data-i="'+i+'"]'); if(row&&k==='u'){ const u=linkNorm(v), ok=/^(https?:|mailto:)/i.test(u), t=lkType(v); const o=row.querySelector('.lk-open'); o.href=u; o.hidden=!ok; const ic=row.querySelector('.lk-ic'); ic.className='lk-ic lk-'+t[0]; ic.textContent=t[1]; } }
+function attLinksDoc(a,o={}){ return attLinks(a).filter(l=>(l.u||'').trim()).map(l=>dPara([dTxt('↗ ',{size:o.size||17,color:GREEN}), dLink(l.u,{size:o.size||17,label:(l.n||'').trim()||String(l.u).trim()})],{after:20,indent:o.indent||0})); }
 function axPB(p,j,k){ const x=axX(p,j); if(!x.pb) x.pb={}; if(x.pb[k]!=null && !(x.pb[k]||'').trim()) delete x.pb[k]; else if(x.pb[k]==null) x.pb[k]=''; else { showToast('Svuota prima il testo per togliere questa voce'); } axSave(); axRe(p,j); }
 
 // ── messaggio ai genitori ──
@@ -7820,7 +7922,7 @@ function axLive(p,j){ axCount(p,j); const a=attGet(p,j), x=a.ax||{}; const t=doc
 function axBody(p,j){ const a=axA(p,j); const x=a.ax;
   return axGroup(p,j,'chi','Chi e quando <span>· presenti, data, permessi, cose da fare</span>',axChi(p,j,a,x))+
     axGroup(p,j,'log','Logistica <span>· ritrovo e rientro, luogo, spostamenti</span>',axLog(p,j,a,x))+
-    axGroup(p,j,'durante','Durante l’attività <span>· scaletta, strumenti, ruoli, cosa osservi, link</span>',axDurante(p,j,a,x)+axLinkEst(p,j,a))+
+    axGroup(p,j,'durante','Durante l’attività <span>· scaletta, strumenti, ruoli, cosa osservi</span>',axDurante(p,j,a,x)+axLinkEst(p,j,a))+
     axGroup(p,j,'mat','Materiali <span>· cosa serve, chi lo procura, quanto costa</span>',axMatOld(x)+axMat(p,j,a,x))+
     axGroup(p,j,'pasti','Pasti e spesa <span>· menù, diete speciali, lista della spesa</span>',axCibo(p,j,x))+
     axGroup(p,j,'costi','Cassa e costi <span>· altre spese, riepilogo, quota a testa</span>',axSpese(p,j,x)+axCosti2(p,j,a,x))+
@@ -7849,11 +7951,11 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
     +`<div class="ax-sub" style="margin-top:10px">Si parte con addosso <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_ADDOSSO().map(v=>[v,v]),x.addosso||[],v=>`axTog(${p},${j},'addosso',axD('${v}'))`,true)
     +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
     +(FASCIA!=='E'?`<div class="ax-sub" style="margin-top:8px">${FASCIA==='L'?'Consigli per le famiglie':'Consigli per lo zaino'} <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true):'');
-  h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>
+  h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>${axQuota(x)&&axQuotaConto(x)?`<div class="ax-hint">${axE(axQuotaConto(x))}</div>`:''}
     ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
     <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
   h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi e quando”.</div>`);
-  h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button></div><div id="ax-msg-${p}-${j}"></div>`;
+  h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgPdf(${p},${j})">↓ Scarica in PDF</button></div>${axCuTelAsk(p,j)}<div id="ax-msg-${p}-${j}"></div>`;
   return h; }
 function attExtraHTML(p,j,a){ const n=axFilledN(a);
   if(!document.getElementById('ax-food-dl')){ const dl=document.createElement('datalist'); dl.id='ax-food-dl'; dl.innerHTML=Object.keys(AX_FOOD).map(k=>`<option value="${k}">`).join(''); document.body.appendChild(dl); }
@@ -7862,7 +7964,7 @@ function attExtraHTML(p,j,a){ const n=axFilledN(a);
 // ── Word: scheda della singola attività ──
 async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
   const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, N=axN(x); const per=getAllPercorsi()[p]; const T_=t=>(t||'').trim().length>0; const P=Object.values(DB).flat().find(q=>q.id===(per&&per.percorsoId));
-  const D=dxLib(); const ch=[...dTitleBlock((a.testo||'').trim()||'Attività '+(j+1), (P?'Percorso: '+P.name+' · ':'')+'Scheda dell’attività')];
+  const D=dxLib(); const ch=[...dTitleBlock((a.testo||'').trim()||'Attività '+attNum(p,j), (P?'Percorso: '+P.name+' · ':'')+'Scheda dell’attività')];
   const cellLink=(u,label)=>dCell([dPara([dLink(u,{size:16,label:label||'link'})],{after:0})],{w:0});
   // In breve
   const tipo=Object.fromEntries(AX_TIPO), mz=Object.fromEntries(AX_MEZZI);
@@ -7905,13 +8007,14 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   if(SP.length){ ch.push(dH3('Altre spese')); ch.push(dGridTable(['Voce','Come si calcola','Totale','A carico di'],SP.map(r=>[plain(r.voce)||'—', axEur(r.importo)+' '+smo[r.modo||'forfait']+(r.modo==='notte'?' × '+(r.notti||1)+' notti':''), axEur(axSpesaCost(r,N)), r.carico?cr[r.carico].replace(' (quota)',''):'—']),[3600,2600,1500,1938])); }
   const items=axCosti(x); if(items.length){ ch.push(dH3('Riepilogo dei costi')); const lab=k=>k?cr[k].replace(' (quota)',''):'Da attribuire'; const rows=items.map(i=>[i.voce.charAt(0).toUpperCase()+i.voce.slice(1), lab(i.k), axEur(i.c)]);
     const by={}; items.forEach(it=>{ by[it.k]=(by[it.k]||0)+it.c; }); Object.keys(by).forEach(k=>rows.push(['Totale a carico: '+lab(k), '', axEur(by[k])+(k==='ragazzi'&&N.rag?' → '+axEur(by[k]/N.rag)+' a testa':'')]));
-    rows.push(['Totale complessivo','',axEur(items.reduce((s2,i)=>s2+i.c,0))]); ch.push(dGridTable(['Voce','A carico di','Importo'],rows,[4438,2400,2800])); }
+    rows.push(['Totale complessivo','',axEur(items.reduce((s2,i)=>s2+i.c,0))]); ch.push(dGridTable(['Voce','A carico di','Importo'],rows,[4438,2400,2800]));
+    { const cq=axQuotaConto(x); if(cq) ch.push(dPara([dTxt('Come si calcola la quota: ',{size:17,bold:true,color:GREEN}),dTxt(cq,{size:17})],{before:40,after:40})); } }
   const TD=(x.todo||[]).filter(r=>(r.cosa||'').trim()); if(TD.length){ ch.push(dH3('Cose da fare prima')); ch.push(dGridTable(['Stato','Cosa','Chi','Entro'],TD.map(r=>[r.fatto?'Fatto':'Da fare', plain(r.cosa), r.chi||'—', r.entro?r.entro.split('-').reverse().join('/'):'—']),[900,5038,2200,1500])); }
   // Imprevisti e attenzioni
   const kv3=[]; const pbl=Object.fromEntries(AX_PB); const PB=Object.entries(x.pb||{}).filter(([k,v])=>(v||'').trim()); if(PB.length||T_(a.pianoB)) kv3.push(['Piano B',[...PB.map(([k,v])=>dPara([dTxt(pbl[k].replace('…','')+': ',{size:18,bold:true}),dTxt(plain(v),{size:18})],{after:30})), ...(T_(a.pianoB)?[dPara(plain(a.pianoB),{size:18,after:30})]:[])]]);
   const sc=x.sic||{}; const scl=[N.tot?N.ad+' adulti e '+N.rag+' ragazzi':'', (axShared(a)&&axRef(x,'sic'))?'referente sicurezza e primo soccorso: '+axRef(x,'sic'):'', sc.numeri?'numeri utili: '+sc.numeri:'', sc.rischi?'rischi: '+sc.rischi:''].filter(Boolean); if(scl.length) kv3.push(['Sicurezza e primo soccorso',scl.join('\n')]);
   if(T_(a.incRischi)||T_(a.incAzioni)) kv3.push(['Benessere e inclusione',[T_(a.incRischi)?'Attenzioni: '+plain(a.incRischi):'',T_(a.incAzioni)?'Accortezze: '+plain(a.incAzioni):''].filter(Boolean).join('\n')]);
-  if(a.link) kv3.push(['Link esterni',[dPara([dLink(a.link,{size:18,label:'link'})],{after:0})]]);
+  if(attLinks(a).some(l=>(l.u||'').trim())) kv3.push(['Allegati e link',attLinksDoc(a,{size:18})]);
   if(kv3.length){ ch.push(dH3('Sicurezza, benessere e piano B')); ch.push(dKV(kv3.map(([l,v])=>[l, typeof v==='string'?dMulti(v,{size:18}):v]))); }
   { const VP=verParti(a).filter(q=>T_((a.vRef||{})[q.k])); const F=[['Cosa è andato bene','vBene'],['Cosa è da migliorare','vMigl'],['Aggiustamenti necessari','vAgg']].filter(r=>T_(a[r[1]]));
     if(F.length||VP.length){ ch.push(dH3('Verifica')); ch.push(dKV(F.map(r=>[r[0],dMulti(a[r[1]])]).concat(VP.map(q=>[q.l+' ('+String(q.chi).replace(/\s*\([^)]*\)\s*$/,'')+')', dMulti(a.vRef[q.k])])))); } }
@@ -7919,7 +8022,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
 // ── Word: lista della spesa ──
 async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFoodList(x); if(!L.length){ showToast('Aggiungi prima piatti, ingredienti e presenti'); return; }
   try{ await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
-  const N=axN(x); const ch=[...dTitleBlock('Lista della spesa', ((a.testo||'').trim()||'Attività '+(j+1))+(x.data?' · '+x.data.split('-').reverse().join('/')+(axMulti(x)?'–'+x.dataFine.split('-').reverse().join('/'):''):'')+' · '+N.tot+' persone')];
+  const N=axN(x); const ch=[...dTitleBlock('Lista della spesa', ((a.testo||'').trim()||'Attività '+attNum(p,j))+(x.data?' · '+x.data.split('-').reverse().join('/')+(axMulti(x)?'–'+x.dataFine.split('-').reverse().join('/'):''):'')+' · '+N.tot+' persone')];
   ch.push(dGridTable(['Alimento','Quantità','Prezzo indicativo','Costo stimato'],L.map(r=>[r.nome, r.qtxt, r.prezzo!=null&&r.prezzo!==''?axEur(r.prezzo)+(r.um==='pz'?' /pz':r.um==='ml'?' /l':' /kg'):'—', r.cost!=null?axEur(r.cost):'—']),[3438,2200,2000,2000]));
   const tot=L.reduce((t,r)=>t+(r.cost||0),0); if(tot) ch.push(dPara('Spesa stimata: '+axEur(tot),{size:19,bold:true,before:100}));
   const dd=axDieteTxt(x); if(dd.length) ch.push(dPara('Diete speciali: '+dd.join(', '),{size:18,before:60}));
@@ -7928,7 +8031,15 @@ async function axSpesaDocx(p,j){ const a=attGet(p,j), x=a.ax||{}; const L=axFood
 
 function axCapoUnita(){ const t=staffTab()||[]; const r=t.find(r=>/^(CU|CB|CC|CR)$/i.test(String(r.ruolo||'').trim())&&(String(r.nome||'').trim()||r.giungla))||t.find(r=>String(r.nome||'').trim()); if(!r) return null;
   const lab={L:'Capo Branco',E:'Capo Reparto',R:'Capo Compagnia'}[FASCIA]||'Capo Unità'; const nm=FASCIA==='L'?(staffGiungla(r)||String(r.nome||'').trim()):String(r.nome||'').trim(); return {nome:nm,ruolo:lab,mail:String(r.mail||'').trim(),tel:String(r.tel||'').trim()}; }
-function axStaffContatti(){ const out=[], seen=new Set(); (staffTab()||[]).forEach(r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; if(!f&&!String(r&&r.giungla||'').trim()) return; const gj=FASCIA==='L'?staffGiungla(r):''; const v=gj||f; if(!v||seen.has(v)) return; seen.add(v); out.push({n:v,tel:String(r.tel||'').trim()}); }); return out; }
+// contatti nella circolare: il Capo Unità sempre (con il telefono, che si chiede se manca), gli altri solo se hanno il telefono
+function axStaffContatti(){ const out=[], seen=new Set(); const cu=axCapoUnitaRow(); const t=staffTab()||[];
+  const nm=r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; const gj=FASCIA==='L'?staffGiungla(r):''; return gj||f; };
+  const rows=cu?[cu.r].concat(t.filter(r=>r!==cu.r)):t;
+  rows.forEach(r=>{ const v=nm(r); if(!v||seen.has(v)) return; const tel=String(r.tel||'').trim(); const isCu=cu&&r===cu.r; if(!isCu&&!tel) return; seen.add(v); out.push({n:v,tel,cu:isCu}); }); return out; }
+function axCapoUnitaRow(){ const t=staffTab()||[]; let i=t.findIndex(r=>/^(CU|CB|CC|CR|CRep)$/i.test(String(r.ruolo||'').trim())&&(String(r.nome||'').trim()||r.giungla)); if(i<0) i=t.findIndex(r=>String(r.nome||'').trim()); return i<0?null:{i,r:t[i]}; }
+function axCuTelAsk(p,j){ const cu=axCapoUnitaRow(); if(!cu) return `<div class="ax-ask">Nella tabella dello staff (Sezione 1.1) manca il Capo Unità: la circolare deve riportare il suo telefono. <button type="button" class="btn-ghost ax-btn" onclick="gGo('1a')">Vai alla 1.1</button></div>`;
+  if(String(cu.r.tel||'').trim()) return '';
+  return `<div class="ax-ask" id="ax-cutel-${p}-${j}">Manca il telefono di <b>${axE(String(cu.r.nome||'').trim()||'Capo Unità')}</b> (Capo Unità): nella circolare c’è sempre. <input class="ax-in" type="tel" placeholder="Telefono" style="max-width:180px" onchange="staffTabSet(${cu.i},'tel',this.value.trim());saveDataDebounced();showToast('Telefono salvato anche nella tabella dello staff');const b=document.getElementById('ax-cutel-${p}-${j}');if(b&&this.value.trim())b.style.display='none'"></div>`; }
 function axStaffNomi(){ const n=[]; (staffTab()||[]).forEach(r=>{ const f=String(r&&r.nome||'').replace(/\(.*?\)/g,'').trim().split(/\s+/)[0]; if(!f&&!String(r&&r.giungla||'').trim()) return; const gj=FASCIA==='L'?staffGiungla(r):''; const v=gj||f; if(v&&!n.includes(v)) n.push(v); }); return n; }
 // Loghi di Sezione per il messaggio ai genitori (da caricare): { 'pesaro': 'data:image/png;base64,...' }
 const SEZ_LOGHI={};
@@ -7943,31 +8054,23 @@ function cxBuilder(){ const rels=[]; let n=0;
   const LK=(t,url,o={})=>{ if(!url) return R(t,o); const id='rIdCx'+(++n); rels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="'+cxE(url)+'" TargetMode="External"/>'); return '<w:hyperlink r:id="'+id+'" w:history="1">'+R(t,Object.assign({},o,{color:'1155CC',u:true}))+'</w:hyperlink>'; };
   const P=(runs,o={})=>'<w:p><w:pPr>'+(o.keepNext?'<w:keepNext/>':'')+(o.border?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="2" w:color="'+o.border+'"/></w:pBdr>':'')+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?160:o.after)+'" w:line="'+(o.line||312)+'" w:lineRule="auto"/>'+(o.ind?'<w:ind w:left="'+o.ind+'"'+(o.hang?' w:hanging="'+o.hang+'"':'')+'/>':'')+'<w:jc w:val="'+(o.jc||'left')+'"/></w:pPr>'+(Array.isArray(runs)?runs.join(''):runs)+'</w:p>';
   return {R,LK,P,rels}; }
-async function axMsgDocx(p,j){
-  if((attGet(p,j).ax||{}).ambientProp||(attGet(p,j).ax||{}).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
-  showToast('Preparo la circolare…');
-  try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+// ── Circolare: un solo contenuto (modello a paragrafi), due uscite: Word e PDF ──
+// intestazione semplice in alto (loghi in linea, niente colonna laterale): si apre bene anche nell'anteprima di Google Drive su iPad
+async function axCircModel(p,j){
   const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, pp=scheda.pp||{}; const sez=axSezFile(((pp.sezione)||'').trim());
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
   const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
   const get=async u=>{ try{ const r=await fetch(u); return r.ok?await r.arrayBuffer():null; }catch(e){ return null; } };
-  const [tpl,lgS,lgB]=await Promise.all([get(base+'circolare/base.docx'),get(base+'circolare/sezioni/'+encodeURIComponent(sez)+'.png'),get(base+'circolare/branca/'+FASCIA+'.png')]);
-  if(!tpl){ showToast('Non riesco a scaricare la carta intestata: serve la connessione'); return; }
-  const zip=await JSZip.loadAsync(tpl);
-  if(lgS) zip.file('word/media/image2.png',lgS); if(lgB) zip.file('word/media/branca.png',lgB);
-  // intestazione: contatti del Capo Unità e dati della Sezione
-  const cu=axCapoUnita()||{}; const val={CONT_H:'Contatti',CU_NOME:cu.nome||'',CU_RUOLO:cu.nome?cu.ruolo:'',CU_MAIL:cu.mail||'',CU_TEL:cu.tel?'T '+cu.tel:'',CU_FAX:'',
-    SEZ_NOME:sez?'CNGEI '+sez:'',SEZ_VIA:(pp.sedeVia||'').trim(),SEZ_CITTA:(pp.sedeCitta||'').trim(),SEZ_CF:(pp.sedeCF||'').trim()?'C.F. '+pp.sedeCF.trim():'',SEZ_SITO:(pp.sedeSito||'').trim(),SEZ_SOCIAL:(pp.sedeSocial||'').trim()};
-  if(!val.CU_NOME&&!val.CU_MAIL&&!val.CU_TEL) val.CONT_H=''; val.SOCIAL_H=(val.SEZ_SITO||val.SEZ_SOCIAL)?'Social':'';
-  let hx=await zip.file('word/header3.xml').async('string');
-  hx=hx.replace(/<w:p\b(?:(?!<w:p\b)[\s\S])*?\{\{(\w+)\}\}[\s\S]*?<\/w:p>/g,(m,k)=>val[k]?m.replace('{{'+k+'}}',cxE(val[k])):'');
-  let side=''; hx=hx.replace(/<!--CXSIDE-->([\s\S]*?)<!--\/CXSIDE-->/,(m,g)=>{ side=g; return ''; });
-  zip.file('word/header3.xml',hx);
-  // corpo
-  const {R,LK,P,rels}=cxBuilder(); const C=GREEN; const b=[];
-  const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE}));
+  const [lgS,lgB]=await Promise.all([sez?get(base+'circolare/sezioni/'+encodeURIComponent(sez)+'.png'):null,get(base+'circolare/branca/'+FASCIA+'.png')]);
+  const cu=axCapoUnita()||{};
+  const head={sez:sez?'CNGEI '+sez:'CNGEI', ente:'Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani · Associazione Scout Laica di Promozione Sociale',
+    addr:[(pp.sedeVia||'').trim(),(pp.sedeCitta||'').trim(),(pp.sedeCF||'').trim()?'C.F. '+pp.sedeCF.trim():''].filter(Boolean).join(' · '),
+    cont:cu.nome?[cu.ruolo+': '+cu.nome, cu.tel?'tel. '+cu.tel:'', cu.mail||''].filter(Boolean).join(' · '):'',
+    web:[(pp.sedeSito||'').trim(),(pp.sedeSocial||'').trim()].filter(Boolean).join(' · ')};
+  const b=[]; const R=(t,o={})=>({k:'r',t:String(t==null?'':t),o}), LK=(t,url,o={})=>url?{k:'lk',t:String(t),url,o}:R(t,o), P=(runs,o={})=>({runs:Array.isArray(runs)?runs:[runs],o});
+  const C=GREEN; const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE,h:true}));
   const oggi=new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
-  b.push('<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+R((sez?sez+', ':'')+oggi,{b:true})+'</w:p>');
+  b.push(P([R((sez?sez+', ':'')+oggi,{b:true})],{luogo:true,after:225}));
   const citz=(x.citaz||'').trim(); if(citz) b.push(P([R(citz,{i:true,color:'444444'})],{jc:'right',after:200}));
   b.push(P([R(tit||'Comunicazione per le famiglie',{b:true,sz:27,color:C})],{after:60}));
   const amb=(x.ambient||'').trim(); if(amb) b.push(P([R(amb,{i:true,color:'444444'})],{after:420}));
@@ -7989,34 +8092,108 @@ async function axMsgDocx(p,j){
   if(port.length||sac.length||add.length||sqL.length){ H('Cosa portare');
     if(add.length) b.push(P([B('Alla partenza, addosso: '),T(add.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '))],{after:100}));
     if(port.length&&add.length) b.push(P([B('Nello zaino:')],{after:40,keepNext:true}));
-    port.forEach(t=>b.push(P([T('•  '+t.charAt(0).toUpperCase()+t.slice(1))],{after:40,ind:360,hang:220})));
+    port.forEach(t=>b.push(P([T('•  '+t.charAt(0).toUpperCase()+t.slice(1))],{after:40,ind:360,hang:220})));
     if(sac.length) b.push(P([B('Al sacco: '),T(sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '))],{before:80}));
     if(sqL.length) b.push(P([B(axSq().lab+': '),T(sqL.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')],{before:80}));
     cons.forEach(t=>b.push(P([R('→ '+t+'.',{i:true,color:'555555'})],{after:40}))); }
   if(casa.length){ H('Da lasciare a casa'); b.push(P([T(casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')])); }
   const bon=q&&x.paga!=='partenza';
   if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
-  const med=true, libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
-  if(bon||L.permessi||med){ H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
-    if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
-      b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
-      b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
-      b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
-    if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
-      b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
-    if(med){ b.push(P([T('☐  '),B('Solo se servono farmaci: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
-      b.push(P([LK('Link al documento',libUrl)],{ind:420})); } }
+  const libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
+  H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
+  if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
+    b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
+    b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
+    b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
+  if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
+    b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
+  b.push(P([T('☐  '),B('Solo se servono farmaci: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
+  b.push(P([LK('Link al documento',libUrl)],{ind:420}));
   H('Contatti'); b.push(P([T('Per qualsiasi dubbio potete contattarci:')],{after:80}));
-  const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
+  const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+(c.r?' ('+c.r+')':'')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
   b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
+  return {b, head, lgS, lgB, tit, nm:'Circolare_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))}; }
+function axPngSize(buf){ try{ const d=new DataView(buf); if(d.getUint32(0)===0x89504E47) return {w:d.getUint32(16),h:d.getUint32(20)}; }catch(e){} return {w:1,h:1}; }
+function axDownload(blob,nm){ const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+function axCircCheck(p,j){ const a=attGet(p,j)||{}, x=a.ax||{}; if(x.ambientProp||x.citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare'); }
+async function axMsgDocx(p,j){
+  axCircCheck(p,j); showToast('Preparo la circolare…');
+  try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
+  const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
+  let tpl=null; try{ const r=await fetch(base+'circolare/base.docx'); tpl=r.ok?await r.arrayBuffer():null; }catch(e){}
+  if(!tpl){ showToast('Non riesco a scaricare il modello della circolare: serve la connessione'); return; }
+  const M=await axCircModel(p,j); const zip=await JSZip.loadAsync(tpl);
+  const {R,LK,P,rels}=cxBuilder();
+  // corpo
+  const run=r=>r.k==='lk'?LK(r.t,r.url,r.o):R(r.t,r.o);
+  const bx=M.b.map(par=>par.o.luogo?'<w:p>'+LUOGO_PPR+par.runs.map(run).join('')+'</w:p>':P(par.runs.map(run),par.o)).join('');
+  // intestazione semplice: tabella senza bordi con i due loghi in linea e i dati al centro, filetto sotto
+  const hrels=[]; let nImg=0;
+  const img=(buf,name,cm)=>{ if(!buf) return ''; const id='rIdCxH'+(++nImg); zip.file('word/media/'+name,buf); hrels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+name+'"/>');
+    const sz=axPngSize(buf), H0=Math.round(cm*360000), W0=Math.round(H0*sz.w/Math.max(1,sz.h)), W=Math.min(W0,Math.round(4.2*360000)), Hh=Math.round(W*sz.h/Math.max(1,sz.w));
+    return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+W+'" cy="'+Hh+'"/><wp:docPr id="'+(900+nImg)+'" name="'+name+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+(900+nImg)+'" name="'+name+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+id+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+W+'" cy="'+Hh+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>'; };
+  const hp=(runs,o={})=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+(o.after||0)+'" w:line="240" w:lineRule="auto"/><w:jc w:val="'+(o.jc||'center')+'"/></w:pPr>'+runs+'</w:p>';
+  const hr=(t,o={})=>R(t,Object.assign({sz:16,color:'444444'},o));
+  const cell=(w,inner,jc)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+(inner||hp(''))+'</w:tc>';
+  const H=M.head; const mid=hp(R(H.sez,{b:true,sz:24,color:GREEN}),{after:20})+hp(hr(H.ente,{sz:14}),{after:20})+(H.addr?hp(hr(H.addr)):'')+(H.cont?hp(hr(H.cont,{color:'222222'})):'')+(H.web?hp(hr(H.web)):'');
+  const nob='<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="single" w:sz="8" w:space="0" w:color="'+GREEN+'"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>';
+  const hdr='<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:jc w:val="center"/>'+nob+'<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="1900"/><w:gridCol w:w="5838"/><w:gridCol w:w="1900"/></w:tblGrid><w:tr>'
+    +cell(1900,hp(img(M.lgS,'cx_sez.png',1.7),{jc:'left'}))+cell(5838,mid)+cell(1900,hp(img(M.lgB,'cx_branca.png',1.7),{jc:'right'}))+'</w:tr></w:tbl>'+hp('',{after:120});
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  const pnum='<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r></w:p>';
+  const doc0='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  zip.file('word/header3.xml',doc0+'<w:hdr '+NS+'>'+hdr+'</w:hdr>');
+  zip.file('word/_rels/header3.xml.rels',doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+hrels.join('')+'</Relationships>');
+  ['header1.xml','header2.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:hdr '+NS+'><w:p/></w:hdr>'));
+  ['header1.xml.rels','header2.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
+  ['footer1.xml','footer2.xml','footer3.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:ftr '+NS+'>'+(f==='footer3.xml'?'<w:p/>':pnum)+'</w:ftr>'));
+  ['footer1.xml.rels','footer2.xml.rels','footer3.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
+  ['image1.jpg','image3.jpg','image4.png','image2.png','branca.png'].forEach(f=>{ try{ zip.remove('word/media/'+f); }catch(e){} });
   let dx=await zip.file('word/document.xml').async('string');
-  let bx=b.join(''); if(side){ const k=bx.indexOf('</w:pPr>'); bx=k>0?bx.slice(0,k+8)+side+bx.slice(k+8):bx; rels.push('<Relationship Id="rIdCxSoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image3.jpg"/>'); }
-  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx);
+  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx).replace(/<w:pgMar [^>]*\/>/,'<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/>');
   zip.file('word/document.xml',dx);
   if(rels.length){ let rx=await zip.file('word/_rels/document.xml.rels').async('string'); rx=rx.replace('</Relationships>',rels.join('')+'</Relationships>'); zip.file('word/_rels/document.xml.rels',rx); }
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-  const nm='Circolare_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))+'.docx';
-  const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); showToast('Circolare pronta'); }
+  axDownload(blob,M.nm+'.docx'); showToast('Circolare pronta'); }
+// PDF: stessi contenuti, impaginati in A4 con jsPDF (testo vero, link cliccabili)
+function axPdfTxt(t){ return String(t==null?'':t).replace(/→/g,'»').replace(/[☐☑]/g,'').replace(/[   ]/g,' ').replace(/[^\u0000-ÿ€“”‘’–—•…‚„‹›™Œœ]/g,''); }
+async function axMsgPdf(p,j){
+  axCircCheck(p,j); showToast('Preparo il PDF…');
+  try{ await loadLib(LIB_URLS.jspdf,()=>!!(window.jspdf&&window.jspdf.jsPDF)); exportTheme(); }catch(e){ showToast('Impossibile generare il PDF: '+e.message); return; }
+  const M=await axCircModel(p,j); const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  const W=210, HH=297, ML=20, MR=20, MT=16, MB=18, CWm=W-ML-MR; let y=MT;
+  const hex=h=>[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  const tw=t=>t/56.7; // twip → mm
+  const b64=buf=>{ let s=''; const u=new Uint8Array(buf); for(let i=0;i<u.length;i+=8192) s+=String.fromCharCode.apply(null,u.subarray(i,i+8192)); return btoa(s); };
+  const logo=(buf,x,right)=>{ if(!buf) return 0; try{ const sz=axPngSize(buf); let h=17, w=h*sz.w/Math.max(1,sz.h); if(w>40){ w=40; h=w*sz.h/sz.w; } doc.addImage('data:image/png;base64,'+b64(buf),'PNG',right?x-w:x,y,w,h); return h; }catch(e){ return 0; } };
+  const H=M.head; const h1=logo(M.lgS,ML,false), h2=logo(M.lgB,W-MR,true);
+  let ty=y+4; const ctr=(t,sz,st,col)=>{ doc.setFont('helvetica',st); doc.setFontSize(sz); doc.setTextColor(...hex(col)); doc.splitTextToSize(axPdfTxt(t),CWm-80).forEach(l=>{ doc.text(l,W/2,ty,{align:'center'}); ty+=sz*0.42; }); };
+  ctr(H.sez,12,'bold',GREEN); ty+=0.6; ctr(H.ente,7,'normal','444444'); if(H.addr) ctr(H.addr,8,'normal','444444'); if(H.cont) ctr(H.cont,8,'normal','222222'); if(H.web) ctr(H.web,8,'normal','444444');
+  y=Math.max(y+h1,y+h2,ty)+2; doc.setDrawColor(...hex(GREEN)); doc.setLineWidth(0.5); doc.line(ML,y,W-MR,y); y+=7;
+  const st=o=>o.b&&o.i?'bolditalic':o.b?'bold':o.i?'italic':'normal';
+  const newPage=()=>{ doc.addPage(); y=MT; };
+  M.b.forEach((par,pi)=>{ const o=par.o||{}; const ind=tw(o.ind||0), hang=tw(o.hang||0); y+=tw(o.before||0);
+    // parole con il loro stile
+    const words=[]; par.runs.forEach(r=>{ const ro=r.o||{}; const box=/^☐/.test(r.t); const t=axPdfTxt(r.t); if(box) words.push({box:true,o:ro});
+      t.split(/(\s+)/).forEach(w=>{ if(w!=='') words.push({t:w,o:ro,url:r.k==='lk'?r.url:null}); }); });
+    const size=w=>((w.o.sz||20)/2); const lh=Math.max(...words.map(size).concat([10]))*0.3528*1.35;
+    if(o.keepNext && y+lh*3>HH-MB) newPage();
+    const lines=[]; let cur=[], x=0; const first=ML+ind-hang, rest=ML+ind;
+    words.forEach(w=>{ let ww; if(w.box) ww=4.2; else { doc.setFont('helvetica',st(w.o)); doc.setFontSize(size(w)); ww=doc.getTextWidth(w.t); }
+      const maxW=W-MR-(lines.length?rest:first); if(x+ww>maxW && cur.length && !/^\s+$/.test(w.t||'')){ lines.push(cur); cur=[]; x=0; }
+      if(!cur.length && /^\s+$/.test(w.t||'')) return; cur.push(Object.assign({},w,{ww})); x+=ww; });
+    if(cur.length) lines.push(cur);
+    lines.forEach((ln,li)=>{ if(y+lh>HH-MB) newPage(); const lw=ln.reduce((s1,w)=>s1+w.ww,0); let xx=(li?rest:first); if(o.jc==='right') xx=W-MR-lw; else if(o.jc==='center') xx=(W-lw)/2;
+      const base=y+lh*0.75;
+      ln.forEach(w=>{ if(w.box){ doc.setDrawColor(60,60,60); doc.setLineWidth(0.3); doc.rect(xx+0.3,base-3,3,3); xx+=w.ww; return; }
+        doc.setFont('helvetica',st(w.o)); doc.setFontSize(size(w)); const col=w.url?'1155CC':(w.o.color||'1A1A18'); doc.setTextColor(...hex(col));
+        doc.text(w.t,xx,base); if(w.url){ doc.setDrawColor(...hex('1155CC')); doc.setLineWidth(0.2); doc.line(xx,base+0.6,xx+w.ww,base+0.6); doc.link(xx,base-size(w)*0.3528,w.ww,size(w)*0.3528*1.2,{url:w.url}); }
+        xx+=w.ww; });
+      y+=lh; });
+    if(o.border){ doc.setDrawColor(...hex(o.border==='PALE'?PALE:o.border)); doc.setLineWidth(0.4); doc.line(ML,y+0.5,W-MR,y+0.5); y+=1.5; }
+    y+=tw(o.after==null?160:o.after); });
+  const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(136,136,136); doc.text(String(i),W/2,HH-8,{align:'center'}); }
+  axDownload(doc.output('blob'),M.nm+'.pdf'); showToast('PDF pronto'); }
 function axFirma(){ const n=axStaffNomi();
   if(!n.length) return UNIT_NAME?'lo staff di '+UNIT_NAME:'lo staff';
   return n.length===1?n[0]:n.slice(0,-1).join(', ')+' e '+n[n.length-1]; }
@@ -8086,7 +8263,7 @@ function tlHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const
   let a0=[t.dal,...dated.map(o=>ym(o.d))].filter(Boolean).sort()[0], a1=[t.al,...dated.map(o=>ym(o.d))].filter(Boolean).sort().pop();
   const out=[]; const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
   const row=o=>{ const x=o.a.ax||{}; const fuori=o.d&&((t.dal&&ym(o.d)<t.dal)||(t.al&&ym(o.d)>t.al));
-    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${idx},${o.j})">Attività ${o.j+1}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div>
+    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${idx},${o.j})">Attività ${attNum(idx,o.j)}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div>
       <div class="tl-meta">${o.d&&x.durata==='piu'&&x.dataFine&&x.dataFine!==x.data?'<b>'+tlDataTxt(x)+'</b>':''}<input type="date" class="tl-date" value="${sEsc(o.d)}" title="Data dell’attività" onchange="tlSetDate(${idx},${o.j},this.value)">${o.st.k==='ver'?`<a href="javascript:void(0)" class="tl-act" onclick="gGo('4')">Vai alla verifica →</a>`:''}</div>
       ${fuori?'<div class="tl-warn">Fuori dalle tempistiche del percorso ('+percTempoTxt(per)+').</div>':''}</div></div>`; };
   if(a0&&a1&&a0<=a1){ let [y,m]=a0.split('-').map(Number); const [y1,m1]=a1.split('-').map(Number); let guard=0; let todayDone=false;
@@ -8113,7 +8290,7 @@ function tlAllHTML(){
   const leg=used.map(i=>`<span class="tl-lg"><i style="background:${TL_COL[i%TL_COL.length]}"></i>${sEsc(pn(i))}</span>`).join('');
   const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
   const row=o=>{ const x=o.a.ax||{}; const c=TL_COL[o.idx%TL_COL.length];
-    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot" style="background:${c}"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${o.idx},${o.j})"><b>${sEsc(tlDataTxt(x))}</b> · ${sEsc(pn(o.idx).split(' · ')[0])}, attività ${o.j+1}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div></div></div>`; };
+    return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot" style="background:${c}"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${o.idx},${o.j})"><b>${sEsc(tlDataTxt(x))}</b> · ${sEsc(pn(o.idx).split(' · ')[0])}, attività ${attNum(o.idx,o.j)}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div></div></div>`; };
   const out=[]; let [y,m]=ym(items[0].d).split('-').map(Number); const [y1,m1]=ym(items[items.length-1].d).split('-').map(Number); let guard=0, todayDone=false;
   while((y<y1||(y===y1&&m<=m1))&&guard++<36){ const key=y+'-'+String(m).padStart(2,'0'); const inM=items.filter(o=>ym(o.d)===key);
     out.push(`<div class="tl-mese${inM.length?'':' tl-vuoto'}">${TL_MESI[m-1]} ${y}</div>`);
@@ -8201,7 +8378,8 @@ function gInitNav(){
   const b=document.getElementById('p3-next'); if(b) b.textContent='Avanti — Sezione 2 →';
   // primo ingresso: se manca il contesto, si parte dalla Sezione 1.1
   // finché non c'è osservazione dei percorsi si riparte dalla Sezione 1.1
-  if(!Object.values(obs||{}).some(v=>v&&v!=='n')) gGo('1a'); else gSync();
+  // si apre sempre dalla Sezione 1.1 (il punto in cui si era rimasti lo rimette posRestore)
+  gGo('1a');
 }
 function gGo(k){
   if(MODE!=='giovani') return;
@@ -8213,6 +8391,78 @@ function gGo(k){
   if(k==='1d'){ goPhaseInternal(3); return; }
   schedaStep=({'2':'B','3':'C','4':'ver','5':'val','chk':'chk'})[k]||'B'; goPhaseInternal(4);
 }
+// ── campi di testo che si allungano da soli (tutta l'app, anche quelli creati dopo) ──
+(function(){
+  const ok = el => el && el.tagName === 'TEXTAREA' && !el.hasAttribute('data-noauto');
+  function fit(el){ if(!ok(el) || !el.isConnected || el.offsetParent === null) return;
+    const cs = getComputedStyle(el); const bord = (parseFloat(cs.borderTopWidth)||0) + (parseFloat(cs.borderBottomWidth)||0);
+    const need = el.scrollHeight + bord;
+    if(need > el.offsetHeight + 1){ el.style.height = need + 'px'; el.style.overflowY = 'hidden'; return; }   // cresce: nessun salto
+    if(!el.value && !el.style.height) return;
+    // può accorciarsi: misuro tenendo ferma l'altezza della pagina (Safari/iPhone non salta)
+    const de = document.documentElement, y = window.scrollY, mh = de.style.minHeight; de.style.minHeight = de.scrollHeight + 'px';
+    const h0 = el.style.height; el.style.height = 'auto'; const n = el.scrollHeight + bord; el.style.height = (n > 0 ? n : h0) + 'px'; el.style.overflowY = 'hidden';
+    de.style.minHeight = mh; if(window.scrollY !== y) window.scrollTo(0, y); }
+  function fitIn(root){ try{ (root && root.querySelectorAll ? root : document).querySelectorAll('textarea').forEach(fit); }catch(e){} try{ window.spIn && spIn(root && root.querySelectorAll ? root : document); }catch(e){} }
+  window.taFit = fit; window.taFitAll = () => fitIn(document);
+  // controllo ortografico del browser, in italiano, sui testi liberi (non su mail, telefoni, numeri, indirizzi web e codici)
+  const NOSP = /mail|\btel\b|telefono|link|\burl\b|sito|social|iban|\bcf\b|sedeCF|codice|password|\b(lat|lon|km)\b|importo|prezzo/i;
+  function sp(el){ try{ if(!el || el.dataset.spk) return; el.dataset.spk = '1';
+    if(el.isContentEditable || el.getAttribute('contenteditable') === 'true'){ el.spellcheck = true; if(!el.lang) el.lang = 'it'; return; }
+    const tg = el.tagName; if(tg !== 'TEXTAREA' && tg !== 'INPUT') return;
+    if(tg === 'TEXTAREA' && /staffTabSet\(\d+,'(mail|tel)'/.test(el.getAttribute('oninput') || '')){ el.spellcheck = false; return; }
+    if(tg === 'INPUT'){ const ty = (el.getAttribute('type') || 'text').toLowerCase(); if(!['text','search'].includes(ty)) return;
+      const im = (el.getAttribute('inputmode') || '').toLowerCase(); const hint = (el.getAttribute('oninput') || '') + ' ' + (el.getAttribute('onchange') || '') + ' ' + (el.id || '') + ' ' + (el.name || '') + ' ' + (el.getAttribute('autocomplete') || '');
+      const ph = el.getAttribute('placeholder') || '';
+      if(['url','email','tel','numeric','decimal'].includes(im) || NOSP.test(hint) || /@|https?:|www\.|drive\.google|\.it\b|\.com\b/i.test(ph)){ el.spellcheck = false; return; } }
+    el.spellcheck = true; if(!el.lang) el.lang = 'it'; }catch(e){} }
+  function spIn(root){ try{ if(root.matches && root.matches('input,textarea,[contenteditable="true"]')) sp(root); (root.querySelectorAll ? root : document).querySelectorAll('input,textarea,[contenteditable="true"]').forEach(sp); }catch(e){} }
+  window.spIn = spIn;
+  document.addEventListener('input', e => { if(ok(e.target)) fit(e.target); }, true);
+  document.addEventListener('toggle', e => { if(e.target && e.target.open) requestAnimationFrame(() => fitIn(e.target)); }, true);
+  let raf = 0, pend = new Set();
+  const mo = new MutationObserver(ms => { ms.forEach(m => m.addedNodes && m.addedNodes.forEach(n => { if(n.nodeType === 1) pend.add(n); }));
+    if(!raf) raf = requestAnimationFrame(() => { raf = 0; const L = [...pend]; pend.clear(); L.forEach(n => { if(n.tagName === 'TEXTAREA'){ fit(n); try{ spIn(n); }catch(e){} } else fitIn(n); }); }); });
+  const start = () => { try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){} fitIn(document); };
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { document.querySelectorAll('textarea').forEach(el => { if(ok(el)){ el.style.height = ''; } }); fitIn(document); }, 150); });
+  document.addEventListener('click', e => { const t = e.target && e.target.closest && e.target.closest('.ptab,.mnav-btn,.gsn-step,summary,[onclick*="gGo"],[onclick*="stPick"],[onclick*="stGo"]'); if(t) setTimeout(() => fitIn(document), 60); }, true);
+})();
+// ── dove si era rimasti (per progetto e per dispositivo) ──
+function posKey(){ let id = 'loc'; try{ const c = JSON.parse(localStorage.getItem(typeof CL_CTX !== 'undefined' ? CL_CTX : 'bussola_cloud_ctx')||'null'); if(c && c.id) id = c.id; }catch(e){} return 'bussola_pos:' + id + ':' + (MODE||''); }
+let _posT = 0;
+function posSave(){
+  try{
+    if(window._posHold || window._appReload || !MODE || window._clApplying) return;
+    const app = document.getElementById('main-app'); if(!app || app.style.display === 'none') return;
+    const n = [1,2,3,4].find(i => document.getElementById('panel'+i)?.classList.contains('active')) || 1;
+    const v = {n, step: schedaStep, y: Math.round(window.scrollY), t: Date.now()};
+    if(MODE === 'giovani') v.k = gCur();
+    if(MODE === 'staff'){ try{ v.sview = STAFF_VIEW; v.member = CURRENT_MEMBER; }catch(e){} }
+    localStorage.setItem(posKey(), JSON.stringify(v));
+  }catch(e){}
+}
+function posSaveSoon(){ clearTimeout(_posT); _posT = setTimeout(posSave, 400); }
+function posRestore(){
+  let v = null; try{ v = JSON.parse(localStorage.getItem(posKey())||'null'); }catch(e){}
+  if(!v) return false;
+  window._posHold = true;
+  try{
+    if(MODE === 'giovani' && v.k) gGo(v.k);
+    else if(MODE === 'staff'){
+      try{ if(v.member && (STAFF_MEMBERS||[]).includes(v.member)) CURRENT_MEMBER = v.member; if(v.sview) STAFF_VIEW = v.sview; }catch(e){}
+      if(v.n && v.n > 1) goPhaseInternal(v.n); else { try{ renderStaffPhase1(); }catch(e){} }
+    }
+  }catch(e){ console.error(e); }
+  const y = v.y || 0, go = () => { try{ const h = document.documentElement; h.style.scrollBehavior = 'auto'; try{ window.scrollTo({top:y, left:0, behavior:'instant'}); }catch(e){ window.scrollTo(0, y); } setTimeout(() => { h.style.scrollBehavior = ''; }, 80); }catch(e){} };
+  setTimeout(go, 120); setTimeout(go, 450); setTimeout(() => { go(); window._posHold = false; }, 900);
+  return true;
+}
+window.addEventListener('scroll', () => { if(!window._posHold) posSaveSoon(); }, {passive:true});
+window.addEventListener('pagehide', posSave);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') posSave(); });
+// in cima alla pagina, subito (niente scorrimento lento che su pagine lunghe si ferma a metà o in fondo)
+function pageTop(){ try{ const h = document.documentElement; h.style.scrollBehavior = 'auto'; try{ window.scrollTo({top:0, left:0, behavior:'instant'}); }catch(e){ window.scrollTo(0, 0); } if(window.scrollY) window.scrollTo(0, 0); clearTimeout(window._ptT); window._ptT = setTimeout(() => { h.style.scrollBehavior = ''; }, 80); }catch(e){ try{ window.scrollTo(0,0); }catch(x){} } }
 function gCur(){
   const n=[1,2,3,4].find(i=>document.getElementById('panel'+i)?.classList.contains('active'))||1;
   if(n===1) return '1b'; if(n===2) return '1c'; if(n===3) return '1d';
@@ -8332,7 +8582,7 @@ async function staffShareGo(ruolo){ const S=window._stShare; window._stShare=nul
   }catch(e){ if(S.cb) S.cb.checked=false; if(e.message==='duplicate'){ clMemLoad(); showToast(S.nome+' era già nel progetto'); } else showToast('Non riesco a invitare: '+clErr(e)); } }
 function staffMailBad(i,on){ const B=window._stBad=window._stBad||{}; if(on) B[i]=1; else delete B[i]; staffTabRefresh(); }
 
-// Numeri dell'Unità (facoltativi): totale, maschi/femmine, annate (4 per Branco e Reparto, 3 per Compagnia)
+// Numeri dell'Unità (da compilare come gli altri campi della 1.1): totale, maschi/femmine, annate (4 per Branco e Reparto, 3 per Compagnia)
 function numeriUnitaHTML(pp, IN){
   const nA = FASCIA === 'R' ? 3 : 4, ann = pp.numAnn || [];
   const num = (v, oninp, extra) => `<input type="number" inputmode="numeric" min="0" max="99" style="${IN};display:block;width:90px;max-width:100%" value="${sEsc(v == null ? '' : v)}" oninput="${oninp}" ${extra||''}>`;
@@ -8340,7 +8590,7 @@ function numeriUnitaHTML(pp, IN){
   const sumA = ann.slice(0, nA).reduce((t,v) => t + (parseInt(v,10) || 0), 0);
   const hasAny = pp.numTot || pp.numM || pp.numF || ann.some(v => v);
   const chip = hasAny ? `<span class="ax-sumd">${tot ? tot + ' tra ragazzi e ragazze' : 'da completare'}</span>` : '<span class="ax-sumd">Quanti sono, quanti maschi e femmine, quanti per ogni anno.</span>';
-  return `<details class="att-extra" style="margin-top:12px"><summary>${OPT}Numeri dell’Unità${chip}</summary>
+  return `<div class="num-box" id="num-box" style="margin-top:16px"><label style="${SC_LBL}">Numeri dell’Unità <span style="font-weight:400;color:var(--ink-faint)">— quanti sono, quanti maschi e femmine, quanti per ogni anno: servono a chi legge il Progetto Personale</span></label>
     <div style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
       <label style="${SC_LBL}">Totale${num(pp.numTot,"ppSet('numTot',this.value);numeriCheck()")}</label>
       <label style="${SC_LBL}">di cui maschi${num(pp.numM,"ppSet('numM',this.value);numeriCheck()")}</label>
@@ -8351,7 +8601,7 @@ function numeriUnitaHTML(pp, IN){
       ${Array.from({length:nA},(_,i) => `<label style="${SC_LBL}">${i+1}° anno${num(ann[i],"ppSetAnn("+i+",this.value);numeriCheck()")}</label>`).join('')}
     </div>
     <div id="num-check" style="font-size:11.5px;color:var(--ink-mid);margin-top:8px;min-height:16px">${numeriCheckTxt(pp)}</div>
-    <div style="font-size:11.5px;color:var(--ink-faint);margin-top:2px">Solo numeri, senza nomi. Compaiono nell’intestazione del documento Word della Scheda.</div></details>`;
+    <div style="font-size:11.5px;color:var(--ink-faint);margin-top:2px">Solo numeri, senza nomi. Nel Word della Scheda compaiono nel capitolo «Composizione dell’Unità».</div></div>`;
 }
 function numeriUnitaTxt(pp){
   pp = pp || {}; const nA = FASCIA === 'R' ? 3 : 4, g = v => (v === undefined || v === null || String(v).trim() === '') ? null : parseInt(v, 10);
@@ -8704,8 +8954,6 @@ function renderSchedaC(root,selected){
         <span class="pcx-chev" aria-hidden="true">▼</span>
         <span style="font-weight:800;font-size:14px;flex:1">${percorsoLabel}<small class="pcx-sum">${pcN ? pcN + (pcN===1?' attività scritta':' attività scritte') : 'da iniziare'}</small></span>
         <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
-          ${idx>0?`<button onclick="movePercorso(${idx},-1);renderValuation()" title="Sposta su" style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:14px">↑</button>`:''}
-          ${idx<totalPercorsi-1?`<button onclick="movePercorso(${idx},1);renderValuation()" title="Sposta giù" style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:14px">↓</button>`:''}
           ${sez3pp&&!sez3main?`<button onclick="sez3Hide(${per.prioritaIdx})" title="Togli dalla Scheda" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--ink-mid)">Togli</button>`:''}
           ${!isPriority?`<button onclick="removePercorso(${idx})" title="Rimuovi" style="background:none;border:1px solid var(--red);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:12px;color:var(--red)">✕</button>`:''}
         </div>
@@ -8814,10 +9062,10 @@ function renderSchedaC(root,selected){
     const attv = (per.attivita||[]).slice(); while(attv.length<3) attv.push({testo:''});
     html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Attività<br><small style="font-weight:400;color:var(--ink-faint)">almeno 3, coerenti tra loro</small>${MODE==='giovani'?'<br>'+attSpuntiLink('Come costruirle')+'<br>'+protSpuntiLink('Protagonismo')+'<br>'+tecSpuntiLink('Attività tecniche'):''}</td>
       <td style="padding:8px 10px;border:1px solid var(--border-light)">
-        ${attv.map((att,j)=>{
+        ${attOrd(per,attv.length).map((j,pos)=>{ const att=attv[j];
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
           return `<details id="att-${idx}-${j}" data-aff="${sEsc(axShared(att)?(att.aff||''):'')}" ${window._attOpen&&window._attOpen[idx+'-'+j]?'open':''} ontoggle="(window._attOpen=window._attOpen||{})['${idx}-${j}']=this.open" style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
-            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)">Attività ${j+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}${att.aff&&axShared(att)?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${j>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
+            <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)"><span class="att-mv">${pos>0&&attCanMove()?`<button type="button" class="btn-ghost att-mv-up" title="Sposta su" aria-label="Sposta su l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},-1)">↑</button>`:''}${pos<attv.length-1&&attCanMove()?`<button type="button" class="btn-ghost att-mv-dn" title="Sposta giù" aria-label="Sposta giù l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},1)">↓</button>`:''}</span><span class="att-sumt" id="att-sumt-${idx}-${j}">Attività ${pos+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}</span>${att.aff&&axShared(att)?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${attv.length>3&&j<(per.attivita||[]).length&&pos>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
             <div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             ${attTipiHTML(idx,j,att)}
@@ -8827,6 +9075,7 @@ function renderSchedaC(root,selected){
             <textarea style="${SC_TA};min-height:56px" placeholder="Che cosa fanno i ragazzi, con quali ruoli, materiali e tempi…" oninput="updateAttivita(${idx},${j},'sviluppo',this.value);saveDataDebounced()">${sEsc(att.sviluppo)}</textarea>
             <label style="${SC_LBL}">Conclusione <span style="font-weight:400;color:var(--ink-faint)">— compresa l'eventuale rielaborazione</span></label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
+            ${attLinksHTML(idx,j,att)}
             ${attExtraHTML(idx,j,att,`<div style="display:flex;gap:8px;align-items:center;margin-top:2px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:11px;flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>`)}
           </details>`; }).join('')}
         <button class="btn-ghost" style="font-size:11.5px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
@@ -8844,9 +9093,9 @@ function renderSchedaC(root,selected){
             <div style="font-size:12px;font-weight:700;min-width:110px">${clLabels[key]}</div>
             <div class="cl3" id="cl3-${idx}-${key}">${cl3HTML(idx,key,cl3Val(cl[key]))}</div>
           </div>
-          <input type="text" style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:4px;font-family:inherit;font-size:11.5px;margin-top:4px;box-sizing:border-box"
-            placeholder="${CL3_PH[key]||'Perché? In quale attività si vede?'}" value="${sEsc(cl[key]?.note||'')}"
-            oninput="updateChecklist(${idx},'${key}','note',this.value);saveDataDebounced()">
+          <textarea rows="1" class="cl3-note" style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:4px;font-family:inherit;font-size:11.5px;line-height:1.45;margin-top:4px;box-sizing:border-box;resize:vertical;min-height:30px;display:block"
+            placeholder="${CL3_PH[key]||'Perché? In quale attività si vede?'}"
+            oninput="updateChecklist(${idx},'${key}','note',this.value);saveDataDebounced()">${sEsc(cl[key]?.note||'')}</textarea>
         </div>`).join('')}
       </td></tr>`;
 
@@ -9300,14 +9549,14 @@ function renderSchedaVer(root,selected){
   let n=0;
   getAllPercorsi().forEach((per,idx)=>{
     const p=per.percorsoId?allP.find(x=>x.id===per.percorsoId):null; if(!p) return;
-    const acts=(per.attivita||[]).map((a,j)=>({a,j})).filter(x=>['testo','lancio','sviluppo','conclusione'].some(k=>(x.a[k]||'').trim()));
+    const acts=attSorted(per,(per.attivita||[]).map((a,j)=>({a,j})).filter(x=>['testo','lancio','sviluppo','conclusione'].some(k=>(x.a[k]||'').trim())));
     if(!acts.length) return;
     h+=`<div style="margin:16px 0 6px;font-size:12px;font-weight:800;color:var(--ink)">Percorso ${idx+1} — ${per.percorsoId[0]}${DB[per.percorsoId[0]].findIndex(x=>x.id===per.percorsoId)+1} ${sEsc(p.name)}</div>`;
     acts.forEach(({a,j})=>{
       n++;
       const shV=axShared(a);
       h+=`<div class="ver-c${window._verOpen&&window._verOpen[idx+'-'+j]?'':' closed'}" id="ver-c-${idx}-${j}" data-verat="${idx}-${j}" data-aff="${sEsc(shV?(a.aff||''):'')}" style="border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;margin:8px 0;background:var(--bg-card)">
-        <div class="ver-hd" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${j+1}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+(j+1))+'»')}</div>`:''}<div class="ver-b">
+        <div class="ver-hd" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${attNum(per,j)}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+attNum(per,j))+'»')}</div>`:''}<div class="ver-b">
         <label style="${SC_LBL}">Cosa è andato bene <span style="font-weight:400;color:var(--ink-faint)">— aspetti positivi, coinvolgimento dei ragazzi, efficacia rispetto all'obiettivo</span></label>
         <textarea style="${SC_TA}" oninput="updateAttivita(${idx},${j},'vBene',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vBene)}</textarea>
         <label style="${SC_LBL}">Cosa è da migliorare <span style="font-weight:400;color:var(--ink-faint)">— criticità, elementi da modificare, imprevisti</span></label>
@@ -9336,6 +9585,7 @@ function ppChecks(){
   const add=(arr,l,ok,det)=>arr.push({l,ok:!!ok,det:det||''});
   add(c1,'Dati: nome, Sezione, Gruppo e Unità', T(pp.nome)&&T(pp.sezione)&&T(pp.gruppo)&&T(UNIT_NAME));
   add(c1,'Contesto territoriale e contesto Sezione/Gruppo', T(pp.ctxTerr)&&T(pp.ctxSez));
+  if(MODE==='giovani') add(c1,'Numeri dell’Unità (totale, maschi e femmine, per anno)', T(String(pp.numTot||''))&&(T(String(pp.numM||''))||T(String(pp.numF||'')))&&(pp.numAnn||[]).some(v=>T(String(v||''))));
   add(c1,'Occasioni osservative indicate (KOS, almeno 2–3)', occCount()>=2);
   add(c1,'Analisi delle dinamiche di gruppo', T(pp.dinamiche));
   const ob=['P','C','S'].filter(a=>T(scheda.osservazione[a].positivi)&&T(scheda.osservazione[a].necessita)).length;
@@ -9705,7 +9955,8 @@ const MF = 'Montserrat';
 const LIB_URLS = {
   exceljs: 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
   docx: 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
-  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+  jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 };
 function loadLib(url, check){
   return new Promise((res, rej) => {
@@ -10194,10 +10445,18 @@ async function exportPPDocx(mode){
     ['Gruppo', plain(grpLabel(pp.gruppo))||'—'],
     ['Unità', plain(UNIT_NAME)||'—'],
     ['Branca', FASCIA_LABEL||'—'],
-  ].concat(numeriUnitaTxt(pp) ? [['Numeri dell’Unità', numeriUnitaTxt(pp)]] : [])));
+  ]));
 
   // ── Sezione 1 ──
   ch.push(dH2('Sezione 1 — Osservazione del Gruppo di Pari & Identificazione e Priorizzazione delle Necessità Educative'));
+  { const g = v => (v === undefined || v === null || String(v).trim() === '' || isNaN(parseInt(v,10))) ? null : parseInt(v,10);
+    const nA = FASCIA === 'R' ? 3 : 4, tot = g(pp.numTot), m = g(pp.numM), f = g(pp.numF), an = Array.from({length:nA}, (_, i) => g((pp.numAnn||[])[i]));
+    if(tot !== null || m !== null || f !== null || an.some(v => v !== null)){
+      const v = x => x === null ? '—' : String(x);
+      ch.push(dH3('Composizione dell’Unità'));
+      ch.push(dGridTable(['Totale','Maschi','Femmine'], [[v(tot), v(m), v(f)]], [3212,3213,3213]));
+      if(an.some(x => x !== null)){ const w = Math.floor(9638 / nA); ch.push(dPara('Per anno di ' + (FASCIA==='L'?'Branco':FASCIA==='R'?'Compagnia':'Reparto'), {size:18, bold:true, before:120, after:40}));
+        ch.push(dGridTable(an.map((_, i) => (i + 1) + '° anno'), [an.map(v)], an.map((_, i) => i === nA - 1 ? 9638 - w * (nA - 1) : w))); } } }
   ch.push(dH3('Contesto territoriale')); ch.push(...dMulti(pp.ctxTerr));
   ch.push(dH3('Contesto Sezione e Gruppo')); ch.push(...dMulti(pp.ctxSez));
   { const SC=staffCols(false); const st=(pp.staffTab||[]).filter(r=>SC.some(c=>c[0]!=='ruolo'&&T_(r[c[0]])));
@@ -10288,10 +10547,11 @@ async function exportPPDocx(mode){
     const pid = per.percorsoId; const p = allP.find(x=>x.id===pid); if(!p) return; const a = pid[0];
     const ob = typeof per.prioritaIdx==='number' ? (scheda.priorita[per.prioritaIdx]?.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean) : (per.obiettiviExtra||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const cl = per.checklist || {};
-    const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k])));
+    const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
-      dPara([dTxt(`${j+1}. ${plain(x.testo)||'Attività '+(j+1)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
+      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).map(k => dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240})),
+      ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GREEN})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
       dPara('',{after:40})
     ]) : '—';
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${typeof per.prioritaIdx==='number'?'':' (facoltativo)'}`));
@@ -10313,11 +10573,11 @@ async function exportPPDocx(mode){
     let any4 = false;
     perc.forEach((per,i) => {
       const p = allP.find(x=>x.id===per.percorsoId); if(!p) return;
-      const acts = (per.attivita||[]).map((x,j)=>({x,j})).filter(o=>T_(o.x.vBene)||T_(o.x.vMigl)||T_(o.x.vAgg)||verParti(o.x).some(q=>T_((o.x.vRef||{})[q.k])));
+      const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>T_(o.x.vBene)||T_(o.x.vMigl)||T_(o.x.vAgg)||verParti(o.x).some(q=>T_((o.x.vRef||{})[q.k]))));
       if(!acts.length) return; any4 = true;
       ch.push(dH3(`Percorso ${i+1} — ${p.name}`));
       acts.forEach(({x,j}) => {
-        ch.push(dPara(`Attività ${j+1}${T_(x.testo)?' — '+plain(x.testo):''}`,{size:19,bold:true,after:40,before:80,keepNext:true}));
+        ch.push(dPara(`Attività ${attNum(per,j)}${T_(x.testo)?' — '+plain(x.testo):''}`,{size:19,bold:true,after:40,before:80,keepNext:true}));
         ch.push(dKV([['Cosa è andato bene', dMulti(x.vBene)], ['Cosa è da migliorare', dMulti(x.vMigl)], ['Aggiustamenti necessari', dMulti(x.vAgg)]]));
       });
     });
@@ -10454,7 +10714,7 @@ async function exportSchedaDocxLegacy(){
     const a = pid[0];
     const idr = per.idrSelezionati?.length ? per.idrSelezionati.map(j=>p.idr?.[j]).filter(Boolean) : (p.idr||[]);
     const cl = per.checklist || {};
-    const att = (per.attivita||[]).filter(x=>x.testo);
+    const att = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j}))).map(o=>o.x).filter(x=>x.testo);
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}`));
     ch.push(dKV([
       [T.necessita, plain(per.necessita)||'—'],
@@ -10462,7 +10722,7 @@ async function exportSchedaDocxLegacy(){
       ['Indicatori di risultato', idr.length ? idr.map(r=>dPara(plain(r),{size:19,after:40,bullet:true})) : '—'],
       ['Strumenti del metodo', plain(per.strumenti)||'—'],
       ['Tempistiche', percTempoTxt(per)],
-      ['Attività', att.length ? att.map((x,k)=>dPara([dTxt(`${k+1}. ${plain(x.testo)}`,{size:19}), ...(x.link?[dTxt('  '), dLink(x.link,{size:16})]:[])],{after:40})) : '—'],
+      ['Attività', att.length ? att.flatMap((x,k)=>[dPara([dTxt(`${k+1}. ${plain(x.testo)}`,{size:19})],{after:attLinks(x).some(l=>(l.u||'').trim())?10:40}), ...attLinksDoc(x,{size:16,indent:240})]) : '—'],
       [T.checklist, clKeys.map(k=>dPara(`${cl[k]?.checked?'☑':'☐'}  ${clLabels[k]}${cl[k]?.note?' — '+plain(cl[k].note):''}`,{size:18,after:20,color:cl[k]?.checked?'2E7D32':'777777'}))]
     ]));
     ch.push(dPara('',{after:60}));
@@ -11095,7 +11355,7 @@ function clArcRowsHTML(rows){
       const isAct = act && act.id === r.id;
       h += `<div class="cl-row ${isAct?'act':''} cl-k${clKind(r.meta)}"><div style="min-width:0"><div class="t">${isAct?'<span class="cl-dot ok"></span>':''}${clTypeTag(r.meta)}${clEsc(r.titolo)}${isAct?' <span style="font-weight:600;font-size:11px;color:#2a7a3b">· aperto adesso</span>':''}</div><div class="s">${clEsc(clMetaTxt(r.meta))} · ${fmt(r.ts)}</div></div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">${isAct?`<button class="cl-btn sm" onclick="clContinue()">Continua qui</button>`:`<button class="cl-btn sm" onclick="clOpenProject('${r.id}')">Apri</button>`}
-        <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div>`;
+        <button class="cl-btn ghost sm" onclick="clRename('${r.id}')">Rinomina</button><button class="cl-btn ghost sm" onclick="clDupAsk('${r.id}',this)">Duplica</button><button class="cl-btn warn sm" onclick="clDelete('${r.id}')">Elimina</button></div></div><div class="cl-dup" id="cl-dup-${r.id}" hidden></div>`;
     });
   });
   return h;
@@ -11446,6 +11706,8 @@ function clMerge(base, mine, theirs, out, path){
   if(clJ(base) === clJ(mine)) return theirs;
   if(clJ(base) === clJ(theirs)) return (out.up && !clCovers(out.up, path)) ? theirs : mine;
   if(path === '/ts') return Math.max(+mine||0, +theirs||0);
+  // ordine delle attività (Sezione 3): se l'hanno cambiato tutte e due le parti vale il mio, senza segnalare un conflitto
+  if(/\/attOrder$/.test(path)) return mine;
   // testi riempiti in automatico dall'app (sintesi dell'osservazione): se nascono da tutte e due le parti si tiene quello già condiviso
   if(/^\/scheda\/osservazione\/[PCS]\/(positivi|necessita)$/.test(path) && !base) return theirs;
   if(clIsObj(mine) && clIsObj(theirs)){
@@ -11857,7 +12119,7 @@ function edLabel(z){
   try{ const at = z.el.closest('details[id^="att-"]') || z.el.closest('[data-verat]'); let idx, j;
     if(at){ const k = at.id ? at.id.slice(4) : at.dataset.verat; [idx, j] = k.split('-').map(Number); }
     const a = (idx != null) ? (getAllPercorsi()[idx].attivita||[])[j] : null;
-    const t = a ? '«' + (((a.testo||'').trim()) || 'Attività ' + (j+1)) + '»' : 'questa parte';
+    const t = a ? '«' + (((a.testo||'').trim()) || 'Attività ' + attNum(idx,j)) + '»' : 'questa parte';
     const parte = z.k === 'g' ? ((z.el.querySelector('summary')||{}).firstChild||{}).textContent : z.k === 'v' ? ((z.el.querySelector('label')||{}).firstChild||{}).textContent : z.k === 'va' ? 'verifica' : '';
     return {idx, j, txt: (parte ? String(parte).trim().replace(/\s*·.*$/,'') + ' di ' : '') + t}; }catch(e){ return {txt:'questa parte'}; } }
 function edBanner(z, on){
@@ -12406,6 +12668,23 @@ async function clOpenProject(id, extra){
     appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
+// «Duplica»: copia identica dei dati in un progetto nuovo («… (copia)»), nello stesso anno o nel successivo; inviti e condivisioni no
+function clDupAsk(id){ const box=document.getElementById('cl-dup-'+id); if(!box) return; if(!box.hidden){ box.hidden=true; return; }
+  const r=((CL._arc&&CL._arc.rows)||[]).find(x=>x.id===id); const y=r?Number(r.anno):new Date().getFullYear();
+  box.innerHTML=`<div class="t" style="font-size:12.5px">Duplica «${clEsc(r?r.titolo:'progetto')}»</div><div class="s" style="margin:2px 0 6px">Si copiano tutti i dati del progetto. Gli inviti e le condivisioni non si copiano.</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><label for="cl-dup-y-${id}" style="font-size:12px">Anno</label><select id="cl-dup-y-${id}" class="cl-in" style="width:auto"><option value="${y}">${y} (stesso anno)</option><option value="${y+1}">${y+1} (anno successivo)</option></select>
+    <button class="cl-btn sm" onclick="clDup('${id}',+document.getElementById('cl-dup-y-${id}').value)">Crea la copia</button><button class="cl-btn ghost sm" onclick="document.getElementById('cl-dup-${id}').hidden=true">Annulla</button></div>`;
+  box.hidden=false; }
+async function clDup(id, anno){
+  try{ const r=await dbGet(id); if(!r){ clToast('Progetto non trovato'); return; }
+    const rows=await dbList(); const meta=Object.assign({}, (rows.find(x=>x.id===id)||{}).meta||clMeta(r.data||{}));
+    let tit=String(r.titolo||'Progetto').replace(/\s*\(copia( \d+)?\)$/,'')+' (copia)', n=2;
+    while(rows.some(x=>Number(x.anno)===Number(anno)&&x.titolo===tit)) tit=String(r.titolo||'Progetto').replace(/\s*\(copia( \d+)?\)$/,'')+' (copia '+(n++)+')';
+    let src=r.data||{}; if(CL.ctx&&CL.ctx.id===id){ try{ saveData(true); src=clSnapshot(); }catch(e){} }   // il progetto aperto: si copia anche l'ultimo lavoro non ancora salvato nel cloud
+    const data=JSON.parse(JSON.stringify(src)); data.ts=Date.now();
+    const nr=await dbInsert(anno, tit, data, meta);
+    CL._arc=null; await clRenderArchive(); clToast('Copia creata: '+nr.anno+' · '+nr.titolo);
+  }catch(e){ clToast('Non riesco a duplicare: '+clErr(e)); } }
 async function clRename(id){
   const rows = await dbList(); const cur = rows.find(r => r.id === id); if(!cur) return;
   const nuovo = (prompt('Nuovo titolo del progetto:', cur.titolo)||'').trim();
@@ -12730,7 +13009,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pp0 = (d.scheda&&d.scheda.pp)||{};
     const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
       || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
-    if((hasWork || (ar && (d.MODE === 'giovani' || d.MODE === 'staff'))) && typeof resumeSession==='function'){ setTimeout(() => resumeSession(), 50); clRestoreView(); }
+    if((hasWork || (ar && (d.MODE === 'giovani' || d.MODE === 'staff'))) && typeof resumeSession==='function'){ let hv = false; try{ hv = !!sessionStorage.getItem('bussola_view'); }catch(e){} setTimeout(() => { resumeSession(); if(!hv) setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); }, 50); clRestoreView(); }
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
 });
