@@ -7130,13 +7130,15 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · beta';
-const APP_BUILD='202610201616'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610201853'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
     'Il <b>Word della circolare</b> torna alla carta intestata nazionale: colonna con i loghi della Sezione, della Branca e degli organismi internazionali, contatti a lato, Montserrat e margini del modello.',
     'Il <b>PDF</b> ha la stessa impaginazione del Word e si vede uguale ovunque (telefono, tablet, Google Drive, WhatsApp): è il formato più sicuro da mandare alle famiglie.',
-    'Il Word ora tiene loghi e contatti in una colonna fissa, senza immagini «flottanti»: si vede come il modello anche su <b>iPad</b>, in Pages e in Google Drive. In fondo firma <b>tutto lo staff</b>.']},
+    'Il Word ora tiene loghi e contatti in una colonna fissa, senza immagini «flottanti»: si vede come il modello anche su <b>iPad</b>, in Pages e in Google Drive. In fondo firma <b>tutto lo staff</b>; logo della Branca grande come quello della Sezione.',
+    'Quota: si sceglie se pagarla con <b>bonifico alla Sezione</b>, <b>in contanti ai capi</b> o alla partenza, entro quando; <b>IBAN e intestatario</b> si scrivono una volta e finiscono nella circolare.',
+    'Tornando al progetto dalla Home («Continua qui») si riparte dal punto in cui eri rimasto.']},
   {d:'19 ottobre 2026', t:'Diciassette miglioramenti chiesti dai capi', i:[
     '<b>Riprendi da dove eri</b>: riaprendo l’app torni alla sezione e al punto della pagina in cui eri (su questo dispositivo); un progetto aperto per la prima volta dall’archivio parte dalla 1.1; cambiando sezione la pagina si apre dall’alto.',
     '<b>Attività</b>: si riordinano con «Sposta su / Sposta giù» (la numerazione segue); nuova sezione <b>Allegati e link</b> (Drive, Canva, video, foto, PDF) che nel Word diventano link cliccabili; titoli e conteggi si aggiornano mentre scrivi; i campi di testo si allungano da soli, anche le note dei 7 punti.',
@@ -7484,6 +7486,12 @@ function axDateTxt(x,year){ if(!x.data) return ''; if(!axMulti(x)) return axDt(x
   return 'da '+axDt(x.data,sameM?{month:undefined}:{})+' a '+axDt(x.dataFine,year?{year:'numeric'}:{}); }
 const AX_ZAINO_REN={'Kit di primo soccorso di Ronda':'Kit di primo soccorso comune','Maglione dell’uniforme':'Felpa dell’uniforme','Pantaloni impermeabili':'Copripantaloni impermeabili','Giacca a vento':'Giacca a vento impermeabile','Sciarpa':'Sciarpa o scaldacollo','Eventuali medicinali in busta chiusa, con le istruzioni per i capi':AX_MEDIC,'Materiale di Pattuglia: accetta, badile, sega':'Accetta, badile e sega','Lampada di Pattuglia con bombole e retine':'Lampada con bombole e retine','Zaino da 50–75 litri con coprizaino':'Zaino da 50–75 litri con coprizaino'};
 function axPortList(x){ if(Array.isArray(x.portareSel)) x.portareSel=x.portareSel.map(v=>AX_ZAINO_REN[v]||v); const sel=(x.portareSel||[]).slice(); const ord=AX_ZAINO.flatMap(g=>g[1].map(it=>it[0])); sel.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)); return sel.concat((x.portare||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
+// come si paga la quota: bonifico alla Sezione (IBAN e intestatario dell'Unità, si scrivono una volta), in contanti entro una data, alla partenza
+const AX_PAGA=[['bonifico','Bonifico alla Sezione'],['contanti','In contanti ai capi'],['partenza','Alla partenza']];
+function axPagaHTML(p,j,x){ const pp=scheda.pp||{}; const m=x.paga||'bonifico';
+  return `<div class="ax-sub" style="margin-top:4px">Come si paga la quota</div>`+axChips(AX_PAGA,m,v=>`axSet(${p},${j},'paga',axD('${v}'),true)`)
+    +(m!=='partenza'?`<div class="ax-sub" style="margin-top:6px">${m==='bonifico'?'Bonifico':'Quota'} e autorizzazioni entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`:`<div class="ax-sub" style="margin-top:6px">Autorizzazioni entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`)
+    +(m==='bonifico'?`<div class="ax-row2" style="margin-top:6px"><div><div class="ax-sub">IBAN</div><input class="ax-in" placeholder="IT00 X000 0000 0000 0000 0000 000" value="${axE(pp.iban)}" oninput="ppSet('iban',this.value)"></div><div><div class="ax-sub">Intestato a</div><input class="ax-in" placeholder="es. CNGEI Sezione di …" value="${axE(pp.ibanInt)}" oninput="ppSet('ibanInt',this.value)"></div></div><div class="ax-hint">IBAN e intestatario valgono per tutte le attività e le uscite: finiscono nella circolare.</div>`:''); }
 function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):''; }
 function axTog(p,j,k,v){ const r=axArrP(p,j,k); const i=r.indexOf(v); if(i>=0) r.splice(i,1); else r.push(v); axSave(); axRe(p,j); }
 function axE(s){ return sEsc(s==null?'':String(s)); }
@@ -7902,7 +7910,7 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   const port=axPortList(x); if(port.length) out.push('• Nello zaino: '+port.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
   const sq=axSqList(x); if(sq.length) out.push('• '+axSq().lab+': '+sq.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
   const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
-  const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: [da inserire], intestato a: [da inserire]; causale: '+axCausale(tit)+')'));
+  const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':x.paga==='contanti'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, in contanti ai capi'+(ent?' entro '+ent:''):(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: '+(((scheda.pp||{}).iban||'').trim()||'[da inserire]')+', intestato a: '+(((scheda.pp||{}).ibanInt||'').trim()||'[da inserire]')+'; causale: '+axCausale(tit)+')'));
   if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' – '+axLk('link al documento',linkNorm(L.permLink)):' – link al documento: [da inserire]'));
   { const casa=FASCIA==='R'?[]:(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)); if(casa.length) out.push('• Da lasciare a casa: '+casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')); if(FASCIA!=='E') (x.consigli||[]).forEach(t=>out.push('• '+t)); }
   { const lu=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'')+'circolare/Liberatoria_somministrazione_farmaci.pdf'; out.push('• Solo se servono farmaci: compilare la '+axLk('liberatoria per la somministrazione dei farmaci',lu)+', allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome'); }
@@ -7957,8 +7965,7 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
     +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
     +(FASCIA!=='E'?`<div class="ax-sub" style="margin-top:8px">${FASCIA==='L'?'Consigli per le famiglie':'Consigli per lo zaino'} <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true):'');
   h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>${axQuota(x)&&axQuotaConto(x)?`<div class="ax-hint">${axE(axQuotaConto(x))}</div>`:''}
-    ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
-    <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
+    ${axQuota(x)?axPagaHTML(p,j,x):`<div class="ax-sub" style="margin-top:6px">Autorizzazioni entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`}`;
   h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi e quando”.</div>`);
   h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgPdf(${p},${j})">↓ Scarica in PDF</button></div>${axCuTelAsk(p,j)}<div id="ax-msg-${p}-${j}"></div>`;
   return h; }
@@ -8102,14 +8109,15 @@ async function axCircModel(p,j){
     if(sqL.length) b.push(P([B(axSq().lab+': '),T(sqL.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')],{before:80}));
     cons.forEach(t=>b.push(P([R('→ '+t+'.',{i:true,color:'555555'})],{after:40}))); }
   if(casa.length){ H('Da lasciare a casa'); b.push(P([T(casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')])); }
-  const bon=q&&x.paga!=='partenza';
-  if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
+  const bon=q&&(x.paga||'bonifico')==='bonifico', cont=q&&x.paga==='contanti';
+  if(q&&x.paga==='partenza'){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
   const libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
   H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
   if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
-    b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
-    b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
+    b.push(P([B('IBAN: '),T(((pp.iban||'').trim())||'______________________________________')],{after:40,ind:420}));
+    b.push(P([B('Intestato a: '),T(((pp.ibanInt||'').trim())||'______________________________')],{after:40,ind:420}));
     b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
+  if(cont) b.push(P([T('☐  '),B('Quota di '+axEur(q)),T(' in contanti ai capi.')],{after:140}));
   if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
     b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
   b.push(P([T('☐  '),B('Solo se servono farmaci: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
@@ -8143,7 +8151,7 @@ async function axMsgDocx(p,j){
   const [fis,soc]=await Promise.all([md('image4.png'),md('image3.jpg')]);
   const sp=(after,inner,jc)=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+after+'" w:line="240" w:lineRule="auto"/><w:jc w:val="'+(jc||'left')+'"/></w:pPr>'+(inner||'')+'</w:p>';
   const V=axCircSide(); const st=(t,b)=>sp(0,t?R(t,{b:!!b,sz:16,color:'455556'}):'');
-  let side=sp(240,img(M.lgS,'cx_sez.png',4.0,4.0),'center')+sp(240,img(M.lgB,'cx_branca.png',2.9,2.9),'center')+sp(360,img(fis,'cx_org.png',4.2,3.66),'left');
+  let side=sp(200,img(M.lgS,'cx_sez.png',3.8,3.8),'center')+sp(240,img(M.lgB,'cx_branca.png',3.8,3.8),'center')+sp(360,img(fis,'cx_org.png',4.2,3.66),'left');
   const blk=[]; const add=(k,b)=>{ if(V[k]) blk.push(st(V[k],b)); };
   add('CONT_H',1); ['CU_NOME','CU_RUOLO','CU_MAIL','CU_TEL'].forEach(k=>add(k)); if(blk.length) blk.push(st(''));
   const n0=blk.length; add('SEZ_NOME',1); ['SEZ_VIA','SEZ_CITTA','SEZ_CF'].forEach(k=>add(k)); if(blk.length>n0) blk.push(st(''));
@@ -8194,8 +8202,8 @@ async function axMsgPdf(p,j){
   const font=(st,sz,col)=>{ doc.setFont(FN,st); doc.setFontSize(sz); doc.setTextColor(...hex(col||'1A1A18')); };
   // pagina 1: colonna a lato come nel modello
   img(md['image1.jpg'],'JPEG',20.05,14.97,10.9,260);
-  if(M.lgS) img(M.lgS,'PNG',20.13,7.19,51.8,51.8); if(M.lgB) img(M.lgB,'PNG',26.28,49.11,40,39.9);
-  img(md['image4.png'],'PNG',23.37,85.28,55.7,48.6);
+  if(M.lgS) img(M.lgS,'PNG',20.13,7.19,51.8,51.8); if(M.lgB) img(M.lgB,'PNG',20.13,45.5,51.8,51.8);
+  img(md['image4.png'],'PNG',23.37,96.5,55.7,48.6);
   font('bold',10,'000000'); doc.text(TX('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani'),72,18.6); doc.text(TX('Associazione SCOUT Laica di Promozione Sociale'),72,22.9);
   { const V=axCircSide(); const rows=[]; const add=(k,b)=>{ if(V[k]) rows.push([V[k],b]); };
     add('CONT_H',1); ['CU_NOME','CU_RUOLO','CU_MAIL','CU_TEL'].forEach(k=>add(k)); if(rows.length) rows.push(['']);
@@ -11207,7 +11215,7 @@ function clOpen(){ if(!clOn()){ return; } if(!CL.sb){ clToast('Servizio non ragg
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
 function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
 // "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
-function clContinue(){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function') resumeSession(); }catch(e){} }
+function clContinue(noPos){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function'){ resumeSession(); if(!noPos) setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); } }catch(e){} }
 function clMsg(t, kind){ const m = $cl('cl-msg'); if(!m) return; m.className = 'cl-msg ' + (kind||'err'); m.textContent = t; }
 function clShow(view){
   const b = $cl('cl-body'), t = $cl('cl-title');
@@ -12056,7 +12064,7 @@ function clPerTeHTML(){
   const it = CL.perte || []; if(!it.length) return '';
   const row = x => {
     if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un’altra persona')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
-    if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue();setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
+    if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue(true);setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
     const pr = `${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}`;
     const go = x.cur ? `clPtGoAtt(${x.idx},${x.j})` : `clOpenShared('${x.id}')`;
     const tt = x.t ? '«'+clEsc(x.t.slice(0,60))+'»' : 'attività '+((x.j||0)+1);
@@ -12071,12 +12079,12 @@ function clPerTeHTML(){
   return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${it.map(row).join('')}${it.some(x=>x.hot===false)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
 }
 function clPtGoAtt(idx, j){
-  clContinue();
+  clContinue(true);
   setTimeout(() => { try{ if(MODE === 'giovani') gGo('3'); else { schedaStep = 'C'; goPhaseInternal(4); } }catch(e){}
     setTimeout(() => { try{ tlGo(idx, j); }catch(e){} }, 500); }, 300);
 }
 function clPtGoSg(){
-  clContinue();
+  clContinue(true);
   const s13 = (SG.list||[]).some(x => x.stato === 'nuovo' && /^13:/.test(x.percorso||'')) && !(SG.list||[]).some(x => x.stato === 'nuovo' && !/^13:/.test(x.percorso||''));
   if(s13){ setTimeout(() => { try{ gGo('1c'); }catch(e){} setTimeout(() => { const w = [...document.querySelectorAll('.sg13')].find(x => x.querySelector('.sg-b')); if(w) w.scrollIntoView({behavior:'smooth', block:'center'}); clToast('I suggerimenti sono sotto le celle della tabella'); }, 500); }, 300); return; }
   setTimeout(() => {

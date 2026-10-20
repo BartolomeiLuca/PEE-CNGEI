@@ -128,6 +128,8 @@ ok(!(await ev(k => uscCur().prog[k].f.includes('desc'), kH)), 'si toglie un camp
 await P.locator(`#usc-b-${kH} .usc-addf button`, {hasText:'Cosa si fa'}).click(); await sleep(200);
 ok(await ev(k => uscCur().prog[k].f.includes('desc'), kH), '…e si rimette');
 await ev(k => { USC_OPEN[k] = true; uscRe(); }, kH); await sleep(100);
+ok(await P.locator(`#usc-b-${kH} details.usc-fld`).count() >= 4 && await P.locator(`#usc-b-${kH} details.usc-fld:not([open])`).count() >= 3 && /Cosa si fa/.test((await P.locator(`#usc-b-${kH} details.usc-fld summary`).allTextContents()).join('|')), 'i campi del blocco si aprono e si chiudono (chiusi all’inizio)');
+await ev(k => { USC_FOPEN[k+'|mat'] = true; USC_FOPEN[k+'|link'] = true; uscRe(); }, kH); await sleep(100);
 await P.locator(`#usc-b-${kH} button`, {hasText:'+ Materiale'}).click(); await sleep(200);
 await P.locator(`#usc-b-${kH} .ax-mat input[placeholder="Materiale"]`).first().fill('Cartine');
 await P.locator(`#usc-b-${kH} .ax-mat .ax-q`).first().fill('6');
@@ -142,22 +144,30 @@ await ev(() => { const u = uscCur(); u.ax.spese = [{voce:'Casa', importo:'8', mo
 await P.locator('.usc-tile', {hasText:'Quota'}).click(); await sleep(300);
 ok(await P.locator('#usc-detail button', {hasText:'Esporta'}).count() === 1 && await P.locator('#usc-detail button', {hasText:'Stampa'}).count() === 0, 'nei riquadri «Esporta» al posto di «Stampa»');
 const det = await P.locator('#usc-detail').textContent();
-ok(/Come nasce la quota/.test(det) && /La parte dei capi vale/.test(det), 'riquadro «Quota»: come nasce e quanto vale la parte dei capi');
-ok(/tutto sui ragazzi/.test(det) && /metà della loro parte/.test(det) && !/oggi capita|campi nazionali/.test(det), 'scenari con le descrizioni brevi');
-await P.locator('.usc-sc', {hasText:'Capi non pagano'}).click(); await sleep(300);
+ok(/Quota ragazzi/.test(det) && /capi costano/.test(det) && /ogni ragazzo paga/.test(det), 'riquadro «Quota»: quanto costano i capi e quanto pesano sulla quota dei ragazzi');
+ok(/tutto sui ragazzi/.test(det) && /metà della loro parte/.test(det) && await P.locator('#usc-detail .ax-conto').count() === 0, 'scenari con le descrizioni brevi, senza la riga grigia del conto');
+await P.locator('#usc-tab-m-costi').click(); await sleep(300);
+const scen = t => P.locator('.usc-modpage .usc-sctab tr', {hasText:t}).locator('button', {hasText:'Scegli'}).click().catch(() => {});
+await scen('Capi non pagano'); await sleep(300);
 const q1 = await ev(() => axQuota(uscCur().ax));
-await P.locator('.usc-sc', {hasText:'Quota ridotta capi'}).click(); await sleep(300);
+await scen('Quota ridotta capi'); await sleep(300);
 const q2 = await ev(() => axQuota(uscCur().ax));
-await P.locator('.usc-sc', {hasText:'Capi pagano la loro parte'}).click(); await sleep(300);
+await scen('Capi pagano la loro parte'); await sleep(300);
 const q3 = await ev(() => axQuota(uscCur().ax));
 ok(q1 > q2 && q2 > q3 && Math.abs((q1 - q3) - 2*(q1 - q2)) < 0.01, `scenari: ${q1.toFixed(2)} > ${q2.toFixed(2)} (metà) > ${q3.toFixed(2)}`);
+ok(await ev(() => { const x = uscCur().ax, N = axN(x); const y = Object.assign({}, x, {spese:[{voce:'Pullman', importo:'660', modo:'forfait', carico:'ragazzi'}], mat:[], piatti:[], contrib:''}); Object.defineProperty(y, '__u', {value:'nessuna'}); const a = uscQ(y, 'ragazzi'), b = uscQ(y, 'capi'); return Math.abs(a - 660/N.rag) < 0.01 && Math.abs(b - 660/N.tot) < 0.01; }), 'anche una spesa «in tutto» (pullman) si divide tra tutti: i capi che non pagano pesano sui ragazzi');
+ok(await P.locator('.usc-modpage .ax-conto').count() === 0 && await P.locator('.usc-modpage .ax-quota-box').count() === 0, 'Cassa e quota senza ripetizioni (niente riquadro verde e riga grigia)');
 await P.locator('.usc-contrib input').first().fill('110'); await sleep(300);
 const q4 = await ev(() => axQuota(uscCur().ax));
-ok(Math.abs(q3 - q4 - 5) < 0.01 && /Contributo/.test(await ev(() => axQuotaConto(uscCur().ax))), 'contributo di 110 €: quota di 5 € più bassa, scritto nel conto');
+ok(Math.abs(q3 - q4 - 5) < 0.01 && /Contributo/.test(await ev(() => axQuotaConto(uscCur().ax))), 'contributo di 110 €: quota di 5 € più bassa');
+await P.locator('.usc-modpage .ax-chip', {hasText:'Bonifico alla Sezione'}).click(); await sleep(300);
+await P.locator('.usc-modpage input[placeholder^="IT00"]').fill('IT60 X054 2811 1010 0000 0123 456'); await P.locator('.usc-modpage input[placeholder^="es. CNGEI"]').fill('CNGEI Sezione di Pesaro'); await sleep(900);
+await P.locator('.usc-modpage .ax-chip', {hasText:'In contanti'}).count().then(n => ok(n === 1, 'si può scegliere anche «In contanti ai capi»'));
 // circolare dell'uscita (carta intestata nazionale)
 { const j = await ev(() => uscJ(USC_CUR)); const [d] = await Promise.all([P.waitForEvent('download', {timeout:30000}), ev(j => axMsgDocx(900, j), j)]);
   const t = (await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')).replace(/<[^>]+>/g, '');
   ok(/Campo invernale/.test(t) && t.includes(q4.toFixed(2).replace('.', ',')), 'circolare in Word dall’uscita con la quota giusta');
+  ok(/IT60 X054 2811 1010 0000 0123 456/.test(t) && /CNGEI Sezione di Pesaro/.test(t), 'IBAN e intestatario nella circolare');
   ok(/Giulia, Dario e Elena/.test(t), 'firma con tutto lo staff: ' + (t.match(/grazie,(.{0,60})/)||[])[1]);
   ok(/Il programma/.test(t) && /Hike/.test(t) && !/wp:anchor/.test(await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')), 'circolare dell’uscita con il programma, senza immagini flottanti'); }
 // scheda Pasti: menù cliccabile, ingredienti, copia, Excel
@@ -182,6 +192,13 @@ await P.locator('#usc-meal-ed button', {hasText:'Piatto per pochi'}).click(); aw
 await P.locator('.usc-dn').last().fill('Panini per l’hike');
 await P.locator('.usc-per input').last().fill('Pattuglia Volpi'); await P.locator('.usc-per select.usc-pn').last().selectOption('6'); await sleep(400);
 ok(await ev(() => uscMeals(uscCur().ax, 2, 'pranzo').some(t => t === 'Panini per l’hike (Pattuglia Volpi · 6 pers.)')), 'piatto per pochi: «per chi» e quante persone');
+await P.locator('.usc-dish').last().locator('.usc-ingn').last().fill('salsa segreta'); await P.locator('.usc-dish').last().locator('.usc-ingn').last().dispatchEvent('change'); await sleep(400);
+await ev(() => { const P0 = uscCur().ax.piatti.find(p => p.nome === 'Panini per l’hike'); const ig = P0.ingr.find(i => i.nome === 'salsa segreta'); ig.dose = '20'; ig.um = 'g'; saveData(true); uscRe(); }); await sleep(300);
+const y0 = await ev(() => window.scrollY);
+await P.locator('.usc-dish').last().locator('.usc-ingn').last().press('Enter'); await sleep(500);
+{ const y1 = await ev(() => window.scrollY); const vis = await ev(() => { const r = document.activeElement.getBoundingClientRect(); return document.activeElement.classList.contains('usc-ingn') && r.top > 0 && r.bottom < innerHeight; });
+  ok(y1 >= y0 - 20 && y1 - y0 < 400 && vis, 'aggiungendo un ingrediente la pagina non torna su al menù: resta lì, con il nuovo ingrediente in vista (' + y0 + ' → ' + y1 + ')'); }
+ok(await P.locator('.usc-dish .usc-noprice').count() >= 1 && /salsa segreta/.test(await P.locator('.usc-npw').textContent()) && /stimata/.test(await P.locator('.usc-npw').textContent()), 'ingredienti senza prezzo evidenziati: la spesa è stimata');
 { const [d] = await Promise.all([P.waitForEvent('download', {timeout:30000}), ev(() => uscExcel())]);
   const z = await JSZip.loadAsync(fs.readFileSync(await d.path())); const wb = await z.file('xl/workbook.xml').async('string');
   ok(/Menù/.test(wb) && /Dosi per piatto/.test(wb) && /Lista della spesa/.test(wb), 'Excel con Menù, Dosi per piatto e Lista della spesa: ' + d.suggestedFilename()); }
@@ -201,11 +218,43 @@ const objH = await ev(k => uscCur().prog[k].obj, kH);
 ok(objH.pid === pidH && (objH.o||[]).length === 1 && (objH.i||[]).length === 1, 'scelti un obiettivo e un Indicatore');
 await P.locator(`#usc-b-${kH} button`, {hasText:'Porta nella programmazione'}).click(); await sleep(300);
 ok(/Consigliato: lavora sugli stessi obiettivi/.test(await P.locator(`#usc-b-${kH} .usc-mvo.best`).textContent()) && await P.locator(`#usc-b-${kH} .usc-mvo`).first().evaluate(e => e.classList.contains('best')), 'propone per primo il percorso con gli stessi obiettivi');
+await ev(k => { USC_FOPEN[k+'|scal'] = true; uscRe(); }, kH); await sleep(200);
+await P.locator(`#usc-b-${kH} .usc-scr input`).first().fill('Partenza dal campo'); await P.locator(`#usc-b-${kH} .usc-scr select`).first().selectOption('60'); await sleep(400);
+ok(await ev(k => { const m = uscCur().prog[k]; return (m.tt||[])[0].cosa === 'Partenza dal campo' && Number(m.tt[0].dur) === 60; }, kH) && /\d\d:\d\d/.test(await P.locator(`#usc-b-${kH} .usc-sct`).first().textContent()), 'scaletta anche nelle attività nate nell’uscita (orari dall’inizio del blocco)');
 const nAtt0 = await ev(i => getAllPercorsi()[i].attivita.filter(a => (a.testo||'').trim()).length, iP);
 await P.locator(`#usc-b-${kH} .usc-mvo.best button`).click(); await sleep(500);
-const mv = await ev(([k,i]) => { const m = uscCur().prog[k]; const f = uscAttFind(m); return {k:m.k, idx:f&&f.idx, t:f&&f.a.testo, data:f&&f.a.ax.data, mat:f&&(f.a.ax.mat||[]).map(r=>r.cosa), oss:f&&Object.keys(f.a.ax.oss||{}).length, link:f&&f.a.link, n:getAllPercorsi()[i].attivita.filter(a => (a.testo||'').trim()).length}; }, [kH, iP]);
+const mv = await ev(([k,i]) => { const m = uscCur().prog[k]; const f = uscAttFind(m); return {tt:f&&(f.a.ax.tt2||[]).map(r=>r.cosa+'@'+(r.start||'')).join('|'), k:m.k, idx:f&&f.idx, t:f&&f.a.testo, data:f&&f.a.ax.data, mat:f&&(f.a.ax.mat||[]).map(r=>r.cosa), oss:f&&Object.keys(f.a.ax.oss||{}).length, link:f&&f.a.link, n:getAllPercorsi()[i].attivita.filter(a => (a.testo||'').trim()).length}; }, [kH, iP]);
 ok(mv.k === 'att' && mv.idx === iP && mv.t === 'Hike' && mv.data === '2026-12-28' && mv.mat.includes('Cartine') && mv.oss === 1 && /gaiagps/.test(mv.link||'') && mv.n === nAtt0 + 1, 'portata nel percorso: titolo, data, materiali, link e Indicatore da osservare; nell’uscita resta collegata ' + JSON.stringify(mv));
 ok(await ev(() => uscSpesa(uscCur())) >= 30, 'la spesa dell’uscita conta ancora i materiali (ora dell’attività)');
+ok(/^Partenza dal campo@\d\d:\d\d/.test(mv.tt||''), 'la scaletta passa nella Sezione 3 con l’ora d’inizio (' + mv.tt + ')');
+// attività della Sezione 3 nell'uscita: gli stessi campi, in tempo reale nei due sensi
+await ev(k => { USC_OPEN[k] = true; USC_FOPEN[k+'|a:mat'] = true; USC_FOPEN[k+'|a:sic'] = true; uscRe(); }, kH); await sleep(300);
+ok(await P.locator(`#usc-b-${kH} details.usc-fld[data-f="a:mat"] .ax-mat input[placeholder="Materiale"]`).count() >= 1 && await P.locator(`#usc-b-${kH} details.usc-fld[data-f="a:scal"]`).count() === 1, 'nel blocco i materiali dell’attività sono righe normali, come nella Sezione 3; c’è anche la scaletta');
+await P.locator(`#usc-b-${kH} details[data-f="a:mat"] button`, {hasText:'Aggiungi materiale'}).click(); await sleep(300);
+await P.locator(`#usc-b-${kH} details[data-f="a:mat"] .ax-mat input[placeholder="Materiale"]`).last().fill('Bussole'); await sleep(300);
+await P.locator(`#usc-b-${kH} details[data-f="a:sic"] textarea`).first().fill('Attraversamento della statale: in fila con un capo in testa'); await sleep(300);
+ok(await ev(k => { const f = uscAttFind(uscCur().prog[k]); return (f.a.ax.mat||[]).some(r => r.cosa === 'Bussole') && /statale/.test(f.a.ax.sic.rischi); }, kH), 'scritti nell’uscita: materiale e sicurezza sono subito nell’attività della Sezione 3');
+await ev(k => { const f = uscAttFind(uscCur().prog[k]); updateAttivita(f.idx, f.j, 'incRischi', 'Attenzione a chi si stanca presto'); uscRe(); }, kH); await sleep(200);
+ok(/chi si stanca presto/.test(await P.locator(`#usc-b-${kH} details[data-f="a:ben"] summary`).textContent()), 'scritto nella Sezione 3: si vede subito nel blocco dell’uscita');
+await ev(k => { const m = uscCur().prog[k]; delete m._mig; m.pb = 'Se piove si resta al rifugio'; uscRe(); }, kA); await sleep(200);
+ok(await ev(k => { const m = uscCur().prog[k]; const f = uscAttFind(m); return !m.pb && /resta al rifugio/.test(f.a.pianoB||''); }, kA), 'il piano B scritto sul blocco (versione di prima) passa all’attività');
+await P.locator('#usc-tab-m-mat').click(); await sleep(300);
+await ev(() => { USC_FOPEN['pd|mat|2'] = true; uscRe(); }); await sleep(200);
+ok(await P.locator('.usc-modpage .usc-axw .ax-mat input[placeholder="Materiale"]').count() >= 2 && await P.locator('.usc-modpage details.usc-mpd').count() >= 1 && await P.locator('.usc-modpage details.usc-pdday').count() === 4, 'Materiali: comuni e giornate collassabili, i materiali delle attività esplosi e modificabili');
+await P.locator('#usc-tab-m-chi').click(); await sleep(200);
+ok(!/giornata per giornata/i.test(await P.locator('.usc-modpage').textContent()), 'in «Persone e date» niente «giornata per giornata»');
+// spostamenti: come ritrovo e trasporti, anche andata e ritorno
+await P.locator('#usc-tab-m-log').click(); await sleep(300);
+await P.locator('.usc-modpage .usc-pdday').nth(2).locator('button', {hasText:'Spostamento in questa giornata'}).evaluate(e => e.click()); await sleep(400);
+const tr = P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first();
+ok(await tr.locator('input').first().inputValue() === '' && (await tr.locator('input').first().getAttribute('placeholder')) !== null, 'nuovo spostamento con partenza, arrivo, ora, mezzo, km e ritorno');
+await tr.locator('input').nth(1).fill('Rifugio Cotaline');
+await tr.locator('select').nth(0).selectOption('09:00'); await sleep(400);
+await P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first().locator('select').nth(1).selectOption('bus'); await sleep(300);
+await P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first().locator('select').nth(2).selectOption('giorno'); await sleep(300);
+await P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first().locator('select').nth(3).selectOption('17:00'); await sleep(300);
+await P.locator('.usc-modpage .usc-pdday').nth(2).locator('button', {hasText:'Metti il ritorno nel programma'}).click(); await sleep(400);
+ok(await ev(() => { const R = uscBlocks(uscCur(), 3).filter(o => o.m.k === 'sposta'); const T = uscTimes(uscCur(), 3); return R.length === 2 && R.some(o => o.m.trip.a === 'Rifugio Cotaline' && axHM(T[o.k].s) === '09:00') && R.some(o => o.m.trip.da === 'Rifugio Cotaline' && o.m.ora === '17:00' && o.m.fix); }), 'spostamento delle 9:00 al rifugio con il ritorno alle 17:00 messo nel programma al suo posto');
 // stampe
 const dtxt = async (f, a) => { const [d] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(f, a)]); return {n: d.suggestedFilename(), t: (await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')).replace(/<[^>]+>/g, ' ')}; };
 const pr = await dtxt(() => uscExport('giorno', 2));
@@ -236,6 +285,9 @@ await ev(() => clOpen()); await sleep(1500);
 ok(await P.locator('#cl-arclist .cl-uc', {hasText:'Campo invernale'}).count() === 1 && await P.locator('#cl-arclist .cl-ucnew').count() >= 1, 'archivio: scheda dell’uscita e «+ Nuova uscita» sotto il progetto');
 await P.locator('#cl-arclist .cl-uc', {hasText:'Campo invernale'}).click(); await sleep(900);
 ok(await P.locator('.usc-title').isVisible(), 'dall’archivio si apre l’uscita');
+await ev(() => { document.getElementById('main-app').style.display = 'none'; MODE = null; clOpen(); }); await sleep(1500);
+await P.locator('#cl-arclist .cl-uc', {hasText:'Campo invernale'}).click(); await sleep(1200);
+ok(await P.locator('.usc-title').isVisible() && await ev(() => MODE) === 'giovani', 'anche arrivando dalla Home (app chiusa) il pulsante dell’uscita la apre');
 // creare un'uscita da un'attività
 await ev(() => gGo('3')); await sleep(700);
 await ev(([i,j]) => { axSet(i,j,'data','2027-03-14'); axSet(i,j,'pres.rag','18'); axSet(i,j,'luogo.tipo','uscita'); }, [iP, jA]);

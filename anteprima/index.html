@@ -1403,6 +1403,44 @@ body.usc-on #tut-panel4,body.usc-on #panel4 .foot-nav,body.usc-on #g-dl,body.usc
 .ax-mat1{grid-template-columns:minmax(0,1fr) 30px}
 @media (min-width:861px){.usc-tabs1{flex-wrap:wrap;overflow:visible}}
 @media (max-width:600px){.usc-hrow>div:first-child{flex:1 1 100%}}
+/* v4: campi dei blocchi collassabili */
+details.usc-fld{padding:0;background:var(--bg)}
+details.usc-fld>summary{list-style:none;cursor:pointer;padding:8px 10px;margin:0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+details.usc-fld>summary::-webkit-details-marker{display:none}
+details.usc-fld>summary .usc-fldt:before{content:"▸";display:inline-block;width:14px;color:var(--ink-faint);transition:transform .15s}
+details.usc-fld[open]>summary .usc-fldt:before{transform:rotate(90deg)}
+.usc-fldt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.usc-fsum{font-weight:500;text-transform:none;letter-spacing:0;color:var(--ink-mid);font-size:11.5px;margin-left:6px}
+.usc-fldb{padding:0 10px 10px}
+.usc-axw .ax-lbl:first-child{margin-top:0}
+.usc-fromi{background:none;color:var(--green);padding:0;font-size:11px;font-weight:600}
+/* pagine dei moduli: sezioni e giornate collassabili */
+details.usc-mpd>summary,details.usc-pdday>summary{list-style:none;cursor:pointer}
+details.usc-mpd>summary::-webkit-details-marker,details.usc-pdday>summary::-webkit-details-marker{display:none}
+details.usc-mpd>summary:before,details.usc-pdday>summary:before{content:"▸";display:inline-block;width:14px;color:var(--ink-faint);transition:transform .15s}
+details.usc-mpd[open]>summary:before,details.usc-pdday[open]>summary:before{transform:rotate(90deg)}
+details.usc-pdday>summary{display:flex;align-items:baseline;gap:8px;margin-bottom:0}
+details.usc-pdday[open]>summary{margin-bottom:6px}
+details.usc-pdday>summary .usc-lnk{margin-left:auto}
+details.usc-mpd:not([open])>summary{margin-bottom:0}
+/* spostamenti */
+.usc-trip{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px 12px;align-items:start}
+.usc-trip .usc-mv2{min-height:0}
+/* scaletta di un blocco */
+.usc-scr{display:grid;grid-template-columns:48px 110px minmax(0,1fr) 170px 30px;gap:5px;align-items:center;margin:3px 0}
+.usc-sct{font-weight:700;font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink-mid)}
+/* quota */
+.usc-qbig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:14px;font-weight:700;margin-bottom:6px}
+.usc-qbig b{font-size:22px;color:var(--green)}.usc-qbig span{font-size:12px;font-weight:500;color:var(--ink-light)}
+.usc-qcapi{background:var(--amber-pale);border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);border-radius:8px;padding:8px 10px;margin:6px 0 10px;line-height:1.5}
+.usc-sctab td,.usc-sctab th{vertical-align:middle}.usc-sctab td small{color:var(--ink-light)}.usc-sctab tr.on td{background:var(--green-pale)}
+.usc-sctab td:nth-child(2),.usc-sctab td:nth-child(3),.usc-sctab th:nth-child(2),.usc-sctab th:nth-child(3){text-align:right}
+/* pasti: ingredienti senza prezzo */
+.usc-noprice{border-color:var(--amber)!important;background:var(--amber-pale)!important}
+.usc-np td{background:var(--amber-pale)}.usc-npt{color:var(--amber);font-weight:700;font-size:11px}
+.usc-npw{margin-top:6px;font-size:11.5px;color:var(--ink-mid);border-left:3px solid var(--amber);padding:3px 8px}
+@media (max-width:600px){.usc-scr{grid-template-columns:44px 96px minmax(0,1fr) 30px}.usc-scr>select:nth-of-type(2){grid-column:2/4}}
+.usc-axw>.ax-lbl:first-child,.usc-axw>.ax-lbl:first-child+.ax-hint{display:none}
 </style>
 </head>
 <body>
@@ -7385,17 +7423,20 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · anteprima';
-const APP_BUILD='202610201616'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610201853'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'In anteprima: uscite e campi', i:[
     '<b>Uscite e campi</b> (facoltativo): Evento in sede, Uscita, Bivacco, Campo. Ogni giornata si costruisce a <b>blocchi colorati</b> presi da una tavolozza (sveglia, pasti, quadrato, attività della Sezione 3 o nuove, hike, gioco, tempo libero, serata…), che si aprono, si spostano con le frecce o trascinandoli e hanno un time table in cima; si può fissare l’ora di un blocco.',
     'In alto <b>Campo</b> (time table di tutto il campo, sintesi dei costi e riepilogo per giornata) e un pulsante per ogni modulo: Persone e date, Ritrovo e trasporti, Pasti, Cassa e quota, Sicurezza, Benessere, Piano B, Materiali, Circolare, più quelli che create voi. Ogni modulo si apre a tutta pagina con la parte generale e il dettaglio giornata per giornata; sotto, le giornate. Pasti con colonne uguali per tutte le giornate e piatti «per pochi» (es. la Pattuglia in hike); materiali dei blocchi con quantità, prezzo e chi li procura; tutto si <b>esporta in Word</b> (il menù anche in Excel).',
+    'Nelle attività della Sezione 3 messe in un’uscita scaletta, materiali, sicurezza, benessere, piano B e link sono gli stessi della Sezione 3 (si scrive di qua o di là). I campi dei blocchi si aprono e si chiudono. Gli <b>spostamenti</b> hanno partenza, arrivo, ora, mezzo, km e ritorno (anche in giornata). <b>Cassa e quota</b> mostra quanto costano i capi e come cambia la quota se pagano; nei pasti sono segnati gli ingredienti senza prezzo.',
     'Nella Sezione 3, dentro «Quando arriva il momento di organizzarla», c’è «Hai un’uscita o un campo?»: se l’attività è fuori sede o con il pernotto, l’app invita a organizzarla come uscita. Un’attività nuova nata in un’uscita, con gli obiettivi e gli Indicatori presi dalla programmazione, si porta nella Sezione 3 con «Porta nella programmazione»: l’app propone il percorso giusto. Il nome dell’Unità ora è nella 1.1, prima dei Numeri dell’Unità.']},
   {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
     'Il <b>Word della circolare</b> torna alla carta intestata nazionale: colonna con i loghi della Sezione, della Branca e degli organismi internazionali, contatti a lato, Montserrat e margini del modello.',
     'Il <b>PDF</b> ha la stessa impaginazione del Word e si vede uguale ovunque (telefono, tablet, Google Drive, WhatsApp): è il formato più sicuro da mandare alle famiglie.',
-    'Il Word ora tiene loghi e contatti in una colonna fissa, senza immagini «flottanti»: si vede come il modello anche su <b>iPad</b>, in Pages e in Google Drive. In fondo firma <b>tutto lo staff</b>.']},
+    'Il Word ora tiene loghi e contatti in una colonna fissa, senza immagini «flottanti»: si vede come il modello anche su <b>iPad</b>, in Pages e in Google Drive. In fondo firma <b>tutto lo staff</b>; logo della Branca grande come quello della Sezione.',
+    'Quota: si sceglie se pagarla con <b>bonifico alla Sezione</b>, <b>in contanti ai capi</b> o alla partenza, entro quando; <b>IBAN e intestatario</b> si scrivono una volta e finiscono nella circolare.',
+    'Tornando al progetto dalla Home («Continua qui») si riparte dal punto in cui eri rimasto.']},
   {d:'19 ottobre 2026', t:'Diciassette miglioramenti chiesti dai capi', i:[
     '<b>Riprendi da dove eri</b>: riaprendo l’app torni alla sezione e al punto della pagina in cui eri (su questo dispositivo); un progetto aperto per la prima volta dall’archivio parte dalla 1.1; cambiando sezione la pagina si apre dall’alto.',
     '<b>Attività</b>: si riordinano con «Sposta su / Sposta giù» (la numerazione segue); nuova sezione <b>Allegati e link</b> (Drive, Canva, video, foto, PDF) che nel Word diventano link cliccabili; titoli e conteggi si aggiornano mentre scrivi; i campi di testo si allungano da soli, anche le note dei 7 punti.',
@@ -7672,7 +7713,7 @@ const axOpen={};
 function axA(p,j){ const a=attGet(p,j); if(a && !a.ax) a.ax={}; return a; }
 function axX(p,j){ const a=axA(p,j); return a?a.ax:{}; }
 function axSave(){ saveDataDebounced(); }
-function axRe(p,j){ if(p===USC_P){ uscRe(); return; } const el=document.getElementById('ax-'+p+'-'+j); if(!el) return; [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open); el.innerHTML=axBody(p,j); axCount(p,j); }
+function axRe(p,j){ if(p===USC_P){ uscRe(); return; } const el=document.getElementById('ax-'+p+'-'+j); if(!el) return; if(el.dataset.usc){ uscRe(); return; } [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open); el.innerHTML=axBody(p,j); axCount(p,j); }
 function axSet(p,j,path,v,re){ if(/^(data|dataFine|durata)$/.test(path)) setTimeout(()=>tlRefresh(p),0); const x=axX(p,j); if(path==='luogo.tipo'&&p===USC_P) uscLuogoTipo(x,v); if(/^luogo\.(from|nome|rientroDove|ritrovoDove|mezzo|tipo)$/.test(path)) setTimeout(()=>axKmSoon(p,j),0); if(path==='luogo.ritrovoDove'){ const L0=x.luogo||{}; if(axRientroStesso(L0)){ if(!x.luogo) x.luogo={}; x.luogo.rientroStesso=true; setTimeout(()=>{ const L=(axX(p,j).luogo)||{}; if(axRientroStesso(L)){ axRientroCopy(L); axSave(); const ro=document.querySelector('#ax-'+p+'-'+j+' .ax-ro'); if(ro) ro.textContent=L.ritrovoDove||'come il ritrovo'; } },0); } } const ks=String(path).split('.'); let o=x; for(let i=0;i<ks.length-1;i++){ if(o[ks[i]]==null) o[ks[i]]=/^\d+$/.test(ks[i+1])?[]:{}; o=o[ks[i]]; } o[ks[ks.length-1]]=v; axSave(); if(re) axRe(p,j); else axLive(p,j); }
 function axGet(x,path){ return String(path).split('.').reduce((o,k)=>o==null?undefined:o[k],x); }
 function axArrP(p,j,path){ const x=axX(p,j); let v=axGet(x,path); if(!Array.isArray(v)){ axSetQuiet(x,path,[]); v=axGet(x,path); } return v; }
@@ -7744,6 +7785,12 @@ function axDateTxt(x,year){ if(!x.data) return ''; if(!axMulti(x)) return axDt(x
   return 'da '+axDt(x.data,sameM?{month:undefined}:{})+' a '+axDt(x.dataFine,year?{year:'numeric'}:{}); }
 const AX_ZAINO_REN={'Kit di primo soccorso di Ronda':'Kit di primo soccorso comune','Maglione dell’uniforme':'Felpa dell’uniforme','Pantaloni impermeabili':'Copripantaloni impermeabili','Giacca a vento':'Giacca a vento impermeabile','Sciarpa':'Sciarpa o scaldacollo','Eventuali medicinali in busta chiusa, con le istruzioni per i capi':AX_MEDIC,'Materiale di Pattuglia: accetta, badile, sega':'Accetta, badile e sega','Lampada di Pattuglia con bombole e retine':'Lampada con bombole e retine','Zaino da 50–75 litri con coprizaino':'Zaino da 50–75 litri con coprizaino'};
 function axPortList(x){ if(Array.isArray(x.portareSel)) x.portareSel=x.portareSel.map(v=>AX_ZAINO_REN[v]||v); const sel=(x.portareSel||[]).slice(); const ord=AX_ZAINO.flatMap(g=>g[1].map(it=>it[0])); sel.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)); return sel.concat((x.portare||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
+// come si paga la quota: bonifico alla Sezione (IBAN e intestatario dell'Unità, si scrivono una volta), in contanti entro una data, alla partenza
+const AX_PAGA=[['bonifico','Bonifico alla Sezione'],['contanti','In contanti ai capi'],['partenza','Alla partenza']];
+function axPagaHTML(p,j,x){ const pp=scheda.pp||{}; const m=x.paga||'bonifico';
+  return `<div class="ax-sub" style="margin-top:4px">Come si paga la quota</div>`+axChips(AX_PAGA,m,v=>`axSet(${p},${j},'paga',axD('${v}'),true)`)
+    +(m!=='partenza'?`<div class="ax-sub" style="margin-top:6px">${m==='bonifico'?'Bonifico':'Quota'} e autorizzazioni entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`:`<div class="ax-sub" style="margin-top:6px">Autorizzazioni entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`)
+    +(m==='bonifico'?`<div class="ax-row2" style="margin-top:6px"><div><div class="ax-sub">IBAN</div><input class="ax-in" placeholder="IT00 X000 0000 0000 0000 0000 000" value="${axE(pp.iban)}" oninput="ppSet('iban',this.value)"></div><div><div class="ax-sub">Intestato a</div><input class="ax-in" placeholder="es. CNGEI Sezione di …" value="${axE(pp.ibanInt)}" oninput="ppSet('ibanInt',this.value)"></div></div><div class="ax-hint">IBAN e intestatario valgono per tutte le attività e le uscite: finiscono nella circolare.</div>`:''); }
 function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):''; }
 function axTog(p,j,k,v){ const r=axArrP(p,j,k); const i=r.indexOf(v); if(i>=0) r.splice(i,1); else r.push(v); axSave(); axRe(p,j); }
 function axE(s){ return sEsc(s==null?'':String(s)); }
@@ -8063,16 +8110,16 @@ function axSpese(p,j,x){ const S=axArrP(p,j,'spese'); const rows=S.length?S:[{}]
   return rows.map((r,i)=>`<div class="ax-spesa"><input class="ax-in" placeholder="es. casa per la notte, pullman, ingressi" value="${axE(r.voce)}" oninput="axRowSet(${p},${j},'spese',${i},'voce',this.value)"><input class="ax-in" type="number" min="0" step="0.01" placeholder="€" value="${axE(r.importo)}" oninput="axRowSet(${p},${j},'spese',${i},'importo',this.value)"><select class="ax-in" onchange="axRowSet(${p},${j},'spese',${i},'modo',this.value,true)">${axOpt(AX_SPMODO,r.modo||'forfait')}</select>${r.modo==='notte'?`<input class="ax-in" type="number" min="1" placeholder="notti" value="${axE(r.notti)}" oninput="axRowSet(${p},${j},'spese',${i},'notti',this.value)">`:''}<select class="ax-in" onchange="axRowSet(${p},${j},'spese',${i},'carico',this.value,true)">${axOpt(AX_CARICO,r.carico)}</select>${S.length?`<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'spese',${i})">×</button>`:''}${r.modo&&r.modo!=='forfait'&&Number(r.importo)?`<span class="ax-hint">→ ${axEur(axSpesaCost(r,N))}</span>`:''}</div>`).join('')+`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${p},${j},'spese',{modo:'forfait'})">+ Aggiungi spesa</button>`; }
 // costi: una spesa «a persona» a carico dei ragazzi si divide tra la parte dei ragazzi (nella quota)
 // e la parte dei capi, che compare a parte «da attribuire» (o a carico di chi si sceglie in x.capiCarico)
-function axCosti(x){ const N=axN(x); const items=[]; const ck=x.capiCarico||'';
-  const add=(voce,c,k,unit)=>{ if(!c) return;   // unit = costo a testa quando la spesa è «a persona»
+function axCosti(x){ const N=axN(x); const items=[]; const ck=x.capiCarico||(x.__u?'ragazzi':'');
+  const add=(voce,c,k,unit)=>{ if(!c) return; if(unit==='R') unit=null; else if(x.__u&&unit==null&&k==='ragazzi'&&N.tot) unit=c/N.tot;   // unit = costo a testa quando la spesa è «a persona»
     if(k==='ragazzi' && unit!=null && N.ad && N.rag && ck!=='ragazzi'){ const cr=unit*N.rag, ca=c-cr;
       items.push({voce,c:cr,k,unit}); if(ca>0.0001){ if(ck==='meta'){ items.push({voce:voce+' · metà della parte dei capi',c:ca/2,k:'ragazzi',capi:true}); items.push({voce:voce+' · metà della parte dei capi',c:ca/2,k:'capi',capi:true}); } else items.push({voce:voce+' · parte dei capi',c:ca,k:ck,capi:true}); } return; }
     items.push(unit!=null&&k==='ragazzi'&&ck!=='ragazzi'?{voce,c,k,unit}:{voce,c,k}); };
   (x.mat||[]).concat(uscMatExtra(x)).forEach(r=>{ const c=axMatCost(r,N); if(!c) return; const v=(r.cosa||'materiale').trim(); const q=Number(r.q==null||r.q===''?1:r.q)||0;
-    add(v,c,r.carico||'',r.qm==='pers'?(Number(r.prezzo)||0)*q:null); });
+    add(v,c,r.carico||'',r.qm==='pers'?(Number(r.prezzo)||0)*q:r.qm==='rag'?'R':null); });
   const fc=axFoodCost(x); if(fc) add('Cibo (stima)',fc,(x.cibo||{}).carico||'',N.tot?fc/N.tot:null);
   (x.spese||[]).forEach(r=>{ const c=axSpesaCost(r,N); if(!c) return; const v=Number(r.importo)||0;
-    add((r.voce||'spesa').trim(),c,r.carico||'',r.modo==='pers'?v:r.modo==='notte'?v*(Number(r.notti)||1):null); });
+    add((r.voce||'spesa').trim(),c,r.carico||'',r.modo==='rag'?'R':r.modo==='pers'?v:r.modo==='notte'?v*(Number(r.notti)||1):null); });
   const ctb=Number(x.contrib)||0; if(ctb>0&&items.some(i=>i.k==='ragazzi')) items.push({voce:'Contributo (autofinanziamento, Sezione…)',c:-ctb,k:'ragazzi',contrib:true});
   return items; }
 // il conto della quota in chiaro: «Casa 100 € ÷ 20 = 5 € + Pullman 50 € a testa = 55 € a testa»
@@ -8167,7 +8214,7 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   const port=axPortList(x); if(port.length) out.push('• Nello zaino: '+port.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
   const sq=axSqList(x); if(sq.length) out.push('• '+axSq().lab+': '+sq.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', '));
   const sac=axSaccoList(x); if(sac.length) out.push('• Al sacco: '+sac.map(o=>o.lab.toLowerCase()+(o.nG>1?' del giorno '+o.g:'')).join(', '));
-  const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: [da inserire], intestato a: [da inserire]; causale: '+axCausale(tit)+')'));
+  const q=axQuota(x), ent=axEntroTxt(x); out.push(!q?'• Non c’è nessuna quota da versare':x.paga==='contanti'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, in contanti ai capi'+(ent?' entro '+ent:''):(x.paga==='partenza'?'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da consegnare alla partenza':'• Quota: '+axEur(q).replace('€ ','')+' € a testa, da versare con bonifico alla Sezione'+((scheda.pp&&(scheda.pp.sezione||'').trim())?' di '+scheda.pp.sezione.trim():'')+(ent?' entro '+ent:'')+' (IBAN: '+(((scheda.pp||{}).iban||'').trim()||'[da inserire]')+', intestato a: '+(((scheda.pp||{}).ibanInt||'').trim()||'[da inserire]')+'; causale: '+axCausale(tit)+')'));
   if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' – '+axLk('link al documento',linkNorm(L.permLink)):' – link al documento: [da inserire]'));
   { const casa=FASCIA==='R'?[]:(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)); if(casa.length) out.push('• Da lasciare a casa: '+casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')); if(FASCIA!=='E') (x.consigli||[]).forEach(t=>out.push('• '+t)); }
   { const lu=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'')+'circolare/Liberatoria_somministrazione_farmaci.pdf'; out.push('• Solo se servono farmaci: compilare la '+axLk('liberatoria per la somministrazione dei farmaci',lu)+', allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome'); }
@@ -8222,8 +8269,7 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
     +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
     +(FASCIA!=='E'?`<div class="ax-sub" style="margin-top:8px">${FASCIA==='L'?'Consigli per le famiglie':'Consigli per lo zaino'} <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true):'');
   h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>${axQuota(x)&&axQuotaConto(x)?`<div class="ax-hint">${axE(axQuotaConto(x))}</div>`:''}
-    ${axQuota(x)?`<div class="ax-sub" style="margin-top:4px">Come si paga</div>`+axChips([['bonifico','Bonifico alla Sezione'],['partenza','Alla partenza']],x.paga||'bonifico',v=>`axSet(${p},${j},'paga',axD('${v}'),true)`):''}
-    <div class="ax-sub" style="margin-top:6px">${axQuota(x)&&(x.paga||'bonifico')==='bonifico'?'Bonifico e autorizzazioni entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`;
+    ${axQuota(x)?axPagaHTML(p,j,x):`<div class="ax-sub" style="margin-top:6px">Autorizzazioni entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`}`;
   h+=axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi e quando”.</div>`);
   h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgPdf(${p},${j})">↓ Scarica in PDF</button></div>${axCuTelAsk(p,j)}<div id="ax-msg-${p}-${j}"></div>`;
   return h; }
@@ -8242,11 +8288,11 @@ const USC_MODELLI=[['sede','Evento in sede','in sede, niente trasporti'],['giorn
 const USC_HID={sede:{log:1},giorno:{},bivacco:{},campo:{}};
 const USC_MOD=[['chi','Persone e date','presenti, date, documenti dei genitori, cose da fare'],['log','Ritrovo, rientro e trasporti','luogo, spostamenti, km e CO₂'],['costi','Cassa e quota','spese, scenari per la parte dei capi, quota'],['sic','Sicurezza (generale)','rischi, numeri utili, cassetta'],['ben','Benessere e inclusione (generale)','attenzioni per tutto il campo'],['pb','Piano B (generale)','le situazioni da prevedere'],['mat','Materiale comune','quello che serve a tutto il campo'],['circ','Circolare per le famiglie','carta intestata nazionale, Word e PDF']];
 const USC_BT={sveglia:['Sveglia','#6D5BD0',['desc','chi'],30],pasto:['Pasto','#D98A00',['menu','chi'],60],cerim:['Cerimonia','#C0392B',['desc','chi'],20],att:['Attività del percorso','#1B7A4E',['lsc','mat','sic','ben','pb'],120],
-  nuova:['Attività','#0E8A8A',['desc','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['desc','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['desc','mat','sic','chi'],90],
-  libero:['Tempo libero','#2E8FD6',['desc'],60],serata:['Serata','#9C2D5B',['desc','mat','chi'],90],riposo:['Riposo','#55606E',['desc'],30],sposta:['Spostamento','#8C8C84',['desc','link'],60],mio:['Blocco tuo','#8E44AD',['desc'],60]};
+  nuova:['Attività','#0E8A8A',['desc','scal','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['desc','scal','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['desc','scal','mat','sic','chi'],90],
+  libero:['Tempo libero','#2E8FD6',['desc'],60],serata:['Serata','#9C2D5B',['desc','mat','chi'],90],riposo:['Riposo','#55606E',['desc'],30],sposta:['Spostamento','#8C8C84',['trip','chi'],60],mio:['Blocco tuo','#8E44AD',['desc'],60]};
 const USC_PALS=[['sveglia','Sveglia','ginnastica, igiene'],['pasto','Colazione','',{pasto:'colazione',dur:45}],['cerim','Quadrato','alzabandiera, cerimonia'],['att','Attività','dalla programmazione'],['nuova','Attività nuova','gioco, tecnica, impresa…'],['hike','Hike','con link alla traccia'],['gioco','Gioco',''],['libero','Tempo libero','angolo di Pattuglia'],['pasto','Pranzo','',{pasto:'pranzo',dur:75}],['pasto','Merenda','',{pasto:'merenda',dur:20}],['pasto','Cena','',{pasto:'cena',dur:75}],['serata','Fuoco di bivacco','serata, veglia'],['riposo','Silenzio','e notte'],['sposta','Spostamento','pullman, cammino'],['mio','Blocco tuo','nome e colore a scelta']];
-const USC_F={desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce'};
-const USC_FALL=['desc','mat','sic','ben','pb','link','obj','chi'];
+const USC_F={trip:'Viaggio',scal:'Scaletta',desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce'};
+const USC_FALL=['desc','scal','mat','sic','ben','pb','link','obj','chi'];
 const USC_GRP=k=>({att:'Attività',nuova:'Attività',hike:'Attività',gioco:'Attività',pasto:'Pasti',libero:'Tempo libero',cerim:'Cerimonie e serate',serata:'Cerimonie e serate'})[k]||'Altro';
 const USC_GCOL={'Attività':'#1B7A4E','Pasti':'#D98A00','Tempo libero':'#2E8FD6','Cerimonie e serate':'#C0392B','Altro':'#55606E'};
 const USC_COLS=['#8E44AD','#0E8A8A','#C0392B','#D98A00','#2E8FD6','#55606E','#E0662A','#1B7A4E'];
@@ -8283,8 +8329,10 @@ function uscDayStart(u,g){ const s=(u.gs||{})[g]; if(s) return s; if(g===1){ con
 const USC_CATK={pasto:'pasto',cerimonia:'cerim',gioco:'gioco',servizio:'libero',spostamento:'sposta',riposo:'riposo',momento:'mio'};
 function uscNorm(m,u){ if(!m||typeof m!=='object') return m;
   if(!m.k){ m.k=m.tipo==='att'?'att':(USC_CATK[m.cat]||'mio'); if(m.ora&&m.fix==null) m.fix=true; const a=axMin(m.ora), b=axMin(m.fine); if(!m.dur) m.dur=(a!=null&&b!=null&&b>a)?b-a:(m.k==='att'?120:60); if(m.ord==null) m.ord=a!=null?a:(m.cr||0)/1e12; if(m.note&&!m.desc) m.desc=m.note; }
-  if(!USC_BT[m.k]) m.k='mio'; if(!Array.isArray(m.f)) m.f=USC_BT[m.k][2].slice(); if(!(Number(m.dur)>0)) m.dur=USC_BT[m.k][3]; if(m.ord==null) m.ord=m.cr||0; if(!m.g) m.g=1; return m; }
-function uscBlocks(u,g){ const P=(u&&u.prog)||{}; return Object.keys(P).map(k=>({k,m:P[k]})).filter(o=>o.m&&typeof o.m==='object'&&!o.m.del).map(o=>{ uscNorm(o.m,u); uscMatMig(u,o.k,o.m); return o; })
+  if(!USC_BT[m.k]) m.k='mio'; if(!Array.isArray(m.f)) m.f=USC_BT[m.k][2].slice(); if(!(Number(m.dur)>0)) m.dur=USC_BT[m.k][3]; if(m.ord==null) m.ord=m.cr||0; if(!m.g) m.g=1;
+  if(m.k==='sposta'&&!m.f.includes('trip')) m.f.unshift('trip');
+  return m; }
+function uscBlocks(u,g){ const P=(u&&u.prog)||{}; return Object.keys(P).map(k=>({k,m:P[k]})).filter(o=>o.m&&typeof o.m==='object'&&!o.m.del).map(o=>{ uscNorm(o.m,u); uscMatMig(u,o.k,o.m); if(o.m.k==='att') uscAttMig(u,o.k,o.m); return o; })
   .filter(o=>g==null||Math.max(1,Number(o.m.g)||1)===g).sort((a,b)=>(Number(a.m.ord)||0)-(Number(b.m.ord)||0)||(a.m.cr||0)-(b.m.cr||0)||a.k.localeCompare(b.k)); }
 function uscOut(u){ const n=uscNG(u); return uscBlocks(u).filter(o=>Math.max(1,Number(o.m.g)||1)>n); }
 function uscTimes(u,g){ const R=uscBlocks(u,g); const out={}; let t=axMin(uscDayStart(u,g)); if(t==null) t=450;
@@ -8394,7 +8442,7 @@ function uscBlkGo(k,g){ const u=uscCur(); const m=uscBlk(k); if(!m) return; m.g=
 function uscBlkTog(k){ USC_OPEN[k]=!USC_OPEN[k]; uscRe(); }
 function uscOpenAll(on){ const u=uscCur(); if(!u) return; uscBlocks(u,typeof USC_TAB==='number'?USC_TAB:null).forEach(o=>USC_OPEN[o.k]=!!on); uscRe(); }
 function uscJump(k,g){ if(g!=null&&USC_TAB!==g){ USC_TAB=g; } USC_OPEN[k]=true; uscRe(); setTimeout(()=>{ const e=document.getElementById('usc-b-'+k); if(e){ e.scrollIntoView({block:'center',behavior:'smooth'}); e.classList.add('usc-flash'); setTimeout(()=>e.classList.remove('usc-flash'),1400); } },60); }
-function uscFieldAdd(k,f){ const m=uscBlk(k); if(!m) return; if(!m.f.includes(f)) m.f.push(f); uscSave(); uscRe(); }
+function uscFieldAdd(k,f){ const m=uscBlk(k); if(!m) return; if(!m.f.includes(f)) m.f.push(f); USC_FOPEN[k+'|'+f]=true; uscSave(); uscRe(); }
 function uscFieldRm(k,f){ const m=uscBlk(k); if(!m) return; m.f=m.f.filter(x=>x!==f); uscSave(); uscRe(); }
 function uscArr(k,f){ const m=uscBlk(k); if(!m) return []; if(!Array.isArray(m[f])) m[f]=[]; return m[f]; }
 function uscRow(k,f,i,c,v,re){ const A=uscArr(k,f); while(A.length<=i) A.push({}); A[i][c]=v; uscSave(); if(re) uscRe(); else uscLive(k); }
@@ -8456,6 +8504,7 @@ function uscToSez3(k,idx){ const u=uscCur(); const m=uscBlk(k); if(!u||!m||!uscC
   const lk=(m.links||[]).filter(l=>(l.u||'').trim()); if(m.f.includes('link')&&lk.length){ a.links=attLinks(a).concat(lk.map(l=>({n:l.n||'',u:l.u}))); a.link=a.links[0].u; }
   if(O.pid===per.percorsoId) (O.i||[]).forEach(i=>{ if(!x.oss) x.oss={}; x.oss[i]={on:true,chi:O.chi||''}; });
   if(m.aff&&!a.aff) a.aff=m.aff;
+  const TT=(m.tt||[]).filter(r=>(r.cosa||'').trim()||r.dur); if(TT.length&&!(x.tt2||[]).some(r=>(r.cosa||'').trim())){ const t0=uscTimes(u,Number(m.g)||1)[k]; x.tt2=TT.map((r,i)=>Object.assign({},r,i===0&&t0?{start:axHM(t0.s)}:{})); }
   attIdsEnsure(per); m.k='att'; m.tipo='att'; m.pid=per.percorsoId; m.aid=a.aid; m.f=['lsc','mat']; m.mat=[]; USC_MOVE=null; USC_OPEN[k]=true;
   saveData(true); uscRe(); showToast('Ora è l’attività '+attNum(idx,j)+' di '+uscPercLabel(per,idx)+': completa Lancio e Conclusione nella Sezione 3'); }
 function uscPickAtt(k,idx,j){ const m=uscBlk(k); const per=getAllPercorsi()[idx]; if(!m||!per||!per.percorsoId) return; attIdsEnsure(per); const a=per.attivita[j]; if(!a) return; m.pid=per.percorsoId; m.aid=a.aid; USC_PICK=false; saveData(true); uscRe(); }
@@ -8485,24 +8534,27 @@ function uscOwnRowDel(k,r){ const o=uscOwnObj(k); if(!o||!Array.isArray(o.rows))
 const USC_SCEN=[['ragazzi','Capi non pagano','tutto sui ragazzi'],['meta','Quota ridotta capi','metà della loro parte'],['capi','Capi pagano la loro parte','ognuno la sua quota'],['sezione','La Sezione copre i capi','dalla cassa di Sezione'],['gruppo','Il Gruppo copre i capi','dalla cassa del Gruppo']];
 function uscQ(x,s){ const y=Object.assign({},x,{capiCarico:s}); try{ Object.defineProperty(y,'__u',{value:x.__u}); }catch(e){} return axQuota(y); }
 function uscScen(s){ const u=uscCur(); if(!u||!uscCan()) return; u.ax.capiCarico=s; uscSave(); uscRe(); }
-function uscContrib(v){ const u=uscCur(); if(!u) return; u.ax.contrib=String(Math.max(0,Number(v)||0)); uscSave(); const t=document.getElementById('usc-tiles'); if(t) t.innerHTML=uscTilesHTML(u); const d=document.getElementById('usc-qres'); if(d) d.innerHTML=uscQuotaRes(u); }
-function uscQuotaRes(u){ const x=u.ax, N=axN(x); const q=axQuota(x); return `<b>Quota ragazzi: ${q?axEur(q):'—'}</b>${N.rag&&axQuotaConto(x)?`<div class="ax-hint ax-conto">${axE(axQuotaConto(x))}</div>`:''}`; }
-function uscQuotaHTML(u){ const x=u.ax, N=axN(x);
-  const yy=Object.assign({},x,{capiCarico:''}); try{ Object.defineProperty(yy,'__u',{value:x.__u}); }catch(e){} const base=axCosti(yy);
-  const capi=base.filter(i=>i.capi).reduce((t,i)=>t+i.c,0); const per=base.filter(i=>i.unit!=null&&i.k==='ragazzi'); const forf=base.filter(i=>i.unit==null&&i.k==='ragazzi'&&!i.capi&&!i.contrib); const altri=base.filter(i=>i.k!=='ragazzi'&&!i.capi);
-  const pp=per.reduce((t,i)=>t+i.unit,0); const can=uscCan(); const ck=x.capiCarico||'';
-  let h=`<div class="usc-qrow">${per.map(i=>`<span>${axE(i.voce)} · a persona</span><span>${axEur(i.unit)}</span>`).join('')}${per.length?`<span class="t">Costo a persona (ragazzi e capi)</span><span class="t">${axEur(pp)}</span>`:''}
-    ${forf.map(i=>`<span>${axE(i.voce)} · in tutto</span><span>${axEur(i.c)}</span>`).join('')}${altri.map(i=>`<span>${axE(i.voce)} · non nella quota</span><span>${axEur(i.c)}</span>`).join('')}
-    <span class="t">Spesa totale · ${N.rag} ragazzi + ${N.ad} capi</span><span class="t">${axEur(uscSpesa(u))}</span></div>`;
-  if(!per.length&&!forf.length) h=`<div class="ax-hint">Inserisci le spese in «Cassa e quota» (scheda Campo), i materiali nei blocchi e il menù nella scheda Pasti: qui vedi come nasce la quota.</div>`;
-  if(capi>0.004&&N.rag) h+=`<div class="usc-qcapi"><b>La parte dei capi vale ${axEur(capi)}</b>: se la pagano i ragazzi pesa <b>${axEur(capi/N.rag)}</b> su ognuno.</div>
-    <div class="usc-scen" role="group" aria-label="Chi paga la parte dei capi">${USC_SCEN.map(([s,t,d])=>`<button type="button" class="usc-sc${ck===s?' on':''}" aria-pressed="${ck===s}" ${can?`onclick="uscScen('${s}')"`:'disabled'}><b>${t}</b>${d}<span>Quota ragazzi <em>${axEur(uscQ(x,s))}</em></span></button>`).join('')}</div>${ck?'':'<div class="ax-warn">Scegli chi paga la parte dei capi.</div>'}`;
+function uscContrib(v){ const u=uscCur(); if(!u) return; u.ax.contrib=String(Math.max(0,Number(v)||0)); uscSave(); const t=document.getElementById('usc-tiles'); if(t) t.innerHTML=uscTilesHTML(u); const d=document.getElementById('usc-qres'); if(d) d.innerHTML=uscQuotaRes(u); const b=document.querySelector('.usc-qbig b'); if(b){ const q=axQuota(u.ax); b.textContent=q?axEur(q):'—'; } }
+function uscQuotaRes(u){ const x=u.ax, N=axN(x); const c=Number(x.contrib)||0; if(!c||!N.rag) return ''; return `<span class="ax-hint">Il contributo di ${axEur(c)} toglie ${axEur(c/N.rag)} a ogni ragazzo: quota ${axEur(axQuota(x))}.</span>`; }
+function uscQuotaHTML(u){ const x=u.ax, N=axN(x), can=uscCan(); const ck=x.capiCarico||'ragazzi';
+  if(!N.rag) return '<div class="ax-hint">Indica quanti ragazzi vengono (Persone e date) per calcolare la quota.</div>';
+  const q=s=>uscQ(x,s); const qr=q('ragazzi'), qc=q('capi'), cur=axQuota(x);
+  const y=Object.assign({},x,{capiCarico:'capi'}); try{ Object.defineProperty(y,'__u',{value:x.__u}); }catch(e){} const capiTot=axCosti(y).filter(i=>i.capi).reduce((t,i)=>t+i.c,0); const pc=N.ad?capiTot/N.ad:0;
+  if(!qr&&!capiTot) return '<div class="ax-hint">Quando ci sono spese a carico dei ragazzi (materiali da comprare, cibo, altre spese), qui vedi la quota.</div>';
+  let h=`<div class="usc-qbig">Quota ragazzi <b>${cur?axEur(cur):'—'}</b><span>${N.rag} ragazzi${N.ad?' · '+N.ad+' capi':''}</span></div>`;
+  if(N.ad&&capiTot>0.004) h+=`<div class="usc-qcapi">I ${N.ad} capi costano <b>${axEur(capiTot)}</b> in tutto (<b>${axEur(pc)}</b> a testa). Se non pagano, ogni ragazzo paga <b>${axEur(qr-qc)}</b> in più: la quota passa da <b>${axEur(qc)}</b> a <b>${axEur(qr)}</b>.</div>`;
+  if(N.ad&&capiTot>0.004) h+=`<div class="usc-tw"><table class="usc-tbl usc-sctab" role="group" aria-label="Chi paga la parte dei capi"><tr><th>Chi paga la parte dei capi</th><th>Quota ragazzi</th><th>Ogni capo</th><th></th></tr>${USC_SCEN.map(([s,t,d])=>{ const on=ck===s; const capo=s==='capi'?pc:s==='meta'?pc/2:0; const cassa=(s==='sezione'||s==='gruppo')?capiTot:0;
+      return `<tr class="${on?'on':''}"><td><b>${t}</b><br><small>${d}${cassa?' · '+axEur(cassa)+' dalla cassa':''}</small></td><td><b>${axEur(q(s))}</b></td><td>${capo?axEur(capo):'—'}</td><td>${on?'<span class="usc-okc">✓ scelto</span>':can?`<button type="button" class="btn-ghost usc-btn" onclick="uscScen('${s}')">Scegli</button>`:''}</td></tr>`; }).join('')}</table></div>`;
   h+=`<label class="usc-contrib">Contributo da autofinanziamento o dalla Sezione <input class="ax-in" type="number" min="0" step="5" value="${axE(x.contrib||'')}" ${can?'':'readonly'} oninput="uscContrib(this.value)"> € <span class="ax-opt">abbassa la quota di tutti i ragazzi</span></label><div id="usc-qres" class="usc-qres">${uscQuotaRes(u)}</div>`;
   return h; }
 // ── disegno della pagina ──
 function uscRe(){ const box=document.getElementById('usc-root'); if(!box){ try{ renderValuation(); }catch(e){} return; }
   const u=uscCur(); if(u){ const j=uscJ(u.id); [...box.querySelectorAll('details[data-k]')].forEach(d=>axOpen[USC_P+'-'+j+'-'+d.dataset.k]=d.open); }
-  const ae=document.activeElement, aid=ae&&ae.id; const y=window.scrollY; box.innerHTML=uscPageHTML(); uscNavSync(); try{ window.scrollTo(0,y); }catch(e){} if(aid){ const f=document.getElementById(aid); if(f&&f!==ae) try{ f.focus({preventScroll:true}); }catch(e){} } }
+  const ae=document.activeElement, aid=ae&&ae.id; const y=window.scrollY; const H=box.offsetHeight; box.style.minHeight=H+'px';
+  box.innerHTML=uscPageHTML(); uscNavSync();
+  const de=document.documentElement; de.style.scrollBehavior='auto'; try{ window.scrollTo({top:y,left:0,behavior:'instant'}); }catch(e){ window.scrollTo(0,y); }
+  box.style.minHeight=''; requestAnimationFrame(()=>{ try{ if(Math.abs(window.scrollY-y)>2) window.scrollTo({top:y,left:0,behavior:'instant'}); }catch(e){} de.style.scrollBehavior=''; });
+  if(aid){ const f=document.getElementById(aid); if(f&&f!==ae) try{ f.focus({preventScroll:true}); }catch(e){} } }
 function renderUscite(root){ const el=document.createElement('div'); el.id='usc-root'; el.innerHTML=uscPageHTML(); root.appendChild(el); setTimeout(uscNavSync,0); }
 function uscPageHTML(){ if(!uscOn()) return ''; const u=uscCur(); if(USC_CUR&&!u) USC_CUR=null; return u?uscOneHTML(u):uscListHTML(); }
 function uscMini(u){ const g={}; uscBlocks(u).forEach(o=>{ const k=USC_GRP(o.m.k); g[k]=(g[k]||0)+(Number(o.m.dur)||0); }); const t=Object.values(g).reduce((a,b)=>a+b,0);
@@ -8605,7 +8657,8 @@ function uscOwnBody(k,o,can){ let h='';
 const USC_MCOLS=['colazione','pranzo','merenda','cena'];
 function uscMealSet(g,m){ USC_MEAL=(USC_MEAL===g+'|'+m)?null:g+'|'+m; uscRe(); setTimeout(()=>{ const e=document.getElementById('usc-meal-ed'); if(e) e.scrollIntoView({block:'nearest',behavior:'smooth'}); },60); }
 function uscDish(j,g,m,per){ const x=axX(USC_P,j); if(!Array.isArray(x.piatti)) x.piatti=[]; x.piatti.push(Object.assign({g,pasto:m,ingr:[{}]},per?{per}:{})); axSave(); uscRe(); setTimeout(()=>{ const L=document.querySelectorAll('#usc-meal-ed .usc-dn'); const i=L[L.length-1]; if(i) i.focus(); },50); }
-function uscIngAdd(j,k,focus){ const x=axX(USC_P,j); const pt=(x.piatti||[])[k]; if(!pt) return; if(!Array.isArray(pt.ingr)) pt.ingr=[]; pt.ingr.push({}); axSave(); uscRe(); if(focus) setTimeout(()=>{ const L=document.querySelectorAll('#usc-dish-'+k+' .usc-ingn'); const i=L[L.length-1]; if(i) i.focus(); },40); }
+function uscIngAdd(j,k,focus){ const x=axX(USC_P,j); const pt=(x.piatti||[])[k]; if(!pt) return; if(!Array.isArray(pt.ingr)) pt.ingr=[]; pt.ingr.push({}); axSave(); uscRe();
+  if(focus) setTimeout(()=>{ const L=document.querySelectorAll('#usc-dish-'+k+' .usc-ingn'); const i=L[L.length-1]; if(i){ try{ i.focus({preventScroll:true}); }catch(e){ i.focus(); } const r=i.getBoundingClientRect(); if(r.bottom>window.innerHeight-90) window.scrollBy({top:r.bottom-window.innerHeight+140,left:0,behavior:'instant'}); else if(r.top<80) window.scrollBy({top:r.top-140,left:0,behavior:'instant'}); } },40); }
 function uscMealCopy(j,from,to){ if(!to) return; const x=axX(USC_P,j); const [g,m]=from.split('|'); const [g2,m2]=to.split('|'); const P=(x.piatti||[]).filter(pt=>(Number(pt.g)||1)===+g&&(pt.pasto||'pranzo')===m);
   if(!P.length){ showToast('Questo pasto è ancora vuoto'); return; } P.forEach(pt=>x.piatti.push(Object.assign(JSON.parse(JSON.stringify(pt)),{g:+g2,pasto:m2}))); axSave(); const u=uscByJ(j); showToast('Copiato in '+axPastoLab(x,m2).toLowerCase()+' di '+uscDayLong(u,+g2)); uscRe(); }
 function uscPastiHTML(u,j){ const x=u.ax, N=axN(x), C=x.cibo||{}, n=uscNG(u), can=uscCan(); const p=USC_P; const cols=uscPCols(u);
@@ -8622,7 +8675,9 @@ function uscPastiHTML(u,j){ const x=u.ax, N=axN(x), C=x.cibo||{}, n=uscNG(u), ca
     ${C.modo==='medio'?`<div class="ax-row3"><div><div class="ax-sub">€ a pasto a persona</div><input class="ax-in" type="number" min="0" step="0.5" value="${axE(C.medio)}" oninput="axSet(${p},${j},'cibo.medio',this.value)"></div><div><div class="ax-sub">Numero di pasti</div><input class="ax-in" type="number" min="0" placeholder="${axPasti(x)||''}" value="${axE(C.npasti)}" oninput="axSet(${p},${j},'cibo.npasti',this.value)"></div><div></div></div>`:''}</div>
     <div class="usc-card2"><h3>Lista della spesa</h3><div class="ax-tot" id="ax-food-${p}-${j}">${axFoodSum(x)}</div>${uscSpesaTable(x)}<div class="ax-hint">Dosi “da scout” e prezzi medi indicativi 2026: si cambiano nei piatti; le dosi che cambi vengono ricordate.</div></div></div>`;
   return h; }
-function uscSpesaTable(x){ const L=axFoodList(x); if(!L.length) return ''; return `<div class="usc-tw"><table class="usc-tbl"><tr><th>Cosa</th><th>Quantità</th><th>Costo</th></tr>${L.map(r=>`<tr><td>${axE(r.nome)}</td><td>${axE(r.qtxt)}</td><td>${r.cost!=null?axEur(r.cost):'—'}</td></tr>`).join('')}</table></div>`; }
+function uscSpesaTable(x){ const L=axFoodList(x); if(!L.length) return ''; const np=L.filter(r=>r.cost==null);
+  return `<div class="usc-tw"><table class="usc-tbl"><tr><th>Cosa</th><th>Quantità</th><th>Costo</th></tr>${L.map(r=>`<tr${r.cost==null?' class="usc-np"':''}><td>${axE(r.nome)}</td><td>${axE(r.qtxt)}</td><td>${r.cost!=null?axEur(r.cost):'<span class="usc-npt">senza prezzo</span>'}</td></tr>`).join('')}</table></div>`
+    +(np.length?`<div class="usc-npw">${np.length===1?'Un ingrediente non ha':np.length+' ingredienti non hanno'} il prezzo (${np.map(r=>axE(r.nome)).join(', ')}): la spesa è stimata per difetto. Il prezzo si scrive nel piatto, accanto all’ingrediente.</div>`:''); }
 function uscMealEdHTML(u,j,g,m){ const x=u.ax, N=axN(x), p=USC_P, can=uscCan(); const sac=axSacco(x,g,m); const P=x.piatti||[]; const lab=axPastoLab(x,m);
   const ro=can?'':'disabled';
   let h=`<div class="usc-meal" id="usc-meal-ed"><div class="usc-dtop"><h3>${uscE(lab)} · ${uscE(uscDayLong(u,g))}</h3><button type="button" class="usc-lnk" onclick="USC_MEAL=null;uscRe()">Chiudi</button></div>
@@ -8631,7 +8686,7 @@ function uscMealEdHTML(u,j,g,m){ const x=u.ax, N=axN(x), p=USC_P, can=uscCan(); 
     h+=`<div class="usc-dish" id="usc-dish-${k}"><div class="usc-dish-h"><input class="ax-in usc-dn" placeholder="Piatto, es. pasta al pomodoro" value="${axE(pt.nome)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.nome',this.value)"><input class="ax-in usc-dchi" placeholder="Chi cucina" value="${axE(pt.chi)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.chi',this.value)">${can?`<button type="button" class="btn-ghost ax-x" title="Togli il piatto" onclick="axArrP(${p},${j},'piatti').splice(${k},1);axSave();uscRe()">×</button>`:''}</div>
       <div class="usc-per"><span class="ax-sub">Per chi</span><select class="ax-in" ${ro} onchange="axSet(${p},${j},'piatti.${k}.per',this.value,true)">${axOpt(AX_PERCHI,pt.per||'tutti')}</select>${(pt.per||'tutti')!=='tutti'?`<input class="ax-in" placeholder="es. Pattuglia Volpi" value="${axE(pt.perNome)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.perNome',this.value)">`:''}${pt.per==='n'?`<select class="ax-in usc-pn" title="Quante persone" ${ro} onchange="axSet(${p},${j},'piatti.${k}.pn',this.value,true)">${axNumOpts(pt.pn,60)}</select>`:''}<span class="ax-hint">${axPtN(pt,N)||'—'} persone</span></div>
       <div class="usc-ingh"><span>Ingrediente</span><span>Dose a persona</span><span></span><span>Prezzo</span><span></span></div>
-      ${(pt.ingr||[]).map((ig,i)=>`<div class="usc-ing"><input class="ax-in usc-ingn" list="ax-food-dl" placeholder="es. pasta" value="${axE(ig.nome)}" ${ro} onchange="axIngName(${p},${j},${k},${i},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.dispatchEvent(new Event('change'));uscIngAdd(${j},${k},true)}"><input class="ax-in" type="number" min="0" title="Dose a persona" value="${axE(ig.dose)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.ingr.${i}.dose',this.value);axDoseRemember(this.closest('.usc-ing').querySelector('input').value,this.value)"><select class="ax-in" ${ro} onchange="axSet(${p},${j},'piatti.${k}.ingr.${i}.um',this.value,true)">${axOpt([['g','g'],['ml','ml'],['pz','pz']],ig.um||'g')}</select><input class="ax-in" type="number" min="0" step="0.01" placeholder="€/${(ig.um||'g')==='pz'?'pz':(ig.um==='ml'?'l':'kg')}" value="${axE(ig.prezzo)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.ingr.${i}.prezzo',this.value)">${can?`<button type="button" class="btn-ghost ax-x" title="Togli" onclick="axArrP(${p},${j},'piatti.${k}.ingr').splice(${i},1);axSave();uscRe()">×</button>`:'<span></span>'}</div>`).join('')}
+      ${(pt.ingr||[]).map((ig,i)=>`<div class="usc-ing"><input class="ax-in usc-ingn" list="ax-food-dl" placeholder="es. pasta" value="${axE(ig.nome)}" ${ro} onchange="axIngName(${p},${j},${k},${i},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.dispatchEvent(new Event('change'));uscIngAdd(${j},${k},true)}"><input class="ax-in" type="number" min="0" title="Dose a persona" value="${axE(ig.dose)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.ingr.${i}.dose',this.value);axDoseRemember(this.closest('.usc-ing').querySelector('input').value,this.value)"><select class="ax-in" ${ro} onchange="axSet(${p},${j},'piatti.${k}.ingr.${i}.um',this.value,true)">${axOpt([['g','g'],['ml','ml'],['pz','pz']],ig.um||'g')}</select><input class="ax-in${(ig.nome||'').trim()&&(ig.prezzo==null||ig.prezzo==='')?' usc-noprice':''}" type="number" min="0" step="0.01" placeholder="€/${(ig.um||'g')==='pz'?'pz':(ig.um==='ml'?'l':'kg')}" title="${(ig.nome||'').trim()&&(ig.prezzo==null||ig.prezzo==='')?'Senza prezzo: la spesa è stimata per difetto':'Prezzo'}" value="${axE(ig.prezzo)}" ${ro} oninput="axSet(${p},${j},'piatti.${k}.ingr.${i}.prezzo',this.value)">${can?`<button type="button" class="btn-ghost ax-x" title="Togli" onclick="axArrP(${p},${j},'piatti.${k}.ingr').splice(${i},1);axSave();uscRe()">×</button>`:'<span></span>'}</div>`).join('')}
       ${can?`<div class="ax-chips"><button type="button" class="btn-ghost ax-add" onclick="uscIngAdd(${j},${k},true)">+ Ingrediente</button><span class="ax-hint">Invio aggiunge il successivo</span><label class="ax-check" style="margin:0"><input type="checkbox" ${pt.unico?'checked':''} onchange="axSet(${p},${j},'piatti.${k}.unico',this.checked,true)"> Piatto unico</label></div>`:''}</div>`; });
     if(can) h+=`<div class="ax-chips"><button type="button" class="btn-ghost usc-btn" onclick="uscDish(${j},${g},'${m}')">+ Piatto</button><button type="button" class="btn-ghost usc-btn" onclick="uscDish(${j},${g},'${m}','n')">+ Piatto per pochi <span class="ax-opt">es. una Pattuglia in hike</span></button>${uscMeals(x,g,m).length?`<label class="usc-copy">Copia in <select class="ax-in" onchange="uscMealCopy(${j},'${g}|${m}',this.value);this.value=''"><option value="">scegli…</option>${Array.from({length:uscNG(u)},(_,i)=>i+1).flatMap(g2=>uscPCols(u).map(m2=>(g2===g&&m2===m)?'':`<option value="${g2}|${m2}">${uscE(axPastoLab(x,m2)+' · '+uscDayShort(u,g2))}</option>`)).join('')}</select></label>`:''}</div>`; }
   return h+`</div>`; }
@@ -8662,7 +8717,8 @@ function uscDayTTHTML(u,g,R,T){ const can=uscCan();
       <button type="button" class="btn-ghost usc-btn" onclick="uscExport('giorno',${g})">⤓ Foglio della giornata (Word)</button></div></div>`; }
 function uscMoveSel(u,k,m){ const n=uscNG(u); const g=Math.max(1,Number(m.g)||1); let o=''; for(let i=1;i<=n;i++) o+=`<option value="${i}" ${i===g?'selected':''}>${uscE(uscDayShort(u,i)+' · '+uscDayLbl(u,i))}</option>`; if(g>n) o+=`<option value="${g}" selected>— fuori date —</option>`;
   return `<label class="usc-mv2"><span>Sposta a</span><select class="ax-in" onchange="uscBlkGo('${k}',this.value)">${o}</select></label>`; }
-function uscFld(k,f,can,inner){ return `<div class="usc-fld"><div class="usc-fldh"><span>${USC_F[f]}${f==='obj'?' <span class="ax-opt">facoltativo</span>':''}</span>${can&&f!=='lsc'&&f!=='menu'?`<button type="button" class="usc-fx" onclick="uscFieldRm('${k}','${f}')" aria-label="Togli ${USC_F[f]}">togli ×</button>`:''}</div>${inner}</div>`; }
+function uscFld(k,f,can,inner,sum){ if(sum===undefined){ try{ const m=uscBlk(k); sum=m?uscFieldSum(m,f,uscCur(),k):''; }catch(e){ sum=''; } } const id=k+'|'+f; const op=!!USC_FOPEN[id]; const rm=can&&f!=='lsc'&&f!=='menu'&&!/^a:/.test(f);
+  return `<details class="usc-fld" data-f="${f}" ${op?'open':''} ontoggle="USC_FOPEN['${id}']=this.open"><summary class="usc-fldh"><span class="usc-fldt">${USC_F[f.replace(/^a:/,'')]||f}${f==='obj'?' <span class="ax-opt">facoltativo</span>':''}${sum?` <span class="usc-fsum">${sum}</span>`:''}</span>${rm?`<button type="button" class="usc-fx" onclick="event.preventDefault();event.stopPropagation();uscFieldRm('${k}','${f}')" aria-label="Togli ${USC_F[f]}">togli ×</button>`:''}</summary><div class="usc-fldb">${inner}</div></details>`; }
 function uscBlkHTML(u,k,m,t,i,n){ const can=uscCan(); const open=!!USC_OPEN[k]; const col=uscBlkCol(m); const [lab]=USC_BT[m.k]; const x=u.ax;
   const f=m.k==='att'?uscAttFind(m):null; const I=f?uscPercInfo(f.per,f.idx):null;
   const who=String(m.aff||'').replace(/\s*\([^)]*\)\s*$/,'');
@@ -8682,12 +8738,13 @@ function uscBlkHTML(u,k,m,t,i,n){ const can=uscCan(); const open=!!USC_OPEN[k]; 
     ${uscMoveSel(u,k,m)}<label class="usc-mv2"><span>Duplica in</span><select class="ax-in" onchange="uscBlkDup('${k}',this.value);this.value=''"><option value="">scegli…</option>${days.map(g=>`<option value="${g}">${uscE(uscDayShort(u,g)+' · '+uscDayLbl(u,g))}</option>`).join('')}</select></label>
     <label class="usc-mv2"><span>${m.k==='att'||m.k==='nuova'||m.k==='hike'||m.k==='gioco'?'Chi conduce':'Affidato a'}</span>${axPersonSel(m.aff||'',`uscBlkSet('${k}','aff',@V,true)`)}</label></div>`;
   if(t&&t.clash) h+=`<div class="ax-warn">Con l’ora fissa delle ${uscE(m.ora)} questo blocco comincia prima che finisca quello precedente (finisce alle ${axHM(t.pe)}): accorcia un blocco prima o sposta l’ora fissa.</div>`;
-  m.f.forEach(fk=>{ if(fk==='chi') return; h+=uscFieldHTML(u,k,m,fk,f,I,can); });
-  const miss=USC_FALL.filter(fk=>fk!=='chi'&&!m.f.includes(fk)&&!(m.k==='att'&&fk==='desc'));
+  if(m.k==='att'){ if(!f&&USC_FOPEN[k+'|lsc']==null) USC_FOPEN[k+'|lsc']=true; h+=uscFieldHTML(u,k,m,'lsc',f,I,can); if(f) USC_ATTF.slice(1).forEach(fk=>{ h+=uscAttFieldHTML(u,k,m,fk,f,can); }); }
+  else m.f.forEach(fk=>{ if(fk==='chi') return; h+=uscFieldHTML(u,k,m,fk,f,I,can); });
+  const miss=m.k==='att'?[]:USC_FALL.filter(fk=>fk!=='chi'&&!m.f.includes(fk)&&!(m.k==='sposta'&&fk==='mat'));
   h+=`<div class="usc-bfoot">${can&&miss.length?`<span class="usc-addf">${miss.map(fk=>`<button type="button" onclick="uscFieldAdd('${k}','${fk}')">+ ${USC_F[fk]}</button>`).join('')}</span>`:''}<span class="usc-bact">${can&&USC_MOVABLE[m.k]?`<button type="button" class="usc-lnk" onclick="USC_MOVE=USC_MOVE==='${k}'?null:'${k}';uscRe()">→ Porta nella programmazione</button>`:''}<button type="button" class="usc-lnk" onclick="uscExport('blocco','${k}')">⤓ Esporta il blocco</button></span></div>`;
   if(USC_MOVE===k) h+=uscMoveHTML(k,m);
   return h+`</div></div>`; }
-function uscFieldHTML(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.ax; const N=axN(x);
+function uscFieldHTML0(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.ax; const N=axN(x);
   if(fk==='lsc'){ if(!f){ if(!can) return uscFld(k,fk,can,'<div class="ax-hint">Nessuna attività scelta.</div>');
       const L=getAllPercorsi(); let h='', any=false;
       L.forEach((per,idx)=>{ if(!per||!per.percorsoId) return; const PI=uscPercInfo(per,idx); const A=per.attivita||[]; const items=attOrd(per,Math.max(3,A.length)).filter(j=>A[j]&&['testo','lancio','sviluppo','conclusione'].some(q=>(A[j][q]||'').trim()));
@@ -8803,7 +8860,7 @@ function uscMeta(d){ try{ const U=(d&&d.scheda&&d.scheda.uscite)||{}; const L=Ob
     return {id:u.id, t:uscTit(u).slice(0,60), d:axDateTxt(x)||'', g:x.data?(axMulti(x)?axNGiorni(x):1):Math.max(1,Number(u.ng)||1), m:uscModello(u)[1], w}; }); }catch(e){ return []; } }
 function uscArcHTML(r){ const M=(r&&r.meta)||{}; if(M.mode!=='giovani') return ''; const L=Array.isArray(M.usc)?M.usc:[]; const mine=typeof CL!=='undefined'&&CL.ctx&&!CL.ctx.ruolo||!(CL.ctx&&CL.ctx.id===r.id);
   return `<div class="cl-usc">${L.map(u=>`<button type="button" class="cl-uc" onclick="uscArcOpen('${clEsc(r.id)}','${clEsc(u.id)}')"><span class="k">${clEsc(u.m||'Uscita')}${u.g>1?' · '+u.g+' giornate':''}</span><b>${clEsc(u.t)}</b><span>${clEsc(u.d||'date da scegliere')}</span>${u.w&&Object.keys(u.w).length?`<span class="cl-umini">${Object.keys(USC_GCOL).filter(k=>u.w[k]).map(k=>`<i style="flex:${u.w[k]};background:${USC_GCOL[k]}"></i>`).join('')}</span>`:''}</button>`).join('')}<button type="button" class="cl-uc cl-ucnew" onclick="uscArcOpen('${clEsc(r.id)}','new')">+ Nuova uscita</button></div>`; }
-function uscArcOpen(pid,uid){ try{ if(CL.ctx&&CL.ctx.id===pid){ try{ clClose(); }catch(e){ try{ modalClose(); }catch(e2){} } if(MODE!=='giovani') return; if(uid==='new') uscNewStart(); else uscOpen(uid); return; }
+function uscArcOpen(pid,uid){ try{ if(CL.ctx&&CL.ctx.id===pid){ try{ clContinue(true); }catch(e){ try{ clClose(); }catch(e2){} } if(MODE!=='giovani') return; setTimeout(()=>{ if(uid==='new') uscNewStart(); else uscOpen(uid); },60); return; }
   const k='bussola_pos:'+pid+':giovani'; localStorage.setItem(k,JSON.stringify({n:4,step:'usc',k:'usc',usc:uid==='new'?null:uid,unew:uid==='new',y:0,t:Date.now()})); }catch(e){}
   clOpenProject(pid); }
 // «Per te»: blocchi di un'uscita affidati a me
@@ -8817,7 +8874,7 @@ function uscPtMine(d,people){ const out=[]; try{ const U=(d&&d.scheda&&d.scheda.
     const mats=[].concat(x.mat||[],...Object.keys(x.bm||{}).filter(k=>P[k]&&!P[k].del).map(k=>x.bm[k]||[])).filter(r=>r&&(r.cosa||'').trim()&&r.chi&&!r.pronto&&affIsMe(r.chi,people));
     if(mats.length) out.push({u:id, ut:uscTit(u), g:0, t:'materiali da procurare: '+mats.slice(0,4).map(r=>r.cosa).join(', ')+(mats.length>4?'…':''), ora:'', d:x.data||'', gt:'tutta l’uscita'}); }); }catch(e){}
   return out; }
-function uscPtRow(x,pr){ return `<div class="cl-row"><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» è affidato a te: «${clEsc(String(x.t).slice(0,60))}»</div><div class="s">${clEsc(x.gt)}${x.ora?' · '+clEsc(x.ora):''} · ${pr}</div></div><button class="cl-btn sm" onclick="${x.cur?`clContinue();setTimeout(()=>uscOpen('${clEsc(x.u)}',${Number(x.g)||1}),300)`:`clOpenShared('${clEsc(x.id)}')`}">Apri</button></div>`; }
+function uscPtRow(x,pr){ return `<div class="cl-row"><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» è affidato a te: «${clEsc(String(x.t).slice(0,60))}»</div><div class="s">${clEsc(x.gt)}${x.ora?' · '+clEsc(x.ora):''} · ${pr}</div></div><button class="cl-btn sm" onclick="${x.cur?`clContinue(true);setTimeout(()=>uscOpen('${clEsc(x.u)}',${Number(x.g)||1}),300)`:`clOpenShared('${clEsc(x.id)}')`}">Apri</button></div>`; }
 // materiali dei blocchi: stanno in ax.bm[codice blocco] (stesso formato del materiale comune: quantità, provenienza, prezzo, chi lo procura…)
 function uscMatMig(u,k,m){ if(!u||!u.ax||!Array.isArray(m.mat)||!m.mat.length) return; if(!u.ax.bm||typeof u.ax.bm!=='object') u.ax.bm={}; if(!Array.isArray(u.ax.bm[k])||!u.ax.bm[k].length) u.ax.bm[k]=m.mat.map(r=>Object.assign({qm:'fissa',carico:'ragazzi'},r)); m.mat=[]; }
 function uscBM(u,k){ const B=(u&&u.ax&&u.ax.bm)||{}; return Array.isArray(B[k])?B[k]:[]; }
@@ -8842,33 +8899,44 @@ function uscOwnPageHTML(u,j,k){ const o=(u.own||{})[k]; if(!o) return ''; const 
 // ── pagina di un modulo: parte generale + riepilogo per giornata ──
 function uscModPageHTML(u,j,k){ const M=USC_MOD.find(m=>m[0]===k); if(!M) return ''; const p=USC_P, x=u.ax, can=uscCan(); const rk=AX_REFG[k];
   const ref=rk?`<label class="usc-mref"><span>Referente</span>${axPersonSel(axRef(x,rk),`axRefSet(${p},${j},'${rk}',@V)`)}</label>`:'';
-  const body={chi:()=>axChi(p,j,u,x), log:()=>axLog(p,j,u,x), costi:()=>uscQuotaHTML(u)+'<div class="usc-sep"></div>'+axSpese(p,j,x)+axCosti2(p,j,u,x), sic:()=>axSic(p,j,u,x), ben:()=>axBen(p,j,u,x), pb:()=>axPB2(p,j,u,x), mat:()=>axMat(p,j,u,x), circ:()=>axCirc(p,j,u,x)}[k];
+  const body={chi:()=>axChi(p,j,u,x), log:()=>axLog(p,j,u,x), costi:()=>uscCostiHTML(u,j), sic:()=>axSic(p,j,u,x), ben:()=>axBen(p,j,u,x), pb:()=>axPB2(p,j,u,x), mat:()=>axMat(p,j,u,x), circ:()=>axCirc(p,j,u,x)}[k];
   let b=''; try{ b=body(); }catch(e){ console.error(e); b='<div class="ax-hint">Questo modulo non si è aperto.</div>'; }
-  const gen={sic:'Per tutto il campo',ben:'Per tutto il campo',pb:'Per tutto il campo',mat:'Materiale comune a tutto il campo',costi:'Come nasce la quota',chi:'Chi viene e quando',log:'Ritrovo, rientro e trasporti',circ:'Circolare per le famiglie'}[k];
+  const gen={sic:'Per tutto il campo',ben:'Per tutto il campo',pb:'Per tutto il campo',mat:'Materiale comune a tutto il campo',chi:'Chi viene e quando',log:'Ritrovo, rientro e trasporti',circ:'Circolare per le famiglie'}[k];
+  const genH=k==='costi'?b:`<details class="usc-mpsec usc-mpd" ${USC_FOPEN['gen|'+k]===false?'':'open'} ontoggle="USC_FOPEN['gen|${k}']=this.open"><summary class="usc-mpst">${uscE(gen)}${k==='mat'?` <span class="usc-fsum">${(x.mat||[]).filter(r=>(r.cosa||'').trim()).length} voci</span>`:''}</summary><div class="ax-body">${b}</div></details>`;
   return `<div class="usc-card2 usc-modpage" id="ax-${p}-${j}"><div class="usc-mph"><div><h3>${uscE(M[1])}</h3><span class="usc-hint" style="margin:0">${uscE(M[2])}</span></div>${ref}${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo ${uscE(M[1])}" onclick="uscModHide('${k}')">×</button>`:''}</div>
-    <div class="usc-mpsec"><div class="usc-mpst">${uscE(gen)}</div><div class="ax-body">${b}</div></div>${uscPerDayHTML(u,j,k)}</div>`; }
+    ${genH}${uscPerDayHTML(u,j,k)}</div>`; }
 function uscDayCost(u,g){ const x=u.ax, N=axN(x); let mat=0; const seen=new Set();
   uscBlocks(u,g).forEach(o=>{ const m=o.m; if(m.f.includes('mat')) uscBM(u,o.k).forEach(r=>mat+=axMatCost(r,N)); if(m.k==='att'){ const key=m.pid+'|'+m.aid; const f=uscAttFind(m); if(f&&!seen.has(key)){ seen.add(key); ((f.a.ax||{}).mat||[]).forEach(r=>mat+=axMatCost(r,N)); } } });
   const y=Object.assign({},x,{piatti:(x.piatti||[]).filter(pt=>(Number(pt.g)||1)===g)}); let cibo=0; try{ cibo=axFoodCost(y); }catch(e){}
   let notte=0; if(g<uscNG(u)) (x.spese||[]).forEach(r=>{ if(r.modo==='notte') notte+=(Number(r.importo)||0)*N.tot; });
   return {mat,cibo,notte,tot:mat+cibo+notte}; }
-function uscPerDayHTML(u,j,k){ const n=uscNG(u), can=uscCan(); const x=u.ax; if(k==='circ') return '';
-  const days=Array.from({length:n},(_,i)=>i+1); const go=g=>`<button type="button" class="usc-lnk" onclick="uscTab(${g})">apri la giornata →</button>`;
-  let h=`<div class="usc-mpsec"><div class="usc-mpst">Giornata per giornata <span class="ax-opt">si cambia qui o nella scheda della giornata</span></div>`;
+function uscPerDayHTML(u,j,k){ const n=uscNG(u), can=uscCan(); const x=u.ax; if(k==='circ'||k==='chi') return '';
+  const days=Array.from({length:n},(_,i)=>i+1); const go=g=>`<button type="button" class="usc-lnk" onclick="event.preventDefault();uscTab(${g})">apri la giornata →</button>`;
   if(k==='costi'){ let T={mat:0,cibo:0,notte:0,tot:0};
-    h+=`<div class="usc-tw"><table class="usc-tbl usc-ctab"><tr><th>Giornata</th><th>Materiali</th><th>Cibo</th><th>Notte</th><th>Totale</th></tr>${days.map(g=>{ const c=uscDayCost(u,g); Object.keys(T).forEach(q=>T[q]+=c[q]); return `<tr><td><button type="button" class="usc-lnk" onclick="uscTab(${g})">${uscE(uscDayShort(u,g))}</button></td><td>${c.mat?axEur(c.mat):'—'}</td><td>${c.cibo?axEur(c.cibo):'—'}</td><td>${c.notte?axEur(c.notte):'—'}</td><td><b>${c.tot?axEur(c.tot):'—'}</b></td></tr>`; }).join('')}
-      <tr><th>Giornate</th><th>${axEur(T.mat)}</th><th>${axEur(T.cibo)}</th><th>${axEur(T.notte)}</th><th>${axEur(T.tot)}</th></tr></table></div><div class="ax-hint">Le spese «in tutto» (pullman, affitto a forfait…) e il materiale comune non sono di una giornata: stanno nel totale della spesa (${axEur(uscSpesa(u))}).</div></div>`; return h; }
-  days.forEach(g=>{ const R=uscBlocks(u,g); const T=uscTimes(u,g); let c='';
-    if(k==='chi'){ const by={}; R.forEach(o=>{ const w=String(o.m.aff||'').replace(/\s*\([^)]*\)\s*$/,'')||'— nessuno —'; (by[w]=by[w]||[]).push(axHM(T[o.k].s)+' '+uscBlkTitle(o.m)); });
-      c=Object.keys(by).length?Object.keys(by).map(w=>`<div class="usc-pdr"><b>${uscE(w)}</b> <span>${uscE(by[w].join(' · '))}</span></div>`).join(''):'<div class="ax-hint">Ancora niente in programma.</div>'; }
-    else if(k==='log'){ const S=R.filter(o=>o.m.k==='sposta'); c=S.map(o=>`<div class="usc-pdr"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b><textarea class="ax-ta" style="min-height:34px" ${can?'':'readonly'} placeholder="Mezzo, percorso, orari…" oninput="uscBlkSet('${o.k}','desc',this.value)">${uscE(o.m.desc)}</textarea></div>`).join('')||'<div class="ax-hint">Nessuno spostamento in questa giornata.</div>';
-      if(can) c+=`<button type="button" class="btn-ghost ax-add" onclick="uscTabAdd(${g},13)">+ Spostamento in questa giornata</button>`; }
-    else if(k==='mat'){ const N=axN(x); c=R.filter(o=>o.m.f.includes('mat')||o.m.k==='att').map(o=>{ const f=o.m.k==='att'?uscAttFind(o.m):null; const am=f?((f.a.ax||{}).mat||[]).filter(r=>(r.cosa||'').trim()):[]; const B=uscBM(u,o.k);
-      return `<div class="usc-pdb"><div class="usc-pdbt"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b></div>${am.length?`<div class="usc-from">Dall’attività della Sezione 3: ${am.map(r=>uscE(r.cosa)+(axMatQty(r,N)?' ('+axMatQty(r,N)+')':'')).join(', ')} <button type="button" class="usc-lnk" onclick="uscGoS3(${f.idx},${f.j})">cambia →</button></div>`:''}${o.m.f.includes('mat')?`<div class="ax-mats">${B.map((r,i)=>axMatRow(USC_P,j,r,i,B.length,N,'bm.'+o.k)).join('')}</div>${can?`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${USC_P},${j},'bm.${o.k}',{prov:'unita',q:1,qm:'fissa',carico:'ragazzi'})">+ Materiale</button>`:''}`:''}</div>`; }).join('')||'<div class="ax-hint">Nessun blocco con materiali.</div>'; }
-    else if(k==='sic'||k==='ben'||k==='pb'){ const W=R.filter(o=>o.m.f.includes(k)); const ph={sic:'Rischi specifici e come li riduci',ben:'Attenzioni e accortezze per questo momento',pb:'Se piove, se manca qualcosa…'}[k];
-      c=W.map(o=>`<div class="usc-pdr"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b><textarea class="ax-ta" style="min-height:34px" ${can?'':'readonly'} placeholder="${ph}" oninput="uscBlkSet('${o.k}','${k}',this.value)">${uscE(o.m[k])}</textarea></div>`).join('')||'<div class="ax-hint">Nessun blocco con questa voce.</div>';
-      const add=R.filter(o=>!o.m.f.includes(k)&&o.m.k!=='riposo'); if(can&&add.length) c+=`<select class="ax-in usc-addsel" onchange="if(this.value){uscFieldAdd(this.value,'${k}')}"><option value="">+ Aggiungi a un momento di questa giornata…</option>${add.map(o=>`<option value="${o.k}">${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</option>`).join('')}</select>`; }
-    h+=`<div class="usc-pdday"><div class="usc-pdh"><b>${uscE(uscDayLong(u,g))}</b> ${go(g)}</div>${c}</div>`; });
+    return `<details class="usc-mpsec usc-mpd" ${USC_FOPEN['pd|costi']?'open':''} ontoggle="USC_FOPEN['pd|costi']=this.open"><summary class="usc-mpst">Costi giornata per giornata</summary><div class="usc-tw"><table class="usc-tbl usc-ctab"><tr><th>Giornata</th><th>Materiali</th><th>Cibo</th><th>Notte</th><th>Totale</th></tr>${days.map(g=>{ const c=uscDayCost(u,g); Object.keys(T).forEach(q=>T[q]+=c[q]); return `<tr><td><button type="button" class="usc-lnk" onclick="uscTab(${g})">${uscE(uscDayShort(u,g))}</button></td><td>${c.mat?axEur(c.mat):'—'}</td><td>${c.cibo?axEur(c.cibo):'—'}</td><td>${c.notte?axEur(c.notte):'—'}</td><td><b>${c.tot?axEur(c.tot):'—'}</b></td></tr>`; }).join('')}
+      <tr><th>Giornate</th><th>${axEur(T.mat)}</th><th>${axEur(T.cibo)}</th><th>${axEur(T.notte)}</th><th>${axEur(T.tot)}</th></tr></table></div><div class="ax-hint">Le spese «in tutto» (pullman, affitto a forfait…) e il materiale comune non sono di una giornata: stanno nel totale (${axEur(uscSpesa(u))}).</div></details>`; }
+  const title={log:'Spostamenti durante il campo',mat:'Materiali delle giornate',sic:'Sicurezza giornata per giornata',ben:'Benessere giornata per giornata',pb:'Piano B giornata per giornata'}[k];
+  let h=`<div class="usc-mpsec"><div class="usc-mpst">${title} <span class="ax-opt">si cambia qui o nella scheda della giornata</span></div>`;
+  days.forEach(g=>{ const R=uscBlocks(u,g); const T=uscTimes(u,g); let c='', cnt=0;
+    if(k==='log'){ const S=R.filter(o=>o.m.k==='sposta'); cnt=S.length;
+      c=S.map(o=>`<div class="usc-pdb"><div class="usc-pdbt"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b> ${can?`<button type="button" class="usc-lnk usc-x" onclick="uscBlkDel('${o.k}')">togli</button>`:''}</div>${uscTripHTML(u,o.k,o.m,T[o.k],can)}</div>`).join('')||'<div class="ax-hint">Nessuno spostamento in questa giornata.</div>';
+      if(can) c+=`<button type="button" class="btn-ghost ax-add" onclick="uscTripAdd(${g})">+ Spostamento in questa giornata</button>`; }
+    else if(k==='mat'){ const N=axN(x); const W=R.filter(o=>o.m.f.includes('mat')||o.m.k==='att');
+      c=W.map(o=>{ const f=o.m.k==='att'?uscAttFind(o.m):null;
+        if(f){ const a=f.a, M=(a.ax&&a.ax.mat)||[]; cnt+=M.filter(r=>(r.cosa||'').trim()).length; const rows=M.length?M:[{}];
+          return `<div class="usc-pdb"><div class="usc-pdbt"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b> <span class="usc-from usc-fromi">attività della Sezione 3: è lo stesso elenco</span></div><div class="usc-axw" id="ax-${f.idx}-${f.j}" data-usc="1"><div class="ax-mats">${rows.map((r,i)=>axMatRow(f.idx,f.j,r,i,M.length,axN(a.ax||{}))).join('')}</div>${can?`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${f.idx},${f.j},'mat',{prov:'unita',q:1,qm:'fissa'})">+ Materiale</button>`:''}</div></div>`; }
+        const B=uscBM(u,o.k); cnt+=B.filter(r=>(r.cosa||'').trim()).length;
+        return `<div class="usc-pdb"><div class="usc-pdbt"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b></div><div class="ax-mats">${B.map((r,i)=>axMatRow(USC_P,j,r,i,B.length,N,'bm.'+o.k)).join('')}</div>${can?`<button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${USC_P},${j},'bm.${o.k}',{prov:'unita',q:1,qm:'fissa',carico:'ragazzi'})">+ Materiale</button>`:''}</div>`; }).join('')||'<div class="ax-hint">Nessun blocco con materiali.</div>'; }
+    else if(k==='sic'||k==='ben'||k==='pb'){ const ph={sic:'Rischi specifici e come li riduci',ben:'Attenzioni e accortezze per questo momento',pb:'Se piove, se manca qualcosa…'}[k];
+      const W=R.filter(o=>o.m.k==='att'?!!uscAttFind(o.m):o.m.f.includes(k));
+      c=W.map(o=>{ if(o.m.k==='att'){ const f=uscAttFind(o.m), a=f.a, ax=a.ax=a.ax||{}; const v=k==='sic'?(ax.sic||{}).rischi:k==='ben'?a.incRischi:a.pianoB; if((v||'').trim()) cnt++;
+          const on=k==='sic'?`axSet(${f.idx},${f.j},'sic.rischi',this.value)`:`updateAttivita(${f.idx},${f.j},'${k==='ben'?'incRischi':'pianoB'}',this.value);saveDataDebounced()`;
+          return `<div class="usc-pdr"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}<small class="usc-fromi"> · dalla Sezione 3</small></b><textarea class="ax-ta" style="min-height:34px" ${can&&uscCanAtt(a)?'':'readonly'} placeholder="${ph}" oninput="${on}">${uscE(v)}</textarea></div>`; }
+        if((o.m[k]||'').trim()) cnt++;
+        return `<div class="usc-pdr"><b>${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</b><textarea class="ax-ta" style="min-height:34px" ${can?'':'readonly'} placeholder="${ph}" oninput="uscBlkSet('${o.k}','${k}',this.value)">${uscE(o.m[k])}</textarea></div>`; }).join('')||'<div class="ax-hint">Nessun blocco con questa voce.</div>';
+      const add=R.filter(o=>o.m.k!=='att'&&!o.m.f.includes(k)&&o.m.k!=='riposo'); if(can&&add.length) c+=`<select class="ax-in usc-addsel" onchange="if(this.value){uscFieldAdd(this.value,'${k}')}"><option value="">+ Aggiungi a un momento di questa giornata…</option>${add.map(o=>`<option value="${o.k}">${axHM(T[o.k].s)} ${uscE(uscBlkTitle(o.m))}</option>`).join('')}</select>`; }
+    const id='pd|'+k+'|'+g; const op=USC_FOPEN[id]!=null?USC_FOPEN[id]:(k==='log'?cnt>0:k!=='mat');
+    h+=`<details class="usc-pdday" ${op?'open':''} ontoggle="USC_FOPEN['${id}']=this.open"><summary class="usc-pdh"><b>${uscE(uscDayLong(u,g))}</b><span class="usc-fsum">${cnt?cnt+(k==='log'?(cnt===1?' spostamento':' spostamenti'):k==='mat'?' materiali':' scritti'):''}</span> ${go(g)}</summary>${c}</details>`; });
   return h+`</div>`; }
 function uscTabAdd(g,pi){ USC_TAB=g; uscBlkAdd(pi); }
 // ── scheda Pasti ──
@@ -8928,6 +8996,88 @@ function uscCircProg(u,b,P,B,T,H){ const n=uscNG(u); const skip={sveglia:1,ripos
   for(let g=1;g<=n;g++){ const Tm=uscTimes(u,g); const R=uscBlocks(u,g).filter(o=>!skip[o.m.k]); if(R.length) D.push([g,R.map(o=>axHM(Tm[o.k].s)+' '+uscBlkTitle(o.m))]); }
   if(!D.length) return; H('Il programma');
   D.forEach(([g,L])=>{ b.push(P([B(uscDayLong(u,g).replace(/^./,c=>c.toUpperCase())+(n>1?' · '+uscDayLbl(u,g):''))],{after:30,keepNext:true})); L.forEach(t=>b.push(P([T('•  '+t)],{after:20,ind:360,hang:220}))); b.push(P([T('')],{after:60})); }); }
+// un'attività della Sezione 3 dentro un'uscita è UNA sola: sicurezza, benessere, piano B, materiali e link scritti prima sul blocco passano all'attività
+function uscAttMig(u,k,m){ if(m._mig) return; const f=uscAttFind(m); if(!f) return; const a=f.a, x=a.ax=a.ax||{}; const add=(o,key,v)=>{ v=String(v||'').trim(); if(!v) return; const old=String(o[key]||'').trim(); if(!old.includes(v)) o[key]=old?old+'\n'+v:v; };
+  if(m.sic){ x.sic=x.sic||{}; add(x.sic,'rischi',m.sic); } if(m.ben) add(a,'incRischi',m.ben); if(m.pb) add(a,'pianoB',m.pb);
+  const bm=uscBM(u,k).filter(r=>r&&(r.cosa||'').trim()); if(bm.length){ x.mat=(x.mat||[]).concat(JSON.parse(JSON.stringify(bm))); delete u.ax.bm[k]; }
+  const lk=(m.links||[]).filter(l=>(l.u||'').trim()); if(lk.length){ const L=attLinks(a).slice(); lk.forEach(l=>{ if(!L.some(z=>z.u===l.u)) L.push({n:l.n||'',u:l.u}); }); a.links=L; a.link=(L[0]||{}).u||''; }
+  delete m.sic; delete m.ben; delete m.pb; m.links=[]; m._mig=1; }
+// campi dei blocchi: chiusi, con un riassunto; si aprono a richiesta
+let USC_FOPEN={};
+const USC_ATTF=['lsc','scal','mat','sic','ben','pb','link'];
+function uscSumTxt(v,n){ v=String(v||'').replace(/\s+/g,' ').trim(); return v?uscE(v.length>(n||48)?v.slice(0,n||48)+'…':v):''; }
+// i campi di un'attività della Sezione 3: sono gli stessi della scheda nei percorsi (si scrive qui o lì, è la stessa cosa)
+function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=f.idx, j=f.j; const W=h=>`<div class="usc-axw" id="ax-${p}-${j}" data-usc="1">${h}</div>`; const N=axN(x);
+  const T={scal:'a:scal',mat:'a:mat',sic:'a:sic',ben:'a:ben',pb:'a:pb',link:'a:link'}[fk]; let sum='', inner='';
+  try{
+    if(fk==='scal'){ const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()); sum=S.length?S.length+(S.length===1?' momento':' momenti'):''; inner=W(axDurante(p,j,a,x)); }
+    else if(fk==='mat'){ const M=(x.mat||[]).filter(r=>(r.cosa||'').trim()); sum=M.length?M.map(r=>uscE(r.cosa)).slice(0,3).join(', ')+(M.length>3?'…':''):''; inner=W(axMat(p,j,a,x)); }
+    else if(fk==='sic'){ sum=uscSumTxt((x.sic||{}).rischi); inner=W(axSic(p,j,a,x)); }
+    else if(fk==='ben'){ sum=uscSumTxt(a.incRischi||a.incAzioni); inner=W(axBen(p,j,a,x)); }
+    else if(fk==='pb'){ const n=Object.keys(x.pb||{}).filter(q=>(x.pb[q]||'').trim()).length; sum=n?n+(n===1?' situazione':' situazioni'):uscSumTxt(a.pianoB); inner=W(axPB2(p,j,a,x)); }
+    else if(fk==='link'){ const n=attLinks(a).filter(l=>(l.u||'').trim()).length; sum=n?n+' link':''; inner=attLinksHTML(p,j,a); }
+  }catch(e){ console.error(e); inner='<div class="ax-hint">Non riesco a mostrare questa parte: aprila nella Sezione 3.</div>'; }
+  if(!can) inner=inner.replace(/<(input|textarea|select|button)(?![^>]*\bdisabled)/g,'<$1 disabled');
+  return uscFld(k,T,can,inner,sum); }
+// scaletta di un blocco (attività nuova, hike, gioco…): durate e chi, gli orari partono dall'inizio del blocco
+function uscScalHTML(u,k,m,t,can){ const R=Array.isArray(m.tt)&&m.tt.length?m.tt:[{},{},{}]; let s=t?t.s:null; const ro=can?'':'disabled';
+  const rows=R.map((r,i)=>{ const st=s!=null?axHM(s):'—'; if(s!=null) s+=Number(r.dur)||0;
+    return `<div class="usc-scr"><span class="usc-sct">${st}</span><select class="ax-in" title="Durata" ${ro} onchange="uscRow('${k}','tt',${i},'dur',this.value,true)">${axDurOpts(r.dur)}</select><input class="ax-in" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${uscE(r.cosa)}" ${ro} oninput="uscRow('${k}','tt',${i},'cosa',this.value)">${axPersonSel(r.chi||'',`uscRow('${k}','tt',${i},'chi',@V,true)`)}${can&&m.tt&&m.tt.length?`<button type="button" class="btn-ghost ax-x" title="Togli" onclick="uscRowDel('${k}','tt',${i})">×</button>`:'<span></span>'}</div>`; }).join('');
+  const tot=R.reduce((a,r)=>a+(Number(r.dur)||0),0);
+  return rows+(can?`<button type="button" class="btn-ghost ax-add" onclick="(function(){const A=uscArr('${k}','tt');while(A.length<3)A.push({});A.push({});uscSave();uscRe();})()">+ Momento</button>`:'')+(tot?`<div class="ax-hint">Durata della scaletta ${axDurTxt(tot)}${tot!==Number(m.dur)?` · il blocco dura ${axDurTxt(m.dur)} <button type="button" class="usc-lnk" onclick="uscBlkSet('${k}','dur',${tot},true)">usa ${axDurTxt(tot)}</button>`:''}</div>`:''); }
+// spostamento: da dove, a dove, mezzo, orari, andata e ritorno
+function uscTripLoc(u){ const L=(u.ax||{}).luogo||{}; return L.tipo==='sede'?uscSedeAddr():String(L.nome||'').trim(); }
+function uscTripHTML(u,k,m,t,can){ const T=m.trip||{}; const ro=can?'':'disabled'; const n=uscNG(u); const g=Number(m.g)||1; const da=T.da!=null?T.da:uscTripLoc(u);
+  const set=(f,ev,re)=>`uscTrip('${k}','${f}',${ev}${re?',true':''})`;
+  let h=`<div class="usc-trip"><label class="usc-mv2"><span>Partenza da</span><input class="ax-in" placeholder="${uscE(uscTripLoc(u)||'luogo del campo')}" value="${uscE(da)}" ${ro} oninput="${set('da','this.value')}"></label>
+    <label class="usc-mv2"><span>Arrivo a</span><input class="ax-in" placeholder="es. Rifugio, stazione, paese" value="${uscE(T.a)}" ${ro} oninput="${set('a','this.value')}"></label>
+    <label class="usc-mv2"><span>Ora di partenza</span><select class="ax-in" ${ro} onchange="uscTripOra('${k}',this.value)">${axTimeOpts(m.fix?m.ora:(t?axHM(t.s):''))}</select></label>
+    <label class="usc-mv2"><span>Mezzo</span><select class="ax-in" ${ro} onchange="${set('mezzo','this.value',1)}">${axOpt([['','—']].concat(AX_MEZZI),T.mezzo||'')}</select></label>
+    <label class="usc-mv2"><span>Km (solo andata)</span><input class="ax-in" type="number" min="0" value="${uscE(T.km)}" ${ro} oninput="${set('km','this.value')}"></label>
+    <label class="usc-mv2"><span>Ritorno</span><select class="ax-in" ${ro} onchange="${set('ar','this.value',1)}">${axOpt([['','solo andata'],['giorno','andata e ritorno in giornata'],['altro','ritorno in un altro giorno']],T.ar||'')}</select></label>
+    ${T.ar==='giorno'||T.ar==='altro'?`${T.ar==='altro'?`<label class="usc-mv2"><span>Giorno del ritorno</span><select class="ax-in" ${ro} onchange="${set('rg','this.value',1)}">${Array.from({length:n},(_,i)=>i+1).filter(q=>q>g).map(q=>`<option value="${q}" ${Number(T.rg)===q?'selected':''}>${uscE(uscDayShort(u,q)+' · '+uscDayLbl(u,q))}</option>`).join('')||'<option value="">— nessuna giornata dopo —</option>'}</select></label>`:''}
+      <label class="usc-mv2"><span>Ora del ritorno</span><select class="ax-in" ${ro} onchange="${set('ro','this.value',1)}">${axTimeOpts(T.ro||'')}</select></label>`:''}</div>`;
+  if(T.mezzo==='altro') h+=`<input class="ax-in" placeholder="Quale mezzo?" value="${uscE(T.mezzoAltro)}" ${ro} oninput="${set('mezzoAltro','this.value')}" style="margin-top:6px">`;
+  const N=axN(u.ax||{}); const km=(Number(T.km)||0)*(T.ar?2:1); if(km&&T.mezzo&&T.mezzo!=='piedi'&&T.mezzo!=='bici'){ try{ h+=`<div class="ax-co2">${axCO2({mezzo:T.mezzo,km,perAuto:4},N.tot)}</div>`; }catch(e){} }
+  if((T.ar==='giorno'||T.ar==='altro')&&T.ro&&can){ const rk=T.rk&&u.prog[T.rk]&&!u.prog[T.rk].del?T.rk:null;
+    h+=rk?`<div class="ax-hint">Il ritorno è nel programma (${uscE(uscDayShort(u,Number(u.prog[rk].g)||1))} alle ${uscE(u.prog[rk].ora||'')}). <button type="button" class="usc-lnk" onclick="uscJump('${rk}',${Number(u.prog[rk].g)||1})">vai →</button></div>`
+      :`<button type="button" class="btn-ghost ax-add" onclick="uscTripRet('${k}')">+ Metti il ritorno nel programma</button>`; }
+  h+=`<div class="ax-hint">Le spese del viaggio (pullman, treno…) si scrivono in «Cassa e quota».</div>`;
+  return h; }
+function uscTrip(k,f,v,re){ const m=uscBlk(k); if(!m) return; if(!m.trip||typeof m.trip!=='object') m.trip={}; m.trip[f]=v; if(f==='a'&&!(m.t||'').trim()) {} uscSave(); if(re) uscRe(); else uscLive(k); }
+function uscTripOra(k,v){ const m=uscBlk(k); if(!m) return; if(!v){ m.fix=false; } else { m.fix=true; m.ora=v; uscPlace(k); } uscSave(); uscRe(); }
+// un blocco con l'ora fissa va al suo posto tra gli altri della giornata
+function uscPlace(k){ const u=uscCur(); const m=uscBlk(k); if(!u||!m) return; const g=Number(m.g)||1; const s=axMin(m.ora); if(s==null) return; const R=uscBlocks(u,g).filter(o=>o.k!==k); const T={}; let t=axMin(uscDayStart(u,g)); if(t==null) t=450;
+  R.forEach(o=>{ const fx=o.m.fix?axMin(o.m.ora):null; const st=fx!=null?fx:t; T[o.k]=st; t=st+(Number(o.m.dur)||30); });
+  const i=R.findIndex(o=>T[o.k]>=s); if(i<0){ m.ord=R.length?(Number(R[R.length-1].m.ord)||0)+1:1; } else { const prev=i>0?Number(R[i-1].m.ord)||0:(Number(R[i].m.ord)||0)-2; m.ord=(prev+(Number(R[i].m.ord)||0))/2; } }
+function uscTripRet(k){ const u=uscCur(); const m=uscBlk(k); if(!u||!m||!uscCan()) return; const T=m.trip||{}; const g=T.ar==='altro'?(Number(T.rg)||Number(m.g)||1):(Number(m.g)||1);
+  const id=uscNewId('m'); u.prog[id]={k:'sposta',tipo:'mom',g,ord:0,dur:Number(m.dur)||60,t:'Ritorno'+(T.da?' a '+T.da:''),f:['trip','chi'],fix:true,ora:T.ro,trip:{da:T.a||'',a:T.da!=null?T.da:uscTripLoc(u),mezzo:T.mezzo||'',km:T.km||''},aff:m.aff||'',cr:Date.now()};
+  T.rk=id; m.trip=T; USC_CUR=u.id; uscPlace(id); saveData(true); showToast('Ritorno messo il '+uscDayShort(u,g)+' alle '+T.ro); uscRe(); }
+function uscFieldHTML(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.ax; const N=axN(x); const t=uscTimes(u,Number(m.g)||1)[k];
+  if(fk==='scal'){ const S=(m.tt||[]).filter(r=>(r.cosa||'').trim()); return uscFld(k,fk,can,uscScalHTML(u,k,m,t,can),S.length?S.length+(S.length===1?' momento':' momenti'):''); }
+  if(fk==='trip'){ const T=m.trip||{}; return uscFld(k,fk,can,uscTripHTML(u,k,m,t,can),uscE([T.da!=null?T.da:uscTripLoc(u),T.a].filter(Boolean).join(' → ')+(T.mezzo?' · '+((Object.fromEntries(AX_MEZZI))[T.mezzo]||'').toLowerCase():''))); }
+  return uscFieldHTML0(u,k,m,fk,f,I,can); }
+function uscFieldSum(m,fk,u,k){ const x=u.ax;
+  if(fk==='desc'||fk==='sic'||fk==='ben'||fk==='pb') return uscSumTxt(m[fk]);
+  if(fk==='mat'){ const B=uscBM(u,k).filter(r=>(r.cosa||'').trim()); return B.length?B.map(r=>uscE(r.cosa)).slice(0,3).join(', ')+(B.length>3?'…':''):''; }
+  if(fk==='link'){ const n=(m.links||[]).filter(l=>(l.u||'').trim()).length; return n?n+' link':''; }
+  if(fk==='obj'){ const O=m.obj||{}; return O.pid?uscE(O.pid)+((O.o||[]).length?' · '+O.o.length+' obiettiv'+(O.o.length===1?'o':'i'):''):''; }
+  if(fk==='menu'){ return uscE(uscMeals(x,Number(m.g)||1,m.pasto||'pranzo').join(', ')); }
+  if(fk==='lsc'){ const f=uscAttFind(m); return f?uscSumTxt([f.a.lancio,f.a.sviluppo].filter(Boolean).join(' · '),40):''; }
+  return ''; }
+function uscTripAdd(g){ const u=uscCur(); if(!u||!uscCan()) return; const R=uscBlocks(u,g); const id=uscNewId('m');
+  u.prog[id]={k:'sposta',tipo:'mom',g,ord:R.length?(Number(R[R.length-1].m.ord)||0)+1:1,dur:60,t:'Spostamento',f:['trip','chi'],trip:{},cr:Date.now()}; USC_FOPEN['pd|log|'+g]=true; saveData(true); uscRe(); }
+// ── cassa e quota: spese, riepilogo, quota (con il peso dei capi), pagamento ──
+function uscCostiHTML(u,j){ const x=u.ax, p=USC_P, can=uscCan(); const I=axCosti(x).filter(i=>!i.contrib);
+  const car=c=>({ragazzi:'quota dei ragazzi',capi:'capi',unita:'Unità',gruppo:'Gruppo',sezione:'Sezione',altro:'altri'})[c]||'da attribuire';
+  const G={}; I.forEach(i=>{ const v=String(i.voce).replace(/ · (metà della )?parte dei capi$/,''); const key=v+'|'+(i.capi?'':i.k); (G[key]=G[key]||{v,c:0,k:i.k,capi:0}); G[key].c+=i.c; if(i.capi) G[key].capi+=i.c; });
+  const rows=Object.values(G); const tot=I.reduce((t,i)=>t+i.c,0);
+  let h=`<details class="usc-mpsec usc-mpd" ${USC_FOPEN['c|spese']===false?'':'open'} ontoggle="USC_FOPEN['c|spese']=this.open"><summary class="usc-mpst">Altre spese <span class="ax-opt">pullman, casa, ingressi… (materiali e cibo si contano da soli)</span></summary><div class="ax-body">${axSpese(p,j,x)}</div></details>`;
+  h+=`<details class="usc-mpsec usc-mpd" ${USC_FOPEN['c|riep']?'open':''} ontoggle="USC_FOPEN['c|riep']=this.open"><summary class="usc-mpst">Tutte le spese <span class="usc-fsum">${axEur(tot)}</span></summary>${rows.length?`<div class="usc-tw"><table class="usc-tbl"><tr><th>Voce</th><th>Chi paga</th><th>Importo</th></tr>${rows.map(r=>`<tr><td>${axE(r.v)}</td><td>${car(r.k)}</td><td>${axEur(r.c)}</td></tr>`).join('')}<tr><th colspan="2">Spesa totale</th><th>${axEur(tot)}</th></tr></table></div>`:'<div class="ax-hint">Ancora nessuna spesa.</div>'}
+    ${rows.some(r=>!r.k)?`<div class="ax-warn">Alcune voci non hanno ancora «chi paga»: ${rows.filter(r=>!r.k).map(r=>axE(r.v)).join(', ')}. Sceglilo nella spesa (o nel menù per il cibo), altrimenti non entrano nella quota.</div>`:''}</details>`;
+  h+=`<div class="usc-mpsec"><div class="usc-mpst">Quota</div>${uscQuotaHTML(u)}</div>`;
+  h+=`<div class="usc-mpsec"><div class="usc-mpst">Come si paga</div><div class="ax-body">${axQuota(x)?axPagaHTML(p,j,x):'<div class="ax-hint">Quando c’è una quota da versare, qui scegli come e entro quando si paga.</div>'}</div></div>`;
+  return h; }
 
 function attExtraHTML(p,j,a){ const n=axFilledN(a);
   if(!document.getElementById('ax-food-dl')){ const dl=document.createElement('datalist'); dl.id='ax-food-dl'; dl.innerHTML=Object.keys(AX_FOOD).map(k=>`<option value="${k}">`).join(''); document.body.appendChild(dl); }
@@ -9070,14 +9220,15 @@ async function axCircModel(p,j){
     if(sqL.length) b.push(P([B(axSq().lab+': '),T(sqL.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')],{before:80}));
     cons.forEach(t=>b.push(P([R('→ '+t+'.',{i:true,color:'555555'})],{after:40}))); }
   if(casa.length){ H('Da lasciare a casa'); b.push(P([T(casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')+'.')])); }
-  const bon=q&&x.paga!=='partenza';
-  if(q&&!bon){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
+  const bon=q&&(x.paga||'bonifico')==='bonifico', cont=q&&x.paga==='contanti';
+  if(q&&x.paga==='partenza'){ H('Quota'); b.push(P([B(axEur(q)+' a testa'),T(', da consegnare alla partenza.')])); }
   const libUrl=base+'circolare/Liberatoria_somministrazione_farmaci.pdf';
   H('Da fare prima dell’attività'+(entro?' (entro '+entro+')':''));
   if(bon){ b.push(P([T('☐  '),B('Bonifico di '+axEur(q)),T(' alla Sezione'+(sez?' di '+sez:''))],{after:60}));
-    b.push(P([B('IBAN: '),T('______________________________________')],{after:40,ind:420}));
-    b.push(P([B('Intestato a: '),T('______________________________')],{after:40,ind:420}));
+    b.push(P([B('IBAN: '),T(((pp.iban||'').trim())||'______________________________________')],{after:40,ind:420}));
+    b.push(P([B('Intestato a: '),T(((pp.ibanInt||'').trim())||'______________________________')],{after:40,ind:420}));
     b.push(P([B('Causale: '),T(axCausale(tit))],{after:140,ind:420})); }
+  if(cont) b.push(P([T('☐  '),B('Quota di '+axEur(q)),T(' in contanti ai capi.')],{after:140}));
   if(L.permessi){ b.push(P([T('☐  '),B('Consegnare firmato: '),T(((L.permCosa||'').trim()||'il modulo di autorizzazione'))],{after:40}));
     b.push(P(axIsUrl(L.permLink)?[LK('Link al documento',linkNorm(L.permLink))]:[T('Link al documento: ______________________________')],{ind:420,after:140})); }
   b.push(P([T('☐  '),B('Solo se servono farmaci: '),T('compilare la liberatoria per la somministrazione dei farmaci, allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome.')],{after:40,ind:420,hang:420}));
@@ -9111,7 +9262,7 @@ async function axMsgDocx(p,j){
   const [fis,soc]=await Promise.all([md('image4.png'),md('image3.jpg')]);
   const sp=(after,inner,jc)=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+after+'" w:line="240" w:lineRule="auto"/><w:jc w:val="'+(jc||'left')+'"/></w:pPr>'+(inner||'')+'</w:p>';
   const V=axCircSide(); const st=(t,b)=>sp(0,t?R(t,{b:!!b,sz:16,color:'455556'}):'');
-  let side=sp(240,img(M.lgS,'cx_sez.png',4.0,4.0),'center')+sp(240,img(M.lgB,'cx_branca.png',2.9,2.9),'center')+sp(360,img(fis,'cx_org.png',4.2,3.66),'left');
+  let side=sp(200,img(M.lgS,'cx_sez.png',3.8,3.8),'center')+sp(240,img(M.lgB,'cx_branca.png',3.8,3.8),'center')+sp(360,img(fis,'cx_org.png',4.2,3.66),'left');
   const blk=[]; const add=(k,b)=>{ if(V[k]) blk.push(st(V[k],b)); };
   add('CONT_H',1); ['CU_NOME','CU_RUOLO','CU_MAIL','CU_TEL'].forEach(k=>add(k)); if(blk.length) blk.push(st(''));
   const n0=blk.length; add('SEZ_NOME',1); ['SEZ_VIA','SEZ_CITTA','SEZ_CF'].forEach(k=>add(k)); if(blk.length>n0) blk.push(st(''));
@@ -9162,8 +9313,8 @@ async function axMsgPdf(p,j){
   const font=(st,sz,col)=>{ doc.setFont(FN,st); doc.setFontSize(sz); doc.setTextColor(...hex(col||'1A1A18')); };
   // pagina 1: colonna a lato come nel modello
   img(md['image1.jpg'],'JPEG',20.05,14.97,10.9,260);
-  if(M.lgS) img(M.lgS,'PNG',20.13,7.19,51.8,51.8); if(M.lgB) img(M.lgB,'PNG',26.28,49.11,40,39.9);
-  img(md['image4.png'],'PNG',23.37,85.28,55.7,48.6);
+  if(M.lgS) img(M.lgS,'PNG',20.13,7.19,51.8,51.8); if(M.lgB) img(M.lgB,'PNG',20.13,45.5,51.8,51.8);
+  img(md['image4.png'],'PNG',23.37,96.5,55.7,48.6);
   font('bold',10,'000000'); doc.text(TX('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani'),72,18.6); doc.text(TX('Associazione SCOUT Laica di Promozione Sociale'),72,22.9);
   { const V=axCircSide(); const rows=[]; const add=(k,b)=>{ if(V[k]) rows.push([V[k],b]); };
     add('CONT_H',1); ['CU_NOME','CU_RUOLO','CU_MAIL','CU_TEL'].forEach(k=>add(k)); if(rows.length) rows.push(['']);
@@ -12179,7 +12330,7 @@ function clOpen(){ if(!clOn()){ return; } if(!CL.sb){ clToast('Servizio non ragg
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
 function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
 // "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
-function clContinue(){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function') resumeSession(); }catch(e){} }
+function clContinue(noPos){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function'){ resumeSession(); if(!noPos) setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); } }catch(e){} }
 function clMsg(t, kind){ const m = $cl('cl-msg'); if(!m) return; m.className = 'cl-msg ' + (kind||'err'); m.textContent = t; }
 function clShow(view){
   const b = $cl('cl-body'), t = $cl('cl-title');
@@ -13029,7 +13180,7 @@ function clPerTeHTML(){
   const it = CL.perte || []; if(!it.length) return '';
   const row = x => {
     if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un’altra persona')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
-    if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue();setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
+    if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue(true);setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
     const pr = `${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}`;
     const go = x.cur ? `clPtGoAtt(${x.idx},${x.j})` : `clOpenShared('${x.id}')`;
     const tt = x.t ? '«'+clEsc(x.t.slice(0,60))+'»' : 'attività '+((x.j||0)+1);
@@ -13045,12 +13196,12 @@ function clPerTeHTML(){
   return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${it.map(row).join('')}${it.some(x=>x.hot===false)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
 }
 function clPtGoAtt(idx, j){
-  clContinue();
+  clContinue(true);
   setTimeout(() => { try{ if(MODE === 'giovani') gGo('3'); else { schedaStep = 'C'; goPhaseInternal(4); } }catch(e){}
     setTimeout(() => { try{ tlGo(idx, j); }catch(e){} }, 500); }, 300);
 }
 function clPtGoSg(){
-  clContinue();
+  clContinue(true);
   const s13 = (SG.list||[]).some(x => x.stato === 'nuovo' && /^13:/.test(x.percorso||'')) && !(SG.list||[]).some(x => x.stato === 'nuovo' && !/^13:/.test(x.percorso||''));
   if(s13){ setTimeout(() => { try{ gGo('1c'); }catch(e){} setTimeout(() => { const w = [...document.querySelectorAll('.sg13')].find(x => x.querySelector('.sg-b')); if(w) w.scrollIntoView({behavior:'smooth', block:'center'}); clToast('I suggerimenti sono sotto le celle della tabella'); }, 500); }, 300); return; }
   setTimeout(() => {
