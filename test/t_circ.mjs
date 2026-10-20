@@ -26,10 +26,11 @@ const [d] = await Promise.all([P.waitForEvent('download', {timeout:30000}), ev((
 fs.copyFileSync(await d.path(), OUT + '/c.docx');
 const z = await JSZip.loadAsync(fs.readFileSync(OUT + '/c.docx'));
 const h3 = await z.file('word/header3.xml').async('string'), dx = await z.file('word/document.xml').async('string');
-ok(/wp:anchor/.test(h3) && /Corpo Nazionale Giovani Esploratori/.test(h3.replace(/<[^>]+>/g, '')), 'Word: carta intestata nazionale (colonna dei loghi a lato, come il modello)');
-ok(!!z.file('word/media/image2.png') && !!z.file('word/media/branca.png') && !!z.file('word/media/image4.png'), 'Word: logo della Sezione, della Branca e degli organismi internazionali');
+const hx = (await Promise.all(Object.keys(z.files).filter(n => /^word\/(header|footer)\d*\.xml$/.test(n)).map(n => z.file(n).async('string')))).join('');
+ok(!/wp:anchor/.test(dx + hx) && /Corpo Nazionale Giovani Esploratori/.test(h3.replace(/<[^>]+>/g, '')) && /w:val="dashed"/.test(dx), 'Word: carta intestata nazionale senza immagini flottanti (colonna dei loghi in una tabella, filetto tratteggiato)');
+ok(!!z.file('word/media/cx_sez.png') && !!z.file('word/media/cx_branca.png') && !!z.file('word/media/cx_org.png') && (dx.match(/<wp:inline/g)||[]).length >= 4, 'Word: logo della Sezione, della Branca, organismi internazionali e social in linea');
 ok(/CNGEI Pesaro/.test(dx) && /Giulia Neri/.test(dx) && /T 320 9998877/.test(dx), 'Word: colonna a lato con Sezione e contatti del Capo Unità');
-ok(/w:left="1985"/.test(dx), 'Word: margini del modello nazionale');
+ok(/w:left="1021"/.test(dx) && /<w:tbl>/.test(dx), 'Word: margini e colonne della carta intestata');
 const t = dx.replace(/<[^>]+>/g, '');
 ok(/Giulia: tel\. 320 9998877/.test(t) && /Paolo: tel\. 333 1112222/.test(t) && /Giulia, Paolo e Elena/.test(t), 'Word: contatti e firma');
 let first = '';

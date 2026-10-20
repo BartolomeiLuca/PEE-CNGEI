@@ -18,19 +18,22 @@ const [p, j] = await ev(() => { const all = getAllPercorsi(); const i = all.find
 const AX = `#ax-${p}-${j}`;
 await ev(([p, j]) => { const x = axX(p, j); x.luogo.mezzo = 'bus'; x.luogo.km = ''; delete x.luogo.lat; delete x.luogo.lon; delete x.luogo.nomeAddr; x.luogo.nome = 'Rifugio Cotaline'; axSave(); ['chi','log','durante','mat','pasti','costi','sic','circ','imp'].forEach(k => axOpen[p+'-'+j+'-'+k] = true); axRe(p, j); let e = document.getElementById('ax-'+p+'-'+j); while(e){ if(e.tagName === 'DETAILS') e.open = true; e = e.parentElement; } document.querySelectorAll('#ax-'+p+'-'+j+' details').forEach(d => d.open = true); }, [p, j]); await sleep(300);
 const km = () => P.locator(`${AX} #ax-km-${p}-${j}`).inputValue();
+const NEWFROM = await P.locator(`${AX} input[oninput*="luogo.from"]`).count() === 0;   // anteprima: la partenza è il luogo di ritrovo
+const FROM = () => NEWFROM ? P.locator(`${AX} input[oninput*="'ritrovoDove'"]`) : P.locator(`${AX} input[oninput*="luogo.from"]`);
+const RIT = NEWFROM ? 'Pesaro' : 'piazza del Popolo';
 // 4. distanza
 ok(await P.locator(`${AX} button:visible`, {hasText:'Calcola distanza'}).count() === 1, 'c’è il pulsante «Calcola distanza» accanto ai km');
-await P.locator(`${AX} input[oninput*="luogo.from"]`).fill('Pesaro'); await sleep(200);
+await FROM().fill('Pesaro'); await sleep(200);
 await P.locator(`${AX} button:visible`, {hasText:'Calcola distanza'}).click(); await sleep(1200);
 const k1 = await km(); const exp1 = String(Math.round(2 * (0.11 * 111 + 0.51 * 80)));
 ok(k1 === exp1, '«Calcola distanza»: km andata e ritorno su strada (' + k1 + ', atteso ' + exp1 + ')');
 for(let i = 0; i < 15 && !/km andata e ritorno/.test(await P.locator(`#ax-geo-r-${p}-${j}`).textContent()); i++) await sleep(300);   // su Firefox il ricalcolo automatico può arrivare subito dopo
 ok(/Pesaro: \d+ km andata e ritorno, su strada/.test(await P.locator(`#ax-geo-r-${p}-${j}`).textContent()), 'spiega da dove e come li ha calcolati');
-await P.locator(`${AX} input[oninput*="luogo.from"]`).fill('Fano'); await sleep(2600);
+await FROM().fill('Fano'); await sleep(2600);
 const k2 = await km(); const exp2 = String(Math.round(2 * (0.04 * 111 + 0.62 * 80)));
 ok(k2 === exp2, 'cambiando la partenza i km si ricalcolano da soli (' + k1 + ' → ' + k2 + ')');
-ok(await ev(() => document.activeElement && /luogo\.from/.test(document.activeElement.getAttribute('oninput') || '')), 'il ricalcolo non toglie il cursore dal campo');
-await P.locator(`${AX} input[oninput*="luogo.from"]`).fill('Pesaro'); await sleep(200);
+ok(await ev(() => document.activeElement && /luogo\.from|ritrovoDove/.test(document.activeElement.getAttribute('oninput') || '')), 'il ricalcolo non toglie il cursore dal campo');
+await FROM().fill('Pesaro'); await sleep(200);
 await P.locator(`${AX} input[oninput*="axPlaceIn"][oninput*="'nome'"]`).fill('Urbino'); await sleep(2600);
 const k3 = await km(); const exp3 = String(Math.round(2 * (0.18 * 111 + 0.27 * 80)));
 ok(k3 === exp3, 'cambiando la destinazione i km si ricalcolano (' + k3 + ', atteso ' + exp3 + ')');
@@ -38,8 +41,8 @@ ok(k3 === exp3, 'cambiando la destinazione i km si ricalcolano (' + k3 + ', atte
 const same = () => P.locator(`#ax-same-${p}-${j}`);
 ok(await same().isChecked(), '«Rientro nello stesso luogo della partenza» spuntato se ritrovo e rientro coincidono');
 ok(await P.locator(`${AX} input[oninput*="'rientroDove'"]`).count() === 0, 'con la spunta il campo del rientro non si compila due volte');
-await P.locator(`${AX} input[oninput*="'ritrovoDove'"]`).fill('piazza del Popolo'); await sleep(400);
-ok(await ev(([p, j]) => axX(p, j).luogo.rientroDove, [p, j]) === 'piazza del Popolo', 'il rientro segue il ritrovo (anche per la circolare)');
+await P.locator(`${AX} input[oninput*="'ritrovoDove'"]`).fill(RIT); await sleep(400);
+ok(await ev(([p, j]) => axX(p, j).luogo.rientroDove, [p, j]) === RIT, 'il rientro segue il ritrovo (anche per la circolare)');
 await same().uncheck(); await sleep(300);
 ok(await P.locator(`${AX} input[oninput*="'rientroDove'"]`).count() === 1, 'togliendo la spunta compare il luogo di rientro');
 await P.locator(`${AX} input[oninput*="'rientroDove'"]`).fill('Stazione centrale'); await sleep(2600);

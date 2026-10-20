@@ -380,7 +380,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .ax-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ax-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}@media (max-width:600px){.ax-row2,.ax-row3{grid-template-columns:1fr}}
 .ax-geo{display:flex;gap:6px}.att-links{margin:10px 0 6px;padding:8px 10px;border:1px solid var(--border-light);border-radius:8px;background:var(--bg)}.att-links-h{font-size:12px;font-weight:800;color:var(--ink);display:flex;gap:8px;align-items:center}.lk-row{display:flex;gap:6px;align-items:center;margin:5px 0;flex-wrap:wrap}.lk-row input{font:inherit;font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);min-width:0}.lk-n{flex:1 1 150px}.lk-u{flex:2 1 220px}.lk-open{font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap}.lk-x{padding:0 7px!important;font-size:13px}.lk-add{font-size:11.5px;border-style:dashed}.lk-ic{flex:0 0 auto;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:3px 6px;border-radius:5px;background:#eee;color:#555;min-width:44px;text-align:center}.lk-drive{background:#e7f0fe;color:#1a56b8}.lk-canva{background:#e8f8fb;color:#00839a}.lk-video{background:#fdecea;color:#c4231f}.lk-foto{background:#fff3e0;color:#a65c00}.lk-pdf{background:#fdecea;color:#8b2216}.lk-sito{background:#e8f5ee;color:#1b5e42}.lk-row.ro a{font-size:12.5px;font-weight:600;color:#1155cc}.lk-opt{margin-left:0}.cl-dup{margin:-2px 0 8px 14px;padding:9px 11px;border:1px dashed #b8c7bd;border-radius:9px;background:#f7faf8}.att-mv{display:inline-flex;gap:2px;margin-right:6px;vertical-align:1px}.att-mv button{padding:0 6px!important;font-size:12px!important;line-height:18px;min-width:22px}details.att-moved{outline:2px solid var(--green-light);transition:outline .3s}.ax-ask{margin-top:8px;padding:8px 10px;border:1px solid #f0c36d;background:#fff8e1;border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ax-same{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-mid);margin:6px 0 2px;cursor:pointer}.ax-same input{width:auto;margin:0}.ax-ro{background:var(--bg);color:var(--ink-light)}.ax-btn{font-size:11.5px!important;padding:5px 10px!important;width:auto!important;text-decoration:none;display:inline-block}.ax-res{display:block;width:100%;text-align:left;font:inherit;font-size:11.5px;padding:5px 8px;margin:3px 0;border:1px solid var(--border-light);border-radius:5px;background:var(--bg-card,#fff);color:var(--ink);cursor:pointer}
 .ax-co2{font-size:12px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--green-pale,#EEF6EE)}.ax-check{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:6px;cursor:pointer}.ax-warn{font-size:11px;color:#C77700;margin-left:6px}
-.ax-mat{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:5px 0;display:grid;gap:4px}.ax-mat1{display:grid;grid-template-columns:1fr 150px 28px;gap:5px}.ax-mat2{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ax-mat2 .ax-in{flex:1;min-width:120px}.ax-x{padding:0 7px!important;font-size:13px;width:auto!important}
+.ax-mat{border:1px solid var(--border-light);border-radius:6px;padding:6px;margin:5px 0;display:grid;gap:4px}.ax-mat1{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:5px}.ax-mat2{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ax-mat2 .ax-in{flex:1;min-width:120px}.ax-x{padding:0 7px!important;font-size:13px;width:auto!important}
 .ax-add{font-size:11px!important;margin-top:4px;border-style:dashed!important;width:auto!important}.ax-tot{font-size:12px;margin-top:6px}.ax-quota{font-size:12px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ax-eco{font-size:11.5px;color:var(--green);margin-top:4px}
 .ax-todo{display:grid;grid-template-columns:20px 1fr 130px 130px 28px;gap:5px;align-items:center;margin:4px 0}@media (max-width:600px){.ax-todo{grid-template-columns:20px 1fr 28px}.ax-todo>select,.ax-todo>input[type=date]{grid-column:2/3}.ax-mat1{grid-template-columns:1fr 28px}.ax-mat1>select{grid-column:1/2}}
 .ax-ttr{display:grid;grid-template-columns:150px 1fr 130px 28px;gap:5px;align-items:center;margin:4px 0}.ax-tt1{display:grid;grid-template-columns:1fr 1fr;gap:4px}.ax-ttt{font-size:12px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;color:var(--ink-mid)}@media (max-width:600px){.ax-ttr{grid-template-columns:1fr 28px;border-bottom:1px dashed var(--border-light);padding-bottom:5px}.ax-ttr>input,.ax-ttr>select{grid-column:1/2}}
@@ -3175,6 +3175,7 @@ function applyTheme(){
 // ── PERSIST ──
 let _saveTimer = null;
 function saveData(silent) {
+  if(window._appReload) return;   // la pagina si sta ricaricando (cambio progetto o account): niente salvataggi dalla memoria, riscriverebbero dati non più validi
   if(window._pjBusy) return;   // separazione Unità/staff in corso: niente salvataggi dalla memoria della pagina
   if(window.BRO){ if(!silent) showToast('Sola lettura: il progetto è di un’altra persona dello staff'); return; }
   try {
@@ -7129,12 +7130,13 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · beta';
-const APP_BUILD='202610200549'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610201616'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
     'Il <b>Word della circolare</b> torna alla carta intestata nazionale: colonna con i loghi della Sezione, della Branca e degli organismi internazionali, contatti a lato, Montserrat e margini del modello.',
-    'Il <b>PDF</b> ha la stessa impaginazione del Word e si vede uguale ovunque (telefono, tablet, Google Drive, WhatsApp): è il formato più sicuro da mandare alle famiglie.']},
+    'Il <b>PDF</b> ha la stessa impaginazione del Word e si vede uguale ovunque (telefono, tablet, Google Drive, WhatsApp): è il formato più sicuro da mandare alle famiglie.',
+    'Il Word ora tiene loghi e contatti in una colonna fissa, senza immagini «flottanti»: si vede come il modello anche su <b>iPad</b>, in Pages e in Google Drive. In fondo firma <b>tutto lo staff</b>.']},
   {d:'19 ottobre 2026', t:'Diciassette miglioramenti chiesti dai capi', i:[
     '<b>Riprendi da dove eri</b>: riaprendo l’app torni alla sezione e al punto della pagina in cui eri (su questo dispositivo); un progetto aperto per la prima volta dall’archivio parte dalla 1.1; cambiando sezione la pagina si apre dall’alto.',
     '<b>Attività</b>: si riordinano con «Sposta su / Sposta giù» (la numerazione segue); nuova sezione <b>Allegati e link</b> (Drive, Canva, video, foto, PDF) che nel Word diventano link cliccabili; titoli e conteggi si aggiornano mentre scrivi; i campi di testo si allungano da soli, anche le note dei 7 punti.',
@@ -7904,7 +7906,7 @@ function axMsgText(p,j){ const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}; const d
   if(L.permessi) out.push('• Da consegnare firmato'+(axEntroTxt(x)?' entro '+axEntroTxt(x):'')+': '+((L.permCosa||'').trim()?L.permCosa.trim():'il modulo di autorizzazione')+(axIsUrl(L.permLink)?' – '+axLk('link al documento',linkNorm(L.permLink)):' – link al documento: [da inserire]'));
   { const casa=FASCIA==='R'?[]:(x.casa||[]).concat((x.casaAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)); if(casa.length) out.push('• Da lasciare a casa: '+casa.map((t,i)=>i?t.charAt(0).toLowerCase()+t.slice(1):t).join(', ')); if(FASCIA!=='E') (x.consigli||[]).forEach(t=>out.push('• '+t)); }
   { const lu=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'')+'circolare/Liberatoria_somministrazione_farmaci.pdf'; out.push('• Solo se servono farmaci: compilare la '+axLk('liberatoria per la somministrazione dei farmaci',lu)+', allegare la prescrizione medica e consegnare i farmaci in confezione integra, con il nome'); }
-  out.push('','Vi chiediamo di rispettare gli orari: ci aiuta a far partire l’attività con tutti e a riportare i ragazzi puntuali. Per qualsiasi dubbio potete contattarci:',...axStaffContatti().map(c=>'• '+c.n+': '+(c.tel||'[telefono]')),'','A presto e grazie,',axFirma());
+  out.push('','Vi chiediamo di rispettare gli orari: ci aiuta a far partire l’attività con tutti e a riportare i ragazzi puntuali. Per qualsiasi dubbio potete contattarci:',...axStaffContatti().map(c=>'• '+c.n+': '+(c.tel||'[telefono]')),'','A presto e grazie,',axFirma(x));
   return out.join('\n'); }
 function axMsg(p,j){ const box=document.getElementById('ax-msg-'+p+'-'+j); const raw=axMsgText(p,j); if(axX(p,j).ambientProp||axX(p,j).citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare');
   box.innerHTML=`<div class="ax-ta ax-msgbox" id="ax-msgt-${p}-${j}" contenteditable="true" style="min-height:190px;margin-top:6px;white-space:normal;overflow-wrap:anywhere">${axMsgHtml(raw)}</div><div class="ax-chips" style="margin-top:4px"><button type="button" class="btn-ghost ax-btn" onclick="axCopyMsg(${p},${j})">Copia il messaggio</button></div><div class="ax-hint">Puoi modificarlo qui prima di copiarlo, poi incollalo dove vuoi. I nomi dei luoghi sottolineati portano alla mappa: restano link dove il testo formattato è supportato (mail, documenti); dove non lo è, come WhatsApp, resta solo il nome. Il Word si apre anche su Drive (e da lì diventa PDF) con i link funzionanti. Il Word è impaginato per sezioni (quando, dove, cosa portare, quota, contatti): prima di condividerlo completa IBAN, intestatario del conto e numeri di telefono.</div>`; }
@@ -8114,12 +8116,15 @@ async function axCircModel(p,j){
   b.push(P([LK('Link al documento',libUrl)],{ind:420}));
   H('Contatti'); b.push(P([T('Per qualsiasi dubbio potete contattarci:')],{after:80}));
   const cts=axStaffContatti(); (cts.length?cts:[{n:''}]).forEach(c=>b.push(P([B((c.n||'Nome')+(c.r?' ('+c.r+')':'')+': '),T(c.tel?'tel. '+c.tel:'tel. ____________________')],{after:40,ind:240})));
-  b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma())],{jc:'right'}));
+  b.push(P([T('A presto e grazie,')],{before:280,after:40,jc:'right'})); b.push(P([B(axFirma(x))],{jc:'right'}));
   return {b, head, lgS, lgB, tit, nm:'Circolare_'+((tit||'attivita').replace(/[^\w\-]+/g,'_').slice(0,40))}; }
 function axPngSize(buf){ try{ const d=new DataView(buf); if(d.getUint32(0)===0x89504E47) return {w:d.getUint32(16),h:d.getUint32(20)}; }catch(e){} return {w:1,h:1}; }
 function axDownload(blob,nm){ const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
 function axCircCheck(p,j){ const a=attGet(p,j)||{}, x=a.ax||{}; if(x.ambientProp||x.citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare'); }
 // Word: carta intestata nazionale (circolare/base.docx) così com'è: colonna dei loghi, contatti a lato, margini e font del modello
+// Word: carta intestata nazionale ricostruita SENZA immagini flottanti (si vede uguale su Word, Pages, Google Drive e iPad):
+// una tabella a due colonne con il filetto tratteggiato a sinistra; nella colonna stretta loghi di Sezione e Branca,
+// organismi internazionali, contatti e social (tutto in linea), nella colonna larga il testo. Intestazione solo testo.
 async function axMsgDocx(p,j){
   axCircCheck(p,j); showToast('Preparo la circolare…');
   try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
@@ -8127,16 +8132,38 @@ async function axMsgDocx(p,j){
   let tpl=null; try{ const r=await fetch(base+'circolare/base.docx'); tpl=r.ok?await r.arrayBuffer():null; }catch(e){}
   if(!tpl){ showToast('Non riesco a scaricare la carta intestata: serve la connessione'); return; }
   const M=await axCircModel(p,j); const zip=await JSZip.loadAsync(tpl);
-  if(M.lgS) zip.file('word/media/image2.png',M.lgS); if(M.lgB) zip.file('word/media/branca.png',M.lgB);
-  // colonna a lato: contatti del Capo Unità e dati della Sezione
-  const V=axCircSide(); let hx=await zip.file('word/header3.xml').async('string');
-  hx=hx.replace(/<w:p\b(?:(?!<w:p\b)[\s\S])*?\{\{(\w+)\}\}[\s\S]*?<\/w:p>/g,(m,k)=>V[k]?m.replace('{{'+k+'}}',cxE(V[k])):'');
-  let side=''; hx=hx.replace(/<!--CXSIDE-->([\s\S]*?)<!--\/CXSIDE-->/,(m,g)=>{ side=g; return ''; });
-  zip.file('word/header3.xml',hx);
   const {R,LK,P,rels}=cxBuilder(); const run=r=>r.k==='lk'?LK(r.t,r.url,r.o):R(r.t,r.o);
-  let bx=M.b.map(par=>par.o.luogo?'<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+par.runs.map(run).join('')+'</w:p>':P(par.runs.map(run),par.o)).join('');
-  if(side){ const k=bx.indexOf('</w:pPr>'); bx=k>0?bx.slice(0,k+8)+side+bx.slice(k+8):bx; rels.push('<Relationship Id="rIdCxSoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image3.jpg"/>'); }
-  let dx=await zip.file('word/document.xml').async('string'); dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx); zip.file('word/document.xml',dx);
+  const body=M.b.map(par=>par.o.luogo?'<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+par.runs.map(run).join('')+'</w:p>':P(par.runs.map(run),par.o)).join('');
+  // immagini in linea nel corpo
+  let nImg=0; const EMU=360000;
+  const img=(buf,name,wcm,hcm)=>{ if(!buf) return ''; const id='rIdCxI'+(++nImg); zip.file('word/media/'+name,buf); rels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+name+'"/>');
+    let W=Math.round(wcm*EMU), H=Math.round(hcm*EMU); if(/\.png$/.test(name)){ const s=axPngSize(buf); if(s.w>1&&s.h>1) H=Math.round(W*s.h/s.w); }
+    return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+W+'" cy="'+H+'"/><wp:docPr id="'+(800+nImg)+'" name="'+name+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+(800+nImg)+'" name="'+name+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+id+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+W+'" cy="'+H+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>'; };
+  const md=async n=>{ const f=zip.file('word/media/'+n); return f?await f.async('arraybuffer'):null; };
+  const [fis,soc]=await Promise.all([md('image4.png'),md('image3.jpg')]);
+  const sp=(after,inner,jc)=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+after+'" w:line="240" w:lineRule="auto"/><w:jc w:val="'+(jc||'left')+'"/></w:pPr>'+(inner||'')+'</w:p>';
+  const V=axCircSide(); const st=(t,b)=>sp(0,t?R(t,{b:!!b,sz:16,color:'455556'}):'');
+  let side=sp(240,img(M.lgS,'cx_sez.png',4.0,4.0),'center')+sp(240,img(M.lgB,'cx_branca.png',2.9,2.9),'center')+sp(360,img(fis,'cx_org.png',4.2,3.66),'left');
+  const blk=[]; const add=(k,b)=>{ if(V[k]) blk.push(st(V[k],b)); };
+  add('CONT_H',1); ['CU_NOME','CU_RUOLO','CU_MAIL','CU_TEL'].forEach(k=>add(k)); if(blk.length) blk.push(st(''));
+  const n0=blk.length; add('SEZ_NOME',1); ['SEZ_VIA','SEZ_CITTA','SEZ_CF'].forEach(k=>add(k)); if(blk.length>n0) blk.push(st(''));
+  const n1=blk.length; add('SOCIAL_H',1); ['SEZ_SITO','SEZ_SOCIAL'].forEach(k=>add(k)); if(blk.length>n1) blk.push(st(''));
+  side+=blk.join('')+st('___________________')+sp(0,img(soc,'cx_soc.jpg',2.88,1.38));
+  const C1=2700, C2=7160; const dash='<w:left w:val="dashed" w:sz="12" w:space="0" w:color="7CC49A"/>';
+  const tbl='<w:tbl><w:tblPr><w:tblW w:w="'+(C1+C2)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tblCellMar><w:tblLook w:val="0000"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+C1+'"/><w:gridCol w:w="'+C2+'"/></w:tblGrid>'
+    +'<w:tr><w:trPr><w:cantSplit w:val="0"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="'+C1+'" w:type="dxa"/><w:tcBorders>'+dash+'</w:tcBorders><w:tcMar><w:left w:w="380" w:type="dxa"/></w:tcMar></w:tcPr>'+side+'</w:tc>'
+    +'<w:tc><w:tcPr><w:tcW w:w="'+C2+'" w:type="dxa"/><w:tcMar><w:left w:w="260" w:type="dxa"/></w:tcMar></w:tcPr>'+body+'</w:tc></w:tr></w:tbl>'+sp(0,'');
+  // intestazione: solo testo, allineata alla colonna del testo; nessuna immagine flottante in tutto il documento
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const doc0='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const hrun=t=>'<w:r><w:rPr><w:rFonts w:ascii="Montserrat" w:hAnsi="Montserrat" w:cs="Montserrat"/><w:b/><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr><w:t xml:space="preserve">'+cxE(t)+'</w:t></w:r>';
+  const hp=t=>'<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/><w:ind w:left="'+(C1+260)+'"/></w:pPr>'+hrun(t)+'</w:p>';
+  zip.file('word/header3.xml',doc0+'<w:hdr '+NS+'>'+hp('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani')+hp('Associazione SCOUT Laica di Promozione Sociale')+'</w:hdr>');
+  ['header1.xml','header2.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:hdr '+NS+'><w:p/></w:hdr>'));
+  ['header1.xml.rels','header2.xml.rels','header3.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
+  let dx=await zip.file('word/document.xml').async('string');
+  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',tbl).replace(/<w:pgMar [^>]*\/>/,'<w:pgMar w:top="1134" w:right="1021" w:bottom="1134" w:left="1021" w:header="454" w:footer="567" w:gutter="0"/>');
+  zip.file('word/document.xml',dx);
   if(rels.length){ let rx=await zip.file('word/_rels/document.xml.rels').async('string'); rx=rx.replace('</Relationships>',rels.join('')+'</Relationships>'); zip.file('word/_rels/document.xml.rels',rx); }
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   axDownload(blob,M.nm+'.docx'); showToast('Circolare pronta'); }
@@ -8203,7 +8230,10 @@ async function axMsgPdf(p,j){
     y+=tw(o.after==null?160:o.after); });
   const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); font('normal',8,'666666'); doc.text(String(i),W-MR,HH-14.5,{align:'right'}); }
   axDownload(doc.output('blob'),M.nm+'.pdf'); showToast('PDF pronto'); }
-function axFirma(){ const n=axStaffNomi();
+function axFirma(x){ const n=axStaffNomi(); const t=staffTab()||[];
+  // anche gli adulti presenti nell'attività o nell'uscita (le persone aggiunte a mano compaiono lì)
+  ((x&&x.pres&&x.pres.ad)||[]).forEach(a=>{ const full=String(a||'').replace(/\s*\([^)]*\)\s*$/,'').trim(); if(!full) return; const r=t.find(r=>String(r.nome||'').trim().toLowerCase()===full.toLowerCase());
+    const v=r?((FASCIA==='L'?staffGiungla(r):'')||full.split(/\s+/)[0]):full.split(/\s+/)[0]; if(v&&!n.includes(v)) n.push(v); });
   if(!n.length) return UNIT_NAME?'lo staff di '+UNIT_NAME:'lo staff';
   return n.length===1?n[0]:n.slice(0,-1).join(', ')+' e '+n[n.length-1]; }
 function attTipiLabel(a){ const t=(a&&a.tipi)||[]; return t.map(x=>x==='Altro'?((a.tipoAltro||'').trim()||'Altro'):x); }
