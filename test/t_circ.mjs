@@ -26,10 +26,10 @@ const [d] = await Promise.all([P.waitForEvent('download', {timeout:30000}), ev((
 fs.copyFileSync(await d.path(), OUT + '/c.docx');
 const z = await JSZip.loadAsync(fs.readFileSync(OUT + '/c.docx'));
 const h3 = await z.file('word/header3.xml').async('string'), dx = await z.file('word/document.xml').async('string');
-ok(!/wp:anchor/.test(h3) && !/wp:anchor/.test(dx), 'Word: niente immagini o riquadri ancorati alla pagina (niente colonna laterale)');
-ok((h3.match(/<wp:inline/g) || []).length === 2, 'Word: i due loghi (Sezione e Branca) sono in linea nell’intestazione');
-ok(/CNGEI Pesaro/.test(h3) && /Capo Reparto: Giulia Neri · tel\. 320 9998877/.test(h3.replace(/<[^>]+>/g, '')), 'Word: intestazione con Sezione e contatti del Capo Unità');
-ok(/w:left="1134"/.test(dx), 'Word: margini normali (niente spazio per la colonna)');
+ok(/wp:anchor/.test(h3) && /Corpo Nazionale Giovani Esploratori/.test(h3.replace(/<[^>]+>/g, '')), 'Word: carta intestata nazionale (colonna dei loghi a lato, come il modello)');
+ok(!!z.file('word/media/image2.png') && !!z.file('word/media/branca.png') && !!z.file('word/media/image4.png'), 'Word: logo della Sezione, della Branca e degli organismi internazionali');
+ok(/CNGEI Pesaro/.test(dx) && /Giulia Neri/.test(dx) && /T 320 9998877/.test(dx), 'Word: colonna a lato con Sezione e contatti del Capo Unità');
+ok(/w:left="1985"/.test(dx), 'Word: margini del modello nazionale');
 const t = dx.replace(/<[^>]+>/g, '');
 ok(/Giulia: tel\. 320 9998877/.test(t) && /Paolo: tel\. 333 1112222/.test(t) && /Giulia, Paolo e Elena/.test(t), 'Word: contatti e firma');
 let first = '';
@@ -41,7 +41,8 @@ ok(/\.pdf$/.test(d2.suggestedFilename()), 'c’è «Scarica in PDF» e scarica u
 fs.copyFileSync(await d2.path(), OUT + '/c2.pdf');
 const pt = execSync(`pdftotext ${OUT}/c2.pdf -`).toString();
 const tit = await ev(([p, j]) => attGet(p, j).testo, [p, j]);
-ok(pt.includes(tit) && /Ciao a tutte e a tutti/.test(pt) && /CNGEI Pesaro/.test(pt), 'PDF: intestazione, titolo e testo');
+ok(pt.includes(tit) && /Ciao a tutte e a tutti/.test(pt) && /CNGEI Pesaro/.test(pt) && /Corpo Nazionale Giovani Esploratori/.test(pt), 'PDF: carta intestata nazionale, titolo e testo');
+ok(/Montserrat/.test(execSync(`pdffonts ${OUT}/c2.pdf`).toString()), 'PDF: font Montserrat come il modello');
 ok(/Giulia: tel\. 320 9998877/.test(pt) && /Giulia, Paolo e Elena/.test(pt), 'PDF: contatti e firma');
 ok(/“/.test(pt) && /’/.test(pt), 'PDF: virgolette e apostrofi tipografici leggibili');
 ok(/\/URI/.test(fs.readFileSync(OUT + '/c2.pdf', 'latin1')), 'PDF: i link sono cliccabili');

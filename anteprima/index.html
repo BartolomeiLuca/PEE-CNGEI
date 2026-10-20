@@ -7227,10 +7227,13 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-19 · anteprima';
-const APP_BUILD='202610192051'; // sostituito a ogni pubblicazione
+const APP_VERSION = '2026-10-20 · anteprima';
+const APP_BUILD='202610200530'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
+    'Il <b>Word della circolare</b> torna alla carta intestata nazionale: colonna con i loghi della Sezione, della Branca e degli organismi internazionali, contatti a lato, Montserrat e margini del modello.',
+    'Il <b>PDF</b> ha la stessa impaginazione del Word e si vede uguale ovunque (telefono, tablet, Google Drive, WhatsApp): è il formato più sicuro da mandare alle famiglie.']},
   {d:'19 ottobre 2026', t:'In anteprima: uscite e campi', i:[
     '<b>Uscite e campi</b> (facoltativo): in fondo alla Sezione 3 «Hai un’uscita o un campo?». Si parte da un modello (uscita di un giorno, campo, evento in sede), si costruisce il programma giornata per giornata con le attività della Sezione 3 e i momenti (pasti, giochi, cerimonie…), e nei moduli si organizzano presenti, trasporti, pasti, quota, sicurezza, piano B e circolare. Le attività si modificano anche dall’uscita (è la stessa attività) e i loro materiali entrano nella quota.',
     'In alto compare la voce <b>Uscite</b> quando ce n’è almeno una; in archivio, sotto il progetto, l’elenco delle uscite. Ogni giornata ha il suo <b>foglio da stampare</b>. Quello che è affidato a te arriva in «Per te».']},
@@ -8462,7 +8465,7 @@ function cxBuilder(){ const rels=[]; let n=0;
   const P=(runs,o={})=>'<w:p><w:pPr>'+(o.keepNext?'<w:keepNext/>':'')+(o.border?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="2" w:color="'+o.border+'"/></w:pBdr>':'')+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?160:o.after)+'" w:line="'+(o.line||312)+'" w:lineRule="auto"/>'+(o.ind?'<w:ind w:left="'+o.ind+'"'+(o.hang?' w:hanging="'+o.hang+'"':'')+'/>':'')+'<w:jc w:val="'+(o.jc||'left')+'"/></w:pPr>'+(Array.isArray(runs)?runs.join(''):runs)+'</w:p>';
   return {R,LK,P,rels}; }
 // ── Circolare: un solo contenuto (modello a paragrafi), due uscite: Word e PDF ──
-// intestazione semplice in alto (loghi in linea, niente colonna laterale): si apre bene anche nell'anteprima di Google Drive su iPad
+// Word e PDF seguono la carta intestata nazionale (circolare/base.docx)
 async function axCircModel(p,j){
   const a=attGet(p,j), x=a.ax||{}, L=x.luogo||{}, pp=scheda.pp||{}; const sez=axSezFile(((pp.sezione)||'').trim());
   const U={L:'il Branco',E:'il Reparto',R:'la Compagnia'}[FASCIA]||'l’Unità'; const tit=(a.testo||'').trim();
@@ -8523,83 +8526,89 @@ async function axCircModel(p,j){
 function axPngSize(buf){ try{ const d=new DataView(buf); if(d.getUint32(0)===0x89504E47) return {w:d.getUint32(16),h:d.getUint32(20)}; }catch(e){} return {w:1,h:1}; }
 function axDownload(blob,nm){ const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
 function axCircCheck(p,j){ const a=attGet(p,j)||{}, x=a.ax||{}; if(x.ambientProp||x.citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare'); }
+// Word: carta intestata nazionale (circolare/base.docx) così com'è: colonna dei loghi, contatti a lato, margini e font del modello
 async function axMsgDocx(p,j){
   axCircCheck(p,j); showToast('Preparo la circolare…');
   try{ await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
   const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
   let tpl=null; try{ const r=await fetch(base+'circolare/base.docx'); tpl=r.ok?await r.arrayBuffer():null; }catch(e){}
-  if(!tpl){ showToast('Non riesco a scaricare il modello della circolare: serve la connessione'); return; }
+  if(!tpl){ showToast('Non riesco a scaricare la carta intestata: serve la connessione'); return; }
   const M=await axCircModel(p,j); const zip=await JSZip.loadAsync(tpl);
-  const {R,LK,P,rels}=cxBuilder();
-  // corpo
-  const run=r=>r.k==='lk'?LK(r.t,r.url,r.o):R(r.t,r.o);
-  const bx=M.b.map(par=>par.o.luogo?'<w:p>'+LUOGO_PPR+par.runs.map(run).join('')+'</w:p>':P(par.runs.map(run),par.o)).join('');
-  // intestazione semplice: tabella senza bordi con i due loghi in linea e i dati al centro, filetto sotto
-  const hrels=[]; let nImg=0;
-  const img=(buf,name,cm)=>{ if(!buf) return ''; const id='rIdCxH'+(++nImg); zip.file('word/media/'+name,buf); hrels.push('<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+name+'"/>');
-    const sz=axPngSize(buf), H0=Math.round(cm*360000), W0=Math.round(H0*sz.w/Math.max(1,sz.h)), W=Math.min(W0,Math.round(4.2*360000)), Hh=Math.round(W*sz.h/Math.max(1,sz.w));
-    return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+W+'" cy="'+Hh+'"/><wp:docPr id="'+(900+nImg)+'" name="'+name+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+(900+nImg)+'" name="'+name+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+id+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+W+'" cy="'+Hh+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>'; };
-  const hp=(runs,o={})=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+(o.after||0)+'" w:line="240" w:lineRule="auto"/><w:jc w:val="'+(o.jc||'center')+'"/></w:pPr>'+runs+'</w:p>';
-  const hr=(t,o={})=>R(t,Object.assign({sz:16,color:'444444'},o));
-  const cell=(w,inner,jc)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+(inner||hp(''))+'</w:tc>';
-  const H=M.head; const mid=hp(R(H.sez,{b:true,sz:24,color:GREEN}),{after:20})+hp(hr(H.ente,{sz:14}),{after:20})+(H.addr?hp(hr(H.addr)):'')+(H.cont?hp(hr(H.cont,{color:'222222'})):'')+(H.web?hp(hr(H.web)):'');
-  const nob='<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="single" w:sz="8" w:space="0" w:color="'+GREEN+'"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>';
-  const hdr='<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:jc w:val="center"/>'+nob+'<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="1900"/><w:gridCol w:w="5838"/><w:gridCol w:w="1900"/></w:tblGrid><w:tr>'
-    +cell(1900,hp(img(M.lgS,'cx_sez.png',1.7),{jc:'left'}))+cell(5838,mid)+cell(1900,hp(img(M.lgB,'cx_branca.png',1.7),{jc:'right'}))+'</w:tr></w:tbl>'+hp('',{after:120});
-  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
-  const pnum='<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="16"/><w:color w:val="888888"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r></w:p>';
-  const doc0='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-  zip.file('word/header3.xml',doc0+'<w:hdr '+NS+'>'+hdr+'</w:hdr>');
-  zip.file('word/_rels/header3.xml.rels',doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+hrels.join('')+'</Relationships>');
-  ['header1.xml','header2.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:hdr '+NS+'><w:p/></w:hdr>'));
-  ['header1.xml.rels','header2.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
-  ['footer1.xml','footer2.xml','footer3.xml'].forEach(f=>zip.file('word/'+f,doc0+'<w:ftr '+NS+'>'+(f==='footer3.xml'?'<w:p/>':pnum)+'</w:ftr>'));
-  ['footer1.xml.rels','footer2.xml.rels','footer3.xml.rels'].forEach(f=>{ if(zip.file('word/_rels/'+f)) zip.file('word/_rels/'+f,doc0+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'); });
-  ['image1.jpg','image3.jpg','image4.png','image2.png','branca.png'].forEach(f=>{ try{ zip.remove('word/media/'+f); }catch(e){} });
-  let dx=await zip.file('word/document.xml').async('string');
-  dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx).replace(/<w:pgMar [^>]*\/>/,'<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/>');
-  zip.file('word/document.xml',dx);
+  if(M.lgS) zip.file('word/media/image2.png',M.lgS); if(M.lgB) zip.file('word/media/branca.png',M.lgB);
+  // colonna a lato: contatti del Capo Unità e dati della Sezione
+  const V=axCircSide(); let hx=await zip.file('word/header3.xml').async('string');
+  hx=hx.replace(/<w:p\b(?:(?!<w:p\b)[\s\S])*?\{\{(\w+)\}\}[\s\S]*?<\/w:p>/g,(m,k)=>V[k]?m.replace('{{'+k+'}}',cxE(V[k])):'');
+  let side=''; hx=hx.replace(/<!--CXSIDE-->([\s\S]*?)<!--\/CXSIDE-->/,(m,g)=>{ side=g; return ''; });
+  zip.file('word/header3.xml',hx);
+  const {R,LK,P,rels}=cxBuilder(); const run=r=>r.k==='lk'?LK(r.t,r.url,r.o):R(r.t,r.o);
+  let bx=M.b.map(par=>par.o.luogo?'<w:p>'+LUOGO_PPR.replace('</w:pPr>','')+'</w:pPr>'+par.runs.map(run).join('')+'</w:p>':P(par.runs.map(run),par.o)).join('');
+  if(side){ const k=bx.indexOf('</w:pPr>'); bx=k>0?bx.slice(0,k+8)+side+bx.slice(k+8):bx; rels.push('<Relationship Id="rIdCxSoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image3.jpg"/>'); }
+  let dx=await zip.file('word/document.xml').async('string'); dx=dx.replace('<w:p><w:r><w:t>{{BODY}}</w:t></w:r></w:p>',bx); zip.file('word/document.xml',dx);
   if(rels.length){ let rx=await zip.file('word/_rels/document.xml.rels').async('string'); rx=rx.replace('</Relationships>',rels.join('')+'</Relationships>'); zip.file('word/_rels/document.xml.rels',rx); }
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   axDownload(blob,M.nm+'.docx'); showToast('Circolare pronta'); }
-// PDF: stessi contenuti, impaginati in A4 con jsPDF (testo vero, link cliccabili)
-function axPdfTxt(t){ return String(t==null?'':t).replace(/→/g,'»').replace(/[☐☑]/g,'').replace(/[   ]/g,' ').replace(/[^\u0000-ÿ€“”‘’–—•…‚„‹›™Œœ]/g,''); }
+// testi della colonna a lato (gli stessi nel Word e nel PDF)
+function axCircSide(){ const pp=scheda.pp||{}; const sez=axSezFile(((pp.sezione)||'').trim()); const cu=axCapoUnita()||{};
+  const V={CONT_H:'Contatti',CU_NOME:cu.nome||'',CU_RUOLO:cu.nome?cu.ruolo:'',CU_MAIL:cu.mail||'',CU_TEL:cu.tel?'T '+cu.tel:'',CU_FAX:'',
+    SEZ_NOME:sez?'CNGEI '+sez:'',SEZ_VIA:(pp.sedeVia||'').trim(),SEZ_CITTA:(pp.sedeCitta||'').trim(),SEZ_CF:(pp.sedeCF||'').trim()?'C.F. '+pp.sedeCF.trim():'',SEZ_SITO:(pp.sedeSito||'').trim(),SEZ_SOCIAL:(pp.sedeSocial||'').trim()};
+  if(!V.CU_NOME&&!V.CU_MAIL&&!V.CU_TEL) V.CONT_H=''; V.SOCIAL_H=(V.SEZ_SITO||V.SEZ_SOCIAL)?'Social':''; return V; }
+function axPdfTxt(t,uni){ t=String(t==null?'':t).replace(/[☐☑]/g,'').replace(/[   ]/g,' '); return uni?t.replace(/[^\u0000-ÿ€“”‘’–—•…‚„‹›™Œœ→↗′]/g,''):t.replace(/→/g,'»').replace(/[^\u0000-ÿ€“”‘’–—•…‚„‹›™Œœ]/g,''); }
+// PDF: la stessa carta intestata nazionale ridisegnata in A4 (posizioni del modello Word, Montserrat, loghi e colonna a lato), testo vero e link cliccabili
 async function axMsgPdf(p,j){
   axCircCheck(p,j); showToast('Preparo il PDF…');
-  try{ await loadLib(LIB_URLS.jspdf,()=>!!(window.jspdf&&window.jspdf.jsPDF)); exportTheme(); }catch(e){ showToast('Impossibile generare il PDF: '+e.message); return; }
-  const M=await axCircModel(p,j); const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
-  const W=210, HH=297, ML=20, MR=20, MT=16, MB=18, CWm=W-ML-MR; let y=MT;
+  try{ await loadLib(LIB_URLS.jspdf,()=>!!(window.jspdf&&window.jspdf.jsPDF)); await loadLib(LIB_URLS.jszip,()=>!!window.JSZip); exportTheme(); }catch(e){ showToast('Impossibile generare il PDF: '+e.message); return; }
+  const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
+  const get=async u=>{ try{ const r=await fetch(u); return r.ok?await r.arrayBuffer():null; }catch(e){ return null; } };
+  const [M,tpl,fR,fB,fI]=await Promise.all([axCircModel(p,j),get(base+'circolare/base.docx'),get(base+'circolare/font/Montserrat-Regular.ttf'),get(base+'circolare/font/Montserrat-Bold.ttf'),get(base+'circolare/font/Montserrat-Italic.ttf')]);
+  const b64=buf=>{ let s=''; const u=new Uint8Array(buf); for(let i=0;i<u.length;i+=8192) s+=String.fromCharCode.apply(null,u.subarray(i,i+8192)); return btoa(s); };
+  const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  let FN='helvetica'; const uni=!!(fR&&fB&&fI);
+  if(uni){ try{ doc.addFileToVFS('MR.ttf',b64(fR)); doc.addFont('MR.ttf','Montserrat','normal'); doc.addFileToVFS('MB.ttf',b64(fB)); doc.addFont('MB.ttf','Montserrat','bold'); doc.addFileToVFS('MI.ttf',b64(fI)); doc.addFont('MI.ttf','Montserrat','italic'); doc.addFont('MB.ttf','Montserrat','bolditalic'); FN='Montserrat'; }catch(e){ FN='helvetica'; } }
+  const U=FN==='Montserrat'; const TX=t=>axPdfTxt(t,U);
+  // immagini del modello: filetto tratteggiato, organismi internazionali, social
+  let md={}; if(tpl){ try{ const z=await JSZip.loadAsync(tpl); for(const k of ['image1.jpg','image3.jpg','image4.png']){ const f=z.file('word/media/'+k); if(f) md[k]=await f.async('arraybuffer'); } }catch(e){} }
+  const img=(buf,type,x,y,w,h)=>{ if(!buf) return; try{ doc.addImage('data:image/'+(type==='JPEG'?'jpeg':'png')+';base64,'+b64(buf),type,x,y,w,h); }catch(e){} };
+  const W=210, HH=297, MR=20, MB=22; const L1=80.8, T1=76, L2=35, T2=19.5; let ML=L1, y=T1, pg=1;
   const hex=h=>[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
   const tw=t=>t/56.7; // twip → mm
-  const b64=buf=>{ let s=''; const u=new Uint8Array(buf); for(let i=0;i<u.length;i+=8192) s+=String.fromCharCode.apply(null,u.subarray(i,i+8192)); return btoa(s); };
-  const logo=(buf,x,right)=>{ if(!buf) return 0; try{ const sz=axPngSize(buf); let h=17, w=h*sz.w/Math.max(1,sz.h); if(w>40){ w=40; h=w*sz.h/sz.w; } doc.addImage('data:image/png;base64,'+b64(buf),'PNG',right?x-w:x,y,w,h); return h; }catch(e){ return 0; } };
-  const H=M.head; const h1=logo(M.lgS,ML,false), h2=logo(M.lgB,W-MR,true);
-  let ty=y+4; const ctr=(t,sz,st,col)=>{ doc.setFont('helvetica',st); doc.setFontSize(sz); doc.setTextColor(...hex(col)); doc.splitTextToSize(axPdfTxt(t),CWm-80).forEach(l=>{ doc.text(l,W/2,ty,{align:'center'}); ty+=sz*0.42; }); };
-  ctr(H.sez,12,'bold',GREEN); ty+=0.6; ctr(H.ente,7,'normal','444444'); if(H.addr) ctr(H.addr,8,'normal','444444'); if(H.cont) ctr(H.cont,8,'normal','222222'); if(H.web) ctr(H.web,8,'normal','444444');
-  y=Math.max(y+h1,y+h2,ty)+2; doc.setDrawColor(...hex(GREEN)); doc.setLineWidth(0.5); doc.line(ML,y,W-MR,y); y+=7;
+  const font=(st,sz,col)=>{ doc.setFont(FN,st); doc.setFontSize(sz); doc.setTextColor(...hex(col||'1A1A18')); };
+  // pagina 1: colonna a lato come nel modello
+  img(md['image1.jpg'],'JPEG',20.05,14.97,10.9,260);
+  if(M.lgS) img(M.lgS,'PNG',20.13,7.19,51.8,51.8); if(M.lgB) img(M.lgB,'PNG',26.28,49.11,40,39.9);
+  img(md['image4.png'],'PNG',23.37,85.28,55.7,48.6);
+  font('bold',10,'000000'); doc.text(TX('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani'),72,18.6); doc.text(TX('Associazione SCOUT Laica di Promozione Sociale'),72,22.9);
+  { const V=axCircSide(); const rows=[]; const add=(k,b)=>{ if(V[k]) rows.push([V[k],b]); };
+    add('CONT_H',1); ['CU_NOME','CU_RUOLO','CU_MAIL','CU_TEL'].forEach(k=>add(k)); if(rows.length) rows.push(['']);
+    const n0=rows.length; add('SEZ_NOME',1); ['SEZ_VIA','SEZ_CITTA','SEZ_CF'].forEach(k=>add(k)); if(rows.length>n0) rows.push(['']);
+    const n1=rows.length; add('SOCIAL_H',1); ['SEZ_SITO','SEZ_SOCIAL'].forEach(k=>add(k)); if(rows.length>n1) rows.push(['']);
+    rows.push(['___________________']);
+    const lh=3.45, bottom=275-7.1-13.8-1; let yy=bottom-rows.length*lh;
+    rows.forEach(([t,b])=>{ yy+=lh; if(!t) return; font(b?'bold':'normal',8,'455556'); doc.splitTextToSize(TX(t),42).slice(0,2).forEach((l,i)=>doc.text(l,27.08,yy+i*3)); });
+    img(md['image3.jpg'],'JPEG',27.08,yy+1.2,28.8,13.8); }
+  const deco=()=>{ img(md['image1.jpg'],'JPEG',20.0,16.85,10.9,260); };
   const st=o=>o.b&&o.i?'bolditalic':o.b?'bold':o.i?'italic':'normal';
-  const newPage=()=>{ doc.addPage(); y=MT; };
-  M.b.forEach((par,pi)=>{ const o=par.o||{}; const ind=tw(o.ind||0), hang=tw(o.hang||0); y+=tw(o.before||0);
-    // parole con il loro stile
-    const words=[]; par.runs.forEach(r=>{ const ro=r.o||{}; const box=/^☐/.test(r.t); const t=axPdfTxt(r.t); if(box) words.push({box:true,o:ro});
-      t.split(/(\s+)/).forEach(w=>{ if(w!=='') words.push({t:w,o:ro,url:r.k==='lk'?r.url:null}); }); });
-    const size=w=>((w.o.sz||20)/2); const lh=Math.max(...words.map(size).concat([10]))*0.3528*1.35;
+  const newPage=()=>{ doc.addPage(); pg++; ML=L2; y=T2; deco(); };
+  M.b.forEach(par=>{ const o=par.o||{}; const ind=tw(o.ind||0), hang=tw(o.hang||0); y+=tw(o.before||0);
+    const words=[]; par.runs.forEach(r=>{ const ro=r.o||{}; if(/^☐/.test(r.t)) words.push({box:true,o:ro}); TX(r.t).split(/(\s+)/).forEach(w=>{ if(w!=='') words.push({t:w,o:ro,url:r.k==='lk'?r.url:null}); }); });
+    const size=w=>((w.o.sz||20)/2); const lh=Math.max(...words.map(size).concat([10]))*0.3528*(o.luogo?1.83:1.58);
     if(o.keepNext && y+lh*3>HH-MB) newPage();
-    const lines=[]; let cur=[], x=0; const first=ML+ind-hang, rest=ML+ind;
-    words.forEach(w=>{ let ww; if(w.box) ww=4.2; else { doc.setFont('helvetica',st(w.o)); doc.setFontSize(size(w)); ww=doc.getTextWidth(w.t); }
-      const maxW=W-MR-(lines.length?rest:first); if(x+ww>maxW && cur.length && !/^\s+$/.test(w.t||'')){ lines.push(cur); cur=[]; x=0; }
-      if(!cur.length && /^\s+$/.test(w.t||'')) return; cur.push(Object.assign({},w,{ww})); x+=ww; });
-    if(cur.length) lines.push(cur);
-    lines.forEach((ln,li)=>{ if(y+lh>HH-MB) newPage(); const lw=ln.reduce((s1,w)=>s1+w.ww,0); let xx=(li?rest:first); if(o.jc==='right') xx=W-MR-lw; else if(o.jc==='center') xx=(W-lw)/2;
-      const base=y+lh*0.75;
-      ln.forEach(w=>{ if(w.box){ doc.setDrawColor(60,60,60); doc.setLineWidth(0.3); doc.rect(xx+0.3,base-3,3,3); xx+=w.ww; return; }
-        doc.setFont('helvetica',st(w.o)); doc.setFontSize(size(w)); const col=w.url?'1155CC':(w.o.color||'1A1A18'); doc.setTextColor(...hex(col));
-        doc.text(w.t,xx,base); if(w.url){ doc.setDrawColor(...hex('1155CC')); doc.setLineWidth(0.2); doc.line(xx,base+0.6,xx+w.ww,base+0.6); doc.link(xx,base-size(w)*0.3528,w.ww,size(w)*0.3528*1.2,{url:w.url}); }
+    const lay=()=>{ const out=[]; let cur=[], x=0; const first=ML+ind-hang, rest=ML+ind;
+      words.forEach(w=>{ let ww; if(w.box) ww=4.2; else { font(st(w.o),size(w)); ww=doc.getTextWidth(w.t); }
+        const maxW=W-MR-(out.length?rest:first); if(x+ww>maxW && cur.length && !/^\s+$/.test(w.t||'')){ out.push(cur); cur=[]; x=0; }
+        if(!cur.length && /^\s+$/.test(w.t||'')) return; cur.push(Object.assign({},w,{ww})); x+=ww; });
+      if(cur.length) out.push(cur); return out; };
+    let lines=lay();
+    for(let li=0; li<lines.length; li++){ if(y+lh>HH-MB){ const left=lines.slice(li).flat(); newPage(); words.splice(0,words.length,...left); lines=lay(); li=-1; continue; }
+      const ln=lines[li]; const lw=ln.reduce((s1,w)=>s1+w.ww,0); const first=li===0; let xx=first?ML+ind-hang:ML+ind; if(o.jc==='right') xx=W-MR-lw; else if(o.jc==='center') xx=(ML+W-MR-lw)/2;
+      const bl=y+lh*0.75;
+      ln.forEach(w=>{ if(w.box){ doc.setDrawColor(60,60,60); doc.setLineWidth(0.3); doc.rect(xx+0.3,bl-3,3,3); xx+=w.ww; return; }
+        font(st(w.o),size(w),w.url?'1155CC':(w.o.color||'1A1A18'));
+        doc.text(w.t,xx,bl); if(w.url){ doc.setDrawColor(...hex('1155CC')); doc.setLineWidth(0.2); doc.line(xx,bl+0.6,xx+w.ww,bl+0.6); doc.link(xx,bl-size(w)*0.3528,w.ww,size(w)*0.3528*1.2,{url:w.url}); }
         xx+=w.ww; });
-      y+=lh; });
-    if(o.border){ doc.setDrawColor(...hex(o.border==='PALE'?PALE:o.border)); doc.setLineWidth(0.4); doc.line(ML,y+0.5,W-MR,y+0.5); y+=1.5; }
+      y+=lh; }
+    if(o.border){ doc.setDrawColor(...hex(o.border)); doc.setLineWidth(0.3); doc.line(ML,y+0.6,W-MR,y+0.6); y+=1.4; }
     y+=tw(o.after==null?160:o.after); });
-  const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(136,136,136); doc.text(String(i),W/2,HH-8,{align:'center'}); }
+  const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); font('normal',8,'666666'); doc.text(String(i),W-MR,HH-14.5,{align:'right'}); }
   axDownload(doc.output('blob'),M.nm+'.pdf'); showToast('PDF pronto'); }
 function axFirma(){ const n=axStaffNomi();
   if(!n.length) return UNIT_NAME?'lo staff di '+UNIT_NAME:'lo staff';
