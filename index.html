@@ -796,9 +796,9 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .pc details summary::-webkit-details-marker,
 .kos-details summary::-webkit-details-marker{display:none}
 .pc details summary::before,
-.kos-details summary::before{content:'▼  Espandi';font-size:10px;font-weight:600;letter-spacing:.02em}
+.kos-details summary::before{content:'▸  Espandi';font-size:10px;font-weight:600;letter-spacing:.02em}
 .pc details[open] summary::before,
-.kos-details[open] summary::before{content:'▲  Chiudi'}
+.kos-details[open] summary::before{content:'▾  Chiudi'}
 .pc details summary:hover,
 .kos-details summary:hover{background:var(--green-mid)!important;opacity:.9}
 /* Per i details dell'auto osservazione */
@@ -893,8 +893,8 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .why-mini{margin-top:10px;text-align:left;font-size:12px;line-height:1.55}.why-mini summary{cursor:pointer;list-style:none;font-size:11px;font-weight:700;color:var(--green);display:inline-flex;align-items:center;gap:6px}.why-mini summary::-webkit-details-marker{display:none}.why-mini summary::before{content:'▶';font-size:9px;transition:transform .2s;display:inline-block}.why-mini[open] summary::before{transform:rotate(90deg)}.why-mini p{margin:6px 0 0;color:var(--ink-mid)}.why-box{background:var(--green-pale);border:1.5px solid var(--green);border-radius:var(--radius);padding:14px 18px;margin:0 0 20px;font-size:13px;line-height:1.75}
 .why-box summary{cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:28px}
 .why-box summary::-webkit-details-marker{display:none}
-.why-box summary::after{content:'Leggi ▾';font-size:10px;font-weight:700;text-transform:none;letter-spacing:0}
-.why-box[open] summary::after{content:'Chiudi ▴'}
+.why-box summary::after{content:'Leggi ▸';font-size:10px;font-weight:700;text-transform:none;letter-spacing:0}
+.why-box[open] summary::after{content:'Chiudi ▾'}
 .why-box p{margin:10px 0 0}
 @media(max-width:640px){
   /* barra in alto: solo l'essenziale, tutto raggiungibile col pollice */
@@ -1150,6 +1150,11 @@ body[data-mode="staff"] #panel2 .foot-nav .btn-primary[onclick="goPhase(3)"]{dis
   .st-cap{display:none}.st-item{width:auto;min-width:128px;flex:none}.st-add{flex:none;white-space:nowrap}
   .st-grid{grid-template-columns:1fr}
 }
+/* frecce: chiuso ▸ (orizzontale), aperto ▾ (in giù), dappertutto */
+.pc-chev{transform:rotate(-90deg)}.pc.expanded .pc-chev{transform:none}
+.istr-chev{transform:rotate(-90deg)}.istr-box[open] .istr-chev{transform:none}
+.pcx-chev{transform:none}.pcx.closed .pcx-chev{transform:rotate(-90deg)}
+.ver-chev{transform:none}.ver-c.closed .ver-chev{transform:rotate(-90deg)}
 </style>
 </head>
 <body>
@@ -5516,7 +5521,7 @@ function mvHeadHTML(p){
   if(st.k==='none') val=`<div class="mv-val none"><span class="l">Dai il tuo valore</span></div>`;
   else { const t=obsToThreshold(st.v), c=thresholdColor(t), tag={dec:'deciso',rev:'da riguardare',conf:'da confrontare',mid:'valore di mezzo',solo:'per ora solo il tuo'}[st.k];
     val=`<div class="mv-val ${st.k==='dec'?'dec':(st.k==='conf'||st.k==='rev')?'conf':'prop'}${t===3?' yl':''}" style="--c:${c}" title="Valore del percorso: ${tag}"><span class="n">${st.v==='n'?'–':st.v}</span><span class="l"><small>${tag}</small>${sEsc(mvLbl(st.v))}</span></div>`; }
-  return `<div class="mv-head"><div class="mv-dots">${dots}</div>${val}<button class="mv-tg" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'} i dettagli dell'osservazione" onclick="mvToggle('${pid}')"><span class="t">Dettagli </span>${open?'▴':'▾'}</button></div>`;
+  return `<div class="mv-head"><div class="mv-dots">${dots}</div>${val}<button class="mv-tg" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'} i dettagli dell'osservazione" onclick="mvToggle('${pid}')"><span class="t">Dettagli </span>${open?'▾':'▸'}</button></div>`;
 }
 function mvScaleHTML(pid){
   const me=mvMe(), all=mvAll(pid), st=mvState(pid);
@@ -7130,7 +7135,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · beta';
-const APP_BUILD='202610201853'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610202103'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
@@ -12346,7 +12351,7 @@ function sgRender(){
     if(items.length){
       const label = ro ? (items.length === 1 ? 'Il tuo suggerimento' : `I tuoi ${items.length} suggerimenti`)
         : (items.length === 1 ? `1 suggerimento di ${clEsc(items[0].autore_nome||'un’altra persona')}` : `${items.length} suggerimenti` + (unread ? ` · ${unread} da leggere` : ''));
-      h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▴':'▾'}</button>`;
+      h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▾':'▸'}</button>`;
     }
     if(ro && SG.form !== tk) h += `<button class="sg-add" onclick="sgForm('${tk}')">+ Suggerisci</button>`;
     if(items.length && SG.open[tk]){

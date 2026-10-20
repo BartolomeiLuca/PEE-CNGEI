@@ -796,9 +796,9 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .pc details summary::-webkit-details-marker,
 .kos-details summary::-webkit-details-marker{display:none}
 .pc details summary::before,
-.kos-details summary::before{content:'▼  Espandi';font-size:10px;font-weight:600;letter-spacing:.02em}
+.kos-details summary::before{content:'▸  Espandi';font-size:10px;font-weight:600;letter-spacing:.02em}
 .pc details[open] summary::before,
-.kos-details[open] summary::before{content:'▲  Chiudi'}
+.kos-details[open] summary::before{content:'▾  Chiudi'}
 .pc details summary:hover,
 .kos-details summary:hover{background:var(--green-mid)!important;opacity:.9}
 /* Per i details dell'auto osservazione */
@@ -893,8 +893,8 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .why-mini{margin-top:10px;text-align:left;font-size:12px;line-height:1.55}.why-mini summary{cursor:pointer;list-style:none;font-size:11px;font-weight:700;color:var(--green);display:inline-flex;align-items:center;gap:6px}.why-mini summary::-webkit-details-marker{display:none}.why-mini summary::before{content:'▶';font-size:9px;transition:transform .2s;display:inline-block}.why-mini[open] summary::before{transform:rotate(90deg)}.why-mini p{margin:6px 0 0;color:var(--ink-mid)}.why-box{background:var(--green-pale);border:1.5px solid var(--green);border-radius:var(--radius);padding:14px 18px;margin:0 0 20px;font-size:13px;line-height:1.75}
 .why-box summary{cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:28px}
 .why-box summary::-webkit-details-marker{display:none}
-.why-box summary::after{content:'Leggi ▾';font-size:10px;font-weight:700;text-transform:none;letter-spacing:0}
-.why-box[open] summary::after{content:'Chiudi ▴'}
+.why-box summary::after{content:'Leggi ▸';font-size:10px;font-weight:700;text-transform:none;letter-spacing:0}
+.why-box[open] summary::after{content:'Chiudi ▾'}
 .why-box p{margin:10px 0 0}
 @media(max-width:640px){
   /* barra in alto: solo l'essenziale, tutto raggiungibile col pollice */
@@ -1150,6 +1150,11 @@ body[data-mode="staff"] #panel2 .foot-nav .btn-primary[onclick="goPhase(3)"]{dis
   .st-cap{display:none}.st-item{width:auto;min-width:128px;flex:none}.st-add{flex:none;white-space:nowrap}
   .st-grid{grid-template-columns:1fr}
 }
+/* frecce: chiuso ▸ (orizzontale), aperto ▾ (in giù), dappertutto */
+.pc-chev{transform:rotate(-90deg)}.pc.expanded .pc-chev{transform:none}
+.istr-chev{transform:rotate(-90deg)}.istr-box[open] .istr-chev{transform:none}
+.pcx-chev{transform:none}.pcx.closed .pcx-chev{transform:rotate(-90deg)}
+.ver-chev{transform:none}.ver-c.closed .ver-chev{transform:rotate(-90deg)}
 /* ── Uscite e campi (disegno 4) ── */
 body.usc-on #tut-panel4,body.usc-on #panel4 .foot-nav,body.usc-on #g-dl,body.usc-on #val-scale-box{display:none!important}
 #usc-root{--uc-tint:13%}
@@ -5807,7 +5812,7 @@ function mvHeadHTML(p){
   if(st.k==='none') val=`<div class="mv-val none"><span class="l">Dai il tuo valore</span></div>`;
   else { const t=obsToThreshold(st.v), c=thresholdColor(t), tag={dec:'deciso',rev:'da riguardare',conf:'da confrontare',mid:'valore di mezzo',solo:'per ora solo il tuo'}[st.k];
     val=`<div class="mv-val ${st.k==='dec'?'dec':(st.k==='conf'||st.k==='rev')?'conf':'prop'}${t===3?' yl':''}" style="--c:${c}" title="Valore del percorso: ${tag}"><span class="n">${st.v==='n'?'–':st.v}</span><span class="l"><small>${tag}</small>${sEsc(mvLbl(st.v))}</span></div>`; }
-  return `<div class="mv-head"><div class="mv-dots">${dots}</div>${val}<button class="mv-tg" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'} i dettagli dell'osservazione" onclick="mvToggle('${pid}')"><span class="t">Dettagli </span>${open?'▴':'▾'}</button></div>`;
+  return `<div class="mv-head"><div class="mv-dots">${dots}</div>${val}<button class="mv-tg" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'} i dettagli dell'osservazione" onclick="mvToggle('${pid}')"><span class="t">Dettagli </span>${open?'▾':'▸'}</button></div>`;
 }
 function mvScaleHTML(pid){
   const me=mvMe(), all=mvAll(pid), st=mvState(pid);
@@ -7423,7 +7428,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · anteprima';
-const APP_BUILD='202610202011'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610202103'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'In anteprima: uscite e campi', i:[
@@ -8575,7 +8580,7 @@ function uscListHTML(){ const L=uscList(); const can=uscCan();
 function uscTilesHTML(u){ const x=u.ax||{}; let sp=0, q=0; try{ sp=uscSpesa(u); q=axQuota(x); }catch(e){}
   const sh=uscModsShown(u), f=sh.filter(([k])=>uscModFilled(u,k)).length, mn=uscMatN(u), np=axPasti(x);
   const T=[['spesa',sp?axEur(sp):'—','Spesa totale'],['quota',q?axEur(q):'—','Quota ragazzi'],['mat',mn+(mn===1?' voce':' voci'),'Materiali'],['pasti',np+(np===1?' pasto':' pasti'),'Menù e spesa'],['mod',f+' / '+sh.length,'Moduli compilati']];
-  return T.map(([k,v,l])=>`<button type="button" class="usc-tile${USC_TILE===k?' on':''}" aria-expanded="${USC_TILE===k}" onclick="USC_TILE=USC_TILE==='${k}'?null:'${k}';uscRe()"><i aria-hidden="true">${USC_TILE===k?'▴':'▾'}</i><b>${uscE(v)}</b><span>${l}</span></button>`).join(''); }
+  return T.map(([k,v,l])=>`<button type="button" class="usc-tile${USC_TILE===k?' on':''}" aria-expanded="${USC_TILE===k}" onclick="USC_TILE=USC_TILE==='${k}'?null:'${k}';uscRe()"><i aria-hidden="true">${USC_TILE===k?'▾':'▸'}</i><b>${uscE(v)}</b><span>${l}</span></button>`).join(''); }
 function uscTileDetail(u){ const k=USC_TILE; if(!k) return ''; const x=u.ax||{}, N=axN(x);
   const head=(t,pk)=>`<div class="usc-dtop"><h3>${t}</h3><span class="usc-dact">${pk?`<button type="button" class="usc-lnk" onclick="uscExport('${pk}')">⤓ Esporta</button>`:''}<button type="button" class="usc-lnk" onclick="USC_TILE=null;uscRe()">Chiudi</button></span></div>`;
   let b='';
@@ -8726,7 +8731,7 @@ function uscBlkHTML(u,k,m,t,i,n){ const can=uscCan(); const open=!!USC_OPEN[k]; 
   const uaff=m.aff||(f&&f.a.aff)||''; let h=`<div class="usc-blk${open?' open':''}" id="usc-b-${k}" data-blk="${k}"${uaff?` data-uaff="${uscE(uaff)}"`:''} style="--c:${col}">
     <div class="usc-bh" ${can?'draggable="true"':''} onclick="if(!event.target.closest('button,select,input'))uscBlkTog('${k}')"><div class="usc-bt">${t?axHM(t.s):'—'}${m.fix?'<span title="ora fissa"> 📌</span>':''}<small>${axDurTxt(m.dur)}</small></div>
       <div class="usc-bn"><b><span class="usc-btype">${uscE(lab)}</span><span class="usc-btt">${uscE(uscBlkTitle(m))}</span></b><span>${uscE(sub)||'&nbsp;'}</span></div>
-      <div class="usc-bctl">${can?`<span class="usc-grip" aria-hidden="true">⠿</span><button type="button" class="usc-ib" data-mv="-1" aria-label="Sposta su" ${i===0?'disabled':''} onclick="uscBlkMove('${k}',-1)">↑</button><button type="button" class="usc-ib" data-mv="1" aria-label="Sposta giù" ${i===n-1?'disabled':''} onclick="uscBlkMove('${k}',1)">↓</button>`:''}<button type="button" class="usc-ib" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'}" onclick="uscBlkTog('${k}')">${open?'▴':'▾'}</button>${can?`<button type="button" class="usc-ib usc-bx" title="Togli dal programma" aria-label="Togli dal programma" onclick="uscBlkDel('${k}')">×</button>`:''}</div></div>`;
+      <div class="usc-bctl">${can?`<span class="usc-grip" aria-hidden="true">⠿</span><button type="button" class="usc-ib" data-mv="-1" aria-label="Sposta su" ${i===0?'disabled':''} onclick="uscBlkMove('${k}',-1)">↑</button><button type="button" class="usc-ib" data-mv="1" aria-label="Sposta giù" ${i===n-1?'disabled':''} onclick="uscBlkMove('${k}',1)">↓</button>`:''}<button type="button" class="usc-ib" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'}" onclick="uscBlkTog('${k}')">${open?'▾':'▸'}</button>${can?`<button type="button" class="usc-ib usc-bx" title="Togli dal programma" aria-label="Togli dal programma" onclick="uscBlkDel('${k}')">×</button>`:''}</div></div>`;
   if(!open) return h+`</div>`;
   h+=`<div class="usc-bb">`;
   const days=Array.from({length:uscNG(u)},(_,q)=>q+1);
@@ -8871,6 +8876,7 @@ function uscPtMine(d,people){ const out=[]; try{ const U=(d&&d.scheda&&d.scheda.
       const g=Math.max(1,Number(m.g)||1); out.push({u:id, ut:uscTit(u), g, t:t||'un momento', ora:m.fix?m.ora||'':(m.k?'':m.ora||''), d:uscDayIso(u,g), gt:uscDayShort(u,g)}); });
     // parti affidate (referenti dei moduli) e materiali da procurare
     AX_REF.forEach(([rk,l])=>{ const w=axRef(x,rk); if(w&&affIsMe(w,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+l.toLowerCase(), ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
+    Object.keys(u.own||{}).forEach(ok=>{ const o=u.own[ok]; if(o&&typeof o==='object'&&!o.del&&o.ref&&affIsMe(o.ref,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+String(o.t||'modulo').toLowerCase(), ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
     const mats=[].concat(x.mat||[],...Object.keys(x.bm||{}).filter(k=>P[k]&&!P[k].del).map(k=>x.bm[k]||[])).filter(r=>r&&(r.cosa||'').trim()&&r.chi&&!r.pronto&&affIsMe(r.chi,people));
     if(mats.length) out.push({u:id, ut:uscTit(u), g:0, t:'materiali da procurare: '+mats.slice(0,4).map(r=>r.cosa).join(', ')+(mats.length>4?'…':''), ora:'', d:x.data||'', gt:'tutta l’uscita'}); }); }catch(e){}
   return out; }
@@ -8895,7 +8901,8 @@ function uscAddModHTML(u){ const Hd=USC_MOD.filter(([k])=>uscHidden(u,k));
     <div class="ax-sub">Oppure crea un modulo vostro <span class="ax-opt">(non entra nei calcoli)</span></div><div class="usc-ownf"><input class="ax-in" id="usc-own-t" maxlength="60" placeholder="es. Turni di servizio"><select class="ax-in" id="usc-own-k">${axOpt([['testo','Testo'],['lista','Lista da spuntare'],['tabella','Piccola tabella']],'testo')}</select><button type="button" class="btn-ghost usc-btn" onclick="uscOwnAdd()">Aggiungi</button></div>
     <button type="button" class="usc-lnk" style="margin-top:6px" onclick="USC_ADDMOD=false;uscRe()">Chiudi</button></div>`; }
 function uscOwnPageHTML(u,j,k){ const o=(u.own||{})[k]; if(!o) return ''; const can=uscCan();
-  return `<div class="usc-card2 usc-modpage"><div class="usc-mph"><div><h3>${can?`<input class="ax-in usc-ownt" value="${uscE(o.t)}" maxlength="60" oninput="uscOwnSet('${k}','t',this.value)" aria-label="Nome del modulo">`:uscE(o.t)}</h3><span class="usc-tag own">creato da voi · non entra nei calcoli</span></div>${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo" onclick="uscOwnDel('${k}')">×</button>`:''}</div>${uscOwnBody(k,o,can).replace(/<div class="usc-hidebar">[\s\S]*?<\/div>$/,'')}</div>`; }
+  const ref=`<label class="usc-mref"><span>Referente</span>${axPersonSel(o.ref||'',`uscOwnSet('${k}','ref',@V,true)`)}</label>`;
+  return `<div class="usc-card2 usc-modpage"${o.ref?` data-uref="${uscE(o.ref)}" data-uk="o:${k}"`:''}><div class="usc-mph"><div><h3>${can?`<input class="ax-in usc-ownt" value="${uscE(o.t)}" maxlength="60" oninput="uscOwnSet('${k}','t',this.value)" aria-label="Nome del modulo">`:uscE(o.t)}</h3><span class="usc-tag own">creato da voi · non entra nei calcoli</span></div>${ref}${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo" onclick="uscOwnDel('${k}')">×</button>`:''}</div>${uscOwnBody(k,o,can).replace(/<div class="usc-hidebar">[\s\S]*?<\/div>$/,'')}</div>`; }
 // ── pagina di un modulo: parte generale + riepilogo per giornata ──
 function uscModPageHTML(u,j,k){ const M=USC_MOD.find(m=>m[0]===k); if(!M) return ''; const p=USC_P, x=u.ax, can=uscCan(); const rk=AX_REFG[k];
   const ref=rk?`<label class="usc-mref"><span>Referente</span>${axPersonSel(axRef(x,rk),`axRefSet(${p},${j},'${rk}',@V)`)}</label>`:'';
@@ -13465,7 +13472,7 @@ function sgRender(){
     if(items.length){
       const label = ro ? (items.length === 1 ? 'Il tuo suggerimento' : `I tuoi ${items.length} suggerimenti`)
         : (items.length === 1 ? `1 suggerimento di ${clEsc(items[0].autore_nome||'un’altra persona')}` : `${items.length} suggerimenti` + (unread ? ` · ${unread} da leggere` : ''));
-      h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▴':'▾'}</button>`;
+      h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▾':'▸'}</button>`;
     }
     if(ro && SG.form !== tk) h += `<button class="sg-add" onclick="sgForm('${tk}')">+ Suggerisci</button>`;
     if(items.length && SG.open[tk]){
