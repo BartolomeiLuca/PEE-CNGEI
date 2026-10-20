@@ -31,9 +31,11 @@ Test aggiunti il 19 ottobre (correzioni della sezione B):
   t_dup (12), t_spell (9 e 13), t_num aggiornato (14 e 17), t_live (15), t_links (16).
     ./grp.sh chromium t_pos t_ax t_circ t_grow t_move t_dup t_spell t_live t_links
 
-Uscite e campi (anteprima del 19 ottobre, sera): solo in `anteprima/index.html`, il sito principale non cambia.
-- t_usc: crea un campo, giornate dalle date, attività dalla Sezione 3 e momenti in ordine di ora, «Sposta a», modifica dell'attività dall'uscita,
-  totali con i materiali delle attività, circolare (testo, Word, PDF), moduli tolti/rimessi e moduli propri, «Fa parte di», foglio della giornata,
-  ricarica, archivio, due persone insieme, «Per te», lettrice, versione principale che apre e salva senza perdere le uscite.
-  Per provare l'anteprima: `SITE=` una cartella con l'anteprima come index.html (es. copia di anteprima/ con circolare/, video/, favicon).
+Uscite e campi (anteprima del 20 ottobre, disegno 4): solo in `anteprima/index.html`, il sito principale non cambia.
+- t_usc (64 controlli): nome dell'Unità nella 1.1, riquadro «Hai un'uscita o un campo?» e avvisi nella Sezione 3, nuova uscita con date e tipo,
+  schema di giornata, tavolozza, sposta su/giù e trascinamento, ora fissa, apri/chiudi tutti, time table, attività della Sezione 3 (stessa attività),
+  campi dei blocchi, materiali e spesa, quota con scenari e contributo, circolare, scheda Pasti (menù, ingredienti, copia, Excel), obiettivi e
+  Indicatori dalla programmazione e «Porta nella programmazione», stampe, scheda Campo, archivio, ricarica, due persone, «Per te», lettrice,
+  blocchi salvati con la prima anteprima, versione principale che apre e salva senza perdere le uscite.
+  Per provare l'anteprima: `SITE=` una cartella con l'anteprima come index.html (con circolare/, video/, favicon) e `grp2.sh` in /home/claude/work.
 - t_ax: su Firefox aspetta il messaggio dei km (il ricalcolo automatico può arrivare subito dopo il clic).
