@@ -7129,7 +7129,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · beta';
-const APP_BUILD='202610200530'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610200549'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
@@ -7397,7 +7397,7 @@ function axPastoSo(m){ const i=AX_PORD.indexOf(m); return i<0?99:i; }
 const AX_PORZ=[['0.8','Ridotte'],['1','Standard'],['1.2','Abbondanti']];
 const AX_PB=[['pioggia','Pioggia o maltempo'],['pochi','Pochi presenti'],['materiale','Manca materiale'],['tempo','Il tempo non basta o avanza'],['altro','Altro…']];
 // impronta: kg CO2e — auto per km del veicolo; treno e pullman per passeggero-km (fattori medi UK DESNZ 2023)
-const AX_CO2={auto:0.17,treno:0.035,bus:0.027,piedi:0,bici:0};
+const AX_CO2={auto:0.17,treno:0.028,bus:0.027,piedi:0,bici:0};  // treno: Trenitalia 2023 (28,43 gCO₂e/pkm); auto e pullman: UK DESNZ 2023
 // dose a persona "da scout" e prezzo medio indicativo 2026 (€/kg, €/l o €/pezzo); null = da compilare
 const AX_FOOD={'pasta':[120,'g',2.19],'riso':[100,'g',2.6],'pane':[80,'g',4.99],'latte':[200,'ml',1.85],'olio extravergine':[10,'ml',11.5],'uova':[2,'pz',0.31],
  'formaggio stagionato':[50,'g',15],'formaggio fresco':[100,'g',15],'prosciutto cotto':[60,'g',28],'pollo':[130,'g',7.6],'carne macinata':[130,'g',14.5],
@@ -7693,7 +7693,7 @@ function axCO2(L,n){ const km=Number(L.km)||0; if(!km||!n) return '<span class="
   const pa=Math.max(1,Number(L.perAuto)||4); const est={auto:km*Math.ceil(n/pa)*AX_CO2.auto, treno:km*n*AX_CO2.treno, bus:km*n*AX_CO2.bus};
   const cur=L.mezzo in est?est[L.mezzo]:null; const f=v=>v<10?v.toFixed(1).replace('.',','):Math.round(v);
   const alt=Object.entries(est).filter(([k])=>k!==L.mezzo).map(([k,v])=>({auto:'in auto',treno:'in treno',bus:'in pullman'}[k]+' circa '+f(v)+' kg')).join(' · ');
-  return (cur!=null?`<b>Impronta stimata del viaggio (${n} persone): circa ${f(cur)} kg di CO₂</b>`:'<b>Stima per confronto</b>')+`<div class="ax-sub">${alt}. Stima indicativa con fattori medi (UK DESNZ 2023); per il treno i km sono approssimati.</div>`; }
+  return (cur!=null?`<b>Impronta stimata del viaggio (${n} persone): circa ${f(cur)} kg di CO₂</b>`:'<b>Stima per confronto</b>')+`<div class="ax-sub">${alt}. Stima indicativa: treno con il dato Trenitalia 2023, auto e pullman con fattori medi europei (UK DESNZ 2023); per il treno i km sono approssimati.</div>`; }
 function axDateWarn(per,d){ if(!d||!per) return ''; const t=percTempo(per); if(!t.dal||!t.al) return ''; const ym=d.slice(0,7); return (ym<t.dal||ym>t.al)?' La data è fuori dalle tempistiche del percorso.':''; }
 async function axGeoQ(q){ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&countrycodes=it&accept-language=it&q='+encodeURIComponent(q)); if(!r.ok) throw new Error('ricerca'); return r.json(); }
 async function axGeo(p,j){ const x=axX(p,j); const L=x.luogo||{}; const box=document.getElementById('ax-geo-r-'+p+'-'+j); const q=(L.nome||'').trim(); if(!q){ showToast('Scrivi prima il luogo'); return; }
