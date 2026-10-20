@@ -327,6 +327,20 @@ let ptd = []; for(let i = 0; i < 3 && !ptd.length; i++){ ptd = await ed(async ()
 ok(ptd.some(t => /^Serata \| Campo invernale/.test(t)), 'a Dario arriva in «Per te» il blocco affidato: ' + JSON.stringify(ptd));
 ok(ptd.some(t => /Chitarra/.test(t)) && ptd.some(t => /referente: sicurezza/.test(t)), '…e anche il materiale da procurare e la parte di cui è referente');
 await PD.close();
+// collaboratrice: si muove dappertutto, modifica solo il blocco affidato a lei
+const Cu = db.addUser('carla@x.it', 'password123', 'Carla Viola');
+await ev(async () => { await dbInvite(CL.ctx.id, 'carla@x.it', 'collaboratore'); await clMemLoad(); }); await sleep(500);
+const kC = await ev(() => { const o = uscBlocks(uscCur(), 2).find(o => o.m.t === 'Tempo libero'); uscBlkSet(o.k, 'aff', 'Carla Viola', true); return o.k; });
+await P.locator('body').click({position:{x:5, y:5}}); await sleep(9000);
+{ const pc = await person(br, db), PC = pc.page, ec = (f, a) => PC.evaluate(f, a);
+  await loginAs(PC, base, Cu); await sleep(1200);
+  await ec(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(3500);
+  await ec(([id, a, b]) => { uscOpen(id, 2); USC_OPEN[a] = true; USC_OPEN[b] = true; USC_FOPEN[a+'|desc'] = true; USC_FOPEN[b+'|desc'] = true; uscRe(); }, [uid, kC, kS]); await sleep(2500);
+  const st = await ec(([a, b]) => ({mio: !document.querySelector('#usc-b-' + a + ' textarea').disabled, altro: !document.querySelector('#usc-b-' + b + ' textarea').disabled, tab: !document.getElementById('usc-tab-3').disabled, pal: [...document.querySelectorAll('.usc-pi')].every(e => e.disabled), apri: !document.querySelector('#usc-b-' + b + ' .usc-bh [aria-expanded]').disabled}), [kC, kS]);
+  ok(st.mio && !st.altro && st.tab && st.pal && st.apri, 'collaboratrice: modifica il blocco affidato a lei, gli altri li apre e li legge, si sposta tra le schede, non aggiunge momenti ' + JSON.stringify(st));
+  await PC.locator('#usc-b-' + kC + ' textarea').first().fill('Angolo di Pattuglia (scritto da Carla)'); await PC.locator('body').click({position:{x:5, y:5}}); await sleep(9000);
+  ok(await ev(k => uscCur().prog[k].desc, kC) === 'Angolo di Pattuglia (scritto da Carla)', '…e quello che scrive arriva a chi ha il progetto');
+  await PC.close(); }
 // lettrice
 const pb = await person(br, db), PB = pb.page, eb = (f, a) => PB.evaluate(f, a);
 await loginAs(PB, base, B); await sleep(1200);

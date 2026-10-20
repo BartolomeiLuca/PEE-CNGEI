@@ -7423,7 +7423,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · anteprima';
-const APP_BUILD='202610201853'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610202011'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'In anteprima: uscite e campi', i:[
@@ -8665,7 +8665,7 @@ function uscPastiHTML(u,j){ const x=u.ax, N=axN(x), C=x.cibo||{}, n=uscNG(u), ca
   const cell=(g,m)=>{ const sac=axSacco(x,g,m); const D=uscMeals(x,g,m); const on=USC_MEAL===g+'|'+m;
     return `<td class="${on?'on':''}"><button type="button" class="usc-mc${sac?' sac':''}" aria-expanded="${on}" onclick="uscMealSet(${g},'${m}')">${sac?'al sacco':D.length?D.map(uscE).join('<br>'):'<span class="usc-mplus">+ menù</span>'}</button></td>`; };
   const ref=`<label class="usc-mref"><span>Referente</span>${axPersonSel(axRef(x,'camb'),`axRefSet(${p},${j},'camb',@V)`)}</label>`;
-  let h=`<div class="usc-card2 usc-modpage"><div class="usc-mph"><div><h3>Pasti</h3><span class="usc-hint" style="margin:0">Tocca un pasto per scrivere piatti e ingredienti: compare nel blocco del pasto di quella giornata. ${N.tot?N.tot+' persone a tavola.':'Indica i presenti in «Persone e date».'}</span></div>${ref}<span class="usc-dact"><button type="button" class="btn-ghost usc-btn" onclick="uscExcel()">⤓ Excel</button><button type="button" class="btn-ghost usc-btn" onclick="uscExport('menu')">⤓ Word</button></span></div>
+  const uref=axRef(x,'camb'); let h=`<div class="usc-card2 usc-modpage"${uref?` data-uref="${uscE(uref)}" data-uk="pasti"`:''}><div class="usc-mph"><div><h3>Pasti</h3><span class="usc-hint" style="margin:0">Tocca un pasto per scrivere piatti e ingredienti: compare nel blocco del pasto di quella giornata. ${N.tot?N.tot+' persone a tavola.':'Indica i presenti in «Persone e date».'}</span></div>${ref}<span class="usc-dact"><button type="button" class="btn-ghost usc-btn" onclick="uscExcel()">⤓ Excel</button><button type="button" class="btn-ghost usc-btn" onclick="uscExport('menu')">⤓ Word</button></span></div>
     <div class="usc-tw"><table class="usc-menu"><tr><th>Giornata</th>${cols.map(m=>`<th><span class="usc-mch">${uscE(axPastoLab(x,m))}${can?`<button type="button" class="usc-mcx" title="Togli la colonna" aria-label="Togli ${uscE(axPastoLab(x,m))} da tutte le giornate" onclick="uscPColDel('${m}')">×</button>`:''}</span></th>`).join('')}</tr>${Array.from({length:n},(_,i)=>i+1).map(g=>`<tr><th>${uscE(uscDayShort(u,g))}</th>${cols.map(m=>cell(g,m)).join('')}</tr>`).join('')}</table></div>`;
   if(can){ const free=AX_PORD.filter(m=>!cols.includes(m)); h+=`<div class="ax-chips" style="margin-top:6px"><span class="ax-sub">Aggiungi a tutte le giornate:</span>${free.map(m=>`<button type="button" class="ax-chip" onclick="uscPColAdd('${m}')">+ ${uscE(axPastoLab(x,m))}</button>`).join('')}</div>`; }
   if(USC_MEAL){ const [g,m]=USC_MEAL.split('|'); h+=uscMealEdHTML(u,j,+g,m); }
@@ -8723,7 +8723,7 @@ function uscBlkHTML(u,k,m,t,i,n){ const can=uscCan(); const open=!!USC_OPEN[k]; 
   const f=m.k==='att'?uscAttFind(m):null; const I=f?uscPercInfo(f.per,f.idx):null;
   const who=String(m.aff||'').replace(/\s*\([^)]*\)\s*$/,'');
   const sub=[I?'Percorso '+I.n+(I.amb?' · '+I.amb:''):'', m.k==='pasto'&&uscMeals(x,Number(m.g)||1,m.pasto||'pranzo').length?uscMeals(x,Number(m.g)||1,m.pasto||'pranzo').join(', '):'', who?(affIsMe(m.aff)?'affidato a te':'conduce '+who):''].filter(Boolean).join(' · ');
-  let h=`<div class="usc-blk${open?' open':''}" id="usc-b-${k}" data-blk="${k}" style="--c:${col}">
+  const uaff=m.aff||(f&&f.a.aff)||''; let h=`<div class="usc-blk${open?' open':''}" id="usc-b-${k}" data-blk="${k}"${uaff?` data-uaff="${uscE(uaff)}"`:''} style="--c:${col}">
     <div class="usc-bh" ${can?'draggable="true"':''} onclick="if(!event.target.closest('button,select,input'))uscBlkTog('${k}')"><div class="usc-bt">${t?axHM(t.s):'—'}${m.fix?'<span title="ora fissa"> 📌</span>':''}<small>${axDurTxt(m.dur)}</small></div>
       <div class="usc-bn"><b><span class="usc-btype">${uscE(lab)}</span><span class="usc-btt">${uscE(uscBlkTitle(m))}</span></b><span>${uscE(sub)||'&nbsp;'}</span></div>
       <div class="usc-bctl">${can?`<span class="usc-grip" aria-hidden="true">⠿</span><button type="button" class="usc-ib" data-mv="-1" aria-label="Sposta su" ${i===0?'disabled':''} onclick="uscBlkMove('${k}',-1)">↑</button><button type="button" class="usc-ib" data-mv="1" aria-label="Sposta giù" ${i===n-1?'disabled':''} onclick="uscBlkMove('${k}',1)">↓</button>`:''}<button type="button" class="usc-ib" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'}" onclick="uscBlkTog('${k}')">${open?'▴':'▾'}</button>${can?`<button type="button" class="usc-ib usc-bx" title="Togli dal programma" aria-label="Togli dal programma" onclick="uscBlkDel('${k}')">×</button>`:''}</div></div>`;
@@ -8903,7 +8903,7 @@ function uscModPageHTML(u,j,k){ const M=USC_MOD.find(m=>m[0]===k); if(!M) return
   let b=''; try{ b=body(); }catch(e){ console.error(e); b='<div class="ax-hint">Questo modulo non si è aperto.</div>'; }
   const gen={sic:'Per tutto il campo',ben:'Per tutto il campo',pb:'Per tutto il campo',mat:'Materiale comune a tutto il campo',chi:'Chi viene e quando',log:'Ritrovo, rientro e trasporti',circ:'Circolare per le famiglie'}[k];
   const genH=k==='costi'?b:`<details class="usc-mpsec usc-mpd" ${USC_FOPEN['gen|'+k]===false?'':'open'} ontoggle="USC_FOPEN['gen|${k}']=this.open"><summary class="usc-mpst">${uscE(gen)}${k==='mat'?` <span class="usc-fsum">${(x.mat||[]).filter(r=>(r.cosa||'').trim()).length} voci</span>`:''}</summary><div class="ax-body">${b}</div></details>`;
-  return `<div class="usc-card2 usc-modpage" id="ax-${p}-${j}"><div class="usc-mph"><div><h3>${uscE(M[1])}</h3><span class="usc-hint" style="margin:0">${uscE(M[2])}</span></div>${ref}${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo ${uscE(M[1])}" onclick="uscModHide('${k}')">×</button>`:''}</div>
+  const uref=rk?axRef(x,rk):''; return `<div class="usc-card2 usc-modpage" id="ax-${p}-${j}"${uref?` data-uref="${uscE(uref)}" data-uk="${k}"`:''}><div class="usc-mph"><div><h3>${uscE(M[1])}</h3><span class="usc-hint" style="margin:0">${uscE(M[2])}</span></div>${ref}${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo ${uscE(M[1])}" onclick="uscModHide('${k}')">×</button>`:''}</div>
     ${genH}${uscPerDayHTML(u,j,k)}</div>`; }
 function uscDayCost(u,g){ const x=u.ax, N=axN(x); let mat=0; const seen=new Set();
   uscBlocks(u,g).forEach(o=>{ const m=o.m; if(m.f.includes('mat')) uscBM(u,o.k).forEach(r=>mat+=axMatCost(r,N)); if(m.k==='att'){ const key=m.pid+'|'+m.aid; const f=uscAttFind(m); if(f&&!seen.has(key)){ seen.add(key); ((f.a.ax||{}).mat||[]).forEach(r=>mat+=axMatCost(r,N)); } } });
@@ -13264,9 +13264,11 @@ let _pres = {}, _presCh = null, _myAtt = null, _attT = null;
 // ── chi può modificare cosa ──
 // zone: attività (data-aff), parte dell'organizzazione (ax-g, data-ref), verifica dell'attività (data-verat),
 // verifica di una parte (data-vref), materiale da procurare (data-mchi: dà il permesso, non lo toglie)
-const ED_ZSEL = 'details[id^="att-"],details.ax-g,[data-verat],[data-vref],.ax-mat[data-mchi]';
-const ED_NAV = /^(?:event\.\w+\(\);\s*)*(?:goPhase|gGo|clShow|exportSchedaDocx|exportDocx|exportExcel|executeExport|closeTutorial|clContinue|clOpen|clClose|tourGo|tourStart|tourEnd|sgMark|sgToggle|sgSend|sgForm|sgDel|sgCancel|sg13\w*|schedaStep=|roExit|roRefresh|modalClose|mvToggle|window\._mvEdit=null|verGo|gotoObs|icsOne|icsAll|fdgPrint|fdgOpen|fdgDocx|fbOpen|fbSend|fbCopy|fbClose|axDocx|axMsgDocx|axMsg|axCopyMsg|axCopy|axSpesaShow|axSpesaDocx|protSpuntiOpen|attSpuntiBr|ppMail\w*|zoomApp|confirmBackToLanding|showAutoOss|ptMarkSeen|clPt\w*|ed\w+|sez3Hide|gPPHide|exDelete|novOpen|document\.getElementById|if\(MODE===)/;
+const ED_ZSEL = 'details[id^="att-"],details.ax-g,[data-verat],[data-vref],.ax-mat[data-mchi],.usc-blk[data-uaff],.usc-modpage[data-uref]';
+const ED_NAV = /^(?:event\.\w+\(\);\s*)*(?:usc(?:Tab|Open|Home|BlkTog|Jump|OpenAll|Export|Excel|Print|MealSet|ArcOpen)\b|USC_TILE=|USC_MEAL=null|USC_ADDMOD=|USC_MOVE=null|axMsgPdf|goPhase|gGo|clShow|exportSchedaDocx|exportDocx|exportExcel|executeExport|closeTutorial|clContinue|clOpen|clClose|tourGo|tourStart|tourEnd|sgMark|sgToggle|sgSend|sgForm|sgDel|sgCancel|sg13\w*|schedaStep=|roExit|roRefresh|modalClose|mvToggle|window\._mvEdit=null|verGo|gotoObs|icsOne|icsAll|fdgPrint|fdgOpen|fdgDocx|fbOpen|fbSend|fbCopy|fbClose|axDocx|axMsgDocx|axMsg|axCopyMsg|axCopy|axSpesaShow|axSpesaDocx|protSpuntiOpen|attSpuntiBr|ppMail\w*|zoomApp|confirmBackToLanding|showAutoOss|ptMarkSeen|clPt\w*|ed\w+|sez3Hide|gPPHide|exDelete|novOpen|document\.getElementById|if\(MODE===)/;
 function edZone(n){ const d = n.dataset || {};
+  if(d.uaff !== undefined) return {k:'u', who:d.uaff, grant:true, key:'u:' + (d.blk||'')};
+  if(d.uref !== undefined) return {k:'r', who:d.uref, grant:true, key:'r:' + (d.uk||'')};
   if(d.vref !== undefined) return {k:'v', who:d.vref, key:'v:' + (n.closest('[data-verat]')||{dataset:{}}).dataset.verat + ':' + (d.vk||'')};
   if(d.mchi !== undefined) return {k:'m', who:d.mchi, grant:true, key:'m'};
   if(n.matches('details.ax-g')){ const a = n.closest('details[id^="att-"]'); return {k:'g', who:d.ref||'', key:'g:' + (a ? a.id.slice(4) : '') + ':' + (d.k||'')}; }
