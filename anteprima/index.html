@@ -7452,7 +7452,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-20 · anteprima';
-const APP_BUILD='202610210738'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610211332'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'20 ottobre 2026', t:'In anteprima: uscite e campi', i:[
@@ -8579,6 +8579,8 @@ function uscLive(k){ try{ const u=uscCur(); if(!u) return; const t=document.getE
 const AN_T='pee_archivio_nazionale', AN_ADMIN='luca.bartolomei@cngei.it';
 const AN_BR={L:'Branco',E:'Reparto',R:'Compagnia',S:'Staff'}, AN_AM={P:'Personale',C:'Comunitario',S:'Spirituale'}, AN_SD={sede:'In sede',fuori:'Fuori sede',uscita:'In uscita'}, AN_FZ={si:'Ha funzionato',in_parte:'In parte',da_provare:'Da provare'};
 let AN={st:'unknown',tab:'mine',rows:null,mine:null,f:{q:'',branca:'',ambito:'',perc:'',tipo:'',str:'',dur:'',sede:'',ok:false},busy:false,det:null,msg:''};
+function anMie(){ try{ const id=CL.user&&CL.user.id; return (AN.rows||[]).filter(r=>id&&r.autore_id===id); }catch(e){ return []; } }
+const AN_ST={in_attesa:'In attesa di revisione',approvata:'Approvata',rifiutata:'Non approvata'};
 function anIsAdmin(){ try{ return !!(CL.user&&String(CL.user.email||'').trim().toLowerCase()===AN_ADMIN); }catch(e){ return false; } }
 async function anProbe(force){ if(!force&&AN.st!=='unknown') return AN.st==='ok'; if(!CL||!CL.sb||!CL.user) return false;
   try{ const {error}=await CL.sb.from(AN_T).select('id').limit(1); AN.st=!error?'ok':(/42P01|does not exist|schema cache|relation/i.test((error.code||'')+' '+(error.message||''))?'no':'err'); AN.err=error?(error.message||''):''; }catch(e){ AN.st='err'; }
@@ -8611,12 +8613,12 @@ async function anOpen(tab){ AN.det=null; AN.msg=''; if(tab) AN.tab=tab; const o=
   try{ await anProbe(true); }catch(e){} try{ await anLoadMine(); }catch(e){ AN.mine=AN.mine||[]; } if(AN.st==='ok') try{ await anLoadRows(); }catch(e){ AN.msg='Non riesco a leggere l’archivio nazionale.'; }
   if(AN.tab!=='mine'&&AN.st!=='ok') AN.tab='mine'; anRender(); }
 function anRender(){ const o=anOv(); const ok=AN.st==='ok'; const adm=anIsAdmin(); const T=AN.tab;
-  let L=T==='mine'?(AN.mine||[]):T==='an'?(AN.rows||[]).filter(r=>r.stato==='approvata'):(AN.rows||[]).filter(r=>r.stato==='in_attesa');
-  const base=L; if(T!=='pend') L=anFilter(L);
+  let L=T==='mine'?(AN.mine||[]):T==='an'?(AN.rows||[]).filter(r=>r.stato==='approvata'):T==='mie'?anMie():(AN.rows||[]).filter(r=>r.stato==='in_attesa');
+  const base=L; if(T!=='pend'&&T!=='mie') L=anFilter(L);
   const opt=(arr,cur,lab)=>`<option value="">${lab}</option>`+arr.map(v=>`<option value="${sEsc(v)}" ${cur===v?'selected':''}>${sEsc(({...AN_BR,...AN_AM}[v])||v)}</option>`).join('');
   const f=AN.f; const percs=[...new Map(base.filter(r=>r.perc_id).map(r=>[r.perc_id,r.perc_nome||r.perc_id])).entries()].sort((a,b)=>a[0].localeCompare(b[0]));
   let h=`<div class="an-box"><button class="modal-x" aria-label="Chiudi" onclick="anClose()">✕</button><h3 class="an-h">Cerca un’attività</h3>
-   <div class="an-tabs" role="tablist"><button type="button" class="${T==='mine'?'on':''}" onclick="AN.tab='mine';AN.det=null;anRender()">Le mie attività</button><button type="button" class="${T==='an'?'on':''}" ${ok?'':'disabled'} title="${ok?'':'Non ancora attivo'}" onclick="AN.tab='an';AN.det=null;anRender()">Archivio nazionale</button>${adm&&ok?`<button type="button" class="${T==='pend'?'on':''}" onclick="AN.tab='pend';AN.det=null;anRender()">Da approvare${(AN.rows||[]).filter(r=>r.stato==='in_attesa').length?' ('+(AN.rows||[]).filter(r=>r.stato==='in_attesa').length+')':''}</button>`:''}</div>`;
+   <div class="an-tabs" role="tablist"><button type="button" class="${T==='mine'?'on':''}" onclick="AN.tab='mine';AN.det=null;anRender()">Le mie attività</button><button type="button" class="${T==='an'?'on':''}" ${ok?'':'disabled'} title="${ok?'':'Non ancora attivo'}" onclick="AN.tab='an';AN.det=null;anRender()">Archivio nazionale</button>${ok&&anMie().length?`<button type="button" class="${T==='mie'?'on':''}" onclick="AN.tab='mie';AN.det=null;anRender()">Le mie proposte (${anMie().length})</button>`:''}${adm&&ok?`<button type="button" class="${T==='pend'?'on':''}" onclick="AN.tab='pend';AN.det=null;anRender()">Da approvare${(AN.rows||[]).filter(r=>r.stato==='in_attesa').length?' ('+(AN.rows||[]).filter(r=>r.stato==='in_attesa').length+')':''}</button>`:''}</div>`;
   if(!ok&&T==='mine') h+=`<div class="ax-hint">${CL&&CL.user?(AN.st==='no'?'L’archivio nazionale non è ancora attivo.':AN.st==='err'?'L’archivio nazionale non è raggiungibile in questo momento.':''):'Accedi con il tuo account per cercare in tutti i tuoi progetti e nell’archivio nazionale.'}</div>`;
   if(AN.msg) h+=`<div class="ax-warn">${sEsc(AN.msg)}</div>`;
   if(ok&&T!=='mine'){ const nA=(AN.rows||[]).filter(r=>r.stato==='approvata').length, nP=(AN.rows||[]).filter(r=>r.stato==='in_attesa').length; h+=`<div class="ax-hint">Collegato come ${sEsc((CL.user&&CL.user.email)||'')} · ${nA} approvat${nA===1?'a':'e'}${adm?' · '+nP+' da approvare':(nP?' · '+nP+' tue in attesa di revisione':'')}${adm?'':'. Le attività proposte compaiono qui dopo la revisione.'}</div>`; }
@@ -8625,7 +8627,7 @@ function anRender(){ const o=anOv(); const ok=AN.st==='ok'; const adm=anIsAdmin(
       ${(c.scaletta||[]).length?`<p><b>Scaletta</b></p><ul>${c.scaletta.map(z=>`<li>${sEsc(z.cosa)}${z.dur?' · '+axDurTxt(z.dur):''}</li>`).join('')}</ul>`:''}${(c.materiali||[]).length?`<p><b>Materiali</b></p><ul>${c.materiali.map(z=>`<li>${sEsc(z.cosa)}${z.q?' · '+sEsc(z.q):''}</li>`).join('')}</ul>`:''}${(r.obiettivi||[]).length?`<p><b>Obiettivi</b></p><ul>${r.obiettivi.map(t=>`<li>${sEsc(t)}</li>`).join('')}</ul>`:''}${(r.idr||[]).length?`<p><b>Indicatori di Risultato</b></p><ul>${r.idr.map(t=>`<li>${sEsc(t)}</li>`).join('')}</ul>`:''}${P('Cosa ha funzionato',c.bene)}${P('Cosa cambieremmo',c.migl)}
       <div class="an-act">${anActs(r)}</div>`;
   } else {
-    if(T!=='pend') h+=`<div class="an-f"><input id="an-q" class="ax-in" type="search" placeholder="Cerca per parole (titolo, lancio, obiettivi…)" value="${sEsc(f.q)}" oninput="AN.f.q=this.value;anList()">
+    if(T!=='pend'&&T!=='mie') h+=`<div class="an-f"><input id="an-q" class="ax-in" type="search" placeholder="Cerca per parole (titolo, lancio, obiettivi…)" value="${sEsc(f.q)}" oninput="AN.f.q=this.value;anList()">
       <select class="ax-in" onchange="AN.f.branca=this.value;anRender()">${opt(['L','E','R','S'].filter(k=>base.some(r=>r.branca===k)),f.branca,'Tutte le Branche')}</select>
       <select class="ax-in" onchange="AN.f.ambito=this.value;anRender()">${opt(['P','C','S'],f.ambito,'Tutti gli ambiti')}</select>
       <select class="ax-in" onchange="AN.f.perc=this.value;anRender()"><option value="">Tutti i percorsi</option>${percs.map(([id,n])=>`<option value="${sEsc(id)}" ${f.perc===id?'selected':''}>${sEsc(id+' · '+n)}</option>`).join('')}</select>
@@ -8641,12 +8643,13 @@ function anRender(){ const o=anOv(); const ok=AN.st==='ok'; const adm=anIsAdmin(
 function anChips(r){ const bits=[AN_BR[r.branca]&&'<span class="an-chip">'+AN_BR[r.branca]+'</span>',r.ambito&&'<span class="an-chip a'+r.ambito+'">'+(AN_AM[r.ambito]||r.ambito)+(r.perc_nome?' · '+sEsc(r.perc_nome):'')+'</span>',r.durata_min&&'<span class="an-chip">'+axDurTxt(r.durata_min)+'</span>',AN_SD[r.sede]&&'<span class="an-chip">'+AN_SD[r.sede]+'</span>',AN_FZ[r.funzionato]&&'<span class="an-chip '+(r.funzionato==='si'?'ok':'')+'">'+(r.funzionato==='si'?'✓ ':'')+AN_FZ[r.funzionato]+'</span>'].filter(Boolean).concat((r.tipi||[]).slice(0,3).map(t=>'<span class="an-chip">'+sEsc(t)+'</span>'),(r.strumenti||[]).slice(0,3).map(t=>'<span class="an-chip s">'+sEsc(t)+'</span>'));
   if(r.src==='mine'&&r.ptit) bits.push('<span class="an-chip p">'+sEsc(r.anno+' · '+r.ptit)+'</span>'); return '<div class="an-chips">'+bits.join('')+'</div>'; }
 function anActs(r){ const i=anIdx(r); const reuse=window.BRO?'':`<button type="button" class="btn-primary usc-btn" onclick="anReuseAsk(${i})">Riusa in questo progetto</button>`;
+  if(AN.tab==='mie') return r.stato!=='approvata'?`<button type="button" class="btn-ghost usc-btn" onclick="anDel('${r.id}')">Ritira la proposta</button>`:'';
   if(AN.tab==='pend') return `<button type="button" class="btn-primary usc-btn" onclick="anDecide('${r.id}','approvata')">Approva</button><button type="button" class="btn-ghost usc-btn" onclick="anDecide('${r.id}','rifiutata')">Rifiuta</button><button type="button" class="btn-ghost usc-btn" onclick="anDel('${r.id}')">Cancella</button>`;
   return reuse+(r.src==='mine'?`<button type="button" class="btn-ghost usc-btn" onclick="anGoMine(${i})">Apri</button>`:'')+(r.src==='an'&&anIsAdmin()?`<button type="button" class="btn-ghost usc-btn" onclick="anDel('${r.id}')">Cancella</button>`:''); }
 let AN_CUR=[];
 function anIdx(r){ let i=AN_CUR.indexOf(r); if(i<0){ AN_CUR.push(r); i=AN_CUR.length-1; } return i; }
-function anListHTML(L,T){ AN_CUR=AN_CUR.slice(0,0); if(!L.length) return `<div class="ax-hint">${T==='pend'?'Nessuna proposta da approvare.':T==='an'?'Nell’archivio non c’è niente con questi filtri.':'Nessuna attività con questi filtri.'}</div>`;
-  return `<div class="ax-hint">${L.length} attività${L.length===1?'':''}</div>`+L.slice(0,80).map(r=>{ const i=anIdx(r); const c=r.contenuto||{}; return `<div class="an-card"><button type="button" class="an-ct" onclick="AN.det=AN_CUR[${i}];anRender()"><b>${sEsc(r.titolo)}</b><span>${sEsc(String(c.lancio||c.sviluppo||'').slice(0,140))}</span></button>${anChips(r)}<div class="an-act">${AN.tab==='pend'?'<button type="button" class="btn-ghost usc-btn" onclick="AN.det=AN_CUR['+i+'];anRender()">Leggi</button>':anActs(r)}</div></div>`; }).join('')+(L.length>80?`<div class="ax-hint">Altre ${L.length-80}: restringi la ricerca.</div>`:''); }
+function anListHTML(L,T){ AN_CUR=AN_CUR.slice(0,0); if(!L.length) return `<div class="ax-hint">${T==='pend'?'Nessuna proposta da approvare.':T==='mie'?'Non hai ancora proposto nulla.':T==='an'?'Nell’archivio non c’è niente con questi filtri.':'Nessuna attività con questi filtri.'}</div>`;
+  return `<div class="ax-hint">${L.length} attività${L.length===1?'':''}</div>`+L.slice(0,80).map(r=>{ const i=anIdx(r); const c=r.contenuto||{}; return `<div class="an-card"><button type="button" class="an-ct" onclick="AN.det=AN_CUR[${i}];anRender()"><b>${sEsc(r.titolo)}</b>${AN.tab==='mie'?`<span class="an-chip ${r.stato==='approvata'?'ok':''}" style="align-self:flex-start">${AN_ST[r.stato]||r.stato}</span>`:''}<span>${sEsc(String(c.lancio||c.sviluppo||'').slice(0,140))}</span></button>${anChips(r)}<div class="an-act">${AN.tab==='pend'?'<button type="button" class="btn-ghost usc-btn" onclick="AN.det=AN_CUR['+i+'];anRender()">Leggi</button>':anActs(r)}</div></div>`; }).join('')+(L.length>80?`<div class="ax-hint">Altre ${L.length-80}: restringi la ricerca.</div>`:''); }
 function anList(){ const b=document.getElementById('an-list'); if(!b) return; const T=AN.tab; let L=T==='mine'?(AN.mine||[]):T==='an'?(AN.rows||[]).filter(r=>r.stato==='approvata'):[]; b.innerHTML=anListHTML(anFilter(L),T); }
 function anGoMine(i){ const r=AN_CUR[i]; if(!r) return; anClose(); if(!r.proj||r.proj==='cur'||(CL.ctx&&r.proj===CL.ctx.id)){ try{ gGo('3'); }catch(e){} setTimeout(()=>{ try{ const idx=getAllPercorsi().findIndex(p=>p.percorsoId===r.perc_id&&(p.attivita||[])[r.j]); tlGo(idx<0?r.pi:idx,r.j); }catch(e){} },200); } else { try{ clOpenProject(r.proj); }catch(e){} } }
 function anReuseAsk(i){ const r=AN_CUR[i]; if(!r||window.BRO) return; const L=getAllPercorsi(); if(!L.length){ showToast('Nel progetto non ci sono ancora percorsi: scegli prima le priorità'); return; }
@@ -8676,10 +8679,10 @@ async function anSend(){ const d=AN.draft; if(!d||AN.busy) return; const g=id=>d
   const row={titolo,branca:d.branca||null,ambito:d.ambito||null,percorso_id:d.perc_id||null,percorso_nome:d.perc_nome||null,obiettivi:d.obiettivi||[],idr:d.idr||[],tipi:d.tipi||[],strumenti:d.strumenti||[],durata_min:d.durata_min||null,sede:d.sede||null,funzionato:g('anp-f').value,
     contenuto:Object.assign({},d.contenuto,{lancio:g('anp-l').value,sviluppo:g('anp-s').value,conclusione:g('anp-c').value,bene:g('anp-b').value,migl:g('anp-m').value})};
   AN.busy=true; g('anp-go').disabled=true;
-  try{ const {error}=await CL.sb.from(AN_T).insert(row); if(error) throw error; anClose(); showToast('Proposta inviata: la vedrai nell’archivio dopo la revisione'); }
+  try{ const {error}=await CL.sb.from(AN_T).insert(row); if(error) throw error; anClose(); try{ await anLoadRows(); }catch(e){} showToast('Proposta inviata. Lo stato lo trovi in «Cerca un’attività › Le mie proposte»; arriva a tutti dopo la revisione.'); }
   catch(e){ g('anp-r').innerHTML='<div class="ax-warn">Non sono riuscito a inviarla ('+sEsc((e&&e.message)||'errore')+'). Riprova più tardi.</div>'; g('anp-go').disabled=false; }
   finally{ AN.busy=false; } }
-async function anDecide(id,stato){ if(!anIsAdmin()) return; try{ const {error}=await CL.sb.from(AN_T).update({stato,approvata_il:stato==='approvata'?new Date().toISOString():null,approvata_da:stato==='approvata'?CL.user.email:null}).eq('id',id); if(error) throw error; await anLoadRows(); AN.det=null; anRender(); showToast(stato==='approvata'?'Approvata':'Rifiutata'); }catch(e){ AN.msg='Non sono riuscito ad aggiornarla: '+((e&&e.message)||''); anRender(); } }
+async function anDecide(id,stato){ if(!anIsAdmin()) return; try{ const {error}=await CL.sb.from(AN_T).update({stato,approvata_il:stato==='approvata'?new Date().toISOString():null,approvata_da:stato==='approvata'?CL.user.email:null}).eq('id',id); if(error) throw error; await anLoadRows(); AN.det=null; anRender(); showToast(stato==='approvata'?'Approvata':'Rifiutata'); try{ clPerTe(); }catch(e){} }catch(e){ AN.msg='Non sono riuscito ad aggiornarla: '+((e&&e.message)||''); anRender(); } }
 async function anDel(id){ if(!confirm('Togliere questa proposta?')) return; try{ const {error}=await CL.sb.from(AN_T).delete().eq('id',id); if(error) throw error; await anLoadRows(); AN.det=null; anRender(); }catch(e){ AN.msg='Non sono riuscito a toglierla: '+((e&&e.message)||''); anRender(); } }
 
 // ── moduli dello staff: Obiettivi · Scatti · Energy Check · Cosa portiamo a casa ──
@@ -12988,6 +12991,7 @@ async function clRenderArchive(){
   if(!clMyName()) h += clNomeBox();
   h += `<p class="cl-note" style="margin:0 0 8px"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: il tuo spazio</a> · <a href="#" class="vid-lk" onclick="clClose();vidOpen(3);return false">▶ Video: programmare con lo staff</a></p>`;
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
+  if(!window.BRO) h += '<div style="margin:0 0 10px"><button class="cl-btn ghost sm" id="cl-cerca" onclick="clClose();anOpen()">🔎 Cerca un’attività · le mie proposte</button></div>';
   h += '<div id="cl-shared"></div>';
   if(act){
     h += `<div class="cl-row act"><div><div class="t"><span class="cl-dot ${CL.status==='off'?'off':'ok'}"></span>Stai lavorando su: ${clTypeTag(clMeta(clSnapshot()))}${clEsc(act.anno)} · ${clEsc(act.titolo)}</div>
@@ -13480,6 +13484,7 @@ async function clPerTe(){
       shared.filter(r => r.nuovo).forEach(r => items.push({k:'inv', id:r.id, mid:r.mid, owner:r.owner, anno:r.anno, titolo:r.titolo, ruolo:r.ruolo}));
       try{ (await dbSgNuovi()).forEach(r => items.push({k:'sg', id:r.id, anno:r.anno, titolo:r.titolo, n:r.n})); }catch(e){}
       try{ (await dbMemChanged()).forEach(r => items.push(r)); }catch(e){}
+      try{ if(anIsAdmin()){ await anProbe(); } if(anIsAdmin()&&AN.st==='ok'){ const {data:pa}=await CL.sb.from(AN_T).select('id').eq('stato','in_attesa').limit(500); if(pa&&pa.length) items.push({k:'an',n:pa.length}); } }catch(e){}
     }
     // cose affidate a me: nel progetto aperto (anche in sola lettura) e negli altri progetti condivisi con me
     try{
@@ -13511,6 +13516,7 @@ function clPerTeHTML(){
   const it = CL.perte || []; if(!it.length) return '';
   const row = x => {
     if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un’altra persona')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
+    if(x.k === 'an') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n===1?'1 proposta':x.n+' proposte'} per l’archivio nazionale da approvare</div><div class="s">Le leggi, poi approvi o rifiuti</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};anOpen('pend')">Leggi e decidi</button></div>`;
     if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue(true);setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
     const pr = `${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}`;
     const go = x.cur ? `clPtGoAtt(${x.idx},${x.j})` : `clOpenShared('${x.id}')`;
