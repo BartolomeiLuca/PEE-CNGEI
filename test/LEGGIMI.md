@@ -39,3 +39,8 @@ Uscite e campi (anteprima del 20 ottobre, disegno 4): solo in `anteprima/index.h
   blocchi salvati con la prima anteprima, versione principale che apre e salva senza perdere le uscite.
   Per provare l'anteprima: `SITE=` una cartella con l'anteprima come index.html (con circolare/, video/, favicon) e `grp2.sh` in /home/claude/work.
 - t_ax: su Firefox aspetta il messaggio dei km (il ricalcolo automatico può arrivare subito dopo il clic).
+
+22 ottobre 2026 (uscite, Cerca, archivio nazionale e 30 video passati sul sito principale):
+- t_new (28 controlli): link preciso di Cerca (sotto le barre fisse), attività delle uscite in Cerca e nell'archivio, «Proponi» nei momenti, liberatoria, scalette spostabili, 30 video, salto in sospeso dopo l'apertura di un altro progetto.
+- t_vidfaq aggiornato ai 30 video. t_usc: «Sposta o duplica» va aperto prima. t_staff: il controllo «Priorità e Valutazione nascoste nello staff» è vecchio e fallisce anche prima (lo staff ora ha anche Uscite).
+- Non lanciare due gruppi di test insieme: usano la stessa porta 8080.

@@ -1464,6 +1464,11 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 .usc-npw{margin-top:6px;font-size:11.5px;color:var(--ink-mid);border-left:3px solid var(--amber);padding:3px 8px}
 @media (max-width:600px){.usc-scr{grid-template-columns:44px 96px minmax(0,1fr) 30px}.usc-scr>select:nth-of-type(2){grid-column:2/4}}
 .usc-axw>.ax-lbl:first-child,.usc-axw>.ax-lbl:first-child+.ax-hint{display:none}
+.an-flash{outline:3px solid #1B7A4E;outline-offset:3px;border-radius:6px}
+.ax-mv{display:inline-flex;gap:2px;align-items:center}.ax-mv .ax-x{padding:0 6px!important;min-width:26px}.ax-mv .ax-x[disabled]{opacity:.3}
+.ax-ttr{grid-template-columns:150px 1fr 130px auto}.usc-scr{grid-template-columns:48px 110px minmax(0,1fr) 170px auto}
+@media (max-width:600px){.ax-ttr{grid-template-columns:1fr auto}.usc-scr{grid-template-columns:44px 96px minmax(0,1fr) auto}}
+.an-lib{display:block;margin-top:4px}
 </style>
 </head>
 <body>
@@ -1592,6 +1597,15 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
         <h4>Salvataggio e archivio</h4>
         <p>Il lavoro si salva da solo, a ogni modifica. Senza account resta nel browser di questo dispositivo. Con un account (<strong>Accedi</strong>) lo ritrovi su ogni dispositivo, con l’archivio dei tuoi progetti e le versioni precedenti. Per tenere una copia fuori dall’app: in <strong>Controllo e invio</strong> scarichi il Word della Scheda e l’Excel con i punteggi; in <strong>Archivio → Scarica tutti i miei progetti</strong> salvi in un unico file l’intero archivio, da ricaricare con <em>Carica file</em> se serve. Per vedere un progetto già compilato, apri il <strong>progetto di esempio</strong> dalla pagina iniziale.</p>
         <p>Se l’app va in errore, invia da sola una segnalazione tecnica (il tipo di errore, la versione dell’app, il tipo di dispositivo e la schermata in cui eri), senza nessun dato del progetto né nomi: serve solo a correggere i problemi.</p>
+
+        <h4>Uscite, campi e uscite dello staff</h4>
+        <p>Dalla voce <strong>Uscite</strong> organizzi uscite, bivacchi e campi: persone e date, ritrovo e trasporti, pasti, cassa e quota, sicurezza, piano B, circolare per le famiglie e programma giornata per giornata. Le attività della Sezione 3 si possono mettere in un’uscita e restano la stessa attività da entrambe le porte. Anche lo <strong>staff</strong> ha le sue uscite, con la convocazione al posto della circolare. Sotto il Vademecum della cassetta di primo soccorso trovi la <em>Liberatoria assunzione farmaci</em>.</p>
+
+        <h4>Cercare un’attività e archivio nazionale</h4>
+        <p>«<strong>Cerca un’attività</strong>» (Sezione 3 e Uscite) cerca fra le attività dei tuoi progetti, anche quelle nate dentro le uscite, e nell’archivio nazionale. <em>Apri</em> ti porta al punto esatto; <em>Riusa</em> la copia nel tuo progetto. Con <em>Proponi all’archivio nazionale</em> metti a disposizione degli altri capi un’attività che hai provato (senza nomi, Unità e date, dopo una revisione).</p>
+
+        <h4>I video</h4>
+        <p>In cima alla pagina iniziale ci sono <strong>trenta video brevi</strong>, uno per argomento, e il link «Guarda il video» in ogni riquadro «Come funziona».</p>
 
         <h4>Come leggere i risultati</h4>
         <p>I percorsi poco presenti non sono fallimenti: sono le aree dove il tuo gruppo ha più da guadagnare. Meglio tre percorsi vissuti in profondità che otto sfiorati. Le letture che l'app propone sono spunti di riflessione, da calare nella storia del tuo gruppo e del tuo territorio.</p>
@@ -3658,7 +3672,7 @@ function zoomApp(dir){
 
 // ── giro guidato (prima apertura) ──
 const TOUR = [
-  {ic:'i-target', t:'Ti diamo il benvenuto nella PEE CNGEI', b:'<p>Ti accompagna passo dopo passo nella <b>Scheda di Programmazione Educativa Esperienziale</b>, come chiedono le Linee Guida, e nell\'<b>organizzazione</b> di ogni attività.</p><p>Puoi lavorare sulla tua <b>Unità</b> (Branco, Reparto o Compagnia) oppure osservare il tuo <b>staff</b>, per conto tuo o insieme alle altre persone dello staff. Bastano cinque schermate per capire come funziona.</p>'},
+  {ic:'i-target', t:'Ti diamo il benvenuto nella PEE CNGEI', b:'<p>Ti accompagna passo dopo passo nella <b>Scheda di Programmazione Educativa Esperienziale</b>, come chiedono le Linee Guida, e nell\'<b>organizzazione</b> di ogni attività.</p><p>Puoi lavorare sulla tua <b>Unità</b> (Branco, Reparto o Compagnia) oppure osservare il tuo <b>staff</b>, per conto tuo o insieme alle altre persone dello staff. Bastano sei schermate per capire come funziona.</p>'},
   {ic:'i-chart', t:'Il cammino, dall\'osservazione al Word', b:'<ul class="tour-steps">'
     +'<li><svg class="ic"><use href="#i-eye"/></svg><div><b>1 · Osservazione</b><span>In quattro passi: contesto e attività del KOS, osservazione dei 24 percorsi, lettura del gruppo, priorità (una per ambito).</span></div></li>'
     +'<li><svg class="ic"><use href="#i-target"/></svg><div><b>2 · Obiettivi</b><span>Per ogni priorità scegli un obiettivo e i suoi indicatori di risultato.</span></div></li>'
@@ -3672,6 +3686,10 @@ const TOUR = [
     +'<li><svg class="ic"><use href="#i-check"/></svg><div><b>Decidi tu quanto condividere</b><span>Per ogni attività puoi attivare la <b>gestione condivisa</b> e indicare chi segue logistica, sicurezza, pasti e le altre parti. Nella 1.2 scegli tra <b>Osservo da solo/a</b> e <b>Osservazione condivisa</b>. Se non attivi nulla, tutto resta a chi ha creato il progetto.</span></div></li></ul>'
     +'<p style="font-size:12px;margin-top:8px"><b>Per te</b>: un numerino sul pulsante con la nuvola segnala inviti, suggerimenti da leggere e cose che hai in carico.</p>'},
   {ic:'i-eye', t:'Ti aiuta, non decide per te', b:'<p>L\'app ti mette a portata di mano percorsi, obiettivi, indicatori, KOS e strumenti del metodo. Ti mostra una <b>fotografia a colori</b> del gruppo e qualche <b>spunto di lettura</b>.</p><p>Sono domande, non verdetti: obiettivi, attività e scelte restano tue e del tuo staff.</p>'},
+  {ic:'i-check', t:'Video, uscite e Cerca', b:'<ul class="tour-steps">'
+    +'<li><svg class="ic"><use href="#i-eye"/></svg><div><b>Trenta video brevi</b><span>Nella pagina iniziale e in ogni riquadro «Come funziona»: uno per argomento, con le schermate vere dell’app.</span></div></li>'
+    +'<li><svg class="ic"><use href="#i-target"/></svg><div><b>Uscite e campi</b><span>Dalla voce <b>Uscite</b> organizzi persone, trasporti, pasti, cassa, sicurezza e programma giornata per giornata. Anche lo staff ha le sue uscite.</span></div></li>'
+    +'<li><svg class="ic"><use href="#i-chart"/></svg><div><b>Cerca un’attività</b><span>Ritrovi le attività dei tuoi progetti, anche quelle nate nelle uscite, e quelle dell’archivio nazionale; con un clic arrivi al punto esatto. Puoi proporre le tue all’archivio.</span></div></li></ul>'},
   {ic:'i-cloud', t:'Il tuo lavoro è al sicuro', b:'<p><b>Si salva da solo</b>, a ogni modifica: lo vedi dalla spunta ✓ sul pulsante con la nuvola.</p><p>Con un <b>account gratuito</b> lo ritrovi su ogni dispositivo, con l\'archivio per anno e le versioni precedenti.</p><p>Vuoi vedere un progetto già compilato? Apri il <b>progetto di esempio</b> dalla pagina iniziale. Qualcosa non va o hai un\'idea? Scrivici con <b>Suggerimenti?</b> in alto.</p>'}
 ];
 let tourI = 0;
@@ -7416,7 +7434,7 @@ function renderValuation(){
   const root=document.getElementById('val-root');
   root.innerHTML='';
   document.getElementById('score-box').style.display='none';
-  if(MODE==='staff'){ schedaStep='usc'; set4('hero-eye4','Organizzazione · facoltativo'); set4('hero-title4','Uscite e bivacchi dello staff'); set4('val-desc','Preparate insieme le uscite dello staff: persone, date, trasporti, cassa, momenti formativi.'); const sc=document.getElementById('val-scale-box'); if(sc) sc.style.display='none'; const t4=document.getElementById('tut-panel4'); if(t4) t4.style.display='none'; renderUscite(root); try{ gSync(); }catch(e){} return; }
+  if(MODE==='staff'){ schedaStep='usc'; set4('hero-eye4','Organizzazione · facoltativo'); set4('hero-title4','Uscite e bivacchi dello staff'); set4('val-desc','Preparate insieme le uscite dello staff: persone, date, trasporti, cassa, momenti formativi.'); const sc=document.getElementById('val-scale-box'); if(sc) sc.style.display='none'; const t4=document.getElementById('tut-panel4'); if(t4) t4.style.display='none'; renderUscite(root); try{ const b=document.getElementById('usc-root'); if(b&&!document.getElementById('an-open')) b.insertAdjacentHTML('beforebegin',anBarHTML()); if(AN.st==='unknown') anProbe(); }catch(e){} try{ gSync(); }catch(e){} return; }
   const selected=priSel();
   precompileScheda(selected);
   const navEl=document.createElement('div');
@@ -7434,7 +7452,7 @@ function renderValuation(){
   else if(schedaStep==='C'){ renderSchedaC(root,selected); if(MODE==='giovani') anBarInsert(navEl); }
   else if(schedaStep==='chk' && MODE==='giovani')renderSchedaInvio(root);
   else if(schedaStep==='ver' && MODE==='giovani')renderSchedaVer(root,selected);
-  else if(schedaStep==='usc' && MODE==='giovani')renderUscite(root);
+  else if(schedaStep==='usc' && MODE==='giovani'){ renderUscite(root); anBarInsert(navEl); }
   else renderSchedaVal(root,selected);
   if(MODE==='giovani'){ ppRefreshReady(); try{ gSync(); }catch(e){} }
 }
@@ -7452,10 +7470,16 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // SCHEDA DI PROGRAMMAZIONE EDUCATIVA ESPERIENZIALE — navigazione per Sezioni
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
-const APP_VERSION = '2026-10-20 · anteprima';
-const APP_BUILD='202610211421'; // sostituito a ogni pubblicazione
+const APP_VERSION = '2026-10-22 · beta';
+const APP_BUILD='202610220648'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
+    '<b>Trenta video brevi</b> al posto dei nove: dalla pagina iniziale e nei riquadri «Come funziona» di ogni sezione, ognuno su una cosa sola.',
+    '<b>Cerca un’attività</b> cerca anche fra le attività nate dentro le uscite e i campi (dello staff e dell’Unità), e «Apri» ti porta nel punto esatto in cui l’attività comincia. La barra Cerca c’è anche nelle Uscite, dove puoi aggiungere l’attività trovata all’uscita aperta.',
+    '<b>Archivio nazionale</b>: «Proponi all’archivio nazionale» c’è anche dentro i momenti delle uscite, anche per attività che non sono nella programmazione. Pasti, spostamenti e moduli (cassa, trasporti…) non si propongono.',
+    '<b>Sicurezza</b>: sotto il Vademecum della cassetta di primo soccorso trovi anche la «Liberatoria assunzione farmaci».',
+    '<b>Scalette</b>: i momenti si spostano su e giù con le frecce, nelle attività e nei blocchi delle uscite.']},
   {d:'21 ottobre 2026', t:'In anteprima: uscite più comode e archivio nazionale', i:[
     '<b>Uscite</b>: gli indicatori seguono gli obiettivi che scegli nella Sezione 2; nei ruoli dei ragazzi e nei pasti puoi aggiungere voci tue con «Altro»; un ingrediente senza prezzo o una spesa senza assegnazione, in giallo, ti porta con un clic alla voce; i totali di Cassa e quota si aggiornano mentre scrivi; le persone per auto si scrivono a mano.',
     'I moduli di un’attività stanno sempre nello stesso ordine (e li sposti con le frecce); se scegli un’attività che ha già una scaletta, il modulo Scaletta nasce dall’orario di inizio. Sposta e Duplica sono chiusi finché non li apri; «Affida» è un campo sempre visibile.',
@@ -7549,25 +7573,47 @@ const NOVITA = [
     'Materiale comune per i Rover, consigli per lo zaino, lista della spesa.']}
 ];
 // ── Video tutorial: otto capitoli brevi, nella cartella /video del sito ──
-const VID_GROUPS = [['i','Per iniziare'],['s','Lavorare con lo staff'],['a','Sezione 1 · Conoscere il gruppo'],['b','Sezioni 2 e 3 · Obiettivi e percorso'],['d','Organizzare le attività'],['u','Uscite e campi'],['v','Sezioni 4 e 5 · Verifica e valutazione'],['t','La modalità staff'],['c','Cerca e archivio nazionale']];
+const VID_GROUPS = [['i','Per iniziare'],['s','Lavorare con lo staff'],['a','Sezione 1 · Conoscere il gruppo'],['b','Sezioni 2 e 3 · Obiettivi e percorso'],['d','Le attività'],['u','Uscite e campi'],['v','Sezioni 4 e 5 · Verifica e valutazione'],['t','La modalità staff'],['c','Cerca e archivio nazionale']];
 const VIDEOS = [
-  {n:1, g:'i', t:'Da dove si parte', d:'1:18'},
-  {n:2, g:'i', t:'Il tuo spazio: account, archivio, copie di sicurezza', d:'0:32', v:'b'},
-  {n:3, g:'s', t:'Programmare con lo staff', d:'0:50'},
-  {n:4, g:'a', t:'Sezione 1: conoscere il gruppo', d:'0:45'},
-  {n:5, g:'b', t:'Sezione 2: percorsi, obiettivi, indicatori', d:'0:34'},
-  {n:6, g:'b', t:'Sezione 3: dalle idee alle attività', d:'0:40'},
-  {n:7, g:'v', t:'Sezioni 4 e 5: verifica, valutazione, documento finale', d:'0:41'},
-  {n:8, g:'s', t:'Ti hanno invitato? Cosa puoi fare', d:'0:34'},
-  {n:9, g:'t', t:'La modalità staff', d:'1:01'}
+  {n:1, g:'i', t:'Da dove si parte', d:'1:22'},
+  {n:2, g:'i', t:'Account, accesso e password', d:'1:16'},
+  {n:3, g:'i', t:'L’archivio e le copie di sicurezza', d:'0:58'},
+  {n:4, g:'i', t:'Telefono, tablet, aiuto', d:'0:49'},
+  {n:5, g:'s', t:'Programmare con lo staff', d:'1:13'},
+  {n:6, g:'s', t:'Lavorare insieme e «Per te»', d:'1:19'},
+  {n:7, g:'a', t:'1.1 Contesto dell’Unità', d:'1:01'},
+  {n:8, g:'a', t:'1.1 KOS 2.0 e altre occasioni osservative', d:'1:06'},
+  {n:9, g:'a', t:'1.2 La scheda di osservazione', d:'1:07'},
+  {n:10, g:'a', t:'1.2 Osservazione condivisa', d:'1:06'},
+  {n:11, g:'a', t:'1.3 Lettura del gruppo', d:'0:54'},
+  {n:12, g:'a', t:'1.4 Le priorità', d:'0:42'},
+  {n:13, g:'b', t:'Sezione 2: obiettivi e indicatori', d:'0:56'},
+  {n:14, g:'b', t:'Sezione 3: strumenti del metodo e tempi', d:'0:42'},
+  {n:15, g:'b', t:'Sezione 3: le attività', d:'0:43'},
+  {n:16, g:'b', t:'Sezione 3: le sette caratteristiche', d:'0:37'},
+  {n:17, g:'b', t:'Sezione 3: gli spunti', d:'0:57'},
+  {n:18, g:'b', t:'Ordinare, spostare, duplicare', d:'0:42'},
+  {n:19, g:'d', t:'Attività: chi, quando e referenti', d:'0:57'},
+  {n:20, g:'d', t:'Attività: logistica e viaggio', d:'0:45'},
+  {n:21, g:'d', t:'Attività: materiali, pasti e spesa', d:'0:58'},
+  {n:22, g:'d', t:'Attività: cassa, costi e quota', d:'0:39'},
+  {n:23, g:'d', t:'Attività: durante, sicurezza, piano B', d:'1:01'},
+  {n:24, g:'d', t:'Foglio del giorno, calendario, circolare', d:'1:04'},
+  {n:25, g:'u', t:'Uscite e campi: creare e organizzare', d:'1:55'},
+  {n:26, g:'u', t:'Uscite: affidare, pasti, cassa e stampa', d:'1:03'},
+  {n:27, g:'v', t:'Sezioni 4 e 5, controllo e invio', d:'1:37'},
+  {n:28, g:'t', t:'La modalità staff', d:'1:12'},
+  {n:29, g:'t', t:'Uscite dello staff', d:'0:57'},
+  {n:30, g:'c', t:'Cerca e archivio nazionale', d:'1:12'}
 ];
 function vidGroups(){ return VID_GROUPS.map(([k,l]) => ({k, l, L: VIDEOS.filter(v => v.g === k)})).filter(g => g.L.length); }
-function vidVer(n){ const v = VIDEOS.find(x => x.n === n); return v && v.v ? '?v=' + v.v : ''; }
-function vidSrc(n){ return '/video/pee-' + n + '.mp4' + vidVer(n); }
+const VID_BASE = '/video/', VID_V = '?v=30';
+function vidVer(n){ return VID_V; }
+function vidSrc(n){ return VID_BASE + 'pee-' + n + '.mp4' + vidVer(n); }
 function vidOpen(n){ window._vidCur = n;
   const v = VIDEOS.find(x => x.n === n) || VIDEOS[0], nx = VIDEOS.find(x => x.n === v.n + 1);
   modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length}</span><h3>${v.t}</h3></div>
-    <video class="vid-v" src="${vidSrc(v.n)}" poster="/video/pee-${v.n}.jpg${vidVer(v.n)}" controls autoplay playsinline preload="metadata"></video>
+    <video class="vid-v" src="${vidSrc(v.n)}" poster="${VID_BASE}pee-${v.n}.jpg${vidVer(v.n)}" controls autoplay playsinline preload="metadata"></video>
     <div class="vid-nav">${v.n > 1 ? `<button class="btn-ghost" onclick="vidOpen(${v.n - 1})">‹ Precedente</button>` : '<span></span>'}<button class="btn-ghost" onclick="vidList()">Tutti i video</button>${nx ? `<button class="btn-primary" onclick="vidOpen(${nx.n})">Prossimo ›</button>` : '<span></span>'}</div>`);
   vidWide(true);
 }
@@ -7575,10 +7621,10 @@ function vidList(){
   modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Video: come funziona</h3>${vidGroups().map(g => `<details class="vid-grp" ${g.L.some(v => v.n === (window._vidCur||0)) ? 'open' : ''}><summary><span>${g.l}</span><span class="vid-gn">${g.L.length} video</span></summary><div class="vid-grid">${g.L.map(vidTile).join('')}</div></details>`).join('')}`);
   vidWide(true);
 }
-function vidTile(v){ return `<button class="vid-tile" onclick="vidOpen(${v.n})"><span class="vid-th" style="background-image:url('/video/pee-${v.n}.jpg${vidVer(v.n)}')"><span class="vid-play">▶</span><span class="vid-du">${v.d}</span></span><span class="vid-tt"><b>${v.n}</b> ${v.t}</span></button>`; }
+function vidTile(v){ return `<button class="vid-tile" onclick="vidOpen(${v.n})"><span class="vid-th" style="background-image:url('${VID_BASE}pee-${v.n}.jpg${vidVer(v.n)}')"><span class="vid-play">▶</span><span class="vid-du">${v.d}</span></span><span class="vid-tt"><b>${v.n}</b> ${v.t}</span></button>`; }
 function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !ov.firstElementChild) return; ov.firstElementChild.style.maxWidth = on ? '860px' : ''; }
 // quale video per la parte dell'app in cui ti trovi
-function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE === 'staff') return 9; if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 3; const k = gCur(); return ({'1a':4,'1b':4,'1c':4,'1d':4,'2':5,'3':6,'4':7,'5':7,'chk':7})[k] || 4; }catch(e){ return 1; } }
+function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE === 'staff') return 28; if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 5; const k = gCur(); return ({'1a':7,'1b':9,'1c':11,'1d':12,'2':13,'3':14,'usc':25,'4':27,'5':27,'chk':27})[k] || 1; }catch(e){ return 1; } }
 function vidLink(n, txt){ return `<a href="#" class="vid-lk" onclick="vidOpen(${n});return false">▶ ${txt || 'Guarda il video'}</a>`; }
 function vidRow(v){ return `<button class="vid-row" onclick="vidOpen(${v.n})"><span class="vid-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span><span class="vid-rt"><b>${v.n}</b> ${v.t}</span><span class="vid-rd">${v.d}</span></button>`; }
 function vidHome(){ const h = document.getElementById('vid-home'); if(!h) return;
@@ -7615,10 +7661,16 @@ const FAQ = [
   ['Documenti','Il Word si apre anche con Pages o Google Documenti?','Sì.'],
   ['La programmazione','C’è il controllo ortografico?','Sì, quello del tuo browser o dispositivo: le parole sbagliate vengono sottolineate in rosso e con il tasto destro (o tenendo premuto sul telefono) trovi i suggerimenti. Su <b>Safari per Mac</b> va attivato da <i>Modifica › Ortografia e grammatica › Controlla ortografia durante la digitazione</i>; su <b>Firefox</b> serve il dizionario italiano (tasto destro su un campo › Lingue › Aggiungi dizionari). Indirizzi, mail e telefoni non vengono controllati.'],
   ['Documenti','La circolare si apre male su iPad o da Google Drive.','Usa <b>↓ Scarica in PDF</b> accanto al Word della circolare: il PDF si legge uguale ovunque, anche nell’anteprima di Google Drive. Anche il Word ora ha un’intestazione semplice, senza colonna laterale.'],
+  ['Per cominciare','Ci sono dei video che spiegano l’app?','Sì: trenta video brevi, ognuno su una cosa sola, raggruppati per argomento. Li trovi nella pagina iniziale (<b>Scopri come funziona l’app</b>) e nel link «Guarda il video» dei riquadri «Come funziona» di ogni sezione.'],
+  ['Lavorare con lo staff','Anche lo staff può programmare uscite e bivacchi?','Sì: nella modalità staff c’è la voce <b>Uscite</b>, con persone, date, trasporti, cassa e momenti formativi. Le attività nate lì si cercano e si possono proporre all’archivio nazionale come quelle dell’Unità.','gGo(\'usc\')'],
+  ['La programmazione','Come cerco un’attività già fatta?','Con <b>Cerca un’attività</b> (nella Sezione 3 e nelle Uscite) cerchi fra le attività di tutti i tuoi progetti, comprese quelle nate dentro le uscite, e nell’archivio nazionale. <b>Apri</b> ti porta nel punto esatto in cui l’attività comincia; <b>Riusa</b> la copia nel tuo progetto (nelle Uscite: la aggiunge all’uscita aperta).','anOpen()'],
+  ['La programmazione','Come propongo un’attività all’archivio nazionale?','Dal pulsante <b>Proponi all’archivio nazionale</b> dentro l’attività (Sezione 3) o dentro il momento di un’uscita. Prima di inviare rileggi il testo: nomi, Unità e date sono già tolti, ma controlla tu. Arriva a tutti dopo una revisione e lo stato lo vedi in <i>Le mie proposte</i>. Pasti, spostamenti e moduli come cassa e trasporti non si propongono.'],
+  ['La programmazione','Posso cambiare l’ordine dei momenti di una scaletta?','Sì: accanto a ogni riga ci sono le frecce ↑ ↓ (e la × per toglierla). Funziona nelle attività e nei blocchi delle uscite; l’ora d’inizio resta quella del primo momento.'],
+  ['Documenti','Dove trovo la liberatoria per i farmaci?','Nella parte <b>Sicurezza</b> di ogni attività e di ogni uscita, sotto il Vademecum della cassetta di primo soccorso: <b>Liberatoria assunzione farmaci</b> (PDF).'],
   ['Se qualcosa non va','Vedo una versione vecchia o la pagina non si aggiorna.','Ricarica la pagina; se resta così, esci dall’account e rientra.'],
   ['Se qualcosa non va','Ho trovato un errore o ho un’idea.','Premi <b>Suggerimenti?</b>: il messaggio arriva direttamente a chi cura l’app.','fbOpen()']
 ];
-const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':2, 'Lavorare con lo staff':3, 'La programmazione':4, 'Documenti':7};
+const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':2, 'Lavorare con lo staff':5, 'La programmazione':15, 'Documenti':24};
 function faqHTML(k){
   const inApp = () => { const m = document.getElementById('main-app'); return m && m.style.display !== 'none' && typeof MODE !== 'undefined' && MODE === 'giovani'; };
   const groups = [...new Set(FAQ.map(f => f[0]))];
@@ -7639,7 +7691,7 @@ function faqFilter(v, k){ k = k || '';
 }
 function faqGo(i){ const f = FAQ[i]; if(!f || !f[3]) return; modalClose(); setTimeout(() => { try{ (new Function(f[3]))(); }catch(e){} }, 50); }
 // link «Domande frequenti» in fondo ai riquadri «Come funziona»
-function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = '<a href="#" class="vid-lk" onclick="vidOpen(vidHere());return false">▶ Guarda il video (1 min)</a> · Hai un dubbio? <a href="#" onclick="faqOpen();return false">Domande frequenti</a>'; b.appendChild(p); }); }
+function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = '<a href="#" class="vid-lk" onclick="vidOpen(vidHere());return false">▶ Guarda il video</a> · Hai un dubbio? <a href="#" onclick="faqOpen();return false">Domande frequenti</a>'; b.appendChild(p); }); }
 function novOpen(){
   modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Novità</h3><p style="font-size:12px;color:var(--ink-mid);margin:0 0 12px">Versione ${APP_VERSION}. Qualcosa non va o hai un’idea? Scrivici da “Suggerimenti?”.</p>`+
     NOVITA.map(n=>`<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase">${n.d}</div><div style="font-size:14px;font-weight:800;margin:2px 0 6px">${n.t}</div><ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.55">${n.i.map(x=>`<li style="margin:3px 0">${x}</li>`).join('')}</ul></div>`).join(''));
@@ -7967,6 +8019,7 @@ const AX_REFG={log:'log',pasti:'camb',costi:'cassa',sic:'sic',ben:'ben',circ:'fa
 function axShared(a){ if(!a) return false; if(a.condivisa!=null) return !!a.condivisa; return !!(a.aff || Object.values(((a.ax||{}).ref)||{}).some(Boolean)); }
 function axRef(x,k){ const R=x.ref||{}; return R[k]||(k==='sic'?(R.ps||(x.sic||{}).cassetta||''):''); }
 function axRefList(x){ return AX_REF.map(([k,l])=>[l,axRef(x,k)]).concat((x.refAltro||[]).filter(r=>(r.r||'').trim()&&r.chi).map(r=>[r.r.trim(),r.chi])).filter(r=>r[1]); }
+const AX_LIB=`<a class="ax-vade an-lib" href="circolare/Liberatoria_somministrazione_farmaci.pdf" target="_blank" rel="noopener">Liberatoria assunzione farmaci (PDF)</a>`;
 const AX_VADE=`<a class="ax-vade" href="circolare/Vademecum_cassetta_primo_soccorso.pdf" target="_blank" rel="noopener">Vademecum della cassetta di primo soccorso (PDF)</a>`;
 function axRefNote(x,k){ const n=axRef(x,k); if(!n) return ''; const l=Object.fromEntries(AX_REF)[k]; return `<div class="ax-refn">Referente ${axE(l.replace(' (e cassetta)','').toLowerCase())}: <b>${axE(n)}</b></div>`; }
 function axLbl(t,hint){ return `<div class="ax-lbl">${t}${hint?` <span>${hint}</span>`:''}</div>`; }
@@ -8200,7 +8253,7 @@ function axCosti2(p,j,a,x){ let h=`<div class="ax-hint" style="margin-bottom:6px
 function axDurante(p,j,a,x){ const per=getAllPercorsi()[p];
   const S=axArrP(p,j,'tt2'); if(!S.length && Array.isArray(a.tt) && a.tt.some(r=>(r.t||r.cosa||'').trim())){ a.tt.forEach(r=>{ const m=/(\d{1,2}[:.]\d{2})/.exec(r.t||''); const d=/(\d+)\s*[′']/.exec(r.t||''); S.push({start:m?m[1].replace('.',':').padStart(5,'0'):'',dur:d?+d[1]:'',cosa:r.cosa||'',chi:r.chi||''}); }); }
   const rows=S.length?S:[{},{},{}]; let t=axMin((rows[0]||{}).start);
-  let h=axLbl('Scaletta','scegli l’ora d’inizio e le durate: gli orari sotto si calcolano da soli')+`<div class="ax-tt">`+rows.map((r,i)=>{ const st=i===0?r.start:(t!=null?axHM(t):''); const line=`<div class="ax-ttr"><div class="ax-tt1">${i===0?`<select class="ax-in" title="Ora d’inizio" onchange="axTT(${p},${j},0,'start',this.value)">${axTimeOpts(r.start)}</select>`:`<span class="ax-ttt">${st||'—'}</span>`}<select class="ax-in" title="Durata" onchange="axTT(${p},${j},${i},'dur',this.value)">${axDurOpts(r.dur)}</select></div><input class="ax-in" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${axE(r.cosa)}" oninput="axTT(${p},${j},${i},'cosa',this.value,1)">${axPersonSel(r.chi,`axTT(${p},${j},${i},'chi',@V)`)}${S.length?`<button type="button" class="btn-ghost ax-x" onclick="axRowDel(${p},${j},'tt2',${i})">×</button>`:''}</div>`; if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; return line; }).join('')+`</div><button type="button" class="btn-ghost ax-add" onclick="axTTAdd(${p},${j})">+ Aggiungi riga</button>`;
+  let h=axLbl('Scaletta','scegli l’ora d’inizio e le durate: gli orari sotto si calcolano da soli')+`<div class="ax-tt">`+rows.map((r,i)=>{ const st=i===0?r.start:(t!=null?axHM(t):''); const line=`<div class="ax-ttr"><div class="ax-tt1">${i===0?`<select class="ax-in" title="Ora d’inizio" onchange="axTT(${p},${j},0,'start',this.value)">${axTimeOpts(r.start)}</select>`:`<span class="ax-ttt">${st||'—'}</span>`}<select class="ax-in" title="Durata" onchange="axTT(${p},${j},${i},'dur',this.value)">${axDurOpts(r.dur)}</select></div><input class="ax-in" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${axE(r.cosa)}" oninput="axTT(${p},${j},${i},'cosa',this.value,1)">${axPersonSel(r.chi,`axTT(${p},${j},${i},'chi',@V)`)}${S.length?`<span class="ax-mv"><button type="button" class="btn-ghost ax-x" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="axTTMove(${p},${j},${i},-1)">↑</button><button type="button" class="btn-ghost ax-x" title="Sposta giù" aria-label="Sposta giù" ${i===S.length-1?'disabled':''} onclick="axTTMove(${p},${j},${i},1)">↓</button><button type="button" class="btn-ghost ax-x" title="Togli" aria-label="Togli" onclick="axRowDel(${p},${j},'tt2',${i})">×</button></span>`:''}</div>`; if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; return line; }).join('')+`</div><button type="button" class="btn-ghost ax-add" onclick="axTTAdd(${p},${j})">+ Aggiungi riga</button>`;
   const tot=rows.reduce((s,r)=>s+(Number(r.dur)||0),0); const st=axMin((rows[0]||{}).start); if(tot) h+=`<div class="ax-tot">${st!=null?'Fine prevista <b>'+axHM(st+tot)+'</b> · ':''}durata totale <b>${axDurTxt(tot)}</b></div>`;
   const used=strumList(per||{}).map(o=>o.s); if(used.length) h+=axLbl('Strumenti del Metodo usati in questa attività')+axChips(used.map(s=>[s,s]),x.strum||[],v=>`axTog(${p},${j},'strum',axD('${v}'))`,true);
   const R=AX_RUOLI[FASCIA]||[]; h+=axLbl('Ruoli dei ragazzi')+axAltro(p,j,'ruoli','ruoliX',R,x)+axIN(p,j,'ruoliAltro','Altri ruoli o come vengono assegnati',x.ruoliAltro);
@@ -8208,6 +8261,7 @@ function axDurante(p,j,a,x){ const per=getAllPercorsi()[p];
   return h; }
 function axIdr(per){ if(!per||!per.percorsoId) return []; const p=Object.values(DB).flat().find(q=>q.id===per.percorsoId); if(!p||!p.idr) return []; const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null; const idx=(pr&&pr.idr&&pr.idr.length)?pr.idr:((per.idrSelezionati&&per.idrSelezionati.length)?per.idrSelezionati:[]); return idx.map(k=>({k,t:p.idr[k]})).filter(o=>o.t); }
 function axTT(p,j,i,f,v,noRe){ const S=axArrP(p,j,'tt2'); while(S.length<=i) S.push({}); while(S.length<3) S.push({}); S[i][f]=(f==='dur'?(Number(v)||''):v); axSave(); if(!noRe) axRe(p,j); else axLive(p,j); }
+function axTTMove(p,j,i,d){ const S=axArrP(p,j,'tt2'); const k=i+d; if(k<0||k>=S.length||!S[i]||!S[k]) return; const st=(S[0]||{}).start; const t=S[i]; S[i]=S[k]; S[k]=t; S.forEach((r,q)=>{ if(q>0&&r&&'start' in r) delete r.start; }); if(st) S[0].start=st; axSave(); axRe(p,j); }
 function axTTAdd(p,j){ const S=axArrP(p,j,'tt2'); while(S.length<3) S.push({}); S.push({}); axSave(); axRe(p,j); }
 
 // ── 4. IMPREVISTI E ATTENZIONI ──
@@ -8218,7 +8272,7 @@ function axPB2(p,j,a,x){ const PB=x.pb||{};
   return h; }
 function axSic(p,j,a,x){ const N=axN(x); const S=x.sic||{};
   return (N.tot?`<div class="ax-hint">Presenti: ${N.ad} adulti e ${N.rag} ragazzi${N.ad&&N.rag?' (un adulto ogni '+(N.rag/N.ad).toFixed(1).replace('.0','').replace('.',',')+')':''}</div>`:'<div class="ax-hint">Indica i presenti in “Chi e quando”.</div>')+
-    `<div class="ax-sub">Rischi specifici e come li riduci</div>${axTA(p,j,'sic.rischi','es. attraversamento della strada, acqua, attrezzi da taglio…',S.rischi)}<div class="ax-row2"><div><div class="ax-sub">Numeri utili</div>${axIN(p,j,'sic.numeri','es. 112, guardia medica, referente del luogo',S.numeri)}</div><div><div class="ax-sub">Cassetta di primo soccorso</div><div class="ax-hint">${AX_VADE}</div></div></div>`; }
+    `<div class="ax-sub">Rischi specifici e come li riduci</div>${axTA(p,j,'sic.rischi','es. attraversamento della strada, acqua, attrezzi da taglio…',S.rischi)}<div class="ax-row2"><div><div class="ax-sub">Numeri utili</div>${axIN(p,j,'sic.numeri','es. 112, guardia medica, referente del luogo',S.numeri)}</div><div><div class="ax-sub">Cassetta di primo soccorso</div><div class="ax-hint">${AX_VADE}${AX_LIB}</div></div></div>`; }
 function axBen(p,j,a,x){
   return `<div class="att-inc"><div><div class="att-sub">A cosa fare attenzione</div><textarea class="ax-ta" placeholder="es. un ragazzo con difficoltà motorie, chi non sa nuotare, chi ha paura del buio, chi è appena arrivato, chi si espone poco…" oninput="updateAttivita(${p},${j},'incRischi',this.value);saveDataDebounced();axLive(${p},${j})">${axE(a.incRischi)}</textarea></div><div><div class="att-sub">Accortezze che metti in campo</div><textarea class="ax-ta" placeholder="es. un ruolo alternativo di pari valore, un percorso più corto, una coppia di riferimento, la possibilità di dire “passo” senza giudizio…" oninput="updateAttivita(${p},${j},'incAzioni',this.value);saveDataDebounced();axLive(${p},${j})">${axE(a.incAzioni)}</textarea></div></div><div class="att-note">Descrivi le situazioni senza nomi e senza dati sanitari: questa parte finisce nella scheda dell’attività che condividi.</div>`; }
 function axLinkEst(p,j,a){ const n=attLinks(a).filter(l=>(l.u||'').trim()).length;
@@ -8509,12 +8563,13 @@ function uscBlkDel(k){ const m=uscBlk(k); if(!m) return; if(!confirm('Togliere �
 function uscBlkGo(k,g){ const u=uscCur(); const m=uscBlk(k); if(!m) return; m.g=Number(g)||1; const R=uscBlocks(u,m.g).filter(o=>o.k!==k); m.ord=R.length?(Number(R[R.length-1].m.ord)||0)+1:1; uscSave(); showToast('Spostato a '+uscDayLong(u,m.g)); uscRe(); }
 function uscBlkTog(k){ USC_OPEN[k]=!USC_OPEN[k]; uscRe(); }
 function uscOpenAll(on){ const u=uscCur(); if(!u) return; uscBlocks(u,typeof USC_TAB==='number'?USC_TAB:null).forEach(o=>USC_OPEN[o.k]=!!on); uscRe(); }
-function uscJump(k,g){ if(g!=null&&USC_TAB!==g){ USC_TAB=g; } USC_OPEN[k]=true; uscRe(); setTimeout(()=>{ const e=document.getElementById('usc-b-'+k); if(e){ e.scrollIntoView({block:'center',behavior:'smooth'}); e.classList.add('usc-flash'); setTimeout(()=>e.classList.remove('usc-flash'),1400); } },60); }
+function uscJump(k,g){ if(g!=null&&USC_TAB!==g){ USC_TAB=g; } USC_OPEN[k]=true; uscRe(); anScrollEl(()=>document.getElementById('usc-b-'+k),true); }
 function uscFieldAdd(k,f){ const m=uscBlk(k); if(!m) return; if(!m.f.includes(f)) m.f.push(f); USC_FOPEN[k+'|'+f]=true; uscSave(); uscRe(); }
 function uscFieldRm(k,f){ const m=uscBlk(k); if(!m) return; m.f=m.f.filter(x=>x!==f); uscSave(); uscRe(); }
 function uscArr(k,f){ const m=uscBlk(k); if(!m) return []; if(!Array.isArray(m[f])) m[f]=[]; return m[f]; }
 function uscRow(k,f,i,c,v,re){ const A=uscArr(k,f); while(A.length<=i) A.push({}); A[i][c]=v; uscSave(); if(re) uscRe(); else uscLive(k); }
 function uscRowAdd(k,f,init){ uscArr(k,f).push(init||{}); uscSave(); uscRe(); setTimeout(()=>{ const L=document.querySelectorAll('#usc-b-'+k+' .usc-'+f+'-r'); const r=L[L.length-1]; const i=r&&r.querySelector('input'); if(i) i.focus(); },40); }
+function uscRowMove(k,f,i,d){ const A=uscArr(k,f); const j=i+d; if(j<0||j>=A.length||!A[i]||!A[j]) return; const t=A[i]; A[i]=A[j]; A[j]=t; uscSave(); uscRe(); }
 function uscRowDel(k,f,i){ uscArr(k,f).splice(i,1); uscSave(); uscRe(); }
 function uscObj(k,c,v,re){ const m=uscBlk(k); if(!m) return; if(!m.obj||typeof m.obj!=='object') m.obj={}; if(c==='pid'&&m.obj.pid!==v){ delete m.obj.pg; m.obj.o=[]; m.obj.i=[]; } m.obj[c]=v; uscSave(); if(re) uscRe(); }
 function uscObjTog(k,c,i){ const m=uscBlk(k); if(!m) return; if(!m.obj||typeof m.obj!=='object') m.obj={}; const A=Array.isArray(m.obj[c])?m.obj[c]:(m.obj[c]=[]); const n=A.indexOf(i); if(n>=0) A.splice(n,1); else A.push(i); uscSave(); uscRe(); }
@@ -8606,12 +8661,30 @@ function anScrub(t){ let r=String(t||''); anNames().forEach(n=>{ try{ r=r.replac
 function anFlat(sc,fascia,proj){ const out=[]; try{ const DBx=Object.values(DB).flat(); (sc.percorsiExtra||[]).forEach((per,pi)=>{ if(!per) return; const P=DBx.find(q=>q.id===per.percorsoId); const same=fascia===FASCIA; const pr=(sc.priorita||[])[per.prioritaIdx]||{};
     (per.attivita||[]).forEach((a,j)=>{ if(!a||!['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim())) return; const x=a.ax||{}; const tt=(x.tt2||[]).filter(r=>r&&(r.cosa||'').trim()); const dur=tt.reduce((n,r)=>n+(Number(r.dur)||0),0)||null; const lt=(x.luogo||{}).tipo;
       const bene=(a.vBene||'').trim(), migl=(a.vMigl||'').trim();
-      out.push({src:'mine',proj:proj||null,pi,j,titolo:(a.testo||'').trim()||'Attività senza titolo',branca:fascia||'',ambito:per.ambito||(per.percorsoId||'')[0]||'',perc_id:per.percorsoId||'',perc_nome:P?P.name:'',
+      out.push({src:'mine',proj:proj||null,pi,j,aid:a.aid||'',titolo:(a.testo||'').trim()||'Attività senza titolo',branca:fascia||'',ambito:per.ambito||(per.percorsoId||'')[0]||'',perc_id:per.percorsoId||'',perc_nome:P?P.name:'',
         obiettivi:same&&P?(pr.obiettivi||[]).map(i=>P.obiettivi[i]).filter(Boolean):[],idr:same&&P?(per.idrSelezionati||[]).map(i=>P.idr[i]).filter(Boolean):[],tipi:(a.tipi||[]).slice(),strumenti:Object.keys(per.strumSel||{}),durata_min:dur,
         sede:lt==='sede'?'sede':lt==='uscita'?'uscita':lt?'fuori':'',funzionato:bene&&migl?'in_parte':bene?'si':'da_provare',
-        contenuto:{lancio:a.lancio||'',sviluppo:a.sviluppo||'',conclusione:a.conclusione||'',scaletta:tt.map(r=>({cosa:r.cosa,dur:Number(r.dur)||0})),materiali:(x.mat||[]).filter(r=>r&&(r.cosa||'').trim()).map(r=>({cosa:r.cosa,q:r.q==null?'':r.q})),bene,migl}}); }); }); }catch(e){ console.error(e); } return out; }
-async function anLoadMine(){ const cur=anFlat(scheda,FASCIA,(CL.ctx&&CL.ctx.id)||'cur'); let all=cur.slice();
-  try{ if(CL.sb&&CL.user&&!window.BRO){ const L=(await dbList()).filter(r=>(r.meta||{}).mode==='giovani'&&r.id!==(CL.ctx&&CL.ctx.id)).slice(0,12); for(const r of L){ try{ const g=await dbGet(r.id); const d=g&&g.data||{}; all=all.concat(anFlat(d.scheda||{},d.FASCIA||'',r.id).map(z=>Object.assign(z,{anno:r.anno,ptit:r.titolo}))); }catch(e){} } } }catch(e){}
+        contenuto:{lancio:a.lancio||'',sviluppo:a.sviluppo||'',conclusione:a.conclusione||'',scaletta:tt.map(r=>({cosa:r.cosa,dur:Number(r.dur)||0})),materiali:(x.mat||[]).filter(r=>r&&(r.cosa||'').trim()).map(r=>({cosa:r.cosa,q:r.q==null?'':r.q})),bene,migl}}); }); }); }catch(e){ console.error(e); } try{ anFlatUsc(sc,fascia,proj).forEach(z=>out.push(z)); }catch(e){ console.error(e); } return out; }
+// attività nate dentro le uscite e i campi (non quelle già in Sezione 3, non pasti, spostamenti, moduli)
+const AN_UBT={nuova:'Attività nuova',hike:'Hike',gioco:'Gioco',serata:'Serata',mio:'Momento vostro'};
+function anFlatUsc(sc,fascia,proj){ const out=[]; const U=(sc&&sc.uscite)||{}; if(!U||typeof U!=='object'||Array.isArray(U)) return out; const DBx=Object.values(DB).flat();
+  Object.values(U).forEach(u=>{ if(!u||typeof u!=='object'||u.del||u.riservata) return; const lt=((u.ax||{}).luogo||{}).tipo; const BM=(u.ax||{}).bm||{};
+    Object.keys(u.prog||{}).forEach(k=>{ const m=u.prog[k]; if(!m||typeof m!=='object'||m.del||!AN_UBT[m.k]||(m.pid&&m.aid)) return;
+      const tit=String(m.t||'').trim(); const desc=String(m.desc||'').trim(); const tt=(Array.isArray(m.tt)?m.tt:[]).filter(r=>r&&(r.cosa||'').trim()); if(!tit||(!desc&&!tt.length)) return;
+      const O=m.obj||{}; const pid=O.pid||''; const P=pid?DBx.find(q=>q.id===pid):null; const dur=tt.reduce((n,r)=>n+(Number(r.dur)||0),0)||Number(m.dur)||null;
+      const mats=(Array.isArray(BM[k])?BM[k]:[]).concat(Array.isArray(m.mat)?m.mat:[]).filter(r=>r&&(r.cosa||'').trim());
+      out.push({src:'mine',proj:proj||null,usc:u.id,uk:k,ug:Number(m.g)||1,pi:-1,j:-1,titolo:tit,branca:fascia||'',ambito:pid?pid[0]:'',perc_id:pid,perc_nome:P?P.name:'',
+        obiettivi:P?(Array.isArray(O.o)?O.o:[]).map(i=>P.obiettivi[i]).filter(Boolean):[],idr:P?(Array.isArray(O.i)?O.i:[]).map(i=>P.idr[i]).filter(Boolean):[],tipi:[AN_UBT[m.k]],strumenti:[],durata_min:dur,
+        sede:lt==='sede'?'sede':lt==='uscita'?'uscita':lt?'fuori':'',funzionato:'da_provare',
+        contenuto:{lancio:'',sviluppo:desc,conclusione:'',scaletta:tt.map(r=>({cosa:r.cosa,dur:Number(r.dur)||0})),materiali:mats.map(r=>({cosa:r.cosa,q:r.q==null?'':r.q})),bene:'',migl:''}}); }); });
+  return out; }
+function anProposeUsc(k){ if(window.BRO) return; const u=uscCur(), m=uscBlk(k); if(!u||!m) return;
+  if(m.k==='att'){ const f=uscAttFind(m); if(f){ anPropose(f.idx,f.j); return; } anNote('Scegli prima l’attività','Questo momento non è ancora collegato a un’attività della Sezione 3.'); return; }
+  const F=anFlatUsc({uscite:{[u.id]:u}},MODE==='staff'?'S':FASCIA,null).find(z=>z.uk===k);
+  if(!F){ anNote('Prima scrivi l’attività','Per proporla all’archivio servono il titolo e almeno «Cosa si fa» o la scaletta. Compilali nel momento e riprova.'); return; }
+  anPropose(0,0,F); }
+async function anLoadMine(){ const cur=anFlat(scheda,MODE==='staff'?'S':FASCIA,(CL.ctx&&CL.ctx.id)||'cur'); let all=cur.slice();
+  try{ if(CL.sb&&CL.user&&!window.BRO){ const L=(await dbList()).filter(r=>['giovani','staff'].includes((r.meta||{}).mode)&&r.id!==(CL.ctx&&CL.ctx.id)).slice(0,16); for(const r of L){ try{ const g=await dbGet(r.id); const d=g&&g.data||{}; all=all.concat(anFlat(d.scheda||{},(r.meta||{}).mode==='staff'?'S':(d.FASCIA||''),r.id).map(z=>Object.assign(z,{anno:r.anno,ptit:r.titolo}))); }catch(e){} } } }catch(e){}
   AN.mine=all; return all; }
 async function anLoadRows(){ if(AN.st!=='ok') return []; const {data,error}=await CL.sb.from(AN_T).select('*').order('created_at',{ascending:false}).limit(1000); if(error) throw error; AN.rows=(data||[]).map(r=>Object.assign({src:'an'},r)); return AN.rows; }
 function anFilter(L){ const f=AN.f, q=f.q.trim().toLowerCase(); return L.filter(r=>{ const c=r.contenuto||{}; const hay=[r.titolo,r.perc_nome,(r.obiettivi||[]).join(' '),(r.idr||[]).join(' '),(r.tipi||[]).join(' '),(r.strumenti||[]).join(' '),c.lancio,c.sviluppo,c.conclusione].join(' ').toLowerCase();
@@ -8653,7 +8726,7 @@ function anRender(){ const o=anOv(); const ok=AN.st==='ok'; const adm=anIsAdmin(
   o.innerHTML=h+'</div>'; o.classList.add('show'); }
 function anChips(r){ const bits=[AN_BR[r.branca]&&'<span class="an-chip">'+AN_BR[r.branca]+'</span>',r.ambito&&'<span class="an-chip a'+r.ambito+'">'+(AN_AM[r.ambito]||r.ambito)+(r.perc_nome?' · '+sEsc(r.perc_nome):'')+'</span>',r.durata_min&&'<span class="an-chip">'+axDurTxt(r.durata_min)+'</span>',AN_SD[r.sede]&&'<span class="an-chip">'+AN_SD[r.sede]+'</span>',AN_FZ[r.funzionato]&&'<span class="an-chip '+(r.funzionato==='si'?'ok':'')+'">'+(r.funzionato==='si'?'✓ ':'')+AN_FZ[r.funzionato]+'</span>'].filter(Boolean).concat((r.tipi||[]).slice(0,3).map(t=>'<span class="an-chip">'+sEsc(t)+'</span>'),(r.strumenti||[]).slice(0,3).map(t=>'<span class="an-chip s">'+sEsc(t)+'</span>'));
   if(r.src==='mine'&&r.ptit) bits.push('<span class="an-chip p">'+sEsc(r.anno+' · '+r.ptit)+'</span>'); return '<div class="an-chips">'+bits.join('')+'</div>'; }
-function anActs(r){ const i=anIdx(r); const reuse=window.BRO?'':`<button type="button" class="btn-primary usc-btn" onclick="anReuseAsk(${i})">Riusa in questo progetto</button>`;
+function anActs(r){ const i=anIdx(r); const inU=!window.BRO&&schedaStep==='usc'&&USC_CUR&&uscCur(); const reuse=window.BRO?'':inU?`<button type="button" class="btn-primary usc-btn" onclick="anReuseUsc(${i})">Aggiungi all’uscita aperta</button>`:MODE==='staff'?'':`<button type="button" class="btn-primary usc-btn" onclick="anReuseAsk(${i})">Riusa in questo progetto</button>`;
   if(AN.tab==='mie') return r.stato!=='approvata'?`<button type="button" class="btn-ghost usc-btn" onclick="anDel('${r.id}')">Ritira la proposta</button>`:'';
   if(AN.tab==='pend') return `<button type="button" class="btn-primary usc-btn" onclick="anDecide('${r.id}','approvata')">Approva</button><button type="button" class="btn-ghost usc-btn" onclick="anDecide('${r.id}','rifiutata')">Rifiuta</button><button type="button" class="btn-ghost usc-btn" onclick="anDel('${r.id}')">Cancella</button>`;
   return reuse+(r.src==='mine'?`<button type="button" class="btn-ghost usc-btn" onclick="anGoMine(${i})">Apri</button>`:'')+(r.src==='an'&&anIsAdmin()?`<button type="button" class="btn-ghost usc-btn" onclick="anDel('${r.id}')">Cancella</button>`:''); }
@@ -8662,7 +8735,27 @@ function anIdx(r){ let i=AN_CUR.indexOf(r); if(i<0){ AN_CUR.push(r); i=AN_CUR.le
 function anListHTML(L,T){ AN_CUR=AN_CUR.slice(0,0); if(!L.length) return `<div class="ax-hint">${T==='pend'?'Nessuna proposta da approvare.':T==='mie'?'Non hai ancora proposto nulla.':T==='an'?'Nell’archivio non c’è niente con questi filtri.':'Nessuna attività con questi filtri.'}</div>`;
   return `<div class="ax-hint">${L.length} attività${L.length===1?'':''}</div>`+L.slice(0,80).map(r=>{ const i=anIdx(r); const c=r.contenuto||{}; return `<div class="an-card"><button type="button" class="an-ct" onclick="AN.det=AN_CUR[${i}];anRender()"><b>${sEsc(r.titolo)}</b>${AN.tab==='mie'?`<span class="an-chip ${r.stato==='approvata'?'ok':''}" style="align-self:flex-start">${AN_ST[r.stato]||r.stato}</span>`:''}<span>${sEsc(String(c.lancio||c.sviluppo||'').slice(0,140))}</span></button>${anChips(r)}<div class="an-act">${AN.tab==='pend'?'<button type="button" class="btn-ghost usc-btn" onclick="AN.det=AN_CUR['+i+'];anRender()">Leggi</button>':anActs(r)}</div></div>`; }).join('')+(L.length>80?`<div class="ax-hint">Altre ${L.length-80}: restringi la ricerca.</div>`:''); }
 function anList(){ const b=document.getElementById('an-list'); if(!b) return; const T=AN.tab; let L=T==='mine'?(AN.mine||[]):T==='an'?(AN.rows||[]).filter(r=>r.stato==='approvata'):[]; b.innerHTML=anListHTML(anFilter(L),T); }
-function anGoMine(i){ const r=AN_CUR[i]; if(!r) return; anClose(); if(!r.proj||r.proj==='cur'||(CL.ctx&&r.proj===CL.ctx.id)){ try{ gGo('3'); }catch(e){} setTimeout(()=>{ try{ const idx=getAllPercorsi().findIndex(p=>p.percorsoId===r.perc_id&&(p.attivita||[])[r.j]); tlGo(idx<0?r.pi:idx,r.j); }catch(e){} },200); } else { try{ clOpenProject(r.proj); }catch(e){} } }
+function anGoMine(i){ const r=AN_CUR[i]; if(!r) return; anClose();
+  const J=r.usc?{t:'usc',u:r.usc,k:r.uk,g:r.ug||1}:{t:'att',pid:r.perc_id,aid:r.aid||'',pi:r.pi,j:r.j};
+  if(!r.proj||r.proj==='cur'||(CL.ctx&&r.proj===CL.ctx.id)) anJump(J);
+  else { try{ sessionStorage.setItem('pee_jump',JSON.stringify(J)); }catch(e){} try{ clOpenProject(r.proj); }catch(e){} } }
+// va all'attività (o al momento dell'uscita) esatta, anche dopo l'apertura di un altro progetto
+function anJump(J){ try{
+  if(J.t==='usc'){ if(!uscGet(J.u)){ showToast('Questa uscita non c’è più'); return; } USC_CUR=J.u; USC_TAB=J.g||1; gGo('usc'); setTimeout(()=>{ try{ uscJump(J.k,J.g||1); }catch(e){} },250); return; }
+  gGo('3'); setTimeout(()=>{ try{ const L=getAllPercorsi(); let idx=-1, jj=J.j;
+    if(J.aid) L.forEach((p,x)=>{ if(idx<0&&p&&p.percorsoId===J.pid){ const q=(p.attivita||[]).findIndex(a=>a&&a.aid===J.aid); if(q>=0){ idx=x; jj=q; } } });
+    if(idx<0) idx=L.findIndex(p=>p&&p.percorsoId===J.pid&&(p.attivita||[])[J.j]);
+    if(idx<0) idx=J.pi; tlGo(idx,jj); }catch(e){} },250); }catch(e){} }
+function anJumpWatch(){ let n=0; const t=setInterval(()=>{ n++; if(n>60){ clearInterval(t); return; } try{ const raw=sessionStorage.getItem('pee_jump'); if(!raw) { if(n>8) clearInterval(t); return; }
+  const app=document.getElementById('main-app'); if(!app||app.style.display==='none'||!MODE||(window._clApplying)||window._appReload) return;
+  sessionStorage.removeItem('pee_jump'); clearInterval(t); setTimeout(()=>anJump(JSON.parse(raw)),700); }catch(e){} },500); }
+anJumpWatch();
+function anReuseUsc(i){ const r=AN_CUR[i]; const u=uscCur(); if(!r||!u||!uscCan()) return; const c=r.contenuto||{}; const g=typeof USC_TAB==='number'?USC_TAB:1; const R=uscBlocks(u,g);
+  const id=uscNewId('m'); const desc=[c.lancio,c.sviluppo,c.conclusione].map(t=>String(t||'').trim()).filter(Boolean).join('\n\n');
+  u.prog[id]={k:'nuova',tipo:'mom',g,ord:R.length?(Number(R[R.length-1].m.ord)||0)+1:1,dur:r.durata_min||USC_BT.nuova[3],t:String(r.titolo||'').slice(0,80),f:USC_BT.nuova[2].slice(),desc,cr:Date.now()};
+  if((c.scaletta||[]).length){ u.prog[id].tt=c.scaletta.map(z=>({cosa:z.cosa,dur:z.dur||'',chi:''})); if(!u.prog[id].f.includes('scal')) u.prog[id].f.push('scal'); }
+  if((c.materiali||[]).length){ if(!u.ax.bm||typeof u.ax.bm!=='object') u.ax.bm={}; u.ax.bm[id]=c.materiali.map(z=>({cosa:z.cosa,q:z.q===''?1:z.q,qm:'fissa',prov:'unita',carico:'ragazzi'})); if(!u.prog[id].f.includes('mat')) u.prog[id].f.push('mat'); }
+  saveData(true); anClose(); USC_OPEN[id]=true; uscRe(); showToast('Aggiunta all’uscita: adattala al tuo gruppo'); setTimeout(()=>{ try{ uscJump(id,g); }catch(e){} },150); }
 function anReuseAsk(i){ const r=AN_CUR[i]; if(!r||window.BRO) return; const L=getAllPercorsi(); if(!L.length){ showToast('Nel progetto non ci sono ancora percorsi: scegli prima le priorità'); return; }
   const ov=anOv(); const sel=L.map((p,k)=>{ const P=Object.values(DB).flat().find(q=>q.id===p.percorsoId); return `<button type="button" class="an-pick" onclick="anReuse(${i},${k})"><b>Percorso ${k+1}</b> ${sEsc(P?P.name:'')}</button>`; }).join('');
   ov.innerHTML=`<div class="an-box"><button class="modal-x" aria-label="Chiudi" onclick="anClose()">✕</button><h3 class="an-h">Riusa «${sEsc(r.titolo)}»</h3><div class="ax-hint">In quale percorso del tuo progetto la metti? Diventa una nuova attività che puoi cambiare come vuoi.</div>${sel}<button type="button" class="btn-ghost usc-btn" onclick="anRender()">← Indietro</button></div>`; }
@@ -8673,10 +8766,10 @@ function anReuse(i,k){ const r=AN_CUR[i]; const per=getAllPercorsi()[k]; if(!r||
   try{ attIdsEnsure(per); }catch(e){} saveData(true); anClose(); try{ gGo('3'); }catch(e){} try{ renderValuation(); }catch(e){} showToast('Attività aggiunta al Percorso '+(k+1)+': adattala al tuo gruppo'); setTimeout(()=>{ try{ tlGo(k,j); }catch(e){} },250); }
 // proponi all'archivio nazionale
 function anNote(t,m){ const ov=anOv(); ov.classList.add('show'); ov.innerHTML=`<div class="an-box"><button class="modal-x" aria-label="Chiudi" onclick="anClose()">✕</button><h3 class="an-h">${sEsc(t)}</h3><p>${sEsc(m)}</p><div class="ax-chips"><button type="button" class="btn-primary" onclick="anClose()">Ho capito</button></div></div>`; }
-async function anPropose(pidx,j){ if(window.BRO) return; if(AN.st!=='ok'){ try{ await anProbe(true); }catch(e){} }
+async function anPropose(pidx,j,F0){ if(window.BRO) return; if(AN.st!=='ok'){ try{ await anProbe(true); }catch(e){} }
   if(AN.st!=='ok'){ anNote('Archivio nazionale non ancora raggiungibile',AN.st==='no'?'La tabella dell’archivio nazionale non è ancora stata creata su Supabase.':'Non riesco a raggiungere l’archivio nazionale ('+(AN.err||'errore')+'). Controlla di aver fatto l’accesso con il tuo account e riprova.'); return; }
-  const per=getAllPercorsi()[pidx]; const a=per&&(per.attivita||[])[j]; if(!a) return;
-  const F=anFlat({percorsiExtra:[per],priorita:[(scheda.priorita||[])[per.prioritaIdx]||{}]},FASCIA,null).find(z=>z.j===j); if(!F){ anNote('Prima scrivi l’attività','Per proporla all’archivio servono almeno il titolo e uno tra Lancio, Sviluppo e Conclusione. Compilali nella Sezione 3 e riprova.'); return; }
+  let F=F0; if(!F){ const per=getAllPercorsi()[pidx]; const a=per&&(per.attivita||[])[j]; if(!a) return;
+    F=anFlat({percorsiExtra:[per],priorita:[(scheda.priorita||[])[per.prioritaIdx]||{}]},FASCIA,null).find(z=>z.j===j&&!z.usc); } if(!F){ anNote('Prima scrivi l’attività','Per proporla all’archivio servono almeno il titolo e uno tra Lancio, Sviluppo e Conclusione. Compilali nella Sezione 3 e riprova.'); return; }
   const c=F.contenuto; AN.draft=Object.assign({},F,{titolo:anScrub(F.titolo),contenuto:Object.assign({},c,{lancio:anScrub(c.lancio),sviluppo:anScrub(c.sviluppo),conclusione:anScrub(c.conclusione),bene:anScrub(c.bene),migl:anScrub(c.migl),scaletta:(c.scaletta||[]).map(z=>({cosa:anScrub(z.cosa),dur:z.dur})),materiali:(c.materiali||[]).map(z=>({cosa:anScrub(z.cosa),q:z.q}))}),funzionato:F.funzionato});
   const d=AN.draft, cc=d.contenuto; const ta=(id,l,v,h)=>`<label class="ax-sub" for="${id}">${l}</label><textarea id="${id}" class="ax-ta" style="min-height:${h||60}px">${sEsc(v||'')}</textarea>`;
   const ov=anOv(); ov.classList.add('show'); ov.innerHTML=`<div class="an-box"><button class="modal-x" aria-label="Chiudi" onclick="anClose()">✕</button><h3 class="an-h">Proponi all’archivio nazionale</h3>
@@ -8997,7 +9090,7 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
   if(m.k==='att'){ if(!f&&USC_FOPEN[k+'|lsc']==null) USC_FOPEN[k+'|lsc']=true; uscFOrd(m).forEach(fk=>{ if(fk==='lsc') h+=uscFieldHTML(u,k,m,'lsc',f,I,can); else if(f) h+=uscAttFieldHTML(u,k,m,fk,f,can); }); }
   else uscFOrd(m).forEach(fk=>{ h+=uscFieldHTML(u,k,m,fk,f,I,can); });
   const miss=m.k==='att'?[]:USC_FALL.filter(fk=>fk!=='chi'&&!m.f.includes(fk)&&!(m.k==='sposta'&&fk==='mat')&&!(uscSt()&&fk==='obj')&&!(fk==='sch'&&m.k!=='mf'));
-  h+=`<div class="usc-bfoot">${can&&miss.length?`<span class="usc-addf">${miss.map(fk=>`<button type="button" onclick="uscFieldAdd('${k}','${fk}')">+ ${USC_F[fk]}</button>`).join('')}</span>`:''}<span class="usc-bact">${can&&Array.isArray(m.fo)?`<button type="button" class="usc-lnk" onclick="uscFldReset('${k}')">↺ Ordine consigliato dei moduli</button>`:''}${can&&USC_MOVABLE[m.k]?`<button type="button" class="usc-lnk" onclick="USC_MOVE=USC_MOVE==='${k}'?null:'${k}';uscRe()">→ Porta nella programmazione</button>`:''}<button type="button" class="usc-lnk" onclick="uscExport('blocco','${k}')">⤓ Esporta il blocco</button></span></div>`;
+  h+=`<div class="usc-bfoot">${can&&miss.length?`<span class="usc-addf">${miss.map(fk=>`<button type="button" onclick="uscFieldAdd('${k}','${fk}')">+ ${USC_F[fk]}</button>`).join('')}</span>`:''}<span class="usc-bact">${can&&Array.isArray(m.fo)?`<button type="button" class="usc-lnk" onclick="uscFldReset('${k}')">↺ Ordine consigliato dei moduli</button>`:''}${can&&USC_MOVABLE[m.k]?`<button type="button" class="usc-lnk" onclick="USC_MOVE=USC_MOVE==='${k}'?null:'${k}';uscRe()">→ Porta nella programmazione</button>`:''}${!window.BRO&&(m.k==='att'||AN_UBT[m.k])&&typeof CL!=='undefined'&&CL&&CL.user?`<span class="an-prop" style="${AN.st!=='no'?'':'display:none'}"><button type="button" class="usc-lnk" onclick="anProposeUsc('${k}')">📚 Proponi all’archivio nazionale</button></span>`:''}<button type="button" class="usc-lnk" onclick="uscExport('blocco','${k}')">⤓ Esporta il blocco</button></span></div>`;
   if(USC_MOVE===k) h+=uscMoveHTML(k,m);
   return h+`</div></div>`; }
 function uscFieldHTML0(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.ax; const N=axN(x);
@@ -9321,7 +9414,7 @@ function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=
 // scaletta di un blocco (attività nuova, hike, gioco…): durate e chi, gli orari partono dall'inizio del blocco
 function uscScalHTML(u,k,m,t,can){ const R=Array.isArray(m.tt)&&m.tt.length?m.tt:[{},{},{}]; let s=t?t.s:null; const ro=can?'':'disabled';
   const rows=R.map((r,i)=>{ const st=s!=null?axHM(s):'—'; if(s!=null) s+=Number(r.dur)||0;
-    return `<div class="usc-scr"><span class="usc-sct">${st}</span><select class="ax-in" title="Durata" ${ro} onchange="uscRow('${k}','tt',${i},'dur',this.value,true)">${axDurOpts(r.dur)}</select><input class="ax-in" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${uscE(r.cosa)}" ${ro} oninput="uscRow('${k}','tt',${i},'cosa',this.value)">${axPersonSel(r.chi||'',`uscRow('${k}','tt',${i},'chi',@V,true)`)}${can&&m.tt&&m.tt.length?`<button type="button" class="btn-ghost ax-x" title="Togli" onclick="uscRowDel('${k}','tt',${i})">×</button>`:'<span></span>'}</div>`; }).join('');
+    return `<div class="usc-scr"><span class="usc-sct">${st}</span><select class="ax-in" title="Durata" ${ro} onchange="uscRow('${k}','tt',${i},'dur',this.value,true)">${axDurOpts(r.dur)}</select><input class="ax-in" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${uscE(r.cosa)}" ${ro} oninput="uscRow('${k}','tt',${i},'cosa',this.value)">${axPersonSel(r.chi||'',`uscRow('${k}','tt',${i},'chi',@V,true)`)}${can&&m.tt&&m.tt.length?`<span class="ax-mv"><button type="button" class="btn-ghost ax-x" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="uscRowMove('${k}','tt',${i},-1)">↑</button><button type="button" class="btn-ghost ax-x" title="Sposta giù" aria-label="Sposta giù" ${i===m.tt.length-1?'disabled':''} onclick="uscRowMove('${k}','tt',${i},1)">↓</button><button type="button" class="btn-ghost ax-x" title="Togli" aria-label="Togli" onclick="uscRowDel('${k}','tt',${i})">×</button></span>`:'<span></span>'}</div>`; }).join('');
   const tot=R.reduce((a,r)=>a+(Number(r.dur)||0),0);
   return rows+(can?`<button type="button" class="btn-ghost ax-add" onclick="(function(){const A=uscArr('${k}','tt');while(A.length<3)A.push({});A.push({});uscSave();uscRe();})()">+ Momento</button>`:'')+(tot?`<div class="ax-hint">Durata della scaletta ${axDurTxt(tot)}${tot!==Number(m.dur)?` · il blocco dura ${axDurTxt(m.dur)} <button type="button" class="usc-lnk" onclick="uscBlkSet('${k}','dur',${tot},true)">usa ${axDurTxt(tot)}</button>`:''}</div>`:''); }
 // spostamento: da dove, a dove, mezzo, orari, andata e ritorno
@@ -9802,7 +9895,17 @@ function tlAllHTML(){
 function tlSetDate(idx,j,v){ const x=axX(idx,j); x.data=v; if(x.dataFine&&v&&x.dataFine<v) x.dataFine=v; saveDataDebounced(); tlRefresh(idx); try{ axRe(idx,j); }catch(e){} }
 function pcxToggle(i){ const c=document.getElementById('pc-card-'+i); if(!c) return; c.classList.toggle('closed'); (window._pcOpen=window._pcOpen||{})[i]=!c.classList.contains('closed'); }
 function pcxOpen(i){ const c=document.getElementById('pc-card-'+i); if(c){ c.classList.remove('closed'); (window._pcOpen=window._pcOpen||{})[i]=true; } }
-function tlGo(idx,j){ const d=document.getElementById('att-'+idx+'-'+j); if(!d) return; pcxOpen(idx); d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'}); }
+// altezza delle barre che restano in alto (intestazione + sottomenù): serve per non far finire il punto cercato sotto di loro
+function anOff(){ let h=0; try{ const a=document.querySelector('.hdr'); if(a) h+=a.getBoundingClientRect().height; const b=document.getElementById('g-subnav'); if(b&&getComputedStyle(b).position==='sticky') h+=b.getBoundingClientRect().height; }catch(e){} return Math.round(h)+14; }
+// porta l'inizio dell'elemento subito sotto le barre; riprova finché non c'è e dopo che i campi si sono allungati
+function anScrollEl(get,flash){ let n=0; const de=document.documentElement;
+  const step=()=>{ let e=null; try{ e=get(); }catch(x){} if(!e){ if(++n<40) setTimeout(step,100); return; }
+    window._posHold=true; de.style.scrollBehavior='auto';
+    const go=()=>{ const y=Math.max(0,Math.round(e.getBoundingClientRect().top+window.scrollY-anOff())); try{ window.scrollTo({top:y,left:0,behavior:'instant'}); }catch(x){ window.scrollTo(0,y); } };
+    go(); setTimeout(go,150); setTimeout(go,450); setTimeout(()=>{ go(); window._posHold=false; de.style.scrollBehavior=''; },900);
+    if(flash){ e.classList.add('an-flash'); setTimeout(()=>e.classList.remove('an-flash'),2400); } };
+  step(); }
+function tlGo(idx,j){ let done=false; anScrollEl(()=>{ const d=document.getElementById('att-'+idx+'-'+j); if(!d) return null; if(!done){ done=true; pcxOpen(idx); d.open=true; } return d; },true); }
 function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const t=percTempo(per); const warn=tmWarn(t.dal,t.al,false);
   const note = t.own ? (typeof per.prioritaIdx==='number'?`<a href="#" style="font-size:11px;color:var(--green);margin-left:6px" onclick="percTempoReset(${idx});return false">↺ riprendi dalla Sezione 2</a>`:'')
     : `<span style="font-size:11px;color:var(--ink-faint);margin-left:6px">ripresa dalla Sezione 2 · cambiala se il percorso dura meno</span>`;
@@ -12693,7 +12796,7 @@ function clShow(view){
       ${view==='login'?`<button class="cl-btn ghost" onclick="clShow('reset')">Password dimenticata?</button>`:''}
       ${isR?`<button class="cl-btn ghost" onclick="clShow('login')">Indietro</button>`:''}</div>
       <div class="cl-msg" id="cl-msg"></div>
-      <p class="cl-note" style="margin:10px 0 0"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: account e archivio (1 min)</a></p>
+      <p class="cl-note" style="margin:10px 0 0"><a href="#" class="vid-lk" onclick="clClose();vidOpen(3);return false">▶ Video: archivio e copie di sicurezza</a></p>
       <p class="cl-note">In questo strumento possono esserci osservazioni su persone reali: usa nomi in forma abbreviata o di fantasia per i ragazzi. Solo tu vedi i tuoi dati.</p>`;
   } else if(view === 'email'){
     t.textContent = 'Cambia email';
@@ -12748,7 +12851,7 @@ function clShow(view){
     t.textContent = rows.length === 1 ? 'Hai un invito su «' + r.anno + ' · ' + r.titolo + '»' : 'Hai ' + rows.length + ' inviti';
     b.innerHTML = rows.slice(0, 4).map(x => `<div class="cl-row"><div style="min-width:0"><div class="t" style="font-weight:500;line-height:1.5">${clInvTxt(x)}.</div><div class="s">${clEsc(CL_RUOLI_TXT[x.ruolo] || CL_RUOLI_TXT.lettore)}</div></div><button class="cl-btn sm" onclick="clInvOpen('${x.id}')">${clEditRole(x.ruolo) ? 'Apri e modifica' : 'Apri'}</button></div>`).join('')
       + (rows.length > 4 ? `<p class="cl-note" style="margin:6px 0 0">Gli altri li trovi in Archivio › Condivisi con me.</p>` : '')
-      + `<p class="cl-note">Il tuo lavoro resta dove è: lo ritrovi nel tuo archivio. <a href="#" class="vid-lk" onclick="clClose();vidOpen(8);return false">▶ Video: cosa puoi fare</a></p><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="cl-btn ghost" onclick="clInvLater()">Più tardi</button></div>`;
+      + `<p class="cl-note">Il tuo lavoro resta dove è: lo ritrovi nel tuo archivio. <a href="#" class="vid-lk" onclick="clClose();vidOpen(6);return false">▶ Video: lavorare insieme</a></p><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="cl-btn ghost" onclick="clInvLater()">Più tardi</button></div>`;
   } else if(view === 'ro'){
     t.textContent = 'Sola lettura';
     b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Stai guardando un progetto condiviso con te${window.BRO&&window.BRO.owner?' da <strong>'+clEsc(window.BRO.owner)+'</strong>':''}. Per aprire i tuoi PEE torna al tuo lavoro.</p>
@@ -13000,7 +13103,7 @@ async function clRenderArchive(){
       <div style="font-size:12px;color:#555">Account: ${clMyName()?`<strong>${clEsc(clMyName())}</strong> · `:''}<strong>${clEsc(CL.user.email)}</strong>${clMyName()?` · <a href="#" onclick="event.preventDefault();clAskNome()" style="color:#1b5e42">cambia nome</a>`:''} · <a href="#" onclick="event.preventDefault();clShow('email')" style="color:#1b5e42">cambia email</a> · <a href="#" onclick="event.preventDefault();clShow('recovery')" style="color:#1b5e42">cambia password</a>${CL.user.new_email?`<br><span style="color:#8a4b00">In attesa di conferma: ${clEsc(CL.user.new_email)}</span>`:''}</div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
   if(!clMyName()) h += clNomeBox();
-  h += `<p class="cl-note" style="margin:0 0 8px"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: il tuo spazio</a> · <a href="#" class="vid-lk" onclick="clClose();vidOpen(3);return false">▶ Video: programmare con lo staff</a></p>`;
+  h += `<p class="cl-note" style="margin:0 0 8px"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: il tuo spazio</a> · <a href="#" class="vid-lk" onclick="clClose();vidOpen(5);return false">▶ Video: programmare con lo staff</a></p>`;
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   if(!window.BRO) h += '<div style="margin:0 0 10px"><button class="cl-btn ghost sm" id="cl-cerca" onclick="clClose();anOpen()">🔎 Cerca un’attività · le mie proposte</button></div>';
   h += '<div id="cl-shared"></div>';

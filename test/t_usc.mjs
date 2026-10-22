@@ -99,6 +99,7 @@ const pos1 = await P.locator(`#usc-b-${kP} .usc-brow > *`).evaluateAll(E => E.ma
 ok(await ev(k => uscCur().prog[k].dur, kP) === 45 && JSON.stringify(pos0) === JSON.stringify(pos1), 'cambiando la durata i campi restano dove sono');
 ok(await P.locator(`#usc-b-${kP} .usc-bh .usc-bx`).count() === 1, '× per togliere il blocco nell’intestazione');
 const n3 = await ev(() => uscBlocks(uscCur(), 3).length);
+await ev(k => { USC_OPEN[k+'|mv'] = true; uscRe(); }, kP); await sleep(200);
 await P.locator(`#usc-b-${kP} .usc-mv2`, {hasText:'Duplica in'}).locator('select').selectOption('3'); await sleep(300);
 ok(await ev(() => uscBlocks(uscCur(), 3).length) === n3 + 1 && await ev(() => uscBlocks(uscCur(), 3).some(o => o.m.pasto === 'pranzo' && o.m.fix)), '«Duplica in»: il pranzo anche il 29 (con la sua ora fissa)');
 await ev(k => { const m = uscCur().prog[k]; m.ora = '08:00'; uscRe(); }, kP); await sleep(200);
