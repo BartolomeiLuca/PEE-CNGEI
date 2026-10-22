@@ -48,10 +48,10 @@ ok(opts.length && JSON.stringify(opts[opts.length-1]) === JSON.stringify(['— s
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('Tutto lo staff'); await sleep(200);
 ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Tutto lo staff', '10. scelta salvata');
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('__a'); await sleep(300);
-await pa.page.locator('#occ-tab input.occ-chi').last().fill('Il Capo Gruppo'); await sleep(200);
+await pa.page.locator('#occ-tab :is(input,textarea).occ-chi').last().fill('Il Capo Gruppo'); await sleep(200);
 ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Il Capo Gruppo', '10. «Altro»: testo libero');
 await ev(pa.page, () => occRefresh()); await sleep(200);
-ok(await ev(pa.page, () => [...document.querySelectorAll('#occ-tab input.occ-chi')].some(i => i.value === 'Il Capo Gruppo')), '10. il testo libero resta dopo il ridisegno');
+ok(await ev(pa.page, () => [...document.querySelectorAll('#occ-tab :is(input,textarea).occ-chi')].some(i => i.value === 'Il Capo Gruppo')), '10. il testo libero resta dopo il ridisegno');
 
 // ── 22-23. materiali di pattuglia e maglia termica ──
 await ev(pa.page, () => { gGo('3'); }); await sleep(800);
@@ -97,9 +97,9 @@ ok(/messaggero/.test(got), '12. la modifica è arrivata sull’altro dispositivo
 ok(trk.length > 30 && dev <= 2, '12. la pagina non salta mentre arriva (scarto massimo ' + dev + ' px su ' + trk.length + ' fotogrammi)');
 
 // caso B: cursore fermo dentro un campo (Safari sposta la pagina quando si rimette il cursore)
-await ev(pb.page, () => { const el = document.querySelector('#att-0-2 textarea'); el.scrollIntoView({block:'center'}); el.focus({preventScroll:true}); el.setSelectionRange(2, 2); });
+await ev(pb.page, () => { const el = document.querySelector('#att-0-2 textarea:not([data-conv])'); el.scrollIntoView({block:'center'}); el.focus({preventScroll:true}); el.setSelectionRange(2, 2); });
 await sleep(3500);
-await ev(pb.page, () => { window._trk = []; const t0 = performance.now(); const f = () => { const e = document.querySelector('#att-0-2 textarea'); if(e) window._trk.push(Math.round(e.getBoundingClientRect().top)); if(performance.now() - t0 < 9000) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+await ev(pb.page, () => { window._trk = []; const t0 = performance.now(); const f = () => { const e = document.querySelector('#att-0-2 textarea:not([data-conv])'); if(e) window._trk.push(Math.round(e.getBoundingClientRect().top)); if(performance.now() - t0 < 9000) requestAnimationFrame(f); }; requestAnimationFrame(f); });
 await ev(pa.page, () => { const a = getAllPercorsi()[0].attivita[1]; a.lancio = (a.lancio||'') + ' Seconda novità.'; _clTouched = true; _clUserAt = Date.now(); saveData(true); });
 await sleep(9500);
 { const trk = await ev(pb.page, () => window._trk); const dev = Math.max(...trk) - Math.min(...trk);

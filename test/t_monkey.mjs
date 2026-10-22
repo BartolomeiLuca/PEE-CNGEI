@@ -18,7 +18,7 @@ for (let i = 0; i < N; i++) {
   const act = await ev(([r1, r2, BADs]) => {
     const BAD = new RegExp(BADs, 'i');
     const vis = el => { const b = el.getBoundingClientRect(); return b.width > 2 && b.height > 2 && getComputedStyle(el).visibility !== 'hidden' && el.offsetParent !== null; };
-    const pool = [...document.querySelectorAll('button, a[href="#"], a[onclick], summary, input:not([type=file]):not([type=hidden]), textarea, select')]
+    const pool = [...document.querySelectorAll('button, a[href="#"], a[onclick], summary, :is(input,textarea):not([type=file]):not([type=hidden]), textarea, select')]
       .filter(e => vis(e) && !e.disabled && !BAD.test((e.textContent || e.value || e.title || e.getAttribute('aria-label') || '').slice(0, 80)));
     if (!pool.length) return {k: 'none'};
     const el = pool[Math.floor(r1 * pool.length)]; const tag = el.tagName, txt = (el.textContent || el.placeholder || el.name || '').trim().replace(/\s+/g, ' ').slice(0, 40);

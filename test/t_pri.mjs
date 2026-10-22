@@ -17,10 +17,10 @@ ok(ord.sel === 'P5,C3,S3' && ord.amb === 'P,C,S' && ord.per.startsWith('P5,C3,S3
 ok(await ev(() => getAllPercorsi()[0].attivita[0].testo === 'Officina di Pattuglia'), 'le attività restano attaccate al loro percorso (P5)');
 // Sezione 2 → 3: necessità
 await ev(() => { gGo('2'); }); await sleep(600);
-const nec = P.locator('input[oninput="priNec(0,this.value)"]');
+const nec = P.locator(':is(input,textarea)[oninput="priNec(0,this.value)"]');
 await nec.fill('Necessità P scritta nella Sezione 2'); await sleep(300);
 await ev(() => { gGo('3'); }); await sleep(600);
-const s3 = P.locator('input[oninput="priNec(0,this.value)"]');
+const s3 = P.locator(':is(input,textarea)[oninput="priNec(0,this.value)"]');
 ok((await s3.inputValue()) === 'Necessità P scritta nella Sezione 2', 'necessità: dalla 2 alla 3');
 await ev(() => { gGo('2'); }); await sleep(500); await nec.fill('Necessità P cambiata'); await sleep(300);
 await ev(() => { gGo('3'); }); await sleep(500);

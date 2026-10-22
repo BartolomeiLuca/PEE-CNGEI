@@ -13,7 +13,7 @@ const pd = await person(br, db), PD = pd.page;
 await loginAs(PD, base, D); await sleep(1200);
 await PD.evaluate(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(3000);
 await PD.evaluate(() => gGo('1a')); await sleep(1200);
-const d = await PD.evaluate(() => [...document.querySelectorAll('#staff-tab tbody tr')].map(r => ({t: r.cells[0].textContent.trim(), chk: !!r.cells[0].querySelector('input.st-chk:not([disabled])')})));
+const d = await PD.evaluate(() => [...document.querySelectorAll('#staff-tab tbody tr')].map(r => ({t: r.cells[0].textContent.trim(), chk: !!r.cells[0].querySelector(':is(input,textarea).st-chk:not([disabled])')})));
 console.log(JSON.stringify(d));
 ok(d[0].t === 'titolare' && !d[0].chk, 'co-titolare: riga del titolare senza spunta');
 ok(/co-titolare/.test(d[3].t) && !d[3].chk, 'co-titolare: l’altro co-titolare non si tocca');

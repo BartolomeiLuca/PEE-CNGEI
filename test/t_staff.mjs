@@ -42,7 +42,7 @@ ok(await ev(P, () => STAFF_MEMBERS.join('|')) === 'Paolo Riva|Elena Sarti', 'agg
 const pr = await ev(P, () => staffProfiles['Paolo Riva']);
 ok(pr.eta === '24' && pr.ruolo === 'VCU' && pr.formazione === 'base' && pr.src.tel === '3331112222', 'età, ruolo, formazione, telefono compilati ' + JSON.stringify(pr).slice(0, 120));
 const prof = await ev(P, () => { stPick(0); stGo('prof'); return document.getElementById('st-main').textContent; });
-ok(/si modificano\s*lì/.test(prof) && /Creativo/.test(prof) && !(await ev(P, () => !!document.querySelector('#st-main .st-f input[type=number]'))), 'Profilo: campi collegati in sola lettura con la nota');
+ok(/si modificano\s*lì/.test(prof) && /Creativo/.test(prof) && !(await ev(P, () => !!document.querySelector('#st-main .st-f :is(input,textarea)[type=number]'))), 'Profilo: campi collegati in sola lettura con la nota');
 // passaggi in alto
 const steps = await ev(P, () => [...document.querySelectorAll('#g-subnav .gsn-step')].map(b => b.textContent));
 ok(steps.length === 4 && /Profilo/.test(steps[0]) && /Scheda di osservazione/.test(steps[1]) && /Lettura individuale/.test(steps[2]) && /Evoluzione/.test(steps[3]), 'barra dei passaggi ' + JSON.stringify(steps));
@@ -84,7 +84,7 @@ const dl = [];
 P.on('download', d => dl.push(d.suggestedFilename()));
 await ev(P, () => exportExcel()); await sleep(3500);
 ok(dl.some(f => /\.xlsx$/.test(f)), 'Excel dello staff scaricato ' + dl.join(','));
-await ev(P, () => { showExportDialog(); document.querySelector('input[value="aggregated"]').checked = true; executeExport(); }); await sleep(3500);
+await ev(P, () => { showExportDialog(); document.querySelector(':is(input,textarea)[value="aggregated"]').checked = true; executeExport(); }); await sleep(3500);
 ok(dl.some(f => /VistaAggregata/.test(f)), 'Word (vista aggregata) scaricato');
 // «Scarica tutto»: un unico Word con l'aggregata e poi gli individuali
 { const waitDl = P.waitForEvent('download');

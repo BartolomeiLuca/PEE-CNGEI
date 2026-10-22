@@ -18,8 +18,8 @@ const [p, j] = await ev(() => { const all = getAllPercorsi(); const i = all.find
 const AX = `#ax-${p}-${j}`;
 await ev(([p, j]) => { const x = axX(p, j); x.luogo.mezzo = 'bus'; x.luogo.km = ''; delete x.luogo.lat; delete x.luogo.lon; delete x.luogo.nomeAddr; x.luogo.nome = 'Rifugio Cotaline'; axSave(); ['chi','log','durante','mat','pasti','costi','sic','circ','imp'].forEach(k => axOpen[p+'-'+j+'-'+k] = true); axRe(p, j); let e = document.getElementById('ax-'+p+'-'+j); while(e){ if(e.tagName === 'DETAILS') e.open = true; e = e.parentElement; } document.querySelectorAll('#ax-'+p+'-'+j+' details').forEach(d => d.open = true); }, [p, j]); await sleep(300);
 const km = () => P.locator(`${AX} #ax-km-${p}-${j}`).inputValue();
-const NEWFROM = await P.locator(`${AX} input[oninput*="luogo.from"]`).count() === 0;   // anteprima: la partenza è il luogo di ritrovo
-const FROM = () => NEWFROM ? P.locator(`${AX} input[oninput*="'ritrovoDove'"]`) : P.locator(`${AX} input[oninput*="luogo.from"]`);
+const NEWFROM = await P.locator(`${AX} :is(input,textarea)[oninput*="luogo.from"]`).count() === 0;   // anteprima: la partenza è il luogo di ritrovo
+const FROM = () => NEWFROM ? P.locator(`${AX} :is(input,textarea)[oninput*="'ritrovoDove'"]`) : P.locator(`${AX} :is(input,textarea)[oninput*="luogo.from"]`);
 const RIT = NEWFROM ? 'Pesaro' : 'piazza del Popolo';
 // 4. distanza
 ok(await P.locator(`${AX} button:visible`, {hasText:'Calcola distanza'}).count() === 1, 'c’è il pulsante «Calcola distanza» accanto ai km');
@@ -34,18 +34,18 @@ const k2 = await km(); const exp2 = String(Math.round(2 * (0.04 * 111 + 0.62 * 8
 ok(k2 === exp2, 'cambiando la partenza i km si ricalcolano da soli (' + k1 + ' → ' + k2 + ')');
 ok(await ev(() => document.activeElement && /luogo\.from|ritrovoDove/.test(document.activeElement.getAttribute('oninput') || '')), 'il ricalcolo non toglie il cursore dal campo');
 await FROM().fill('Pesaro'); await sleep(200);
-await P.locator(`${AX} input[oninput*="axPlaceIn"][oninput*="'nome'"]`).fill('Urbino'); await sleep(2600);
+await P.locator(`${AX} :is(input,textarea)[oninput*="axPlaceIn"][oninput*="'nome'"]`).fill('Urbino'); await sleep(2600);
 const k3 = await km(); const exp3 = String(Math.round(2 * (0.18 * 111 + 0.27 * 80)));
 ok(k3 === exp3, 'cambiando la destinazione i km si ricalcolano (' + k3 + ', atteso ' + exp3 + ')');
 // 5. rientro
 const same = () => P.locator(`#ax-same-${p}-${j}`);
 ok(await same().isChecked(), '«Rientro nello stesso luogo della partenza» spuntato se ritrovo e rientro coincidono');
-ok(await P.locator(`${AX} input[oninput*="'rientroDove'"]`).count() === 0, 'con la spunta il campo del rientro non si compila due volte');
-await P.locator(`${AX} input[oninput*="'ritrovoDove'"]`).fill(RIT); await sleep(400);
+ok(await P.locator(`${AX} :is(input,textarea)[oninput*="'rientroDove'"]`).count() === 0, 'con la spunta il campo del rientro non si compila due volte');
+await P.locator(`${AX} :is(input,textarea)[oninput*="'ritrovoDove'"]`).fill(RIT); await sleep(400);
 ok(await ev(([p, j]) => axX(p, j).luogo.rientroDove, [p, j]) === RIT, 'il rientro segue il ritrovo (anche per la circolare)');
 await same().uncheck(); await sleep(300);
-ok(await P.locator(`${AX} input[oninput*="'rientroDove'"]`).count() === 1, 'togliendo la spunta compare il luogo di rientro');
-await P.locator(`${AX} input[oninput*="'rientroDove'"]`).fill('Stazione centrale'); await sleep(2600);
+ok(await P.locator(`${AX} :is(input,textarea)[oninput*="'rientroDove'"]`).count() === 1, 'togliendo la spunta compare il luogo di rientro');
+await P.locator(`${AX} :is(input,textarea)[oninput*="'rientroDove'"]`).fill('Stazione centrale'); await sleep(2600);
 const k4 = await km(); const g = (a, b) => Math.abs(a[0] - b[0]) * 111 + Math.abs(a[1] - b[1]) * 80; const exp4 = String(Math.round(g(CITY.pesaro, CITY.urbino) + g(CITY.urbino, CITY.stazione)));
 ok(k4 === exp4, 'con un rientro diverso i km sono andata + ritorno fino al rientro (' + k4 + ', atteso ' + exp4 + ')');
 await sleep(1200); await P.reload(); await sleep(2500); await ev(() => gGo('3')); await sleep(800);

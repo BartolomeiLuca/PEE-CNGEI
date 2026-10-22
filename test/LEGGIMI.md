@@ -47,3 +47,6 @@ Uscite e campi (anteprima del 20 ottobre, disegno 4): solo in `anteprima/index.h
 
 ## 22 ottobre — collaudo definitivo (t_coll.mjs)
 `node t_coll.mjs <motore> [profili]`: titolare, co-titolare, collaboratrice, lettore, amministratore archivio ed estranea × 8 profili di dispositivo; scalette (tocco vero sulle frecce), Cerca/Apri, Proponi, uscite, archivio nazionale con regole emulate (harness.mjs: tabella pee_archivio_nazionale), salto fra progetti, Word. Lanciare un motore alla volta (porta 8080).
+
+## 22 ottobre sera — campi a riga singola che si allungano
+I campi `<input type=text>` diventano `<textarea data-conv>` (stessa grafica, vanno a capo): nei test usare `:is(input,textarea)` o `textarea:not([data-conv])` per i campi lunghi. audit_grow.mjs (in work) controlla che ogni campo cresca.

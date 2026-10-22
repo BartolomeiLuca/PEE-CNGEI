@@ -12,8 +12,8 @@ ok(arrows === 0, '9. Sezione 3: niente «Sposta su/giù» accanto ai percorsi ('
 ok(await ev(() => [...document.querySelectorAll('.pcx-hd button')].some(b => /Togli dalla Scheda|Rimuovi/.test(b.title)) || document.querySelectorAll('.pcx-hd').length > 0), '9. restano le intestazioni dei percorsi (con «Togli dalla Scheda» / «Rimuovi» dove servono)');
 // 13
 const r = await ev(() => { const v = e => e ? (e.spellcheck + ':' + (e.lang || '')) : 'manca';
-  return { lancio: v(document.querySelector('textarea[oninput*="\'lancio\'"]')), titolo: v(document.querySelector('input[oninput*="\'testo\'"]')),
-    nota: v(document.querySelector('textarea.cl3-note')), link: v(document.querySelector('input[inputmode="url"]')) }; });
+  return { lancio: v(document.querySelector('textarea[oninput*="\'lancio\'"]')), titolo: v(document.querySelector(':is(input,textarea)[oninput*="\'testo\'"]')),
+    nota: v(document.querySelector('textarea.cl3-note')), link: v(document.querySelector(':is(input,textarea)[inputmode="url"]')) }; });
 ok(r.lancio === 'true:it' && r.titolo === 'true:it' && r.nota === 'true:it', '13. testi liberi con controllo ortografico in italiano ' + JSON.stringify(r));
 ok(/^false/.test(r.link) || r.link === 'manca', '13. niente controllo sugli indirizzi web (' + r.link + ')');
 await ev(() => gGo('1a')); await sleep(900);
@@ -27,7 +27,8 @@ await ev(() => gGo('3')); await sleep(800);
 const [p, j] = await ev(() => [getAllPercorsi().findIndex(x => x.percorsoId === 'S3'), 1]);
 await ev(([p, j]) => { ['circ'].forEach(k => axOpen[p+'-'+j+'-'+k] = true); axRe(p, j); axMsg(p, j); }, [p, j]); await sleep(500);
 ok(await ev(([p, j]) => { const e = document.getElementById('ax-msgt-' + p + '-' + j); return !!e && e.spellcheck === true && e.lang === 'it'; }, [p, j]), '13. anche il messaggio modificabile creato dopo (contenteditable)');
-await ev(() => attAdd(getAllPercorsi().findIndex(x => x.percorsoId === 'P5'))); await sleep(500);
+await ev(() => attAdd(getAllPercorsi().findIndex(x => x.percorsoId === 'P5'))); await sleep(2500);
+console.log('DBG', JSON.stringify(await ev(() => [...document.querySelectorAll('textarea[oninput*="\'lancio\'"]')].filter(t => !(t.spellcheck === true && t.lang === 'it')).map(t => [t.id, t.spellcheck, t.lang, t.dataset.spk, t.offsetParent === null]))));
 ok(await ev(() => [...document.querySelectorAll('textarea[oninput*="\'lancio\'"]')].every(t => t.spellcheck === true && t.lang === 'it')), '13. e nelle attività aggiunte dopo');
 ok(await ev(() => FAQ.some(f => /controllo ortografico/i.test(f[1]) && /Safari/.test(f[2]) && /Firefox/.test(f[2]))), '13. nelle FAQ: come attivarlo su Safari e Firefox');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));

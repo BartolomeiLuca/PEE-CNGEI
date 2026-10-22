@@ -7472,7 +7472,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-22 · beta';
-const APP_BUILD='202610222024'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610222354'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -10007,7 +10007,40 @@ function gGo(k){
     const de = document.documentElement, y = window.scrollY, mh = de.style.minHeight; de.style.minHeight = de.scrollHeight + 'px';
     const h0 = el.style.height; el.style.height = 'auto'; const n = el.scrollHeight + bord; el.style.height = (n > 0 ? n : h0) + 'px'; el.style.overflowY = 'hidden';
     de.style.minHeight = mh; if(window.scrollY !== y) window.scrollTo(0, y); }
-  function fitIn(root){ try{ (root && root.querySelectorAll ? root : document).querySelectorAll('textarea').forEach(fit); }catch(e){} try{ window.spIn && spIn(root && root.querySelectorAll ? root : document); }catch(e){} }
+  // ── i campi a riga singola diventano campi che si allungano da soli (stessa grafica, vanno a capo quando serve) ──
+  const NOCONV = /mail|\btel\b|telefono|link|\burl\b|sito|social|iban|\bcf\b|sedeCF|codice|password|\b(lat|lon|km)\b|importo|prezzo|\bcap\b|\bpec\b/i;
+  const CP = ['display','width','min-width','max-width','flex-grow','flex-shrink','flex-basis','grid-column-start','grid-column-end','align-self','justify-self','margin-top','margin-right','margin-bottom','margin-left','padding-top','padding-right','padding-bottom','padding-left',
+    'border-top-width','border-right-width','border-bottom-width','border-left-width','border-top-style','border-right-style','border-bottom-style','border-left-style','border-top-color','border-right-color','border-bottom-color','border-left-color',
+    'border-top-left-radius','border-top-right-radius','border-bottom-left-radius','border-bottom-right-radius','font-family','font-size','font-weight','font-style','line-height','letter-spacing','text-transform','text-align','color','background-color','box-sizing','opacity'];
+  function convOk(el){ try{ if(!el || el.tagName !== 'INPUT' || !el.isConnected) return false;
+    if((el.getAttribute('type')||'text').toLowerCase() !== 'text') return false;
+    if(el.hasAttribute('data-noauto') || el.hasAttribute('list')) return false;
+    const im = (el.getAttribute('inputmode')||'').toLowerCase(); if(['url','email','tel','numeric','decimal'].includes(im)) return false;
+    const ac = (el.getAttribute('autocomplete')||'').toLowerCase(); if(ac && ac !== 'off') return false;
+    const hint = (el.getAttribute('oninput')||'') + ' ' + (el.getAttribute('onchange')||'') + ' ' + (el.id||'') + ' ' + (el.name||''); if(NOCONV.test(hint)) return false;
+    if(/@|https?:|www\.|drive\.google/i.test(el.getAttribute('placeholder')||'')) return false;
+    const ml = parseInt(el.getAttribute('maxlength')||'0', 10); if(ml && ml <= 12) return false;
+    if(el.closest('#welcome-screen,#auth-box,.auth-box,#cl-auth')) return false;
+    return true; }catch(e){ return false; } }
+  function convList(list){ try{
+    const snaps = list.filter(el => convOk(el) && el.offsetParent !== null).map(el => { const cs = getComputedStyle(el), par = el.parentElement; let pw = 0; if(par){ const pc = getComputedStyle(par); pw = par.clientWidth - (parseFloat(pc.paddingLeft)||0) - (parseFloat(pc.paddingRight)||0); }
+      const o = {}; CP.forEach(p => { o[p] = cs.getPropertyValue(p); }); return {el, o, w: el.offsetWidth, h: el.offsetHeight, pw, act: document.activeElement === el, ss: el.selectionStart, se: el.selectionEnd}; });
+    snaps.forEach(s => { const el = s.el; if(!el.isConnected) return; const t = document.createElement('textarea');
+      [...el.attributes].forEach(a => { if(['type','value','size','list'].includes(a.name)) return; try{ t.setAttribute(a.name, a.value); }catch(e){} });
+      t.value = el.value; t.rows = 1; t.dataset.conv = '1'; t.setAttribute('wrap', 'soft');
+      Object.keys(s.o).forEach(p => { if(s.o[p] !== '') t.style.setProperty(p, s.o[p]); });
+      const grow = parseFloat(s.o['flex-grow']) > 0;
+      if(grow) t.style.setProperty('width', 'auto'); else if(s.pw && Math.abs(s.w - s.pw) <= 2) t.style.setProperty('width', '100%'); else t.style.setProperty('width', s.w + 'px');
+      if(!/^(block|flex|grid)$/.test(s.o.display)) t.style.setProperty('display', 'inline-block');
+      t.style.setProperty('min-height', s.h + 'px'); t.style.setProperty('height', s.h + 'px'); t.style.setProperty('resize', 'none'); t.style.setProperty('overflow', 'hidden'); t.style.setProperty('vertical-align', 'top'); t.style.setProperty('overflow-wrap', 'anywhere');
+      el.replaceWith(t);
+      if(s.act){ try{ t.focus(); t.setSelectionRange(s.ss, s.se); }catch(e){} }
+      fit(t); }); }catch(e){} }
+  function convIn(root){ try{ const r = root && root.querySelectorAll ? root : document; const L = [...r.querySelectorAll('input')]; if(r.tagName === 'INPUT') L.push(r); if(L.length) convList(L); }catch(e){} }
+  document.addEventListener('focusin', e => { const t = e.target; if(t && t.tagName === 'INPUT' && convOk(t)) convList([t]); }, true);
+  document.addEventListener('keydown', e => { const t = e.target; if(t && t.tagName === 'TEXTAREA' && t.dataset.conv === '1' && e.key === 'Enter' && !e.isComposing){ e.preventDefault(); t.dispatchEvent(new Event('change', {bubbles:true})); } }, true);
+  document.addEventListener('input', e => { const t = e.target; if(t && t.tagName === 'TEXTAREA' && t.dataset.conv === '1' && /[\r\n]/.test(t.value)){ const p = t.selectionStart; t.value = t.value.replace(/\s*[\r\n]+\s*/g, ' '); try{ t.setSelectionRange(p, p); }catch(er){} } }, true);
+  function fitIn(root){ try{ convIn(root); }catch(e){} try{ (root && root.querySelectorAll ? root : document).querySelectorAll('textarea').forEach(fit); }catch(e){} try{ window.spIn && spIn(root && root.querySelectorAll ? root : document); }catch(e){} }
   window.taFit = fit; window.taFitAll = () => fitIn(document);
   // controllo ortografico del browser, in italiano, sui testi liberi (non su mail, telefoni, numeri, indirizzi web e codici)
   const NOSP = /mail|\btel\b|telefono|link|\burl\b|sito|social|iban|\bcf\b|sedeCF|codice|password|\b(lat|lon|km)\b|importo|prezzo/i;
@@ -10025,8 +10058,8 @@ function gGo(k){
   document.addEventListener('input', e => { if(ok(e.target)) fit(e.target); }, true);
   document.addEventListener('toggle', e => { if(e.target && e.target.open) requestAnimationFrame(() => fitIn(e.target)); }, true);
   let raf = 0, pend = new Set();
-  const mo = new MutationObserver(ms => { ms.forEach(m => m.addedNodes && m.addedNodes.forEach(n => { if(n.nodeType === 1) pend.add(n); }));
-    if(!raf) raf = requestAnimationFrame(() => { raf = 0; const L = [...pend]; pend.clear(); L.forEach(n => { if(n.tagName === 'TEXTAREA'){ fit(n); try{ spIn(n); }catch(e){} } else fitIn(n); }); }); });
+  const mo = new MutationObserver(ms => { ms.forEach(m => m.addedNodes && m.addedNodes.forEach(n => { if(n.nodeType === 1){ pend.add(n); if(n.tagName === 'INPUT' || n.querySelector('input')) convIn(n); try{ spIn(n); }catch(e){} } }));
+    if(!raf) raf = requestAnimationFrame(() => { raf = 0; const L = [...pend]; pend.clear(); L.forEach(n => { if(n.tagName === 'TEXTAREA'){ fit(n); try{ spIn(n); }catch(e){} } else { if(n.tagName === 'INPUT') convIn(n); else fitIn(n); } }); }); });
   const start = () => { try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){} fitIn(document); };
   if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { document.querySelectorAll('textarea').forEach(el => { if(ok(el)){ el.style.height = ''; } }); fitIn(document); }, 150); });
@@ -11863,7 +11896,7 @@ function dPara(content, o={}){
   const p = {
     children: kids,
     spacing: {before:o.before||0, after: o.after===undefined?100:o.after, line: o.line||300},
-    keepNext: !!o.keepNext, keepLines: true,
+    keepNext: !!o.keepNext, keepLines: !!(o.keepNext||o.keepLines),
     alignment: o.align==='center' ? D.AlignmentType.CENTER : o.align==='right' ? D.AlignmentType.RIGHT : D.AlignmentType.LEFT
   };
   if(o.bullet){ p.numbering = {reference:'bul', level:0}; }
@@ -11895,13 +11928,13 @@ function dCell(children, o={}){
 function dGridTable(heads, rows, widths, sz){
   const D=dxLib(); sz=sz||17;
   const hr=heads.map((h,i)=>dCell(dPara(h,{size:sz,bold:true,color:'FFFFFF',after:0}),{w:widths[i],fill:GREEN,border:GREEN}));
-  return dTable([hr, ...rows.map(r=>r.map((v,i)=>dCell(dMulti(v,{size:sz}),{w:widths[i],vAlign:D.VerticalAlign.TOP})))], widths);
+  return dTable([hr, ...rows.map(r=>r.map((v,i)=>dCell(dMulti(v,{size:sz}),{w:widths[i],vAlign:D.VerticalAlign.TOP})))], widths, true);
 }
-function dTable(rows, widths){
+function dTable(rows, widths, split){
   const D = dxLib();
   return new D.Table({
     width:{size:widths.reduce((a,b)=>a+b,0), type:D.WidthType.DXA}, columnWidths:widths, layout:D.TableLayoutType.FIXED,
-    rows: rows.map(r => new D.TableRow({children:r, cantSplit:true}))
+    rows: rows.map(r => new D.TableRow({children:r, cantSplit:!split}))
   });
 }
 const CW = 9638; // larghezza utile A4 con margini 20mm
@@ -11911,7 +11944,7 @@ function dKV(rows){
   return dTable(rows.map(([l, v]) => [
     dCell(l, {w:w[0], fill:PALE, bold:true, color:'444444', size:18, vAlign:dxLib().VerticalAlign.TOP}),
     dCell(v, {w:w[1], vAlign:dxLib().VerticalAlign.TOP})
-  ]), w);
+  ]), w, true);
 }
 // riga percorso con barra a 10 segmenti
 function dBarRows(items){
@@ -12158,10 +12191,9 @@ async function exportPPDocx(mode){
     const cl = per.checklist || {};
     const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
-      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{after:30,keepNext:true}),
+      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{before:acts[0].j===j?0:100,after:30,keepNext:true}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).map(k => dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240})),
       ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GREEN})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
-      dPara('',{after:40})
     ]) : '—';
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${typeof per.prioritaIdx==='number'?'':' (facoltativo)'}`));
     ch.push(dKV([
@@ -12173,7 +12205,7 @@ async function exportPPDocx(mode){
       ['Rielaborazione nel percorso', dMulti(per.rielab)],
       ['Le 7 caratteristiche', clKeys.map(k => { const v=cl3Val(cl[k]); const L={si:'Sì',parte:'In parte',no:'Non ancora'}[v]||'(da indicare)'; const C={si:'2E7D32',parte:'B07D00',no:'B3261E'}[v]||'777777'; return dPara([dTxt(`${clLab[k]}: `,{size:18,bold:true}), dTxt(L,{size:18,bold:true,color:C}), dTxt(' — '+(plain(cl[k]?.note)||'—'),{size:18})],{after:30}); })]
     ]));
-    ch.push(dPara('',{after:60}));
+    ch.push(dPara('',{size:4,after:0,line:120}));
   });
 
   if(fin){

@@ -61,7 +61,7 @@ ok(await ev(() => { const L = uscCur().ax.luogo; return L.tipo === 'sede' && L.r
 await ev(() => uscSetModello('campo')); await sleep(200);
 ok(await ev(() => uscCur().ax.luogo.tipo === 'uscita'), '…tornando a «Campo» il luogo non resta «in sede»');
 await P.locator('#usc-tab-m-log').click(); await sleep(300);
-ok(/si parte dal luogo di ritrovo/.test(await P.locator('.usc-modpage').textContent()) && await P.locator('.usc-modpage input[placeholder*="Città della Sezione"]').count() === 0, 'la partenza è il luogo di ritrovo');
+ok(/si parte dal luogo di ritrovo/.test(await P.locator('.usc-modpage').textContent()) && await P.locator('.usc-modpage :is(input,textarea)[placeholder*="Città della Sezione"]').count() === 0, 'la partenza è il luogo di ritrovo');
 // giornata 2: schema e tavolozza
 await P.locator('#usc-tab-2').click(); await sleep(300);
 await P.locator('.usc-empty2 button', {hasText:'Giornata tipo'}).click(); await sleep(500);
@@ -86,7 +86,7 @@ if(engine === 'chromium'){ await P.setViewportSize({width:1280, height:2600}); a
 // ora fissa
 const kP = await ev(() => uscBlocks(uscCur(), 2).find(o => o.m.t === 'Pranzo').k);
 await ev(k => USC_OPEN[k] = true, kP); await ev(() => uscRe()); await sleep(200);
-await P.locator(`#usc-b-${kP} input[type=checkbox]`).first().check(); await sleep(300);
+await P.locator(`#usc-b-${kP} :is(input,textarea)[type=checkbox]`).first().check(); await sleep(300);
 await P.locator(`#usc-b-${kP} .usc-brow select`).first().selectOption('12:30'); await sleep(300);
 const tp = await ev(k => axHM(uscTimes(uscCur(), 2)[k].s), kP);
 ok(tp === '12:30' && /📌/.test(await P.locator(`#usc-b-${kP} .usc-bt`).textContent()), 'ora fissa: il pranzo alle 12:30 con lo spillo');
@@ -120,7 +120,7 @@ const kA = await ev(() => { const R = uscBlocks(uscCur(), 2); return R[R.length-
 await P.locator(`#usc-b-${kA} .usc-pa`).first().click(); await sleep(400);
 ok(await ev(k => !!uscAttFind(uscCur().prog[k]), kA), 'blocco «Attività»: scelta un’attività della Sezione 3');
 await P.locator(`#usc-b-${kA} button`, {hasText:'Modifica qui'}).click(); await sleep(300);
-await P.locator(`#usc-b-${kA} textarea`).first().fill('LANCIO DALL’USCITA'); await sleep(300);
+await P.locator(`#usc-b-${kA} textarea:not([data-conv])`).first().fill('LANCIO DALL’USCITA'); await sleep(300);
 ok(await ev(k => uscAttFind(uscCur().prog[k]).a.lancio === 'LANCIO DALL’USCITA', kA), 'modificata nell’uscita, cambia nella Sezione 3 (stessa attività)');
 // campi del blocco: togli e rimetti, materiali da comprare nella spesa
 await ev(k => { USC_OPEN[k] = true; uscRe(); }, kH); await sleep(200);
@@ -132,7 +132,7 @@ await ev(k => { USC_OPEN[k] = true; uscRe(); }, kH); await sleep(100);
 ok(await P.locator(`#usc-b-${kH} details.usc-fld`).count() >= 4 && await P.locator(`#usc-b-${kH} details.usc-fld:not([open])`).count() >= 3 && /Cosa si fa/.test((await P.locator(`#usc-b-${kH} details.usc-fld summary`).allTextContents()).join('|')), 'i campi del blocco si aprono e si chiudono (chiusi all’inizio)');
 await ev(k => { USC_FOPEN[k+'|mat'] = true; USC_FOPEN[k+'|link'] = true; uscRe(); }, kH); await sleep(100);
 await P.locator(`#usc-b-${kH} button`, {hasText:'+ Materiale'}).click(); await sleep(200);
-await P.locator(`#usc-b-${kH} .ax-mat input[placeholder="Materiale"]`).first().fill('Cartine');
+await P.locator(`#usc-b-${kH} .ax-mat :is(input,textarea)[placeholder="Materiale"]`).first().fill('Cartine');
 await P.locator(`#usc-b-${kH} .ax-mat .ax-q`).first().fill('6');
 await P.locator(`#usc-b-${kH} .ax-mat select:not(.ax-qm)`).first().selectOption('comprare'); await sleep(300);
 await P.locator(`#usc-b-${kH} .ax-mat .ax-q`).nth(1).fill('5'); await sleep(300);
@@ -158,11 +158,11 @@ const q3 = await ev(() => axQuota(uscCur().ax));
 ok(q1 > q2 && q2 > q3 && Math.abs((q1 - q3) - 2*(q1 - q2)) < 0.01, `scenari: ${q1.toFixed(2)} > ${q2.toFixed(2)} (metà) > ${q3.toFixed(2)}`);
 ok(await ev(() => { const x = uscCur().ax, N = axN(x); const y = Object.assign({}, x, {spese:[{voce:'Pullman', importo:'660', modo:'forfait', carico:'ragazzi'}], mat:[], piatti:[], contrib:''}); Object.defineProperty(y, '__u', {value:'nessuna'}); const a = uscQ(y, 'ragazzi'), b = uscQ(y, 'capi'); return Math.abs(a - 660/N.rag) < 0.01 && Math.abs(b - 660/N.tot) < 0.01; }), 'anche una spesa «in tutto» (pullman) si divide tra tutti: i capi che non pagano pesano sui ragazzi');
 ok(await P.locator('.usc-modpage .ax-conto').count() === 0 && await P.locator('.usc-modpage .ax-quota-box').count() === 0, 'Cassa e quota senza ripetizioni (niente riquadro verde e riga grigia)');
-await P.locator('.usc-contrib input').first().fill('110'); await sleep(300);
+await P.locator('.usc-contrib :is(input,textarea)').first().fill('110'); await sleep(300);
 const q4 = await ev(() => axQuota(uscCur().ax));
 ok(Math.abs(q3 - q4 - 5) < 0.01 && /Contributo/.test(await ev(() => axQuotaConto(uscCur().ax))), 'contributo di 110 €: quota di 5 € più bassa');
 await P.locator('.usc-modpage .ax-chip', {hasText:'Bonifico alla Sezione'}).click(); await sleep(300);
-await P.locator('.usc-modpage input[placeholder^="IT00"]').fill('IT60 X054 2811 1010 0000 0123 456'); await P.locator('.usc-modpage input[placeholder^="es. CNGEI"]').fill('CNGEI Sezione di Pesaro'); await sleep(900);
+await P.locator('.usc-modpage :is(input,textarea)[placeholder^="IT00"]').fill('IT60 X054 2811 1010 0000 0123 456'); await P.locator('.usc-modpage :is(input,textarea)[placeholder^="es. CNGEI"]').fill('CNGEI Sezione di Pesaro'); await sleep(900);
 await P.locator('.usc-modpage .ax-chip', {hasText:'In contanti'}).count().then(n => ok(n === 1, 'si può scegliere anche «In contanti ai capi»'));
 // circolare dell'uscita (carta intestata nazionale)
 { const j = await ev(() => uscJ(USC_CUR)); const [d] = await Promise.all([P.waitForEvent('download', {timeout:30000}), ev(j => axMsgDocx(900, j), j)]);
@@ -191,7 +191,7 @@ await P.locator('.usc-menu tr').nth(2).locator('.usc-mc').nth(1).click(); await 
 if(!(await P.locator('#usc-meal-ed').count())){ await P.locator('.usc-menu tr').nth(2).locator('.usc-mc').nth(1).click(); await sleep(200); }
 await P.locator('#usc-meal-ed button', {hasText:'Piatto per pochi'}).click(); await sleep(300);
 await P.locator('.usc-dn').last().fill('Panini per l’hike');
-await P.locator('.usc-per input').last().fill('Pattuglia Volpi'); await P.locator('.usc-per select.usc-pn').last().selectOption('6'); await sleep(400);
+await P.locator('.usc-per :is(input,textarea)').last().fill('Pattuglia Volpi'); await P.locator('.usc-per select.usc-pn').last().selectOption('6'); await sleep(400);
 ok(await ev(() => uscMeals(uscCur().ax, 2, 'pranzo').some(t => t === 'Panini per l’hike (Pattuglia Volpi · 6 pers.)')), 'piatto per pochi: «per chi» e quante persone');
 await P.locator('.usc-dish').last().locator('.usc-ingn').last().fill('salsa segreta'); await P.locator('.usc-dish').last().locator('.usc-ingn').last().dispatchEvent('change'); await sleep(400);
 await ev(() => { const P0 = uscCur().ax.piatti.find(p => p.nome === 'Panini per l’hike'); const ig = P0.ingr.find(i => i.nome === 'salsa segreta'); ig.dose = '20'; ig.um = 'g'; saveData(true); uscRe(); }); await sleep(300);
@@ -220,7 +220,7 @@ ok(objH.pid === pidH && (objH.o||[]).length === 1 && (objH.i||[]).length === 1, 
 await P.locator(`#usc-b-${kH} button`, {hasText:'Porta nella programmazione'}).click(); await sleep(300);
 ok(/Consigliato: lavora sugli stessi obiettivi/.test(await P.locator(`#usc-b-${kH} .usc-mvo.best`).textContent()) && await P.locator(`#usc-b-${kH} .usc-mvo`).first().evaluate(e => e.classList.contains('best')), 'propone per primo il percorso con gli stessi obiettivi');
 await ev(k => { USC_FOPEN[k+'|scal'] = true; uscRe(); }, kH); await sleep(200);
-await P.locator(`#usc-b-${kH} .usc-scr input`).first().fill('Partenza dal campo'); await P.locator(`#usc-b-${kH} .usc-scr select`).first().selectOption('60'); await sleep(400);
+await P.locator(`#usc-b-${kH} .usc-scr :is(input,textarea)`).first().fill('Partenza dal campo'); await P.locator(`#usc-b-${kH} .usc-scr select`).first().selectOption('60'); await sleep(400);
 ok(await ev(k => { const m = uscCur().prog[k]; return (m.tt||[])[0].cosa === 'Partenza dal campo' && Number(m.tt[0].dur) === 60; }, kH) && /\d\d:\d\d/.test(await P.locator(`#usc-b-${kH} .usc-sct`).first().textContent()), 'scaletta anche nelle attività nate nell’uscita (orari dall’inizio del blocco)');
 const nAtt0 = await ev(i => getAllPercorsi()[i].attivita.filter(a => (a.testo||'').trim()).length, iP);
 await P.locator(`#usc-b-${kH} .usc-mvo.best button`).click(); await sleep(500);
@@ -230,10 +230,10 @@ ok(await ev(() => uscSpesa(uscCur())) >= 30, 'la spesa dell’uscita conta ancor
 ok(/^Partenza dal campo@\d\d:\d\d/.test(mv.tt||''), 'la scaletta passa nella Sezione 3 con l’ora d’inizio (' + mv.tt + ')');
 // attività della Sezione 3 nell'uscita: gli stessi campi, in tempo reale nei due sensi
 await ev(k => { USC_OPEN[k] = true; USC_FOPEN[k+'|a:mat'] = true; USC_FOPEN[k+'|a:sic'] = true; uscRe(); }, kH); await sleep(300);
-ok(await P.locator(`#usc-b-${kH} details.usc-fld[data-f="a:mat"] .ax-mat input[placeholder="Materiale"]`).count() >= 1 && await P.locator(`#usc-b-${kH} details.usc-fld[data-f="a:scal"]`).count() === 1, 'nel blocco i materiali dell’attività sono righe normali, come nella Sezione 3; c’è anche la scaletta');
+ok(await P.locator(`#usc-b-${kH} details.usc-fld[data-f="a:mat"] .ax-mat :is(input,textarea)[placeholder="Materiale"]`).count() >= 1 && await P.locator(`#usc-b-${kH} details.usc-fld[data-f="a:scal"]`).count() === 1, 'nel blocco i materiali dell’attività sono righe normali, come nella Sezione 3; c’è anche la scaletta');
 await P.locator(`#usc-b-${kH} details[data-f="a:mat"] button`, {hasText:'Aggiungi materiale'}).click(); await sleep(300);
-await P.locator(`#usc-b-${kH} details[data-f="a:mat"] .ax-mat input[placeholder="Materiale"]`).last().fill('Bussole'); await sleep(300);
-await P.locator(`#usc-b-${kH} details[data-f="a:sic"] textarea`).first().fill('Attraversamento della statale: in fila con un capo in testa'); await sleep(300);
+await P.locator(`#usc-b-${kH} details[data-f="a:mat"] .ax-mat :is(input,textarea)[placeholder="Materiale"]`).last().fill('Bussole'); await sleep(300);
+await P.locator(`#usc-b-${kH} details[data-f="a:sic"] textarea:not([data-conv])`).first().fill('Attraversamento della statale: in fila con un capo in testa'); await sleep(300);
 ok(await ev(k => { const f = uscAttFind(uscCur().prog[k]); return (f.a.ax.mat||[]).some(r => r.cosa === 'Bussole') && /statale/.test(f.a.ax.sic.rischi); }, kH), 'scritti nell’uscita: materiale e sicurezza sono subito nell’attività della Sezione 3');
 await ev(k => { const f = uscAttFind(uscCur().prog[k]); updateAttivita(f.idx, f.j, 'incRischi', 'Attenzione a chi si stanca presto'); uscRe(); }, kH); await sleep(200);
 ok(/chi si stanca presto/.test(await P.locator(`#usc-b-${kH} details[data-f="a:ben"] summary`).textContent()), 'scritto nella Sezione 3: si vede subito nel blocco dell’uscita');
@@ -241,15 +241,15 @@ await ev(k => { const m = uscCur().prog[k]; delete m._mig; m.pb = 'Se piove si r
 ok(await ev(k => { const m = uscCur().prog[k]; const f = uscAttFind(m); return !m.pb && /resta al rifugio/.test(f.a.pianoB||''); }, kA), 'il piano B scritto sul blocco (versione di prima) passa all’attività');
 await P.locator('#usc-tab-m-mat').click(); await sleep(300);
 await ev(() => { USC_FOPEN['pd|mat|2'] = true; uscRe(); }); await sleep(200);
-ok(await P.locator('.usc-modpage .usc-axw .ax-mat input[placeholder="Materiale"]').count() >= 2 && await P.locator('.usc-modpage details.usc-mpd').count() >= 1 && await P.locator('.usc-modpage details.usc-pdday').count() === 4, 'Materiali: comuni e giornate collassabili, i materiali delle attività esplosi e modificabili');
+ok(await P.locator('.usc-modpage .usc-axw .ax-mat :is(input,textarea)[placeholder="Materiale"]').count() >= 2 && await P.locator('.usc-modpage details.usc-mpd').count() >= 1 && await P.locator('.usc-modpage details.usc-pdday').count() === 4, 'Materiali: comuni e giornate collassabili, i materiali delle attività esplosi e modificabili');
 await P.locator('#usc-tab-m-chi').click(); await sleep(200);
 ok(!/giornata per giornata/i.test(await P.locator('.usc-modpage').textContent()), 'in «Persone e date» niente «giornata per giornata»');
 // spostamenti: come ritrovo e trasporti, anche andata e ritorno
 await P.locator('#usc-tab-m-log').click(); await sleep(300);
 await P.locator('.usc-modpage .usc-pdday').nth(2).locator('button', {hasText:'Spostamento in questa giornata'}).evaluate(e => e.click()); await sleep(400);
 const tr = P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first();
-ok(await tr.locator('input').first().inputValue() === '' && (await tr.locator('input').first().getAttribute('placeholder')) !== null, 'nuovo spostamento con partenza, arrivo, ora, mezzo, km e ritorno');
-await tr.locator('input').nth(1).fill('Rifugio Cotaline');
+ok(await tr.locator(':is(input,textarea)').first().inputValue() === '' && (await tr.locator(':is(input,textarea)').first().getAttribute('placeholder')) !== null, 'nuovo spostamento con partenza, arrivo, ora, mezzo, km e ritorno');
+await tr.locator(':is(input,textarea)').nth(1).fill('Rifugio Cotaline');
 await tr.locator('select').nth(0).selectOption('09:00'); await sleep(400);
 await P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first().locator('select').nth(1).selectOption('bus'); await sleep(300);
 await P.locator('.usc-modpage .usc-pdday').nth(2).locator('.usc-trip').first().locator('select').nth(2).selectOption('giorno'); await sleep(300);
@@ -337,9 +337,9 @@ await P.locator('body').click({position:{x:5, y:5}}); await sleep(9000);
   await loginAs(PC, base, Cu); await sleep(1200);
   await ec(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(3500);
   await ec(([id, a, b]) => { uscOpen(id, 2); USC_OPEN[a] = true; USC_OPEN[b] = true; USC_FOPEN[a+'|desc'] = true; USC_FOPEN[b+'|desc'] = true; uscRe(); }, [uid, kC, kS]); await sleep(2500);
-  const st = await ec(([a, b]) => ({mio: !document.querySelector('#usc-b-' + a + ' textarea').disabled, altro: !document.querySelector('#usc-b-' + b + ' textarea').disabled, tab: !document.getElementById('usc-tab-3').disabled, pal: [...document.querySelectorAll('.usc-pi')].every(e => e.disabled), apri: !document.querySelector('#usc-b-' + b + ' .usc-bh [aria-expanded]').disabled}), [kC, kS]);
+  const st = await ec(([a, b]) => ({mio: !document.querySelector('#usc-b-' + a + ' textarea:not([data-conv])').disabled, altro: !document.querySelector('#usc-b-' + b + ' textarea:not([data-conv])').disabled, tab: !document.getElementById('usc-tab-3').disabled, pal: [...document.querySelectorAll('.usc-pi')].every(e => e.disabled), apri: !document.querySelector('#usc-b-' + b + ' .usc-bh [aria-expanded]').disabled}), [kC, kS]);
   ok(st.mio && !st.altro && st.tab && st.pal && st.apri, 'collaboratrice: modifica il blocco affidato a lei, gli altri li apre e li legge, si sposta tra le schede, non aggiunge momenti ' + JSON.stringify(st));
-  await PC.locator('#usc-b-' + kC + ' textarea').first().fill('Angolo di Pattuglia (scritto da Carla)'); await PC.locator('body').click({position:{x:5, y:5}}); await sleep(9000);
+  await PC.locator('#usc-b-' + kC + ' textarea:not([data-conv])').first().fill('Angolo di Pattuglia (scritto da Carla)'); await PC.locator('body').click({position:{x:5, y:5}}); await sleep(9000);
   ok(await ev(k => uscCur().prog[k].desc, kC) === 'Angolo di Pattuglia (scritto da Carla)', '…e quello che scrive arriva a chi ha il progetto');
   await PC.close(); }
 // lettrice

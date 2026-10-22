@@ -17,7 +17,7 @@ for (const [F, nA, lab] of [['L', 4, 'Branco'], ['R', 3, 'Compagnia']]) {
   }
   ok(!over.length, lab + ': nessuna sezione larga più dello schermo ' + over.join(','));
   await ev(() => gGo('1a')); await sleep(500);
-  const n = await ev(() => { const d = document.querySelector('#num-box'); if (!d) return -1; return d.querySelectorAll('input[type=number]').length; });
+  const n = await ev(() => { const d = document.querySelector('#num-box'); if (!d) return -1; return d.querySelectorAll(':is(input,textarea)[type=number]').length; });
   ok(n === 3 + nA, lab + ': riquadro numeri con ' + (3 + nA) + ' campi (' + n + ')');
   await ev(() => { scheda.pp.numTot = '18'; scheda.pp.numM = '9'; scheda.pp.numF = '9'; scheda.pp.numAnn = ['5','5','4','4']; saveData(true); });
   const [d] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev(() => exportSchedaDocx())]);

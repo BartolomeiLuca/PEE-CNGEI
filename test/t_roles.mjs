@@ -77,7 +77,7 @@ const ban = await ev(pa.page, () => [...document.querySelectorAll('.ed-aff')].ma
 ok(ban.some(t => /affidata a Bruno Verdi/.test(t)) && ban.some(t => /affidata a Dario Blu/.test(t)), '18. «Questa parte è affidata a X» per le parti di Bruno e Dario (' + ban.length + ' avvisi)');
 const lockA = await ev(pa.page, () => { const d = document.getElementById('att-0-0'); const f = [...d.querySelectorAll('textarea,input,select')]; return {n:f.length, dis:f.filter(e => e.disabled).length}; });
 ok(lockA.n > 0 && lockA.dis === lockA.n, '18. attività di Bruno: tutti i campi in sola lettura per Anna (' + lockA.dis + '/' + lockA.n + ')');
-const freeA = await ev(pa.page, () => { const d = document.getElementById('att-0-2'); const t = d.querySelector('input[type=text]'); return t && !t.disabled; });
+const freeA = await ev(pa.page, () => { const d = document.getElementById('att-0-2'); const t = d.querySelector(':is(input,textarea)[type=text]'); return t && !t.disabled; });
 ok(freeA, '18. attività non affidata: Anna modifica liberamente');
 const logLock = await ev(pa.page, () => { const g = document.querySelector('#att-0-2 details.ax-g[data-k="log"]'); return g && [...g.querySelectorAll('input,select,textarea')].every(e => e.disabled) && !!g.querySelector('.ed-aff'); });
 ok(logLock, '25. la logistica affidata a Bruno è in sola lettura, con l’avviso');
@@ -90,7 +90,7 @@ await sleep(400);
 pa.page.__answer = true;
 await pa.page.locator('#att-lock-0-0 .ed-aff >> text=Modifica comunque').click();
 await sleep(500);
-const unl = await ev(pa.page, () => { const d = document.getElementById('att-0-0'); const t = d.querySelector('input[type=text]'); return t && !t.disabled; });
+const unl = await ev(pa.page, () => { const d = document.getElementById('att-0-0'); const t = d.querySelector(':is(input,textarea)[type=text]'); return t && !t.disabled; });
 ok(unl, '18. «Modifica comunque»: dopo la conferma Anna può modificare');
 const av = await ev(pa.page, () => (scheda.avvisi||[]).map(a => a.tipo + ':' + a.a));
 ok(JSON.stringify(av) === JSON.stringify(['sugg:bruno@x.it','mod:bruno@x.it']), '18. avvisi per Bruno salvati nel progetto: ' + JSON.stringify(av));
@@ -138,7 +138,7 @@ ok(b3.log > 0 && b3.sic === 0, '24. referente della logistica: modifica solo la 
 ok(b3.navOn && b3.addOff, '17. navigazione e Word attivi, «+ Aggiungi» disattivato');
 ok(b3.aff, '15. il collaboratore non cambia il referente');
 // Bruno modifica la sua attività → arriva ad Anna
-await pb.page.fill('#att-0-0 input[type=text]', 'Officina di Pattuglia di Bruno');
+await pb.page.fill('#att-0-0 :is(input[type=text],textarea[data-conv]) >> nth=0', 'Officina di Pattuglia di Bruno');
 await sleep(4500);
 const fromB = db.t.pee_archivi.find(r => r.id === pid).data.scheda.percorsiExtra[0].attivita[0].testo;
 ok(fromB === 'Officina di Pattuglia di Bruno', '21. la modifica di Bruno è nel progetto comune');
@@ -182,7 +182,7 @@ await ev(pc.page, () => goPhaseInternal(2)); await sleep(800);
 const add13 = pc.page.locator('.sg13[data-k="13:P:positivi"] .sg-add');
 ok(await add13.isVisible(), '13. lettrice: «+ Suggerisci» sotto gli aspetti positivi');
 await add13.click();
-await pc.page.fill('.sg13[data-k="13:P:positivi"] textarea', 'Le Pattuglie si aiutano nei lavori manuali');
+await pc.page.fill('.sg13[data-k="13:P:positivi"] textarea:not([data-conv])', 'Le Pattuglie si aiutano nei lavori manuali');
 await pc.page.click('.sg13[data-k="13:P:positivi"] >> text=Invia suggerimento');
 await sleep(1500);
 ok(db.t.pee_suggerimenti.some(x => x.percorso === '13:P:positivi'), '13. suggerimento salvato');
@@ -201,7 +201,7 @@ ok(tocca, '19. «tocca a te» accanto al materiale da procurare');
 // ── Bruno suggerisce nella 1.3 come collaboratore ──
 await ev(pb.page, () => goPhaseInternal(2)); await sleep(800);
 ok(await pb.page.isVisible('.sg13[data-k="13:C:necessita"] .sg-add'), '13. collaboratore: «+ Suggerisci» sotto le necessità');
-const bDis = await ev(pb.page, () => [...document.querySelectorAll('#g-lettura textarea')].filter(t => !t.closest('.sg13')).every(t => t.disabled));
+const bDis = await ev(pb.page, () => [...document.querySelectorAll('#g-lettura textarea:not([data-conv])')].filter(t => !t.closest('.sg13')).every(t => t.disabled));
 ok(bDis, '15. collaboratore: i testi della 1.3 non si modificano');
 
 // ── 2: cambio email di Carla ──
