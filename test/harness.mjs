@@ -26,7 +26,7 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[]}; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[]}; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
   user(id){ return this.users.find(u => u.id === id); }
   pubUser(u){ return u ? {id:u.id, email:u.email, user_metadata:Object.assign({}, u.meta), new_email:u.pending||undefined} : null; }
   addUser(email, password = 'password123', nome = ''){ const u = {id:uuid(), email:email.toLowerCase(), password, meta: nome ? {nome} : {}}; this.users.push(u); return u; }
@@ -43,6 +43,7 @@ export class FakeDB {
       case 'pee_versioni': return r.user_id === uid || this.canEdit(uid, r.archivio_id);
       case 'pee_suggerimenti': return this.isOwner(uid, r.archivio_id) || (r.user_id === uid && !!this.mem(uid, r.archivio_id)) || (this.sql13 && (this.isCot(uid, r.archivio_id) || (r.dest && r.dest === em)));
       case 'pee_gruppi': return true;
+      case 'pee_archivio_nazionale': return r.stato === 'approvata' || r.autore_id === uid || em === 'luca.bartolomei@cngei.it';
       default: return false;
     }
   }
@@ -103,6 +104,7 @@ export class FakeDB {
           const ok = (this.mem(uid, r.archivio_id) || (this.sql13 && this.isOwner(uid, r.archivio_id))) && r.stato === 'nuovo';
           if(!ok) return this.err('42501', 'new row violates row-level security policy');
           if(r.dest && !this.sql13) return this.err('42703', 'column "dest" does not exist'); }
+        if(q.table === 'pee_archivio_nazionale'){ r.autore_id = uid; r.stato = v0.stato || 'in_attesa'; if(r.stato !== 'in_attesa') return this.err('42501', 'new row violates row-level security policy'); r.approvata_il = null; r.approvata_da = null; if(!r.titolo || r.titolo.length < 3 || r.titolo.length > 140) return this.err('23514', 'check constraint'); }
         T.push(r); out.push(r); this.emit(q.table, 'INSERT', r);
       }
       const rows = out.map(r => this.pick(r, q.ret || '*'));
@@ -116,6 +118,7 @@ export class FakeDB {
           if(ok && r.user_id !== uid && (('anno' in q.vals && q.vals.anno !== r.anno) || ('titolo' in q.vals && q.vals.titolo !== r.titolo))) return this.err('P0001', 'Solo chi ha creato il progetto può cambiarne anno, titolo o proprietario'); }
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare' && (!q.vals.ruolo || ['lettore','collaboratore'].includes(q.vals.ruolo)));
         if(q.table === 'pee_suggerimenti') ok = this.isOwner(uid, r.archivio_id) || (this.sql13 && r.dest && r.dest === u.email && Object.keys(q.vals).every(k => k === 'stato'));
+        if(q.table === 'pee_archivio_nazionale') ok = u.email === 'luca.bartolomei@cngei.it';
         if(!ok) continue;
         const old = Object.assign({}, r);
         const changed = q.table === 'pee_archivi' && 'data' in q.vals && JSON.stringify(q.vals.data) !== JSON.stringify(r.data);
@@ -133,6 +136,7 @@ export class FakeDB {
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || r.email === u.email || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare');
         if(q.table === 'pee_versioni') ok = r.user_id === uid;
         if(q.table === 'pee_suggerimenti') ok = r.user_id === uid || this.isOwner(uid, r.archivio_id);
+        if(q.table === 'pee_archivio_nazionale') ok = (r.autore_id === uid && r.stato !== 'approvata') || u.email === 'luca.bartolomei@cngei.it';
         if(!ok) continue;
         T.splice(T.indexOf(r), 1); this.emit(q.table, 'DELETE', r, r);
       }

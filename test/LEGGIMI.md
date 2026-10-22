@@ -44,3 +44,6 @@ Uscite e campi (anteprima del 20 ottobre, disegno 4): solo in `anteprima/index.h
 - t_new (28 controlli): link preciso di Cerca (sotto le barre fisse), attività delle uscite in Cerca e nell'archivio, «Proponi» nei momenti, liberatoria, scalette spostabili, 30 video, salto in sospeso dopo l'apertura di un altro progetto.
 - t_vidfaq aggiornato ai 30 video. t_usc: «Sposta o duplica» va aperto prima. t_staff: il controllo «Priorità e Valutazione nascoste nello staff» è vecchio e fallisce anche prima (lo staff ora ha anche Uscite).
 - Non lanciare due gruppi di test insieme: usano la stessa porta 8080.
+
+## 22 ottobre — collaudo definitivo (t_coll.mjs)
+`node t_coll.mjs <motore> [profili]`: titolare, co-titolare, collaboratrice, lettore, amministratore archivio ed estranea × 8 profili di dispositivo; scalette (tocco vero sulle frecce), Cerca/Apri, Proponi, uscite, archivio nazionale con regole emulate (harness.mjs: tabella pee_archivio_nazionale), salto fra progetti, Word. Lanciare un motore alla volta (porta 8080).

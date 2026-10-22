@@ -35,5 +35,13 @@ for (const [fa, n, lab] of [['L', 7, 'Branco'], ['R', 6, 'Compagnia'], ['E', 7, 
   const r = await ev(f => { FASCIA = f; const d = document.createElement('div'); renderSchedaCtx(d); const x = d.querySelector('#num-box'); return x ? x.querySelectorAll('input[type=number]').length + '|' + /Per anno di (\w+)/.exec(x.textContent)[1] : 'assente'; }, fa);
   ok(r.startsWith(n + '|'), lab + ': ' + n + ' campi (' + r + ')');
 }
+for (const fa of ['E','R']) { const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default; const fs = (await import('fs')).default;
+  await ev(f => { FASCIA = f; const SC = staffCols(false); const r = {}; SC.forEach(c => { r[c[0]] = c[0]==='ruolo' ? 'Capo' : 'Zz' + c[0]; }); scheda.pp.ctxTerr = 'TERR'; scheda.pp.ctxSez = 'SEZ'; scheda.pp.staffTab = [r]; }, fa);
+  const [d] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev(() => exportSchedaDocx())]);
+  const z = await JSZip.loadAsync(fs.readFileSync(await d.path())); const x = await z.file('word/document.xml').async('string'); const t = x.replace(/<[^>]+>/g, '');
+  const lab = fa === 'R' ? 'Adulti in Compagnia' : 'Adulti in staff';
+  ok(t.indexOf('Contesto Sezione e Gruppo') < t.indexOf(lab) && t.indexOf(lab) < t.indexOf('Osservazione con il KOS: occasioni'), 'Word ' + fa + ': «' + lab + '» è un capitolo dopo Contesto Sezione e Gruppo');
+  const hx = x.slice(x.lastIndexOf('<w:p>', x.indexOf(lab)), x.indexOf(lab)), hc = x.slice(x.lastIndexOf('<w:p>', x.indexOf('Contesto territoriale')), x.indexOf('Contesto territoriale'));
+  ok(hx.replace(/w:val="[^"]*"/g,'') === hc.replace(/w:val="[^"]*"/g,'') || (hx.match(/w:pStyle w:val="[^"]*"/)||[])[0] === (hc.match(/w:pStyle w:val="[^"]*"/)||[])[0], 'Word ' + fa + ': stesso stile di titolo di «Contesto territoriale»'); }
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

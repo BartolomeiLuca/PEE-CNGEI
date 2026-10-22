@@ -1466,6 +1466,7 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 .usc-axw>.ax-lbl:first-child,.usc-axw>.ax-lbl:first-child+.ax-hint{display:none}
 .an-flash{outline:3px solid #1B7A4E;outline-offset:3px;border-radius:6px}
 .ax-mv{display:inline-flex;gap:2px;align-items:center}.ax-mv .ax-x{padding:0 6px!important;min-width:26px}.ax-mv .ax-x[disabled]{opacity:.3}
+@media (pointer:coarse){.ax-mv{gap:4px}.ax-mv .ax-x{min-width:38px;min-height:36px;font-size:15px}}
 .ax-ttr{grid-template-columns:150px 1fr 130px auto}.usc-scr{grid-template-columns:48px 110px minmax(0,1fr) 170px auto}
 @media (max-width:600px){.ax-ttr{grid-template-columns:1fr auto}.usc-scr{grid-template-columns:44px 96px minmax(0,1fr) auto}}
 .an-lib{display:block;margin-top:4px}
@@ -7471,7 +7472,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-22 · beta';
-const APP_BUILD='202610220648'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610222024'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -12068,7 +12069,7 @@ async function exportPPDocx(mode){
   ch.push(dH3('Contesto territoriale')); ch.push(...dMulti(pp.ctxTerr));
   ch.push(dH3('Contesto Sezione e Gruppo')); ch.push(...dMulti(pp.ctxSez));
   { const SC=staffCols(false); const st=(pp.staffTab||[]).filter(r=>SC.some(c=>c[0]!=='ruolo'&&T_(r[c[0]])));
-    if(st.length){ ch.push(dPara(FASCIA==='R'?'Adulti in Compagnia':'Adulti in staff',{size:19,bold:true,before:80,after:40}));
+    if(st.length){ ch.push(dH3(FASCIA==='R'?'Adulti in Compagnia':'Adulti in staff'));
       const ws=SC.length>9?[800,950,850,500,950,1150,1100,950,950]:[900,1100,600,1050,1300,1200,1050,1050]; ws.push(CW-ws.reduce((a,b)=>a+b,0));
       ch.push(dGridTable(SC.map(c=>c[1]), st.map(r=>SC.map(c=>c[0]==='giungla'?staffGiungla(r):r[c[0]])), ws, 15)); } }
   ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
@@ -13762,7 +13763,7 @@ function edLock(){
     const mineG = [...d.querySelectorAll('details.ax-g')].filter(g => affIsMe(g.dataset.ref)).map(g => (g.querySelector('summary')||{}).firstChild && g.querySelector('summary').firstChild.textContent.trim());
     const txt = who ? '✎ ' + who + ' sta modificando questa attività: aspetta che finisca, poi potrai modificarla anche tu.'
       : (collab && !affIsMe(d.dataset.aff) ? (mineG.length ? 'Qui puoi modificare solo la parte affidata a te: ' + mineG.join(', ') + ' (dentro “Quando arriva il momento di organizzarla”).' : 'Questa attività non è affidata a te: la puoi leggere, non modificare.') : '');
-    if(lk){ let t = lk.querySelector(':scope > .ed-txt'); if(!t){ t = document.createElement('div'); t.className = 'ed-txt'; lk.prepend(t); } if(t.textContent !== txt) t.textContent = txt; if(!txt) t.remove(); }
+    if(lk){ let t = lk.querySelector(':scope > .ed-txt'); if(txt){ if(!t){ t = document.createElement('div'); t.className = 'ed-txt'; lk.prepend(t); } if(t.textContent !== txt) t.textContent = txt; } else if(t) t.remove(); }
     d.classList.toggle('att-locked', !!who);
   });
   app.querySelectorAll(ED_ZSEL).forEach(z => {
