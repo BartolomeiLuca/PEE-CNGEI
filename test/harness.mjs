@@ -165,6 +165,7 @@ export async function person(browser, db, opts = {}){
   // di norma i percorsi e le attività si presentano chiusi: i test li aprono da soli (KEEPCLOSED=1 per vederli chiusi)
   if(!process.env.KEEPCLOSED) await ctx.addInitScript(() => { const all = new Proxy({}, {get: () => true, set: () => true}); window._attOpen = all; window._pcOpen = all; window._verOpen = all; });
   // le domande di feedback non devono comparire nei test (SV=1 per provarle)
+  if(!process.env.NAC) await ctx.addInitScript(() => { try{ localStorage.setItem('bussola_nac_off', '1'); }catch(e){} });
   if(!process.env.SV) await ctx.addInitScript(() => { try{ localStorage.setItem('bussola_sv_off', '1'); }catch(e){} });
   await ctx.exposeBinding('__sb', async (src, req) => { if(db.delay) await new Promise(r => setTimeout(r, db.delay)); return db.handle(req, src.page); });
   const errors = [];

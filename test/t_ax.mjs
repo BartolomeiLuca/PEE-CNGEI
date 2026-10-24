@@ -65,6 +65,6 @@ await P.locator(`#ax-capi-${p}-${j}`).selectOption(''); await sleep(300);
 { const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default;
   const [d] = await Promise.all([P.waitForEvent('download', {timeout:30000}), ev(([p, j]) => axDocx(p, j), [p, j])]);
   const t = (await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')).replace(/<[^>]+>/g, '');
-  ok(/Come si calcola la quota: Casa € 100,00 ÷ 20 = € 5,00 \+ Pullman € 50,00 a testa = € 55,00 a testa/.test(t) && /Pullman · parte dei capi/.test(t), 'il Word della scheda organizzativa riporta il conto e la parte dei capi'); }
+  ok(/Quota: € 55,00 a testa/.test(t) && !/Come si calcola la quota/.test(t) && /Pullman · parte dei capi/.test(t), 'il Word della scheda organizzativa riporta la quota finale (senza il conto) e la parte dei capi'); }
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

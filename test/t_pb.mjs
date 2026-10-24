@@ -1,0 +1,31 @@
+// Piano B dei singoli momenti dell'uscita: stesse situazioni del Piano B generale
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+const base = await serve(); const db = new FakeDB(); db.sql13 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const br = await launch(engine); const pa = await person(br, db), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(3000);
+await ev(() => { scheda.pp.numTot='20'; _clTouched = true; saveData(true); });
+await ev(() => gGo('usc')); await sleep(600);
+await ev(() => uscNewStart()); await sleep(400);
+await P.fill('#usc-new-t', 'Uscita PB'); await P.fill('#usc-new-d1', '2026-12-27'); await P.locator('#usc-new-d1').dispatchEvent('change');
+await P.locator('button', {hasText:'Crea l’uscita'}).click(); await sleep(900);
+const k = await ev(() => { const i = USC_PALS.findIndex(q => q[0] === 'nuova'); uscBlkAdd(i); const o = uscBlocks(uscCur(), 1).filter(o => o.m.k === 'nuova').pop(); return o && o.k; });
+ok(!!k, 'momento «Attività» aggiunto');
+await ev(k => { USC_OPEN[k] = true; const m = uscBlk(k); if(!m.f.includes('pb')) uscFieldAdd(k, 'pb'); USC_FOPEN[k+'|pb'] = true; uscRe(); }, k); await sleep(400);
+const box = P.locator(`#usc-b-${k} .usc-fld[data-f="pb"]`);
+ok(await box.count() === 1, 'campo Piano B presente');
+const chips = await box.locator('.ax-chip').allTextContents();
+ok(chips.join('|') === 'Pioggia o maltempo|Pochi presenti|Manca materiale|Il tempo non basta o avanza|Altro…', 'le situazioni sono quelle del Piano B generale: ' + chips.join(' | '));
+await box.locator('.ax-chip', {hasText:'Pioggia'}).click(); await sleep(300);
+await P.locator(`#usc-b-${k} .usc-fld[data-f="pb"] textarea`).first().fill('Si va in sede e si fa il gioco al coperto.'); await sleep(300);
+await box.locator('.ax-chip', {hasText:'Pochi presenti'}).click(); await sleep(300);
+const st = await ev(k => uscBlk(k).pbo, k);
+ok(st && st.pioggia === 'Si va in sede e si fa il gioco al coperto.' && st.pochi === '', 'dati salvati per situazione: ' + JSON.stringify(st));
+ok(/1 situazione/.test(await P.locator(`#usc-b-${k} .usc-fld[data-f="pb"] .usc-fsum`).first().textContent()), 'il riassunto dice «1 situazione»');
+// vecchio testo libero: resta come Note
+await ev(k => { uscBlk(k).pb = 'Vecchio testo del Piano B'; uscRe(); }, k); await sleep(400);
+ok(/Vecchio testo del Piano B/.test(await box.textContent()) && /Note/.test(await box.textContent()), 'il testo scritto prima resta e compare come «Note»');
+ok(/Pioggia o maltempo: Si va in sede/.test(await ev(k => uscPbTxt(uscBlk(k)), k)), 'testo per stampa e Word completo');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 2).join(' | ') : ''));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);

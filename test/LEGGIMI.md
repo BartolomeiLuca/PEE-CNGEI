@@ -50,3 +50,7 @@ Uscite e campi (anteprima del 20 ottobre, disegno 4): solo in `anteprima/index.h
 
 ## 22 ottobre sera — campi a riga singola che si allungano
 I campi `<input type=text>` diventano `<textarea data-conv>` (stessa grafica, vanno a capo): nei test usare `:is(input,textarea)` o `textarea:not([data-conv])` per i campi lunghi. audit_grow.mjs (in work) controlla che ogni campo cresca.
+
+Test aggiunti il 24 ottobre (riscrittura di uscite, cassa, testo formattato):
+- t_loss (protezione da salvataggi molto più scarni), t_nac (promemoria «non sei collegato/a»), t_nl (a capo nel Word), t_grow2 (campi che restano aperti), t_ret (ritorno in un altro giorno, Unità e staff), t_pb (Piano B delle attività),
+  t_cassa (moduli Trasporti/Locazioni/Quota, categorie e incidenze, da attribuire cliccabile, materiali richiudibili ed Excel, diete per pasto, time table a blocchi e trascinabile, Excel del time table), t_rich (barra di formattazione, segni nel testo, anteprima, Word).

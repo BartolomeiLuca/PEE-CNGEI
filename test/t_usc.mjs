@@ -69,8 +69,8 @@ const blocks = () => ev(() => uscBlocks(uscCur(), 2).map(o => uscBlkTitle(o.m)))
 const times = () => ev(() => { const T = uscTimes(uscCur(), 2); return uscBlocks(uscCur(), 2).map(o => axHM(T[o.k].s)); });
 let b0 = await blocks(), t0 = await times();
 ok(b0.length === 12 && b0[0] === 'Sveglia e ginnastica' && t0[0] === '07:30' && t0[1] === '08:00', 'schema «Giornata tipo»: 12 blocchi, orari in fila dalle 07:30');
-ok(await P.locator('.usc-tseg').count() === 12, 'time table della giornata con una voce per blocco');
-ok(/Sveglia e ginnastica/.test(await P.locator('.usc-tseg').first().textContent()), '…e nel time table si legge cosa c’è scritto');
+ok(await P.locator('.usc-slot').count() === 12, 'time table della giornata con una voce per blocco');
+ok(/Sveglia e ginnastica/.test(await P.locator('.usc-slot').first().textContent()), '…e nel time table si legge cosa c’è scritto');
 await P.locator('.usc-pi', {hasText:'Hike'}).click(); await sleep(400);
 b0 = await blocks(); ok(b0.length === 13 && b0[12] === 'Hike', 'dalla tavolozza: «Hike» in fondo alla giornata');
 const kH = await ev(() => uscBlocks(uscCur(), 2)[12].k);
@@ -111,7 +111,7 @@ ok(await P.locator('.usc-blk .usc-bb').count() === 13, '«Apri tutti» apre tutt
 await P.locator('.usc-dcol button', {hasText:'Chiudi tutti'}).click(); await sleep(300);
 ok(await P.locator('.usc-blk .usc-bb').count() === 0, '«Chiudi tutti» li chiude');
 // time table: tocco → blocco aperto
-await P.locator('.usc-tseg', {hasText:'Serata'}).click(); await sleep(400);
+await P.locator('.usc-slot', {hasText:'Serata'}).click(); await sleep(400);
 const kS = await ev(() => uscBlocks(uscCur(), 2).find(o => o.m.t === 'Serata').k);
 ok(await P.locator(`#usc-b-${kS} .usc-bb`).isVisible(), 'toccando una voce del time table si apre il suo blocco');
 // attività della Sezione 3 nella giornata: scegli, modifica qui
@@ -170,7 +170,8 @@ await P.locator('.usc-modpage .ax-chip', {hasText:'In contanti'}).count().then(n
   ok(/Campo invernale/.test(t) && t.includes(q4.toFixed(2).replace('.', ',')), 'circolare in Word dall’uscita con la quota giusta');
   ok(/IT60 X054 2811 1010 0000 0123 456/.test(t) && /CNGEI Sezione di Pesaro/.test(t), 'IBAN e intestatario nella circolare');
   ok(/Giulia, Dario e Elena/.test(t), 'firma con tutto lo staff: ' + (t.match(/grazie,(.{0,60})/)||[])[1]);
-  ok(/Il programma/.test(t) && /Hike/.test(t) && !/wp:anchor/.test(await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')), 'circolare dell’uscita con il programma, senza immagini flottanti'); }
+  ok(!/Il programma/.test(t) && !/Hike/.test(t) && !/wp:anchor/.test(await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')), 'circolare dell’uscita senza il programma (niente spoiler), senza immagini flottanti');
+  { const iO = t.indexOf('Orari e luoghi'), iQ = t.indexOf('Quota'), iC = t.indexOf('Cosa portare'); ok(iO >= 0 && iQ > iO && (iC < 0 || iQ < iC), 'la quota sta fra «Orari e luoghi» e «Cosa portare»'); } }
 // scheda Pasti: menù cliccabile, ingredienti, copia, Excel
 await P.locator('#usc-tab-pasti').click(); await sleep(300);
 await P.locator('.usc-menu tr').nth(2).locator('.usc-mc').nth(1).click(); await sleep(300); // pranzo del 28
@@ -264,8 +265,8 @@ const pt = await dtxt(() => uscExport('tuttotutto'));
 ok(/Time table del campo/.test(pt.t) && /Lista della spesa/.test(pt.t) && /Quota/.test(pt.t) && /Circolare/.test(pt.t), '«Tutto di tutto» in Word: time table, giornate, menù e spesa, quota, circolare');
 // scheda Campo: time table generale e moduli
 await P.locator('#usc-tab-campo').click(); await sleep(300);
-ok(await P.locator('.usc-gseg').count() >= 14 && /spesa totale/.test(await P.locator('.usc-sint').textContent()) && await P.locator('.usc-camp .usc-ctab tr').count() === 6, 'scheda Campo: time table di tutto il campo, sintesi e riepilogo per giornata');
-await P.locator('.usc-gseg', {hasText:'Serata'}).first().click(); await sleep(400);
+ok(await P.locator('.usc-slot').count() >= 14 && /spesa totale/.test(await P.locator('.usc-sint').textContent()) && await P.locator('.usc-camp .usc-ctab tr').count() === 6, 'scheda Campo: time table di tutto il campo, sintesi e riepilogo per giornata');
+await P.locator('.usc-slot', {hasText:'Serata'}).first().click(); await sleep(400);
 ok(await ev(() => USC_TAB) === 2 && await P.locator(`#usc-b-${kS} .usc-bb`).isVisible(), 'dal time table del campo si arriva al blocco nella sua giornata');
 // Sezione 3: «fa parte di»
 await ev(() => gGo('3')); await sleep(800);
@@ -347,7 +348,7 @@ const pb = await person(br, db), PB = pb.page, eb = (f, a) => PB.evaluate(f, a);
 await loginAs(PB, base, B); await sleep(1200);
 await eb(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(3500);
 await eb(id => uscOpen(id, 2), uid); await sleep(800);
-ok(await PB.locator('.usc-tseg').count() >= 12 && await PB.locator('.usc-pal').count() === 0 && await PB.locator('[data-mv]').count() === 0, 'la lettrice vede time table e blocchi senza poterli cambiare');
+ok(await PB.locator('.usc-slot').count() >= 12 && await PB.locator('.usc-pal').count() === 0 && await PB.locator('[data-mv]').count() === 0, 'la lettrice vede time table e blocchi senza poterli cambiare');
 await PB.close();
 // dati del 19 ottobre (blocchi con tipo/ora) letti e convertiti
 await ev(() => { const u = uscCur(); u.prog.old1 = {tipo:'mom', g:4, ora:'08:00', fine:'08:45', t:'Colazione vecchia', cat:'pasto', cr:1}; u.prog.old2 = {tipo:'mom', g:4, ora:'07:30', t:'Sveglia vecchia', cat:'momento', cr:2}; saveData(true); });
