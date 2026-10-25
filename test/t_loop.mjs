@@ -1,4 +1,4 @@
-// separazione Unità/staff: niente copie a catena, pulizia delle copie identiche
+// separazione Unità/staff: niente copie a catena (le copie identiche NON si tolgono più da sole: l’utente può tenere più PEE nello stesso anno)
 import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
 const base = await serve(); const db = new FakeDB(); db.sql13 = true;
@@ -24,7 +24,7 @@ await sleep(8000);
 const mine = db.t.pee_archivi.filter(r => r.user_id === A.id);
 const byMode = m => mine.filter(r => (r.meta||{}).mode === m).length;
 console.log(mine.map(r => r.titolo + '/' + (r.meta||{}).mode).join(' | '));
-ok(byMode('giovani') <= 2 && byMode('staff') === 1, 'nessuna nuova copia, le copie identiche tolte (' + byMode('giovani') + '/' + byMode('staff') + ')');
+ok(byMode('giovani') <= 5 && byMode('staff') === 1, 'niente copie a catena (al massimo 4 già presenti + 1 dalla separazione) e le copie dell’utente non si cancellano da sole (' + byMode('giovani') + '/' + byMode('staff') + ')');
 const cur = await ev(() => ({mode: MODE, id: CL.ctx && CL.ctx.id}));
 const nav0 = []; P.on('framenavigated', f => { if(f === P.mainFrame()) nav0.push(1); });
 await ev(() => clOpen()); await sleep(6000);
