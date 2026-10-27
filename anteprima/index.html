@@ -3205,10 +3205,10 @@ function grRows(pid){
 function grSet(pid, k, f, v){ if(!scheda.griglia) scheda.griglia = {}; if(!scheda.griglia[pid]) scheda.griglia[pid] = {}; if(!scheda.griglia[pid][k]) scheda.griglia[pid][k] = {}; scheda.griglia[pid][k][f] = v; saveDataDebounced(); }
 function grInner(pid){
   const rows = grRows(pid); const G = ((scheda.griglia || {})[pid]) || {}; const amb = pid[0]; const start = grStart();
-  const L = amb === 'P' ? ['Comportamenti positivi emersi', 'Comportamenti da migliorare', 'Note specifiche del singolo o del gruppetto'] : ['Punti di forza', 'Aspetti da migliorare', 'Note'];
+  const L = ['Comportamenti positivi emersi', 'Comportamenti da migliorare', 'Note specifiche del singolo o del gruppetto'];
   const ta = (k, f, v, lab, ro) => `<label class="gr-f"><span>${lab}</span><textarea rows="2"${ro ? ' readonly' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(v || '')}</textarea></label>`;
   const row = (r, i, free) => { const g = G[r.k] || {}; const iso = grIso(r.data); const early = iso && iso < start;
-    return `<div class="gr-row${free ? '' : ' gr-hl'}"><div class="gr-h"><b>${free ? 'Altre osservazioni' : 'Attività ' + (i + 1)}</b>${free ? '' : ' · ' + sEsc(r.nome) + (r.data ? ' · ' + sEsc(grDateTxt(r.data)) : '')}${early ? '<span class="gr-warn">prima del 1° settembre</span>' : ''}</div><div class="gr-g">${ta(r.k, 'foc', g.foc, 'Focus osservativo')}${ta(r.k, 'pos', g.pos, L[0])}${ta(r.k, 'mig', g.mig, L[1])}${ta(r.k, 'note', g.note, L[2])}</div></div>`; };
+    return `<div class="gr-row${free ? '' : ' gr-hl'}"><div class="gr-h"><b>${free ? 'Altre osservazioni' : 'Attività:'}</b>${free ? '' : ' ' + sEsc(r.nome) + (r.data ? ' · ' + sEsc(grDateTxt(r.data)) : '')}${early ? '<span class="gr-warn">prima del 1° settembre</span>' : ''}</div><div class="gr-g">${ta(r.k, 'foc', g.foc, 'Focus osservativo')}${ta(r.k, 'pos', g.pos, L[0])}${ta(r.k, 'mig', g.mig, L[1])}${ta(r.k, 'note', g.note, L[2])}</div></div>`; };
   if(!rows.length) return `<div class="gr-empty">Nessuna attività svolta ha ancora toccato questo percorso: nell’Allegato resta «Non osservato». Se hai comunque elementi, scrivili qui.</div>` + row({k:'x'}, 0, true);
   return rows.map((r, i) => row(r, i, false)).join('') + `<details class="gr-more"><summary>Altre osservazioni su questo percorso</summary>${row({k:'x'}, 0, true)}</details>`;
 }
@@ -12552,6 +12552,7 @@ async function exportPPDocx(mode){
   if(T_(pp.condizioni)){ ch.push(dH3('Condizioni dell\'osservazione')); ch.push(...dMulti(pp.condizioni)); }
   ch.push(dH3('Analisi delle dinamiche di gruppo')); ch.push(...dMulti(pp.dinamiche));
   ch.push(dH3('Aspetti positivi e necessità educative'));
+  if(['P','C','S'].some(a=>DB[a].some(p=>numOf(obsVal(p))>0)) || Object.keys(typeof obsSources==='function'?obsSources():{}).length || Object.keys(scheda.griglia||{}).length) ch.push(dPara('Questa è la sintesi. Il dettaglio dell’osservazione, percorso per percorso, è nell’Allegato 1 (griglia osservativa e scala), in fondo al documento.',{size:18,italics:true,color:'777777',after:80}));
   const w1 = [1500, 2700, 2700, CW-6900];
   const rows1 = [[
     dCell(dPara('Ambito',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[0],fill:GREEN,border:GREEN}),
@@ -12705,12 +12706,12 @@ async function exportPPDocx(mode){
         const seen = DB[a].map(p => numOf(obsVal(p))).filter(n => n>0);
         const media = seen.length ? Math.round(seen.reduce((s,x)=>s+x,0)/seen.length*10)/10 : 0;
         ch.push(dAmbitoHead(a, media, `  ·  ${seen.length}/8 osservati`));
-        const L3 = a==='P' ? ['Comportamenti positivi emersi','Comportamenti da migliorare','Note specifiche del singolo/gruppetto'] : ['Punti di forza','Aspetti da migliorare','Note'];
+        const L3 = ['Comportamenti positivi emersi','Comportamenti da migliorare','Note specifiche del singolo/gruppetto'];
         const rows = [['Percorso','Focus osservativo'].concat(L3).map((t,i) => dCell(dPara(t,{size:16,bold:true,color:'FFFFFF',after:0}),{w:wc[i],fill:GREEN,border:GREEN}))];
         DB[a].forEach((p,i) => {
           const n = numOf(obsVal(p)); const lv = n ? `Livello osservato: ${n}/10 – ${scoreLabel(n)}` : 'Non osservato';
           const g = G[p.id] || {}; const rs = grRows(p.id);
-          const list = rs.map((r,j) => ({lab:'Attività '+(j+1)+': '+r.nome+(r.data?' ('+grDateTxt(r.data)+')':''), d:g[r.k]||{}}));
+          const list = rs.map((r,j) => ({lab:'Attività: '+r.nome+(r.data?' ('+grDateTxt(r.data)+')':''), d:g[r.k]||{}}));
           if(g.x && ['foc','pos','mig','note'].some(k => cl(g.x[k]))) list.push({lab:'Altre osservazioni', d:g.x});
           if(!list.length) list.push({lab:'', d:{}});
           list.forEach((it,j) => {
