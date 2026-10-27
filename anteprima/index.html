@@ -10324,7 +10324,7 @@ function gInitNav(){
   if(pt) pt.innerHTML=G_TABS.map(([k,l,,ic,t])=>`<button class="ptab" id="gt-${k}" onclick="gGo('${k}')" title="${t}"><svg class="ic"><use href="#${ic}"/></svg><span class="pt-l">${l}</span><span class="pt-s">${G_TABS_SHORT[k]||l}</span></button>`).join('');
   if(mn) mn.innerHTML=G_TABS.map(([k,,m,ic])=>`<button class="mnav-btn" id="gm-${k}" onclick="gGo('${k}')"><span class="mnav-icon"><svg class="ic"><use href="#${ic}"/></svg></span><span class="mnav-lbl">${m}</span></button>`).join('');
   const s3=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
-  s3('hero-eye3','Sezione 1.4'); s3('hero-title3','Priorizzazione delle necessità educative');
+  s3('hero-eye3',crumbTxt(CRUMB1)); s3('hero-title3','Priorizzazione delle necessità educative');
   s3('hero-desc3','Scegli le necessità educative su cui lavorare durante l’anno: <strong>almeno una per ciascun Ambito di Sviluppo</strong> (Personale, Comunitario, Spirituale). I percorsi meno presenti nell’osservazione compaiono per primi.');
   const b=document.getElementById('p3-next'); if(b) b.textContent='Avanti — Sezione 2 →';
   // primo ingresso: se manca il contesto, si parte dalla Sezione 1.1
@@ -10475,8 +10475,9 @@ function gSync(){ try{ setTimeout(()=>window.ptCheck&&ptCheck(),0); }catch(e){}
   const i=G_STEPS.findIndex(x=>x[0]===cur);
   sn.style.display='';
   sn.innerHTML=`<div class="gsn-wrap"><div class="gsn-title">Sezione 1 · Osservazione del Gruppo di Pari &amp; Identificazione e Priorizzazione delle Necessità Educative</div>
-    <div class="gsn-steps">${G_STEPS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${n}</b>${l}</button>`).join('')}</div>${(cur==='1b'&&MODE==='giovani')?'<div class="gsn-act" style="margin-top:8px"><button type="button" class="btn-ghost" id="gr-dl-btn" onclick="exportSchedaDocx(\'griglia\')" title="Scarica solo la griglia osservativa, nel formato CNGEI, da caricare su Drive quando l’ICdF la richiede">Scarica griglia (formato CNGEI)</button></div>':''}</div>`;
-  if(cur==='1b'){ const e=document.getElementById('hero-eye1'); if(e) e.textContent='Sezione 1.2'; const t=document.getElementById('hero-title1'); if(t) t.textContent='Scheda di osservazione dei percorsi'; }
+    <div class="gsn-steps">${G_STEPS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${j+1} ·</b> ${l}</button>`).join('')}</div>${(cur==='1b'&&MODE==='giovani')?'<div class="gsn-act" style="margin-top:8px"><button type="button" class="btn-ghost" id="gr-dl-btn" onclick="exportSchedaDocx(\'griglia\')" title="Scarica solo la griglia osservativa, nel formato CNGEI, da caricare su Drive quando l’ICdF la richiede">Scarica griglia (formato CNGEI)</button></div>':''}</div>`;
+  if(cur==='1a'||cur==='1b'){ const e=document.getElementById('hero-eye1'); if(e) e.textContent=crumbTxt(CRUMB1); } if(cur==='1c'){ const e=document.querySelector('#panel2 .hero-eye'); if(e) e.textContent=crumbTxt(CRUMB1); }
+  if(cur==='1b'){ const t0=null; const t=document.getElementById('hero-title1'); if(t) t.textContent='Scheda di osservazione dei percorsi'; }
 }
 // barra della Sezione 1 fissa durante lo scroll (compatta quando agganciata)
 (function(){
@@ -10489,6 +10490,8 @@ function gSync(){ try{ setTimeout(()=>window.ptCheck&&ptCheck(),0); }catch(e){}
   document.addEventListener('DOMContentLoaded',()=>{ setH(); try{ new ResizeObserver(setH).observe(document.getElementById('hdr')); }catch(e){} });
   setInterval(setH,2000);
 })();
+function crumbTxt(sec){ return (isPP() ? 'Progetto Personale' : 'Programmazione di Unità') + ' › ' + sec; }
+const CRUMB1 = 'Sezione 1 · Osservazione del Gruppo di Pari';
 function gHero4(){
   const pp=isPP();
   const T={ctx:['Sezione 1.1','Contesto e osservazione con il KOS','Chi compila, il contesto in cui opera l’Unità e le occasioni in cui hai osservato il gruppo.'],
@@ -10500,7 +10503,7 @@ function gHero4(){
     usc:['Uscite e campi','Uscite e campi','Il programma di ogni giornata a blocchi colorati, con presenti, trasporti, pasti, quota e circolare in un posto solo.']}[schedaStep];
   if(!T) return;
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
-  set('hero-eye4',schedaStep==='usc'?'Organizzazione · facoltativo':T[0]+' · Scheda di Programmazione Educativa Esperienziale'); set('hero-title4',T[1]); set('val-desc',T[2]);
+  set('hero-eye4',schedaStep==='usc'?'Organizzazione · facoltativo':crumbTxt(schedaStep==='ctx'?CRUMB1:T[0])); set('hero-title4',T[1]); set('val-desc',T[2]);
   const vs=document.getElementById('val-scale-box'); if(vs) vs.style.display = schedaStep==='val' ? '' : 'none';
 }
 function gSetPP(v){ if(!scheda.pp) scheda.pp={}; scheda.pp.isPP=v; saveDataDebounced(); renderValuation(); }
@@ -15864,6 +15867,23 @@ body.sh-in .toast{pointer-events:none}
 .sh-st{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;padding:12px 14px}
 .sh-badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;background:#F0F0E8;color:#5f5f58}
 @media(max-width:760px){ .sh-dgrid{grid-template-columns:1fr} .sh-dh h1{font-size:21px} }
+
+/* cornice come nei mockup: indicazione piccola, titolo grande, descrizione, pillole */
+body.sh-in .hero{background:transparent;border:0;box-shadow:none;padding:4px 0 2px;margin-bottom:14px;overflow:visible;border-radius:0}
+body.sh-in .hero::before{display:none}
+body.sh-in .hero-eye{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:none;color:#55645c;margin-bottom:6px}
+body.sh-in .hero h1{font-size:26px;font-weight:700;line-height:1.2}
+body.sh-in .hero p{font-size:14px;line-height:1.5;color:#3d4c44;max-width:760px}
+body.sh-in #g-subnav{padding:6px 0 10px;background:transparent}
+body.sh-in #g-subnav .gsn-wrap{background:transparent;border:0;padding:0}
+body.sh-in #g-subnav .gsn-title{display:none}
+body.sh-in .gsn-steps{gap:10px}
+body.sh-in .gsn-step{flex:0 0 auto;min-width:0;border:0;border-radius:999px;background:#e3e9e2;padding:10px 18px;font-size:13px;font-weight:600;color:#3d4c44;min-height:44px}
+body.sh-in .gsn-step b{display:inline;font-size:inherit;color:inherit;font-weight:700;margin-right:2px}
+body.sh-in .gsn-step.on{background:var(--green);color:#fff}
+body.sh-in .gsn-step.done b{color:inherit}
+body.sh-in #g-subnav.stuck .gsn-step{padding:6px 12px;min-height:36px;font-size:12px}
+body.sh-in .gsn-act{margin-top:10px}
 </style>
 <aside id="sh-side" aria-label="Menu principale"></aside>
 <div id="sh-scrim" onclick="shDrawer(false)"></div>
