@@ -1026,7 +1026,7 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:9.5px}
 .sg-wrap{padding:0 16px 12px;font-family:'Montserrat',sans-serif}
 .sg-pill,.sg-add{font:700 11.5px 'Montserrat',sans-serif;color:var(--green);background:var(--green-pale);border:1px solid #B0DBC4;border:1px solid color-mix(in srgb,var(--green-light) 45%,#fff);border-radius:20px;padding:6px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:32px}
 .sg-pill.new{background:var(--green);color:#fff;border-color:var(--green)}
-body[data-theme="L"] .sg-pill.new{background:#7a7100}
+body[data-theme="L"] .sg-pill.new{background:#f0e603;color:#1a1800}
 .sg-add{background:#fff;border:1.5px solid var(--green)}
 .sg-pill+.sg-add{margin-left:8px}
 .sg-b{margin-top:8px;background:#fff;border:1px solid var(--border);border-left:3px solid var(--green-light);border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.55;color:var(--ink)}
@@ -1034,7 +1034,7 @@ body[data-theme="L"] .sg-pill.new{background:#7a7100}
 .sg-a{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
 .sg-a button{font:700 11.5px 'Montserrat',sans-serif;border:1.5px solid var(--green);background:#fff;color:var(--green);border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
 .sg-a button.ok{background:var(--green);color:#fff}
-body[data-theme="L"] .sg-a button.ok{background:#7a7100}
+body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .sg-box{margin-top:8px;background:#fff;border:1.5px solid var(--green);border-radius:8px;padding:12px}
 .sg-box textarea,.sg-box input{width:100%;border:1px solid var(--border);border-radius:6px;padding:8px;font:13px 'Montserrat',sans-serif;box-sizing:border-box;margin-top:6px}
 .sg-box textarea{min-height:70px;resize:vertical}
@@ -1108,7 +1108,8 @@ body.ro .hdr-save,body.ro #cl-histbtn,body.ro .member-tab.add-btn,body.ro .membe
 .cl-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b6b64;margin:14px 0 6px}
 body[data-theme="E"]{--green:#25734e;--green-mid:#2f8a5f;--green-light:#5cb88a;--green-pale:#e6f3ec}
 body[data-theme="R"]{--green:#c4231f;--green-mid:#dc2b26;--green-light:#ef7773;--green-pale:#fdecea}
-body[data-theme="L"]{--green:#7a7100;--green-mid:#a39800;--green-light:#f0e603;--green-pale:#fffbd0}
+body[data-theme="L"]{--green:#1f1d00;--green-mid:#3a3600;--green-light:#f0e603;--green-pale:#fffbd0}
+body[data-theme="L"] .btn-primary{background:#f0e603;color:#1a1800;box-shadow:inset 0 0 0 1.5px #1a1800}body[data-theme="L"] .btn-primary:hover{background:#ffee00}
 body[data-theme="S"]{--green:#1d4f8f;--green-mid:#2a67b3;--green-light:#6fa0dc;--green-pale:#e8f0fa}
 body[data-theme="E"] .hdr{background:#25734e}
 body[data-theme="R"] .hdr{background:#dc2b26}
@@ -1118,7 +1119,7 @@ body[data-theme="L"] .hdr-mode{background:rgba(0,0,0,.09);color:#2b2800}
 body[data-theme="L"] .phase-tabs{background:rgba(0,0,0,.07)}
 body[data-theme="L"] .ptab{color:rgba(43,40,0,.7)}
 body[data-theme="L"] .ptab:hover:not(.active){color:#2b2800;background:rgba(0,0,0,.08)}
-body[data-theme="L"] .ptab.active{background:#fff;color:#5c5500}
+body[data-theme="L"] .ptab.active{background:#fff;color:#1a1800}
 body[data-theme="L"] .hdr-btn{color:#2b2800;border-color:rgba(0,0,0,.28)}
 body[data-theme="L"] .hdr-btn:hover{background:rgba(0,0,0,.08)}
 body[data-theme="L"] .hdr .back-landing-btn{background:rgba(0,0,0,.07);color:#2b2800;border-color:rgba(0,0,0,.3)}
@@ -8607,7 +8608,7 @@ function attLk(key,i,k,v){ const [p,j]=String(key).split('-').map(Number); const
   saveDataDebounced();
   if(k==='add'||k==='del'){ if(box){ box.outerHTML=attLinksHTML(p,j,a); if(k==='add'){ const r=[...document.querySelectorAll('#att-links-'+p+'-'+j+' .lk-n')].pop(); if(r) r.focus(); } } return; }
   const row=box&&box.querySelector('.lk-row[data-i="'+i+'"]'); if(row&&k==='u'){ const u=linkNorm(v), ok=/^(https?:|mailto:)/i.test(u), t=lkType(v); const o=row.querySelector('.lk-open'); o.href=u; o.hidden=!ok; const ic=row.querySelector('.lk-ic'); ic.className='lk-ic lk-'+t[0]; ic.textContent=t[1]; } }
-function attLinksDoc(a,o={}){ return attLinks(a).filter(l=>(l.u||'').trim()).map(l=>dPara([dTxt('↗ ',{size:o.size||17,color:GREEN}), dLink(l.u,{size:o.size||17,label:(l.n||'').trim()||String(l.u).trim()})],{after:20,indent:o.indent||0})); }
+function attLinksDoc(a,o={}){ return attLinks(a).filter(l=>(l.u||'').trim()).map(l=>dPara([dTxt('↗ ',{size:o.size||17,color:GRTXT}), dLink(l.u,{size:o.size||17,label:(l.n||'').trim()||String(l.u).trim()})],{after:20,indent:o.indent||0})); }
 function axPB(p,j,k){ const x=axX(p,j); if(!x.pb) x.pb={}; if(x.pb[k]!=null && !(x.pb[k]||'').trim()) delete x.pb[k]; else if(x.pb[k]==null) x.pb[k]=''; else { showToast('Svuota prima il testo per togliere questa voce'); } axSave(); axRe(p,j); }
 
 // ── messaggio ai genitori ──
@@ -9474,7 +9475,7 @@ function uscTTModel(u,g,a0,z0){ const T=uscTimes(u,g), R=uscBlocks(u,g); if(!R.l
   return {a,z,S}; }
 function ttTint(hex,p){ const h=String(hex||'#888888').replace('#','').padEnd(6,'0').slice(0,6); const c=[0,2,4].map(i=>parseInt(h.substr(i,2),16)); return c.map(v=>Math.round(v+(255-v)*p).toString(16).padStart(2,'0')).join('').toUpperCase(); }
 function dTTWord(M){ const D=dxLib(); const W=[1300,CW-1300]; const TOP=D.VerticalAlign.TOP;
-  const rows=[[dCell(dPara('Ora',{size:17,bold:true,color:'FFFFFF',after:0}),{w:W[0],fill:GREEN,border:GREEN}),dCell(dPara('Attività',{size:17,bold:true,color:'FFFFFF',after:0}),{w:W[1],fill:GREEN,border:GREEN})]];
+  const rows=[[dCell(dPara('Ora',{size:17,bold:true,color:ONG,after:0}),{w:W[0],fill:GREEN,border:GREEN}),dCell(dPara('Attività',{size:17,bold:true,color:ONG,after:0}),{w:W[1],fill:GREEN,border:GREEN})]];
   const line=b=>dPara([dTxt(axHM(b.s)+'–'+axHM(b.e)+'  ',{size:16,bold:true,color:'444444'}),dTxt(b.t,{size:18,bold:true}),...(b.chi?[dTxt('  ·  '+b.chi,{size:16,color:'555555'})]:[])],{after:30,shade:ttTint(b.col,.72),borderLeft:b.col.replace('#','')});
   M.S.forEach(sl=>{ const full=sl.t%60===0; const left=dCell(dPara(axHM(sl.t),{size:17,bold:full,color:full?'1A1A1A':'777777',after:0}),{w:W[0],fill:'F4F4F0',vAlign:TOP});
     let right;
@@ -9960,31 +9961,31 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   if(L.permessi) kv.push(['Documenti dei genitori',[L.permCosa||'da definire',L.permRef?'referente: '+L.permRef:''].filter(Boolean).join(' · ')+(axIsUrl(L.permLink)?' · modulo: '+linkNorm(L.permLink):'')]);
   if(kv.length){ ch.push(dH3('In breve')); ch.push(dKV(kv)); }
   // Svolgimento
-  const fasi=['lancio','sviluppo','conclusione'].filter(k=>T_(a[k])); if(fasi.length){ ch.push(dH3('Svolgimento')); fasi.forEach((k,q)=>{ ch.push(dPara(k[0].toUpperCase()+k.slice(1),{size:19,bold:true,color:GREEN,before:q?0:20,after:30,keepNext:true})); ch.push(...dMulti(a[k])); if(q<fasi.length-1) ch.push(dPara('',{size:14,after:100})); }); }
+  const fasi=['lancio','sviluppo','conclusione'].filter(k=>T_(a[k])); if(fasi.length){ ch.push(dH3('Svolgimento')); fasi.forEach((k,q)=>{ ch.push(dPara(k[0].toUpperCase()+k.slice(1),{size:19,bold:true,color:GRTXT,before:q?0:20,after:30,keepNext:true})); ch.push(...dMulti(a[k])); if(q<fasi.length-1) ch.push(dPara('',{size:14,after:100})); }); }
   const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()||r.dur); if(S.length){ ch.push(dH3('Scaletta')); let t=axMin(((x.tt2||[])[0]||{}).start); const rows=[]; (x.tt2||[]).forEach(r=>{ if(!((r.cosa||'').trim()||r.dur)) return; rows.push([t!=null?axHM(t):'—', axDurTxt(r.dur)||'—', plain(r.cosa)||'—', r.chi||'—']); if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; }); ch.push(dGridTable(['Ora','Durata','Cosa succede','Chi conduce'],rows,[1300,1200,4938,2200])); }
   const kv2=[]; if((x.strum||[]).length) kv2.push(['Strumenti del Metodo',x.strum.join(', ')]); const ru=[...(x.ruoli||[]),(x.ruoliAltro||'').trim()].filter(Boolean); if(ru.length) kv2.push([stT('Ruoli dei ragazzi'),ru.join(', ')]);
   const idr=axIdr(per); const os=idr.filter(o=>((x.oss||{})[o.k]||{}).on); if(os.length||axOssExtra(x).length) kv2.push(['Cosa osservo', os.map(o=>{ const v=x.oss[o.k]; return dPara([dTxt(plain(o.t),{size:18,bold:true}), dTxt((v.comp?' — '+v.comp:'')+(v.chi?' (osserva: '+v.chi+')':''),{size:18})],{after:40}); }).concat(axOssExtra(x).map(v=>dPara([dTxt(plain(v.t),{size:18,bold:true}), dTxt((v.comp?' — '+v.comp:'')+(v.chi?' (osserva: '+v.chi+')':''),{size:18})],{after:40})))]);
   if(kv2.length){ ch.push(dH3('Ruoli e osservazione')); ch.push(dKV(kv2)); }
   // Materiali e costi
   const M=(x.mat||[]).filter(r=>(r.cosa||'').trim()); const pv=Object.fromEntries(AX_PROV), cr=Object.fromEntries(AX_CARICO.map(([k,l])=>[k,stT(l)]));
-  if(M.length){ ch.push(dH3('Materiali')); const W=[3300,1300,3238,1800]; const hd=['Materiale','Quantità','Da dove · chi lo procura','Costo'].map((h,i)=>dCell(dPara(h,{size:16,bold:true,color:'FFFFFF',after:0}),{w:W[i],fill:GREEN,border:GREEN}));
+  if(M.length){ ch.push(dH3('Materiali')); const W=[3300,1300,3238,1800]; const hd=['Materiale','Quantità','Da dove · chi lo procura','Costo'].map((h,i)=>dCell(dPara(h,{size:16,bold:true,color:ONG,after:0}),{w:W[i],fill:GREEN,border:GREEN}));
     const rows=M.map(r=>{ const q=axMatQty(r,N); const c=axMatCost(r,N); const cell=(v,i,o)=>dCell(dPara([dTxt(String(v),Object.assign({size:17},o||{}))],{after:0}),{w:W[i]});
       const prov=r.prov==='altro'?(r.provAltro||'altro'):(pv[r.prov||'unita']||'Già in Unità'); const dove=r.prov==='comprare'&&(r.dove||'').trim()?r.dove.trim():'';
       const c3=dCell([dPara([dTxt(prov,{size:17}),...(r.chi?[dTxt(' · '+r.chi,{size:17,bold:true})]:[]),...(dove?[dTxt(' · ',{size:17}),axIsUrl(dove)?dLink(dove,{size:16,label:'link'}):dTxt(dove,{size:17})]:[])],{after:0})],{w:W[2]});
       return [cell(plain(r.cosa),0,{bold:true}), cell(q+(r.qm&&r.qm!=='fissa'?' ('+(r.q==null?1:r.q)+(r.qm==='rag'?' a ragazzo':' a persona')+')':''),1), c3, cell(c?axEur(c)+(r.carico?' · '+cr[r.carico].replace(' (quota)','').toLowerCase():''):'—',3)]; });
     ch.push(dTable([hd,...rows],W)); }
-  if(T_(a.materiali)) ch.push(dPara([dTxt('Note sui materiali: ',{size:17,bold:true,color:GREEN}),dTxt(plain(a.materiali),{size:17})],{before:60,after:40}));
-  { const sq=MODE==='staff'?[]:axSqList(x); if(sq.length) ch.push(dPara([dTxt(axSq().lab+': ',{size:17,bold:true,color:GREEN}),dTxt(sq.join(', '),{size:17})],{before:60,after:40})); }
-  { const pl=axPortList(x); if(pl.length){ ch.push(dH3(MODE==='staff'?'Cosa portare':'Cosa portano i ragazzi')); const nc=3, w=Math.floor(CW/nc), per=Math.ceil(pl.length/nc); const cols=[...Array(nc)].map((_,c)=>pl.slice(c*per,(c+1)*per)); ch.push(dTable([cols.map(cl=>dCell(cl.length?cl.map(t=>dPara([dTxt('☐  ',{size:17,color:GREEN}),dTxt(t,{size:17})],{after:30,line:260})):[dPara('',{after:0})],{w,noBorder:true,vAlign:dxLib().VerticalAlign.TOP}))],[...Array(nc)].map(()=>w))); } }
+  if(T_(a.materiali)) ch.push(dPara([dTxt('Note sui materiali: ',{size:17,bold:true,color:GRTXT}),dTxt(plain(a.materiali),{size:17})],{before:60,after:40}));
+  { const sq=MODE==='staff'?[]:axSqList(x); if(sq.length) ch.push(dPara([dTxt(axSq().lab+': ',{size:17,bold:true,color:GRTXT}),dTxt(sq.join(', '),{size:17})],{before:60,after:40})); }
+  { const pl=axPortList(x); if(pl.length){ ch.push(dH3(MODE==='staff'?'Cosa portare':'Cosa portano i ragazzi')); const nc=3, w=Math.floor(CW/nc), per=Math.ceil(pl.length/nc); const cols=[...Array(nc)].map((_,c)=>pl.slice(c*per,(c+1)*per)); ch.push(dTable([cols.map(cl=>dCell(cl.length?cl.map(t=>dPara([dTxt('☐  ',{size:17,color:GRTXT}),dTxt(t,{size:17})],{after:30,line:260})):[dPara('',{after:0})],{w,noBorder:true,vAlign:dxLib().VerticalAlign.TOP}))],[...Array(nc)].map(()=>w))); } }
   const PT=(x.piatti||[]).filter(pt=>(pt.nome||'').trim()&&!axPtSacco(x,pt)); const SAC=axSaccoList(x); if(PT.length||SAC.length){ ch.push(dH3('Menù')); const so=axPastoSo;
     const rows=PT.slice().sort((a1,b1)=>(a1.g||1)-(b1.g||1)||so(a1.pasto||'pranzo')-so(b1.pasto||'pranzo')).map(pt=>['Giorno '+(pt.g||1), axPastoLab(x,pt.pasto||'pranzo'), plain(pt.nome)+(pt.unico?' (piatto unico)':'')+(axPtPerTxt(pt,N)?' · '+axPtPerTxt(pt,N):''), pt.chi||'—', pt.g||1, so(pt.pasto||'pranzo')]).concat(SAC.map(o=>['Giorno '+o.g, o.lab, 'Al sacco: lo porta ciascuno', '—', o.g, so(o.m)])).sort((a1,b1)=>a1[4]-b1[4]||a1[5]-b1[5]).map(r=>r.slice(0,4));
-    ch.push(dGridTable(['Giorno','Pasto','Piatto','Chi cucina'],rows,[1400,1500,4538,2200])); const dd=axDieteTxt(x); if(dd.length) ch.push(dPara('Diete speciali: '+dd.join(', '),{size:17,before:40,after:40})); const fc=axFoodCost(x); if(fc) ch.push(dPara([dTxt('Costo stimato del cibo: ',{size:18,bold:true,color:GREEN}),dTxt(axEur(fc)+((x.cibo||{}).carico?' · a carico di '+cr[(x.cibo||{}).carico].replace(' (quota)','').toLowerCase():''),{size:18})],{before:40,after:40})); }
+    ch.push(dGridTable(['Giorno','Pasto','Piatto','Chi cucina'],rows,[1400,1500,4538,2200])); const dd=axDieteTxt(x); if(dd.length) ch.push(dPara('Diete speciali: '+dd.join(', '),{size:17,before:40,after:40})); const fc=axFoodCost(x); if(fc) ch.push(dPara([dTxt('Costo stimato del cibo: ',{size:18,bold:true,color:GRTXT}),dTxt(axEur(fc)+((x.cibo||{}).carico?' · a carico di '+cr[(x.cibo||{}).carico].replace(' (quota)','').toLowerCase():''),{size:18})],{before:40,after:40})); }
   const SP=(x.spese||[]).filter(r=>(r.voce||'').trim()||Number(r.importo)); const smo=Object.fromEntries(AX_SPMODO);
   if(SP.length){ ch.push(dH3('Altre spese')); ch.push(dGridTable(['Voce','Come si calcola','Totale','A carico di'],SP.map(r=>[plain(r.voce)||'—', axEur(r.importo)+' '+smo[r.modo||'forfait']+(r.modo==='notte'?' × '+(r.notti||1)+' notti':''), axEur(axSpesaCost(r,N)), r.carico?cr[r.carico].replace(' (quota)',''):'—']),[3600,2600,1500,1938])); }
   const items=axCosti(x); if(items.length){ ch.push(dH3('Riepilogo dei costi')); const lab=k=>k?cr[k].replace(' (quota)',''):'Da attribuire'; const rows=items.map(i=>[i.voce.charAt(0).toUpperCase()+i.voce.slice(1), lab(i.k), axEur(i.c)]);
     const by={}; items.forEach(it=>{ by[it.k]=(by[it.k]||0)+it.c; }); Object.keys(by).forEach(k=>rows.push(['Totale a carico: '+lab(k), '', axEur(by[k])+(k==='ragazzi'&&N.rag?' → '+axEur(by[k]/N.rag)+' a testa':'')]));
     rows.push(['Totale complessivo','',axEur(items.reduce((s2,i)=>s2+i.c,0))]); ch.push(dGridTable(['Voce','A carico di','Importo'],rows,[4438,2400,2800]));
-    { const qq=axQuota(x); if(qq) ch.push(dPara([dTxt('Quota: ',{size:17,bold:true,color:GREEN}),dTxt(axEur(qq)+' a testa'+(axQuotaInc(x)?' '+axQuotaInc(x):''),{size:17})],{before:40,after:40})); } }
+    { const qq=axQuota(x); if(qq) ch.push(dPara([dTxt('Quota: ',{size:17,bold:true,color:GRTXT}),dTxt(axEur(qq)+' a testa'+(axQuotaInc(x)?' '+axQuotaInc(x):''),{size:17})],{before:40,after:40})); } }
   const TD=(x.todo||[]).filter(r=>(r.cosa||'').trim()); if(TD.length){ ch.push(dH3('Cose da fare prima')); ch.push(dGridTable(['Stato','Cosa','Chi','Entro'],TD.map(r=>[r.fatto?'Fatto':'Da fare', plain(r.cosa), r.chi||'—', r.entro?r.entro.split('-').reverse().join('/'):'—']),[900,5038,2200,1500])); }
   // Imprevisti e attenzioni
   const kv3=[]; const pbl=Object.fromEntries(AX_PB); const PB=Object.entries(x.pb||{}).filter(([k,v])=>(v||'').trim()); if(PB.length||T_(a.pianoB)) kv3.push(['Piano B',[...PB.map(([k,v])=>dPara([dTxt(pbl[k].replace('…','')+': ',{size:18,bold:true}),dTxt(plain(v),{size:18})],{after:30})), ...(T_(a.pianoB)?[dPara(plain(a.pianoB),{size:18,after:30})]:[])]]);
@@ -10044,7 +10045,7 @@ async function axCircModel(p,j){
     cont:cu.nome?[cu.ruolo+': '+cu.nome, cu.tel?'tel. '+cu.tel:'', cu.mail||''].filter(Boolean).join(' · '):'',
     web:[(pp.sedeSito||'').trim(),(pp.sedeSocial||'').trim()].filter(Boolean).join(' · ')};
   const b=[]; const R=(t,o={})=>({k:'r',t:String(t==null?'':t),o}), LK=(t,url,o={})=>url?{k:'lk',t:String(t),url,o}:R(t,o), P=(runs,o={})=>({runs:Array.isArray(runs)?runs:[runs],o});
-  const C=GREEN; const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE,h:true}));
+  const C=GRTXT; const T=(t,o={})=>R(t,o), B=t=>R(t,{b:true}), H=t=>b.push(P([R(t,{b:true,sz:22,color:C})],{before:400,after:100,keepNext:true,border:PALE,h:true}));
   const oggi=new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
   b.push(P([R((sez?sez+', ':'')+oggi,{b:true})],{luogo:true,after:225}));
   const citz=(x.citaz||'').trim(); if(citz) b.push(P([R(citz,{i:true,color:'444444'})],{jc:'right',after:200}));
@@ -12111,10 +12112,10 @@ const scoreHex = n => n>0 ? thrHex(obsToThreshold(n)) : 'BBBBBB';
 const scoreLabel = n => n>0 ? thresholdLabel(obsToThreshold(Math.round(n))) : 'Non osservato';
 const AMB_LABEL = {P:'Personale', C:'Comunitario', S:'Spirituale'};
 const AMB_HEX = {P:'BF9000', C:'990000', S:'1155CC'};
-let GREEN = '1B5E42', PALE = 'E8F5E9';
+let GREEN = '1B5E42', PALE = 'E8F5E9', ONG = 'FFFFFF', GRTXT = '1B5E42';
 // Colori di Branca per Word ed Excel: L giallo (scurito per la leggibilità), E verde, R rosso
-const BRANCA_HEX = {L:['9A6700','FFF8E6'], E:['1B5E42','F1F7F3'], R:['A31F1F','FCF1F1']};
-function exportTheme(){ const c=BRANCA_HEX[typeof FASCIA!=='undefined'?FASCIA:'']||BRANCA_HEX.E; GREEN=c[0]; PALE=c[1]; }
+const BRANCA_HEX = {L:['F0E603','FFFCD6','1A1800','1A1800'], E:['1B5E42','F1F7F3'], R:['A31F1F','FCF1F1']};
+function exportTheme(){ const c=BRANCA_HEX[typeof FASCIA!=='undefined'?FASCIA:'']||BRANCA_HEX.E; GREEN=c[0]; PALE=c[1]; ONG=c[2]||'FFFFFF'; GRTXT=c[3]||c[0]; }
 const RUOLO_LBL = {CU:'Capo Unità', VCU:'Vice Capo Unità', SiS:'Senior in Servizio'};
 const FORM_LBL = {nessuna:'Nessuna', base:'Base', tdm:'Testa di Moro', wb:'Wood Badge'};
 const ESP_LBL = {basso:'Bassa (0–2 anni)', medio:'Media (3–6 anni)', alto:'Alta (7+ anni)'};
@@ -12156,7 +12157,7 @@ async function exportExcel(){
   }
   function title(ws, text, sub, cols){
     ws.mergeCells(1,1,1,cols); const c = ws.getCell(1,1);
-    c.value = text; c.font = F({size:16, bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(GREEN);
+    c.value = text; c.font = F({size:16, bold:true, color:{argb:'FF'+ONG}}); c.fill = fill(GREEN);
     c.alignment = {vertical:'middle', indent:1}; ws.getRow(1).height = 30;
     ws.mergeCells(2,1,2,cols); const d = ws.getCell(2,1);
     d.value = (UNIT_NAME ? UNIT_NAME + ' · ' : '') + sub; d.font = F({size:9, italic:true, color:{argb:'FF666666'}}); d.alignment = {indent:1, vertical:'middle'};
@@ -12385,9 +12386,9 @@ function dPara(content, o={}){
   if(o.heading) p.heading = D.HeadingLevel['HEADING_'+o.heading];
   const pr = new D.Paragraph(p); if(o.heading) pr._hd = o.heading; return pr;
 }
-const dH1 = (t, o={}) => dPara(t, Object.assign({size:34, bold:true, color:GREEN, before:0, after:160, keepNext:true, borderBottom:{size:18,color:GREEN}}, o));
-const dH2 = (t, color=GREEN, o={}) => dPara(t, Object.assign({heading:2, size:26, bold:true, color, before:260, after:120, keepNext:true, borderLeft:color}, o));
-const dH3 = (t, o={}) => dPara(t, Object.assign({heading:3, size:22, bold:true, color:GREEN, before:160, after:80, keepNext:true}, o));
+const dH1 = (t, o={}) => dPara(t, Object.assign({size:34, bold:true, color:GRTXT, before:0, after:160, keepNext:true, borderBottom:{size:18,color:GRTXT}}, o));
+const dH2 = (t, color=GRTXT, o={}) => dPara(t, Object.assign({heading:2, size:26, bold:true, color, before:260, after:120, keepNext:true, borderLeft:(color===GRTXT?GREEN:color)}, o));
+const dH3 = (t, o={}) => dPara(t, Object.assign({heading:3, size:22, bold:true, color:GRTXT, before:160, after:80, keepNext:true}, o));
 const dNote = t => dPara(t, {italics:true, color:'999999', size:19});
 function dCell(children, o={}){
   const D = dxLib();
@@ -12405,7 +12406,7 @@ function dCell(children, o={}){
 // tabella generica con intestazione verde
 function dGridTable(heads, rows, widths, sz){
   const D=dxLib(); sz=sz||17;
-  const hr=heads.map((h,i)=>dCell(dPara(h,{size:sz,bold:true,color:'FFFFFF',after:0}),{w:widths[i],fill:GREEN,border:GREEN}));
+  const hr=heads.map((h,i)=>dCell(dPara(h,{size:sz,bold:true,color:ONG,after:0}),{w:widths[i],fill:GREEN,border:GREEN}));
   return dTable([hr, ...rows.map(r=>r.map((v,i)=>dCell(dMulti(v,{size:sz}),{w:widths[i],vAlign:D.VerticalAlign.TOP})))], widths, true);
 }
 function dTable(rows, widths, split){
@@ -12508,7 +12509,7 @@ function dDocument(children, headerText){
   // indice automatico di Word (collegato ai titoli): compare se il documento ha almeno tre capitoli
   const h2=children.filter(c=>c&&c._hd===2).length, h3=children.filter(c=>c&&c._hd===3).length; let toc=false;
   if((h2>=3||(h2===0&&h3>=4))&&D.TableOfContents){ const first=children.findIndex(c=>c&&c._hd===(h2>=3?2:3)); const rng=h2>=3?(h3<=14?'2-3':'2-2'):'3-3';
-    if(first>=0){ children=children.slice(); children.splice(first,0,dPara('Indice',{size:26,bold:true,color:GREEN,before:200,after:80,keepNext:true}), new D.TableOfContents('Indice',{hyperlink:true,headingStyleRange:rng}), dPara('',{after:120})); toc=true; } }
+    if(first>=0){ children=children.slice(); children.splice(first,0,dPara('Indice',{size:26,bold:true,color:GRTXT,before:200,after:80,keepNext:true}), new D.TableOfContents('Indice',{hyperlink:true,headingStyleRange:rng}), dPara('',{after:120})); toc=true; } }
   return new D.Document({
     creator:'PEE CNGEI', title:(UNIT_NAME?UNIT_NAME+' — ':'')+headerText,
     features: toc?{updateFields:true}:undefined,
@@ -12654,7 +12655,7 @@ async function dSave(doc, name){
 }
 function dTitleBlock(title, sub){
   if(UNIT_NAME) sub = UNIT_NAME + ' · ' + sub;
-  return [dPara(title, {size:40, bold:true, color:GREEN, after:60, borderBottom:{size:24,color:GREEN}}), dPara(sub, {size:18, color:'666666', after:240})];
+  return [dPara(title, {size:40, bold:true, color:GRTXT, after:60, borderBottom:{size:24,color:GRTXT}}), dPara(sub, {size:18, color:'666666', after:240})];
 }
 
 // ═════════════════════ DOCX — punto d'ingresso ═════════════════════
@@ -12710,9 +12711,16 @@ async function exportPPDocx(mode){
   ch.push(dH3('Contesto Sezione e Gruppo')); ch.push(...dMulti(pp.ctxSez));
   { const SC=staffCols(false); const st=(pp.staffTab||[]).filter(r=>SC.some(c=>c[0]!=='ruolo'&&T_(r[c[0]])));
     if(st.length){ ch.push(dH3(FASCIA==='R'?'Adulti in Compagnia':'Adulti in staff'));
-      const ws=SC.length>9?[800,950,850,500,950,1150,1100,950,950]:[900,1100,600,1050,1300,1200,1050,1050]; ws.push(CW-ws.reduce((a,b)=>a+b,0));
-      ch.push(dGridTable(SC.map(c=>c[1]), st.map(r=>SC.map(c=>c[0]==='giungla'?staffGiungla(r):r[c[0]])), ws, 15)); } }
-  ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
+      // una persona = due righe: sopra i dati brevi, sotto (a tutta larghezza) i testi lunghi
+      const LONG=['car','prof','disp','varie']; const SH=SC.filter(c=>!LONG.includes(c[0])), LG=SC.filter(c=>LONG.includes(c[0]));
+      const wB={ruolo:900,nome:2000,giungla:1500,eta:700,form:2000,ruoli:1500}; const ws=SH.map(c=>wB[c[0]]||1500); ws[ws.length-1]+=CW-ws.reduce((x,y)=>x+y,0);
+      const D=dxLib(); const hr=SH.map((c,i)=>dCell(dPara(c[1],{size:17,bold:true,color:ONG,after:0}),{w:ws[i],fill:GREEN,border:GREEN}));
+      const rowsS=[hr];
+      st.forEach(r=>{
+        rowsS.push(SH.map((c,i)=>dCell(dPara(String((c[0]==='giungla'?staffGiungla(r):r[c[0]])||'—'),{size:17,bold:true,after:0}),{w:ws[i],fill:PALE,vAlign:D.VerticalAlign.TOP})));
+        const lp=LG.filter(c=>T_(r[c[0]])).map(c=>dPara(c[1]+': '+plain(r[c[0]]),{size:17,after:40}));
+        rowsS.push([dCell(lp.length?lp:[dPara('—',{size:17,after:0})],{w:CW,span:SH.length})]); });
+      ch.push(dTable(rowsS, ws, true)); } }  ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
   { const kr=occKosRows(); const man=(pp.occMan||[]).filter(r=>T_(r.att)||OCC_COLS.some(c=>T_(r[c[0]]))||(r.perc||[]).length);
     const pc=ids=>(ids||[]).slice().sort((a,b)=>'PCS'.indexOf(a[0])-'PCS'.indexOf(b[0])||(+a.slice(1))-(+b.slice(1))).join(', ');
     const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', grDateTxt(o.data), o.ctx, o.chi, o.note, pc(a.f)]; }).concat(man.map(r=>[r.att,grDateTxt(r.data),r.ctx,r.chi,r.note,pc(r.perc)]));
@@ -12731,10 +12739,10 @@ async function exportPPDocx(mode){
   if(['P','C','S'].some(a=>DB[a].some(p=>numOf(obsVal(p))>0)) || Object.keys(typeof obsSources==='function'?obsSources():{}).length || Object.keys(scheda.griglia||{}).length) ch.push(dPara('Questa è la sintesi. Il dettaglio dell’osservazione, percorso per percorso, è nell’Allegato 1 (griglia osservativa e scala), in fondo al documento.',{size:18,italics:true,color:'777777',after:80}));
   const w1 = [1500, 2700, 2700, CW-6900];
   const rows1 = [[
-    dCell(dPara('Ambito',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[0],fill:GREEN,border:GREEN}),
-    dCell(dPara('Aspetti positivi emersi',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[1],fill:GREEN,border:GREEN}),
-    dCell(dPara('Necessità educative',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[2],fill:GREEN,border:GREEN}),
-    dCell(dPara('Necessità educative specifiche del singolo/gruppetto',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[3],fill:GREEN,border:GREEN})
+    dCell(dPara('Ambito',{size:17,bold:true,color:ONG,after:0}),{w:w1[0],fill:GREEN,border:GREEN}),
+    dCell(dPara('Aspetti positivi emersi',{size:17,bold:true,color:ONG,after:0}),{w:w1[1],fill:GREEN,border:GREEN}),
+    dCell(dPara('Necessità educative',{size:17,bold:true,color:ONG,after:0}),{w:w1[2],fill:GREEN,border:GREEN}),
+    dCell(dPara('Necessità educative specifiche del singolo/gruppetto',{size:17,bold:true,color:ONG,after:0}),{w:w1[3],fill:GREEN,border:GREEN})
   ]];
   ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
     rows1.push([
@@ -12800,10 +12808,10 @@ async function exportPPDocx(mode){
     const cl = per.checklist || {};
     const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
-      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GREEN})]:[])],{before:0,after:40,keepNext:true}),
-      ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,q,arr) => [dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GREEN}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240}), ...(q<arr.length-1?[dPara('',{size:12,after:60})]:[])]),
+      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40,keepNext:true}),
+      ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,q,arr) => [dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240}), ...(q<arr.length-1?[dPara('',{size:12,after:60})]:[])]),
       ...(acts[acts.length-1].j===j?[]:[dPara('',{size:12,after:240})]),
-      ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GREEN})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
+      ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
     ]) : '—';
     ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${typeof per.prioritaIdx==='number'?'':' (facoltativo)'}`));
     ch.push(dKV([
@@ -12849,9 +12857,9 @@ async function exportPPDocx(mode){
         any5 = true;
         const w5 = [CW-4400, 1500, 2900];
         const r5 = [[
-          dCell(dPara('Indicatore di risultato',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w5[0],fill:GREEN,border:GREEN}),
-          dCell(dPara('Comportamento',{size:17,bold:true,color:'FFFFFF',after:0,align:'center'}),{w:w5[1],fill:GREEN,border:GREEN}),
-          dCell(dPara('Osservazioni qualitative',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w5[2],fill:GREEN,border:GREEN})
+          dCell(dPara('Indicatore di risultato',{size:17,bold:true,color:ONG,after:0}),{w:w5[0],fill:GREEN,border:GREEN}),
+          dCell(dPara('Comportamento',{size:17,bold:true,color:ONG,after:0,align:'center'}),{w:w5[1],fill:GREEN,border:GREEN}),
+          dCell(dPara('Osservazioni qualitative',{size:17,bold:true,color:ONG,after:0}),{w:w5[2],fill:GREEN,border:GREEN})
         ]];
         idrIdx.forEach(j => { const c = (scheda.idrComp?.[pid]?.[j]) || {};
           r5.push([
@@ -12861,7 +12869,7 @@ async function exportPPDocx(mode){
           ]); });
         ch.push(dTable(r5, w5));
       }
-      ch.push(dPara('Valutazione complessiva',{size:19,bold:true,color:GREEN,before:100,after:40,keepNext:true}));
+      ch.push(dPara('Valutazione complessiva',{size:19,bold:true,color:GRTXT,before:100,after:40,keepNext:true}));
       ch.push(...dMulti((scheda.valCompl||{})[pid]));
     });
     if(!any5) ch.push(dNote('Valutazione finale non ancora compilata.'));
@@ -12877,7 +12885,6 @@ async function exportPPDocx(mode){
     if(SOLOGR && !hasG){ showToast('La griglia è ancora vuota: compila prima almeno un percorso nell’osservazione.'); return; }
     if(hasG){
       ch.push(dH2('Allegato 1 — Griglia osservativa'));
-      ch.push(dPara('Griglia nel formato CNGEI: per ogni percorso le attività svolte, i focus osservativi e i comportamenti osservati.',{size:16,italics:true,color:'777777',after:100}));
       ch.push(dPara('GRIGLIA OSSERVATIVA DELL’UNITÀ',{size:22,bold:true,align:'center',before:120,after:120,keepNext:true}));
       const wc = [2100, 2400, 1700, 1700, CW-7900];
       const cl = x => String(x==null?'':x).trim();
@@ -12922,7 +12929,7 @@ async function exportPPDocx(mode){
       const wc = [CW-3300, 900, 2400]; const LB = {si:'SÌ', parz:'IN PARTE', no:'NO'}; const FL = {si:'2E7D32', parz:'E0A100', no:'B3261E'};
       const rowsF = [];
       CHK_PP.forEach(g => {
-        rowsF.push([dCell(dPara(g.sec.toUpperCase(),{size:17,bold:true,color:'FFFFFF',after:0}),{w:CW,span:3,fill:GREEN,border:GREEN})]);
+        rowsF.push([dCell(dPara(g.sec.toUpperCase(),{size:17,bold:true,color:ONG,after:0}),{w:CW,span:3,fill:GREEN,border:GREEN})]);
         g.items.forEach(it => { const c = st.items[it.id] || {};
           rowsF.push([
             dCell(dPara(it.q,{size:18,after:0}),{w:wc[0],border:'E6E6E6'}),
@@ -13054,7 +13061,7 @@ async function exportSchedaDocxLegacy(){
   if(!tl.length && !isStaff) ch.push(dNote('Nessuna voce nella timeline.'));
   if(!isStaff) tl.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(e => {
     const d = e.data ? new Date(e.data+'T12:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) : '—';
-    ch.push(dPara([dTxt(e.who||'',{size:19,bold:true,color:GREEN}), dTxt('   '+d,{size:17,color:'777777'})],{before:120,after:40,keepNext:true}));
+    ch.push(dPara([dTxt(e.who||'',{size:19,bold:true,color:GRTXT}), dTxt('   '+d,{size:17,color:'777777'})],{before:120,after:40,keepNext:true}));
     ch.push(dPara(plain(e.note)||'—',{size:19,after:40}));
     if(e.obsChange && Object.keys(e.obsChange).length) ch.push(dChips(Object.entries(e.obsChange)));
   });
@@ -13069,7 +13076,7 @@ async function exportSchedaDocxLegacy(){
       const w = [CW-3300, 900, 2400]; const LBL = {si:'SÌ', parz:'IN PARTE', no:'NO'}; const FILL = {si:'2E7D32', parz:'E0A100', no:'B3261E'};
       const rowsF = [];
       CHK_PP.forEach(g => {
-        rowsF.push([dCell(dPara(g.sec.toUpperCase(),{size:17,bold:true,color:'FFFFFF',after:0}),{w:CW,span:3,fill:GREEN,border:GREEN})]);
+        rowsF.push([dCell(dPara(g.sec.toUpperCase(),{size:17,bold:true,color:ONG,after:0}),{w:CW,span:3,fill:GREEN,border:GREEN})]);
         g.items.forEach(it => {
           const c = st.items[it.id] || {};
           rowsF.push([
@@ -13099,7 +13106,7 @@ async function exportMembersPDF(members, withAgg){
     const sc = allP.map(p => ({p, n:numOf(mObs[p.id])}));
     const forti = sc.filter(x => obsToThreshold(x.n||'n') >= 4);
     const deboli = sc.filter(x => x.n>0 && obsToThreshold(x.n) <= 2);
-    ch.push(dPara(member, {size:38, bold:true, color:GREEN, after:80, borderBottom:{size:24,color:GREEN}, pageBreakBefore: mi>0 || !!withAgg, keepNext:true}));
+    ch.push(dPara(member, {size:38, bold:true, color:GRTXT, after:80, borderBottom:{size:24,color:GRTXT}, pageBreakBefore: mi>0 || !!withAgg, keepNext:true}));
     const info = [];
     if(prof.eta) info.push(['Età', String(prof.eta)]);
     if(prof.ruolo) info.push(['Ruolo formativo', RUOLO_LBL[prof.ruolo]||prof.ruolo]);
@@ -13121,7 +13128,7 @@ async function exportMembersPDF(members, withAgg){
       ch.push(dH3('Evoluzione nel percorso formativo'));
       tl.forEach(e => {
         const d = e.data ? new Date(e.data+'T12:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) : '—';
-        ch.push(dPara(d,{size:18,bold:true,color:GREEN,before:100,after:30,keepNext:true}));
+        ch.push(dPara(d,{size:18,bold:true,color:GRTXT,before:100,after:30,keepNext:true}));
         ch.push(dPara(plain(e.note)||'—',{size:19,after:40}));
         if(e.obsChange && Object.keys(e.obsChange).length) ch.push(dChips(Object.entries(e.obsChange)));
       });
@@ -15406,7 +15413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 body.sh-pend #hdr,body.sh-pend #main-app,body.sh-pend #mobile-nav{visibility:hidden}
 #sh-root *{box-sizing:border-box}
 .sh-top{background:var(--green,#25734e);color:#fff;min-height:56px;padding:0 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.sh-top .sh-mark{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--green,#25734e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex:none}
+.sh-top .sh-mark-l{width:40px;height:40px;border-radius:0;background:transparent}.sh-top .sh-mark-l svg{width:100%;height:100%;display:block}.sh-top .sh-mark{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--green,#25734e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex:none}
 .sh-top b{font-size:14px}
 .sh-top nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
 .sh-lnk{background:transparent;border:0;color:inherit;font:600 12.5px 'Montserrat',sans-serif;min-height:44px;padding:0 12px;cursor:pointer;border-radius:8px;text-decoration:underline;text-underline-offset:3px}
@@ -15537,7 +15544,8 @@ function show(view, arg){
   else if(view === 'home') homeHTML();
 }
 function top(menu){
-  return `<header class="sh-top"><div class="sh-mark" aria-hidden="true">PEE</div><b>PEE CNGEI</b><span class="sh-tag-line">Programmazione Educativa Esperienziale</span>${menu ? `<nav aria-label="Link rapidi">
+  const lm = document.querySelector('#hdr .logo-mark'); const mk0 = lm ? `<div class="sh-mark sh-mark-l" aria-hidden="true">${lm.innerHTML}</div>` : `<div class="sh-mark" aria-hidden="true">PEE</div>`;
+  return `<header class="sh-top">${mk0}<b>PEE CNGEI</b><span class="sh-tag-line">Programmazione Educativa Esperienziale</span>${menu ? `<nav aria-label="Link rapidi">
     <button class="sh-lnk" type="button" onclick="shGuide()">Guida</button>
     <button class="sh-lnk" type="button" onclick="shVideo()">Video</button>
     <button class="sh-lnk" type="button" onclick="shProfileOpen()">Profilo</button>
@@ -15898,7 +15906,7 @@ window.clInit = async function(){
 body.sh-in .hdr-save .save-w{display:inline!important}body.sh-in .hdr-save .save-time{display:inline!important}@media(max-width:767px){body.sh-in .hdr-save .save-time{display:none!important}}
 
 /* ── dentro il progetto: intestazione, menu laterale, barra in basso ── */
-body.sh-in .pj-bar,body.sh-in .phase-tabs,body.sh-in .back-landing-btn,body.sh-in .logo-sub,body.sh-in .hdr-mode,body.sh-in #mobile-nav,body.sh-in .hdr-actions .fb-btn,body.sh-in .hdr-actions .cl-hdrbtn{display:none!important}
+body.sh-in .pj-bar,body.sh-in .phase-tabs,body.sh-in .back-landing-btn,body.sh-in .logo-sub,body.sh-in .hdr-mode,body.sh-in #mobile-nav,body.sh-in .hdr-actions .faq-btn,body.sh-in .hdr-actions .cl-hdrbtn{display:none!important}
 body.sh-in.sh-ready{padding-left:0;padding-right:0;padding-top:0}
 body.sh-in .sh-hlk{display:inline-flex}
 .sh-hlk{display:none;align-items:center;gap:6px;background:transparent;border:0;color:inherit;font:600 12.5px 'Montserrat',sans-serif;min-height:44px;padding:0 10px;cursor:pointer;border-radius:8px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
@@ -15926,7 +15934,7 @@ body.sh-drawer #sh-scrim{display:block}
 .sh-bbb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:transparent;font:700 11px 'Montserrat',sans-serif;color:#3D3D38;min-height:48px;cursor:pointer}
 .sh-bbb .ic{width:22px;height:22px}
 .sh-bbb.on{color:var(--green,#25734e);box-shadow:inset 0 3px 0 var(--green,#25734e)}
-@media(max-width:767px){ body.sh-in.sh-ready #sh-bb{display:grid} body.sh-in.sh-ready .main{padding-bottom:calc(88px + env(safe-area-inset-bottom))} body.sh-in.sh-ready .sh-hb,body.sh-in .sh-hlk,body.sh-in .hdr-actions .hdr-zoom{display:none!important} .sh-pjn{max-width:58vw;font-size:13px} }
+@media(max-width:767px){ body.sh-in .hdr-actions .fb-btn{display:none!important} body.sh-in.sh-ready #sh-bb{display:grid} body.sh-in.sh-ready .main{padding-bottom:calc(88px + env(safe-area-inset-bottom))} body.sh-in.sh-ready .sh-hb,body.sh-in .sh-hlk,body.sh-in .hdr-actions .hdr-zoom{display:none!important} .sh-pjn{max-width:58vw;font-size:13px} }
 body.sh-own #g-dl,body.sh-own #pp-ready{display:none!important}
 body.sh-in .toast{pointer-events:none}
 @media(max-width:767px){ body.sh-in.sh-ready .toast{bottom:calc(80px + env(safe-area-inset-bottom))} }
@@ -15957,6 +15965,9 @@ body.sh-in .toast{pointer-events:none}
 .sh-amb{display:flex;align-items:center;gap:10px;font-size:13px}
 .sh-amb .bar{flex:1;height:10px;border-radius:5px;background:#ECECE4;overflow:hidden}
 .sh-amb .bar i{display:block;height:100%}
+.sh-badge.sh-ok{background:#1d6b46}.body-x{}.sh-sec.sh-cur{border:2px solid var(--green-mid,#BF9000)}.sh-badge.sh-cur{background:#fff;border:2px solid var(--green-mid,#BF9000);color:#1a1800}
+.sh-ir{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid #ECECE4;font-size:12px}.sh-ir:first-of-type{border-top:0}.sh-ir span{color:#5f5f58}@media(max-width:640px){.sh-ir{grid-template-columns:1fr}}
+.sh-pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap}.sh-pill-ok{background:#d9ecdf;color:#1d5a3a}.sh-pill-wait{background:#fff3cf;color:#6b4e00}.sh-pill-no{background:#efefe8;color:#55554f}
 .sh-st{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;padding:12px 14px}
 .sh-badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;background:#F0F0E8;color:#5f5f58}
 @media(max-width:760px){ .sh-dgrid{grid-template-columns:1fr} .sh-dh h1{font-size:21px} }
@@ -16062,7 +16073,7 @@ function bbHTML(){
 function paint(){
   const s = $('sh-side'); if(s) s.innerHTML = navHTML();
   const b = $('sh-bb'); if(b) b.innerHTML = bbHTML();
-  try{ const nm = $('sh-pjn'); if(nm && CL.ctx) nm.textContent = CL.ctx.titolo; }catch(e){}
+  try{ const nm = $('sh-pjn'); if(nm && CL.ctx){ const t = isST() ? 'Staff' : (scheda && scheda.tipoProgetto === 'PP' ? 'Progetto Personale' : 'Programmazione di Unità'); const br = (typeof FASCIA !== 'undefined' && FASCIA) ? 'Branca ' + FASCIA + ': ' : ''; nm.textContent = br + t + (CL.ctx.anno ? ' ' + CL.ctx.anno : ''); nm.title = CL.ctx.titolo || ''; } const nn = $('sh-name'); if(nn && CL.user){ try{ nn.textContent = clShortName(); }catch(e){} } }catch(e){}
 }
 window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on); const h = $('sh-hb'); if(h) h.setAttribute('aria-expanded', on ? 'true' : 'false'); };
 window.shSheet = function(g){
@@ -16070,7 +16081,7 @@ window.shSheet = function(g){
   if(g === 'Altro'){
     const keep = isPP() ? ['ppc','ppa'] : isST() ? ['sha','arc'] : ['num','chk','sha','arc'];
     h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
-      + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
+      + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else{
     let on = false; const out = [];
     it.forEach(i => { if(i.g){ on = i.g === g; return; } if(on) out.push(i); });
@@ -16310,13 +16321,32 @@ function ppIterStato(){ const it = ppIter(); const d = k => (it[k] || {}).date;
   if(d('appr')) return 'Progetto approvato.'; if(d('finale')) return 'Consegna finale inviata: attendi l’approvazione.'; if(d('riscontro')) return 'Riscontro ricevuto: integra e prepara la consegna finale.';
   if(d('prima')) return 'Prima consegna inviata: attendi il riscontro.'; if(d('presa')) return 'Presa in carico ricevuta: puoi sviluppare il Progetto.'; if(d('avvio')) return 'Avvio inviato: attendi la presa in carico del Tutor.';
   return 'L’avvio non è ancora stato segnato come inviato al Tutor.'; }
+const PP_SEZ_L = ['Osservazione del Gruppo di Pari & Identificazione e Priorizzazione delle Necessità Educative','Obiettivi e Indicatori di Risultato','Percorso Educativo Esperienziale','Verifica delle Attività','Valutazione Finale'];
+const PP_SEZ_D = ['Contesto, KOS, osservazione, priorità','Almeno un Obiettivo per ogni Ambito: Personale, Comunitario, Spirituale','Un percorso dettagliato, con 3-4 attività e le sue caratteristiche','Per ogni attività: cosa è andato bene, cosa migliorare, aggiustamenti necessari','Un riscontro per ogni Indicatore di Risultato e una valutazione complessiva'];
+function ppHomeHTML(p, as){
+  const st = [1,2,3,4,5].map(n => ppStato(n)); const next = st.findIndex(x => x !== 'Completata');
+  let extra2 = ''; try{ const pr = (scheda.priorita || []).slice(0, 3); const sel = priSel().slice(0, 3); extra2 = (st[1] === 'Completata' ? '' : ' · ' + pr.slice(0, 3).filter(x => x && (x.obiettivi || []).length).length + ' di ' + Math.max(3, sel.length) + ' compilati'); }catch(e){}
+  const cards = st.map((s0, i) => {
+    const done = s0 === 'Completata', cur = i === next;
+    const badge = done ? `<span class="sh-badge sh-ok" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>` : `<span class="sh-badge${cur ? ' sh-cur' : ''}">${i + 1}</span>`;
+    const lbl = done ? 'Rivedi' : cur ? 'Continua' : 'Apri';
+    return `<div class="sh-st sh-sec${cur ? ' sh-cur' : ''}">${badge}<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;line-height:1.35">Sezione ${i + 1} · ${esc(PP_SEZ_L[i])}</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">${esc(PP_SEZ_D[i])}${done ? ' · completata' : i === 1 ? esc(extra2) : s0 === 'In corso' ? ' · in corso' : ''}</div></div><button type="button" class="${cur ? 'btn-primary' : 'btn-ghost'}" style="min-height:40px;min-width:84px" onclick="shPP('${i + 1}')">${lbl}</button></div>`; }).join('');
+  const it = ppIter(); const d = k => (it[k] || {}).date;
+  const pill = (txt, k) => `<span class="sh-pill sh-pill-${k}">${txt}</span>`;
+  const row = (t, d0, pl) => `<div class="sh-ir"><b>${t}</b><span>${d0}</span>${pl}</div>`;
+  const fm = k => pill('Inviato il ' + esc(fmtDL(d(k))), 'ok');
+  const inv = `<div class="sh-card2" style="margin-top:6px"><h3 style="margin:0 0 8px">Gli invii</h3>`
+    + row('Avvio', 'A: Tutor della Sperimentazione · CC: Capo Gruppo e Commissario di Sezione', d('avvio') ? fm('avvio') : pill('Non ancora', 'no'))
+    + row('Presa in carico', 'Il Tutor conferma entro 7 giorni e indica il formatore. Non blocca la compilazione.', d('presa') ? pill('Ricevuta il ' + esc(fmtDL(d('presa'))), 'ok') : d('avvio') ? pill('In attesa del Tutor', 'wait') : pill('Non ancora', 'no'))
+    + row('Primo invio', 'Dopo la Sezione 3, anche solo abbozzata. A: Tutor · CC: Capo Gruppo, Commissario di Sezione e ICdF', d('prima') ? fm('prima') : pill('Non ancora', 'no'))
+    + row('Invio finale', 'Progetto completo, Sezioni 1-5. A: Tutor · CC: Capo Gruppo, Commissario di Sezione e ICdF', d('finale') ? fm('finale') : pill('Non ancora', 'no'))
+    + `<div style="font-size:11.5px;color:#5f5f58;margin-top:10px">${esc(ppIterStato())} Senza Tutor, il destinatario è l’ICdF (campo modificabile). Le Linee Guida citano la Sezione 4 per l’invio finale: nell’app l’invio comprende anche la Sezione 5. Prima di ogni invio: il Capo Gruppo, come mentore, ha verificato la completezza del lavoro?</div>
+    <div style="margin-top:10px"><button type="button" class="btn-ghost" style="min-height:40px" onclick="shPP('i')">Apri gli invii</button></div></div>`;
+  return `<div class="sh-dh"><div><h1>A che punto sei</h1><div class="sub">Il tuo Progetto Personale in cinque Sezioni.${next >= 0 ? ' Prossimo passo: la Sezione ' + (next + 1) + '.' : ' Le cinque Sezioni sono complete.'}</div></div></div><div style="display:flex;flex-direction:column;gap:10px">${cards}${inv}</div>`;
+}
 function ppHTML(v){
   const p = SH.prof || {}; const as = (scheda && scheda.annoScout) || '';
-  if(v === '0'){
-    return `<div class="sh-dh"><div><h1>A che punto sei</h1><div class="sub">${esc(p.nome || '')}${as ? ' · Anno scout ' + esc(as) : ''}</div></div></div>
-      <div style="display:flex;flex-direction:column;gap:10px">` + PP_SEZ.map((t, i) => `<button type="button" class="sh-st" style="text-align:left;cursor:pointer;font:inherit;color:inherit;min-height:44px" onclick="shPP('${i + 1}')"><span class="sh-badge">${i + 1}</span><div><div style="font-size:13px;font-weight:800;line-height:1.35">${i + 1} · ${esc(t)}</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">${ppStato(i + 1)}</div></div></button>`).join('')
-      + `<div class="sh-st" style="background:#FFF8E1;border-color:#BF9000"><div><div style="font-size:13px;font-weight:800">Invii</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">${esc(ppIterStato())}</div></div></div></div>`;
-  }
+  if(v === '0') return ppHomeHTML(p, as);
   if(v === 'i') return ppIterHTML();
   const t = {1:PP_SEZ[0],2:PP_SEZ[1],3:PP_SEZ[2],4:PP_SEZ[3],5:PP_SEZ[4],i:'Invii del Progetto Personale',c:'Checklist dei criteri',a:'Le attività del mio percorso'}[v] || '';
   const n = /^\d$/.test(v) ? v + ' · ' : '';
@@ -16346,8 +16376,9 @@ function headerSetup(){
   const ha = hi.querySelector('.hdr-actions');
   if(ha){
     const mk = (t, f) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'sh-hlk'; b.textContent = t; b.onclick = f; return b; };
-    const a = [mk('I tuoi progetti', () => shGoHome()), mk('Guida', () => shGuide()), mk('Video', () => shVideo()), mk('Profilo', () => shProfileOpen())];
+    const a = [mk('I tuoi progetti', () => shGoHome()), mk('Guida', () => shGuide()), mk('Video', () => shVideo())];
     a.reverse().forEach(b => ha.insertBefore(b, ha.firstChild));
+    const nb = mk('Profilo', () => shProfileOpen()); nb.id = 'sh-name'; nb.title = 'Il tuo profilo'; nb.style.fontWeight = '800'; const sv = ha.querySelector('.hdr-save'); ha.insertBefore(nb, sv || null);
   }
   const setH = () => { const h = $('hdr'); if(h) document.documentElement.style.setProperty('--sh-hh', h.offsetHeight + 'px'); };
   setH(); window.addEventListener('resize', setH); try{ new ResizeObserver(setH).observe($('hdr')); }catch(e){}

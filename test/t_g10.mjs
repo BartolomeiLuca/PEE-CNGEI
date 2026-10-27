@@ -9,10 +9,10 @@ db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', 
 db.t.pee_archivi.push({id:'pp1', user_id:u.id, anno:2026, titolo:'PP', meta:{mode:'giovani', fascia:'E', tipo:'PP'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'X', obs:{P1:3}, pris:{P1:true}, scheda:{tipoProgetto:'PP', annoScout:'2026-27', pp:{nome:'Anna Verdi', sezione:'Pesaro'}, osservazione:{P:{positivi:'a', necessita:'b'}, C:{positivi:'a', necessita:'b'}, S:{positivi:'a', necessita:'b'}}}}, created_at:'2026-10-01T10:00:00Z', updated_at:'2026-10-01T10:00:00Z'});
 await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('pp1', 0)); await sleep(3500);
 let t = await ev(() => document.getElementById('panel-pp').innerText);
-ok(/In corso/.test(t) && /Da iniziare/.test(t) && /non è ancora stato segnato come inviato/.test(t), '«A che punto sei»: stato per Sezione (1 In corso, altre Da iniziare) e iter');
+ok(/Sezione 1 ·[^\n]*\n[^\n]*in corso/.test(t) && /Prossimo passo: la Sezione 1/.test(t) && /Gli invii/.test(t) && /Non ancora/.test(t), '«A che punto sei»: Sezioni con stato, prossimo passo e invii');
 await ev(() => { scheda.priorita[0] = Object.assign(scheda.priorita[0], {obiettivi:[0], idr:[0,1], tempistica:'nov-feb'}); shPP('0'); });
 t = await ev(() => document.getElementById('panel-pp').innerText);
-ok(/2 · Obiettivi e Indicatori di Risultato\nCompletata/.test(t), 'Sezione 2 completata con obiettivo, 2 indicatori e tempistica');
+ok(/Sezione 2 ·[^\n]*\n[^\n]*completata/.test(t), 'Sezione 2 completata con obiettivo, 2 indicatori e tempistica');
 await P.click('#sh-side .sh-si:has-text("Invii del Progetto")'); await sleep(500);
 t = await ev(() => document.getElementById('panel-pp').innerText);
 ok(/Comunicazione di avvio/.test(t) && /Supporto operativo/.test(t) && /Verifica della completezza del lavoro prima dell’invio/.test(t) && /Prima consegna/.test(t) && /Consegna finale/.test(t) && /Approvazione finale/.test(t), 'Invii: i passi delle Linee Guida e i compiti del Capo Gruppo mentore');

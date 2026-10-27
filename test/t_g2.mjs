@@ -22,7 +22,7 @@ ok(s.grp.join('|') === 'Progettare|Realizzare|Misurare e conservare', 'menu: gru
 ok(s.items.includes('1 · Osservazione del Gruppo di Pari') && s.items.includes('2 · Obiettivi e Indicatori di Risultato') && s.items.includes('3 · Percorsi Educativi Esperienziali') && s.items.includes('4 · Verifica delle Attività') && s.items.includes('5 · Valutazione Finale'), 'menu: sezioni con i titoli delle Linee Guida');
 ok(s.ph === 'none' && s.theme === 'E', 'schede di fase vecchie nascoste, tema verde della Branca E');
 const hdr = await ev(() => document.getElementById('hdr').innerText);
-ok(/I tuoi progetti/.test(hdr) && /Guida/.test(hdr) && /Profilo/.test(hdr), 'intestazione: I tuoi progetti, Guida, Profilo');
+ok(/I tuoi progetti/.test(hdr) && /Guida/.test(hdr) && /Video/.test(hdr) && /Suggerimenti/.test(hdr), 'intestazione: I tuoi progetti, Guida, Video, Suggerimenti');
 // 2 · le voci del menu portano alle sezioni
 const go = async (label) => { await P.click(`#sh-side .sh-si:has-text("${label}")`); await sleep(500); return ev(() => ({dash: document.getElementById('panel-dash').classList.contains('active'), p: [1,2,3,4].filter(i => document.getElementById('panel'+i).classList.contains('active')), step: schedaStep, on: (document.querySelector('#sh-side .sh-si.on') || {}).textContent})); };
 let r = await go('1 · Osservazione'); ok(!r.dash && r.p.length === 1 && /1 · Osservazione/.test(r.on), 'voce 1 · apre la Sezione 1 e si evidenzia');
