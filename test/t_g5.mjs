@@ -41,5 +41,8 @@ await open('an1');
 await ev(() => { const t = staffTab(); t.splice(0); t.push({ruolo:'CU',nome:'A'},{ruolo:'VCU',nome:'B'}); staffTabMove(0,1); });
 const uo = await ev(() => staffTab().map(r => r.nome).join(','));
 ok(uo === 'B,A', 'Unità: il riordino resta com\'era');
+await ev(() => { const t = staffTab(); t.splice(0); t.push({ruolo:'CU',nome:'A'},{ruolo:'VCU',nome:'B'}); document.getElementById('staff-tab').innerHTML = staffTabHTML(); });
+const pos = await ev(() => { const tr = document.querySelector('#staff-tab tbody tr'); const tds = [...tr.children]; const mv = tds[0].querySelectorAll('button[onclick^="staffTabMove"]').length; const del = tds[tds.length-1].querySelectorAll('button[onclick^="staffTabDel"]').length; const arrLast = tds[tds.length-1].querySelectorAll('button[onclick^="staffTabMove"]').length; const th = [...document.querySelectorAll('#staff-tab thead th')][0].textContent.trim(); return {mv, del, arrLast, th}; });
+ok(pos.mv === 2 && pos.arrLast === 0 && pos.del === 1 && pos.th === 'Ordine', 'Unità: le frecce stanno nella prima colonna (a sinistra), la × resta a destra');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);
