@@ -15988,6 +15988,57 @@ body.sh-in .gsn-step.on{background:var(--green);color:#fff}
 body.sh-in .gsn-step.done b{color:inherit}
 body.sh-in #g-subnav.stuck .gsn-step{padding:6px 12px;min-height:36px;font-size:12px}
 body.sh-in .gsn-act{margin-top:10px}
+
+/* ══ SISTEMA VISIVO UNICO (fase 1) — stesso linguaggio in tutta l'app: pasticche, card morbide, campi larghi e leggibili ══ */
+body.sh-in{--u-line:#d6dcd5;--u-line-s:#e4e8e2;--u-soft:#f5f7f3;--u-r-card:18px;--u-r-ctl:12px;--u-shadow:0 1px 2px rgba(30,50,30,.05),0 6px 18px -10px rgba(30,50,30,.12)}
+/* pulsanti: pasticca */
+body.sh-in .btn-primary,body.sh-in .btn-ghost,body.sh-in .btn-export,body.sh-in .btn-secondary{border-radius:999px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;min-height:40px;padding:9px 18px;line-height:1.2;transition:background .15s,border-color .15s,box-shadow .15s}
+body.sh-in .btn-ghost,body.sh-in .btn-export{background:#fff;border:1.5px solid var(--u-line);color:var(--ink)}
+body.sh-in .btn-ghost:hover,body.sh-in .btn-export:hover{border-color:var(--green);background:var(--green-pale)}
+body.sh-in .btn-primary{box-shadow:0 1px 2px rgba(0,0,0,.12)}
+body.sh-in .btn-primary:hover{filter:brightness(1.06)}
+body.sh-in table .btn-ghost,body.sh-in table .btn-primary,body.sh-in .mv-b,body.sh-in .oss-resync{min-height:32px;padding:5px 12px;font-size:12px}
+body.sh-in .btn-ghost:focus-visible,body.sh-in .btn-primary:focus-visible,body.sh-in .btn-export:focus-visible{outline:3px solid #1d4f8f;outline-offset:2px}
+/* campi */
+body.sh-in select,body.sh-in textarea,body.sh-in input[type=text],body.sh-in input[type=date],body.sh-in input[type=number],body.sh-in input[type=email],body.sh-in input[type=search],body.sh-in input:not([type]){border:1.5px solid var(--u-line);border-radius:var(--u-r-ctl);background-color:#fff;font-family:'Montserrat',sans-serif;font-size:14px;line-height:1.4;padding:9px 12px;color:var(--ink)}
+body.sh-in select{min-height:42px;padding-right:30px}
+body.sh-in textarea{line-height:1.5}
+body.sh-in select:focus,body.sh-in textarea:focus,body.sh-in input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green-light) 35%,transparent)}
+body.sh-in table select,body.sh-in table textarea,body.sh-in table input[type=text],body.sh-in table input[type=date],body.sh-in .gr-f textarea,body.sh-in .ax-in{font-size:13px;border-radius:10px;padding:7px 10px}
+body.sh-in table select,body.sh-in .ax-in{min-height:36px}
+body.sh-in label{font-family:'Montserrat',sans-serif}
+/* card */
+body.sh-in .gblock,body.sh-in .sh-card2,body.sh-in .cf-det,body.sh-in .sh-st{background:#fff;border:1px solid var(--u-line-s);border-radius:var(--u-r-card);box-shadow:var(--u-shadow)}
+body.sh-in .gblock{padding:22px 24px;margin:18px 0}
+body.sh-in .gblock h3{font-size:17px;font-weight:800;margin:0 0 8px;letter-spacing:0}
+body.sh-in .gblock .gblock{box-shadow:none;background:var(--u-soft);border-color:var(--u-line-s);padding:16px 18px}
+/* riquadro «Come funziona»: più quieto */
+body.sh-in .tutorial-box{background:var(--green-pale);border:0;border-radius:var(--u-r-card);padding:16px 54px 14px 20px;margin:0 0 18px}
+body.sh-in .tutorial-hdr{font-size:13px;letter-spacing:0;text-transform:none;margin-bottom:6px}
+body.sh-in .tutorial-list{font-size:13px}
+body.sh-in .tutorial-close{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);width:32px;height:32px;font-size:18px;top:10px;right:12px}
+body.sh-in .tutorial-box.tb-c > :not(.tutorial-hdr):not(.tutorial-close){display:none!important}
+body.sh-in .tutorial-box .tutorial-hdr{cursor:pointer;margin-bottom:8px}body.sh-in .tutorial-box.tb-c .tutorial-hdr{margin-bottom:0}
+body.sh-in .tutorial-box .tutorial-hdr::before{content:'▾';margin-right:8px;font-size:11px}body.sh-in .tutorial-box.tb-c .tutorial-hdr::before{content:'▸'}
+body.sh-in .tutorial-box.tb-c{padding-top:12px;padding-bottom:12px}body.sh-in .tutorial-box.tb-c .tutorial-close{top:6px}
+/* avvisi e note */
+body.sh-in .mv-lock,body.sh-in .st-note{border-radius:14px}
+body.sh-in .ax-chip,body.sh-in .an-chip{border-radius:999px}
+body.sh-in .ax-chip{padding:5px 12px;min-height:30px;font-size:12px}
+/* titoli di pagina: stessa gerarchia ovunque */
+body.sh-in .hero{background:transparent;border:0;box-shadow:none;padding:0;margin:0 0 14px;overflow:visible}
+body.sh-in .hero::before{display:none}
+body.sh-in .hero-eye{font-size:11.5px;letter-spacing:.02em;text-transform:none;font-weight:700;color:var(--ink-mid);margin-bottom:6px}
+body.sh-in .hero h1{font-size:26px;font-weight:800;line-height:1.2;margin-bottom:8px}
+body.sh-in .hero p{font-size:14px;line-height:1.55;max-width:760px;color:var(--ink-mid)}
+body.sh-in .sh-dh h1{font-size:26px}
+body.sh-in input[type=checkbox],body.sh-in input[type=radio]{accent-color:var(--green);width:18px;height:18px;flex:none}
+body.sh-in .gblock > h3 + p,body.sh-in .gblock > p:first-of-type{font-size:13px;line-height:1.55;color:var(--ink-mid)}
+body.sh-in .obs-select{border-width:1.5px;font-size:13px;font-weight:600}
+/* tabelle */
+body.sh-in table{border-radius:12px}
+body.sh-in thead th{background:var(--u-soft)}
+@media(max-width:640px){ body.sh-in .gblock{padding:16px 14px;border-radius:16px} body.sh-in .hero h1,body.sh-in .sh-dh h1{font-size:22px} body.sh-in .btn-primary,body.sh-in .btn-ghost,body.sh-in .btn-export{min-height:44px} }
 </style>
 <aside id="sh-side" aria-label="Menu principale"></aside>
 <div id="sh-scrim" onclick="shDrawer(false)"></div>
@@ -16395,7 +16446,8 @@ window.shEnter = function(){
   shSync();
 };
 // l'app aggiorna le sezioni da sola (ricarica del progetto, altre persone): la dashboard si ridisegna
-setInterval(() => { try{ const d = $('panel-dash'); if(d && d.classList.contains('active') && !editing && !d.contains(document.activeElement)) { const h = dashHTML(); if(d.innerHTML !== h) d.innerHTML = h; } shSync(); }catch(e){} }, 1500);
+function tutorialFold(){ try{ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.dataset.tb) return; b.dataset.tb = '1'; b.classList.add('tb-c'); const h = b.querySelector('.tutorial-hdr'); if(!h) return; h.setAttribute('role', 'button'); h.tabIndex = 0; h.setAttribute('aria-expanded', 'false'); const f = () => { const c = b.classList.toggle('tb-c'); h.setAttribute('aria-expanded', c ? 'false' : 'true'); }; h.addEventListener('click', f); h.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); f(); } }); }); }catch(e){} }
+setInterval(() => { tutorialFold(); try{ const d = $('panel-dash'); if(d && d.classList.contains('active') && !editing && !d.contains(document.activeElement)) { const h = dashHTML(); if(d.innerHTML !== h) d.innerHTML = h; } shSync(); }catch(e){} }, 1500);
 })();
 </script>
 <!-- GUSCIO:FINE -->
