@@ -26,7 +26,7 @@ ok(s.rows >= 1 && /Gioco vecchio/.test(s.txt) && /10 agosto/.test(s.txt), 'grigl
 ok(s.sel === 'none', 'il menu a tendina vecchio non si vede');
 await P.click('#card-P1 .sc-n >> nth=7'); await sleep(300);
 ok(await ev(() => obs.P1 === 8 && document.getElementById('badge-P1').textContent.startsWith('8')), 'clic su 8: il valore passa a 8');
-await P.fill('#card-P1 .gr-row textarea >> nth=1', 'Sanno correre agilmente'); await sleep(300);
+await P.fill('#card-P1 .gr-row textarea >> nth=0', 'Sanno correre agilmente'); await sleep(300);
 ok(await ev(() => JSON.stringify(scheda.griglia).includes('Sanno correre agilmente')), 'il testo della griglia si salva nella scheda');
 await P.click('#card-P2 .pc-hdr'); await sleep(300);
 ok(/Nessuna attività svolta ha ancora toccato/.test(await ev(() => document.querySelector('#card-P2 .gr-box').textContent)), 'percorso senza attività: riga libera «Non osservato»');
@@ -34,7 +34,8 @@ ok(/Nessuna attività svolta ha ancora toccato/.test(await ev(() => document.que
 const [dl] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(() => exportSchedaDocx('full'))]);
 const path = await dl.path(); const { execSync } = await import('child_process');
 const xml = execSync('unzip -p ' + path + ' word/document.xml').toString().replace(/<[^>]+>/g, ' ');
-ok(/Allegato 1 — Griglia osservativa/.test(xml) && /Sanno correre agilmente/.test(xml) && /Livello osservato: 8\/10/.test(xml), 'Word: Allegato 1 con griglia, testi e livello nella cella del percorso');
+ok(/Allegato 1 — Griglia osservativa/.test(xml) && /Sanno correre agilmente/.test(xml) && !/Livello osservato/.test(xml) && !/\d+\/8 osservati/.test(xml), 'Word: Allegato 1 con griglia e testi, senza livello né riepilogo');
+ok(/SVILUPPO PERSONALE/.test(xml) && /Focus osservativi/.test(xml) && /1\. Corporeità\s*: Espressività, consapevolezza fisica, gestione stress fisico/.test(xml.replace(/\s+/g,' ')), 'Word: intestazione del modello e sottotitolo del Reparto accanto al percorso');
 ok(/Non osservato/.test(xml) && /coincide con l’Unità del percorso: in parte/.test(xml), 'Word: righe «Non osservato» e domanda sul gruppo osservato');
 ok(!/Profilo di osservazione/.test(xml), 'Word: niente più allegato «Profilo di osservazione»');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
