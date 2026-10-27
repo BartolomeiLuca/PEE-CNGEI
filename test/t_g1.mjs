@@ -9,27 +9,27 @@ db.addUser('anna@x.it', 'password123', 'Anna Verdi');
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(1500);
 // 1 · senza account: schermata di accesso, niente pagina iniziale vecchia
 let s = await ev(() => ({show: document.getElementById('sh-root').classList.contains('show'), txt: document.getElementById('sh-root').textContent, wel: getComputedStyle(document.getElementById('welcome-screen')).display, hdr: getComputedStyle(document.getElementById('hdr')).display}));
-ok(s.show && /Per lavorare serve un account/.test(s.txt), 'senza account: compare la schermata «Per lavorare serve un account»');
+ok(s.show && /1 · Il tuo account/.test(s.txt) && /2 · Il tuo profilo/.test(s.txt) && /Crea l’account/.test(s.txt), 'senza account: pagina unica «1 · Il tuo account» + «2 · Il tuo profilo»');
 ok(s.wel === 'none' && s.hdr === 'none', 'la pagina iniziale e l’intestazione vecchie non si vedono');
 // 2 · accesso
 await P.click('#sh-login'); await sleep(300);
-ok(await ev(() => document.getElementById('cl-ov').classList.contains('show')), 'Accedi apre la finestra di accesso');
-await P.fill('#cl-email', 'anna@x.it'); await P.fill('#cl-pw', 'password123'); await P.click('#cl-go'); await sleep(2000);
+ok(!(await ev(() => document.getElementById('cl-ov').classList.contains('show'))) && /Accedi/.test(await ev(() => document.getElementById('sh-ago').textContent)), 'Accedi resta nella pagina (nessuna finestra)');
+await P.fill('#sh-em', 'anna@x.it'); await P.fill('#sh-pw', 'password123'); await P.click('#sh-ago'); await sleep(2000);
 s = await ev(() => ({v: SH.view, ov: document.getElementById('cl-ov').classList.contains('show'), txt: document.getElementById('sh-root').textContent, nome: document.getElementById('sh-nome') && document.getElementById('sh-nome').value}));
 ok(s.v === 'profile' && !s.ov, 'dopo l’accesso: schermata del profilo, finestra chiusa');
 ok(s.nome === 'Anna Verdi', 'il nome si precompila dall’account');
 // 3 · validazione
 await P.click('#sh-psave'); await sleep(200);
 ok(/Scegli il tuo ruolo/.test(await ev(() => document.getElementById('sh-pmsg').textContent)), 'profilo: senza ruolo chiede il ruolo');
-await P.selectOption('#sh-ruolo', 'cu'); await P.click('#sh-psave'); await sleep(200);
+await P.check('input[name="sh-ruolo"][value="cu"]'); await P.click('#sh-psave'); await sleep(200);
 ok(/Branca/.test(await ev(() => document.getElementById('sh-pmsg').textContent)), 'profilo: Capo Unità senza Branca → chiede la Branca');
-await P.selectOption('#sh-branca', 'E'); await P.fill('#sh-sez', 'Pesaro'); await P.dispatchEvent('#sh-sez', 'change'); await sleep(300);
+await P.check('input[name="sh-branca"][value="E"]'); await P.fill('#sh-sez', 'Pesaro'); await P.dispatchEvent('#sh-sez', 'change'); await sleep(300);
 const gopts = await ev(() => [...document.querySelectorAll('#sh-grp option')].length);
 ok(gopts >= 22, 'Gruppo: menu a tendina con Monogruppo e Gruppi 1-20');
 await P.selectOption('#sh-grp', '1'); await P.selectOption('#sh-area', 'altoadriatico'); await P.click('#sh-psave'); await sleep(1500);
 s = await ev(() => ({v: SH.view, txt: document.getElementById('sh-root').textContent}));
-ok(s.v === 'home' && /da dove cominci/.test(s.txt) && /Progetto Personale/.test(s.txt) && /Programmazione Annuale/.test(s.txt), 'senza progetti: home con le due carte (PP e Programmazione Annuale)');
-ok(/passo passo e con la struttura indicata nelle Linee Guida/.test(s.txt), 'testo della carta PP come deciso');
+ok(s.v === 'home' && /Che cosa vuoi progettare/.test(s.txt) && /Progetto Personale/.test(s.txt) && /Programmazione Annuale/.test(s.txt), 'senza progetti: home con le due carte (PP e Programmazione Annuale)');
+ok(/passo passo, con la struttura indicata nelle Linee Guida/.test(s.txt), 'testo della carta PP come deciso');
 const prof = db.t.pee_profili[0];
 ok(prof && prof.ruolo === 'cu' && prof.branca === 'E' && prof.sezione === 'Pesaro' && prof.gruppo === '1' && prof.area_rcdf === 'altoadriatico', 'profilo salvato in pee_profili');
 // 4 · nuovo progetto PP
@@ -58,7 +58,7 @@ ok(/I tuoi progetti/.test(home) && /Titolare/.test(home) && /Condivisi con te/i.
 ok(/Il tuo ruolo: Co-titolare/.test(home) && /Il tuo ruolo: Collaboratore/.test(home) && /Il tuo ruolo: Lettore/.test(home), 'condivisi: Co-titolare, Collaboratore e Lettore con il ruolo');
 // 6 · Capo Gruppo: niente Branca né Nome Unità
 await ev(() => shProfileOpen()); await sleep(300);
-await P.selectOption('#sh-ruolo', 'cg'); await sleep(200);
+await P.check('input[name="sh-ruolo"][value="cg"]'); await sleep(200);
 ok(await ev(() => document.getElementById('sh-brw').style.display === 'none'), 'profilo Capo Gruppo: la Branca sparisce');
 await P.click('#sh-psave'); await sleep(1500);
 await P.click('text=+ Nuovo progetto'); await sleep(300);

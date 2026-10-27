@@ -15172,6 +15172,7 @@ body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
 .sh-msg{font-size:13px;line-height:1.5;min-height:18px}
 .sh-msg.err{color:#a1260f;font-weight:600}
 .sh-msg.ok{color:#1b5e42;font-weight:600}
+.sh-prof-line{display:flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:#3D3D38;flex-wrap:wrap}.sh-prof-line a{color:#1b5e42;font-weight:700}.sh-big small{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f5f58}.sh-big ul{margin:2px 0 0;padding-left:18px;font-size:13px;line-height:1.5;color:#3D3D38;flex:1}.sh-big em{font-style:normal;font-weight:700;color:#1b5e42;margin-top:6px}.sh-tag-line{font-size:12px;opacity:.85;font-weight:500}.sh-h2{margin:0!important;font-size:18px!important;font-weight:800!important;letter-spacing:0!important;text-transform:none!important;color:inherit!important}.sh-rrs{display:flex;flex-direction:column;gap:8px}#sh-brw .sh-rrs{flex-direction:row;flex-wrap:wrap}#sh-brw .sh-rr{min-width:72px;justify-content:center}.sh-dis{opacity:.55}.sh-card a{color:#1b5e42;font-weight:700}
 .sh-rr{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;padding:10px 12px;border:1px solid #D8D8D0;border-radius:8px;min-height:44px;cursor:pointer;background:#fff}
 .sh-rr input{width:18px;height:18px;margin:0;accent-color:var(--green,#25734e)}
 .sh-rr.on{border:2px solid var(--green,#25734e);background:var(--green-pale,#e6f3ec)}
@@ -15260,7 +15261,7 @@ async function profSave(p){
 SH.profSave = profSave;
 function profOk(p){
   p = p || SH.prof || {};
-  if(!String(p.nome||'').trim() || !p.ruolo || !String(p.sezione||'').trim() || !p.area_rcdf) return false;
+  if(!String(p.nome||'').trim() || !p.ruolo || !String(p.sezione||'').trim()) return false;
   if(!noGruppo(p.ruolo) && !String(p.gruppo||'').trim()) return false;
   if((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) return false;
   return true;
@@ -15278,21 +15279,85 @@ function show(view, arg){
   else if(view === 'home') homeHTML();
 }
 function top(menu){
-  return `<header class="sh-top"><div class="sh-mark" aria-hidden="true">PEE</div><b>PEE CNGEI</b>${menu ? `<nav aria-label="Link rapidi">
+  return `<header class="sh-top"><div class="sh-mark" aria-hidden="true">PEE</div><b>PEE CNGEI</b><span class="sh-tag-line">Programmazione Educativa Esperienziale</span>${menu ? `<nav aria-label="Link rapidi">
     <button class="sh-lnk" type="button" onclick="shGuide()">Guida</button>
+    <button class="sh-lnk" type="button" onclick="shVideo()">Video</button>
     <button class="sh-lnk" type="button" onclick="shProfileOpen()">Profilo</button>
     <button class="sh-lnk" type="button" onclick="shLogout()">Esci</button></nav>` : ''}</header>`;
 }
-function gateHTML(why){
+window.shVideo = function(){ try{ vidOpen(1); }catch(e){ try{ shGuide(); }catch(x){} } };
+function accountCard(why){
   const off = why === 'offline';
+  if(off) return `<div class="sh-card"><h2 class="sh-h2">1 · Il tuo account</h2><p class="sh-sub"><b>Il servizio non è raggiungibile.</b> Controlla la connessione e riprova: per lavorare serve l’account.</p><div><button class="sh-btn" type="button" onclick="location.reload()">Riprova</button></div></div>`;
+  return `<form class="sh-card" id="sh-af" onsubmit="return shAccSubmit(event)" novalidate>
+    <h2 class="sh-h2">1 · Il tuo account</h2>
+    <div><label class="sh-lb" for="sh-em">Email</label><input class="sh-in" id="sh-em" type="email" autocomplete="email" inputmode="email" maxlength="160"></div>
+    <div><label class="sh-lb" for="sh-pw">Password</label><input class="sh-in" id="sh-pw" type="password" autocomplete="new-password" minlength="8"><div class="sh-hint">Serve per tornare ai tuoi progetti da qualsiasi dispositivo. Almeno 8 caratteri.</div></div>
+    <div class="sh-msg" id="sh-amsg" role="alert"></div>
+    <div><button class="sh-btn" type="submit" id="sh-ago">Crea l’account</button></div>
+    <div class="sh-hint" style="margin:0">Hai già un account? <a href="#" id="sh-login" onclick="return shAccMode('login')">Accedi</a> · <a href="#" id="sh-forgot" onclick="return shAccMode('reset')">Password dimenticata</a></div>
+  </form>`;
+}
+window.shAccMode = function(m){
+  SH._amode = m; const f = $('sh-af'); if(!f) return false;
+  const login = m === 'login', reset = m === 'reset';
+  $('sh-pw').closest('div').style.display = reset ? 'none' : '';
+  $('sh-pw').autocomplete = login ? 'current-password' : 'new-password';
+  $('sh-ago').textContent = login ? 'Accedi' : reset ? 'Mandami il link' : 'Crea l’account';
+  f.querySelector('.sh-h2').textContent = '1 · Il tuo account';
+  const h = f.querySelector('.sh-hint:last-child');
+  h.innerHTML = login ? 'Non hai un account? <a href="#" onclick="return shAccMode(\'signup\')">Creane uno</a> · <a href="#" onclick="return shAccMode(\'reset\')">Password dimenticata</a>' : reset ? 'Ti ricordi la password? <a href="#" onclick="return shAccMode(\'login\')">Accedi</a>' : 'Hai già un account? <a href="#" id="sh-login" onclick="return shAccMode(\'login\')">Accedi</a> · <a href="#" id="sh-forgot" onclick="return shAccMode(\'reset\')">Password dimenticata</a>';
+  $('sh-amsg').className = 'sh-msg'; $('sh-amsg').textContent = '';
+  return false;
+};
+window.shAccSubmit = async function(ev){
+  if(ev) ev.preventDefault();
+  const m = $('sh-amsg'), btn = $('sh-ago'); const mode = SH._amode || 'signup';
+  const em = String($('sh-em').value || '').trim(), pw = $('sh-pw').value || '';
+  const err = t => { m.className = 'sh-msg err'; m.textContent = t; btn.disabled = false; return false; };
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err('Scrivi un indirizzo email valido.');
+  if(mode !== 'reset' && pw.length < 8) return err('La password deve avere almeno 8 caratteri.');
+  btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Un attimo…';
+  const back = () => location.href.split('#')[0].split('?')[0];
+  try{
+    if(mode === 'login'){
+      const {data, error} = await CL.sb.auth.signInWithPassword({email:em, password:pw});
+      if(error) throw error;
+      CL.user = data.user || (data.session && data.session.user) || CL.user;
+      if(await clCtxGuard()){ appReload(); return false; }
+      await route(true);
+    } else if(mode === 'reset'){
+      const {error} = await CL.sb.auth.resetPasswordForEmail(em, {redirectTo: back()});
+      if(error) throw error;
+      m.className = 'sh-msg ok'; m.textContent = 'Se l’indirizzo è registrato, ti arriva un link per scegliere una nuova password (guarda anche tra la posta indesiderata).'; btn.disabled = false;
+    } else {
+      const nome = (SH.prof && SH.prof.nome) || '';
+      const {data, error} = await CL.sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: back(), data:{nome}}});
+      if(error) throw error;
+      if(data.session){ CL.user = data.session.user; if(await clCtxGuard()){ appReload(); return false; } await route(true); }
+      else { SH._pendMail = em; $('sh-af').outerHTML = pendCard(em); }
+    }
+  }catch(e){ err(clErr(e)); }
+  return false;
+};
+function pendCard(em){
+  return `<div class="sh-card" id="sh-af"><h2 class="sh-h2">1 · Il tuo account</h2><p class="sh-sub"><b>Controlla la tua mail.</b> Ti abbiamo scritto a ${esc(em)} un link di conferma: aprilo per attivare l’account, poi accedi. Se non lo trovi, guarda tra la posta indesiderata.</p><div class="sh-msg" id="sh-amsg" role="status"></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shResend()">Rinvia la mail</button><button class="sh-btn gh" type="button" onclick="shAccBack()">Ho già confermato: accedi</button></div></div>`;
+}
+window.shResend = async function(){
+  const m = $('sh-amsg');
+  try{ const {error} = await CL.sb.auth.resend({type:'signup', email:SH._pendMail, options:{emailRedirectTo: location.href.split('#')[0].split('?')[0]}}); if(error) throw error; m.className = 'sh-msg ok'; m.textContent = 'Mail rinviata.'; }
+  catch(e){ m.className = 'sh-msg err'; m.textContent = clErr(e); }
+};
+window.shAccBack = function(){ show('gate'); setTimeout(() => shAccMode('login'), 0); };
+function gateHTML(why){
+  const p = SH.prof || {};
   $('sh-root').innerHTML = top(false) + `<main class="sh-wrap narrow">
-    <h1>PEE CNGEI</h1>
-    <p class="sh-sub">Programmazione Educativa Esperienziale CNGEI: il tuo Progetto Personale e la Programmazione Annuale della tua Unità.</p>
-    <div class="sh-card">
-      ${off ? `<p class="sh-sub"><b>Il servizio non è raggiungibile.</b> Controlla la connessione e riprova: per lavorare serve l’account.</p><div><button class="sh-btn" type="button" onclick="location.reload()">Riprova</button></div>`
-      : `<p class="sh-sub"><b>Per lavorare serve un account.</b> Il tuo lavoro si salva da solo nel cloud e lo ritrovi su ogni dispositivo.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="button" id="sh-login" onclick="shAuth('login')">Accedi</button><button class="sh-btn gh" type="button" id="sh-signup" onclick="shAuth('signup')">Crea un account</button></div>`}
-    </div></main>`;
+    <h1>Per cominciare servono un account e un profilo</h1>
+    <p class="sh-sub">Il tuo lavoro si salva da solo nel cloud e lo ritrovi su ogni dispositivo. Il profilo serve a precompilare i progetti.</p>
+    ${accountCard(why)}
+    ${why === 'offline' ? '' : profCard({}, 'first', true)}
+  </main>`;
+  shProfRole();
 }
 window.shAuth = function(v){ try{ $('cl-ov').classList.add('show'); clShow(v); }catch(e){ clOpen(); } };
 
@@ -15311,33 +15376,43 @@ function areaOpts(cur){
   const A = (typeof RCDF_AREE !== 'undefined') ? RCDF_AREE : [];
   return `<option value=""${cur ? '' : ' selected'}>— scegli —</option>` + A.map(a => `<option value="${esc(a[0])}"${cur === a[0] ? ' selected' : ''}>${esc(a[1])}</option>`).join('');
 }
-function profileHTML(mode){
-  const p = SH.prof || {}; const first = mode !== 'edit';
+function rrGroup(name, items, cur, onch){
+  return `<div class="sh-rrs" role="radiogroup" aria-labelledby="${name}-l">${items.map(([v,t]) => `<label class="sh-rr${cur === v ? ' on' : ''}"><input type="radio" name="${name}" value="${v}"${cur === v ? ' checked' : ''} onchange="shRR(this)">${t}</label>`).join('')}</div>`;
+}
+window.shRR = function(el){ document.querySelectorAll('input[name="' + el.name + '"]').forEach(i => i.closest('.sh-rr').classList.toggle('on', i.checked)); shProfRole(); };
+function rv(name){ const c = document.querySelector('input[name="' + name + '"]:checked'); return c ? c.value : ''; }
+function profCard(p, mode, disabled){
+  const first = mode !== 'edit';
   let nome = p.nome || ''; if(!nome){ try{ nome = (CL.user.user_metadata && CL.user.user_metadata.nome) || ''; }catch(e){} }
-  $('sh-root').innerHTML = top(!first) + `<main class="sh-wrap narrow">
-    <h1>${first ? 'Raccontaci chi sei' : 'Il tuo profilo'}</h1>
-    <p class="sh-sub">${first ? 'Poche informazioni, una volta sola: servono a precompilare i progetti e a sapere a chi mandare le comunicazioni. Le puoi cambiare quando cambia il tuo incarico.' : 'Puoi cambiarlo quando cambia il tuo incarico. I progetti già creati non cambiano.'}</p>
-    <form class="sh-card" id="sh-pf" onsubmit="return shProfSubmit(event)" novalidate>
-      <div><label class="sh-lb" for="sh-nome">Nome e cognome</label><input class="sh-in" id="sh-nome" autocomplete="name" maxlength="120" value="${esc(nome)}"></div>
-      <div><label class="sh-lb" for="sh-ruolo">Ruolo</label><select class="sh-in" id="sh-ruolo" onchange="shProfRole()"><option value="">— scegli —</option>${RUOLI.map(r => `<option value="${r[0]}"${p.ruolo === r[0] ? ' selected' : ''}>${r[1]}</option>`).join('')}</select></div>
-      <div id="sh-brw"><label class="sh-lb" for="sh-branca">Branca</label><select class="sh-in" id="sh-branca"><option value="">— scegli —</option>${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b}</option>`).join('')}</select><div class="sh-hint" id="sh-brh">L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover</div></div>
+  return `<form class="sh-card${disabled ? ' sh-dis' : ''}" id="sh-pf" onsubmit="return shProfSubmit(event)" novalidate><fieldset ${disabled ? 'disabled' : ''} style="border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:16px">
+      <h2 class="sh-h2">${first ? '2 · Il tuo profilo' : 'Il tuo profilo'}</h2>
+      ${first ? '' : '<p class="sh-sub">Puoi cambiarlo quando cambia il tuo incarico. I progetti già creati non cambiano.</p>'}
+      <div><label class="sh-lb" for="sh-nome">Nome e cognome</label><input class="sh-in" id="sh-nome" autocomplete="name" maxlength="120" value="${esc(nome)}"><div class="sh-hint">Compare nei tuoi progetti, nelle condivisioni e nell’oggetto delle mail del Progetto Personale.</div></div>
+      <div><div class="sh-lb" id="sh-ruolo-l">Il tuo ruolo</div>${rrGroup('sh-ruolo', RUOLI, p.ruolo)}<div class="sh-hint">Lo potrai cambiare dal profilo quando cambia il tuo incarico.</div></div>
+      <div id="sh-brw"><div class="sh-lb" id="sh-branca-l">Branca</div>${rrGroup('sh-branca', BRANCHE.map(b => [b,b]), p.branca)}<div class="sh-hint" id="sh-brh">L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover. Il colore dell’app segue la Branca del progetto aperto.</div></div>
       <div class="sh-g2">
         <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" value="${esc(p.sezione || '')}" onchange="shProfSez()"><datalist id="sh-dl-sez">${sezOpts()}</datalist></div>
         <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
       </div>
-      <div><label class="sh-lb" for="sh-area">Area RCdF</label><select class="sh-in" id="sh-area">${areaOpts(p.area_rcdf)}</select><div class="sh-hint">Il Referente della Commissione di Formazione (RCdF) della tua area riceve in copia le comunicazioni del Progetto Personale.</div></div>
+      <div><label class="sh-lb" for="sh-area">Area di formazione (RCdF)</label><select class="sh-in" id="sh-area">${areaOpts(p.area_rcdf)}</select><div class="sh-hint">Serve per indirizzare le mail del Progetto Personale. Puoi lasciarla vuota e scegliere più tardi.</div></div>
       <div class="sh-msg" id="sh-pmsg" role="alert"></div>
       ${SH.profErr ? `<div class="sh-hint">Il profilo non si è potuto leggere dal cloud (${esc(SH.profErr)}): ti mostro la copia di questo dispositivo.</div>` : ''}
-      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="submit" id="sh-psave">${first ? 'Salva e continua' : 'Salva'}</button>${first ? '' : '<button class="sh-btn gh" type="button" onclick="shGoHome()">Annulla</button>'}</div>
-    </form></main>`;
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="submit" id="sh-psave">${first ? 'Continua' : 'Salva'}</button>${first ? '' : '<button class="sh-btn gh" type="button" onclick="shGoHome()">Annulla</button>'}</div>
+    </fieldset></form>`;
+}
+function profileHTML(mode){
+  const p = SH.prof || {}; const first = mode !== 'edit';
+  const acc = first ? `<div class="sh-card"><h2 class="sh-h2">1 · Il tuo account</h2><p class="sh-sub">Account attivo: <b>${esc((CL.user && CL.user.email) || '')}</b> ✓</p></div>` : '';
+  $('sh-root').innerHTML = top(!first) + `<main class="sh-wrap narrow">
+    ${first ? '<h1>Ancora il profilo, poi cominci</h1><p class="sh-sub">Poche informazioni, una volta sola: servono a precompilare i progetti e a sapere a chi mandare le comunicazioni.</p>' : '<h1>Il tuo profilo</h1>'}
+    ${acc}${profCard(p, mode, false)}</main>`;
   shProfRole();
   if(p.sezione) try{ grpFetch(p.sezione).then(() => { const g = $('sh-grp'); if(g && document.activeElement !== g) g.innerHTML = grpOpts($('sh-sez').value, g.value); }); }catch(e){}
 }
 window.shProfRole = function(){
-  const r = ($('sh-ruolo') || {}).value;
+  const r = rv('sh-ruolo');
   const b = $('sh-brw'), g = $('sh-grw'); if(!b) return;
   b.style.display = noBranca(r) ? 'none' : ''; g.style.display = noGruppo(r) ? 'none' : '';
-  const h = $('sh-brh'); if(h) h.textContent = (r === 'cu' || r === 'vcu') ? 'L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover' : 'Facoltativa: scegli la Branca in cui presti servizio, se ne hai una. L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover';
 };
 window.shProfSez = function(){
   const s = ($('sh-sez').value || '').trim(); const g = $('sh-grp');
@@ -15347,10 +15422,10 @@ window.shProfSez = function(){
 window.shProfSubmit = async function(ev){
   if(ev) ev.preventDefault();
   const m = $('sh-pmsg'); const v = id => String(($(id) || {}).value || '').trim();
-  const p = {nome:v('sh-nome'), ruolo:v('sh-ruolo'), branca:v('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:v('sh-area')};
+  const p = {nome:v('sh-nome'), ruolo:rv('sh-ruolo'), branca:rv('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:v('sh-area')};
   if(noBranca(p.ruolo)) p.branca = '';
   if(noGruppo(p.ruolo)) p.gruppo = '';
-  const miss = !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-ruolo'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-branca'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : !p.area_rcdf ? ['Scegli la tua Area RCdF','sh-area'] : null;
+  const miss = !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
   if(miss){ m.className = 'sh-msg err'; m.textContent = miss[0] + '.'; try{ $(miss[1]).focus(); }catch(e){} return false; }
   const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
   try{
@@ -15394,13 +15469,15 @@ async function homeHTML(){
   const draw = () => {
     const rows = SH.rows || [], shr = SH.shared || [];
     const p = SH.prof || {};
-    let h = top(true) + `<main class="sh-wrap">`;
+    const RN = Object.fromEntries(RUOLI); const BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
+    const riga = `<div class="sh-prof-line"><span>${esc([RN[p.ruolo] || '', p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
+    let h = top(true) + `<main class="sh-wrap">` + riga;
     if(!rows.length && !shr.length){
-      h += `<h1>Ciao ${esc(String(p.nome||'').split(/\s+/)[0])}, da dove cominci?</h1><p class="sh-sub">Scegli che cosa vuoi creare. Potrai aggiungere altri progetti quando vuoi.</p>
+      h += `<h1>Che cosa vuoi progettare?</h1><p class="sh-sub">La scelta decide quali Sezioni vedi, le regole di compilazione e gli invii. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
       <div class="sh-two" style="margin-top:6px">
-        <button class="sh-big" type="button" onclick="shNew('PP')"><b>Progetto Personale</b><span>Il tuo Progetto Personale passo passo e con la struttura indicata nelle Linee Guida.</span></button>
-        <button class="sh-big" type="button" onclick="shNew('AN')"><b>Programmazione Annuale</b><span>La programmazione dell’anno scout della tua Unità: osservazione, obiettivi, percorsi, verifica e valutazione.</span></button>
-      </div>`;
+        <button class="sh-big" type="button" onclick="shNew('PP')"><small>Per un adulto volontario</small><b>Progetto Personale</b><span>Il Progetto Personale previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge). Chiunque voglia può aprirlo.</span><ul><li>Il tuo Progetto Personale passo passo, con la struttura indicata nelle Linee Guida</li><li>Osservazione del Gruppo di Pari con il KOS e la griglia osservativa</li><li>Un Percorso Educativo Esperienziale dettagliato, per l’obiettivo che scegli</li><li>Gli invii previsti (avvio, primo invio, invio finale) con i destinatari giusti</li><li>La checklist dei criteri, per controllare il lavoro prima di inviarlo</li></ul><em>Inizia il Progetto Personale</em></button>
+        <button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout</small><b>Programmazione Educativa Annuale</b><span>La programmazione dell’anno scout, da costruire con lo staff e da accompagnare fino alla verifica finale.</span><ul><li>Tre priorità, una per Ambito (Personale, Comunitario, Spirituale), ciascuna con i suoi percorsi</li><li>Osservazione condivisa con lo staff, con confronto e sintesi</li><li>Pit-stop di verifica a gennaio-febbraio e ad aprile-maggio</li><li>Attività dell’anno, numeri e cassa nello stesso posto</li><li>Chiusura dell’anno scout e appunti per l’anno dopo</li></ul><em>Inizia la Programmazione Annuale</em></button>
+      </div><p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.</p>`;
     }else{
       h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1>I tuoi progetti</h1><button class="sh-btn" type="button" style="margin-left:auto" onclick="shNew()">+ Nuovo progetto</button></div>`;
       h += rows.length ? rows.map(x => rowHTML(x, false)).join('') : '<p class="sh-sub">Non hai ancora progetti tuoi.</p>';
@@ -15560,6 +15637,8 @@ window.clInit = async function(){
 })();
 </script>
 <style id="sh-css2">
+body.sh-in .hdr-save .save-w{display:inline!important}body.sh-in .hdr-save .save-time{display:inline!important}@media(max-width:767px){body.sh-in .hdr-save .save-time{display:none!important}}
+
 /* ── dentro il progetto: intestazione, menu laterale, barra in basso ── */
 body.sh-in .pj-bar,body.sh-in .phase-tabs,body.sh-in .back-landing-btn,body.sh-in .logo-sub,body.sh-in .hdr-mode,body.sh-in #mobile-nav,body.sh-in .hdr-actions .fb-btn,body.sh-in .hdr-actions .cl-hdrbtn{display:none!important}
 body.sh-in.sh-ready{padding-left:0;padding-right:0;padding-top:0}
@@ -15928,7 +16007,7 @@ function headerSetup(){
   const ha = hi.querySelector('.hdr-actions');
   if(ha){
     const mk = (t, f) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'sh-hlk'; b.textContent = t; b.onclick = f; return b; };
-    const a = [mk('I tuoi progetti', () => shGoHome()), mk('Guida', () => shGuide()), mk('Profilo', () => shProfileOpen())];
+    const a = [mk('I tuoi progetti', () => shGoHome()), mk('Guida', () => shGuide()), mk('Video', () => shVideo()), mk('Profilo', () => shProfileOpen())];
     a.reverse().forEach(b => ha.insertBefore(b, ha.firstChild));
   }
   const setH = () => { const h = $('hdr'); if(h) document.documentElement.style.setProperty('--sh-hh', h.offsetHeight + 'px'); };
