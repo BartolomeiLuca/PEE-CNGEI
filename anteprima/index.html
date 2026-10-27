@@ -421,7 +421,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .mv-sc-l{display:grid;grid-template-columns:minmax(0,.8fr) repeat(5,minmax(0,2fr));gap:3px;font-size:10px;color:var(--ink-faint);text-align:center;margin-top:3px}.mv-list{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink);margin-bottom:8px}.mv-list i{color:var(--ink-mid)}.mv-me{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:8px 10px}.mv-me label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}.mv-box .mv-storia>summary{background:none!important;color:var(--ink-mid)!important;padding:4px 0!important;border:0!important;min-height:0!important}.mv-me select{max-width:210px}.mv-me .mv-noteinp{flex:1;min-width:200px;margin:0}
 @media(max-width:600px){.mv-dots{display:none}.mv-sc-l{display:none}.mv-val{min-width:0;padding:3px 8px}.mv-val .l small{display:none}.mv-tg{padding:0 8px}}
 @media(max-width:420px){.mv-val{gap:6px}.mv-val .l{font-size:10.5px;max-width:74px}.mv-val .n{font-size:19px}.mv-tg .t{display:none}.mv-dots{display:none}}
-.mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.ver-rip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 2px;font-size:11px;color:var(--ink-mid)}.ver-rip button{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 10px;min-height:30px;cursor:pointer}.ver-rip-n{font-size:11px;color:var(--ink-faint);margin-top:6px}.oss-resync{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:none;border:0;padding:6px 4px;cursor:pointer;text-decoration:underline}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
+.mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.ver-rip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 2px;font-size:11px;color:var(--ink-mid)}.ver-rip button{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 10px;min-height:30px;cursor:pointer}.ver-rip-n{font-size:11px;color:var(--ink-faint);margin-top:6px}.idr-tag{font-size:10px;font-weight:700;color:var(--green);border:1px solid var(--green);border-radius:8px;padding:0 6px;white-space:nowrap}.oss-resync{font:inherit;font-size:11px;font-weight:700;color:var(--green);background:none;border:0;padding:6px 4px;cursor:pointer;text-decoration:underline}.mv-b{font-size:11.5px;padding:6px 12px;min-height:34px}.mv-why{display:block;font-size:11.5px;font-weight:700;margin-top:6px}.mv-why span{font-weight:500;color:var(--ink-faint)}.mv-storia{margin-top:6px;font-size:11.5px;color:var(--ink-mid)}.mv-storia>summary{all:unset;cursor:pointer;font-weight:700;font-size:11.5px;color:var(--ink-mid);display:inline-block;padding:2px 0}.mv-storia>summary::before,.mv-storia>summary::after{content:none!important;display:none!important}.mv-storia>summary::-webkit-details-marker{display:none}
 .att-ver{margin:8px 0 4px;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f0d98a;font-size:12px;font-weight:600;color:#6b5200;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.att-ver .btn-ghost{font-size:11.5px;padding:5px 10px}
 .ver-idr{margin-top:10px;padding:8px 10px;border-radius:8px;background:#f5f6fb}.ver-idr-r{margin-top:6px}.ver-idr-t{font-size:11.5px;color:var(--ink)}.ver-idr-f{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .ver-flash{box-shadow:0 0 0 3px #f0c14b;transition:box-shadow .3s}
@@ -7369,6 +7369,30 @@ function toggleObiettivo(priIdx,objIdx,checked){
   if(checked){if(!scheda.priorita[priIdx].obiettivi.includes(objIdx)) scheda.priorita[priIdx].obiettivi.push(objIdx);}
   else scheda.priorita[priIdx].obiettivi=scheda.priorita[priIdx].obiettivi.filter(x=>x!==objIdx);
 }
+// ── Indicatori di Risultato: testo del manuale, adattato (con ripristino) o personalizzato (indice ≥ 100) ──
+function idrModOf(pid, create){ if(!scheda.idrMod) { if(!create) return {adapt:{}, extra:[]}; scheda.idrMod = {}; } let m = scheda.idrMod[pid]; if(!m){ if(!create) return {adapt:{}, extra:[]}; m = scheda.idrMod[pid] = {adapt:{}, extra:[]}; } if(!m.adapt) m.adapt = {}; if(!m.extra) m.extra = []; return m; }
+function idrBase(pid, j){ const d = Object.values(DB).flat().find(z => z.id === pid); return (d && d.idr && d.idr[j]) || ''; }
+function idrTxt(pid, j){ const m = idrModOf(pid, false); if(j >= 100){ const e = m.extra[j - 100]; return (e && !e.del) ? String(e.t || '') : ''; } const a = m.adapt[j]; return (a !== undefined && String(a).trim()) ? String(a) : idrBase(pid, j); }
+function idrTag(pid, j){ const m = idrModOf(pid, false); if(j >= 100) return 'personalizzato'; const a = m.adapt[j]; return (a !== undefined && String(a).trim() && String(a).trim() !== idrBase(pid, j).trim()) ? 'adattato' : ''; }
+function idrTxtTag(pid, j){ const t = idrTxt(pid, j); const g = idrTag(pid, j); return t ? (g ? t + ' [' + g + ']' : t) : ''; }
+function priIdrListHTML(i, pid){
+  const pr = scheda.priorita[i] || {}; const sel = pr.idr || []; const m = idrModOf(pid, false); const ed = window._idrEdit || {};
+  const row = (j, txt, tag, extra) => { const editing = ed.pid === pid && ed.j === j;
+    return `<div class="idr-row"><label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0 2px;font-size:12px;cursor:pointer;color:var(--ink-mid)"><input type="checkbox" style="margin-top:2px;flex-shrink:0" ${sel.includes(j)?'checked':''} onchange="toggleIdr(${i},${j},this.checked);var w=document.getElementById('idr-warn-${i}');if(w)w.style.display=(scheda.priorita[${i}].idr||[]).length===1?'':'none';saveDataDebounced()"><span>${editing?'':sEsc(txt)}${tag?` <span class="idr-tag">${tag}</span>`:''}</span></label>
+      ${editing?`<textarea class="idr-ed" style="${SC_TA};min-height:48px;margin:2px 0 4px 24px;width:calc(100% - 24px)" oninput="idrEditSet('${pid}',${j},this.value)">${sEsc(txt)}</textarea><div style="margin:0 0 4px 24px"><button type="button" class="oss-resync" onclick="idrEditEnd()">Fatto</button></div>`
+      :`<div style="margin:0 0 4px 24px"><button type="button" class="oss-resync" onclick="idrEditStart('${pid}',${j})">${j>=100?'Modifica':'Adatta'}</button>${tag==='adattato'?`<button type="button" class="oss-resync" onclick="idrRestore('${pid}',${j})" title="Torna al testo del Manuale PEE">Ripristina il testo del Manuale</button>`:''}${j>=100?`<button type="button" class="oss-resync" onclick="idrExtraDel(${i},'${pid}',${j})">Togli</button>`:''}</div>`}</div>`; };
+  let h = '';
+  (DB[pid[0]].find(x => x.id === pid).idr || []).forEach((t, j) => { h += row(j, idrTxt(pid, j), idrTag(pid, j)); });
+  m.extra.forEach((e, k) => { if(e && !e.del) h += row(100 + k, String(e.t || ''), 'personalizzato'); });
+  h += `<div style="margin-top:6px"><button type="button" class="btn-ghost" style="font-size:11px;border-style:dashed" onclick="idrExtraAdd(${i},'${pid}')">+ Aggiungi un indicatore tuo</button></div>`;
+  return h;
+}
+function idrEditStart(pid, j){ window._idrEdit = {pid, j}; renderValuation(); setTimeout(() => { const t = document.querySelector('textarea.idr-ed'); if(t){ t.focus(); } }, 50); }
+function idrEditEnd(){ window._idrEdit = null; saveData(true); renderValuation(); }
+function idrEditSet(pid, j, v){ if(j >= 100){ const m = idrModOf(pid, true); if(m.extra[j - 100]) m.extra[j - 100].t = v; } else { idrModOf(pid, true).adapt[j] = v; } saveDataDebounced(); }
+function idrRestore(pid, j){ const m = idrModOf(pid, true); delete m.adapt[j]; window._idrEdit = null; saveData(true); renderValuation(); }
+function idrExtraAdd(i, pid){ const m = idrModOf(pid, true); m.extra.push({t:''}); const j = 100 + m.extra.length - 1; toggleIdr(i, j, true); window._idrEdit = {pid, j}; saveData(true); renderValuation(); setTimeout(() => { const t = document.querySelector('textarea.idr-ed'); if(t) t.focus(); }, 50); }
+function idrExtraDel(i, pid, j){ if(!confirm('Tolgo questo indicatore?')) return; const m = idrModOf(pid, true); if(m.extra[j - 100]) m.extra[j - 100].del = true; toggleIdr(i, j, false); window._idrEdit = null; saveData(true); renderValuation(); }
 function toggleIdr(priIdx,idrIdx,checked){
   percProvForgetPri(priIdx,'i',idrIdx);
   if(!scheda.priorita[priIdx].idr) scheda.priorita[priIdx].idr=[];
@@ -10867,10 +10891,7 @@ function renderSchedaB(root,selected){
         <div>
           <label style="font-size:11px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Indicatori di risultato <span style="font-weight:400;color:var(--ink-faint)">(consigliati almeno 2 per obiettivo)</span></label>
           <div id="idr-warn-${i}" style="font-size:11.5px;color:#8A5300;background:#FFF4E0;border-left:3px solid #E0A400;padding:6px 9px;margin:0 0 6px;${(scheda.priorita[i].idr||[]).length===1?'':'display:none'}">Hai scelto un solo indicatore. Va bene così, ma con <strong>almeno 2</strong> a fine anno capisci meglio se il percorso ha funzionato davvero.</div>
-          ${(p.idr||[]).map((idr,j)=>`<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12px;cursor:pointer;color:var(--ink-mid)">
-            <input type="checkbox" style="margin-top:2px;flex-shrink:0" ${(scheda.priorita[i].idr||[]).includes(j)?'checked':''}
-              onchange="toggleIdr(${i},${j},this.checked);var w=document.getElementById('idr-warn-${i}');if(w)w.style.display=(scheda.priorita[${i}].idr||[]).length===1?'':'none';saveDataDebounced()">
-            <span>${idr}</span></label>`).join('')}
+          ${priIdrListHTML(i,id)}
         </div>
         <div style="margin-top:12px">
           <label style="font-size:11px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Tempistica <span style="font-weight:400;color:var(--ink-faint)">— orizzonte temporale per raggiungere l'obiettivo, non inferiore a un trimestre</span></label>
@@ -10925,7 +10946,7 @@ function renderSchedaC(root,selected){
 
     // IDR: per percorsi prioritari usa quelli da Step B; per extra usa tutti quelli del percorso
     const idrSel = isPriority && per.idrSelezionati?.length>0
-      ? per.idrSelezionati.map(j=>p?.idr?.[j]).filter(Boolean)
+      ? per.idrSelezionati.map(j=>idrTxtTag(per.percorsoId,j)).filter(Boolean)
       : (p?.idr||[]);
 
     // Obiettivi selezionati (Step B) per percorsi prioritari
@@ -10936,7 +10957,7 @@ function renderSchedaC(root,selected){
     // Label percorso
     const sez3pp = MODE==='giovani' && isPP() && isPriority;
     const sez3main = sez3pp && per.prioritaIdx===sez3Chosen(Math.min(selected.length,3));
-    const percorsoLabel = `Percorso ${idx+1}${p?' — '+a+(numP||'')+' '+p.name:''}${sez3pp?(sez3main?' <span style="font-weight:600;font-size:11px;color:var(--green)">· obiettivo scelto</span>':' <span style="font-weight:600;font-size:11px;color:var(--ink-faint)">· facoltativo</span>'):''}`;
+    const percorsoLabel = `Percorso ${idx+1}${p?' — '+a+(numP||'')+' '+p.name:''}${sez3pp?(sez3main?' <span style="font-weight:600;font-size:11px;color:var(--green)">· obiettivo scelto</span>':' <span style="font-weight:600;font-size:11px;color:var(--ink-faint)">· consigliato, non richiesto dalle Linee Guida</span>'):''}`;
 
     const pcN = (per.attivita||[]).filter(x => ['testo','lancio','sviluppo','conclusione'].some(k => (x[k]||'').trim())).length;
     const pcOpen = !!(window._pcOpen && window._pcOpen[idx]);
@@ -11187,7 +11208,7 @@ function sez3MoreHTML(selected){
   const sel=selected.slice(0,3); const all=getAllPercorsi(); const allP=Object.values(DB).flat();
   const miss=sel.map((id,i)=>({id,i})).filter(o=>!all.some(x=>x.prioritaIdx===o.i));
   if(!miss.length) return '';
-  return `<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0">${miss.map(o=>{ const p=allP.find(x=>x.id===o.id); return `<button class="btn-ghost" style="border-style:dashed;font-size:11px" onclick="sez3Add(${o.i})">+ Progetta anche il percorso per la Priorità ${o.i+1}${p?' ('+sEsc(p.name)+')':''} — facoltativo</button>`; }).join('')}</div>`;
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0">${miss.map(o=>{ const p=allP.find(x=>x.id===o.id); return `<button class="btn-ghost" style="border-style:dashed;font-size:11px" onclick="sez3Add(${o.i})">+ Progetta anche il percorso per la Priorità ${o.i+1}${p?' ('+sEsc(p.name)+')':''} — consigliato, facoltativo</button>`; }).join('')}</div>`;
 }
 function sez3Choose(i){ scheda.sez3Pri=i; const pr=scheda.percorsiExtra.find(x=>x.prioritaIdx===i); if(pr){ pr.nascosto=false; } saveDataDebounced(); renderValuation(); }
 function sez3Add(i){ getAllPercorsi(); const pr=scheda.percorsiExtra.find(x=>x.prioritaIdx===i); if(pr){ pr.attivo=true; pr.nascosto=false; } saveDataDebounced(); renderValuation(); }
@@ -11416,7 +11437,7 @@ function renderSchedaVal(root,selected){
     const {p, a, numInAmbito, idrIndices} = data;
     const cv=vals[pid];
     if(!scheda.idrRaggiunto[pid]) scheda.idrRaggiunto[pid]={};
-    const idrToShow = idrIndices.map(j=>({testo:p.idr?.[j], origIdx:j})).filter(x=>x.testo);
+    const idrToShow = idrIndices.map(j=>({testo:idrTxtTag(pid,j), origIdx:j})).filter(x=>x.testo);
 
     const idrHTML = idrToShow.length>0
       ? idrToShow.map(({testo,origIdx})=>{
@@ -11468,7 +11489,7 @@ function renderSchedaVal(root,selected){
   let recapRows='';
   Object.entries(byPid).forEach(([pid,data])=>{
     const {p, a, idrIndices}=data;
-    const idrToShow=idrIndices.map(j=>({testo:p.idr?.[j],origIdx:j})).filter(x=>x.testo);
+    const idrToShow=idrIndices.map(j=>({testo:idrTxtTag(pid,j),origIdx:j})).filter(x=>x.testo);
     if(!idrToShow.length) return;
     // Calcola media per percorso (scala 1-10)
     const idrScoresPer = idrToShow.map(({origIdx})=>{
@@ -11666,17 +11687,17 @@ const RCDF_AREE = [
 function ppMailState(){ const pp=scheda.pp||(scheda.pp={}); if(!pp.mail) pp.mail={area:'',tutorMail:'',cgMail:'',cdsMail:'',tono:'sobrio',l1:'',l2:'',body:'',edited:false}; return pp.mail; }
 function ppMailSubject(){ const pp=scheda.pp||{}; const k=(pp.mail||{})._kind; return (k==='avvio'?'Avvio Progetto Personale - ':'Invio Progetto Personale - ')+((pp.nome||'').trim()||'[Nome Cognome]')+' - '+((pp.sezione||'').trim()||'[Sezione]'); }
 function ppMailBuild(kind){
-  const pp=scheda.pp||{}, m=ppMailState(); const nome=(pp.nome||'').trim(); const tutor=(pp.tutor||'').trim().split(/\s+/)[0]||'';
+  const pp=scheda.pp||{}, m=ppMailState(); const nome=(pp.nome||'').trim(); const tutor=(m.destNome||pp.tutor||'').trim().split(/\s+/)[0]||'';
   const warm=m.tono==='caldo', fin=kind==='completo';
   if(kind==='avvio'){
-    const r=[(warm?'Ciao ':'Buongiorno ')+(tutor||'[nome dell’ICdF]')+',',
+    const r=[(warm?'Ciao ':'Buongiorno ')+(tutor||'[nome del Tutor o dell’ICdF]')+',',
       (warm?'ti scrivo per dirti che inizio il mio Progetto Personale di Programmazione Educativa Esperienziale, ':'con questa mail comunico l’avvio del mio Progetto Personale di Programmazione Educativa Esperienziale, ')+'dopo aver completato il Modulo di Formazione Associativa (FOR.A). Lavorerò con '+(UNIT_NAME?UNIT_NAME+', ':'la mia Unità, ')+'Sezione '+((pp.sezione||'').trim()||'[Sezione]')+'.',
       warm?'Resto in attesa della tua conferma e di eventuali indicazioni per partire.':'Resto in attesa della presa in carico e di eventuali indicazioni.',
       warm?'A presto!':'Un saluto,', nome||'[Nome Cognome]'];
     return r.join('\n\n').replace(/\n\n(A presto!|Un saluto,)\n\n/,'\n\n$1\n');
   }
   const cl=t=>{ t=(t||'').trim(); return t.replace(/\s*\n+\s*/g,' '); };
-  const saluto=(warm?'Ciao ':'Buongiorno ')+(tutor||'[nome dell’ICdF]');
+  const saluto=(warm?'Ciao ':'Buongiorno ')+(tutor||'[nome del Tutor o dell’ICdF]');
   const apertura=fin
     ? (warm?'ti mando il mio Progetto Personale completo: ora ci sono anche la Sezione 4 (la verifica delle attività) e la Sezione 5 (la valutazione finale).':'ti invio il mio Progetto Personale completo, con la Sezione 4 (verifica delle attività) e la Sezione 5 (valutazione finale).')
     : (warm?'ti mando la prima parte del mio Progetto Personale, scritta fino alla Sezione 3 (il percorso educativo esperienziale): è il momento giusto per una tua prima lettura prima di partire con le attività.':'ti invio la prima parte del mio Progetto Personale, scritta fino alla Sezione 3, per una prima verifica prima della realizzazione.');
@@ -11691,22 +11712,33 @@ function ppMailBuild(kind){
 }
 function ppMailEmails(){ const m=ppMailState(); const area=RCDF_AREE.find(x=>x[0]===m.area);
   const clean=t=>(t||'').split(/[;,\s]+/).map(x=>x.trim()).filter(x=>/@/.test(x));
-  return {to:[].concat(area?[area[2]]:[],clean(m.tutorMail)), cc:[].concat(clean(m.cgMail),clean(m.cdsMail))}; }
+  const tutor=clean(m.tutorMail), icdf=area?[area[2]]:[], cg=clean(m.cgMail), cds=clean(m.cdsMail);
+  const uniq=a=>a.filter((x,i)=>a.findIndex(y=>y.toLowerCase()===x.toLowerCase())===i);
+  const avvio=m._kind==='avvio';
+  // LG 2.2 (avvio): A Tutor, CC Capo Gruppo e Commissario di Sezione (senza ICdF). LG 2.5 (invii): in CC anche l'ICdF. Senza Tutor scrivi all'ICdF.
+  const to=tutor.length?tutor:icdf; let cc=cg.concat(cds); if(!avvio && tutor.length) cc=cc.concat(icdf);
+  const toU=uniq(to); return {to:toU, cc:uniq(cc).filter(x=>!toU.some(y=>y.toLowerCase()===x.toLowerCase()))}; }
+function ppMailRecipTxt(){ const e=ppMailEmails(); const m=ppMailState(); const noT=!(m.tutorMail||'').trim();
+  return '<b>A:</b> '+(e.to.length?sEsc(e.to.join(', ')):'<i>da compilare</i>')+(noT&&e.to.length?' <span style="color:var(--ink-faint)">(senza Tutor scrivi all’ICdF)</span>':'')+'<br><b>CC:</b> '+(e.cc.length?sEsc(e.cc.join(', ')):'—')+(m._kind==='avvio'?' <span style="color:var(--ink-faint)">(all’avvio l’ICdF non è in copia, come da Linee Guida)</span>':''); }
+function ppMailRecip(){ const d=document.getElementById('pp-mail-recip'); if(d) d.innerHTML=ppMailRecipTxt(); }
 function ppMailOpen(kind){
   const m=ppMailState(); if(m._kind!==kind) m.edited=false; m._kind=kind; if(!m.edited||!m.body) m.body=ppMailBuild(kind); const av=kind==='avvio';
   let ov=document.getElementById('pp-mail-ov'); if(!ov){ ov=document.createElement('div'); ov.id='pp-mail-ov'; ov.className='modal-overlay'; document.body.appendChild(ov); }
   const inS='width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:13px Montserrat,sans-serif;background:var(--surface,#fff);color:var(--ink)';
   const lb='display:block;font-size:11px;font-weight:700;margin:10px 0 3px;color:var(--ink)';
   ov.innerHTML=`<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:640px;width:calc(100% - 24px);max-height:92vh;overflow:auto;padding:18px 18px 16px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Mail all’ICdF · ${av?'avvio del Progetto Personale':kind==='completo'?'consegna finale':'prima consegna'}</div><button class="btn-ghost" onclick="ppMailClose()" style="padding:4px 10px">✕</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Mail · ${av?'avvio del Progetto Personale':kind==='completo'?'consegna finale (Sezioni 1–5)':'prima consegna (Sezioni 1–3)'}</div><button class="btn-ghost" onclick="ppMailClose()" style="padding:4px 10px">✕</button></div>
     <p style="font-size:11.5px;color:var(--ink-mid);margin:6px 0 0">Il testo è una base: riscrivilo con le tue parole. Se lo modifichi a mano non lo sovrascrivo.</p>
-    <label style="${lb}">Il tuo ICdF (area di riferimento)</label>
-    <select style="${inS}" onchange="ppMailSet('area',this.value)"><option value="">— scegli l’area della tua Sezione —</option>${RCDF_AREE.map(x=>`<option value="${x[0]}" ${m.area===x[0]?'selected':''}>${x[1]} · ${x[2]}</option>`).join('')}</select>
+    <label style="${lb}">Il tuo ICdF / Responsabile del Centro di Formazione (area di riferimento)</label>
+    <select style="${inS}" onchange="ppMailSet('area',this.value);ppMailRecip()"><option value="">— scegli l’area della tua Sezione —</option>${RCDF_AREE.map(x=>`<option value="${x[0]}" ${m.area===x[0]?'selected':''}>${x[1]} · ${x[2]}</option>`).join('')}</select>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">
-      <div><label style="${lb}">A: ICdF</label><input style="${inS}" type="email" placeholder="email dell’ICdF" value="${sEsc(m.tutorMail)}" oninput="ppMailSet('tutorMail',this.value,1)"></div>
-      <div><label style="${lb}">CC: Capo Gruppo</label><input style="${inS}" type="email" placeholder="email" value="${sEsc(m.cgMail)}" oninput="ppMailSet('cgMail',this.value,1)"></div>
-      <div><label style="${lb}">CC: Commissario di Sezione</label><input style="${inS}" type="email" placeholder="email" value="${sEsc(m.cdsMail)}" oninput="ppMailSet('cdsMail',this.value,1)"></div>
+      <div><label style="${lb}">A: Tutor della Sperimentazione</label><input style="${inS}" type="email" placeholder="email del Tutor (se non c’è, lascia vuoto)" value="${sEsc(m.tutorMail)}" oninput="ppMailSet('tutorMail',this.value,1);ppMailRecip()"></div>
+      <div><label style="${lb}">CC: Capo Gruppo</label><input style="${inS}" type="email" placeholder="email" value="${sEsc(m.cgMail)}" oninput="ppMailSet('cgMail',this.value,1);ppMailRecip()"></div>
+      <div><label style="${lb}">CC: Commissario di Sezione</label><input style="${inS}" type="email" placeholder="email" value="${sEsc(m.cdsMail)}" oninput="ppMailSet('cdsMail',this.value,1);ppMailRecip()"></div>
     </div>
+    <label style="${lb}">Nome di chi scrivi <span style="font-weight:400;color:var(--ink-faint)">(per il saluto, facoltativo)</span></label>
+    <input style="${inS}" value="${sEsc(m.destNome||'')}" placeholder="es. Marco" oninput="ppMailSet('destNome',this.value)">
+    <div id="pp-mail-recip" style="font-size:11.5px;color:var(--ink-mid);margin-top:8px;line-height:1.5">${ppMailRecipTxt()}</div>
 ${av?'':`    <label style="${lb}">Una cosa che ti è venuta bene o che ti ha fatto piacere ${OPT}</label>
     <input style="${inS}" value="${sEsc(m.l1)}" placeholder="es. i ragazzi hanno risposto bene alle prime attività di osservazione" oninput="ppMailSet('l1',this.value)">
     <label style="${lb}">Un dubbio su cui vorresti un parere ${OPT}</label>
@@ -11728,7 +11760,7 @@ function ppMailEdit(v){ const m=ppMailState(); m.body=v; m.edited=true; saveData
 function ppMailTono(t){ const m=ppMailState(); m.tono=t; m.edited=false; m.body=ppMailBuild(m._kind||'parziale'); const el=document.getElementById('pp-mail-body'); if(el) el.value=m.body; ['sobrio','caldo'].forEach(x=>{ const b=document.getElementById('pp-tono-'+x); if(b){ b.style.fontWeight=x===t?'800':''; b.style.borderColor=x===t?'var(--green)':''; } }); saveDataDebounced(); }
 function ppMailRegen(){ const m=ppMailState(); m.edited=false; m.body=ppMailBuild(m._kind||'parziale'); const el=document.getElementById('pp-mail-body'); if(el) el.value=m.body; saveDataDebounced(); }
 function ppMailSend(){ const m=ppMailState(); const e=ppMailEmails(); const sub=(document.getElementById('pp-mail-sub')||{}).value||ppMailSubject();
-  if(!e.to.length){ showToast('Inserisci l’email dell’ICdF'); return; }
+  if(!e.to.length){ showToast('Inserisci l’email del Tutor oppure scegli l’area del tuo ICdF'); return; }
   let url='mailto:'+e.to.map(encodeURIComponent).join(',')+'?subject='+encodeURIComponent(sub)+(e.cc.length?'&cc='+e.cc.map(encodeURIComponent).join(','):'')+'&body='+encodeURIComponent(m.body);
   window.location.href=url; }
 function ppMailCopy(){ const m=ppMailState(); const t=m.body; const done=()=>showToast('Testo della mail copiato'); try{ navigator.clipboard.writeText(t).then(done,()=>{ prompt('Copia il testo:', t); }); }catch(e){ prompt('Copia il testo:', t); } }
@@ -12632,7 +12664,7 @@ async function exportPPDocx(mode){
     const p = allP.find(x=>x.id===id); if(!p) return;
     const a = id[0]; const pr = scheda.priorita[i] || {};
     const ob = (pr.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
-    const idr = (pr.idr||[]).map(j=>p.idr?.[j]).filter(Boolean);
+    const idr = (pr.idr||[]).map(j=>idrTxtTag(id,j)).filter(Boolean);
     ch.push(dH3(`Priorità ${i+1}`));
     ch.push(dKV([
       ['Ambito di Sviluppo', AMB_LABEL[a]],
@@ -12648,7 +12680,7 @@ async function exportPPDocx(mode){
   extras.forEach((per,k) => {
     const p = allP.find(x=>x.id===per.percorsoId); if(!p) return; const a = per.percorsoId[0];
     const ob = (per.obiettiviExtra||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
-    const idr = (per.idrSelezionati||[]).map(j=>p.idr?.[j]).filter(Boolean);
+    const idr = (per.idrSelezionati||[]).map(j=>idrTxtTag(per.percorsoId,j)).filter(Boolean);
     ch.push(dH3(`Priorità aggiuntiva ${k+1} (facoltativa)`));
     ch.push(dKV([
       ['Ambito di Sviluppo', AMB_LABEL[a]],
@@ -12727,7 +12759,7 @@ async function exportPPDocx(mode){
         ]];
         idrIdx.forEach(j => { const c = (scheda.idrComp?.[pid]?.[j]) || {};
           r5.push([
-            dCell(dPara(plain(p.idr?.[j]),{size:18,after:0}),{w:w5[0],border:'E6E6E6'}),
+            dCell(dPara(plain(idrTxtTag(pid,j)),{size:18,after:0}),{w:w5[0],border:'E6E6E6'}),
             dCell(dPara(c.c?LBL[c.c]:'—',{size:16,bold:true,color:c.c?'FFFFFF':'888888',align:'center',after:0}),{w:w5[1],fill:c.c?FILL[c.c]:undefined,border:'E6E6E6'}),
             dCell(dMulti(c.note,{size:17}),{w:w5[2],border:'E6E6E6'})
           ]); });
@@ -16109,13 +16141,70 @@ document.addEventListener('keydown', e => {
 
 // ── Progetto Personale: «A che punto sei» (le Sezioni arrivano al prossimo passo) ──
 const PP_SEZ = ['Osservazione del Gruppo di Pari','Obiettivi e Indicatori di Risultato','Percorso Educativo Esperienziale','Verifica delle Attività','Valutazione Finale'];
+// stato di ogni Sezione del PP: «Da iniziare» / «In corso» / «Completata» (solo da ciò che c'è scritto)
+function ppStato(n){
+  const T = x => String(x == null ? '' : x).trim().length > 0;
+  try{
+    const sel = priSel().slice(0, 3); const pr = (scheda.priorita || []).slice(0, 3); const all = getAllPercorsi() || [];
+    const main = all.filter(x => typeof x.prioritaIdx === 'number' && x.prioritaIdx === sez3Chosen(sel.length))[0] || all[0] || {};
+    const acts = (main.attivita || []).filter(a => a);
+    if(n === 1){ const o = scheda.osservazione || {}; const amb = ['P','C','S']; const txt = amb.filter(a => o[a] && (T(o[a].positivi) || T(o[a].necessita))).length; const ok = amb.every(a => o[a] && T(o[a].positivi) && T(o[a].necessita)); const hasObs = Object.values(obs || {}).some(v => v && v !== 'n');
+      return ok ? 'Completata' : (txt || hasObs || T((scheda.pp || {}).dinamiche)) ? 'In corso' : 'Da iniziare'; }
+    if(n === 2){ const any = pr.some(x => x && (T(x.necessita) || (x.obiettivi || []).length || (x.idr || []).length || T(x.tempistica) || x.tDal)); const ok = sel.length >= 1 && pr.slice(0, sel.length).every(x => x && (x.obiettivi || []).length >= 1 && (x.idr || []).length >= 2 && (x.tDal && x.tAl || T(x.tempistica)));
+      return ok ? 'Completata' : any ? 'In corso' : 'Da iniziare'; }
+    if(n === 3){ const full = acts.filter(a => T(a.lancio) && T(a.sviluppo) && T(a.conclusione)).length; const any = acts.some(a => T(a.testo) || T(a.lancio) || T(a.sviluppo) || T(a.conclusione)) || T(main.strumenti);
+      return full >= 3 ? 'Completata' : any ? 'In corso' : 'Da iniziare'; }
+    if(n === 4){ const done = acts.filter(a => T(a.vBene) || T(a.vMigl) || T(a.vAgg)); const withTxt = acts.filter(a => T(a.testo) || T(a.lancio));
+      return done.length && done.length >= withTxt.length ? 'Completata' : done.length ? 'In corso' : 'Da iniziare'; }
+    if(n === 5){ const ic = scheda.idrComp || {}; const n5 = Object.values(ic).reduce((t, o) => t + Object.values(o || {}).filter(v => v && v.c).length, 0); const need = pr.slice(0, sel.length).reduce((t, x) => t + ((x && x.idr) || []).length, 0);
+      return n5 && n5 >= need ? 'Completata' : n5 || T((scheda.valCompl || {}).P) ? 'In corso' : 'Da iniziare'; }
+  }catch(e){}
+  return 'Da iniziare';
+}
+// ── Progetto Personale: pagina «Invii» (iter delle Linee Guida, cap. 2) ──
+const ITER_CG = ['Supporto operativo','Confronto sulle scelte educative','Verifica della completezza del lavoro prima dell’invio','Feedback sul contesto e sulle dinamiche del Gruppo'];
+function ppIter(){ const pp = (scheda.pp || (scheda.pp = {})); if(!pp.iter) pp.iter = {}; return pp.iter; }
+function iterStep(k, n, titolo, corpo, azioni, stato){
+  const it = ppIter()[k] || {};
+  return `<div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">${n}</span>${esc(titolo)}${it.date ? ' <span style="font-weight:600;font-size:11.5px;color:#2E7D32">· ' + esc(stato || 'fatto') + ' il ' + esc(fmtDL(it.date)) + '</span>' : ''}</h3>
+    <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">${corpo}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center">${azioni || ''}
+      <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;min-height:36px"><input type="checkbox" ${it.date ? 'checked' : ''} onchange="shIterSet('${k}',this.checked)">${esc(stato ? 'Segna come: ' + stato : 'Fatto')}</label></div></div>`;
+}
+window.shIterSet = function(k, on){ const it = ppIter(); it[k] = on ? Object.assign(it[k] || {}, {date: td()}) : Object.assign(it[k] || {}, {date: ''}); try{ saveData(true); }catch(e){} shPP('i'); };
+window.shIterVal = function(k, f, v){ const it = ppIter(); it[k] = Object.assign(it[k] || {}, {[f]: v}); try{ saveDataDebounced(); }catch(e){} };
+function ppIterHTML(){
+  const it = ppIter(); const sel = (k, f) => (it[k] || {})[f] || '';
+  const btn = (t, f, pri) => `<button type="button" class="${pri ? 'btn-primary' : 'btn-ghost'}" style="min-height:40px" onclick="${f}">${t}</button>`;
+  return `<div class="sh-dh"><div><h1>Invii del Progetto Personale</h1><div class="sub">L’iter delle Linee Guida (cap. 2). È una guida: non blocca nulla e puoi segnare i passi a mano.</div></div></div>
+    ${iterStep('avvio', 1, 'Comunicazione di avvio', 'Dopo il Modulo FOR.A (o ex Wood Badge) mandi la mail di avvio. <b>A:</b> Tutor della Sperimentazione che ti segue. <b>CC:</b> Capo Gruppo e Commissario di Sezione. L’ICdF qui non è in copia.', btn('Prepara la mail di avvio', "ppMailOpen('avvio')", 1), 'inviata')}
+    ${iterStep('presa', 2, 'Presa in carico', 'Il Tutor conferma la ricezione entro 7 giorni, indica il formatore incaricato di seguirti (se diverso dal Tutor), dà eventuali indicazioni e comunica le tempistiche del feedback, che avverrà con una checklist. Quando l’hai ricevuta puoi sviluppare il Progetto.', '', 'ricevuta')}
+    <div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">3</span>Sviluppo con il Capo Gruppo mentore</h3>
+      <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">Durante lo sviluppo il Capo Gruppo svolge il ruolo di mentore, offrendo:<ul style="margin:6px 0 0 18px;padding:0">${ITER_CG.map(x => '<li>' + esc(x) + '</li>').join('')}</ul></div>
+      <div style="margin-top:10px;font-size:12.5px"><label for="it-cg" style="font-weight:700">Il Capo Gruppo ha verificato la completezza del lavoro prima dell’invio?</label>
+        <select id="it-cg" style="margin-left:6px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;font:inherit" onchange="shIterVal('cgVer','v',this.value)"><option value="">— non indicato —</option><option value="si" ${sel('cgVer','v') === 'si' ? 'selected' : ''}>Sì</option><option value="no" ${sel('cgVer','v') === 'no' ? 'selected' : ''}>Non ancora</option></select>
+        <span style="font-size:11.5px;color:#6f6f66">Domanda di promemoria: non blocca l’invio.</span></div></div>
+    ${iterStep('prima', 4, 'Prima consegna · Sezioni 1–3', 'Quando il Progetto è scritto fino alla Sezione 3 (anche solo abbozzata) mandi una mail per una prima verifica prima della realizzazione. <b>A:</b> Tutor. <b>CC:</b> Capo Gruppo, Commissario di Sezione e Responsabile del tuo Centro di Formazione (ICdF). <b>Oggetto:</b> Invio Progetto Personale - Nome Cognome - Sezione. <b>Allegati:</b> la Scheda compilata (PDF o Word) ed eventuali materiali integrativi. Senza Tutor scrivi all’ICdF.', btn('Prepara la mail', "ppMailOpen('parziale')", 1) + btn('Scarica il Word (Sezioni 1–3)', "exportSchedaDocx('parziale')"), 'inviata')}
+    <div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">5</span>Riscontro</h3>
+      <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">Il formatore valuta il Progetto con i criteri di qualità, ti dà il feedback con una checklist nei tempi comunicati e può chiederti integrazioni o chiarimenti.</div>
+      <textarea style="width:100%;box-sizing:border-box;min-height:60px;margin-top:8px;padding:8px 10px;border:1px solid #ccc;border-radius:8px;font:inherit" placeholder="Appunti sul riscontro: cosa ti è stato chiesto di integrare…" oninput="shIterVal('riscontro','note',this.value)">${esc(sel('riscontro', 'note'))}</textarea>
+      <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;min-height:36px;margin-top:6px"><input type="checkbox" ${(it.riscontro || {}).date ? 'checked' : ''} onchange="shIterSet('riscontro',this.checked)">Riscontro ricevuto${(it.riscontro || {}).date ? ' il ' + esc(fmtDL(it.riscontro.date)) : ''}</label></div>
+    ${iterStep('finale', 6, 'Consegna finale · Sezioni 1–5', 'Una volta approvata la prima parte dal Tutor rimandi il progetto completo con la Sezione 4 realizzata (qui includiamo anche la Sezione 5). Stessi destinatari dell’invio precedente.', btn('Prepara la mail', "ppMailOpen('completo')", 1) + btn('Scarica il Word completo', "exportSchedaDocx('completo')"), 'inviata')}
+    ${iterStep('appr', 7, 'Approvazione finale', 'L’approvazione del Progetto Personale completa questa tappa formativa e viene registrata negli archivi associativi tramite il Settore Risorse Adulte.', '', 'approvato')}
+    <details class="sh-card2"><summary style="cursor:pointer;font-weight:800">I Responsabili dei Centri di Formazione (ICdF) per area</summary><ul style="margin:8px 0 0 18px;padding:0;font-size:12.5px;line-height:1.6">${RCDF_AREE.map(x => '<li>' + esc(x[1]) + ': <a href="mailto:' + esc(x[2]) + '">' + esc(x[2]) + '</a></li>').join('')}</ul></details>`;
+}
+function ppIterStato(){ const it = ppIter(); const d = k => (it[k] || {}).date;
+  if(d('appr')) return 'Progetto approvato.'; if(d('finale')) return 'Consegna finale inviata: attendi l’approvazione.'; if(d('riscontro')) return 'Riscontro ricevuto: integra e prepara la consegna finale.';
+  if(d('prima')) return 'Prima consegna inviata: attendi il riscontro.'; if(d('presa')) return 'Presa in carico ricevuta: puoi sviluppare il Progetto.'; if(d('avvio')) return 'Avvio inviato: attendi la presa in carico del Tutor.';
+  return 'L’avvio non è ancora stato segnato come inviato al Tutor.'; }
 function ppHTML(v){
   const p = SH.prof || {}; const as = (scheda && scheda.annoScout) || '';
   if(v === '0'){
     return `<div class="sh-dh"><div><h1>A che punto sei</h1><div class="sub">${esc(p.nome || '')}${as ? ' · Anno scout ' + esc(as) : ''}</div></div></div>
-      <div style="display:flex;flex-direction:column;gap:10px">` + PP_SEZ.map((t, i) => `<button type="button" class="sh-st" style="text-align:left;cursor:pointer;font:inherit;color:inherit;min-height:44px" onclick="shPP('${i + 1}')"><span class="sh-badge">${i + 1}</span><div><div style="font-size:13px;font-weight:800;line-height:1.35">${i + 1} · ${esc(t)}</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">Da iniziare</div></div></button>`).join('')
-      + `<div class="sh-st" style="background:#FFF8E1;border-color:#BF9000"><div><div style="font-size:13px;font-weight:800">Invii</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">L’avvio non è ancora stato inviato al Tutor.</div></div></div></div>`;
+      <div style="display:flex;flex-direction:column;gap:10px">` + PP_SEZ.map((t, i) => `<button type="button" class="sh-st" style="text-align:left;cursor:pointer;font:inherit;color:inherit;min-height:44px" onclick="shPP('${i + 1}')"><span class="sh-badge">${i + 1}</span><div><div style="font-size:13px;font-weight:800;line-height:1.35">${i + 1} · ${esc(t)}</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">${ppStato(i + 1)}</div></div></button>`).join('')
+      + `<div class="sh-st" style="background:#FFF8E1;border-color:#BF9000"><div><div style="font-size:13px;font-weight:800">Invii</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">${esc(ppIterStato())}</div></div></div></div>`;
   }
+  if(v === 'i') return ppIterHTML();
   const t = {1:PP_SEZ[0],2:PP_SEZ[1],3:PP_SEZ[2],4:PP_SEZ[3],5:PP_SEZ[4],i:'Invii del Progetto Personale',c:'Checklist dei criteri',a:'Le attività del mio percorso'}[v] || '';
   const n = /^\d$/.test(v) ? v + ' · ' : '';
   return `<div class="sh-dh"><div><h1>${n}${esc(t)}</h1></div></div><div class="sh-card2"><h3>In costruzione</h3><div class="sub" style="font-size:13px;color:#3D3D38">Questa parte del Progetto Personale si compila nei prossimi passi del lavoro, con la struttura delle Linee Guida. Per ora il menu, i dati e il colore della tua Branca sono pronti.</div><div><button type="button" class="sh-lk" onclick="shPP('0')">Torna a «A che punto sei»</button></div></div>`;
