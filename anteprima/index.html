@@ -10451,7 +10451,7 @@ function gSync(){ try{ setTimeout(()=>window.ptCheck&&ptCheck(),0); }catch(e){}
   const i=G_STEPS.findIndex(x=>x[0]===cur);
   sn.style.display='';
   sn.innerHTML=`<div class="gsn-wrap"><div class="gsn-title">Sezione 1 · Osservazione del Gruppo di Pari &amp; Identificazione e Priorizzazione delle Necessità Educative</div>
-    <div class="gsn-steps">${G_STEPS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${n}</b>${l}</button>`).join('')}</div></div>`;
+    <div class="gsn-steps">${G_STEPS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${n}</b>${l}</button>`).join('')}</div>${(cur==='1b'&&MODE==='giovani')?'<div class="gsn-act" style="margin-top:8px"><button type="button" class="btn-ghost" id="gr-dl-btn" onclick="exportSchedaDocx(\'griglia\')" title="Scarica solo la griglia osservativa, nel formato CNGEI, da caricare su Drive quando l’ICdF la richiede">Scarica griglia (formato CNGEI)</button></div>':''}</div>`;
   if(cur==='1b'){ const e=document.getElementById('hero-eye1'); if(e) e.textContent='Sezione 1.2'; const t=document.getElementById('hero-title1'); if(t) t.textContent='Scheda di osservazione dei percorsi'; }
 }
 // barra della Sezione 1 fissa durante lo scroll (compatta quando agganciata)
@@ -10634,6 +10634,23 @@ function renderSchedaCtx(root){
     <div style="margin-top:12px;text-align:right"><button class="btn-primary" onclick="gGo('1b')">Avanti — 1.2 Scheda di osservazione →</button></div>`;
   root.appendChild(el);
 }
+// Bozza dalla griglia (1.2) → tabella 1.3: aggiunge in coda (mai sostituisce) i testi della griglia, per Ambito
+function grDraftFor(a){
+  const out = {positivi:[], necessita:[], singoli:[]};
+  (DB[a] || []).forEach(p => { const g = (scheda.griglia || {})[p.id]; if(!g) return;
+    const pos = [], mig = [], nt = [];
+    Object.keys(g).forEach(k => { const d = g[k] || {}; if(String(d.pos || '').trim()) pos.push(String(d.pos).trim()); if(String(d.mig || '').trim()) mig.push(String(d.mig).trim()); if(String(d.note || '').trim()) nt.push(String(d.note).trim()); });
+    const nm = p.id + ' ' + p.name;
+    if(pos.length) out.positivi.push(nm + ': ' + pos.join('; ')); if(mig.length) out.necessita.push(nm + ': ' + mig.join('; ')); if(nt.length) out.singoli.push(nm + ': ' + nt.join('; ')); });
+  return out;
+}
+function grProponiBozza(a, btn){
+  const d = grDraftFor(a); const o = scheda.osservazione[a]; let n = 0;
+  ['positivi','necessita','singoli'].forEach(f => { const cur = String(o[f] || ''); const add = d[f].filter(l => cur.indexOf(l) < 0); if(!add.length) return; n += add.length;
+    ppSetObs(a, f, (cur.trim() ? cur.replace(/\s+$/, '') + '\n' : '') + add.join('\n')); });
+  if(!n){ showToast('Dalla griglia non c’è nulla di nuovo da aggiungere per questo Ambito (o non hai ancora scritto nelle colonne). Il tuo testo resta com’è.'); return; }
+  try{ gRenderLettura(); }catch(e){} saveData(true); showToast('Bozza aggiunta in coda al tuo testo: rivedila e completala.');
+}
 // Sezione 1.3 — lettura del gruppo (sotto il riepilogo)
 function gRenderLettura(){
   const box=document.getElementById('g-lettura'); if(!box) return;
@@ -10643,7 +10660,7 @@ function gRenderLettura(){
   const pp=scheda.pp||(scheda.pp={});
   const lab={P:'Sviluppo Personale',C:'Sviluppo Comunitario',S:'Sviluppo Spirituale'};
   const rows=['P','C','S'].map(a=>`<tr>
-      <td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:14%">${lab[a]}</td>
+      <td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:14%">${lab[a]}<button type="button" class="oss-resync" onclick="grProponiBozza('${a}',this)" title="Facoltativo: aggiunge in coda, in forma modificabile, i testi che hai scritto nella griglia osservativa (1.2) per i percorsi di questo Ambito">Proponi bozza dalla griglia</button></td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:positivi"></div></td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:necessita"></div></td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Solo elementi rilevanti per il gruppo…" oninput="ppSetObs('${a}','singoli',this.value)">${sEsc(scheda.osservazione[a].singoli||'')}</textarea></td></tr>`).join('');
@@ -12540,9 +12557,10 @@ async function exportPPDocx(mode){
   const FASCIA_LABEL = {L:'Lupetti e Lupette',E:'Esploratori ed Esploratrici',R:'Rover'}[FASCIA] || '';
   const hasFin = getAllPercorsi().some(x => (x.attivita||[]).some(a => T_(a.vBene)||T_(a.vMigl)||T_(a.vAgg))) || Object.values(scheda.idrComp||{}).some(o=>Object.values(o||{}).some(v=>v&&v.c)) || Object.values(scheda.valCompl||{}).some(T_);
   const fin = mode ? mode==='completo' : hasFin;
+  const SOLOGR0 = mode === 'griglia';
   const ch = [];
   const PPm = isPP();
-  ch.push(...dTitleBlock('Scheda di Programmazione Educativa Esperienziale', `${FASCIA_LABEL?FASCIA_LABEL+' · ':''}${PPm?'Progetto Personale · '+(fin?'versione completa (Sezioni 1–5)':'prima consegna (Sezioni 1–3)'):(fin?'Sezioni 1–5':'Sezioni 1–3')} · Generato il ${todayIt()}`));
+  ch.push(...dTitleBlock('Scheda di Programmazione Educativa Esperienziale', `${FASCIA_LABEL?FASCIA_LABEL+' · ':''}${SOLOGR0?'Griglia osservativa (Allegato 1)':PPm?'Progetto Personale · '+(fin?'versione completa (Sezioni 1–5)':'prima consegna (Sezioni 1–3)'):(fin?'Sezioni 1–5':'Sezioni 1–3')} · Generato il ${todayIt()}`));
   ch.push(dKV([
     ['Compilata da', plain(pp.nome)||'—'],
     ['Sezione', plain(pp.sezione)||'—'],
@@ -12551,6 +12569,7 @@ async function exportPPDocx(mode){
     ['Branca', FASCIA_LABEL||'—'],
   ]));
 
+  const SOLOGR = mode === 'griglia'; const headLen = ch.length;
   // ── Sezione 1 ──
   ch.push(dH2('Sezione 1 — Osservazione del Gruppo di Pari & Identificazione e Priorizzazione delle Necessità Educative'));
   { const g = v => (v === undefined || v === null || String(v).trim() === '' || isNaN(parseInt(v,10))) ? null : parseInt(v,10);
@@ -12724,10 +12743,12 @@ async function exportPPDocx(mode){
     if(PPm) ch.push(dPara('Le Sezioni 4 (Verifica delle Attività) e 5 (Valutazione Finale) si aggiungono dopo la realizzazione del percorso e l\'approvazione del Progetto Educativo Esperienziale da parte dell\'ICdF.',{size:18,italics:true,color:'777777',before:200}));
   }
 
+  if(SOLOGR) ch.length = headLen;
   // ── Allegato 1: griglia osservativa + scala (formato CNGEI) ──
   const anyObs = ['P','C','S'].some(a => DB[a].some(p => numOf(obsVal(p))>0));
   { const G = scheda.griglia || {};
     const hasG = anyObs || Object.keys(typeof obsSources==='function'?obsSources():{}).length || Object.keys(G).length;
+    if(SOLOGR && !hasG){ showToast('La griglia è ancora vuota: compila prima almeno un percorso nell’osservazione.'); return; }
     if(hasG){
       ch.push(dH2('Allegato 1 — Griglia osservativa'));
       ch.push(dPara('Griglia nel formato CNGEI: per ogni percorso le attività svolte, i focus osservativi e i comportamenti osservati.',{size:16,italics:true,color:'777777',after:100}));
@@ -12787,7 +12808,7 @@ async function exportPPDocx(mode){
     }
   }catch(e){}
 
-  try{ await dSave(dDocument(ch, 'Scheda di Programmazione Educativa Esperienziale'), `Scheda_PEE_${((UNIT_NAME||pp.nome||'Unita')+'').replace(/[^\w]+/g,'_')}_${PPm?(fin?'PP_completo':'PP_consegna1'):(fin?'completa':'sezioni1-3')}_${todayIso()}.docx`); }
+  try{ await dSave(dDocument(ch, 'Scheda di Programmazione Educativa Esperienziale'), `Scheda_PEE_${((UNIT_NAME||pp.nome||'Unita')+'').replace(/[^\w]+/g,'_')}_${SOLOGR0?'griglia_osservativa':PPm?(fin?'PP_completo':'PP_consegna1'):(fin?'completa':'sezioni1-3')}_${todayIso()}.docx`); }
   catch(e){ showToast('Errore nella creazione del .docx: '+e.message); }
 }
 

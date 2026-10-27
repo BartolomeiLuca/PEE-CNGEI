@@ -1,0 +1,32 @@
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+import { execSync } from 'child_process';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(engine);
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', dashboard:{}});
+db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Progetto 2026-27', meta:{mode:'giovani', fascia:'E', tipo:'AN'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'X', obs:{P1:6}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', pp:{occMan:[{id:'m1', att:'Gioco mio', data:'2026-10-20', perc:['P1']}]}, griglia:{P1:{'m:m1':{pos:'Collaborano bene', mig:'Poca ascolto', note:'Marco defilato'}}}}}, created_at:'2026-10-01T10:00:00Z', updated_at:'2026-10-01T10:00:00Z'});
+await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
+// download griglia
+await ev(() => gGo('1b')); await sleep(800);
+ok(await ev(() => !![...document.querySelectorAll('button')].find(b => /Scarica griglia \(formato CNGEI\)/.test(b.textContent))), 'pulsante «Scarica griglia (formato CNGEI)» presente in 1.2');
+const [dl] = await Promise.all([P.waitForEvent('download', {timeout:40000}), P.click('text=Scarica griglia (formato CNGEI)')]);
+const xml = execSync('unzip -p ' + await dl.path() + ' word/document.xml').toString().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+ok(/griglia_osservativa/.test(dl.suggestedFilename()), 'nome file: ' + dl.suggestedFilename());
+ok(xml.includes('Griglia osservativa') && xml.includes('Collaborano bene') && xml.includes('Attività: Gioco mio'), 'Word: contiene la griglia con i testi');
+ok(!xml.includes('Sezione 1 —') && !xml.includes('Sezione 3 —'), 'Word: solo la griglia, senza le Sezioni');
+// bozza
+await ev(() => goPhaseInternal(2)); await sleep(1500);
+const has = await ev(() => { return !!document.querySelector('button[onclick*="grProponiBozza"]'); }); 
+ok(has, 'pulsante «Proponi bozza dalla griglia» in 1.3');
+await ev(() => { ppSetObs('P','positivi','Mio testo'); }); 
+await ev(() => grProponiBozza('P')); await sleep(300);
+let o = await ev(() => scheda.osservazione.P);
+ok(o.positivi.startsWith('Mio testo\n') && /Collaborano bene/.test(o.positivi) && /Poca ascolto/.test(o.necessita) && /Marco defilato/.test(o.singoli), 'la bozza si aggiunge in coda e riempie le tre colonne');
+await ev(() => grProponiBozza('P')); await sleep(200);
+o = await ev(() => scheda.osservazione.P);
+ok(o.positivi.split('Collaborano bene').length === 2, 'ripetere non duplica');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);
