@@ -15141,5 +15141,424 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<!-- GUSCIO:INIZIO (lotto B, passo 1) -->
+<style id="sh-css">
+#sh-root{display:none;position:fixed;inset:0;z-index:300;background:#F7F7F2;overflow:auto;font-family:'Montserrat',system-ui,sans-serif;color:#1A1A18;-webkit-overflow-scrolling:touch}
+#sh-root.show{display:block}
+body.sh-pend #hdr,body.sh-pend #main-app,body.sh-pend #mobile-nav{visibility:hidden}
+#sh-root *{box-sizing:border-box}
+.sh-top{background:var(--green,#25734e);color:#fff;min-height:56px;padding:0 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sh-top .sh-mark{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--green,#25734e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex:none}
+.sh-top b{font-size:14px}
+.sh-top nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.sh-lnk{background:transparent;border:0;color:inherit;font:600 12.5px 'Montserrat',sans-serif;min-height:44px;padding:0 12px;cursor:pointer;border-radius:8px;text-decoration:underline;text-underline-offset:3px}
+.sh-lnk:hover{background:rgba(255,255,255,.14)}
+.sh-wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px;display:flex;flex-direction:column;gap:14px}
+.sh-wrap.narrow{max-width:640px}
+.sh-wrap h1{margin:0;font-size:26px;font-weight:800;line-height:1.2}
+.sh-wrap h2{margin:14px 0 0;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5f5f58}
+.sh-sub{font-size:14px;line-height:1.55;color:#3D3D38;margin:0}
+.sh-card{background:#fff;border:1px solid #D8D8D0;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.sh-lb{display:block;font-size:12.5px;font-weight:700;margin:0 0 6px}
+.sh-in{width:100%;min-height:44px;border:1px solid #8a8a82;border-radius:8px;padding:8px 12px;font:500 14px 'Montserrat',sans-serif;background:#fff;color:#1A1A18}
+.sh-in:focus-visible,.sh-btn:focus-visible,.sh-lnk:focus-visible,.sh-rr:focus-within{outline:3px solid #1d4f8f;outline-offset:2px}
+.sh-hint{font-size:12px;color:#5f5f58;line-height:1.5;margin-top:5px}
+.sh-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sh-btn{min-height:44px;padding:0 22px;border:0;border-radius:10px;background:var(--green,#25734e);color:#fff;font:700 14px 'Montserrat',sans-serif;cursor:pointer}
+body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
+.sh-btn.gh{background:#fff;color:#1A1A18;border:1px solid #8a8a82}
+.sh-btn.sm{min-height:44px;padding:0 16px;font-size:13px}
+.sh-btn[disabled]{opacity:.55;cursor:default}
+.sh-msg{font-size:13px;line-height:1.5;min-height:18px}
+.sh-msg.err{color:#a1260f;font-weight:600}
+.sh-msg.ok{color:#1b5e42;font-weight:600}
+.sh-rr{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;padding:10px 12px;border:1px solid #D8D8D0;border-radius:8px;min-height:44px;cursor:pointer;background:#fff}
+.sh-rr input{width:18px;height:18px;margin:0;accent-color:var(--green,#25734e)}
+.sh-rr.on{border:2px solid var(--green,#25734e);background:var(--green-pale,#e6f3ec)}
+.sh-pr{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:12px 14px;align-items:center;padding:14px 18px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;font-size:13.5px}
+.sh-pr .t{font-weight:800}
+.sh-pr .s{font-size:12px;color:#5f5f58;margin-top:2px;line-height:1.4}
+.sh-pr.act{border:2px solid var(--green,#25734e)}
+.sh-tag{font-size:11px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
+.sh-tag.L{background:#f7f19a}.sh-tag.E{background:#d7ecdf}.sh-tag.R{background:#f8c9c7}.sh-tag.X{background:#e3e8f2}
+.sh-role{font-size:11px;font-weight:700;border-radius:12px;padding:2px 9px;border:1px solid #8a8a82;color:#3D3D38;background:#fff;white-space:nowrap}
+.sh-hs{font-size:12px;color:#5f5f58;white-space:nowrap}
+.sh-act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.sh-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sh-big{background:#fff;border:2px solid #D8D8D0;border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:10px;text-align:left;cursor:pointer;font:inherit;color:inherit;min-height:160px}
+.sh-big:hover{border-color:var(--green,#25734e)}
+.sh-big b{font-size:18px;font-weight:800}
+.sh-big span{font-size:13.5px;line-height:1.55;color:#3D3D38}
+.sh-ov{position:fixed;inset:0;background:rgba(26,26,24,.5);display:none;align-items:flex-start;justify-content:center;padding:6vh 14px;overflow:auto;z-index:310}
+.sh-ov.show{display:flex}
+.sh-dlg{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.sh-dlg h2{margin:0;font-size:20px;font-weight:800;text-transform:none;letter-spacing:0;color:#1A1A18}
+@media(max-width:760px){
+  .sh-top{padding:0 12px}.sh-wrap{padding:20px 16px 48px}.sh-two{grid-template-columns:1fr}.sh-g2{grid-template-columns:1fr}
+  .sh-pr{grid-template-columns:minmax(0,1fr) auto}.sh-pr .sh-hs{grid-column:1/-1}.sh-act{grid-column:1/-1;justify-content:flex-start}
+}
+</style>
+<div id="sh-root" role="region" aria-label="PEE CNGEI"></div>
+<div class="sh-ov" id="sh-ov" onclick="if(event.target===this)shDlgClose()"><section class="sh-dlg" id="sh-dlg" role="dialog" aria-modal="true" aria-labelledby="sh-dlg-t"></section></div>
+<script id="sh-js">
+(function(){
+'use strict';
+let on = false;
+try{
+  const q = new URLSearchParams(location.search);
+  if(q.get('guscio') === '0') localStorage.removeItem('pee_guscio');
+  if(q.get('guscio') === '1') localStorage.setItem('pee_guscio','1');
+  on = !window.BRO && (/\/anteprima(\/|$)/.test(location.pathname) || localStorage.getItem('pee_guscio') === '1') && q.get('guscio') !== '0';
+}catch(e){}
+window.SH = {on, prof:null, profErr:'', rows:null, shared:null, view:null, uid:null, tipo:'AN'};
+if(!on) return;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const RUOLI = [['cu','Capo Unità'],['vcu','Vice Capo Unità'],['cg','Capo Gruppo'],['cds','Commissario di Sezione'],['senior','Senior in Servizio'],['volontario','Adulto volontario']];
+const RUOLO_TXT = Object.fromEntries(RUOLI);
+const BRANCHE = ['L','E','R'];
+const BR_FULL = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
+const BR_UNIT = {L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki', R:'Es. Compagnia Aquila'};
+const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
+const noBranca = r => r === 'cg' || r === 'cds';
+const noGruppo = r => r === 'cds';
+SH.RUOLI = RUOLI; SH.noBranca = noBranca;
+
+document.body.classList.add('sh-on','sh-pend');
+try{ const w = $('welcome-screen'); if(w) w.style.display = 'none'; }catch(e){}
+
+// ── anno scout: dal 1 settembre al 31 agosto ──
+function annoScoutStart(d){ d = d || new Date(); return d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1; }
+function annoScoutTxt(y){ return y + '-' + String((y + 1) % 100).padStart(2,'0'); }
+SH.annoScoutStart = annoScoutStart; SH.annoScoutTxt = annoScoutTxt;
+
+// ── profilo (tabella pee_profili; copia sul dispositivo se il servizio non risponde) ──
+const profKey = () => 'pee_profilo_' + (CL.user ? CL.user.id : '');
+async function profLoad(){
+  SH.profErr = ''; let p = null;
+  try{
+    const r = await CL.sb.from('pee_profili').select('nome,ruolo,branca,sezione,gruppo,area_rcdf,dashboard').eq('user_id', CL.user.id).maybeSingle();
+    if(r.error) throw r.error;
+    p = r.data || null;
+  }catch(e){
+    SH.profErr = (e && (e.message || e.code)) || 'errore';
+    try{ p = JSON.parse(localStorage.getItem(profKey()) || 'null'); }catch(x){}
+  }
+  SH.prof = p || {}; SH.uid = CL.user.id;
+  if(p){ try{ localStorage.setItem(profKey(), JSON.stringify(p)); }catch(e){} }
+  return SH.prof;
+}
+async function profSave(p){
+  const row = {user_id:CL.user.id, nome:p.nome, ruolo:p.ruolo, branca:p.branca || null, sezione:p.sezione || null, gruppo:p.gruppo || null, area_rcdf:p.area_rcdf || null};
+  if(p.dashboard !== undefined) row.dashboard = p.dashboard;
+  const r = await CL.sb.from('pee_profili').upsert(row, {onConflict:'user_id'});
+  if(r.error) throw r.error;
+  SH.prof = Object.assign({}, SH.prof, p);
+  try{ localStorage.setItem(profKey(), JSON.stringify(SH.prof)); }catch(e){}
+}
+SH.profSave = profSave;
+function profOk(p){
+  p = p || SH.prof || {};
+  if(!String(p.nome||'').trim() || !p.ruolo || !String(p.sezione||'').trim() || !p.area_rcdf) return false;
+  if(!noGruppo(p.ruolo) && !String(p.gruppo||'').trim()) return false;
+  if((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) return false;
+  return true;
+}
+SH.profOk = profOk;
+
+// ── schermate ──
+function show(view, arg){
+  SH.view = view; const r = $('sh-root');
+  if(!view){ r.classList.remove('show'); r.innerHTML = ''; document.body.classList.remove('sh-pend'); document.body.style.overflow = ''; return; }
+  document.body.classList.remove('sh-pend'); r.classList.add('show'); r.scrollTop = 0;
+  if(view === 'wait') r.innerHTML = top(false) + '<div class="sh-wrap narrow"><p class="sh-sub" role="status">Un attimo…</p></div>';
+  else if(view === 'gate') gateHTML(arg);
+  else if(view === 'profile') profileHTML(arg);
+  else if(view === 'home') homeHTML();
+}
+function top(menu){
+  return `<header class="sh-top"><div class="sh-mark" aria-hidden="true">PEE</div><b>PEE CNGEI</b>${menu ? `<nav aria-label="Link rapidi">
+    <button class="sh-lnk" type="button" onclick="shGuide()">Guida</button>
+    <button class="sh-lnk" type="button" onclick="shProfileOpen()">Profilo</button>
+    <button class="sh-lnk" type="button" onclick="shLogout()">Esci</button></nav>` : ''}</header>`;
+}
+function gateHTML(why){
+  const off = why === 'offline';
+  $('sh-root').innerHTML = top(false) + `<main class="sh-wrap narrow">
+    <h1>PEE CNGEI</h1>
+    <p class="sh-sub">Programmazione Educativa Esperienziale CNGEI: il tuo Progetto Personale e la Programmazione Annuale della tua Unità.</p>
+    <div class="sh-card">
+      ${off ? `<p class="sh-sub"><b>Il servizio non è raggiungibile.</b> Controlla la connessione e riprova: per lavorare serve l’account.</p><div><button class="sh-btn" type="button" onclick="location.reload()">Riprova</button></div>`
+      : `<p class="sh-sub"><b>Per lavorare serve un account.</b> Il tuo lavoro si salva da solo nel cloud e lo ritrovi su ogni dispositivo.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="button" id="sh-login" onclick="shAuth('login')">Accedi</button><button class="sh-btn gh" type="button" id="sh-signup" onclick="shAuth('signup')">Crea un account</button></div>`}
+    </div></main>`;
+}
+window.shAuth = function(v){ try{ $('cl-ov').classList.add('show'); clShow(v); }catch(e){ clOpen(); } };
+
+function sezOpts(){ return (typeof SEZIONI !== 'undefined' ? SEZIONI : []).map(s => `<option value="${esc(s)}">`).join(''); }
+function grpOpts(sez, cur){
+  let known = []; try{ known = new Set(grpKnown(sez)); }catch(e){ known = new Set(); }
+  cur = String(cur || '');
+  const o = (v,t) => `<option value="${v}"${cur === v ? ' selected' : ''}>${t}${known.has && known.has(v) && cur !== v ? ' · già presente' : ''}</option>`;
+  let h = `<option value=""${cur ? '' : ' selected'}>— scegli —</option>` + o('unico','Monogruppo');
+  for(let n = 1; n <= 20; n++) h += o(String(n), 'Gruppo ' + n);
+  if(cur && cur !== 'unico' && !/^([1-9]|1\d|20)$/.test(cur)) h += `<option value="${esc(cur)}" selected>${esc(cur)}</option>`;
+  return h;
+}
+SH.grpOpts = grpOpts;
+function areaOpts(cur){
+  const A = (typeof RCDF_AREE !== 'undefined') ? RCDF_AREE : [];
+  return `<option value=""${cur ? '' : ' selected'}>— scegli —</option>` + A.map(a => `<option value="${esc(a[0])}"${cur === a[0] ? ' selected' : ''}>${esc(a[1])}</option>`).join('');
+}
+function profileHTML(mode){
+  const p = SH.prof || {}; const first = mode !== 'edit';
+  let nome = p.nome || ''; if(!nome){ try{ nome = (CL.user.user_metadata && CL.user.user_metadata.nome) || ''; }catch(e){} }
+  $('sh-root').innerHTML = top(!first) + `<main class="sh-wrap narrow">
+    <h1>${first ? 'Raccontaci chi sei' : 'Il tuo profilo'}</h1>
+    <p class="sh-sub">${first ? 'Poche informazioni, una volta sola: servono a precompilare i progetti e a sapere a chi mandare le comunicazioni. Le puoi cambiare quando cambia il tuo incarico.' : 'Puoi cambiarlo quando cambia il tuo incarico. I progetti già creati non cambiano.'}</p>
+    <form class="sh-card" id="sh-pf" onsubmit="return shProfSubmit(event)" novalidate>
+      <div><label class="sh-lb" for="sh-nome">Nome e cognome</label><input class="sh-in" id="sh-nome" autocomplete="name" maxlength="120" value="${esc(nome)}"></div>
+      <div><label class="sh-lb" for="sh-ruolo">Ruolo</label><select class="sh-in" id="sh-ruolo" onchange="shProfRole()"><option value="">— scegli —</option>${RUOLI.map(r => `<option value="${r[0]}"${p.ruolo === r[0] ? ' selected' : ''}>${r[1]}</option>`).join('')}</select></div>
+      <div id="sh-brw"><label class="sh-lb" for="sh-branca">Branca</label><select class="sh-in" id="sh-branca"><option value="">— scegli —</option>${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b}</option>`).join('')}</select><div class="sh-hint" id="sh-brh">L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover</div></div>
+      <div class="sh-g2">
+        <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" value="${esc(p.sezione || '')}" onchange="shProfSez()"><datalist id="sh-dl-sez">${sezOpts()}</datalist></div>
+        <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
+      </div>
+      <div><label class="sh-lb" for="sh-area">Area RCdF</label><select class="sh-in" id="sh-area">${areaOpts(p.area_rcdf)}</select><div class="sh-hint">Il Referente della Commissione di Formazione (RCdF) della tua area riceve in copia le comunicazioni del Progetto Personale.</div></div>
+      <div class="sh-msg" id="sh-pmsg" role="alert"></div>
+      ${SH.profErr ? `<div class="sh-hint">Il profilo non si è potuto leggere dal cloud (${esc(SH.profErr)}): ti mostro la copia di questo dispositivo.</div>` : ''}
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="submit" id="sh-psave">${first ? 'Salva e continua' : 'Salva'}</button>${first ? '' : '<button class="sh-btn gh" type="button" onclick="shGoHome()">Annulla</button>'}</div>
+    </form></main>`;
+  shProfRole();
+  if(p.sezione) try{ grpFetch(p.sezione).then(() => { const g = $('sh-grp'); if(g && document.activeElement !== g) g.innerHTML = grpOpts($('sh-sez').value, g.value); }); }catch(e){}
+}
+window.shProfRole = function(){
+  const r = ($('sh-ruolo') || {}).value;
+  const b = $('sh-brw'), g = $('sh-grw'); if(!b) return;
+  b.style.display = noBranca(r) ? 'none' : ''; g.style.display = noGruppo(r) ? 'none' : '';
+  const h = $('sh-brh'); if(h) h.textContent = (r === 'cu' || r === 'vcu') ? 'L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover' : 'Facoltativa: scegli la Branca in cui presti servizio, se ne hai una. L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover';
+};
+window.shProfSez = function(){
+  const s = ($('sh-sez').value || '').trim(); const g = $('sh-grp');
+  if(g) g.innerHTML = grpOpts(s, g.value);
+  try{ grpFetch(s).then(() => { const g2 = $('sh-grp'); if(g2 && document.activeElement !== g2) g2.innerHTML = grpOpts($('sh-sez').value, g2.value); }); }catch(e){}
+};
+window.shProfSubmit = async function(ev){
+  if(ev) ev.preventDefault();
+  const m = $('sh-pmsg'); const v = id => String(($(id) || {}).value || '').trim();
+  const p = {nome:v('sh-nome'), ruolo:v('sh-ruolo'), branca:v('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:v('sh-area')};
+  if(noBranca(p.ruolo)) p.branca = '';
+  if(noGruppo(p.ruolo)) p.gruppo = '';
+  const miss = !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-ruolo'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-branca'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : !p.area_rcdf ? ['Scegli la tua Area RCdF','sh-area'] : null;
+  if(miss){ m.className = 'sh-msg err'; m.textContent = miss[0] + '.'; try{ $(miss[1]).focus(); }catch(e){} return false; }
+  const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
+  try{
+    await profSave(p);
+    try{ grpRemember(p.sezione, p.gruppo); }catch(e){}
+    const edit = SH._profEdit; SH._profEdit = false;
+    m.className = 'sh-msg ok'; m.textContent = 'Profilo salvato.';
+    if(edit){ SH.rows = null; show('home'); } else await route(true);
+  }catch(e){
+    btn.disabled = false; m.className = 'sh-msg err';
+    m.textContent = /relation|does not exist|42P01|PGRST205/i.test(String(e && (e.message||e.code))) ? 'Il database non ha ancora la tabella dei profili: serve lo script SQL del profilo.' : 'Non sono riuscito a salvare: ' + ((e && e.message) || 'riprova tra poco') + '.';
+  }
+  return false;
+};
+window.shProfileOpen = function(){ SH._profEdit = true; try{ saveData(true); }catch(e){} show('profile', 'edit'); };
+
+// ── elenco progetti ──
+const tipoOf = m => (m && m.tipo) || (m && m.mode === 'staff' ? 'ST' : (m && m.mode === 'giovani' ? 'AN' : ''));
+const TIPO_TXT = {PP:'Progetto Personale', AN:'Programmazione Annuale', ST:'Staff (versione precedente)'};
+const brOf = m => (m && (m.fascia || m.branca)) || '';
+function rowHTML(r, shared){
+  const m = r.meta || {}; const t = tipoOf(m); const br = brOf(m);
+  const act = CL.ctx && CL.ctx.id === r.id;
+  const tit = esc(r.titolo);
+  const sub = shared ? 'Di ' + esc(r.owner || 'un’altra persona') : esc(m.nome || '') ;
+  const ts = r.ts ? new Date(r.ts) : null; const hs = ts ? 'Modificato ' + dayTxt(ts) : '';
+  const role = shared ? `<span class="sh-role">Il tuo ruolo: ${esc(SH_RUOLI_CLIENT[r.ruolo] || 'Lettore')}</span>` : `<span class="sh-role">Titolare</span>`;
+  const tag = br ? `<span class="sh-tag ${br}">Branca ${esc(br)}</span>` : `<span class="sh-tag X">${t === 'ST' ? 'Staff' : 'Gruppo'}</span>`;
+  const open = act ? `<button class="sh-btn sm" type="button" onclick="shOpen('${r.id}',${shared ? 1 : 0})">Continua</button>` : `<button class="sh-btn sm" type="button" onclick="shOpen('${r.id}',${shared ? 1 : 0})">Apri</button>`;
+  const more = shared ? '' : `<button class="sh-btn gh sm" type="button" onclick="shRename('${r.id}')">Rinomina</button><button class="sh-btn gh sm" type="button" onclick="shDup('${r.id}')">Duplica</button><button class="sh-btn gh sm" type="button" onclick="shDel('${r.id}')">Elimina</button>`;
+  return `<div class="sh-pr${act ? ' act' : ''}" data-id="${r.id}"><div style="min-width:0"><div class="t">${tit}</div><div class="s">${TIPO_TXT[t] ? esc(TIPO_TXT[t]) + (sub ? ' · ' : '') : ''}${sub}</div></div>${tag}${role}<span class="sh-hs">${hs}</span><div class="sh-act">${open}${more}</div></div>`;
+}
+function dayTxt(d){
+  const now = new Date(); const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()), b = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = Math.round((a - b) / 864e5);
+  if(diff <= 0) return 'oggi'; if(diff === 1) return 'ieri';
+  return 'il ' + d.toLocaleDateString('it-IT', {day:'numeric', month:'long'});
+}
+async function homeHTML(){
+  const r = $('sh-root');
+  const draw = () => {
+    const rows = SH.rows || [], shr = SH.shared || [];
+    const p = SH.prof || {};
+    let h = top(true) + `<main class="sh-wrap">`;
+    if(!rows.length && !shr.length){
+      h += `<h1>Ciao ${esc(String(p.nome||'').split(/\s+/)[0])}, da dove cominci?</h1><p class="sh-sub">Scegli che cosa vuoi creare. Potrai aggiungere altri progetti quando vuoi.</p>
+      <div class="sh-two" style="margin-top:6px">
+        <button class="sh-big" type="button" onclick="shNew('PP')"><b>Progetto Personale</b><span>Il tuo Progetto Personale passo passo e con la struttura indicata nelle Linee Guida.</span></button>
+        <button class="sh-big" type="button" onclick="shNew('AN')"><b>Programmazione Annuale</b><span>La programmazione dell’anno scout della tua Unità: osservazione, obiettivi, percorsi, verifica e valutazione.</span></button>
+      </div>`;
+    }else{
+      h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1>I tuoi progetti</h1><button class="sh-btn" type="button" style="margin-left:auto" onclick="shNew()">+ Nuovo progetto</button></div>`;
+      h += rows.length ? rows.map(x => rowHTML(x, false)).join('') : '<p class="sh-sub">Non hai ancora progetti tuoi.</p>';
+      if(shr.length) h += `<h2>Condivisi con te</h2>` + shr.map(x => rowHTML(x, true)).join('');
+    }
+    h += `</main>`; r.innerHTML = h;
+  };
+  if(SH.rows) draw(); else r.innerHTML = top(true) + '<div class="sh-wrap"><p class="sh-sub" role="status">Carico i tuoi progetti…</p></div>';
+  try{
+    const [a, b] = await Promise.all([dbList(), dbShared().catch(() => [])]);
+    SH.rows = a; SH.shared = b;
+    if(SH.view === 'home') draw();
+  }catch(e){
+    if(SH.view === 'home') r.innerHTML = top(true) + `<div class="sh-wrap"><h1>I tuoi progetti</h1><p class="sh-sub">Non riesco a leggere i progetti: controlla la connessione.</p><div><button class="sh-btn" type="button" onclick="shGoHome()">Riprova</button></div></div>`;
+  }
+}
+window.shGoHome = function(){
+  try{ if(CL.ctx && !window.BRO) saveData(true); }catch(e){}
+  SH.rows = null; show('home');
+};
+window.shOpen = function(id, shared){
+  if(CL.ctx && CL.ctx.id === id){
+    const mainOn = $('main-app') && $('main-app').style.display !== 'none';
+    show(null);
+    if(!mainOn){ try{ clContinue(true); }catch(e){} }
+    try{ if(window.shEnter) shEnter(); }catch(e){}
+    return;
+  }
+  if(shared) clOpenShared(id); else clOpenProject(id);
+};
+window.shRename = async function(id){
+  const cur = (SH.rows || []).find(r => r.id === id); if(!cur) return;
+  const nuovo = (prompt('Nuovo titolo del progetto:', cur.titolo) || '').trim();
+  if(!nuovo || nuovo === cur.titolo) return;
+  if(SH.rows.some(r => r.id !== id && r.anno === cur.anno && r.titolo === nuovo)){ clToast('Esiste già un progetto con questo titolo in quell’anno'); return; }
+  try{ await dbRename(id, nuovo); if(CL.ctx && CL.ctx.id === id){ CL.ctx.titolo = nuovo; clSaveCtx(); } SH.rows = null; show('home'); }catch(e){ clToast('Errore: ' + clErr(e)); }
+};
+window.shDup = async function(id){
+  const r = (SH.rows || []).find(x => x.id === id); if(!r) return;
+  try{ await clDup(id, Number(r.anno)); SH.rows = null; show('home'); }catch(e){ clToast('Non riesco a duplicare'); }
+};
+window.shDel = async function(id){
+  await clDelete(id);
+  if(!window._appReload){ SH.rows = null; show('home'); }
+};
+window.shLogout = function(){ clLogout(); };
+window.shGuide = function(){ try{ faqOpen(); }catch(e){} };
+
+// ── nuovo progetto ──
+function dlgOpen(h){ $('sh-dlg').innerHTML = h; $('sh-ov').classList.add('show'); const f = $('sh-dlg').querySelector('input,select,button'); if(f) setTimeout(() => { try{ f.focus(); }catch(e){} }, 30); }
+window.shDlgClose = function(){ $('sh-ov').classList.remove('show'); };
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('sh-ov').classList.contains('show')) shDlgClose(); });
+window.shNew = function(tipo){
+  const p = SH.prof || {}; SH.tipo = tipo || SH.tipo || 'AN';
+  const cur = annoScoutStart();
+  const anni = [cur, cur - 1, cur + 1];
+  const sezgr = [p.sezione, p.gruppo ? (/^\d+$/.test(p.gruppo) ? 'Gruppo ' + p.gruppo : (p.gruppo === 'unico' ? 'Monogruppo' : p.gruppo)) : ''].filter(Boolean).join(' · ');
+  const nb = noBranca(p.ruolo);
+  dlgOpen(`<h2 id="sh-dlg-t">Nuovo progetto</h2>
+    <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">Tipo</legend><div class="sh-g2">
+      <label class="sh-rr${SH.tipo === 'PP' ? ' on' : ''}"><input type="radio" name="sh-tipo" value="PP"${SH.tipo === 'PP' ? ' checked' : ''} onchange="shTipo()">Progetto Personale</label>
+      <label class="sh-rr${SH.tipo === 'AN' ? ' on' : ''}"><input type="radio" name="sh-tipo" value="AN"${SH.tipo === 'AN' ? ' checked' : ''} onchange="shTipo()">Programmazione Annuale</label></div></fieldset>
+    <div class="${nb ? '' : 'sh-g2'}"><div><label class="sh-lb" for="sh-nas">Anno scout</label><select class="sh-in" id="sh-nas">${anni.map(y => `<option value="${y}">${annoScoutTxt(y)}</option>`).join('')}</select></div>
+      ${nb ? '' : `<div><label class="sh-lb" for="sh-nbr">Branca</label><select class="sh-in" id="sh-nbr">${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b}</option>`).join('')}</select></div>`}</div>
+    ${nb ? '' : `<div><label class="sh-lb" for="sh-nun">Nome Unità</label><input class="sh-in" id="sh-nun" maxlength="60" placeholder="${BR_UNIT[p.branca] || 'Es. Reparto Kontiki'}"></div>`}
+    <div class="sh-hint">Sezione e Gruppo si compilano dal tuo profilo${sezgr ? ': ' + esc(sezgr) : ''}.${nb ? ' Come ' + esc(RUOLO_TXT[p.ruolo]) + ' non scegli Branca né Nome Unità.' : ''}</div>
+    <div class="sh-msg" id="sh-nmsg" role="alert"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="sh-ncre" onclick="shCreate()">Crea il progetto</button></div>`);
+};
+window.shTipo = function(){
+  const v = (document.querySelector('input[name="sh-tipo"]:checked') || {}).value; if(v) SH.tipo = v;
+  document.querySelectorAll('#sh-dlg .sh-rr').forEach(l => l.classList.toggle('on', !!l.querySelector('input:checked')));
+};
+async function uniqueTitle(rows, anno, base){
+  let t = base, n = 2; const used = new Set(rows.filter(r => Number(r.anno) === Number(anno)).map(r => r.titolo));
+  while(used.has(t)) t = base + ' (' + (n++) + ')';
+  return t;
+}
+window.shCreate = async function(){
+  const p = SH.prof || {}; const tipo = SH.tipo; const msg = $('sh-nmsg'); const btn = $('sh-ncre');
+  const y = +$('sh-nas').value; const nb = noBranca(p.ruolo);
+  const br = nb ? '' : $('sh-nbr').value; const unit = nb ? '' : String(($('sh-nun') || {}).value || '').trim().slice(0, 60);
+  btn.disabled = true; msg.className = 'sh-msg'; msg.textContent = 'Creo il progetto…';
+  try{
+    const rows = await dbList();
+    const as = annoScoutTxt(y);
+    const base = (tipo === 'PP' ? 'Progetto Personale ' : 'Programmazione Annuale ') + as + (unit ? ' · ' + unit : '');
+    const titolo = await uniqueTitle(rows, y, base);
+    const pp = {}; if(p.sezione) pp.sezione = p.sezione; if(p.gruppo) pp.gruppo = p.gruppo;
+    let d;
+    if(nb){
+      d = {v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CG', UNIT_NAME:'', scheda:{tipoProgetto:'AN', annoScout:as, pp}};
+    }else{
+      d = {v:1, MODE:'giovani', FASCIA:br, UNIT_NAME:unit, scheda:{tipoProgetto:tipo, annoScout:as, pp}};
+    }
+    d.ts = Date.now();
+    const meta = clMeta(d);
+    const r = await dbInsert(y, titolo, d, meta);
+    SH.rows = null; shDlgClose();
+    CL.ctx = null;
+    try{ localStorage.removeItem(CL_LS); }catch(e){}
+    await clOpenProject(r.id);
+  }catch(e){
+    btn.disabled = false; msg.className = 'sh-msg err';
+    msg.textContent = e && e.message === 'duplicate' ? 'Esiste già un progetto con questo titolo in quell’anno.' : 'Non sono riuscito a creare il progetto: ' + ((e && e.message) || 'riprova tra poco') + '.';
+  }
+};
+
+// ── instradamento ──
+let routing = false;
+async function route(force){
+  if(routing && !force) return; routing = true;
+  try{
+    if(window.BRO){ show(null); return; }
+    if(!clOn() || !CL.sb){ show('gate', 'offline'); return; }
+    if(!CL.user){ SH.prof = null; SH.uid = null; show('gate'); return; }
+    if(!SH.prof || SH.uid !== CL.user.id){ show('wait'); await profLoad(); }
+    if(!profOk(SH.prof)){ show('profile'); return; }
+    let snap = {}; try{ snap = clSnapshot(); }catch(e){}
+    if(CL.ctx && snap.MODE){
+      // un progetto è aperto su questo dispositivo: ci si entra direttamente
+      const mainOn = $('main-app') && $('main-app').style.display !== 'none';
+      if(!mainOn){ try{ resumeSession(); setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); }catch(e){} }
+      show(null); try{ if(window.shEnter) shEnter(); }catch(e){} return;
+    }
+    show('home');
+  }finally{ routing = false; }
+}
+SH.route = route;
+
+// il guscio sostituisce la partenza dell'app: niente apertura automatica di un progetto, niente pagina iniziale
+window.clAutoOpen = async function(){ return false; };
+// la partenza del progetto può essere chiesta due volte (dall'avvio dell'app e dal guscio): la seconda volta non fa nulla
+const _rs = window.resumeSession;
+window.resumeSession = function(){ if(SH._resumed && $('main-app') && $('main-app').style.display !== 'none') return; SH._resumed = true; return _rs.apply(this, arguments); };
+window.confirmBackToLanding = function(){ shGoHome(); };
+// il tipo di progetto sta in scheda (i campi in cima ai dati non sopravvivono al salvataggio) e nei dati dell'archivio
+const _clMeta = window.clMeta;
+window.clMeta = function(d){
+  const m = _clMeta(d); try{ const s = (d && d.scheda) || {}; if(s.tipoProgetto) m.tipo = s.tipoProgetto; if(s.annoScout) m.anno_scout = s.annoScout; }catch(e){}
+  return m;
+};
+const _clInit = window.clInit;
+window.clInit = async function(){
+  let r; try{ r = await _clInit.apply(this, arguments); }catch(e){ r = null; }
+  try{
+    if(CL.sb && !SH._sub){ SH._sub = true;
+      CL.sb.auth.onAuthStateChange((ev, ses) => {
+        const uid = ses && ses.user ? ses.user.id : null;
+        if((ev === 'SIGNED_IN' && uid && uid !== SH.uid) || ev === 'SIGNED_OUT'){ setTimeout(() => { try{ if(ev === 'SIGNED_IN') $('cl-ov').classList.remove('show'); }catch(e){} route(true); }, 60); }
+      });
+    }
+  }catch(e){}
+  await route(true);
+  return r;
+};
+})();
+</script>
+<!-- GUSCIO:FINE -->
 </body>
 </html>

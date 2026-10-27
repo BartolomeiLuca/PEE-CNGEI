@@ -26,7 +26,7 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[]}; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[]}; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
   user(id){ return this.users.find(u => u.id === id); }
   pubUser(u){ return u ? {id:u.id, email:u.email, user_metadata:Object.assign({}, u.meta), new_email:u.pending||undefined} : null; }
   addUser(email, password = 'password123', nome = ''){ const u = {id:uuid(), email:email.toLowerCase(), password, meta: nome ? {nome} : {}}; this.users.push(u); return u; }
@@ -43,6 +43,7 @@ export class FakeDB {
       case 'pee_versioni': return r.user_id === uid || this.canEdit(uid, r.archivio_id);
       case 'pee_suggerimenti': return this.isOwner(uid, r.archivio_id) || (r.user_id === uid && !!this.mem(uid, r.archivio_id)) || (this.sql13 && (this.isCot(uid, r.archivio_id) || (r.dest && r.dest === em)));
       case 'pee_gruppi': return true;
+      case 'pee_profili': return r.user_id === uid;
       case 'pee_archivio_nazionale': return r.stato === 'approvata' || r.autore_id === uid || em === 'luca.bartolomei@cngei.it';
       default: return false;
     }
@@ -88,6 +89,18 @@ export class FakeDB {
       rows = rows.map(r => this.pick(r, q.cols));
       if(q.single) return {data: rows[0] || null, error:null};
       return {data:rows, error:null};
+    }
+    if(q.op === 'upsert'){
+      const list = Array.isArray(q.vals) ? q.vals : [q.vals];
+      for(const v0 of list){
+        if(q.table === 'pee_profili'){
+          const v = Object.assign({}, v0, {user_id: uid}); let r = T.find(x => x.user_id === uid);
+          if(!r){ r = Object.assign({created_at:now(), dashboard:{}}, v); T.push(r); } else Object.assign(r, v); r.updated_at = now();
+        } else if(q.table === 'pee_gruppi'){
+          if(!T.some(x => x.sezione === v0.sezione && x.gruppo === v0.gruppo)) T.push(Object.assign({}, v0));
+        } else return this.err('42501', 'permission denied');
+      }
+      return {data:null, error:null};
     }
     if(q.op === 'insert'){
       const list = Array.isArray(q.vals) ? q.vals : [q.vals]; const out = [];

@@ -27,6 +27,7 @@
     const api = {
       select(c){ if(q.op === 'select') q.cols = c||'*'; else q.ret = c||'*'; return api; },
       insert(v){ q.op = 'insert'; q.vals = v; return api; },
+      upsert(v, o){ q.op = 'upsert'; q.vals = v; q.conflict = o && o.onConflict; return api; },
       update(v){ q.op = 'update'; q.vals = v; return api; },
       delete(){ q.op = 'delete'; return api; },
       eq(c,v){ q.filters.push(['eq',c,v]); return api; },
