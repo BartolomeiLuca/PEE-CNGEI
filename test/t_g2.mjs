@@ -1,0 +1,85 @@
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const db = new FakeDB();
+const br = await launch(engine);
+const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+const mkp = (id, tipo, titolo, extra = {}) => db.t.pee_archivi.push({id, user_id:u.id, anno:2026, titolo, meta:{mode:'giovani', fascia:'E', tipo, nome:'Reparto Kontiki'}, data:Object.assign({v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'Reparto Kontiki', scheda:{tipoProgetto:tipo, annoScout:'2026-27', pp:{sezione:'Pesaro', gruppo:'1'}}}, extra), created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
+const obs = {}; ['P1','P2','P3','C1','C2'].forEach(k => obs[k] = 3);
+mkp('an1', 'AN', 'Programmazione Annuale 2026-27', {obs, pris:{P2:true, C3:true, S1:true}});
+mkp('pp1', 'PP', 'Progetto Personale 2026-27');
+db.t.pee_archivi.push({id:'st1', user_id:u.id, anno:2026, titolo:'Staff 2026', meta:{mode:'staff'}, data:{v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CU', UNIT_NAME:'Staff X'}, created_at:'2026-10-01T10:00:00Z', updated_at:'2026-10-02T10:00:00Z'});
+await loginAs(P, base, u); await sleep(1500);
+const open = async id => { await ev(id => shOpen(id, 0), id); await sleep(3500); };
+// 1 · Programmazione Annuale: dashboard e menu
+await open('an1');
+let s = await ev(() => ({dash: document.getElementById('panel-dash').classList.contains('active'), items: [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()), grp: [...document.querySelectorAll('#sh-side .sh-sg')].map(b => b.textContent.trim()), on: (document.querySelector('#sh-side .sh-si.on') || {}).textContent, ph: !!document.querySelector('#hdr .phase-tabs') && getComputedStyle(document.querySelector('#hdr .phase-tabs')).display, theme: document.body.getAttribute('data-theme')}));
+ok(s.dash && s.on === 'Dashboard', 'Programmazione Annuale: si apre sulla Dashboard');
+ok(s.grp.join('|') === 'Progettare|Realizzare|Misurare e conservare', 'menu: gruppi Progettare / Realizzare / Misurare e conservare');
+ok(s.items.includes('1 · Osservazione del Gruppo di Pari') && s.items.includes('2 · Obiettivi e Indicatori di Risultato') && s.items.includes('3 · Percorsi Educativi Esperienziali') && s.items.includes('4 · Verifica delle Attività') && s.items.includes('5 · Valutazione Finale'), 'menu: sezioni con i titoli delle Linee Guida');
+ok(s.ph === 'none' && s.theme === 'E', 'schede di fase vecchie nascoste, tema verde della Branca E');
+const hdr = await ev(() => document.getElementById('hdr').innerText);
+ok(/I tuoi progetti/.test(hdr) && /Guida/.test(hdr) && /Profilo/.test(hdr), 'intestazione: I tuoi progetti, Guida, Profilo');
+// 2 · le voci del menu portano alle sezioni
+const go = async (label) => { await P.click(`#sh-side .sh-si:has-text("${label}")`); await sleep(500); return ev(() => ({dash: document.getElementById('panel-dash').classList.contains('active'), p: [1,2,3,4].filter(i => document.getElementById('panel'+i).classList.contains('active')), step: schedaStep, on: (document.querySelector('#sh-side .sh-si.on') || {}).textContent})); };
+let r = await go('1 · Osservazione'); ok(!r.dash && r.p.length === 1 && /1 · Osservazione/.test(r.on), 'voce 1 · apre la Sezione 1 e si evidenzia');
+r = await go('2 · Obiettivi'); ok(!r.dash && r.p[0] === 4 && r.step === 'B' && /2 · Obiettivi/.test(r.on), 'voce 2 · Obiettivi e Indicatori di Risultato');
+r = await go('3 · Percorsi'); ok(r.step === 'C' && /3 · Percorsi/.test(r.on), 'voce 3 · Percorsi Educativi Esperienziali');
+r = await go('4 · Verifica'); ok(r.step === 'ver' && /4 · Verifica/.test(r.on), 'voce 4 · Verifica delle Attività');
+r = await go('5 · Valutazione'); ok(r.step === 'val' && /5 · Valutazione/.test(r.on), 'voce 5 · Valutazione Finale');
+r = await go('Uscite e campi'); ok(r.step === 'usc' && /Uscite/.test(r.on), 'voce Uscite e campi');
+r = await go('Controllo e invio'); ok(r.step === 'chk' && /Controllo/.test(r.on), 'voce Controllo e invio');
+r = await go('Numeri dell'); await sleep(500); ok(await ev(() => !!document.getElementById('num-box') && document.getElementById('num-box').getBoundingClientRect().height > 0), 'voce Numeri dell’Unità: porta al riquadro dei numeri');
+r = await go('Dashboard'); ok(r.dash && r.p.length === 0, 'voce Dashboard: torna alla dashboard');
+// 3 · schede con dati
+await ev(() => { const per = getAllPercorsi(); const A = per[0].attivita; A[0].testo = 'Uscita di pattuglia'; A[0].ax = {data:'2026-10-31'}; A[1].testo = 'Servizio al quartiere'; A[1].ax = {data:'2026-11-07'}; A[2].testo = 'Gioco passato'; A[2].ax = {data:'2026-10-03'}; per[1].attivita[0].testo = 'Veglia'; per[1].attivita[0].ax = {data:'2026-11-14'}; saveData(true); });
+await sleep(2000);
+const dd = await ev(() => document.getElementById('panel-dash').innerText);
+ok(/Uscita di pattuglia/.test(dd) && /Servizio al quartiere/.test(dd), 'Prossime attività: compaiono quelle future');
+ok(/Gioco passato/.test(dd.split('Attività da verificare')[1] || ''), 'Attività da verificare: compare quella già vissuta');
+ok(/Equilibrio degli Ambiti/.test(dd) && /Percorsi in corso per Ambito/.test(dd), 'schede dipendenti dai dati: Equilibrio degli Ambiti e Percorsi in corso per Ambito compaiono quando ci sono i dati');
+ok(/Hai osservato 5 percorsi su 24/.test(dd), 'Prossimo passo suggerito: osservazione incompleta (5 su 24)');
+// 4 · Personalizza: tastiera, nascondi, salvataggio nel profilo
+await P.click('#sh-pers'); await sleep(300);
+ok(/Personalizza la dashboard/.test(await ev(() => document.getElementById('panel-dash').innerText)), 'Personalizza: compare l’avviso con le istruzioni');
+const ord0 = await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c));
+await P.focus('#panel-dash .sh-card2[data-c="prossime"]'); await P.keyboard.press('ArrowRight'); await sleep(300);
+const ord1 = await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c));
+ok(ord0.indexOf('prossime') + 1 === ord1.indexOf('prossime'), 'Personalizza: la freccia destra sposta la scheda dopo');
+ok(await ev(() => document.activeElement && document.activeElement.dataset && document.activeElement.dataset.c === 'prossime'), 'Personalizza: il fuoco resta sulla scheda spostata');
+await P.click('#panel-dash .sh-card2[data-c="numeri"] >> text=Nascondi'); await sleep(300);
+ok(!(await ev(() => !!document.querySelector('#panel-dash .sh-card2[data-c="numeri"]'))) && /schede nascoste/i.test(await ev(() => document.getElementById('panel-dash').innerText)), 'Personalizza: Nascondi toglie la scheda e la elenca fra le nascoste');
+await sleep(1200);
+const saved = db.t.pee_profili[0].dashboard;
+ok(saved.AN && saved.AN.order.indexOf('prossime') === ord1.indexOf('prossime') && saved.AN.hide.includes('numeri'), 'la disposizione si salva nel profilo (pee_profili.dashboard)');
+await P.click('#sh-pers'); await sleep(200);
+await ev(() => location.reload()); await sleep(4500); await ev(() => shDash()); await sleep(300);
+const ord2 = await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c));
+ok(ord2.indexOf('prossime') === ord1.indexOf('prossime') && !ord2.includes('numeri'), 'dopo la ricarica la disposizione personale resta');
+// drag con il mouse
+await P.click('#sh-pers'); await sleep(200);
+await P.dragAndDrop('#panel-dash .sh-card2[data-c="verificare"]', '#panel-dash .sh-card2[data-c="avanz"]'); await sleep(400);
+const ord3 = await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c));
+ok(ord3.indexOf('verificare') < ord3.indexOf('avanz'), 'Personalizza: trascinando una scheda sopra un’altra si spostano');
+await P.click('text=Ripristina la disposizione iniziale'); await sleep(300);
+ok((await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c))).includes('numeri'), 'Ripristina: torna la disposizione iniziale');
+await P.click('#sh-pers');
+// 5 · Progetto Personale
+await open('pp1');
+s = await ev(() => ({own: document.getElementById('panel-pp').classList.contains('active'), p: [1,2,3,4].filter(i => document.getElementById('panel'+i).classList.contains('active')), items: [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()), grp: [...document.querySelectorAll('#sh-side .sh-sg')].map(b => b.textContent.trim()), txt: document.getElementById('panel-pp').innerText, gdl: getComputedStyle(document.getElementById('g-dl')).display}));
+ok(s.own && s.p.length === 0 && /A che punto sei/.test(s.txt), 'Progetto Personale: si apre su «A che punto sei», senza sezioni della Programmazione');
+ok(s.grp.join('|') === 'Progettare|Inviare|Attività leggere' && s.items.includes('Invii del Progetto Personale') && s.items.includes('Checklist dei criteri') && s.items.includes('Le attività del mio percorso') && s.items.includes('3 · Percorso Educativo Esperienziale'), 'Progetto Personale: menu con Progettare, Inviare, Attività leggere');
+ok(!s.items.includes('Dashboard') && s.gdl === 'none', 'Progetto Personale: nessuna dashboard');
+await P.click('#sh-side .sh-si:has-text("3 · Percorso")'); await sleep(300);
+ok(/In costruzione/.test(await ev(() => document.getElementById('panel-pp').innerText)) && (await ev(() => [1,2,3,4].every(i => !document.getElementById('panel'+i).classList.contains('active')))), 'Progetto Personale: le Sezioni non ancora costruite non mostrano quelle della Programmazione');
+await ev(() => goPhaseInternal(1)); await sleep(300);
+ok(await ev(() => document.getElementById('panel-pp').classList.contains('active') && !document.getElementById('panel1').classList.contains('active')), 'Progetto Personale: anche un salto interno dell’app resta nel guscio');
+// 6 · staff (versione precedente)
+await open('st1');
+s = await ev(() => ({items: [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()), theme: document.body.getAttribute('data-theme'), dash: document.getElementById('panel-dash').classList.contains('active')}));
+ok(!s.dash && s.items.includes('Osservazione dello staff') && s.items.includes('Riepilogo') && s.theme === 'S', 'progetto Staff: menu proprio, tema blu, niente dashboard');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);

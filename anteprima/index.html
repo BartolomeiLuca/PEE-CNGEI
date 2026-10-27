@@ -15208,7 +15208,7 @@ try{
   const q = new URLSearchParams(location.search);
   if(q.get('guscio') === '0') localStorage.removeItem('pee_guscio');
   if(q.get('guscio') === '1') localStorage.setItem('pee_guscio','1');
-  on = !window.BRO && (/\/anteprima(\/|$)/.test(location.pathname) || localStorage.getItem('pee_guscio') === '1') && q.get('guscio') !== '0';
+  on = (/\/anteprima(\/|$)/.test(location.pathname) || localStorage.getItem('pee_guscio') === '1') && q.get('guscio') !== '0';
 }catch(e){}
 window.SH = {on, prof:null, profErr:'', rows:null, shared:null, view:null, uid:null, tipo:'AN'};
 if(!on) return;
@@ -15223,7 +15223,7 @@ const BR_UNIT = {L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki', R:'Es. C
 const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
 const noBranca = r => r === 'cg' || r === 'cds';
 const noGruppo = r => r === 'cds';
-SH.RUOLI = RUOLI; SH.noBranca = noBranca;
+SH.RUOLI = RUOLI; SH.noBranca = noBranca; SH.esc = esc;
 
 document.body.classList.add('sh-on','sh-pend');
 try{ const w = $('welcome-screen'); if(w) w.style.display = 'none'; }catch(e){}
@@ -15422,6 +15422,7 @@ window.shGoHome = function(){
   SH.rows = null; show('home');
 };
 window.shOpen = function(id, shared){
+  if(window.BRO && !(CL.ctx && CL.ctx.id === id)){ try{ sessionStorage.removeItem('bussola_ro'); }catch(e){} }
   if(CL.ctx && CL.ctx.id === id){
     const mainOn = $('main-app') && $('main-app').style.display !== 'none';
     show(null);
@@ -15514,7 +15515,6 @@ let routing = false;
 async function route(force){
   if(routing && !force) return; routing = true;
   try{
-    if(window.BRO){ show(null); return; }
     if(!clOn() || !CL.sb){ show('gate', 'offline'); return; }
     if(!CL.user){ SH.prof = null; SH.uid = null; show('gate'); return; }
     if(!SH.prof || SH.uid !== CL.user.id){ show('wait'); await profLoad(); }
@@ -15529,7 +15529,7 @@ async function route(force){
     show('home');
   }finally{ routing = false; }
 }
-SH.route = route;
+SH.route = route; SH.show = show;
 
 // il guscio sostituisce la partenza dell'app: niente apertura automatica di un progetto, niente pagina iniziale
 window.clAutoOpen = async function(){ return false; };
@@ -15557,6 +15557,396 @@ window.clInit = async function(){
   await route(true);
   return r;
 };
+})();
+</script>
+<style id="sh-css2">
+/* ── dentro il progetto: intestazione, menu laterale, barra in basso ── */
+body.sh-in .pj-bar,body.sh-in .phase-tabs,body.sh-in .back-landing-btn,body.sh-in .logo-sub,body.sh-in .hdr-mode,body.sh-in #mobile-nav,body.sh-in .hdr-actions .fb-btn,body.sh-in .hdr-actions .cl-hdrbtn{display:none!important}
+body.sh-in.sh-ready{padding-left:0;padding-right:0;padding-top:0}
+body.sh-in .sh-hlk{display:inline-flex}
+.sh-hlk{display:none;align-items:center;gap:6px;background:transparent;border:0;color:inherit;font:600 12.5px 'Montserrat',sans-serif;min-height:44px;padding:0 10px;cursor:pointer;border-radius:8px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.sh-hlk:hover{background:rgba(255,255,255,.14)}
+body[data-theme="L"] .sh-hlk:hover{background:rgba(0,0,0,.08)}
+.sh-hb{display:none;width:44px;height:44px;border:1px solid currentColor;border-radius:10px;background:transparent;color:inherit;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.sh-pjn{font-size:12.5px;font-weight:700;max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sh-side{display:none;position:fixed;left:0;top:var(--sh-hh,64px);bottom:0;width:248px;background:#fff;border-right:1px solid #D8D8D0;padding:12px 10px 24px;overflow:auto;z-index:90;font-family:'Montserrat',sans-serif}
+.sh-sg{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5f5f58;padding:14px 12px 6px}
+.sh-si{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;min-height:44px;border:0;background:transparent;border-radius:8px;font:600 13px/1.35 'Montserrat',sans-serif;color:#3D3D38;text-align:left;cursor:pointer}
+.sh-si:hover{background:#F0F0E8}
+.sh-si.on{background:var(--green-pale,#e6f3ec);color:#1A1A18;box-shadow:inset 3px 0 0 var(--green,#25734e)}
+.sh-si:focus-visible,.sh-bbb:focus-visible,.sh-card2 button:focus-visible,.sh-hb:focus-visible,.sh-hlk:focus-visible{outline:3px solid #1d4f8f;outline-offset:2px}
+.sh-si .ic,.sh-bbb .ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sh-si.off{color:#6b6b63}
+@media(min-width:1100px){
+  body.sh-in.sh-ready #sh-side{display:block}
+  body.sh-in.sh-ready .main{max-width:none;margin:0 0 0 248px;padding-left:max(24px,calc((100vw - 248px - 960px)/2));padding-right:max(24px,calc((100vw - 248px - 960px)/2))}
+}
+@media(max-width:1099px){ body.sh-in.sh-ready .sh-hb{display:inline-flex} body.sh-in.sh-ready #sh-side{transform:translateX(-105%);transition:transform .2s;display:block;z-index:210;top:0;box-shadow:8px 0 24px rgba(0,0,0,.2);padding-top:64px} body.sh-in.sh-ready.sh-drawer #sh-side{transform:none} }
+@media(prefers-reduced-motion:reduce){#sh-side{transition:none!important}}
+#sh-scrim{display:none;position:fixed;inset:0;background:rgba(26,26,24,.5);z-index:200}
+body.sh-drawer #sh-scrim{display:block}
+#sh-bb{display:none;position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid #D8D8D0;z-index:95;grid-template-columns:repeat(4,1fr);font-family:'Montserrat',sans-serif}
+.sh-bbb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:transparent;font:700 11px 'Montserrat',sans-serif;color:#3D3D38;min-height:48px;cursor:pointer}
+.sh-bbb .ic{width:22px;height:22px}
+.sh-bbb.on{color:var(--green,#25734e);box-shadow:inset 0 3px 0 var(--green,#25734e)}
+@media(max-width:767px){ body.sh-in.sh-ready #sh-bb{display:grid} body.sh-in.sh-ready .main{padding-bottom:calc(88px + env(safe-area-inset-bottom))} body.sh-in.sh-ready .sh-hb,body.sh-in .sh-hlk,body.sh-in .hdr-actions .hdr-zoom{display:none!important} .sh-pjn{max-width:58vw;font-size:13px} }
+body.sh-own #g-dl,body.sh-own #pp-ready{display:none!important}
+body.sh-in .toast{pointer-events:none}
+@media(max-width:767px){ body.sh-in.sh-ready .toast{bottom:calc(80px + env(safe-area-inset-bottom))} }
+#sh-sheet{display:none;position:fixed;inset:0;z-index:215;background:rgba(26,26,24,.5);align-items:flex-end}
+#sh-sheet.show{display:flex}
+#sh-sheet .in{background:#fff;width:100%;max-height:80vh;overflow:auto;border-radius:16px 16px 0 0;padding:8px 8px calc(16px + env(safe-area-inset-bottom))}
+/* ── dashboard e pagina del Progetto Personale ── */
+#panel-dash,#panel-pp{font-family:'Montserrat',sans-serif}
+.sh-dh{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sh-dh h1{margin:0;font-size:24px;font-weight:800;line-height:1.2}
+.sh-dh .sub{font-size:13px;color:#5f5f58;margin-top:4px}
+.sh-dgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sh-card2{background:#fff;border:1px solid #D8D8D0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sh-card2.wide{grid-column:1/-1}
+.sh-card2 h3{margin:0;font-size:15px;font-weight:800}
+.sh-card2 .sub{font-size:12px;color:#5f5f58;line-height:1.45}
+.sh-card2 .row{display:flex;align-items:center;gap:10px;font-size:13px;color:#3D3D38;line-height:1.4}
+.sh-bar{height:8px;border-radius:4px;background:#ECECE4;overflow:hidden;flex:1;min-width:40px}
+.sh-bar i{display:block;height:100%;background:var(--green,#25734e)}
+.sh-lk{background:transparent;border:0;color:#1d4f8f;font:700 13px 'Montserrat',sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;text-align:left}
+.sh-card2.edit{border:2px dashed #8a8a82;cursor:grab}
+.sh-card2.edit:focus-visible{outline:3px solid #1d4f8f}
+.sh-card2.over{border-color:var(--green,#25734e);background:var(--green-pale,#e6f3ec)}
+.sh-etool{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.sh-etool button{min-height:44px;padding:0 12px;border:1px solid #8a8a82;border-radius:8px;background:#fff;font:700 12.5px 'Montserrat',sans-serif;cursor:pointer}
+.sh-ebanner{background:#FFF8E1;border:1px solid #BF9000;border-radius:12px;padding:12px 16px;font-size:13px;line-height:1.5;margin-bottom:14px}
+.sh-pit{position:absolute;top:14px;height:26px;border:2px solid #3D3D38;border-radius:6px;background:#F0F0E8}
+.sh-amb{display:flex;align-items:center;gap:10px;font-size:13px}
+.sh-amb .bar{flex:1;height:10px;border-radius:5px;background:#ECECE4;overflow:hidden}
+.sh-amb .bar i{display:block;height:100%}
+.sh-st{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;padding:12px 14px}
+.sh-badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;background:#F0F0E8;color:#5f5f58}
+@media(max-width:760px){ .sh-dgrid{grid-template-columns:1fr} .sh-dh h1{font-size:21px} }
+</style>
+<aside id="sh-side" aria-label="Menu principale"></aside>
+<div id="sh-scrim" onclick="shDrawer(false)"></div>
+<nav id="sh-bb" aria-label="Menu principale"></nav>
+<div id="sh-sheet" onclick="if(event.target===this)shSheetClose()"><div class="in" id="sh-sheet-in" role="dialog" aria-modal="true"></div></div>
+<script id="sh-js2">
+(function(){
+'use strict';
+if(!window.SH || !SH.on) return;
+const $ = id => document.getElementById(id);
+const esc = SH.esc;
+const IC = {
+  dash:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+  eye:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>', star:'<path d="M12 3l2.5 6 6.5.5-5 4.3 1.6 6.4L12 16.7 6.4 20.2 8 13.8 3 9.5 9.5 9z"/>',
+  list:'<path d="M4 6h16M4 12h16M4 18h10"/>', check:'<path d="M5 12l5 5 9-10"/>', up:'<path d="M12 20V4M5 11l7-7 7 7"/>',
+  tent:'<path d="M3 20 12 4l9 16M12 4v16M8 20l4-7 4 7"/>', users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5a3.2 3.2 0 010 6M21 20c0-2.6-1.5-4.800-3.600-5.600"/>',
+  doc:'<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>', arch:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>',
+  mail:'<path d="M4 6h16v12H4zM4 7l8 6 8-6"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h0"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>', proj:'<path d="M4 5h16v14H4zM4 9h16"/>',
+  chk:'<path d="M9 11l3 3 8-8M20 12v7H4V5h10"/>', cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', num:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
+};
+const ico = k => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[k] || ''}</svg>`;
+
+// ── voci del menu ──
+const NAV_AN = [
+  {id:'dash', t:'Dashboard', ic:'dash', go:'shDash()'},
+  {g:'Progettare'},
+  {id:'s1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shSec('1')"},
+  {id:'s2', t:'2 · Obiettivi e Indicatori di Risultato', ic:'star', go:"shSec('2')"},
+  {id:'s3', t:'3 · Percorsi Educativi Esperienziali', ic:'list', go:"shSec('3')"},
+  {id:'s4', t:'4 · Verifica delle Attività', ic:'check', go:"shSec('4')"},
+  {id:'s5', t:'5 · Valutazione Finale', ic:'up', go:"shSec('5')"},
+  {g:'Realizzare'},
+  {id:'usc', t:'Uscite e campi', ic:'tent', go:"shSec('usc')"},
+  {g:'Misurare e conservare'},
+  {id:'num', t:'Numeri dell’Unità', ic:'num', go:'shNum()'},
+  {id:'chk', t:'Controllo e invio', ic:'doc', go:"shSec('chk')"},
+  {id:'sha', t:'Condividi con lo staff', ic:'users', go:'shShare()'},
+  {id:'arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'}
+];
+const NAV_PP = [
+  {id:'pp0', t:'A che punto sei', ic:'clock', go:"shPP('0')"},
+  {g:'Progettare'},
+  {id:'pp1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shPP('1')"},
+  {id:'pp2', t:'2 · Obiettivi e Indicatori di Risultato', ic:'star', go:"shPP('2')"},
+  {id:'pp3', t:'3 · Percorso Educativo Esperienziale', ic:'list', go:"shPP('3')"},
+  {id:'pp4', t:'4 · Verifica delle Attività', ic:'check', go:"shPP('4')"},
+  {id:'pp5', t:'5 · Valutazione Finale', ic:'up', go:"shPP('5')"},
+  {g:'Inviare'},
+  {id:'ppi', t:'Invii del Progetto Personale', ic:'mail', go:"shPP('i')"},
+  {id:'ppc', t:'Checklist dei criteri', ic:'chk', go:"shPP('c')"},
+  {g:'Attività leggere'},
+  {id:'ppa', t:'Le attività del mio percorso', ic:'cal', go:"shPP('a')"}
+];
+const NAV_ST = [
+  {g:'Progettare'},
+  {id:'st1', t:'Osservazione dello staff', ic:'eye', go:'goPhase(1)'},
+  {id:'st2', t:'Riepilogo', ic:'list', go:'goPhase(2)'},
+  {g:'Realizzare'},
+  {id:'usc', t:'Uscite e campi', ic:'tent', go:"shSec('usc')"},
+  {g:'Misurare e conservare'},
+  {id:'sha', t:'Condividi con lo staff', ic:'users', go:'shShare()'},
+  {id:'arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'}
+];
+const isPP = () => { try{ return (scheda && scheda.tipoProgetto) === 'PP' && MODE !== 'staff'; }catch(e){ return false; } };
+const isST = () => { try{ return MODE === 'staff'; }catch(e){ return false; } };
+const navItems = () => isPP() ? NAV_PP : isST() ? NAV_ST : NAV_AN;
+let cur = null;
+
+function navHTML(){
+  return navItems().map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('');
+}
+function bbHTML(){
+  const pp = isPP();
+  if(isST()){ const B2 = [['st1','Osservazione','eye','goPhase(1)'],['st2','Riepilogo','list','goPhase(2)'],['usc','Uscite','tent',"shSec('usc')"],['more','Altro','more',"shSheet('Altro')"]];
+    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
+  const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
+               : [['dash','Dashboard','dash','shDash()'],['sec','Progettare','list',"shSheet('Progettare')"],['usc','Realizzare','tent',"shSheet('Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
+  const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['s1','s2','s3','s4','s5'];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['usc'].includes(cur) : b[0] === 'more' ? ['num','chk','sha','arc','ppc','ppa'].includes(cur) : cur === b[0];
+  return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
+}
+function paint(){
+  const s = $('sh-side'); if(s) s.innerHTML = navHTML();
+  const b = $('sh-bb'); if(b) b.innerHTML = bbHTML();
+  try{ const nm = $('sh-pjn'); if(nm && CL.ctx) nm.textContent = CL.ctx.titolo; }catch(e){}
+}
+window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on); const h = $('sh-hb'); if(h) h.setAttribute('aria-expanded', on ? 'true' : 'false'); };
+window.shSheet = function(g){
+  const it = navItems(); let h = '';
+  if(g === 'Altro'){
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['sha','arc'] : ['num','chk','sha','arc'];
+    h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
+      + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
+  }else{
+    let on = false; const out = [];
+    it.forEach(i => { if(i.g){ on = i.g === g; return; } if(on) out.push(i); });
+    h = `<div class="sh-sg">${esc(g)}</div>` + out.map(i => `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('');
+  }
+  $('sh-sheet-in').innerHTML = h; $('sh-sheet').classList.add('show');
+  const f = $('sh-sheet-in').querySelector('button'); if(f) f.focus();
+};
+window.shSheetClose = function(){ $('sh-sheet').classList.remove('show'); };
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-sheet').classList.contains('show')) shSheetClose(); else if(document.body.classList.contains('sh-drawer')) shDrawer(false); } });
+
+// ── quale voce è attiva ──
+function active(){
+  const ptab = $('panel-dash'), ppp = $('panel-pp');
+  if(ptab && ptab.classList.contains('active')) return 'dash';
+  if(ppp && ppp.classList.contains('active')) return 'pp' + (SH.ppv || '0');
+  const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
+  if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
+  if(p(4)){ return ({ctx:'s1', A:'s2', B:'s2', C:'s3', ver:'s4', val:'s5', chk:'chk', usc:'usc'})[schedaStep] || 's2'; }
+  if(p(1) || p(2) || p(3)) return 's1';
+  return null;
+}
+window.shSync = function(){ const a = active(); if(a !== cur){ cur = a; paint(); } };
+function panelsOff(){ [1,2,3,4].forEach(i => { const e = $('panel' + i); if(e) e.classList.remove('active'); }); }
+function ownOff(){ ['panel-dash','panel-pp'].forEach(id => { const e = $(id); if(e) e.classList.remove('active'); }); document.body.classList.remove('sh-own'); }
+function own(id){
+  panelsOff(); ownOff(); const e = $(id); if(e){ e.classList.add('active'); document.body.classList.add('sh-own'); }
+  try{ const sn = $('g-subnav'); if(sn) sn.style.display = 'none'; }catch(e){}
+  try{ window.scrollTo(0, 0); }catch(e){}
+  shSync();
+}
+// quando l'app va in un'altra sezione, la dashboard si spegne
+['goPhaseInternal','renderValuation'].forEach(n => {
+  const f = window[n]; if(typeof f !== 'function') return;
+  window[n] = function(){ if(n === 'goPhaseInternal') ownOff(); const r = f.apply(this, arguments);
+    try{ if(n === 'goPhaseInternal' && isPP() && !SH._ppHold){ SH._ppHold = true; try{ shPP(SH.ppv || '0'); }finally{ SH._ppHold = false; } } shSync(); }catch(e){} return r; };
+});
+
+// ── passaggi di sezione ──
+window.shSec = function(k){
+  if(MODE === 'giovani'){ ownOff(); gGo(k); }
+  else { ownOff(); if(k === 'usc'){ gGo('usc'); } else { goPhase(2); } }
+  setTimeout(shSync, 30);
+};
+window.shNum = function(){
+  ownOff(); gGo('1a');
+  setTimeout(() => { try{ const e = $('num-box'); if(e){ e.scrollIntoView({block:'center'}); const i = e.querySelector('input,textarea'); if(i) i.focus({preventScroll:true}); } }catch(e){} cur = 'num'; paint(); }, 250);
+};
+window.shShare = function(){ try{ if(CL.ctx) clShow('share'); }catch(e){} };
+
+// ── dashboard ──
+function td(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+function fmtD(iso){ const [y,m,g] = iso.split('-').map(Number); return g + ' ' + MESI[m-1].slice(0,3); }
+function fmtDL(iso){ try{ return new Date(iso + 'T12:00').toLocaleDateString('it-IT', {weekday:'short', day:'numeric', month:'short'}).replace(/\.$/, ''); }catch(e){ return iso; } }
+const AMB = {P:['Personale','#BF9000'], C:['Comunitario','#990000'], S:['Spirituale','#1155CC']};
+function collect(){
+  const o = {per:[], acts:[], usc:[], obsN:0, obsTot:0, sel:[]};
+  try{ o.obsTot = Object.values(DB).flat().length; o.obsN = Object.values(obs || {}).filter(v => v && v !== 'n').length; }catch(e){}
+  try{ o.sel = priSel(); }catch(e){}
+  try{ o.per = getAllPercorsi() || []; }catch(e){}
+  o.per.forEach((per, pi) => (per.attivita || []).forEach((a, j) => { if(!a) return; const x = a.ax || {}; const st = (()=>{ try{ return tlStato(a); }catch(e){ return {k:'nd'}; } })();
+    const has = (a.testo || '').trim() || x.data; if(!has) return;
+    o.acts.push({pi, j, amb:per.ambito || (per.percorsoId || '')[0], txt:(a.testo || '').trim() || ('Attività ' + (j + 1)), data:x.data || '', fine:(x.durata === 'piu' && x.dataFine) ? x.dataFine : (x.data || ''), st}); }));
+  try{ const U = (scheda && scheda.uscite) || {}; Object.keys(U).map(k => U[k]).filter(u => u && typeof u === 'object' && !u.del && u.id).forEach(u => { const x = u.ax || {}; o.usc.push({id:u.id, txt:(typeof uscTit === 'function' ? uscTit(u) : 'Uscita'), data:x.data || '', fine:x.dataFine || x.data || ''}); }); }catch(e){}
+  return o;
+}
+function percNome(id){ try{ const a = id[0], p = (DB[a] || []).find(x => x.id === id); return p ? p.name : id; }catch(e){ return id; } }
+function nextStep(o){
+  if(o.obsN < o.obsTot) return ['Completa l’osservazione', 'Hai osservato ' + o.obsN + ' percorsi su ' + o.obsTot + '. Più osservi, più la scelta delle necessità educative è fondata.', "shSec('1')"];
+  if(o.sel.length < 3) return ['Scegli le necessità educative', 'Servono tre priorità, una per Ambito: Personale, Comunitario, Spirituale.', "gGo('1d')"];
+  const pr = (scheda && scheda.priorita) || []; const sent = [0,1,2].filter(i => pr[i] && (pr[i].idr || []).length).length;
+  if(sent < 3) return ['Scegli obiettivi e Indicatori di Risultato', 'Ne mancano ancora per ' + (3 - sent) + (3 - sent === 1 ? ' priorità.' : ' priorità.'), "shSec('2')"];
+  const senza = o.per.filter(p => !(p.attivita || []).some(a => a && ((a.testo || '').trim() || (a.ax || {}).data)));
+  if(senza.length) return ['Metti in programma le attività', senza.length + (senza.length === 1 ? ' percorso non ha' : ' percorsi non hanno') + ' ancora attività.', "shSec('3')"];
+  const ver = o.acts.filter(a => a.st.k === 'ver');
+  if(ver.length) return ['Verifica le attività vissute', ver.length + (ver.length === 1 ? ' attività è stata vissuta' : ' attività sono state vissute') + ' e aspetta la verifica.', "shSec('4')"];
+  return ['Prosegui con le attività', 'Tutto è in ordine: continua a vivere e verificare le attività, poi passa alla Valutazione Finale.', "shSec('5')"];
+}
+function pct(a, b){ return b ? Math.round(100 * a / b) : 0; }
+const CARDS = [
+  {id:'passo', t:'Prossimo passo suggerito', wide:1, av:() => true, html:o => { const n = nextStep(o); return `<h3>${esc('Prossimo passo suggerito')}</h3><div style="font-size:15px;font-weight:700">${esc(n[0])}</div><div class="sub" style="font-size:13px">${esc(n[1])}</div><div><button type="button" class="sh-lk" onclick="${n[2]}">Vai</button></div>`; }},
+  {id:'anno', t:'L’anno in un colpo d’occhio', wide:1, av:() => true, html:o => {
+    const now = new Date(); const y0 = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+    const a = new Date(y0, 8, 1), b = new Date(y0 + 1, 8, 1); const pos = d => Math.max(0, Math.min(100, 100 * (d - a) / (b - a)));
+    const pit = [[new Date(y0 + 1, 0, 1), new Date(y0 + 1, 2, 1), 'gennaio-febbraio'], [new Date(y0 + 1, 3, 1), new Date(y0 + 1, 5, 1), 'aprile-maggio']];
+    const marks = o.acts.concat(o.usc).filter(x => x.data).map(x => `<div title="${esc(x.txt)} · ${esc(fmtD(x.data))}" style="position:absolute;left:${pos(new Date(x.data + 'T12:00')).toFixed(1)}%;top:20px;width:8px;height:14px;margin-left:-4px;border-radius:2px;background:#3D3D38"></div>`).join('');
+    const nAtt = o.acts.concat(o.usc).filter(x => x.data).length;
+    const lab = ['set','ott','nov','dic','gen','feb','mar','apr','mag','giu','lug','ago'].map(m => `<span style="flex:1;text-align:left">${m}</span>`).join('');
+    return `<h3>L’anno in un colpo d’occhio</h3><div role="img" aria-label="Anno scout dal 1 settembre al 31 agosto. Oggi è il ${now.getDate()} ${MESI[now.getMonth()]}. ${nAtt ? nAtt + (nAtt === 1 ? ' attività in calendario.' : ' attività in calendario.') : 'Nessuna attività in calendario.'} Verifiche (pit-stop) a gennaio-febbraio e ad aprile-maggio.">
+      <div style="position:relative;height:56px"><div style="position:absolute;left:0;right:0;top:22px;height:10px;border-radius:5px;background:#ECECE4"></div>
+      <div style="position:absolute;left:0;width:${pos(now).toFixed(1)}%;top:22px;height:10px;border-radius:5px;background:var(--green,#25734e)"></div>
+      ${pit.map(p => `<div class="sh-pit" title="Verifica (pit-stop): ${p[2]}" style="left:${pos(p[0]).toFixed(1)}%;width:${(pos(p[1]) - pos(p[0])).toFixed(1)}%"></div>`).join('')}
+      ${marks}<div style="position:absolute;left:${pos(now).toFixed(1)}%;top:8px;width:2px;height:38px;background:#1A1A18"></div></div>
+      <div style="display:flex;font-size:10.5px;color:#5f5f58">${lab}</div></div>
+      <div class="sub">La linea nera è oggi. I riquadri sono le verifiche (pit-stop) di gennaio-febbraio e aprile-maggio; i segni scuri sono le attività in calendario.</div>`; }},
+  {id:'prossime', t:'Prossime attività', av:() => true, html:o => {
+    const oggi = td(); const L = o.acts.concat(o.usc).filter(x => x.data && x.fine >= oggi).sort((a, b) => a.data.localeCompare(b.data)).slice(0, 4);
+    return `<h3>Prossime attività</h3>` + (L.length ? L.map(x => `<div class="row"><b style="min-width:76px">${esc(fmtDL(x.data))}</b><span>${esc(x.txt)}</span></div>`).join('') : `<div class="sub" style="font-size:13px;color:#3D3D38">Nessuna attività in calendario. Le metti in calendario dalla Sezione 3.</div><div><button type="button" class="sh-lk" onclick="shSec('3')">Vai alla Sezione 3</button></div>`); }},
+  {id:'avanz', t:'Avanzamento programmazione', av:() => true, html:o => {
+    const pr = (scheda && scheda.priorita) || []; const per = o.per;
+    const v = [pct(o.obsN, o.obsTot), pct([0,1,2].filter(i => pr[i] && (pr[i].idr || []).length).length, 3), pct(per.filter(p => (p.attivita || []).some(a => a && ((a.testo || '').trim() || (a.ax || {}).data))).length, Math.max(per.length, 3)),
+      pct(o.acts.filter(a => a.st.k === 'ok').length, o.acts.filter(a => ['ok','ver'].includes(a.st.k)).length), pct(per.filter(p => ((scheda.valCompl || {})[p.percorsoId] || '').trim()).length, Math.max(per.length, 3))];
+    return `<h3>Avanzamento programmazione</h3>` + v.map((p, i) => `<div class="row"><span style="width:20px;font-weight:700">${i + 1}</span><div class="sh-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p}" aria-label="Sezione ${i + 1}"><i style="width:${p}%"></i></div><b style="min-width:38px;text-align:right">${p}%</b></div>`).join(''); }},
+  {id:'numeri', t:'Numeri e cassa', av:() => true, html:o => {
+    const pp = (scheda && scheda.pp) || {}; const T = Number(pp.numTot) || 0;
+    return `<h3>Numeri e cassa</h3>` + (T ? `<div class="row"><b style="font-size:20px">${T}</b><span>tra Lupetti/Esploratori/Rover${Number(pp.numM) || Number(pp.numF) ? ': ' + (Number(pp.numM) || 0) + ' maschi e ' + (Number(pp.numF) || 0) + ' femmine' : ''}</span></div><div><button type="button" class="sh-lk" onclick="shNum()">Modifica i numeri</button></div>` : `<div class="sub" style="font-size:13px;color:#3D3D38">Iscritti, presenze e cassa compariranno qui quando inserisci i primi dati.</div><div><button type="button" class="sh-lk" onclick="shNum()">Inserisci i numeri</button></div>`); }},
+  {id:'verificare', t:'Attività da verificare', av:() => true, html:o => {
+    const L = o.acts.filter(a => a.st.k === 'ver').slice(0, 4);
+    return `<h3>Attività da verificare</h3>` + (L.length ? L.map(x => `<div class="row"><span>${esc(x.txt)}${x.data ? ' · ' + esc(fmtD(x.data)) : ''}</span></div>`).join('') + `<div><button type="button" class="sh-lk" onclick="shSec('4')">Vai alla Sezione 4</button></div>` : `<div class="sub" style="font-size:13px;color:#3D3D38">Nessuna attività aspetta la verifica: compaiono qui quando sono state vissute.</div>`); }},
+  {id:'ambiti', t:'Equilibrio degli Ambiti', av:o => o.acts.length > 0, html:o => {
+    const n = {P:0, C:0, S:0}; o.acts.forEach(a => { if(n[a.amb] != null) n[a.amb]++; }); const mx = Math.max(1, n.P, n.C, n.S);
+    return `<h3>Equilibrio degli Ambiti</h3><div class="sub">Le attività messe in programma, per Ambito di sviluppo.</div>` + ['P','C','S'].map(k => `<div class="sh-amb"><span style="width:96px">${AMB[k][0]}</span><div class="bar"><i style="width:${pct(n[k], mx)}%;background:${AMB[k][1]}"></i></div><b style="min-width:20px;text-align:right">${n[k]}</b></div>`).join(''); }},
+  {id:'percorsi', t:'Percorsi in corso per Ambito', av:o => o.per.some(p => p && p.percorsoId), html:o => {
+    return `<h3>Percorsi in corso per Ambito</h3>` + ['P','C','S'].map(k => { const p = o.per.find(x => x && (x.percorsoId || '')[0] === k); const n = p ? (p.attivita || []).filter(a => a && ((a.testo || '').trim() || (a.ax || {}).data)).length : 0;
+      return `<div class="row"><b style="width:96px">${AMB[k][0]}</b><span>${p ? esc(percNome(p.percorsoId)) + ' · ' + n + (n === 1 ? ' attività' : ' attività') : 'Nessun percorso scelto'}</span></div>`; }).join(''); }}
+  /* «Osservazione dello staff» e «Ultime modifiche dello staff» si aggiungono quando nel progetto ci saranno i dati dello staff */
+];
+function layout(){
+  const d = (SH.prof && SH.prof.dashboard && SH.prof.dashboard.AN) || {}; return {order:Array.isArray(d.order) ? d.order : [], hide:Array.isArray(d.hide) ? d.hide : []};
+}
+function ordered(o){
+  const L = layout(); const av = CARDS.filter(c => c.av(o)); const byId = Object.fromEntries(av.map(c => [c.id, c]));
+  const out = []; L.order.forEach(id => { if(byId[id]){ out.push(byId[id]); delete byId[id]; } }); av.forEach(c => { if(byId[c.id]) out.push(c); });
+  return {shown:out.filter(c => !L.hide.includes(c.id)), hidden:out.filter(c => L.hide.includes(c.id))};
+}
+let saveT = null;
+function saveLayout(order, hide){
+  SH.prof = SH.prof || {}; SH.prof.dashboard = Object.assign({}, SH.prof.dashboard || {}, {AN:{order, hide}});
+  clearTimeout(saveT); saveT = setTimeout(() => { try{ SH.profSave({nome:SH.prof.nome, ruolo:SH.prof.ruolo, branca:SH.prof.branca, sezione:SH.prof.sezione, gruppo:SH.prof.gruppo, area_rcdf:SH.prof.area_rcdf, dashboard:SH.prof.dashboard}).catch(() => {}); }catch(e){} }, 600);
+}
+let editing = false, focusId = null;
+function dashHTML(){
+  const o = collect(); const {shown, hidden} = ordered(o); const p = SH.prof || {};
+  const first = String(p.nome || '').split(/\s+/)[0];
+  const fas = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'}[FASCIA] || '';
+  const asx = (scheda && scheda.annoScout) || '';
+  let h = `<div class="sh-dh"><div><h1>Il tuo anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : '', new Date().toLocaleDateString('it-IT', {day:'numeric', month:'long'})].filter(Boolean).map(esc).join(' · ')}</div></div>
+    <div style="margin-left:auto"><button type="button" class="sh-btn gh sm" id="sh-pers" onclick="shDashEdit(${editing ? 0 : 1})" style="min-height:44px;padding:0 16px;border:1px solid #8a8a82;border-radius:10px;background:#fff;font:700 13px 'Montserrat',sans-serif;cursor:pointer">${editing ? 'Fatto' : 'Personalizza'}</button></div></div>`;
+  if(editing) h += `<div class="sh-ebanner" role="note"><b>Personalizza la dashboard.</b> Trascina le schede, oppure selezionane una e usa le frecce della tastiera (o i pulsanti «Prima» e «Dopo»). «Nascondi» la toglie dalla vista. La disposizione è tua e si salva nel tuo profilo.<div id="sh-live" class="sub" aria-live="polite" style="margin-top:4px"></div></div>`;
+  h += `<div class="sh-dgrid">` + shown.map((c, i) => `<section class="sh-card2${c.wide ? ' wide' : ''}${editing ? ' edit' : ''}" data-c="${c.id}" ${editing ? `tabindex="0" draggable="true" aria-label="Scheda ${esc(c.t)}, posizione ${i + 1} di ${shown.length}. Usa le frecce per spostarla."` : ''}>${c.html(o)}${editing ? `<div class="sh-etool"><button type="button" onclick="shMove('${c.id}',-1)">‹ Prima</button><button type="button" onclick="shMove('${c.id}',1)">Dopo ›</button><button type="button" onclick="shHide('${c.id}',1)">Nascondi</button></div>` : ''}</section>`).join('') + `</div>`;
+  if(editing){
+    h += `<h2 style="margin:22px 0 8px;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5f5f58">Schede nascoste</h2>` + (hidden.length ? hidden.map(c => `<div class="sh-card2" style="flex-direction:row;align-items:center;margin-bottom:8px"><b style="flex:1">${esc(c.t)}</b><button type="button" style="min-height:44px;padding:0 14px;border:1px solid #8a8a82;border-radius:8px;background:#fff;font:700 12.5px 'Montserrat',sans-serif;cursor:pointer" onclick="shHide('${c.id}',0)">Mostra</button></div>`).join('') : `<div class="sub">Nessuna scheda nascosta.</div>`)
+      + `<div style="margin-top:14px"><button type="button" class="sh-lk" onclick="shDashReset()">Ripristina la disposizione iniziale</button></div>`;
+  }
+  return h;
+}
+function drawDash(){
+  const e = $('panel-dash'); if(!e) return; e.innerHTML = dashHTML();
+  if(focusId){ const f = e.querySelector(`[data-c="${focusId}"]`); if(f){ f.focus(); } focusId = null; }
+}
+function curOrder(){ const o = collect(); return ordered(o).shown.map(c => c.id); }
+function say(t){ const l = $('sh-live'); if(l) l.textContent = t; }
+window.shDash = function(){ ensurePanels(); drawDash(); own('panel-dash'); };
+window.shDashEdit = function(on){ editing = !!on; drawDash(); };
+window.shMove = function(id, dir){
+  const ord = curOrder(); const i = ord.indexOf(id), j = i + dir; if(i < 0 || j < 0 || j >= ord.length) return;
+  ord.splice(i, 1); ord.splice(j, 0, id); saveLayout(ord, layout().hide); focusId = id; drawDash();
+  const c = CARDS.find(x => x.id === id); say((c ? c.t : 'Scheda') + ': posizione ' + (j + 1) + ' di ' + ord.length + '.');
+};
+window.shHide = function(id, h){
+  const L = layout(); const ord = L.order.length ? L.order.slice() : curOrder(); let hide = L.hide.slice();
+  if(h){ if(!hide.includes(id)) hide.push(id); } else { hide = hide.filter(x => x !== id); }
+  saveLayout(ord.concat(CARDS.map(c => c.id).filter(x => !ord.includes(x))), hide); drawDash();
+};
+window.shDashReset = function(){ saveLayout([], []); drawDash(); };
+// trascinamento con il mouse e con il tocco lungo (HTML5) · frecce da tastiera
+document.addEventListener('dragstart', e => { const c = e.target.closest && e.target.closest('.sh-card2.edit'); if(!c) return; SH._drag = c.dataset.c; try{ e.dataTransfer.setData('text/plain', SH._drag); e.dataTransfer.effectAllowed = 'move'; }catch(x){} });
+document.addEventListener('dragover', e => { const c = e.target.closest && e.target.closest('.sh-card2.edit'); if(!c || !SH._drag) return; e.preventDefault(); document.querySelectorAll('.sh-card2.over').forEach(x => x.classList.remove('over')); c.classList.add('over'); });
+document.addEventListener('dragend', () => { SH._drag = null; document.querySelectorAll('.sh-card2.over').forEach(x => x.classList.remove('over')); });
+document.addEventListener('drop', e => {
+  const c = e.target.closest && e.target.closest('.sh-card2.edit'); if(!c || !SH._drag) return; e.preventDefault();
+  const from = SH._drag, to = c.dataset.c; SH._drag = null; if(from === to) return;
+  const ord = curOrder(); ord.splice(ord.indexOf(from), 1); ord.splice(ord.indexOf(to), 0, from); saveLayout(ord, layout().hide); focusId = from; drawDash();
+  const k = ord.indexOf(from); const cc = CARDS.find(x => x.id === from); say((cc ? cc.t : 'Scheda') + ': posizione ' + (k + 1) + ' di ' + ord.length + '.');
+});
+document.addEventListener('keydown', e => {
+  const c = e.target.closest && e.target.closest('.sh-card2.edit'); if(!c || e.target !== c) return;
+  const m = {ArrowLeft:-1, ArrowUp:-1, ArrowRight:1, ArrowDown:1}[e.key]; if(!m) return; e.preventDefault(); shMove(c.dataset.c, m);
+});
+
+// ── Progetto Personale: «A che punto sei» (le Sezioni arrivano al prossimo passo) ──
+const PP_SEZ = ['Osservazione del Gruppo di Pari','Obiettivi e Indicatori di Risultato','Percorso Educativo Esperienziale','Verifica delle Attività','Valutazione Finale'];
+function ppHTML(v){
+  const p = SH.prof || {}; const as = (scheda && scheda.annoScout) || '';
+  if(v === '0'){
+    return `<div class="sh-dh"><div><h1>A che punto sei</h1><div class="sub">${esc(p.nome || '')}${as ? ' · Anno scout ' + esc(as) : ''}</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">` + PP_SEZ.map((t, i) => `<button type="button" class="sh-st" style="text-align:left;cursor:pointer;font:inherit;color:inherit;min-height:44px" onclick="shPP('${i + 1}')"><span class="sh-badge">${i + 1}</span><div><div style="font-size:13px;font-weight:800;line-height:1.35">${i + 1} · ${esc(t)}</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">Da iniziare</div></div></button>`).join('')
+      + `<div class="sh-st" style="background:#FFF8E1;border-color:#BF9000"><div><div style="font-size:13px;font-weight:800">Invii</div><div style="font-size:11.5px;color:#5f5f58;margin-top:2px">L’avvio non è ancora stato inviato al Tutor.</div></div></div></div>`;
+  }
+  const t = {1:PP_SEZ[0],2:PP_SEZ[1],3:PP_SEZ[2],4:PP_SEZ[3],5:PP_SEZ[4],i:'Invii del Progetto Personale',c:'Checklist dei criteri',a:'Le attività del mio percorso'}[v] || '';
+  const n = /^\d$/.test(v) ? v + ' · ' : '';
+  return `<div class="sh-dh"><div><h1>${n}${esc(t)}</h1></div></div><div class="sh-card2"><h3>In costruzione</h3><div class="sub" style="font-size:13px;color:#3D3D38">Questa parte del Progetto Personale si compila nei prossimi passi del lavoro, con la struttura delle Linee Guida. Per ora il menu, i dati e il colore della tua Branca sono pronti.</div><div><button type="button" class="sh-lk" onclick="shPP('0')">Torna a «A che punto sei»</button></div></div>`;
+}
+window.shPP = function(v){ ensurePanels(); SH.ppv = v; $('panel-pp').innerHTML = ppHTML(v); own('panel-pp'); };
+
+function ensurePanels(){
+  const m = $('main-app'); if(!m) return;
+  if(!$('panel-dash')){ const d = document.createElement('div'); d.className = 'panel'; d.id = 'panel-dash'; m.insertBefore(d, m.firstChild); }
+  if(!$('panel-pp')){ const d = document.createElement('div'); d.className = 'panel'; d.id = 'panel-pp'; m.insertBefore(d, m.firstChild); }
+}
+function headerSetup(){
+  const hi = document.querySelector('#hdr .hdr-inner'); if(!hi || hi.dataset.sh) return; hi.dataset.sh = '1';
+  const logo = hi.querySelector('.logo');
+  const hb = document.createElement('button'); hb.type = 'button'; hb.id = 'sh-hb'; hb.className = 'sh-hb'; hb.setAttribute('aria-label', 'Apri il menu'); hb.setAttribute('aria-expanded', 'false'); hb.setAttribute('aria-controls', 'sh-side');
+  hb.innerHTML = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:22px;height:22px"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'; hb.onclick = () => shDrawer(!document.body.classList.contains('sh-drawer'));
+  hi.insertBefore(hb, hi.firstChild);
+  const pn = document.createElement('span'); pn.id = 'sh-pjn'; pn.className = 'sh-pjn'; if(logo) logo.after(pn);
+  const ha = hi.querySelector('.hdr-actions');
+  if(ha){
+    const mk = (t, f) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'sh-hlk'; b.textContent = t; b.onclick = f; return b; };
+    const a = [mk('I tuoi progetti', () => shGoHome()), mk('Guida', () => shGuide()), mk('Profilo', () => shProfileOpen())];
+    a.reverse().forEach(b => ha.insertBefore(b, ha.firstChild));
+  }
+  const setH = () => { const h = $('hdr'); if(h) document.documentElement.style.setProperty('--sh-hh', h.offsetHeight + 'px'); };
+  setH(); window.addEventListener('resize', setH); try{ new ResizeObserver(setH).observe($('hdr')); }catch(e){}
+}
+window.shEnter = function(){
+  if(window.BRO && !$('main-app')) return;
+  document.body.classList.add('sh-in', 'sh-ready');
+  headerSetup(); ensurePanels(); paint();
+  let pos = null; try{ pos = localStorage.getItem('bussola_pos:' + (CL.ctx && CL.ctx.id) + ':' + MODE); }catch(e){}
+  const anyOwn = $('panel-dash').classList.contains('active') || $('panel-pp').classList.contains('active');
+  if(isPP()){ if(!anyOwn) shPP('0'); }
+  else if(isST()){ /* progetto dello staff (versione precedente o Capo Gruppo): resta com'è */ }
+  else if(!anyOwn && !pos && !window.BRO){ shDash(); }
+  shSync();
+};
+// l'app aggiorna le sezioni da sola (ricarica del progetto, altre persone): la dashboard si ridisegna
+setInterval(() => { try{ const d = $('panel-dash'); if(d && d.classList.contains('active') && !editing && !d.contains(document.activeElement)) { const h = dashHTML(); if(d.innerHTML !== h) d.innerHTML = h; } shSync(); }catch(e){} }, 1500);
 })();
 </script>
 <!-- GUSCIO:FINE -->

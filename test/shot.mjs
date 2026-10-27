@@ -1,0 +1,20 @@
+import { FakeDB, serve, launch, person, sleep, loginAs } from './harness.mjs';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const [,, vw, vh, name, tipo, branca] = process.argv;
+const db = new FakeDB(); const br = await launch('chromium');
+const pa = await person(br, db, {ctx:{viewport:{width:+vw, height:+vh}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:branca||'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+const d = {v:1, MODE:'giovani', FASCIA:branca||'E', UNIT_NAME:'Reparto Kontiki', scheda:{tipoProgetto:tipo||'AN', annoScout:'2026-27', pp:{sezione:'Pesaro', gruppo:'1'}}};
+const a = {id:'p1', user_id:u.id, anno:2026, titolo:(tipo==='PP'?'Progetto Personale':'Programmazione Annuale')+' 2026-27 · Reparto Kontiki', meta:{mode:'giovani', fascia:branca||'E', tipo:tipo||'AN', nome:'Reparto Kontiki'}, data:d, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'};
+db.t.pee_archivi.push(a);
+await P.goto(base); await ev(([id]) => { localStorage.setItem('bussola_tour_v3','1'); }, ['p1']);
+await loginAs(P, base, u);
+await ev(() => 0);
+// apro il progetto dalla home
+await sleep(1500);
+await ev(() => shOpen('p1', 0)); await sleep(3500);
+await P.screenshot({path:'/tmp/shot_'+name+'.png'});
+console.log(JSON.stringify(await ev(() => ({v:SH.view, dash:document.getElementById('panel-dash')?.classList.contains('active'), cur:document.querySelector('.sh-si.on')?.textContent})), null, 0), pa.errors.slice(0,3));
+await br.close(); process.exit(0);
