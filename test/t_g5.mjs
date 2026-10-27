@@ -1,0 +1,45 @@
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const db = new FakeDB();
+const br = await launch(engine);
+const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+const mkp = (id, tipo, titolo, extra = {}) => db.t.pee_archivi.push({id, user_id:u.id, anno:2026, titolo, meta:{mode:'giovani', fascia:'E', tipo, nome:'Reparto Kontiki'}, data:Object.assign({v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'Reparto Kontiki', scheda:{tipoProgetto:tipo, annoScout:'2026-27', pp:{sezione:'Pesaro', gruppo:'1'}}}, extra), created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
+const obs = {}; ['P1','P2','P3','C1','C2'].forEach(k => obs[k] = 3);
+mkp('an1', 'AN', 'Programmazione Annuale 2026-27', {obs, pris:{P2:true, C3:true, S1:true}});
+mkp('pp1', 'PP', 'Progetto Personale 2026-27');
+db.t.pee_archivi.push({id:'st1', user_id:u.id, anno:2026, titolo:'Staff 2026', meta:{mode:'staff'}, data:{v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CU', UNIT_NAME:'Staff X'}, created_at:'2026-10-01T10:00:00Z', updated_at:'2026-10-02T10:00:00Z'});
+await loginAs(P, base, u); await sleep(1500);
+const open = async id => { await ev(id => shOpen(id, 0), id); await sleep(3500); };
+// riordino degli adulti in modalità staff
+await open('st1');
+await ev(() => { STAFF_MEMBERS.splice(0); STAFF_MEMBERS.push('Lia','Marco','Paolo'); STAFF_MEMBERS.forEach(n => { staffProfiles[n] = staffProfiles[n] || {ruolo:'CU'}; }); });
+const html = await ev(() => staffTabHTML());
+ok(/staffTabMove\(0,1\)/.test(html) && /Sposta giù/.test(html), 'staff: le frecce di riordino ci sono (tabella)');
+await ev(() => staffTabMove(0,1)); 
+let o = await ev(() => STAFF_MEMBERS.slice());
+ok(o.join(',') === 'Marco,Lia,Paolo', 'staff: Lia scende di un posto');
+await ev(() => staffTabMove(2,1)); await ev(() => staffTabMove(0,-1));
+o = await ev(() => STAFF_MEMBERS.slice());
+ok(o.join(',') === 'Marco,Lia,Paolo', 'staff: oltre i bordi non succede nulla');
+await ev(() => staffTabMove(2,-1));
+o = await ev(() => STAFF_MEMBERS.slice());
+ok(o.join(',') === 'Marco,Paolo,Lia', 'staff: Lia (ultima) risale sopra Paolo');
+await ev(() => { _clTouched = true; _clUserAt = Date.now(); saveData(true); }); await sleep(3000);
+//console.log('DBDATA', JSON.stringify((db.t.pee_archivi.find(r => r.id === 'st1')||{}).data||{}).slice(0,300));
+const saved = db.t.pee_archivi.find(r => r.id === 'st1');
+ok(saved && (saved.data.STAFF_MEMBERS||[]).join(',') === 'Marco,Paolo,Lia', 'staff: l\'ordine è salvato nel progetto');
+await ev(() => { try{ renderStaffPhase1(); }catch(e){} }); await sleep(300);
+const names = await ev(() => [...document.querySelectorAll('.st-nm')].map(e => e.textContent.trim()));
+
+ok(names.filter(n => n !== 'Auto osservazione').join(',') === 'Marco,Paolo,Lia', 'staff: anche l\'elenco laterale segue l\'ordine');
+// Unità: il riordino di sempre funziona
+await open('an1');
+await ev(() => { const t = staffTab(); t.splice(0); t.push({ruolo:'CU',nome:'A'},{ruolo:'VCU',nome:'B'}); staffTabMove(0,1); });
+const uo = await ev(() => staffTab().map(r => r.nome).join(','));
+ok(uo === 'B,A', 'Unità: il riordino resta com\'era');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);

@@ -26,12 +26,12 @@ ok(/Branca/.test(await ev(() => document.getElementById('sh-pmsg').textContent))
 await P.check('input[name="sh-branca"][value="E"]'); await P.fill('#sh-sez', 'Pesaro'); await P.dispatchEvent('#sh-sez', 'change'); await sleep(300);
 const gopts = await ev(() => [...document.querySelectorAll('#sh-grp option')].length);
 ok(gopts >= 22, 'Gruppo: menu a tendina con Monogruppo e Gruppi 1-20');
-await P.selectOption('#sh-grp', '1'); await P.selectOption('#sh-area', 'altoadriatico'); await P.click('#sh-psave'); await sleep(1500);
+await P.selectOption('#sh-grp', '1'); await P.click('#sh-psave'); await sleep(1500);
 s = await ev(() => ({v: SH.view, txt: document.getElementById('sh-root').textContent}));
 ok(s.v === 'home' && /Che cosa vuoi progettare/.test(s.txt) && /Progetto Personale/.test(s.txt) && /Programmazione Annuale/.test(s.txt), 'senza progetti: home con le due carte (PP e Programmazione Annuale)');
 ok(/passo passo, con la struttura indicata nelle Linee Guida/.test(s.txt), 'testo della carta PP come deciso');
 const prof = db.t.pee_profili[0];
-ok(prof && prof.ruolo === 'cu' && prof.branca === 'E' && prof.sezione === 'Pesaro' && prof.gruppo === '1' && prof.area_rcdf === 'altoadriatico', 'profilo salvato in pee_profili');
+ok(prof && prof.ruolo === 'cu' && prof.branca === 'E' && prof.sezione === 'Pesaro' && prof.gruppo === '1' && !prof.area_rcdf, 'profilo salvato in pee_profili (senza campo ICdF: nascosto per ora)');
 // 4 · nuovo progetto PP
 await P.click('.sh-big >> nth=0'); await sleep(300);
 const dl = await ev(() => ({t: document.getElementById('sh-dlg').textContent, pp: document.querySelector('input[name="sh-tipo"]:checked').value, anni: [...document.querySelectorAll('#sh-nas option')].map(o => o.textContent)}));

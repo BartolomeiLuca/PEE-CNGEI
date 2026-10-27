@@ -162,7 +162,7 @@ export class FakeDB {
 
 export const ENGINES = {chromium, webkit, firefox};
 export async function launch(engine = 'chromium'){
-  const opt = engine === 'chromium' ? {executablePath: undefined} : {};
+  const opt = engine === 'chromium' ? {executablePath: process.env.CHROME_BIN || undefined} : {};
   return ENGINES[engine].launch(opt);
 }
 // una "persona": contesto del browser con la sua memoria locale, collegato al finto database
@@ -196,7 +196,7 @@ export async function person(browser, db, opts = {}){
 }
 // accesso diretto: imposta la sessione prima di aprire l'app
 export async function loginAs(page, base, u){
-  await page.goto(base + 'favicon-none.html').catch(() => {});
+  await page.goto(base + 'favicon-none.html').catch(() => {}); await page.waitForTimeout(400);
   await page.goto(base, {waitUntil:'domcontentloaded'});
   await page.evaluate(u => { localStorage.setItem('bussola_tour_v3', '1'); localStorage.setItem('fake_sb_session', JSON.stringify({user:{id:u.id, email:u.email, user_metadata:u.meta||{}}, access_token:'t'})); }, u);
   page.__uidv = u.id;

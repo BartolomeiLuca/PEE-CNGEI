@@ -3129,7 +3129,7 @@ function staffTab(){ if(MODE==='staff') return stTabSynth(); const pp=scheda.pp|
   if(!Array.isArray(pp.staffTab)) pp.staffTab=(FASCIA==='R'?['CC','VCC','CG']:['CU','VCU','VCU','SiS','CG']).map(r=>({ruolo:r})); return pp.staffTab; }
 function staffTabSet(i,k,v){ const t=staffTab(); if(t[i]){ t[i][k]=v; if(k==='mail'&&(window._stBad||{})[i]&&clEmailOk(String(v||'').trim().toLowerCase().split(/[\s,;]+/)[0])){ delete window._stBad[i]; const c=document.querySelector('#staff-tab .st-bad'); if(c){ c.parentElement.style.outline=''; c.parentElement.style.background=''; c.remove(); } } saveDataDebounced(); if(k==='nome'){ clearTimeout(window._occNT); window._occNT=setTimeout(()=>{ try{ const o=document.getElementById('occ-tab'); if(o&&!o.contains(document.activeElement)) o.innerHTML=occTableHTML(); }catch(e){} },600); } } }
 function staffTabAdd(){ staffTab().push({ruolo:''}); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
-function staffTabMove(i,d){ const t=staffTab(), j=i+d; if(MODE==='staff'||j<0||j>=t.length||!t[i]||!t[j]) return; const x=t[i]; t[i]=t[j]; t[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
+function staffTabMove(i,d){ const j=i+d; if(MODE==='staff'){ const a=STAFF_MEMBERS; if(j<0||j>=a.length||!a[i]||!a[j]) return; const x=a[i]; a[i]=a[j]; a[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); try{ if(typeof renderStaffPhase1==='function') renderStaffPhase1(); }catch(e){} return; } const t=staffTab(); if(j<0||j>=t.length||!t[i]||!t[j]) return; const x=t[i]; t[i]=t[j]; t[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 function staffTabDel(i){ staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 function staffTabHTML(){
   const t=staffTab(); const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
@@ -3138,7 +3138,7 @@ function staffTabHTML(){
   const w={ruolo:56,nome:110,giungla:90,mail:150,tel:100,eta:44,form:150,car:240,prof:200,ruoli:160,disp:150,varie:220};
   const MV=MODE==='staff'?34:92;
   return `<div style="overflow-x:auto"><table style="border-collapse:collapse;table-layout:fixed;width:100%;min-width:${Math.round(staffCols().reduce((a,c)=>a+(w[c[0]]||100)+8,0)+(sh?74:0)+MV)}px"><colgroup>${sh?'<col style="width:74px">':''}${staffCols().map(c=>`<col style="width:${(w[c[0]]||100)+8}px">`).join('')}<col style="width:${MV}px"></colgroup><thead><tr>${sh?`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left;width:74px">Condividi</th>`:''}${staffCols().map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:10.5px;text-align:left">${c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg)"></th></tr></thead><tbody>`+
-    t.map((r,i)=>`<tr>${sh?`<td style="${cell};text-align:center;padding:5px 4px">${staffShareCell(i,r)}</td>`:''}${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}${c[0]==='mail'&&bad[i]?';outline:2px solid #c62828;outline-offset:-2px;background:#ffebee':''}">${c[0]==='giungla'?gjSel(i,r):inp(i,c[0],r[c[0]],w[c[0]])}${c[0]==='mail'&&bad[i]?'<div class="st-bad">Controlla l’email</div>':''}</td>`).join('')}<td style="${cell};text-align:center;white-space:nowrap">${MODE==='staff'?'':`<button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="staffTabMove(${i},-1)">↑</button><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta giù" aria-label="Sposta giù" ${i===t.length-1?'disabled':''} onclick="staffTabMove(${i},1)">↓</button>`}<button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
+    t.map((r,i)=>`<tr>${sh?`<td style="${cell};text-align:center;padding:5px 4px">${staffShareCell(i,r)}</td>`:''}${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}${c[0]==='mail'&&bad[i]?';outline:2px solid #c62828;outline-offset:-2px;background:#ffebee':''}">${c[0]==='giungla'?gjSel(i,r):inp(i,c[0],r[c[0]],w[c[0]])}${c[0]==='mail'&&bad[i]?'<div class="st-bad">Controlla l’email</div>':''}</td>`).join('')}<td style="${cell};text-align:center;white-space:nowrap">${`<button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="staffTabMove(${i},-1)">↑</button><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta giù" aria-label="Sposta giù" ${i===t.length-1?'disabled':''} onclick="staffTabMove(${i},1)">↓</button>`}<button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
     `</tbody></table></div><button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="staffTabAdd()">+ Aggiungi riga</button>`;
 }
 
@@ -15288,7 +15288,7 @@ if(!on) return;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const RUOLI = [['cu','Capo Unità'],['vcu','Vice Capo Unità'],['cg','Capo Gruppo'],['cds','Commissario di Sezione'],['senior','Senior in Servizio'],['volontario','Adulto volontario']];
+const RUOLI = [['cu','Capo Unità'],['vcu','Vice Capo Unità'],['cg','Capo Gruppo'],['cds','Commissario di Sezione'],['senior','Senior in Servizio'],['volontario','Adulto in formazione']];
 const RUOLO_TXT = Object.fromEntries(RUOLI);
 const BRANCHE = ['L','E','R'];
 const BR_FULL = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
@@ -15466,7 +15466,7 @@ function profCard(p, mode, disabled){
         <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" value="${esc(p.sezione || '')}" onchange="shProfSez()"><datalist id="sh-dl-sez">${sezOpts()}</datalist></div>
         <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
       </div>
-      <div><label class="sh-lb" for="sh-area">Area di formazione (RCdF)</label><select class="sh-in" id="sh-area">${areaOpts(p.area_rcdf)}</select><div class="sh-hint">Serve per indirizzare le mail del Progetto Personale. Puoi lasciarla vuota e scegliere più tardi.</div></div>
+      <!-- Area RCdF/ICdF: campo nascosto finché non attiviamo l'invio delle mail dall'app. Il valore già salvato si conserva (vedi shProfSubmit). -->
       <div class="sh-msg" id="sh-pmsg" role="alert"></div>
       ${SH.profErr ? `<div class="sh-hint">Il profilo non si è potuto leggere dal cloud (${esc(SH.profErr)}): ti mostro la copia di questo dispositivo.</div>` : ''}
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="submit" id="sh-psave">${first ? 'Continua' : 'Salva'}</button>${first ? '' : '<button class="sh-btn gh" type="button" onclick="shGoHome()">Annulla</button>'}</div>
@@ -15494,7 +15494,7 @@ window.shProfSez = function(){
 window.shProfSubmit = async function(ev){
   if(ev) ev.preventDefault();
   const m = $('sh-pmsg'); const v = id => String(($(id) || {}).value || '').trim();
-  const p = {nome:v('sh-nome'), ruolo:rv('sh-ruolo'), branca:rv('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:v('sh-area')};
+  const p = {nome:v('sh-nome'), ruolo:rv('sh-ruolo'), branca:rv('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:($('sh-area')?v('sh-area'):String((SH.prof&&SH.prof.area_rcdf)||''))};
   if(noBranca(p.ruolo)) p.branca = '';
   if(noGruppo(p.ruolo)) p.gruppo = '';
   const miss = !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
