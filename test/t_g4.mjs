@@ -1,0 +1,41 @@
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(engine);
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Progetto 2026-27', meta:{mode:'giovani', fascia:'E', tipo:'AN'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'X', obs:{P1:6}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', pp:{occMan:[{att:'Gioco vecchio', data:'3 ottobre', perc:['P1']}]}}}, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
+await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
+// 1.1
+await ev(() => gGo('1a')); await sleep(600);
+let s = await ev(() => ({dt:document.querySelectorAll('#occ-tab input[type=date]').length, old:document.getElementById('occ-tab').textContent, co:!!document.getElementById('gr-coinc')}));
+ok(s.dt >= 1 && /scritto prima: «3 ottobre»/.test(s.old), 'data: campo data, e il testo vecchio non si perde');
+ok(s.co && /coincide con l’Unità/.test(await ev(() => document.getElementById('gr-coinc').textContent)), 'compare «Il gruppo osservato coincide con l’Unità?»');
+await P.fill('#occ-tab input[type=date]', '2026-08-10'); await sleep(400);
+ok(/prima del 1° settembre/.test(await ev(() => document.getElementById('occ-tab').textContent)) && /anteriori al 1° settembre/.test(await ev(() => document.getElementById('gr-coinc').textContent)), 'data prima del 1° settembre: avviso');
+await P.check('input[name="gr-co"][value="parte"]'); await sleep(300);
+ok(/Limiti dell’osservazione/.test(await ev(() => document.getElementById('gr-coinc').textContent)), '«In parte» apre i limiti dell’osservazione');
+// 1.2
+await ev(() => gGo('1b')); await sleep(800);
+await ev(() => document.getElementById('card-P1').classList.add('expanded'));
+s = await ev(() => ({btn:document.querySelectorAll('#card-P1 .sc-n').length, rows:document.querySelectorAll('#card-P1 .gr-row').length, txt:document.querySelector('#card-P1 .gr-box').textContent, on:document.querySelector('#card-P1 .sc-n.on')?.textContent, sel:getComputedStyle(document.getElementById('sel-P1')).display}));
+ok(s.btn === 10 && s.on === '6', 'scala a 10 pulsanti, il 6 già salvato è acceso');
+ok(s.rows >= 1 && /Gioco vecchio/.test(s.txt) && /10 agosto/.test(s.txt), 'griglia: la riga arriva dall’attività svolta, con data');
+ok(s.sel === 'none', 'il menu a tendina vecchio non si vede');
+await P.click('#card-P1 .sc-n >> nth=7'); await sleep(300);
+ok(await ev(() => obs.P1 === 8 && document.getElementById('badge-P1').textContent.startsWith('8')), 'clic su 8: il valore passa a 8');
+await P.fill('#card-P1 .gr-row textarea >> nth=1', 'Sanno correre agilmente'); await sleep(300);
+ok(await ev(() => JSON.stringify(scheda.griglia).includes('Sanno correre agilmente')), 'il testo della griglia si salva nella scheda');
+await P.click('#card-P2 .pc-hdr'); await sleep(300);
+ok(/Nessuna attività svolta ha ancora toccato/.test(await ev(() => document.querySelector('#card-P2 .gr-box').textContent)), 'percorso senza attività: riga libera «Non osservato»');
+// Word
+const [dl] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(() => exportSchedaDocx('full'))]);
+const path = await dl.path(); const { execSync } = await import('child_process');
+const xml = execSync('unzip -p ' + path + ' word/document.xml').toString().replace(/<[^>]+>/g, ' ');
+ok(/Allegato 1 — Griglia osservativa/.test(xml) && /Sanno correre agilmente/.test(xml) && /Livello osservato: 8\/10/.test(xml), 'Word: Allegato 1 con griglia, testi e livello nella cella del percorso');
+ok(/Non osservato/.test(xml) && /coincide con l’Unità del percorso: in parte/.test(xml), 'Word: righe «Non osservato» e domanda sul gruppo osservato');
+ok(!/Profilo di osservazione/.test(xml), 'Word: niente più allegato «Profilo di osservazione»');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);
