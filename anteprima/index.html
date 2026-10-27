@@ -7829,7 +7829,7 @@ const STRUM_BRANCA = {
     ['Servizio','Rover in Servizio']]
 };
 const BRANCA_NOME = {L:'Branco (Lupetti e Lupette)', E:'Reparto (Esploratori ed Esploratrici)', R:'Compagnia (Rover)'};
-function isPP(){ return false; } // Scheda unica: nessuna distinzione tra PP e PE
+function isPP(){ try{ return !!(scheda && scheda.tipoProgetto === 'PP' && MODE === 'giovani'); }catch(e){ return false; } } // Progetto Personale: scelto alla creazione (scheda.tipoProgetto)
 function idrMin(){ return 1; }
 function percHasContent(pr){
   const T=t=>(t||'').trim().length>0;
@@ -10906,7 +10906,7 @@ function renderSchedaC(root,selected){
   const el=document.createElement('div'); el.className='profile-card';
   let html=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">Sezione 3 — Percorso educativo esperienziale</h3>
     ${sez3IntroHTML(selected)}
-    <div style="font-size:11px;color:var(--ink-mid);background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5"><strong>Due attenzioni della PEE.</strong> <em>Co-costruzione</em>: esplicita in quale momento i ragazzi determinano il percorso e con quali forme (non serve all'inizio, ma deve esserci). <em>Rielaborazione</em>: cognitiva ed emotiva, in uno o più momenti lungo il percorso, non un solo momento finale come una vecchia sedimentazione.</div>`;
+    <div style="font-size:11px;color:var(--ink-mid);background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5"><strong>Rielaborazione.</strong> Una o più attività del percorso vanno dedicate alla rielaborazione. <em>Cognitiva</em>: cosa ho appreso (sapere/conoscenza) e, dunque, cosa so fare (saper fare/abilità). <em>Emotiva</em>: agisce sulla sfera interiore e sviluppa il saper essere (attitudine); alcune rielaborazioni emotive possono richiedere molto tempo. I due livelli possono stare in momenti diversi; meglio evitare un solo momento finale. La rielaborazione e la co-costruzione le spieghi nella verifica delle 7 caratteristiche qui sotto.</div>`;
 
   if(!selected.length && !scheda.percorsiExtra.filter(p=>p.percorsoId).length){
     html+=`<div class="empty-state"><div class="empty-icon">△</div><div class="empty-txt">Nessuna priorità selezionata: torna alle Priorità.</div></div>`;
@@ -11071,10 +11071,10 @@ function renderSchedaC(root,selected){
           </details>`; }).join('')}
         <button class="btn-ghost" style="font-size:11.5px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
       </td></tr>
-    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Co-costruzione nel percorso</td>
-      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti i ragazzi determinano il percorso (es. Attività 1, lancio) e con quali forme (ascolto, proposte, scelte)?" oninput="updatePercorsoField(${idx},'coCostr',this.value);saveDataDebounced()">${sEsc(per.coCostr)}</textarea></td></tr>
-    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Rielaborazione nel percorso</td>
-      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti rielabori l'esperienza (es. Attività 2, conclusione), cognitiva ed emotiva, e come? Anche con il supporto dei ragazzi; i due livelli non devono essere per forza insieme." oninput="updatePercorsoField(${idx},'rielab',this.value);saveDataDebounced()">${sEsc(per.rielab)}</textarea></td></tr>`;
+${(per.coCostr||'').trim()?`    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Co-costruzione nel percorso <small style="font-weight:400;color:var(--ink-faint)">(da una versione precedente)</small></td>
+      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti i ragazzi determinano il percorso (es. Attività 1, lancio) e con quali forme (ascolto, proposte, scelte)?" oninput="updatePercorsoField(${idx},'coCostr',this.value);saveDataDebounced()">${sEsc(per.coCostr)}</textarea></td></tr>`:''}
+${(per.rielab||'').trim()?`    <tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Rielaborazione nel percorso <small style="font-weight:400;color:var(--ink-faint)">(da una versione precedente)</small></td>
+      <td style="padding:6px 10px;border:1px solid var(--border-light)"><textarea style="${SC_TA};min-height:52px" placeholder="In quali attività o momenti rielabori l'esperienza (es. Attività 2, conclusione), cognitiva ed emotiva, e come? Anche con il supporto dei ragazzi; i due livelli non devono essere per forza insieme." oninput="updatePercorsoField(${idx},'rielab',this.value);saveDataDebounced()">${sEsc(per.rielab)}</textarea></td></tr>`:''}`;
 
     // Checklist con note
     html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Le 7 caratteristiche<br><small style="font-weight:400;color:var(--ink-faint)">guarda il percorso nel suo insieme: per ognuna dì quanto c'è e perché</small></td>
@@ -11283,7 +11283,7 @@ function chkAuto(kind){
     if(kind==='att'){
       if(!percs.length) return {ok:false, txt:'Nessun percorso configurato nella scheda Percorso'};
       const ok = percs.filter(x=>(x.attivita||[]).filter(a=>filled(a.lancio)&&filled(a.sviluppo)&&filled(a.conclusione)).length>=3).length;
-      return {ok:ok===percs.length, txt:`${ok} percorsi su ${percs.length} con almeno 3 attività complete (lancio, sviluppo, conclusione); rielaborazione indicata in ${percs.filter(x=>filled(x.rielab)).length}`};
+      return {ok:ok===percs.length, txt:`${ok} percorsi su ${percs.length} con almeno 3 attività complete (lancio, sviluppo, conclusione)`};
     }
     if(kind==='strum'){
       if(!percs.length) return {ok:false, txt:'Nessun percorso configurato nella scheda Percorso'};
@@ -11293,7 +11293,7 @@ function chkAuto(kind){
     if(kind==='cl7'){
       if(!percs.length) return {ok:false, txt:'Nessun percorso configurato nella scheda Percorso'};
       const full = percs.filter(x=>Object.values(x.checklist||{}).filter(c=>c&&c.checked&&filled(c.note)).length>=7).length;
-      return {ok:full===percs.length, txt:`${full} percorsi su ${percs.length} con tutte e 7 le caratteristiche spuntate e spiegate; co-costruzione indicata in ${percs.filter(x=>filled(x.coCostr)).length}`};
+      return {ok:full===percs.length, txt:`${full} percorsi su ${percs.length} con tutte e 7 le caratteristiche spuntate e spiegate`};
     }
     if(kind==='val'){
       const n = Object.values(scheda.idrComp||{}).reduce((a,o)=>a+Object.values(o||{}).filter(v=>v&&v.c).length,0);
@@ -11593,8 +11593,6 @@ function ppChecks(){
   add(c1,'Strumenti del metodo e tempistiche in ogni percorso', percs.length>0&&percs.every(x=>(T(x.strumenti)||Object.keys(x.strumSel||{}).length)&&(()=>{ const t=percTempo(x); return (t.dal&&t.al)||(T(x.dal)&&T(x.al)); })()));
   const attOk = x => (x.attivita||[]).filter(a=>T(a.lancio)&&T(a.sviluppo)&&T(a.conclusione)).length>=3;
   add(c1,'Almeno 3 attività con Lancio, Sviluppo e Conclusione in ogni percorso', percs.length>0&&percs.every(attOk));
-  add(c1,'Co-costruzione esplicitata in ogni percorso', percs.length>0&&percs.every(x=>T(x.coCostr)));
-  add(c1,'Rielaborazione (cognitiva ed emotiva) esplicitata in ogni percorso', percs.length>0&&percs.every(x=>T(x.rielab)));
   const clK=['nuova','stimolante','progressiva','costruita','rielaborativa','esperienziale','educativa'];
   add(c1,'Le 7 caratteristiche: per ognuna quanto c’è e perché, in ogni percorso', percs.length>0&&percs.every(x=>clK.every(k=>x.checklist&&x.checklist[k]&&cl3Val(x.checklist[k])&&T(x.checklist[k].note))), (()=>{ let t=0,d=0; percs.forEach(x=>clK.forEach(k=>{ t++; const c=(x.checklist||{})[k]; if(c&&cl3Val(c)&&T(c.note)) d++; })); return t?d+'/'+t:''; })());
   const acts=[]; percs.forEach(x=>(x.attivita||[]).forEach(a=>{ if(T(a.lancio)||T(a.sviluppo)||T(a.conclusione)||T(a.testo)) acts.push(a); }));
@@ -12685,8 +12683,8 @@ async function exportPPDocx(mode){
       ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
       ['Tempistiche', percTempoTxt(per)],
       ['Attività', attCell],
-      ['Co-costruzione nel percorso', dMulti(per.coCostr)],
-      ['Rielaborazione nel percorso', dMulti(per.rielab)],
+      ...(T_(per.coCostr) ? [['Co-costruzione nel percorso', dMulti(per.coCostr)]] : []),
+      ...(T_(per.rielab) ? [['Rielaborazione nel percorso', dMulti(per.rielab)]] : []),
       ['Le 7 caratteristiche', clKeys.map(k => { const v=cl3Val(cl[k]); const L={si:'Sì',parte:'In parte',no:'Non ancora'}[v]||'(da indicare)'; const C={si:'2E7D32',parte:'B07D00',no:'B3261E'}[v]||'777777'; return dPara([dTxt(`${clLab[k]}: `,{size:18,bold:true}), dTxt(L,{size:18,bold:true,color:C}), dTxt(' — '+(plain(cl[k]?.note)||'—'),{size:18})],{after:30}); })]
     ]));
     ch.push(dPara('',{size:4,after:0,line:120}));
@@ -15946,9 +15944,9 @@ function active(){
   if(ppp && ppp.classList.contains('active')) return 'pp' + (SH.ppv || '0');
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
-  if(p(4)){ return ({ctx:'s1', A:'s2', B:'s2', C:'s3', ver:'s4', val:'s5', chk:'chk', usc:'usc'})[schedaStep] || 's2'; }
-  if(p(1) || p(2) || p(3)) return 's1';
-  return null;
+  const sec = (() => { if(p(4)){ return ({ctx:'s1', A:'s2', B:'s2', C:'s3', ver:'s4', val:'s5', chk:'chk', usc:'usc'})[schedaStep] || 's2'; } if(p(1) || p(2) || p(3)) return 's1'; return null; })();
+  if(isPP() && sec){ const m = {s1:'pp1', s2:'pp2', s3:'pp3', s4:'pp4', s5:'pp5', chk:'ppc'}[sec]; if(m){ SH.ppv = m.slice(2); return m; } }
+  return sec;
 }
 window.shSync = function(){ const a = active(); if(a !== cur){ cur = a; paint(); } };
 function panelsOff(){ [1,2,3,4].forEach(i => { const e = $('panel' + i); if(e) e.classList.remove('active'); }); }
@@ -15963,7 +15961,7 @@ function own(id){
 ['goPhaseInternal','renderValuation'].forEach(n => {
   const f = window[n]; if(typeof f !== 'function') return;
   window[n] = function(){ if(n === 'goPhaseInternal') ownOff(); const r = f.apply(this, arguments);
-    try{ if(n === 'goPhaseInternal' && isPP() && !SH._ppHold){ SH._ppHold = true; try{ shPP(SH.ppv || '0'); }finally{ SH._ppHold = false; } } shSync(); }catch(e){} return r; };
+    try{ if(n === 'goPhaseInternal' && isPP() && !SH._ppHold && !/^[1-5c]$/.test(SH.ppv || '0')){ SH._ppHold = true; try{ shPP(SH.ppv || '0'); }finally{ SH._ppHold = false; } } shSync(); }catch(e){} return r; };
 });
 
 // ── passaggi di sezione ──
@@ -16122,7 +16120,11 @@ function ppHTML(v){
   const n = /^\d$/.test(v) ? v + ' · ' : '';
   return `<div class="sh-dh"><div><h1>${n}${esc(t)}</h1></div></div><div class="sh-card2"><h3>In costruzione</h3><div class="sub" style="font-size:13px;color:#3D3D38">Questa parte del Progetto Personale si compila nei prossimi passi del lavoro, con la struttura delle Linee Guida. Per ora il menu, i dati e il colore della tua Branca sono pronti.</div><div><button type="button" class="sh-lk" onclick="shPP('0')">Torna a «A che punto sei»</button></div></div>`;
 }
-window.shPP = function(v){ ensurePanels(); SH.ppv = v; $('panel-pp').innerHTML = ppHTML(v); own('panel-pp'); };
+window.shPP = function(v){
+  ensurePanels(); SH.ppv = v;
+  if(/^[1-5c]$/.test(v)){ ownOff(); SH._ppHold = true; try{ gGo(v === 'c' ? 'chk' : v); }finally{ SH._ppHold = false; } setTimeout(shSync, 30); return; }
+  $('panel-pp').innerHTML = ppHTML(v); own('panel-pp');
+};
 
 function ensurePanels(){
   const m = $('main-app'); if(!m) return;

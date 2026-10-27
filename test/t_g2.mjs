@@ -74,9 +74,10 @@ ok(s.own && s.p.length === 0 && /A che punto sei/.test(s.txt), 'Progetto Persona
 ok(s.grp.join('|') === 'Progettare|Inviare|Attività leggere' && s.items.includes('Invii del Progetto Personale') && s.items.includes('Checklist dei criteri') && s.items.includes('Le attività del mio percorso') && s.items.includes('3 · Percorso Educativo Esperienziale'), 'Progetto Personale: menu con Progettare, Inviare, Attività leggere');
 ok(!s.items.includes('Dashboard') && s.gdl === 'none', 'Progetto Personale: nessuna dashboard');
 await P.click('#sh-side .sh-si:has-text("3 · Percorso")'); await sleep(300);
-ok(/In costruzione/.test(await ev(() => document.getElementById('panel-pp').innerText)) && (await ev(() => [1,2,3,4].every(i => !document.getElementById('panel'+i).classList.contains('active')))), 'Progetto Personale: le Sezioni non ancora costruite non mostrano quelle della Programmazione');
+ok(!/In costruzione/.test(await ev(() => document.getElementById('main-app').innerText)) && (await ev(() => document.getElementById('panel4').classList.contains('active') && !document.getElementById('panel-pp').classList.contains('active'))), 'Progetto Personale: la Sezione 3 mostra la sezione vera, non il segnaposto');
+await P.click('#sh-side .sh-si:has-text("Invii del Progetto")'); await sleep(300);
 await ev(() => goPhaseInternal(1)); await sleep(300);
-ok(await ev(() => document.getElementById('panel-pp').classList.contains('active') && !document.getElementById('panel1').classList.contains('active')), 'Progetto Personale: anche un salto interno dell’app resta nel guscio');
+ok(await ev(() => document.getElementById('panel-pp').classList.contains('active') && !document.getElementById('panel1').classList.contains('active')), 'Progetto Personale: da Invii un salto interno dell’app resta nel guscio');
 // 6 · staff (versione precedente)
 await open('st1');
 s = await ev(() => ({items: [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()), theme: document.body.getAttribute('data-theme'), dash: document.getElementById('panel-dash').classList.contains('active')}));
