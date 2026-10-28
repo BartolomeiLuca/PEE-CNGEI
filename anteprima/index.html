@@ -8210,7 +8210,7 @@ const FAQ = [
   ['La programmazione','Perché il numero di un’attività cambia?','L’<b>Elenco dell’anno</b> numera le attività per data: se ne aggiungi o sposti una, i numeri successivi scalano. Nelle circolari e nei documenti citale sempre anche con data e titolo.','shEle()'],
   ['Spese e numeri','Dove registro le spese e i giustificativi?','In <b>Spese mese per mese</b> (menu Realizzare): il preventivo viene dalle attività; nel «Registro delle spese» scrivi quanto hai speso davvero, recuperi le voci dal preventivo (arrivano «da confermare»), colleghi il link allo scontrino o alla fattura su Drive e scarichi il rendiconto in Excel o Word, sintetico o dettagliato.','shBil()'],
   ['Spese e numeri','Perché una voce recuperata non conta come spesa?','Il costo previsto non è una spesa fatta. Finché non confermi l’importo, la voce resta «da confermare» e non entra nel totale speso. Una voce recuperata dal preventivo non si può recuperare di nuovo, così non si conta due volte.'],
-  ['Spese e numeri','Cosa mostrano i «Numeri dell’anno»?','Sommano ciò che hai già scritto: attività per formato e tipo, giornate e notti, fuori sede, presenti, chilometri, spesa prevista, attività per Ambito, percorsi e strumenti più usati, verifiche. Le verifiche sono testi e restano testi. Dove manca un dato lo trovi indicato.','shNum()'],
+  ['Spese e numeri','Cosa mostrano i «Numeri dell’anno»?','Sommano ciò che hai già scritto: attività per formato e tipo, giornate e notti, fuori sede, presenti, chilometri, spesa prevista, attività per Ambito, percorsi e strumenti più usati, verifiche. Le verifiche sono testi e restano testi. Dove manca un dato lo trovi indicato.','shNumAnno()'],
   ['Lavorare con lo staff','Che cos’è il Check dello staff?','Un momento in cui lo staff si ferma a vedere come sta (energia, sostegno, voglia di esserci): di norma a gennaio-febbraio, prima dei campi estivi e a fine ciclo. Sono già impostati e li puoi cambiare, spegnere o aggiungere dal menu Realizzare; ogni check propone un’attività per condurlo. Si fa di persona.','shChk()'],
   ['Lavorare con lo staff','Come conduco una verifica o un’autovalutazione dello staff?','Nelle attività formative per lo staff trovi due aree, <b>Verifica dello staff</b> e <b>Autovalutazione del ruolo adulto</b>, con dieci schede «Come si fa», stampabili. La <b>Guida per chi conduce</b> riassume quando farle, come si prepara il momento e cosa guardare.','facGuideOpen()'],
   ['Account e salvataggio','Ho eliminato un progetto per sbaglio.','Resta nel cestino dell’archivio per 30 giorni: lo ripristini da lì. Dopo 30 giorni viene eliminato per sempre.'],
@@ -8221,7 +8221,7 @@ const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':2, 'Lavorare con lo
 function faqHTML(k){
   const inApp = () => { const m = document.getElementById('main-app'); return m && m.style.display !== 'none' && typeof MODE !== 'undefined' && MODE === 'giovani'; };
   const groups = [...new Set(FAQ.map(f => f[0]))];
-  const item = (f, i) => { const go = f[3] && (/^gGo/.test(f[3]) ? inApp() : /^sh(Cal|Ele|AnnoV|Bil|Num|Chk)\(/.test(f[3]) ? !!(typeof CL !== 'undefined' && CL.ctx) : true) ? `<button class="btn-ghost" style="margin-top:8px;font-size:12px;padding:6px 12px" onclick="faqGo(${i})">Portami lì →</button>` : '';
+  const item = (f, i) => { const go = f[3] && (/^gGo/.test(f[3]) ? inApp() : /^sh(Cal|Ele|AnnoV|Bil|NumAnno|Chk)\(/.test(f[3]) ? !!(typeof CL !== 'undefined' && CL.ctx) : true) ? `<button class="btn-ghost" style="margin-top:8px;font-size:12px;padding:6px 12px" onclick="faqGo(${i})">Portami lì →</button>` : '';
     return `<details class="faq-it" data-q="${sEsc((f[1]+' '+f[2]).replace(/<[^>]+>/g,'').toLowerCase())}"><summary>${f[1]}</summary><div class="faq-a">${f[2]}${go?'<div>'+go+'</div>':''}</div></details>`; };
   return `<input class="ax-in faq-q" id="faq-q${k}" type="search" placeholder="Cerca una domanda…" oninput="faqFilter(this.value,'${k}')" style="width:100%;margin:8px 0 6px">
     <div id="faq-list${k}">${groups.map(g => `<div class="faq-g"><div class="faq-gh">${g}${FAQ_VID[g]?` <a href="#" class="vid-lk" style="text-transform:none;letter-spacing:0;font-size:12px" onclick="vidOpen(${FAQ_VID[g]});return false">▶ video</a>`:''}</div>${FAQ.map((f,i)=>f[0]===g?item(f,i):'').join('')}</div>`).join('')}</div>
@@ -16675,7 +16675,7 @@ const NAV_AN = [
   {g:'Misurare'},
   {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
   {id:'m-5', k:'5', t:'Valutazione finale', ic:'up', go:"shSec('5')"},
-  {id:'m-num', t:'Numeri dell’anno', ic:'dash', go:'shNum()'},
+  {id:'m-num', t:'Numeri dell’anno', ic:'dash', go:'shNumAnno()'},
   {id:'m-anno', t:'Verifica dell’anno', ic:'check', go:'shAnnoV()'},
   {g:'Conservare'},
   {id:'k-arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'},
@@ -17317,7 +17317,7 @@ const CHK_DEF = () => [
   {id:'fc', nome:'A fine di ogni ciclo', m1:0, m2:0, ciclo:true, on:true, att:'Cosa, e allora, adesso cosa?'}
 ];
 function chkList(){ const pp = scheda.pp = scheda.pp || {}; return Array.isArray(pp.checkStaff) ? pp.checkStaff : CHK_DEF(); }
-function chkSet(L){ if(window.BRO) return; scheda.pp = scheda.pp || {}; scheda.pp.checkStaff = L; try{ saveDataDebounced(); }catch(e){} }
+function chkStore(L){ if(window.BRO) return; scheda.pp = scheda.pp || {}; scheda.pp.checkStaff = L; try{ saveDataDebounced(); }catch(e){} }
 // prossima finestra (mese di inizio, anno) a partire da oggi: per «fine ciclo» vale l'ultimo mese del ciclo
 function chkNext(c, oggi){
   oggi = oggi || new Date(); const y = oggi.getFullYear(), m = oggi.getMonth() + 1; let a = c.m1, b = c.m2;
@@ -17341,10 +17341,10 @@ function chkHTML(){
   <section class="sh-card2 wide"><div class="chk-l">${rows || '<p class="sh-hint">Nessun check impostato.</p>'}</div>${can ? `<div class="anv-act"><button type="button" class="sh-btn" onclick="chkAdd()">Aggiungi un check</button><button type="button" class="btn-ghost" onclick="chkReset()">Rimetti quelli di serie</button><button type="button" class="btn-ghost" onclick="facGuideOpen()">Guida per chi conduce</button></div>` : ''}</section>`;
 }
 function chkRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'chk' && p.classList.contains('active')) p.innerHTML = chkHTML(); }
-window.chkEdit = function(id, k, v, quiet){ const L = chkList().map(c => Object.assign({}, c)); const c = L.find(x => x.id === id); if(!c) return; c[k] = v; chkSet(L); if(!quiet) chkRe(); };
-window.chkAdd = function(){ const L = chkList().map(c => Object.assign({}, c)); L.push({id:'c' + Date.now().toString(36), nome:'Nuovo check', m1:3, m2:3, ciclo:false, on:true, att:'Termometro dello staff'}); chkSet(L); chkRe(); };
-window.chkDel = function(id){ chkSet(chkList().filter(c => c.id !== id)); chkRe(); };
-window.chkReset = function(){ chkSet(CHK_DEF()); chkRe(); };
+window.chkEdit = function(id, k, v, quiet){ const L = chkList().map(c => Object.assign({}, c)); const c = L.find(x => x.id === id); if(!c) return; c[k] = v; chkStore(L); if(!quiet) chkRe(); };
+window.chkAdd = function(){ const L = chkList().map(c => Object.assign({}, c)); L.push({id:'c' + Date.now().toString(36), nome:'Nuovo check', m1:3, m2:3, ciclo:false, on:true, att:'Termometro dello staff'}); chkStore(L); chkRe(); };
+window.chkDel = function(id){ chkStore(chkList().filter(c => c.id !== id)); chkRe(); };
+window.chkReset = function(){ chkStore(CHK_DEF()); chkRe(); };
 window.shChk = function(){ ensurePanels(); SH.ppv = 'chk'; ownOff(); $('panel-pp').innerHTML = chkHTML(); own('panel-pp'); };
 window.chkNext = chkNext; window.chkList = chkList;
 
@@ -17431,7 +17431,7 @@ function numHTML(){
   ${q(R.bene, 'Cosa è andato bene, dalle verifiche') + q(R.migl, 'Cosa migliorare, dalle verifiche')}<p class="sh-hint">Le verifiche sono testi: te le riporto, non le trasformo in numeri.</p></section>
   <section class="sh-card2 wide"><h3>Come sono calcolati</h3><p class="sh-hint">Periodo: anno scout ${esc(String(scheda.annoScout || ''))}. Dati: ${R.cont} attività dell’Unità${R.staffN ? ' e ' + R.staffN + ' di staff' : ''}, ${R.att} attività nei percorsi. Le percentuali sono sul totale della singola barra. «Già passate» vuol dire con data anteriore a oggi, non che siano state verificate.</p></section>`;
 }
-window.shNum = async function(){
+window.shNumAnno = async function(){
   ensurePanels(); SH.ppv = 'num'; ownOff(); $('panel-pp').innerHTML = '<p class="sh-sub" role="status">Carico l’anno…</p>'; own('panel-pp');
   try{ SH._nm = await numLoad(); }catch(e){ console.error(e); $('panel-pp').innerHTML = '<p class="sh-sub">Non riesco a leggere l’anno: controlla la connessione.</p>'; return; }
   if(SH.ppv === 'num') $('panel-pp').innerHTML = numHTML();

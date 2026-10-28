@@ -12,7 +12,7 @@ const att = (t, v) => ({testo:t, link:'', lancio:'x', sviluppo:'', conclusione:'
 db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Programmazione 2026-27', meta:{mode:'giovani', fascia:'E', tipo:'AN', nome:'Reparto'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'Reparto', obs:{}, pris:{P1:true}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', priorita:[{ambito:'P', necessita:'n', percorso:'P1', obiettivi:[0], idr:[0], tempistica:''}], pp:{}, percorsiExtra:[{prioritaIdx:0, percorsoId:'P1', ambito:'P', strumSel:{Hike:'', Gioco:''}, attivita:[att('Gioco A', 'Bene'), att('Gioco BB')]}], uscite:{a:usc('a', 'sede', 'Riunione', '2026-10-04'), b:usc('b', 'giorno', 'Uscita', '2027-03-14', {spese:[{voce:'Pullman', importo:300, cat:'trasporti', carico:'unita'}]}), c:usc('c', 'bivacco', 'Bivacco', '2027-05-01', {dataFine:'2027-05-02', durata:'piu'})}}}, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
 await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
 ok(await ev(() => { shGrp('Misurare'); return [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Numeri dell’anno/.test(b.textContent)); }), 'menu Misurare: «Numeri dell’anno»');
-await ev(() => shNum()); await sleep(2500);
+await ev(() => shNumAnno()); await sleep(2500);
 const t = await ev(() => document.getElementById('panel-pp').textContent);
 ok(/3attività nel calendario/.test(t) && /1 già passate · 2 da fare/.test(t), 'attività del calendario e quante già passate');
 ok(/4giornate di attività/.test(t) && /1 notte/.test(t), 'giornate e notti');
