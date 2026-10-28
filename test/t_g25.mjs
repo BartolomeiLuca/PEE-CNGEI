@@ -1,0 +1,21 @@
+// PP: «Le attività del mio percorso»
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(engine);
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+const att = (t, d, v) => ({testo:t, link:'', lancio:'x', sviluppo:'', conclusione:'', vBene:v || '', vMigl:'', vAgg:'', aid:'a' + t.length, ax:d ? {data:d} : undefined});
+db.t.pee_archivi.push({id:'q1', user_id:u.id, anno:2026, titolo:'Il mio PP 2026-27', meta:{mode:'personale', tipo:'PP'}, data:{v:1, MODE:'personale', FASCIA:'E', UNIT_NAME:'', obs:{}, pris:{P1:true}, scheda:{tipoProgetto:'PP', annoScout:'2026-27', priorita:[{ambito:'P', necessita:'n', percorso:'P1', obiettivi:[0], idr:[0], tempistica:''}], pp:{}, percorsiExtra:[{prioritaIdx:0, percorsoId:'P1', ambito:'P', attivita:[att('Passeggiata notturna', '2026-09-20', 'Bene'), att('Diario del cammino', '2027-05-01'), att('Gioco senza data', '')]}]}}, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
+await loginAs(P, base, u); await sleep(1200);
+const rows = await ev(() => SH.rows && SH.rows.map(r => r.id + ':' + r.titolo));
+await ev(() => shOpen('q1', 0)); await sleep(3500);
+await ev(() => shPP('a')); await sleep(600);
+const s = await ev(() => document.getElementById('panel-pp').textContent);
+ok(/Passeggiata notturna/.test(s) && /Diario del cammino/.test(s) && /Gioco senza data/.test(s), 'elenca le attività della Sezione 3 ' + s.slice(0, 80));
+ok(/Verificata/.test(s) && /Da fare/.test(s), 'stato: verificata / da fare');
+ok(!/In costruzione/.test(s), 'non è più un segnaposto');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
+summary(); await br.close(); process.exit(0);

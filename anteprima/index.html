@@ -16880,10 +16880,25 @@ function ppHomeHTML(p, as){
     <div style="margin-top:10px"><button type="button" class="btn-ghost" style="min-height:40px" onclick="shPP('i')">Apri gli invii</button></div></div>`;
   return `<div class="sh-dh"><div><h1>A che punto sei</h1><div class="sub">Il tuo Progetto Personale in cinque Sezioni.${next >= 0 ? ' Prossimo passo: la Sezione ' + (next + 1) + '.' : ' Le cinque Sezioni sono complete.'}</div></div></div><div style="display:flex;flex-direction:column;gap:10px">${cards}${inv}</div>`;
 }
+
+// ── PP · «Le attività del mio percorso»: tutte le attività scritte nella Sezione 3, in ordine di data, con lo stato della verifica ──
+function ppActsHTML(){
+  let L = []; try{ L = calActs(); }catch(e){}
+  const ver = a => ['vBene', 'vMigl', 'vAgg'].some(k => String(a[k] || '').trim());
+  L = L.slice().sort((a, b) => String(a.date || '9').localeCompare(String(b.date || '9')) || a.idx - b.idx || a.pos - b.pos);
+  const AMB = {P:'Personale', C:'Comunitario', S:'Spirituale'};
+  const oggi = new Date().toISOString().slice(0, 10);
+  const rows = L.map(o => { const d = o.date ? fmtDL(o.date) : 'senza data', fatta = ver(o.a), pass = o.date && o.date < oggi;
+    return `<tr><td>${esc(d)}</td><td><b>${esc(o.titolo)}</b><div class="sh-hint">${esc(AMB[o.amb] || '')} · ${esc(o.pn)}</div></td><td>${fatta ? 'Verificata' : pass ? '<b>Da verificare</b>' : 'Da fare'}</td></tr>`; }).join('');
+  return `<div class="sh-dh"><div><h1>Le attività del mio percorso</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Tutte le attività scritte nella Sezione 3, in ordine di data. Quelle già passate e non ancora verificate si chiudono nella Sezione 4.</p></div></div>
+  <section class="sh-card2 wide">${rows ? `<div class="vis-lst"><table class="bil-t"><thead><tr><th>Quando</th><th>Attività</th><th>Stato</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sh-hint">Ancora nessuna attività: le scrivi nella Sezione 3.</p>'}<div class="anv-act"><button type="button" class="sh-btn" onclick="shPP('3')">Vai alla Sezione 3</button><button type="button" class="btn-ghost" onclick="shPP('4')">Vai alla Sezione 4</button></div></section>`;
+}
+window.ppActsHTML = ppActsHTML;
 function ppHTML(v){
   const p = SH.prof || {}; const as = (scheda && scheda.annoScout) || '';
   if(v === '0') return ppHomeHTML(p, as);
   if(v === 'i') return ppIterHTML();
+  if(v === 'a') return ppActsHTML();
   const t = {1:PP_SEZ[0],2:PP_SEZ[1],3:PP_SEZ[2],4:PP_SEZ[3],5:PP_SEZ[4],i:'Invii del Progetto Personale',c:'Checklist dei criteri',a:'Le attività del mio percorso'}[v] || '';
   const n = /^\d$/.test(v) ? v + ' · ' : '';
   return `<div class="sh-dh"><div><h1>${n}${esc(t)}</h1></div></div><div class="sh-card2"><h3>In costruzione</h3><div class="sub" style="font-size:13px;color:#3D3D38">Questa parte del Progetto Personale si compila nei prossimi passi del lavoro, con la struttura delle Linee Guida. Per ora il menu, i dati e il colore della tua Branca sono pronti.</div><div><button type="button" class="sh-lk" onclick="shPP('0')">Torna a «A che punto sei»</button></div></div>`;
