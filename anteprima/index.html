@@ -5558,7 +5558,7 @@ function renderTimelineHTML() {
       <div class="tl-f1"><label>Data</label><input type="date" id="tl-date-input" value="${new Date().toISOString().slice(0,10)}"></div>
       <label class="tl-lb">Nota (momento, contesto, cosa hai visto fare)</label>
       <textarea id="tl-note-input" placeholder="Es: Alla riunione ha proposto lui come dividere i compiti e ha ascoltato le idee degli altri."></textarea>
-      <label class="tl-lb">Aggiorna i percorsi che sono cambiati <span class="tl-opt">(facoltativo · lascia «invariato» sugli altri)</span></label>
+      <label class="tl-lb">Aggiorna i percorsi che sono cambiati <span class="tl-opt">(lascia «invariato» sugli altri)</span></label>
       ${tlNewFormHTML()}
       <button class="btn-primary" onclick="addTimelineEntry('${mem}')" style="margin-top:12px">Salva lo scatto →</button>
     </div></details>`;
@@ -7665,7 +7665,7 @@ function renderValuation(){
   const root=document.getElementById('val-root');
   root.innerHTML='';
   document.getElementById('score-box').style.display='none';
-  if(MODE==='staff'){ schedaStep='usc'; set4('hero-eye4','Organizzazione · facoltativo'); set4('hero-title4','Uscite e bivacchi dello staff'); set4('val-desc','Preparate insieme le uscite dello staff: persone, date, trasporti, cassa, momenti formativi.'); const sc=document.getElementById('val-scale-box'); if(sc) sc.style.display='none'; const t4=document.getElementById('tut-panel4'); if(t4) t4.style.display='none'; renderUscite(root); try{ const b=document.getElementById('usc-root'); if(b&&!document.getElementById('an-open')) b.insertAdjacentHTML('beforebegin',anBarHTML()); if(AN.st==='unknown') anProbe(); }catch(e){} try{ gSync(); }catch(e){} return; }
+  if(MODE==='staff'){ schedaStep='usc'; set4('hero-eye4','Organizzazione'); set4('hero-title4','Uscite e bivacchi dello staff'); set4('val-desc','Preparate insieme le uscite dello staff: persone, date, trasporti, cassa, momenti formativi.'); const sc=document.getElementById('val-scale-box'); if(sc) sc.style.display='none'; const t4=document.getElementById('tut-panel4'); if(t4) t4.style.display='none'; renderUscite(root); try{ const b=document.getElementById('usc-root'); if(b&&!document.getElementById('an-open')) b.insertAdjacentHTML('beforebegin',anBarHTML()); if(AN.st==='unknown') anProbe(); }catch(e){} try{ gSync(); }catch(e){} return; }
   const selected=priSel();
   precompileScheda(selected);
   const navEl=document.createElement('div');
@@ -7702,7 +7702,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610281130'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610281300'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -8003,7 +8003,7 @@ const ATT_TIPI = {
 };
 function attGet(pidx,aidx){ if(pidx===USC_P){ const u=uscByJ(aidx); if(u&&u.condivisa==null) u.condivisa=true; return u; } const per=getAllPercorsi()[pidx]; if(!per) return null; nomiMigra(per); if(!per.attivita) per.attivita=[]; while(per.attivita.length<=aidx) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); return per.attivita[aidx]; }
 
-const OPT='<span class="opt-tag">Facoltativo</span>';
+const OPT='';
 // ── Attività: sezioni facoltative "Per preparare bene l'attività" ──
 const AX_DUR=[5,10,15,20,25,30,40,45,50,60,75,90,105,120,150,180,240,300,360];
 const AX_TIPO=[['sede','In sede'],['vicino','All’aperto vicino'],['uscita','Uscita'],['altro','Altro…']];
@@ -8078,7 +8078,7 @@ const AX_SQ={E:{lab:'Di pattuglia', chi:'ogni Pattuglia', voci:['Tenda','Fornell
 function axSq(){ return AX_SQ[FASCIA||'E']||AX_SQ.E; }
 function axSqList(x){ const V=axSq().voci; const sel=(x.sqSel||[]).slice().sort((a,b)=>V.indexOf(a)-V.indexOf(b)); return sel.concat((x.sqAltro||'').split('\n').map(t=>t.trim()).filter(Boolean)); }
 function axSqHTML(p,j,x){ const Q=axSq();
-  return `<div class="ax-sub" style="margin-top:10px">${Q.lab} <span class="ax-opt">(facoltativo · il materiale che porta ${Q.chi}, da dividere tra ${stT('i ragazzi')})</span></div>`
+  return `<div class="ax-sub" style="margin-top:10px">${Q.lab} <span class="ax-opt">(il materiale che porta ${Q.chi}, da dividere tra ${stT('i ragazzi')})</span></div>`
    +(Q.voci.length?axChips(Q.voci.map(v=>[v,v]),x.sqSel||[],v=>`axTog(${p},${j},'sqSel',axD('${v}'))`,true):'')
    +axTA(p,j,'sqAltro',Q.voci.length?'Altro, una cosa per riga':'Una cosa per riga',x.sqAltro,36); }
 function axZainoFor(){ return AX_ZAINO.map(([g,l])=>[g,l.filter(it=>it[1].includes(FASCIA||'E')).map(it=>it[0])]).filter(g=>g[1].length); }
@@ -8117,7 +8117,7 @@ function axPortList(x){ if(Array.isArray(x.portareSel)) x.portareSel=x.portareSe
 const AX_PAGA=[['bonifico','Bonifico alla Sezione'],['contanti','In contanti ai capi'],['partenza','Alla partenza']];
 function axPagaHTML(p,j,x){ const pp=scheda.pp||{}; const m=x.paga||'bonifico';
   return `<div class="ax-sub" style="margin-top:4px">Come si paga la quota</div>`+axChips(AX_PAGA,m,v=>`axSet(${p},${j},'paga',axD('${v}'),true)`)
-    +(m!=='partenza'?`<div class="ax-sub" style="margin-top:6px">${m==='bonifico'?'Bonifico':'Quota'}${MODE==='staff'?' e conferma di presenza':' e autorizzazioni'} entro il <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`:`<div class="ax-sub" style="margin-top:6px">${MODE==='staff'?'Conferma di presenza entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`)
+    +(m!=='partenza'?`<div class="ax-sub" style="margin-top:6px">${m==='bonifico'?'Bonifico':'Quota'}${MODE==='staff'?' e conferma di presenza':' e autorizzazioni'} entro il</div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`:`<div class="ax-sub" style="margin-top:6px">${MODE==='staff'?'Conferma di presenza entro il':'Autorizzazioni entro il'}</div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`)
     +(m==='bonifico'?`<div class="ax-row2" style="margin-top:6px"><div><div class="ax-sub">IBAN</div><input class="ax-in" placeholder="IT00 X000 0000 0000 0000 0000 000" value="${axE(pp.iban)}" oninput="ppSet('iban',this.value)"></div><div><div class="ax-sub">Intestato a</div><input class="ax-in" placeholder="es. CNGEI Sezione di …" value="${axE(pp.ibanInt)}" oninput="ppSet('ibanInt',this.value)"></div></div><div class="ax-hint">IBAN e intestatario valgono per tutte le attività e le uscite: finiscono nella circolare.</div>`:''); }
 function axEntroTxt(x){ return x.entro?new Date(x.entro+'T12:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):''; }
 // Elenco di scelte con «+ Altro»: scrivi una voce tua e si aggiunge alla lista (e si spunta)
@@ -8280,7 +8280,7 @@ function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPerc
   const ppl=[...new Set([...axPeople(),...(P.ad||[])])];
   let h=axLbl('Presenti','da qui si aggiornano viaggio, quote, quantità e sicurezza');
   h+=`<div class="ax-sub">${uscSt()?'Chi partecipa':'Adulti'}</div>`+(ppl.length?axChipsAd(p,j,ppl,P.ad||[]):'<div class="ax-hint">'+(uscSt()?'Aggiungi i membri dello staff nella Fase 1, oppure una persona qui.':'Inserisci i nomi dello staff nella 1.1, oppure aggiungi una persona qui.')+'</div>')+`<button type="button" class="btn-ghost ax-add" onclick="(function(){const n=axNewPerson(); if(n){ const r=axArrP(${p},${j},'pres.ad'); if(!r.includes(n)) r.push(n); axSave(); axRe(${p},${j}); }})()">+ Altra persona</button>`;
-  if(!uscSt()) h+=`<div class="ax-row3"><div><div class="ax-sub">Ragazzi in tutto</div><select class="ax-in" onchange="axSet(${p},${j},'pres.rag',this.value,true)">${axNumOpts(P.rag,60)}</select></div><div><div class="ax-sub">di cui ragazze <span class="ax-opt">(facoltativo)</span></div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragF',this.value)">${axNumOpts(P.ragF,60)}</select></div><div><div class="ax-sub">di cui ragazzi <span class="ax-opt">(facoltativo)</span></div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragM',this.value)">${axNumOpts(P.ragM,60)}</select></div></div>`
+  if(!uscSt()) h+=`<div class="ax-row3"><div><div class="ax-sub">Ragazzi in tutto</div><select class="ax-in" onchange="axSet(${p},${j},'pres.rag',this.value,true)">${axNumOpts(P.rag,60)}</select></div><div><div class="ax-sub">di cui ragazze</div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragF',this.value)">${axNumOpts(P.ragF,60)}</select></div><div><div class="ax-sub">di cui ragazzi</div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragM',this.value)">${axNumOpts(P.ragM,60)}</select></div></div>`
     +(axRag11()?`<div class="ax-sedeuse"><button type="button" class="btn-ghost ax-btn" onclick="axRagDa11(${p},${j})">👥 Prendi i ragazzi dell’Unità dalla tabella 1.1: ${axRag11().tot}${axRag11().f?' (di cui '+axRag11().f+' ragazze)':''}</button></div>`:'');
   if(uscSt()){ if(N.tot) h+=`<div class="ax-hint"><b>${N.tot} person${N.tot===1?'a':'e'}</b>: la quota si divide tra chi partecipa</div>`; }
   else if(N.tot) h+=`<div class="ax-hint"><b>${N.tot} persone</b>${MODE==='staff'?'':`: ${N.ad} adult${N.ad===1?'o':'i'} e ${N.rag} ragazz${N.rag===1?'o':'i'}`}${N.ad&&N.rag&&MODE!=='staff'?' · un adulto ogni '+(N.rag/N.ad).toFixed(1).replace('.0','').replace('.',',')+' ragazzi':''}</div>`;
@@ -8694,11 +8694,11 @@ function axCirc(p,j,a,x){ const L=x.luogo||{}; const tipo=Object.fromEntries(AX_
   h+=axLbl(ST?'3. Cosa portare':'3. Cosa portano i ragazzi','scegli dal menù, oppure parti da una lista base')+axZainoHTML(p,j,x)
     +`<div class="ax-sub" style="margin-top:6px">Altro <span class="ax-opt">(una cosa per riga)</span></div>`+axTA(p,j,'portare','es. quaderno\nsacchetto per i rifiuti',x.portare,44)
     +(ST?'':axSqHTML(p,j,x))
-    +`<div class="ax-sub" style="margin-top:10px">Si parte con addosso <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_ADDOSSO().map(v=>[v,v]),x.addosso||[],v=>`axTog(${p},${j},'addosso',axD('${v}'))`,true)
-    +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
-    +(FASCIA!=='E'&&!ST?`<div class="ax-sub" style="margin-top:8px">${FASCIA==='L'?'Consigli per le famiglie':'Consigli per lo zaino'} <span class="ax-opt">(facoltativo)</span></div>`+axChips(AX_CONSIGLI().concat((x.consigli||[]).filter(v=>!AX_CONSIGLI().includes(v))).map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true)+`<div class="ax-chips" style="margin-top:6px;align-items:center"><span class="ax-sub">Altro:</span><input class="ax-in" style="max-width:320px" maxlength="90" placeholder="Scrivi un altro consiglio" onkeydown="if(event.key==='Enter'){event.preventDefault();axConsAdd(${p},${j},this)}"><button type="button" class="ax-chip" onclick="axConsAdd(${p},${j},this.previousElementSibling)">+ Aggiungi</button></div>`:'');
+    +`<div class="ax-sub" style="margin-top:10px">Si parte con addosso</div>`+axChips(AX_ADDOSSO().map(v=>[v,v]),x.addosso||[],v=>`axTog(${p},${j},'addosso',axD('${v}'))`,true)
+    +(FASCIA!=='R'?`<div class="ax-sub" style="margin-top:8px">Da lasciare a casa</div>`+axChips(AX_CASA.map(v=>[v,v]),x.casa||[],v=>`axTog(${p},${j},'casa',axD('${v}'))`,true)+axTA(p,j,'casaAltro','Altro da lasciare a casa, una cosa per riga',x.casaAltro,36):'')
+    +(FASCIA!=='E'&&!ST?`<div class="ax-sub" style="margin-top:8px">${FASCIA==='L'?'Consigli per le famiglie':'Consigli per lo zaino'}</div>`+axChips(AX_CONSIGLI().concat((x.consigli||[]).filter(v=>!AX_CONSIGLI().includes(v))).map(v=>[v,v]),x.consigli||[],v=>`axTog(${p},${j},'consigli',axD('${v}'))`,true)+`<div class="ax-chips" style="margin-top:6px;align-items:center"><span class="ax-sub">Altro:</span><input class="ax-in" style="max-width:320px" maxlength="90" placeholder="Scrivi un altro consiglio" onkeydown="if(event.key==='Enter'){event.preventDefault();axConsAdd(${p},${j},this)}"><button type="button" class="ax-chip" onclick="axConsAdd(${p},${j},this.previousElementSibling)">+ Aggiungi</button></div>`:'');
   h+=axLbl('4. Quota e scadenze')+`<div class="ax-sub">Quota: <b>${axQuota(x)?axEur(axQuota(x))+' a testa':'nessuna'}</b> <span class="ax-opt">(dal riepilogo dei costi)</span></div>${axQuota(x)&&axQuotaConto(x)?`<div class="ax-hint">${axE(axQuotaConto(x))}</div>`:''}
-    ${axQuota(x)?axPagaHTML(p,j,x):`<div class="ax-sub" style="margin-top:6px">${MODE==='staff'?'Conferma di presenza entro il':'Autorizzazioni entro il'} <span class="ax-opt">(facoltativo)</span></div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`}`;
+    ${axQuota(x)?axPagaHTML(p,j,x):`<div class="ax-sub" style="margin-top:6px">${MODE==='staff'?'Conferma di presenza entro il':'Autorizzazioni entro il'}</div><input class="ax-in" type="date" style="max-width:190px" value="${axE(x.entro)}" onchange="axSet(${p},${j},'entro',this.value)">`}`;
   h+=ST?'':axLbl('5. Autorizzazioni')+(L.permessi?`<div class="ax-sub">Da consegnare firmato: <b>${axE((L.permCosa||'').trim()||'il modulo di autorizzazione')}</b>${axIsUrl(L.permLink)?' · c’è il link al modulo':''}</div>`:`<div class="ax-hint">Nessuna autorizzazione segnata. Se servono, spuntale in “Chi e quando”.</div>`);
   h+=axLbl('6. Invio')+`<div class="ax-chips"><button type="button" class="btn-ghost ax-btn" onclick="axMsg(${p},${j})">Prepara il messaggio</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgDocx(${p},${j})">↓ Word da condividere</button><button type="button" class="btn-ghost ax-btn" onclick="axMsgPdf(${p},${j})">↓ Scarica in PDF</button></div>${axCuTelAsk(p,j)}<div id="ax-msg-${p}-${j}"></div>`;
   return h; }
@@ -9401,7 +9401,7 @@ function uscDayTTHTML(u,g,R,T){ const can=uscCan();
   return `<div class="usc-ttcard"><div class="usc-tt"><div class="usc-dh"><h3>Time table · ${uscE(uscDayLong(u,g))}</h3><span class="ax-hint">tocca una voce per aprirla${can?' · trascinala per spostarla':''}</span><span class="usc-dact"><button type="button" class="usc-lnk" onclick="uscExcelTT(${g})">⤓ Excel</button></span></div>
     ${R.length?`<div class="usc-tl">${segs}</div>`:'<div class="ax-hint">Ancora niente in questa giornata.</div>'}</div>
     <div class="usc-ttside">${uscWeightsHTML(R)}${R.some(o=>T[o.k].clash)?'<div class="ax-warn">Un blocco con l’ora fissa comincia prima che finisca quello precedente: guarda il segno tratteggiato nel time table.</div>':''}
-      ${can?`<label class="usc-lb">La giornata comincia alle<select class="ax-in" onchange="uscSetDayStart(${g},this.value)">${axTimeOpts(uscDayStart(u,g))}</select></label>${n>1?`<label class="usc-lb"><span class="usc-lt">Nome della giornata <span class="ax-opt">(facoltativo)</span></span><input class="ax-in" maxlength="30" placeholder="${uscE(uscDayLbl(Object.assign({},u,{gl:{}}),g))}" value="${uscE((u.gl||{})[g]||'')}" oninput="uscSetDayLbl(${g},this.value)"></label>`:''}`:''}
+      ${can?`<label class="usc-lb">La giornata comincia alle<select class="ax-in" onchange="uscSetDayStart(${g},this.value)">${axTimeOpts(uscDayStart(u,g))}</select></label>${n>1?`<label class="usc-lb"><span class="usc-lt">Nome della giornata</span><input class="ax-in" maxlength="30" placeholder="${uscE(uscDayLbl(Object.assign({},u,{gl:{}}),g))}" value="${uscE((u.gl||{})[g]||'')}" oninput="uscSetDayLbl(${g},this.value)"></label>`:''}`:''}
       <button type="button" class="btn-ghost usc-btn" onclick="uscExport('giorno',${g})">⤓ Foglio della giornata (Word)</button></div></div>`; }
 function uscMoveSel(u,k,m){ const n=uscNG(u); const g=Math.max(1,Number(m.g)||1); let o=''; for(let i=1;i<=n;i++) o+=`<option value="${i}" ${i===g?'selected':''}>${uscE(uscDayShort(u,i)+' · '+uscDayLbl(u,i))}</option>`; if(g>n) o+=`<option value="${g}" selected>— fuori date —</option>`;
   return `<label class="usc-mv2"><span>Sposta a</span><select class="ax-in" onchange="uscBlkGo('${k}',this.value)">${o}</select></label>`; }
@@ -9901,7 +9901,7 @@ function uscMfPick(k,name){ const m=uscBlk(k), a=ATT_SCHEDE[name]; if(!m||!a||!u
     if(rows.length){ if(!u.ax.bm||typeof u.ax.bm!=='object') u.ax.bm={}; u.ax.bm[k]=rows; if(!m.f.includes('mat')) m.f.push('mat'); USC_FOPEN[k+'|mat']=true; } } }catch(e){}
   USC_FOPEN[k+'|sch']=true; uscSave(); uscRe(); }
 function uscMfHTML(k,m,can){ const ro=can?'':'readonly'; const keys=Object.keys(ATT_SCHEDE); const ta=(f,l,ph)=>`<label class="ax-sub">${l}</label><textarea class="ax-ta" style="min-height:64px" ${ro} placeholder="${ph}" oninput="uscBlkSet('${k}','${f}',this.value)">${uscE(m[f]||'')}</textarea>`;
-  return (can?`<div class="ax-sub" style="margin-top:0">Parti da una scheda <span class="ax-opt">facoltativo: la copia qui e poi la scrivi come vuoi</span></div><div class="ax-chips"><select class="ax-in" aria-label="Scegli una scheda" onchange="if(this.value)uscMfPick('${k}',this.value);this.value=''"><option value="">scegli tra le ${keys.length} schede…</option>${keys.map(n=>`<option value="${uscE(n)}">${uscE(n)}</option>`).join('')}</select>${m.mfSrc?`<button type="button" class="usc-lnk" onclick="attSchedaOpen(${uscE(JSON.stringify(m.mfSrc)).replace(/&quot;/g,"'")})">vedi la scheda «${uscE(m.mfSrc)}»</button>`:''}</div>`:'')
+  return (can?`<div class="ax-sub" style="margin-top:0">Parti da una scheda <span class="ax-opt">la copia qui e poi la scrivi come vuoi</span></div><div class="ax-chips"><select class="ax-in" aria-label="Scegli una scheda" onchange="if(this.value)uscMfPick('${k}',this.value);this.value=''"><option value="">scegli tra le ${keys.length} schede…</option>${keys.map(n=>`<option value="${uscE(n)}">${uscE(n)}</option>`).join('')}</select>${m.mfSrc?`<button type="button" class="usc-lnk" onclick="attSchedaOpen(${uscE(JSON.stringify(m.mfSrc)).replace(/&quot;/g,"'")})">vedi la scheda «${uscE(m.mfSrc)}»</button>`:''}</div>`:'')
    +ta('mfScopo','A cosa serve (scopo)','Perché lo facciamo, cosa vogliamo che resti')+ta('mfPassi','Passi e tempi','es. 5 min — Spiego le regole…')+ta('mfDom','Domande per ripensarci','Cosa ci portiamo a casa?')+ta('mfAtt','Attenzioni','Cosa può andare storto, come accorgersene'); }
 // Piano B di un momento: stesse situazioni del Piano B generale (pioggia, pochi presenti, manca materiale, tempo, altro); il testo scritto prima resta come «Note»
 function uscPbTxt(m){ const O=(m&&m.pbo&&typeof m.pbo==='object')?m.pbo:{}; const L=Object.fromEntries(AX_PB); const t=AX_PB.map(([q])=>q).filter(q=>(O[q]||'').trim()).map(q=>L[q]+': '+O[q].trim()); if((m&&m.pb||'').trim()) t.push(m.pb.trim()); return t.join('\n'); }
@@ -10248,7 +10248,7 @@ function axFirma(x){ const t=staffTab()||[]; const cgOut=!(MODE==='staff'&&STAFF
   return n.length===1?n[0]:n.slice(0,-1).join(', ')+' e '+n[n.length-1]; }
 function attTipiLabel(a){ const t=(a&&a.tipi)||[]; return t.map(x=>x==='Altro'?((a.tipoAltro||'').trim()||'Altro'):x); }
 function attTipiSelHTML(a){ const l=attTipiLabel(a);
-  if(!l.length) return `<div style="font-size:12px;color:var(--ink-faint);margin:2px 0 4px">Nessun tipo scelto (facoltativo): serve solo a darti qualche idea.</div>`;
+  if(!l.length) return `<div style="font-size:12px;color:var(--ink-faint);margin:2px 0 4px">Nessun tipo scelto: serve solo a darti qualche idea.</div>`;
   return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px">${l.map(x=>`<span style="font-size:12px;font-weight:700;background:var(--green-pale,#e8f5e9);border:1px solid var(--border-light);border-radius:12px;padding:3px 10px">${sEsc(x)}</span>`).join('')}</div>`; }
 function attTipoToggle(pidx,aidx,g,i,on){ const a=attGet(pidx,aidx); if(!a) return; const it=(ATT_TIPI[FASCIA]||[])[g]?.[1]?.[i]; if(!it) return;
   if(!a.tipi) a.tipi=[]; if(on){ if(!a.tipi.includes(it)) a.tipi.push(it); } else a.tipi=a.tipi.filter(x=>x!==it);
@@ -10614,7 +10614,7 @@ function gHero4(){
     usc:['Uscite e campi','Uscite e campi','Il programma di ogni giornata a blocchi colorati, con presenti, trasporti, pasti, quota e circolare in un posto solo.']}[schedaStep];
   if(!T) return;
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
-  set('hero-eye4',schedaStep==='usc'?'Organizzazione · facoltativo':crumbTxt(schedaStep==='ctx'?CRUMB1:T[0])); set('hero-title4',T[1]); set('val-desc',T[2]);
+  set('hero-eye4',schedaStep==='usc'?'Organizzazione':crumbTxt(schedaStep==='ctx'?CRUMB1:T[0])); set('hero-title4',T[1]); set('val-desc',T[2]);
   const vs=document.getElementById('val-scale-box'); if(vs) vs.style.display = schedaStep==='val' ? '' : 'none';
 }
 function gSetPP(v){ if(!scheda.pp) scheda.pp={}; scheda.pp.isPP=v; saveDataDebounced(); renderValuation(); }
@@ -10745,16 +10745,16 @@ function renderSchedaCtx(root){
       <label style="${SC_LBL}">Nome e cognome<input style="${IN}" maxlength="80" value="${sEsc(pp.nome)}" oninput="ppSet('nome',this.value)"></label>
       ${sezGrpHTML(SC_LBL,IN)}
     </div>
-    ${MODE==='giovani'?`<details class="att-extra" style="margin-top:12px"><summary>${OPT}Sede della Sezione<span class="ax-sumd">Serve solo per la carta intestata della circolare alle famiglie: si scrive una volta e l’app la ricorda.</span></summary>
+    ${MODE==='giovani'?`<label style="${SC_LBL};margin-top:16px;max-width:420px" id="unit-name-11">Nome dell'Unità<input style="${IN}" maxlength="60" placeholder="${({L:'es. Branco Popolo Libero',E:'es. Reparto Kontiki',R:'es. Compagnia Orsa Maggiore'})[FASCIA]||''}" value="${sEsc(UNIT_NAME)}" oninput="setUnitName(this.value);const u=document.getElementById('unit-name-in');if(u)u.value=this.value"></label>`+numeriUnitaHTML(pp,IN):''}
+    <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
+    <textarea style="${SC_TA}" placeholder="Quali elementi del territorio (trasporti, parchi, offerte) aiutano o limitano le attività della tua Unità?" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
+    ${MODE==='giovani'?`<div style="margin-top:16px"><label style="${SC_LBL}">Sede della Sezione <span style="font-weight:400;color:var(--ink-faint)">— serve per la carta intestata della circolare alle famiglie: si scrive una volta e l’app la ricorda.</span></label>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:8px">
       <label style="${SC_LBL}">Indirizzo<input style="${IN}" maxlength="80" placeholder="es. Strada Santa Colomba n.1" value="${sEsc(pp.sedeVia)}" oninput="ppSet('sedeVia',this.value)"></label>
       <label style="${SC_LBL}">CAP, città e provincia<input style="${IN}" maxlength="60" placeholder="es. 61122 Pesaro (PU)" value="${sEsc(pp.sedeCitta)}" oninput="ppSet('sedeCitta',this.value)"></label>
       <label style="${SC_LBL}">Sito della Sezione<input style="${IN}" maxlength="80" placeholder="es. pesaro.cngei.it" value="${sEsc(pp.sedeSito)}" oninput="ppSet('sedeSito',this.value)"></label>
       <label style="${SC_LBL}">Profilo social<input style="${IN}" maxlength="60" placeholder="es. @cngeipesaro" value="${sEsc(pp.sedeSocial)}" oninput="ppSet('sedeSocial',this.value)"></label>
-      <label style="${SC_LBL}">Codice fiscale della Sezione<input style="${IN}" maxlength="20" value="${sEsc(pp.sedeCF)}" oninput="ppSet('sedeCF',this.value)"></label></div></details>`:''}
-    ${MODE==='giovani'?`<label style="${SC_LBL};margin-top:16px;max-width:420px" id="unit-name-11">Nome dell'Unità<input style="${IN}" maxlength="60" placeholder="${({L:'es. Branco Popolo Libero',E:'es. Reparto Kontiki',R:'es. Compagnia Orsa Maggiore'})[FASCIA]||''}" value="${sEsc(UNIT_NAME)}" oninput="setUnitName(this.value);const u=document.getElementById('unit-name-in');if(u)u.value=this.value"></label>`+numeriUnitaHTML(pp,IN):''}
-    <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
-    <textarea style="${SC_TA}" placeholder="Quali elementi del territorio (trasporti, parchi, offerte) aiutano o limitano le attività della tua Unità?" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
+      <label style="${SC_LBL}">Codice fiscale della Sezione<input style="${IN}" maxlength="20" value="${sEsc(pp.sedeCF)}" oninput="ppSet('sedeCF',this.value)"></label></div></div>`:''}
     <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Unità, rapporti con il Consiglio di Gruppo…</span></label>
     <textarea style="${SC_TA}" placeholder="Come sono composti la Sezione e il Gruppo? Quanti Adulti in staff, con quale esperienza e disponibilità?" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
     <div style="font-size:12px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">${FASCIA==='R'?'Adulti in Compagnia <span style="font-weight:400;color:var(--ink-faint)">— in Compagnia non c\'è un vero staff: di solito ci sei tu (CC) e, se c\'è, il VCC. Esperienza, formazione e disponibilità; aggiungi o togli righe</span>':'Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span>'}</div>
@@ -10906,11 +10906,11 @@ function svOpen(mom){
     <div class="sv-q">${m.q}</div>
     <div class="sv-scale" role="group" aria-label="Da 1 a 5">${[1,2,3,4,5].map(v => `<button type="button" class="sv-v" data-v="${v}" onclick="svVote(${v})">${v}</button>`).join('')}</div>
     <div class="sv-ends"><span>per niente</span><span>moltissimo</span></div>
-    <label class="sv-q" for="sv-a">Cosa ti ha aiutato di più? <span>facoltativo</span></label>
+    <label class="sv-q" for="sv-a">Cosa ti ha aiutato di più?</label>
     <textarea id="sv-a" rows="2" maxlength="800"></textarea>
-    <label class="sv-q" for="sv-b">Cosa ti è mancato o ti ha messo in difficoltà? <span>facoltativo</span></label>
+    <label class="sv-q" for="sv-b">Cosa ti è mancato o ti ha messo in difficoltà?</label>
     <textarea id="sv-b" rows="2" maxlength="800"></textarea>
-    <label class="sv-q" for="sv-n">Il tuo nome, se vuoi essere ricontattata/o <span>facoltativo</span></label>
+    <label class="sv-q" for="sv-n">Il tuo nome, se vuoi essere ricontattata/o</label>
     <input id="sv-n" maxlength="60" value="${sEsc(nome)}">
     <div id="sv-msg" class="cl-msg" style="display:none"></div>
     <div class="sv-btns"><button class="btn-primary" id="sv-go" onclick="svSend()">Invia</button><button class="btn-ghost" onclick="svLater()">Non ora</button><button class="sv-never" onclick="svNever()">Non chiedermelo più</button></div>
@@ -11262,7 +11262,7 @@ function attSpuntiOpen(){
     '<div class="asp-note"><b>Ambientazione.</b> '+sEsc(D.ambientazione)+'</div>'+
     '<div style="margin-top:10px;font-size:12px">Vuoi che i ragazzi siano protagonisti dell’attività? <a href="javascript:void(0)" class="asp-link" onclick="protSpuntiOpen()">Apri gli spunti sul protagonismo</a></div>';
   modalShow('<div class="asp"><div style="font-size:15px;font-weight:800;margin-bottom:2px">Come costruire un’attività</div>'+
-    '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px">Facoltativo: idee pratiche da tenere a portata di mano mentre progetti.</div>'+fasi+'</div>');
+    '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px">Idee pratiche da tenere a portata di mano mentre progetti.</div>'+fasi+'</div>');
 }
 // ── Pop-up facoltativo: dare protagonismo ai ragazzi ──
 const PROT_SPUNTI = {"def": "Protagonismo giovanile vuol dire che i ragazzi e le ragazze decidono davvero su ciò che riguarda la loro vita scout, insieme ai capi e non al loro posto. Non vuol dire che fanno tutto senza aiuto. Vuol dire che sanno cosa possono decidere, hanno le informazioni per farlo, vedono che la loro scelta cambia le cose e trovano un capo accanto che li allena senza sostituirli. Lo scautismo è \"un movimento di giovani, sostenuto da adulti\", non \"per giovani, gestito da adulti\".", "domande": ["Cosa decidono loro, cosa decidiamo insieme, cosa resta a noi? E gliel'ho detto?", "Questa scelta è davvero aperta, o la risposta ce l'ho già in testa?", "Hanno le informazioni che servono (tempi, soldi, vincoli) prima che io chieda cosa vogliono fare?", "Prenderei questa decisione al posto di un adulto? Gli parlerei con questo tono?", "Chi raccoglie le loro idee può davvero decidere, o le \"riferisce\" soltanto allo staff?", "Chi ha avuto un ruolo l'ultima volta, e chi non lo ha mai avuto?", "Se qualcuno non vuole esporsi, può farlo senza perdere la faccia?", "Quando e come racconterò loro cosa è successo con le loro proposte?"], "errori": [{"n": "Voto finto", "r": "hai già prenotato il posto o scelto il tema prima di \"farli votare\"", "f": "di' chiaramente cosa è già deciso e fai votare solo ciò che è davvero aperto."}, {"n": "Parere che sparisce", "r": "chiedi idee in verifica e alla riunione dopo nessuno ne parla", "f": "apri la riunione dopo con \"Avete proposto X, abbiamo fatto Y per questo motivo\"."}, {"n": "Scelte truccate", "r": "le opzioni sono costruite per arrivare dove volevi tu (\"hike o hike con bivacco?\")", "f": "offri 2–4 alternative che accetteresti davvero tutte."}, {"n": "Decorazione", "r": "i ragazzi sono all'evento per la foto e non sanno perché", "f": "prima spiega lo scopo e dai un compito vero, oppure non chiedere loro di esserci."}, {"n": "Ribaltare in staff", "r": "una decisione del Consiglio viene cambiata dai capi senza dirlo", "f": "se devi cambiarla, torna dai ragazzi e spiega il motivo."}, {"n": "Sempre gli stessi", "r": "la cartina, il microfono e il ruolo di guida vanno sempre agli stessi due o tre", "f": "tieni una lista di chi ha già guidato e scegli tra chi manca."}, {"n": "Salvataggio lampo", "r": "al primo nodo che non tiene prendi la corda in mano", "f": "fai una domanda (\"Cosa vedi? Cosa proveresti?\") e aspetta."}, {"n": "Delega e fuga", "r": "\"è la vostra Impresa, arrangiatevi\" e poi la colpa è loro", "f": "concorda un momento di verifica a metà strada e spezza il compito in passi più piccoli."}], "ruoli": {"L": "Proponi tu la cornice e offri scelte piccole e concrete, da 2 a 4 opzioni. Raccogli le loro idee con domande e giochi, poi fai vedere subito cosa è successo grazie a loro. Ricorda che bambini della stessa età sono molto diversi nella voglia e nella capacità di guidare.", "E": "Il tuo lavoro principale è allenare i Capi Pattuglia, più che gestire l'attività. Quando il Reparto è agitato, non stringere il controllo: dai confini chiari e libertà dentro quei confini. Se un Capo Pattuglia parte bene e poi traballa, fa parte del percorso.", "R": "Diventi consigliere a distanza: intervieni se sono in gioco sicurezza o benessere, il resto lo progettano loro. Il tuo contributo più prezioso sono le domande sul senso (\"Dove vi porta? Che persone volete diventare?\"), non le soluzioni."}, "abitudini": ["Conta fino a 3–5 dopo una domanda e di nuovo dopo la prima risposta, prima di parlare.", "Quando chiedi qualcosa, aggiungi sempre \"per questo motivo…\".", "Restituisci sempre come è stato usato il loro parere, anche quando non è stato seguito.", "Sostituisci \"devi\" con \"potreste provare…\", e \"sbrigatevi\" con \"quanto tempo vi serve?\".", "Quando qualcuno è giù di morale, nominalo (\"Vedo che non hai voglia\") invece di dire \"dai, non lamentarti\".", "Lascia materiali e attrezzi a portata di mano, così possono fare senza doverti chiedere il permesso."], "extra": {"L": ["In Cerchio di Branco fai disegnare a ogni Lupetto, su un foglietto senza nome, un gioco o un posto che sogna per le Vacanze di Branco; poi appallottolate i fogli, lanciateli al centro e ognuno ne racconta uno → anche chi non parla mai in Cerchio fa arrivare la sua idea, senza paura di sbagliare.", "Per scegliere tra due giochi o due mete della Caccia, fai votare i Lupetti mettendo un sassolino in uno di due barattoli → decidono con un gesto semplice e vedono subito che la loro scelta conta.", "Quando un Lupetto conquista una Capacità (un nodo, un ban, un gioco nuovo), fallo diventare per una riunione il «maestro» della sua Muta, con un Vecchio Lupo accanto → scopre che quello che sa fare serve anche agli altri.", "Se piove e salta il gioco all'aperto, chiedi alle Mute «cosa possiamo fare in Tana?» e scegliete insieme tra due o tre delle loro idee → imparano che un problema si risolve insieme, e tu aiuti a scegliere.", "Affida a ogni Muta, a turno ogni mese, un piccolo incarico di Tana (riordinare i materiali del gioco, curare un angolo della Tana, preparare i bans di apertura) → ognuno si prende cura di uno spazio che sente suo.", "A fine riunione fai tre domande veloci: «cosa ti è piaciuto?», «cosa cambieresti?», «cosa vuoi fare la prossima volta?», e fai rispondere prima con il pollice in su, in mezzo o in giù → in pochi minuti parlano tutti e tu raccogli idee per la volta dopo."], "E": ["Al Consiglio di Pattuglia, prima di discutere, ognuno scrive in silenzio su un foglietto anonimo un'idea per la prossima uscita di pattuglia, e il segretario le legge tutte ad alta voce → escono anche le idee di chi di solito sta zitto, e il Capo Pattuglia non deve indovinare cosa vogliono gli altri.", "Al Consiglio di Reparto, quando due proposte delle pattuglie finiscono in parità, chiedi ai Capi Pattuglia di costruire insieme una terza proposta che tenga il meglio di entrambe → imparano a trattare invece di contarsi.", "Affida a una pattuglia la preparazione e la conduzione di un'intera attività di reparto (un gioco serale, una caccia al tesoro), con un capo dello staff che fa da consulente e non da regista → per una sera è la pattuglia a tenere in mano il Reparto.", "Prima di un hike o di un'uscita di pattuglia, fai preparare un «piano B» (un sentiero alternativo, cosa fare se piove o se qualcuno si fa male) e lascia al Capo Pattuglia la scelta di quando usarlo → l'imprevisto diventa una decisione loro, e lo staff resta garante della sicurezza.", "Chiedi al magazziniere di pattuglia di insegnare ai nuovi arrivati, nell'angolo di pattuglia, come si controlla, si monta e si ripone la tenda → il materiale diventa una responsabilità condivisa e i nuovi si sentono subito parte della pattuglia.", "Prima della verifica dell'Impresa, fai rileggere alla pattuglia i verbali del registro di pattuglia: cosa avevamo deciso, cosa abbiamo fatto davvero → si confrontano con le loro stesse parole, non solo con il giudizio dello staff."], "R": ["Nelle settimane prima del Consiglio di Compagnia, lascia in sede una scatola dove ogni Rover può infilare idee anonime (un'uscita, un servizio, un tema da approfondire) → al Consiglio si parte da una lista vera, e anche chi è nuovo o timido ha detto la sua.", "Quando ci sono troppe proposte, chiedi a chi le presenta di dire anche tempi, costi e cosa serve, poi fate votare ogni Rover con tre bollini da distribuire come vuole → la scelta diventa realistica e si vede subito cosa sta a cuore alla Compagnia.", "Per un'uscita o l'Estate Rover, fai dividere il lavoro in Ronde d'Azione (percorso, menù e spesa, attività) coordinate dalla Ronda Esecutiva, mentre tu fai domande invece di dare risposte («come lo sapete?», «e se succede...?») → i Rover organizzano davvero e tu li aiuti a vedere quello che manca.", "Quando qualcosa va storto (pochi iscritti, un servizio annullato, un autofinanziamento andato male), invece di sistemarlo tu porta il problema alla Ronda Esecutiva e chiedi «cosa proponete?» → imparano a gestire una crisi senza aspettare un adulto.", "Chiedi ai Rover che hanno già fatto un hike di preparare con chi è appena arrivato in Compagnia lo zaino e il percorso del suo primo hike → le competenze passano tra pari e i nuovi si sentono accolti.", "Chiedi a chi fa servizio associativo in Branco o in Reparto di raccontare al Consiglio cosa sta imparando e di proporre un'attività in cui la Compagnia può dare una mano → il servizio di uno diventa un'occasione per tutti."]}};
@@ -11278,7 +11278,7 @@ function protSpuntiOpen(tab){
   else body='<div class="asp-h" style="font-size:13px">La postura del capo</div>'+li(D.postura)+'<div class="asp-h" style="font-size:13px;margin-top:12px">Piccole abitudini di tutti i giorni</div>'+li(Q.abitudini);
   const tabs=[['capire','Capire'],['errori','Situazioni da riconoscere'],['esempi','Esempi per Branca'],['postura','Postura del capo']];
   modalShow('<div class="asp"><div style="font-size:15px;font-weight:800;margin-bottom:2px">Dare protagonismo ai ragazzi</div>'+
-    '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:8px">Facoltativo: spunti pratici per lasciare ai ragazzi scelte vere.</div>'+
+    '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:8px">Spunti pratici per lasciare ai ragazzi scelte vere.</div>'+
     '<div class="asp-tabs">'+tabs.map(t=>'<button class="'+(T===t[0]?'on':'')+'" onclick="protSpuntiOpen(\''+t[0]+'\')">'+t[1]+'</button>').join('')+'</div>'+body+'</div>');
 }
 function protBrBody(b){ const x=ATT_SPUNTI.branche[b], ex=x.esempi.concat(PROT_SPUNTI.extra[b]||[]);
@@ -15572,12 +15572,15 @@ function show(view, arg){
   else if(view === 'home') homeHTML();
 }
 function top(menu){
-  const lm = document.querySelector('#hdr .logo-mark'); const mk0 = lm ? `<div class="sh-mark sh-mark-l" aria-hidden="true">${lm.innerHTML}</div>` : `<div class="sh-mark" aria-hidden="true">PEE</div>`;
-  return `<header class="sh-top">${mk0}<b>PEE CNGEI</b><span class="sh-tag-line">Programmazione Educativa Esperienziale</span>${menu ? `<nav aria-label="Link rapidi">
-    <button class="sh-lnk" type="button" onclick="shGuide()">Guida</button>
-    <button class="sh-lnk" type="button" onclick="shVideo()">Video</button>
-    <button class="sh-lnk" type="button" onclick="shProfileOpen()">Profilo</button>
-    <button class="sh-lnk" type="button" onclick="shLogout()">Esci</button></nav>` : ''}</header>`;
+  // stessa barra dentro e fuori dai progetti: logo, nome, link e pulsante «Suggerimenti?» identici
+  const lm = document.querySelector('#hdr .logo-mark');
+  const mk0 = lm ? `<div class="logo-mark" aria-hidden="true">${lm.innerHTML}</div>` : '';
+  let nm = ''; try{ nm = (CL && CL.user) ? clShortName() : ''; }catch(e){}
+  return `<header class="sh-top"><div class="logo">${mk0}<div class="logo-txt">PEE CNGEI</div></div><span class="sh-pjn sh-pjn-t">Programmazione Educativa Esperienziale</span><nav aria-label="Link rapidi">
+    ${menu ? '<button class="sh-lnk sh-lnk-h" type="button" onclick="shGoHome()">I tuoi progetti</button>' : ''}
+    <button class="sh-lnk sh-lnk-g" type="button" onclick="shGuide()">Guida</button>
+    <button class="sh-lnk sh-lnk-h" type="button" onclick="shVideo()">Video</button>
+    ${menu ? '<button class="sh-lnk sh-lnk-b sh-lnk-h" type="button" onclick="fbOpen()">Suggerimenti?</button><button class="sh-lnk sh-lnk-n" type="button" id="sh-name-t" title="Il tuo profilo" onclick="shProfileOpen()">' + esc(nm || 'Profilo') + '</button>' : ''}</nav></header>`;
 }
 window.shVideo = function(){ try{ vidOpen(1); }catch(e){ try{ shGuide(); }catch(x){} } };
 function accountCard(why){
@@ -15692,7 +15695,7 @@ function profCard(p, mode, disabled){
       <div class="sh-msg" id="sh-pmsg" role="alert"></div>
       ${SH.profErr ? `<div class="sh-hint">Il profilo non si è potuto leggere dal cloud (${esc(SH.profErr)}): ti mostro la copia di questo dispositivo.</div>` : ''}
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="submit" id="sh-psave">${first ? 'Continua' : 'Salva'}</button>${first ? '' : '<button class="sh-btn gh" type="button" onclick="shGoHome()">Annulla</button>'}</div>
-    </fieldset></form>`;
+    </fieldset></form>${first ? '' : '<div class="sh-wrap-out"><button class="sh-btn gh" type="button" onclick="shLogout()">Esci dall’account</button></div>'}`;
 }
 function profileHTML(mode){
   const p = SH.prof || {}; const first = mode !== 'edit';
@@ -16155,6 +16158,38 @@ body.sh-in[data-amb="P"] #amb-foot0,body.sh-in[data-amb="C"] #amb-foot0,body.sh-
 .lg-in ul{margin:0 0 4px;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)}
 .lg-in li{margin:3px 0}
 .lg-in .lg-src{font-size:12px;color:var(--ink-light);margin:12px 0 0}
+/* Programmazione di Unità: gruppi del menu a fisarmonica e pagina 1a divisa */
+.sh-sg.sh-gh{display:flex;align-items:center;gap:0;width:100%;border:0;background:transparent;cursor:pointer;text-align:left;min-height:40px}
+.sh-sg.sh-gh:hover{background:#F0F0E8;border-radius:8px}
+.sh-sg.sh-gh .sh-tri{display:inline-block;width:0;height:0;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--u-tri,#3d4c44);margin-right:10px;transition:transform .15s}
+.sh-sg.sh-gh.open .sh-tri{transform:rotate(90deg)}
+.sh-gi{display:flex;flex-direction:column;gap:1px;margin-bottom:6px}
+body.sh-in[data-ctx] .profile-card>[data-blk="*"],body.sh-in[data-ctx] .profile-card>[data-blk="x"]{display:none!important}
+body.sh-in[data-ctx="unit"] .profile-card>[data-blk]:not([data-blk="unit"]):not([data-blk="*"]):not([data-blk="x"]),
+body.sh-in[data-ctx="ctx"] .profile-card>[data-blk]:not([data-blk="ctx"]):not([data-blk="*"]):not([data-blk="x"]),
+body.sh-in[data-ctx="staff"] .profile-card>[data-blk]:not([data-blk="staff"]):not([data-blk="*"]):not([data-blk="x"]),
+body.sh-in[data-ctx="occ"] .profile-card>[data-blk]:not([data-blk="occ"]):not([data-blk="*"]):not([data-blk="x"]){display:none!important}
+body.sh-in[data-ctx="pctx"] .profile-card>[data-blk="occ"]{display:none!important}
+#ctx-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+/* barra in alto unica: dentro e fuori dai progetti */
+.sh-top{background:var(--green,#1B5E42);color:#fff;min-height:61px;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:nowrap;box-shadow:0 2px 20px rgba(0,0,0,.2);position:sticky;top:0;z-index:50}
+.sh-top .logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.sh-top .logo-mark{width:40px;height:40px;flex-shrink:0;display:flex;background:transparent;border-radius:0}
+.sh-top .logo-txt{font-size:13px;font-weight:700;color:inherit}
+.sh-top .sh-pjn-t{font-size:12.5px;font-weight:700;max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-top nav{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.sh-top .sh-lnk{background:transparent;border:0;color:inherit;font:600 12.5px 'Montserrat',sans-serif;min-height:44px;padding:0 10px;cursor:pointer;border-radius:8px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.sh-top .sh-lnk:hover{background:rgba(255,255,255,.14)}
+.sh-top .sh-lnk-b{border:1.5px solid rgba(255,255,255,.35);border-radius:8px;text-decoration:none;font-weight:700;min-height:40px;padding:0 14px}
+.sh-top .sh-lnk-n{font-weight:800}
+.sh-wrap-out{max-width:640px;margin:14px auto 0;padding:0 4px}
+@media(max-width:767px){.sh-top{padding:0 12px}.sh-top .sh-pjn-t{display:none}.sh-top nav .sh-lnk-h{display:none}}
+body.sh-in .hdr-inner .hdr-actions{margin-left:auto}
+body.sh-in .hdr .logo{display:flex!important}
+body.sh-in .hdr .logo-mark{display:flex!important;width:40px;height:40px}
+body.sh-in .hdr .logo-txt{display:block!important}
+body.sh-in .hdr .logo-txt{color:inherit}
+@media(max-width:767px){body.sh-in .hdr .logo-txt,.sh-top .logo-txt{display:none!important}}
 /* testo di lettura nelle schede: almeno 13,5 px (i testi di servizio restano a 12 px) */
 body.sh-in .gblock :is(label,p,li)[style*="font-size:12px"]:not(table *),body.sh-in .gblock :is(label,p,li)[style*="font-size:12.5px"]:not(table *),body.sh-in .gblock :is(label,p,li)[style*="font-size:13px"]:not(table *){font-size:13.5px!important;line-height:1.5!important}
 
@@ -16184,19 +16219,31 @@ const ico = k => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[k]
 // ── voci del menu ──
 const NAV_AN = [
   {id:'dash', t:'Dashboard', ic:'dash', go:'shDash()'},
+  {g:'Capire'},
+  {id:'a-unit', k:'1a:unit', t:'La mia unità', ic:'users', go:"shSub('1a','','unit')"},
+  {id:'a-ctx', k:'1a:ctx', t:'Il mio contesto', ic:'proj', go:"shSub('1a','','ctx')"},
+  {id:'a-staff', k:'1a:staff', t:'Il mio staff', ic:'user', go:"shSub('1a','','staff')"},
+  {g:'Osservare'},
+  {id:'o-occ', k:'1a:occ', t:'Come ho osservato', ic:'eye', go:"shSub('1a','','occ')"},
+  {id:'o-P', k:'1b:P', t:'Sviluppo Personale', ic:'eye', go:"shSub('1b','P')"},
+  {id:'o-C', k:'1b:C', t:'Sviluppo Comunitario', ic:'eye', go:"shSub('1b','C')"},
+  {id:'o-S', k:'1b:S', t:'Sviluppo Spirituale', ic:'eye', go:"shSub('1b','S')"},
+  {id:'o-conf', k:'1s', t:'Confronto e sintesi', ic:'users', go:"shSub('1s','')", cond:'conf'},
+  {id:'o-1c', k:'1c', t:'Lettura del gruppo', ic:'list', go:"shSub('1c','')"},
+  {id:'o-1d', k:'1d', t:'Priorità', ic:'star', go:"shSub('1d','')"},
   {g:'Progettare'},
-  {id:'s1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shSec('1')", sub:true},
-  {id:'s2', t:'2 · Obiettivi e Indicatori di Risultato', ic:'star', go:"shSec('2')"},
-  {id:'s3', t:'3 · Percorsi Educativi Esperienziali', ic:'list', go:"shSec('3')"},
-  {id:'s4', t:'4 · Verifica delle Attività', ic:'check', go:"shSec('4')"},
-  {id:'s5', t:'5 · Valutazione Finale', ic:'up', go:"shSec('5')"},
+  {id:'p-2', k:'2', t:'Obiettivi e indicatori', ic:'star', go:"shSec('2')"},
+  {id:'p-3', k:'3', t:'Percorsi educativi', ic:'list', go:"shSec('3')"},
   {g:'Realizzare'},
-  {id:'usc', t:'Uscite e campi', ic:'tent', go:"shSec('usc')"},
-  {g:'Misurare e conservare'},
-  {id:'num', t:'Numeri dell’Unità', ic:'num', go:'shNum()'},
-  {id:'chk', t:'Controllo e invio', ic:'doc', go:"shSec('chk')"},
-  {id:'sha', t:'Condividi con lo staff', ic:'users', go:'shShare()'},
-  {id:'arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'}
+  {id:'r-usc', k:'usc', t:'Uscite e campi', ic:'tent', go:"shSec('usc')"},
+  {g:'Misurare'},
+  {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
+  {id:'m-5', k:'5', t:'Valutazione finale', ic:'up', go:"shSec('5')"},
+  {g:'Conservare'},
+  {id:'k-arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'},
+  {g:'Condividere'},
+  {id:'d-sha', t:'Condividi con lo staff', ic:'users', go:'shShare()'},
+  {id:'d-chk', k:'chk', t:'Controllo e invio', ic:'doc', go:"shSec('chk')"}
 ];
 const NAV_PP = [
   {id:'pp0', t:'A che punto sei', ic:'clock', go:"shPP('0')"},
@@ -16228,13 +16275,25 @@ const navItems = () => isPP() ? NAV_PP : isST() ? NAV_ST : NAV_AN;
 let cur = null;
 
 // Sezione 1: sottovoci (Sviluppo Personale, Comunitario, Spirituale = una pagina per Ambito, niente scroll infinito)
-const SUB1 = [['1a','Contesto e KOS'],['1b:P','Sviluppo Personale'],['1b:C','Sviluppo Comunitario'],['1b:S','Sviluppo Spirituale'],['1c','Lettura del gruppo'],['1d','Priorità']];
-function subCur(){ try{ const g = gCur(); if(g === '1b') return '1b:' + (window._ambF || 'P'); return g; }catch(e){ return ''; } }
+const SUB1 = [['1a:pctx','Contesto'],['1a:occ','KOS e Occasioni osservative'],['1b:P','Sviluppo Personale'],['1b:C','Sviluppo Comunitario'],['1b:S','Sviluppo Spirituale'],['1c','Lettura del gruppo'],['1d','Priorità']];
+function subCur(){ try{ const g = gCur(); if(g === '1b') return '1b:' + (window._ambF || 'P'); if(g === '1a') return '1a:' + (window._ctxF === 'occ' ? 'occ' : 'pctx'); return g; }catch(e){ return ''; } }
 function subHTML(inSheet){
   const sc = subCur();
-  return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[1] || ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
+  return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
+function navCond(i){ if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
+function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
+SH._gt = SH._gt || {};
+window.shGrp = function(g){ const cg = groupOf(cur); const open = SH._gt[g] !== undefined ? SH._gt[g] : g === cg; SH._gt[g] = !open; paint(); };
+function itemBtn(i, drawer){ return `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="${drawer === false ? '' : 'shDrawer(false);'}${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`; }
 function navHTML(){
+  if(!isPP() && !isST()){
+    const cg = groupOf(cur);
+    return navGroups().map(G => { const vis = G.items.filter(navCond); if(!G.g) return vis.map(i => itemBtn(i)).join('');
+      const open = SH._gt[G.g] !== undefined ? SH._gt[G.g] : G.g === cg;
+      return `<button type="button" class="sh-sg sh-gh${open ? ' open' : ''}" aria-expanded="${open}" onclick="shGrp('${G.g}')"><span class="sh-tri" aria-hidden="true"></span>${esc(G.g)}</button>` + (open ? `<div class="sh-gi">${vis.map(i => itemBtn(i)).join('')}</div>` : ''); }).join('');
+  }
   return navItems().map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
 }
 function bbHTML(){
@@ -16242,9 +16301,9 @@ function bbHTML(){
   if(isST()){ const B2 = [['st1','Osservazione','eye','goPhase(1)'],['st2','Riepilogo','list','goPhase(2)'],['usc','Uscite','tent',"shSec('usc')"],['more','Altro','more',"shSheet('Altro')"]];
     return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
-               : [['dash','Dashboard','dash','shDash()'],['sec','Progettare','list',"shSheet('Progettare')"],['usc','Realizzare','tent',"shSheet('Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
-  const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['s1','s2','s3','s4','s5'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['usc'].includes(cur) : b[0] === 'more' ? ['num','chk','sha','arc','ppc','ppa'].includes(cur) : cur === b[0];
+               : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
+  const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','r-usc'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
@@ -16256,9 +16315,12 @@ window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on
 window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
-    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['sha','arc'] : ['num','chk','sha','arc'];
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['sha','arc'] : ['m-4','m-5','k-arc','d-sha','d-chk'];
     h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
+  }else if(!isPP() && !isST()){
+    const names = g.split('|'); h = '';
+    names.forEach(n => { const G = navGroups().find(x => x.g === n); if(!G) return; h += `<div class="sh-sg">${esc(n)}</div>` + G.items.filter(navCond).map(i => `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join(''); });
   }else{
     let on = false; const out = [];
     it.forEach(i => { if(i.g){ on = i.g === g; return; } if(on) out.push(i); });
@@ -16274,14 +16336,18 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-she
 function active(){
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'conf' ? (isPP() ? 'pp1' : 's1') : 'pp' + (SH.ppv || '0');
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0');
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
+  if(!isPP()){
+    if(p(4)){ if(schedaStep === 'ctx') return ({unit:'a-unit', ctx:'a-ctx', staff:'a-staff', occ:'o-occ'})[window._ctxF || 'unit']; return ({A:'p-2', B:'p-2', C:'p-3', ver:'m-4', val:'m-5', chk:'d-chk', usc:'r-usc'})[schedaStep] || 'p-2'; }
+    if(p(1)) return 'o-' + (window._ambF || 'P'); if(p(2)) return 'o-1c'; if(p(3)) return 'o-1d'; return null;
+  }
   const sec = (() => { if(p(4)){ return ({ctx:'s1', A:'s2', B:'s2', C:'s3', ver:'s4', val:'s5', chk:'chk', usc:'usc'})[schedaStep] || 's2'; } if(p(1) || p(2) || p(3)) return 's1'; return null; })();
   if(isPP() && sec){ const m = {s1:'pp1', s2:'pp2', s3:'pp3', s4:'pp4', s5:'pp5', chk:'ppc'}[sec]; if(m){ SH.ppv = m.slice(2); return m; } }
   return sec;
 }
-window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ applyAmb(); lgInstr(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; cur = a; paint(); } };
+window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); lgInstr(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
 // una pagina per Ambito nella scheda di osservazione (filtro sulle tre sezioni dei percorsi)
 function applyAmb(){
   const on = (MODE === 'giovani' && gCur() === '1b') ? (window._ambF || 'P') : '';
@@ -16289,13 +16355,53 @@ function applyAmb(){
   const f = $('amb-foot'); if(!f) return;
   if(!on){ f.style.display = 'none'; return; }
   const ord = ['P','C','S'], i = ord.indexOf(on), nm = {P:'Sviluppo Personale', C:'Sviluppo Comunitario', S:'Sviluppo Spirituale'};
-  const prev = i > 0 ? `<button type="button" class="btn-ghost" onclick="shSub('1b','${ord[i-1]}')">← ${nm[ord[i-1]]}</button>` : `<button type="button" class="btn-ghost" onclick="shSub('1a','')">← Contesto e KOS</button>`;
-  const next = i < 2 ? `<button type="button" class="btn-primary" onclick="shSub('1b','${ord[i+1]}')">${nm[ord[i+1]]} →</button>` : `<button type="button" class="btn-primary" onclick="shSub('1c','')">Lettura del gruppo →</button>`;
-  const h = prev + next; if(f.dataset.k !== on){ f.dataset.k = on; f.innerHTML = h; } f.style.display = '';
+  const pp = isPP(); let conf = false; try{ conf = gSteps().some(x => x[0] === '1s'); }catch(e){}
+  const prev = i > 0 ? `<button type="button" class="btn-ghost" onclick="shSub('1b','${ord[i-1]}')">← ${nm[ord[i-1]]}</button>` : (pp ? `<button type="button" class="btn-ghost" onclick="shSub('1a','','occ')">← KOS e Occasioni osservative</button>` : `<button type="button" class="btn-ghost" onclick="shSub('1a','','occ')">← Come ho osservato</button>`);
+  const nx = conf ? ['1s','Confronto e sintesi'] : ['1c','Lettura del gruppo'];
+  const next = i < 2 ? `<button type="button" class="btn-primary" onclick="shSub('1b','${ord[i+1]}')">${nm[ord[i+1]]} →</button>` : `<button type="button" class="btn-primary" onclick="shSub('${nx[0]}','')">${nx[1]} →</button>`;
+  const h = prev + next; const kk = on + (pp ? 'p' : 'a') + (conf ? 'c' : ''); if(f.dataset.k !== kk){ f.dataset.k = kk; f.innerHTML = h; } f.style.display = '';
+}
+// ── Programmazione di Unità, pagina 1a divisa in La mia unità / Il mio contesto / Il mio staff / Come ho osservato ──
+const CTX_PAGES = ['unit','ctx','staff','occ']; const PCTX_PAGES = ['pctx','occ'];
+const CTX_NAME = {unit:'La mia unità', ctx:'Il mio contesto', staff:'Il mio staff', occ:'Come ho osservato', pctx:'Contesto'};
+const CTX_TITLE = {unit:'La mia unità', ctx:'Il mio contesto', staff:'Il mio staff', occ:'Occasioni osservative', pctx:'Contesto'};
+const CTX_DESC = {pctx:'Chi compila, il contesto in cui opera l’Unità e chi c’è nello staff.', unit:'Chi compila, come si chiama l’Unità e quanti siete.', ctx:'Il territorio, la Sezione e il Gruppo in cui lavori.', staff:'Chi c’è nello staff e come programmate: da soli o insieme.', occ:'Le occasioni in cui hai osservato il gruppo e a quali condizioni.'};
+function ctxObserve(){ if(SH._mo) return; const r = $('val-root'); if(!r) return; try{ SH._mo = new MutationObserver(() => { try{ tagCtx(); applyCtx(); }catch(e){} }); SH._mo.observe(r, {childList:true, subtree:true}); }catch(e){} }
+function tagCtx(){
+  const card = document.querySelector('#val-root .profile-card'); if(!card) return;
+  const kids = Array.prototype.slice.call(card.children).filter(e => e.id !== 'ctx-foot');
+  if(card.dataset.tg === String(kids.length)) return;
+  let g = 'unit';
+  kids.forEach(e => {
+    const t = (e.textContent || '').trim();
+    if(e.tagName === 'LABEL' && /^Contesto territoriale/.test(t)) g = 'ctx';
+    else if(e.tagName === 'DIV' && /^Adulti in staff/.test(t)) g = 'staff';
+    else if(e.tagName === 'DIV' && /^Osservazione con il Kit/.test(t)) g = 'occ';
+    let b = g; if(e.id === 'prog-mode') b = isPP() ? 'x' : 'staff'; if(e.tagName === 'H3') b = '*'; if(/^Avanti/.test(t) && e.tagName === 'DIV') b = 'x';
+    e.setAttribute('data-blk', b);
+  });
+  card.dataset.tg = String(kids.length);
+}
+function applyCtx(){
+  const pp = isPP(); let on = ''; if(MODE === 'giovani' && gCur() === '1a'){ const f = window._ctxF; on = pp ? (f === 'occ' ? 'occ' : 'pctx') : (CTX_PAGES.indexOf(f) >= 0 ? f : 'unit'); }
+  if(document.body.getAttribute('data-ctx') !== on) document.body.setAttribute('data-ctx', on);
+  const card = document.querySelector('#val-root .profile-card');
+  if(on){
+    const ttl = (pp && on === 'occ') ? 'KOS e Occasioni osservative' : CTX_TITLE[on]; const t = $('hero-title4'); if(t && t.textContent !== ttl) t.textContent = ttl;
+    const d = $('val-desc'); if(d && d.textContent !== CTX_DESC[on]) d.textContent = CTX_DESC[on];
+    if(card){
+      let f = card.querySelector('#ctx-foot'); if(!f){ f = document.createElement('div'); f.id = 'ctx-foot'; f.className = 'foot-nav'; card.appendChild(f); }
+      const PG = pp ? PCTX_PAGES : CTX_PAGES; const i = PG.indexOf(on); const nm = k => (pp && k === 'occ') ? 'KOS e Occasioni osservative' : CTX_NAME[k];
+      const prev = i > 0 ? `<button type="button" class="btn-ghost" onclick="shSub('1a','','${PG[i-1]}')">← ${nm(PG[i-1])}</button>` : '<span></span>';
+      const next = i < PG.length - 1 ? `<button type="button" class="btn-primary" onclick="shSub('1a','','${PG[i+1]}')">${nm(PG[i+1])} →</button>` : `<button type="button" class="btn-primary" onclick="shSub('1b','P')">Sviluppo Personale →</button>`;
+      const h = prev + next; const kk = on + (pp ? 'p' : 'a'); if(f.dataset.k !== kk){ f.dataset.k = kk; f.innerHTML = h; }
+    }
+  }else if(card){ const f = card.querySelector('#ctx-foot'); if(f) f.remove(); }
 }
 // ── Istruzioni di compilazione dalle Linee Guida (solo Progetto Personale): paragrafo chiuso a inizio pagina ──
 const LG_ISTR = {
- '1a': {s:'Sezione 1', mod:['Contesto territoriale: Indicare qui gli elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte che il territorio offre, etc)','Contesto Sezione e Gruppo: Indicare qui gli elementi rilevanti che possono influenzare la tua Unità (composizione della Sezione e del Gruppo, numero di Adulti in staff, esperienza e disponibilità, etc)'], crit:['Osservazione basata su attività concrete (2-3 attività iniziali)','Riferimenti importanti da segnalare su Adulti, Contesto territoriale e associativo, etc.']},
+ '1ao': {s:'Sezione 1', cosa:['Compilazione della scheda di osservazione utilizzando il Kit di Osservazione e Scoperta del gruppo Unità'], crit:['Osservazione basata su attività concrete (2-3 attività iniziali)']},
+ '1a': {s:'Sezione 1', mod:['Contesto territoriale: Indicare qui gli elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte che il territorio offre, etc)','Contesto Sezione e Gruppo: Indicare qui gli elementi rilevanti che possono influenzare la tua Unità (composizione della Sezione e del Gruppo, numero di Adulti in staff, esperienza e disponibilità, etc)'], crit:['Riferimenti importanti da segnalare su Adulti, Contesto territoriale e associativo, etc.']},
  '1b': {s:'Sezione 1', cosa:['Compilazione della scheda di osservazione utilizzando il Kit di Osservazione e Scoperta del gruppo Unità'], crit:['Osservazione basata su attività concrete (2-3 attività iniziali)','Focus sul gruppo nel suo complesso, non solo sui singoli','Descrizione oggettiva e non giudicante']},
  '1c': {s:'Sezione 1', cosa:['Analisi delle dinamiche di gruppo emerse dall’osservazione','Evidenziazione di aspetti positivi emersi e necessità educative dell’Unità','Eventuali note significative sui singoli (solo elementi rilevanti per il gruppo)'], crit:['Focus sul gruppo nel suo complesso, non solo sui singoli','Descrizione oggettiva e non giudicante','Bilanciamento tra aspetti positivi e necessità']},
  '1d': {s:'Sezione 1', cosa:['Priorizzazione e scelta delle necessità educative sulle quali si vuole lavorare durante l’anno (almeno 1 per ciascun Ambito di Sviluppo)','Breve spiegazione finale della scelta fatta, per permettere al tutor di capire il ragionamento che è stato svolto'], crit:['Necessità concrete, risolvibili e rilevanti']},
@@ -16312,7 +16418,7 @@ function lgBoxHTML(k){
 function lgInstr(){
   try{
     if(!isPP()) return;
-    const k = gCur(); const pn = ({'1b':'panel1','1c':'panel2','1d':'panel3'})[k] || 'panel4';
+    let k = gCur(); if(k === '1a' && window._ctxF === 'occ') k = '1ao'; const pn = ({'1b':'panel1','1c':'panel2','1d':'panel3'})[k] || 'panel4';
     const panel = $(pn); if(!panel || !panel.classList.contains('active')) return;
     const old = document.getElementById('lg-istr');
     if(!LG_ISTR[k]){ if(old) old.remove(); return; }
@@ -16325,8 +16431,8 @@ function lgInstr(){
     if(anchor && anchor.parentNode === panel){ if(anchor.classList.contains('hero')) anchor.after(d); else panel.insertBefore(d, anchor); } else panel.insertBefore(d, panel.firstChild);
   }catch(e){}
 }
-window.shSub = function(k, amb){
-  ownOff(); if(k === '1b') window._ambF = amb || window._ambF || 'P';
+window.shSub = function(k, amb, ctx){
+  ownOff(); if(k === '1b') window._ambF = amb || window._ambF || 'P'; if(k === '1a' && ctx) window._ctxF = ctx;
   if(isPP()){ SH._ppHold = true; try{ gGo(k); }finally{ SH._ppHold = false; } } else gGo(k);
   try{ applyAmb(); }catch(e){} setTimeout(shSync, 30); try{ window.scrollTo(0, 0); }catch(e){}
 };
@@ -16353,8 +16459,8 @@ window.shSec = function(k){
   setTimeout(shSync, 30);
 };
 window.shNum = function(){
-  ownOff(); gGo('1a');
-  setTimeout(() => { try{ const e = $('num-box'); if(e){ e.scrollIntoView({block:'center'}); const i = e.querySelector('input,textarea'); if(i) i.focus({preventScroll:true}); } }catch(e){} cur = 'num'; paint(); }, 250);
+  ownOff(); shSub('1a', '', 'unit');
+  setTimeout(() => { try{ const e = $('num-box'); if(e){ e.scrollIntoView({block:'center'}); const i = e.querySelector('input,textarea'); if(i) i.focus({preventScroll:true}); } }catch(e){} }, 300);
 };
 window.shShare = function(){ try{ if(CL.ctx) clShow('share'); }catch(e){} };
 

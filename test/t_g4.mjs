@@ -9,7 +9,7 @@ db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', 
 db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Progetto 2026-27', meta:{mode:'giovani', fascia:'E', tipo:'AN'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'X', obs:{P1:6}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', pp:{occMan:[{att:'Gioco vecchio', data:'3 ottobre', perc:['P1']}]}}}, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
 await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
 // 1.1
-await ev(() => gGo('1a')); await sleep(600);
+await ev(() => shSub('1a','','occ')); await sleep(600);
 let s = await ev(() => ({dt:document.querySelectorAll('#occ-tab input[type=date]').length, old:document.getElementById('occ-tab').textContent, co:!!document.getElementById('gr-coinc')}));
 ok(s.dt >= 1 && /scritto prima: «3 ottobre»/.test(s.old), 'data: campo data, e il testo vecchio non si perde');
 ok(s.co && /coincide con l’Unità/.test(await ev(() => document.getElementById('gr-coinc').textContent)), 'compare «Il gruppo osservato coincide con l’Unità?»');

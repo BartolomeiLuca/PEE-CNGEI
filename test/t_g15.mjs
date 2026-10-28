@@ -13,7 +13,7 @@ await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('pp1', 0)); 
 // sottomenu
 await P.click('#sh-side .sh-si[data-id="pp1"]'); await sleep(800);
 let s = await ev(() => [...document.querySelectorAll('#sh-side .sh-ss')].map(x => x.textContent));
-ok(s.join('|') === 'Contesto e KOS|Sviluppo Personale|Sviluppo Comunitario|Sviluppo Spirituale|Lettura del gruppo|Priorità', 'PP: sottovoci della Sezione 1 nel menu: ' + s.join(' / '));
+ok(s.join('|') === 'Contesto|KOS e Occasioni osservative|Sviluppo Personale|Sviluppo Comunitario|Sviluppo Spirituale|Lettura del gruppo|Priorità', 'PP: sottovoci della Sezione 1 nel menu: ' + s.join(' / '));
 await P.click('#sh-side .sh-ss[data-sub="1b:C"]'); await sleep(900);
 s = await ev(() => ({vis:[...document.querySelectorAll('#percorsi-root .ambito-sec')].map(e => getComputedStyle(e).display !== 'none'), on:document.querySelector('#sh-side .sh-ss.on')?.textContent, foot:getComputedStyle(document.getElementById('amb-foot')).display}));
 ok(s.vis.join() === 'false,true,false' && s.on === 'Sviluppo Comunitario' && s.foot !== 'none', 'una pagina per Ambito: solo il Comunitario in vista, voce accesa, piè di pagina precedente/successivo');
