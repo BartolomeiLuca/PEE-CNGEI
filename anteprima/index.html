@@ -16462,6 +16462,7 @@ const NAV_AN = [
   {id:'p-vis', t:'Visione d’insieme', ic:'cal', go:'shVis()'},
   {g:'Realizzare'},
   {id:'r-cal', t:'Calendario e attività', ic:'cal', go:'shCal()'},
+  {id:'r-ele', t:'Elenco dell’anno', ic:'list', go:'shEle()'},
   {id:'r-bil', t:'Spese mese per mese', ic:'doc', go:'shBil()'},
   {id:'r-chk', t:'Check dello staff', ic:'users', go:'shChk()'},
   {g:'Misurare'},
@@ -16534,7 +16535,7 @@ function bbHTML(){
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal','r-bil','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal','r-ele','r-bil','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
@@ -16567,7 +16568,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-she
 function active(){
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'chk' ? 'r-chk' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -17138,6 +17139,44 @@ window.chkDel = function(id){ chkSet(chkList().filter(c => c.id !== id)); chkRe(
 window.chkReset = function(){ chkSet(CHK_DEF()); chkRe(); };
 window.shChk = function(){ ensurePanels(); SH.ppv = 'chk'; ownOff(); $('panel-pp').innerHTML = chkHTML(); own('panel-pp'); };
 window.chkNext = chkNext; window.chkList = chkList;
+
+// ── Realizzare · «Elenco dell'anno»: tutte le attività dell'anno scout (cicli dell'Unità + attività di staff) in ordine di data, numerate da 1 ──
+async function eleLoad(){
+  const items = await annoLoad(); const out = []; const y = Number(CL.ctx.anno);
+  const take = (sc, ciclo, staff, cur, pid) => { const U = (sc || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return;
+    Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const x = u.ax || {};
+      out.push({id:u.id, pid, cur, staff, ciclo, titolo:uscTit(u), formato:(CAL_T[uscModK(u)] || ['Uscita'])[0], tipo:uscTipoLab(u), data:/^\d{4}-\d{2}-\d{2}/.test(x.data || '') ? x.data.slice(0, 10) : '', fine:/^\d{4}-\d{2}-\d{2}/.test(x.dataFine || '') ? x.dataFine.slice(0, 10) : '', cr:Number(u.cr) || 0}); }); };
+  items.forEach(it => take((it.data || {}).scheda, it.ci.nome, false, !!it.cur, it.id));
+  try{ const rows = await dbList(); const st = rows.filter(r => Number(r.anno) === y && (r.meta || {}).mode === 'staff');
+    for(const r of st){ try{ const g = await dbGet(r.id); take(((g && g.data) || {}).scheda, 'Staff', true, false, r.id); }catch(e){} } }catch(e){}
+  return out;
+}
+function eleSeq(L){ const d = L.filter(o => o.data).sort((a, b) => a.data.localeCompare(b.data) || a.cr - b.cr || String(a.titolo).localeCompare(String(b.titolo))); d.forEach((o, i) => o.n = i + 1); return d.concat(L.filter(o => !o.data).sort((a, b) => a.cr - b.cr)); }
+function eleFilt(L){ const f = SH._ef || {}; return L.filter(o => (!f.s || (f.s === 'staff' ? o.staff : !o.staff)) && (!f.f || o.formato === f.f)); }
+function eleHTML(){
+  const L0 = SH._el; if(!L0) return '<p class="sh-sub" role="status">Carico l’anno…</p>';
+  const all = eleSeq(L0), f = SH._ef = SH._ef || {}, L = eleFilt(all), y = Number(CL.ctx.anno);
+  const nStaff = all.filter(o => o.staff).length;
+  const sel = (id, v, opts, lab) => `<select id="${id}" class="sh-in" aria-label="${lab}" onchange="eleFlt('${id === 'ele-s' ? 's' : 'f'}',this.value)">${opts.map(([k, t]) => `<option value="${esc(k)}"${v === k ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+  const rows = L.map(o => `<tr${o.cur ? ` class="ele-go" tabindex="0" role="button" onclick="shSrUsc('${o.id}')" onkeydown="if(event.key==='Enter')this.click()"` : ''}><td class="n">${o.n ? o.n : '—'}</td><td>${o.data ? esc(fmtDL(o.data)) + (o.fine && o.fine > o.data ? ' → ' + esc(fmtDL(o.fine)) : '') : '<span class="sh-hint">senza data</span>'}</td><td><b>${esc(o.titolo)}</b>${o.staff ? ' <span class="ele-stf">STF</span>' : ''}</td><td>${esc(o.formato)}${o.tipo ? '<div class="sh-hint">' + esc(o.tipo) + '</div>' : ''}</td><td>${esc(o.ciclo)}</td></tr>`).join('');
+  return `<div class="sh-dh"><div><h1>Elenco dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Tutte le attività dell’anno scout ${esc(String(scheda.annoScout || y))} in ordine di data, numerate da 1: quelle dell’Unità in tutti i cicli${nStaff ? ' e quelle dello staff (STF)' : ' e, se hai un progetto staff dello stesso anno, anche quelle (STF)'}. Il numero si aggiorna da solo se ne aggiungi o sposti una: nei documenti citale sempre anche con data e titolo.</p></div></div>
+  <section class="sh-card2 wide"><div class="bil-flt"><label class="sh-lb" for="ele-s">Mostra</label>${sel('ele-s', f.s || '', [['', 'Tutte'], ['unita', 'Solo Unità'], ['staff', 'Solo staff']], 'Unità o staff')}<label class="sh-lb" for="ele-f">Formato</label>${sel('ele-f', f.f || '', [['', 'Tutti'], ['Riunione', 'Riunioni'], ['Uscita', 'Uscite'], ['Bivacco', 'Bivacchi'], ['Campo', 'Campi']], 'Formato')}</div>
+  ${rows ? `<div class="vis-lst"><table class="bil-t ele-t"><thead><tr><th>N.</th><th>Quando</th><th>Attività</th><th>Formato e tipo</th><th>Ciclo</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sh-hint">Nessuna attività: le crei da «Calendario e attività».</p>'}
+  <div class="anv-act"><button type="button" class="sh-btn" onclick="shCal()">Vai a Calendario e attività</button><button type="button" class="btn-ghost" onclick="eleCsv()">Scarica per Excel</button></div></section>`;
+}
+window.eleFlt = function(k, v){ (SH._ef = SH._ef || {})[k] = v; const p = $('panel-pp'); if(p && SH.ppv === 'ele') p.innerHTML = eleHTML(); };
+window.shEle = async function(){
+  ensurePanels(); SH.ppv = 'ele'; ownOff(); $('panel-pp').innerHTML = '<p class="sh-sub" role="status">Carico l’anno…</p>'; own('panel-pp');
+  try{ SH._el = await eleLoad(); }catch(e){ console.error(e); $('panel-pp').innerHTML = '<p class="sh-sub">Non riesco a leggere l’anno: controlla la connessione.</p>'; return; }
+  if(SH.ppv === 'ele') $('panel-pp').innerHTML = eleHTML();
+};
+window.eleCsv = function(){
+  if(!SH._el) return; const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const L = [['N.', 'Data', 'Data fine', 'Attività', 'Unità o staff', 'Formato', 'Tipo', 'Ciclo'].map(q).join(';')];
+  eleFilt(eleSeq(SH._el)).forEach(o => L.push([o.n || '', o.data, o.fine, o.titolo, o.staff ? 'STF' : 'Unità', o.formato, o.tipo, o.ciclo].map(q).join(';')));
+  saveBlob(new Blob(['﻿' + L.join('\r\n')], {type:'text/csv;charset=utf-8'}), 'Attivita-' + String(scheda.annoScout || '').replace(/[^0-9-]/g, '') + '.csv');
+};
+window.eleSeq = eleSeq; window.eleLoad = eleLoad;
 // ── Realizzare · «Spese mese per mese»: preventivo di tutte le uscite dell'anno, mese per mese, con filtri, speso davvero ed export ──
 const BIL_MESI = ['Settembre','Ottobre','Novembre','Dicembre','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto'];
 function bilKeys(y){ const o = []; for(let i = 0; i < 12; i++){ const m = (8 + i) % 12; o.push((y + (8 + i >= 12 ? 1 : 0)) + '-' + String(m + 1).padStart(2, '0')); } return o; }
@@ -17629,6 +17668,8 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .chk-nm{min-height:44px}.chk-w,.chk-a{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}.chk-nx{margin-left:auto;font-size:13px}
 .chk-sel{width:auto;min-height:44px;min-width:130px}.chk-on{display:flex;gap:6px;align-items:center;min-height:44px;font-weight:700}.chk-on input{width:20px;height:20px}.chk-del{grid-column:1/-1;justify-self:end;min-height:40px}
 .chk-a .sh-lb{margin:0}
+/* Elenco dell'anno */
+.ele-go{cursor:pointer}.ele-go:hover{background:#f1f5ef}.ele-t .n{font-weight:800;text-align:right}.ele-stf{font-size:10.5px;font-weight:800;border:1px solid #111;border-radius:4px;padding:0 4px;margin-left:4px}
 /* Tipo di attività */
 .cal-tp{font-size:12px;border:1px solid #8a8a82;border-radius:999px;padding:1px 8px;background:#fff;color:#3d3d38}
 #cal-tpa[hidden]{display:none}
