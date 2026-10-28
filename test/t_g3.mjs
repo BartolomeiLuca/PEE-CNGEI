@@ -48,12 +48,12 @@ const noHScroll = ev => ev(() => document.documentElement.scrollWidth <= innerWi
   const alt = await ev(() => document.getElementById('sh-sheet-in').innerText);
   ok(/Verifica delle attività/.test(alt) && /I tuoi progetti/.test(alt) && /Guida e video/.test(alt) && /Profilo/.test(alt) && /Archivio degli anni/.test(alt), '390 px: «Altro» elenca Verifica, Valutazione, Archivio, Condividi, Controllo, I tuoi progetti, Guida, Profilo');
   await P.keyboard.press('Escape'); await sleep(200);
-  ok(await ev(() => getComputedStyle(document.querySelector('#hdr')).backgroundColor) === 'rgb(220, 43, 38)', '390 px: Branca R → intestazione rossa');
+  ok(await ev(() => getComputedStyle(document.querySelector('#hdr')).backgroundColor) === 'rgb(196, 35, 31)', '390 px: Branca R → intestazione rossa');
   ok(!pa.errors.length, 'nessun errore JS (390)'); }
 // telefono · Progetto Personale, Branca L
 { const {P, ev, pa} = await mk(390, 844, 'PP', 'L');
   ok((await ev(() => [...document.querySelectorAll('#sh-bb .sh-bbb')].map(b => b.textContent.trim()))).join('|') === 'Stato|Sezioni|Invii|Altro', '390 px · PP: Stato, Sezioni, Invii, Altro');
-  ok(await ev(() => getComputedStyle(document.querySelector('#hdr')).backgroundColor) === 'rgb(240, 230, 3)' && await ev(() => getComputedStyle(document.querySelector('#hdr')).color) === 'rgb(43, 40, 0)', '390 px · Branca L: intestazione gialla con testo scuro');
+  ok(await ev(() => getComputedStyle(document.querySelector('#hdr')).backgroundColor) === 'rgb(240, 230, 3)' && await ev(() => getComputedStyle(document.querySelector('#hdr')).color) === 'rgb(26, 24, 0)', '390 px · Branca L: intestazione gialla con testo scuro');
   await P.click('#sh-bb .sh-bbb:has-text("Invii")'); await sleep(300);
   ok(/Invii del Progetto Personale/.test(await ev(() => document.getElementById('panel-pp').innerText)), '390 px · PP: «Invii» apre la pagina degli invii');
   ok(await noHScroll(ev), '390 px · PP: nessuna barra di scorrimento orizzontale');

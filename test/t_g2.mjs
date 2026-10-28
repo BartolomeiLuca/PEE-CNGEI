@@ -24,7 +24,7 @@ s.items = await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].map(b
 ok(['La mia unità','Il mio contesto','Il mio staff','Come ho osservato','Sviluppo Personale','Sviluppo Comunitario','Sviluppo Spirituale','Lettura del gruppo','Priorità','Obiettivi e indicatori','Percorsi educativi','Uscite e campi','Verifica delle attività','Valutazione finale','Archivio degli anni','Condividi con lo staff','Controllo e invio'].every(x => s.items.includes(x)), 'menu: tutte le voci dei sette gruppi');
 ok(s.ph === 'none' && s.theme === 'E', 'schede di fase vecchie nascoste, tema verde della Branca E');
 const hdr = await ev(() => document.getElementById('hdr').innerText);
-ok(/I tuoi progetti/.test(hdr) && /Guida/.test(hdr) && /Video/.test(hdr) && /Suggerimenti/.test(hdr), 'intestazione: I tuoi progetti, Guida, Video, Suggerimenti');
+ok(/Progetti/.test(hdr) && /Guida/.test(hdr) && !/Video/.test(hdr) && /Suggerimenti/.test(hdr) && await ev(() => !!document.querySelector('#hdr #hd-search') && !!document.querySelector('#hdr #hd-hist') && !!document.querySelector('#hdr .hd-zoom') && !!document.querySelector('#hdr .hd-name')), 'intestazione: Progetti, Guida, Suggerimenti, lente, orologio, A a, nome (Video dentro la Guida)');
 // 2 · le voci del menu portano alle sezioni
 const openAll = () => ev(() => ['Capire','Osservare','Progettare','Realizzare','Misurare','Conservare','Condividere'].forEach(g => { if(!document.querySelector('#sh-side .sh-gh.open[onclick*="' + g + '"]')) shGrp(g); }));
 const go = async (label) => { await openAll(); await sleep(150); await P.click(`#sh-side .sh-si:has-text("${label}")`); await sleep(500); return ev(() => ({dash: document.getElementById('panel-dash').classList.contains('active'), p: [1,2,3,4].filter(i => document.getElementById('panel'+i).classList.contains('active')), step: schedaStep, on: (document.querySelector('#sh-side .sh-si.on') || {}).textContent})); };
@@ -87,6 +87,6 @@ ok(await ev(() => document.getElementById('panel-pp').classList.contains('active
 // 6 · staff (versione precedente)
 await open('st1');
 s = await ev(() => ({items: [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()), theme: document.body.getAttribute('data-theme'), dash: document.getElementById('panel-dash').classList.contains('active')}));
-ok(!s.dash && s.items.includes('Osservazione dello staff') && s.items.includes('Riepilogo') && s.theme === 'S', 'progetto Staff: menu proprio, tema blu, niente dashboard');
+ok(!s.dash && s.items.includes('Osservazione dello staff') && s.items.includes('Riepilogo') && s.theme === 'E', 'progetto Staff: menu proprio, colore della Branca del profilo, niente dashboard');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

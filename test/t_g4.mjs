@@ -12,7 +12,7 @@ await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); a
 await ev(() => shSub('1a','','occ')); await sleep(600);
 let s = await ev(() => ({dt:document.querySelectorAll('#occ-tab input[type=date]').length, old:document.getElementById('occ-tab').textContent, co:!!document.getElementById('gr-coinc')}));
 ok(s.dt >= 1 && /scritto prima: «3 ottobre»/.test(s.old), 'data: campo data, e il testo vecchio non si perde');
-ok(s.co && /coincide con l’Unità/.test(await ev(() => document.getElementById('gr-coinc').textContent)), 'compare «Il gruppo osservato coincide con l’Unità?»');
+ok(s.co && /corrisponde a quello per cui programmerai/.test(await ev(() => document.getElementById('gr-coinc').textContent)), 'compare «Il gruppo osservato corrisponde a quello per cui programmerai?»');
 await P.fill('#occ-tab input[type=date]', '2026-08-10'); await sleep(400);
 ok(/prima del 1° settembre/.test(await ev(() => document.getElementById('occ-tab').textContent)) && /anteriori al 1° settembre/.test(await ev(() => document.getElementById('gr-coinc').textContent)), 'data prima del 1° settembre: avviso');
 await P.check('input[name="gr-co"][value="parte"]'); await sleep(300);
@@ -36,7 +36,7 @@ const path = await dl.path(); const { execSync } = await import('child_process')
 const xml = execSync('unzip -p ' + path + ' word/document.xml').toString().replace(/<[^>]+>/g, ' ');
 ok(/Allegato 1 — Griglia osservativa/.test(xml) && /Sanno correre agilmente/.test(xml) && !/Livello osservato/.test(xml) && !/\d+\/8 osservati/.test(xml), 'Word: Allegato 1 con griglia e testi, senza livello né riepilogo');
 ok(/SVILUPPO PERSONALE/.test(xml) && /Focus osservativi/.test(xml) && /1\. Corporeità\s*: Espressività, consapevolezza fisica, gestione stress fisico/.test(xml.replace(/\s+/g,' ')), 'Word: intestazione del modello e sottotitolo del Reparto accanto al percorso');
-ok(/Non osservato/.test(xml) && /coincide con l’Unità del percorso: in parte/.test(xml), 'Word: righe «Non osservato» e domanda sul gruppo osservato');
+ok(/Non osservato/.test(xml) && /corrisponde a quello per cui si programma: in parte/.test(xml), 'Word: righe «Non osservato» e domanda sul gruppo osservato');
 ok(!/Profilo di osservazione/.test(xml), 'Word: niente più allegato «Profilo di osservazione»');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

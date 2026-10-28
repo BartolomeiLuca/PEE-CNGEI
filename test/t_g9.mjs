@@ -13,6 +13,7 @@ await P.click('#sh-side .sh-si:has-text("2 · ")'); await sleep(600);
 const n0 = await ev(() => document.querySelectorAll('.idr-row').length);
 ok(n0 >= 3 && await ev(() => !!document.querySelector('button[onclick*="idrEditStart"]')), 'Sezione 2: ogni IdR ha «Adatta» (' + n0 + ' righe)');
 const base0 = await ev(() => idrBase('P1', 0));
+await ev(() => document.querySelectorAll('details.u-ob').forEach(d => { d.open = true; })); await sleep(200);   // le priorità compilate partono chiuse
 await P.click('button[onclick*="idrEditStart(\'P1\',0)"]'); await sleep(300);
 await P.fill('textarea.idr-ed', 'Testo adattato da me'); await sleep(200);
 await P.click('button[onclick*="idrEditEnd"]'); await sleep(400);

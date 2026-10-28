@@ -27,7 +27,7 @@ let t = await ev(() => document.getElementById('panel-pp').innerText);
 ok(/Confronto e sintesi dello staff/.test(t) && /Sviluppo Personale/.test(t) && /Sviluppo Comunitario/.test(t) && /Sviluppo Spirituale/.test(t), 'pagina Confronto con i tre Ambiti');
 ok(/Divergenza alta/.test(t), 'riga con divergenza evidenziata col messaggio');
 ok(/Tu/.test(t) && /Bruno/.test(t), 'colonne per educatore (nome proprio)');
-ok(await ev(() => document.querySelector('#g-subnav .gsn-step.on') && /Confronto e sintesi/.test(document.querySelector('#g-subnav .gsn-step.on').innerText)), 'pillola «Confronto e sintesi» attiva');
+ok(await ev(() => document.querySelector('#sh-side .sh-si.on') && /Confronto e sintesi/.test(document.querySelector('#sh-side .sh-si.on').innerText) && getComputedStyle(document.querySelector('#g-subnav .gsn-steps')).display === 'none'), 'voce «Confronto e sintesi» attiva nel menu, niente pulsanti-pillola vecchi');
 ok(await ev(() => /Corporeità/.test(document.getElementById('cf-detail').innerText) && /Gioco uno/.test(document.getElementById('cf-detail').innerText)), 'dettaglio: percorso e attività con presenze');
 ok(await ev(() => /Bruno · assente/.test(document.getElementById('cf-detail').innerText)), 'presenze: Bruno assente a «Gioco uno»');
 // sintesi condivisa
