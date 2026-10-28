@@ -13364,7 +13364,7 @@ const clTs = v => v ? Date.parse(v) : 0;
 async function dbList(){
   const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').eq('user_id', CL.user.id);
   if(error) throw error;
-  return (data||[]).map(r => ({id:r.id, anno:r.anno, titolo:r.titolo, meta:r.meta||{}, ts:clTs(r.updated_at)})).filter(r => !(r.meta && r.meta.cest)).sort((a,b) => b.anno - a.anno || b.ts - a.ts);
+  return (data||[]).map(r => ({id:r.id, anno:r.anno, titolo:r.titolo, meta:r.meta||{}, ts:clTs(r.updated_at)})).filter(r => !(r.meta && (r.meta.cest || r.meta.mode === 'anno'))).sort((a,b) => b.anno - a.anno || b.ts - a.ts);
 }
 // ── cestino: un progetto eliminato resta recuperabile 30 giorni (segnato nei dati dell'archivio, nessuna modifica al database) ──
 const CL_TRASH_DAYS = 30;
@@ -16282,6 +16282,7 @@ const NAV_AN = [
   {g:'Misurare'},
   {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
   {id:'m-5', k:'5', t:'Valutazione finale', ic:'up', go:"shSec('5')"},
+  {id:'m-anno', t:'Verifica dell’anno', ic:'check', go:'shAnnoV()'},
   {g:'Conservare'},
   {id:'k-arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'},
   {g:'Condividere'},
@@ -16347,7 +16348,7 @@ function bbHTML(){
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
@@ -16380,7 +16381,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-she
 function active(){
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -16584,8 +16585,8 @@ function dashHTML(){
   const asx = (scheda && scheda.annoScout) || '';
   const sco = SH.dscope === 'anno' ? 'anno' : 'ciclo'; const cc = annoCicloInfo(annoCur());
   const seg = `<div class="sh-seg" role="group" aria-label="Che cosa vuoi vedere"><button type="button" aria-pressed="${sco === 'anno'}" onclick="shScope('anno')">Il mio anno</button><button type="button" aria-pressed="${sco === 'ciclo'}" onclick="shScope('ciclo')">Il mio ciclo</button></div>`;
-  if(sco === 'anno') return `<div class="sh-dh"><div><h1>Il mio anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div></div></div>${seg}<div id="an-year">${annoYearHTML()}</div>`;
-  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div></div>
+  if(sco === 'anno') return `<div class="sh-dh"><div><h1>Il mio anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">Un anno scout può avere più cicli di programmazione, di solito di 3-4 mesi ciascuno. Qui li vedi insieme.</p></div></div>${seg}<div id="an-year">${annoYearHTML()}</div>`;
+  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button></p></div>
     <div style="margin-left:auto"><button type="button" class="sh-btn gh sm" id="sh-pers" onclick="shDashEdit(${editing ? 0 : 1})" style="min-height:44px;padding:0 16px;border:1px solid #8a8a82;border-radius:10px;background:#fff;font:700 13px 'Montserrat',sans-serif;cursor:pointer">${editing ? 'Fatto' : 'Personalizza'}</button></div></div>${seg}${cicloFormHTML()}`;
   if(editing) h += `<div class="sh-ebanner" role="note"><b>Personalizza la dashboard.</b> Trascina le schede, oppure selezionane una e usa le frecce della tastiera (o i pulsanti «Prima» e «Dopo»). «Nascondi» la toglie dalla vista. La disposizione è tua e si salva nel tuo profilo.<div id="sh-live" class="sub" aria-live="polite" style="margin-top:4px"></div></div>`;
   h += `<div class="sh-dgrid">` + shown.map((c, i) => `<section class="sh-card2${c.wide ? ' wide' : ''}${editing ? ' edit' : ''}" data-c="${c.id}" ${editing ? `tabindex="0" draggable="true" aria-label="Scheda ${esc(c.t)}, posizione ${i + 1} di ${shown.length}. Usa le frecce per spostarla."` : ''}>${c.html(o)}${editing ? `<div class="sh-etool"><button type="button" onclick="shMove('${c.id}',-1)">‹ Prima</button><button type="button" onclick="shMove('${c.id}',1)">Dopo ›</button><button type="button" onclick="shHide('${c.id}',1)">Nascondi</button></div>` : ''}</section>`).join('') + `</div>`;
@@ -16751,8 +16752,9 @@ function annoCicloInfo(it, n){
 function cicloFormHTML(){
   const sc = scheda.ciclo || {}; const y0 = visY0(); const opt = v => VIS_M.map((m, i) => `<option value="${visYM(i, y0)}" ${v === visYM(i, y0) ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('');
   const info = annoCicloInfo(annoCur());
-  return `<details class="u-fold sh-cf" ${(!sc.nome && !sc.dal) ? '' : ''}><summary>Nome e periodo del ciclo<span class="u-sub">${esc(info.nome)}${info.txt ? ' · ' + esc(info.txt) : ''}</span></summary><div class="u-fold-in"><div class="cal-new" style="border:0;padding:0;margin:0"><label>Nome del ciclo <input class="sh-in" maxlength="60" value="${esc(sc.nome || '')}" placeholder="Es. I trimestre" oninput="cicloSet('nome',this.value)"></label><label>Dal <select class="sh-in" onchange="cicloSet('dal',this.value);shDash()"><option value="">scegli…</option>${opt(sc.dal)}</select></label><label>Al <select class="sh-in" onchange="cicloSet('al',this.value);shDash()"><option value="">scegli…</option>${opt(sc.al)}</select></label></div><div class="sh-hint">Il periodo del ciclo serve alla verifica e a «Il mio anno». Se lo lasci vuoto lo ricavo dai periodi dei percorsi.</div></div></details>`;
+  return `<details class="u-fold sh-cf" id="sh-cf"><summary>Nome e periodo del ciclo<span class="u-sub">${esc(info.nome)}${info.txt ? ' · ' + esc(info.txt) : ''}</span></summary><div class="u-fold-in"><div class="cal-new" style="border:0;padding:0;margin:0"><label>Nome del ciclo <input class="sh-in" maxlength="60" value="${esc(sc.nome || '')}" placeholder="Es. I trimestre" oninput="cicloSet('nome',this.value)"></label><label>Dal <select class="sh-in" onchange="cicloSet('dal',this.value);shDash()"><option value="">scegli…</option>${opt(sc.dal)}</select></label><label>Al <select class="sh-in" onchange="cicloSet('al',this.value);shDash()"><option value="">scegli…</option>${opt(sc.al)}</select></label></div><div class="sh-hint">Il periodo del ciclo serve alla verifica e a «Il mio anno». Se lo lasci vuoto lo ricavo dai periodi dei percorsi.</div></div></details>`;
 }
+window.cfOpen = function(){ const d = $('sh-cf'); if(!d) return; d.open = true; const i = d.querySelector('input,textarea'); if(i){ i.focus(); try{ i.select(); }catch(e){} } };
 window.cicloSet = function(k, v){ if(window.BRO) return; scheda.ciclo = scheda.ciclo || {}; scheda.ciclo[k] = v; saveDataDebounced(); };
 window.shScope = function(v){ SH.dscope = v === 'anno' ? 'anno' : 'ciclo'; try{ localStorage.setItem('pee_dscope', SH.dscope); }catch(e){} if(v === 'anno') SH._ay = null; shDash(); };
 async function annoLoad(){
@@ -16813,7 +16815,8 @@ function annoYearHTML(){
   const seg = (k, lab, opts) => `<div class="sh-seg sm" role="group" aria-label="${lab}"><span class="sh-seg-l">${lab}</span>${opts.map(([v, t]) => `<button type="button" aria-pressed="${SH[k] === v}" onclick="SH.${k}='${v}';annoRe()">${t}</button>`).join('')}</div>`;
   const form = (can && SH._ncForm) ? ncFormHTML(items) : '';
   return `<section class="sh-card2 wide"><h3>I cicli di quest’anno</h3><div class="an-cl">${cards}</div>${can ? `<div><button type="button" class="sh-btn" onclick="ncOpen()">+ Nuovo ciclo</button></div>` : ''}${form}</section>
-    <section class="sh-card2 wide"><h3>Visione d’insieme dell’anno</h3><div class="vis-opt">${seg('alet', 'Leggi', [['percorso', 'Per percorso'], ['attivita', 'Attività per attività'], ['ciclo', 'Per ciclo']])}${seg('acol', 'Colora per', [['ambito', 'Ambito'], ['ciclo', 'Ciclo'], ['stato', 'Stato']])}</div>${annoTL(items, SH.alet, SH.acol, false)}<div class="sub" style="font-size:12px">Per spostare un blocco apri il ciclo e usa «Visione d’insieme».</div></section>`;
+    <section class="sh-card2 wide"><h3>Visione d’insieme dell’anno</h3><div class="vis-opt">${seg('alet', 'Leggi', [['percorso', 'Per percorso'], ['attivita', 'Attività per attività'], ['ciclo', 'Per ciclo']])}${seg('acol', 'Colora per', [['ambito', 'Ambito'], ['ciclo', 'Ciclo'], ['stato', 'Stato']])}</div>${annoTL(items, SH.alet, SH.acol, false)}<div class="sub" style="font-size:12px">Per spostare un blocco apri il ciclo e usa «Visione d’insieme».</div></section>
+    <section class="sh-card2 wide"><h3>Verifica dell’anno</h3><div class="sub" style="font-size:13px;color:#3D3D38">Ogni ciclo ha la sua verifica. Qui guardi l’anno intero, con un Word cumulativo che arriva all’inizio dell’anno dopo.</div><div><button type="button" class="sh-btn" onclick="shAnnoV()">Apri la verifica dell’anno</button></div></section>`;
 }
 function annoRe(){ const e = $('an-year'); if(e) e.innerHTML = annoYearHTML(); }
 window.annoRe = annoRe;
@@ -16822,7 +16825,7 @@ function ncFormHTML(items){
   const y0 = visY0(); const last = items.map(i => i.ci.al).filter(Boolean).sort().pop(); const li = last ? visIdx(last, y0) : null; const st = li !== null ? Math.min(11, li + 1) : 4; const en = Math.min(11, st + 2);
   const opt = v => VIS_M.map((m, i) => `<option value="${visYM(i, y0)}" ${v === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('');
   return `<div class="cal-new" role="group" aria-label="Nuovo ciclo"><b>Nuovo ciclo</b><label>Nome <input id="nc-n" class="sh-in" maxlength="60" value="Ciclo ${items.length + 1}"></label><label>Dal <select id="nc-d" class="sh-in">${opt(st)}</select></label><label>Al <select id="nc-a" class="sh-in">${opt(en)}</select></label>
-    <div class="sh-hint" style="flex:1 1 100%">Il nuovo ciclo parte da quello aperto ora: contesto, unità, staff e sede passano; la rilettura di fine ciclo diventa il punto di partenza dell’osservazione. Priorità, obiettivi, percorsi e verifica sono nuovi.</div><div class="cal-wa"><button type="button" class="sh-btn" id="nc-go" onclick="ncMake()">Crea e apri</button><button type="button" class="sh-btn gh" onclick="SH._ncForm=false;annoRe()">Annulla</button></div></div>`;
+    <div class="sh-hint" style="flex:1 1 100%">Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi. Il nuovo ciclo parte da quello aperto ora: contesto, unità, staff e sede passano; la rilettura di fine ciclo diventa il punto di partenza dell’osservazione. Priorità, obiettivi, percorsi e verifica sono nuovi.</div><div class="cal-wa"><button type="button" class="sh-btn" id="nc-go" onclick="ncMake()">Crea e apri</button><button type="button" class="sh-btn gh" onclick="SH._ncForm=false;annoRe()">Annulla</button></div></div>`;
 }
 window.ncOpen = function(){ SH._ncForm = true; annoRe(); setTimeout(() => { const e = $('nc-n'); if(e) e.focus(); }, 40); };
 const NC_PP = ['sezione', 'gruppo', 'ctxTerr', 'ctxSez', 'sedeVia', 'sedeCitta', 'sedeCF', 'sedeSocial', 'sedeSito', 'numTot', 'numM', 'numF', 'numAnn', 'staffTab'];
@@ -16841,6 +16844,58 @@ window.ncMake = async function(){
     SH.rows = null; SH._ay = null; CL.ctx = null; try{ localStorage.removeItem(CL_LS); }catch(e){}
     await clOpenProject(r.id);
   }catch(e){ if(btn) btn.disabled = false; showToast('Non sono riuscito a creare il ciclo: ' + ((e && e.message) || 'riprova')); }
+};
+// ── Misurare · «Verifica dell'anno»: la riflessione sull'anno intero, sopra la verifica di ogni ciclo. Sta in una riga propria (non è un ciclo) ──
+async function annoRow(y){
+  const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,data,meta,updated_at').eq('user_id', CL.user.id); if(error) throw error;
+  return (data || []).find(r => Number(r.anno) === Number(y) && (r.meta || {}).mode === 'anno' && !(r.meta || {}).cest) || null;
+}
+async function annoRowEnsure(y){
+  let r = await annoRow(y); if(r){ r.data = r.data || {}; if(!r.data.ver) r.data.ver = {}; return r; }
+  const as = scheda.annoScout || (y + '-' + String((y + 1) % 100).padStart(2, '0'));
+  const d = {v:1, MODE:'anno', annoScout:as, UNIT_NAME:UNIT_NAME || '', FASCIA, ver:{}, ts:Date.now()}; const meta = {mode:'anno', fascia:FASCIA, tipo:'ANNO', nome:UNIT_NAME || ''};
+  const rows = await dbList(); let t = 'Verifica dell’anno ' + as + (UNIT_NAME ? ' · ' + UNIT_NAME : ''), k = 2; const base = t; while(rows.some(x => Number(x.anno) === Number(y) && x.titolo === t)) t = base + ' (' + (k++) + ')';
+  const ins = await dbInsert(y, t, d, meta); return {id:ins.id, anno:y, titolo:ins.titolo, data:d, meta, updated_at:null};
+}
+function annoSum(it){
+  const sc = it.data.scheda || {}; const per = it.ci.per; const idr = {spontaneo:0, stimolato:0, no:0}; const ic = sc.idrComp || {};
+  Object.keys(ic).forEach(pid => Object.keys(ic[pid] || {}).forEach(j => { const c = (ic[pid][j] || {}).c; if(c && idr[c] !== undefined) idr[c]++; }));
+  const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
+  const obs0 = it.data.obs || {}, ri = sc.riobs || {};
+  const pv = per.map(p => { const a = Number(obs0[p.pid]) || 0, b = Number(ri[p.pid]) || 0; return {nm:p.nm, a, b, vc:String((sc.valCompl || {})[p.pid] || '').trim(), n:p.acts.length, ok:p.acts.filter(x => x.st === 'ok').length, da:p.acts.filter(x => x.st === 'ver').length}; });
+  return {idr, pv};
+}
+window.annoVerSave = function(k, v){
+  const R = SH._av; if(!R) return; R.data.ver[k] = v; R.data.ts = Date.now(); clearTimeout(SH._avT);
+  SH._avT = setTimeout(async () => { try{ await dbUpdate(R.id, R.data, R.meta, null); SH._avSaved = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); const e = $('anv-st'); if(e) e.textContent = '✓ Salvato ' + SH._avSaved; }catch(e){ const x = $('anv-st'); if(x) x.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700);
+};
+function annoVerHTML(){
+  const R = SH._av, items = SH._ay;
+  if(!R || !items) return '<p class="sh-sub" role="status">Carico l’anno…</p>';
+  const can = !window.BRO; const ver = R.data.ver || {};
+  const cyc = items.map(it => { const sm = annoSum(it); const rows = sm.pv.map(p => `<tr><td>${esc(p.nm)}</td><td>${p.a ? p.a : '—'} → ${p.b ? p.b : '—'}</td><td>${p.n} · ${p.ok} verificate${p.da ? ' · ' + p.da + ' da verificare' : ''}</td><td>${p.vc ? esc(p.vc.length > 220 ? p.vc.slice(0, 219) + '…' : p.vc) : '<span class="sh-hint">non ancora scritta</span>'}</td></tr>`).join('');
+    const tot = sm.idr.spontaneo + sm.idr.stimolato + sm.idr.no;
+    return `<section class="sh-card2 wide"><h3>${esc(it.ci.nome)}${it.ci.txt ? ' · ' + esc(it.ci.txt) : ''}</h3>${rows ? `<div class="vis-lst"><table><thead><tr><th>Percorso</th><th>Dal punto di partenza a oggi</th><th>Attività</th><th>Valutazione complessiva</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sh-hint">Nessun percorso in questo ciclo.</p>'}<p class="sh-hint" style="margin:6px 0 0">${tot ? `Indicatori di Risultato: ${sm.idr.spontaneo} spontanei, ${sm.idr.stimolato} stimolati, ${sm.idr.no} non adottati.` : 'Indicatori di Risultato: non ancora valutati.'}${it.cur ? '' : ` <button type="button" class="sh-lk" onclick="shOpen('${it.id}',0)">Apri il ciclo</button>`}</p></section>`; }).join('');
+  const q = VER_Q.map(([k, t]) => `<label class="sh-lb" for="anv-${k}">${esc(t)}</label><textarea id="anv-${k}" class="sh-in" rows="3" ${can ? '' : 'readonly'} oninput="annoVerSave('${k}',this.value)">${esc(ver[k] || '')}</textarea>`).join('');
+  return `<div class="sh-dh"><div><h1>Verifica dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Anno scout ${esc(String(scheda.annoScout || ''))}. La verifica di ogni ciclo si fa nel ciclo; qui guardi l’anno intero. Quello che scrivi arriva all’inizio dell’anno dopo, negli «Appunti dalla programmazione precedente».</p></div></div>
+    ${cyc}<section class="sh-card2 wide"><h3>La riflessione dell’anno</h3><div class="anv-q">${q}</div><div class="anv-act"><button type="button" class="sh-btn" onclick="exportAnnoDocx()">Scarica il Word dell’anno</button><span id="anv-st" class="sh-hint" role="status">${SH._avSaved ? '✓ Salvato ' + SH._avSaved : 'Si salva da solo.'}</span></div></section>`;
+}
+window.shAnnoV = async function(){
+  ensurePanels(); SH.ppv = 'annov'; ownOff(); $('panel-pp').innerHTML = '<p class="sh-sub" role="status">Carico l’anno…</p>'; own('panel-pp');
+  try{ const L = await annoLoad(); SH._ay = L; SH._av = await annoRowEnsure(Number(CL.ctx.anno)); }catch(e){ console.error(e); $('panel-pp').innerHTML = '<p class="sh-sub">Non riesco a leggere l’anno: controlla la connessione.</p>'; return; }
+  if(SH.ppv === 'annov') $('panel-pp').innerHTML = annoVerHTML();
+};
+window.exportAnnoDocx = async function(){
+  const items = SH._ay, R = SH._av; if(!items || !R) return;
+  try{ showToast('Preparo il documento…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: ' + e.message); return; }
+  const ch = dTitleBlock('Verifica dell’anno scout', 'Anno scout ' + (scheda.annoScout || '') + ' · ' + items.length + (items.length === 1 ? ' ciclo' : ' cicli'));
+  items.forEach(it => { const sm = annoSum(it); ch.push(dPara(it.ci.nome + (it.ci.txt ? ' · ' + it.ci.txt : ''), {heading:2, size:26, bold:true, color:GRTXT, before:240, after:100, keepNext:true}));
+    if(!sm.pv.length) ch.push(dPara('Nessun percorso in questo ciclo.', {size:19, color:'777777'}));
+    sm.pv.forEach(p => { ch.push(dH3(p.nm)); ch.push(dKV([['Dal punto di partenza a oggi', (p.a || '—') + ' → ' + (p.b || '—')], ['Attività', p.n + ' · ' + p.ok + ' verificate'], ['Valutazione complessiva', p.vc || '—']])); });
+    const tot = sm.idr.spontaneo + sm.idr.stimolato + sm.idr.no; ch.push(dPara(tot ? 'Indicatori di Risultato: ' + sm.idr.spontaneo + ' spontanei, ' + sm.idr.stimolato + ' stimolati, ' + sm.idr.no + ' non adottati.' : 'Indicatori di Risultato: non ancora valutati.', {size:18, italics:true, color:'555555'})); });
+  ch.push(dPara('La riflessione dell’anno', {heading:2, size:26, bold:true, color:GRTXT, before:300, after:100, keepNext:true}));
+  VER_Q.forEach(([k, t]) => { ch.push(dH3(t)); dMulti((R.data.ver || {})[k] || '').forEach(p => ch.push(p)); });
+  const doc = dDocument(ch, 'Verifica dell’anno'); await dSave(doc, 'Verifica-dell-anno-' + String(scheda.annoScout || '').replace(/[^0-9-]/g, '') + '.docx');
 };
 // ── Realizzare · «Calendario e attività»: contenitori (Riunione, Uscita, Bivacco, Campo) e blocchi (le attività dei percorsi) ──
 const CAL_T = {sede:['Riunione', '#4a6b8a'], giorno:['Uscita', '#2f7d5b'], bivacco:['Bivacco', '#a0612b'], campo:['Campo', '#7a3f8f']};
@@ -17084,12 +17139,17 @@ const PREV_V = [
   ['unit', 'Composizione dell’Unità (numeri)', ['numTot', 'numM', 'numF', 'numAnn']],
   ['staff', 'Adulti in staff (la tabella, con i contatti)', ['staffTab']]
 ];
+// «Dall'anno scorso» / «Dal ciclo precedente»: il ciclo nuovo riprende dal ciclo di partenza; il primo ciclo dell'anno riprende da tutti i cicli dell'anno prima e dalla sua verifica
 async function prevProbe(){
   if(!CL.ctx || !CL.user) return null;
-  const rows = await dbList(); const y = Number(CL.ctx.anno) - 1;
-  const mine = (scheda && scheda.tipoProgetto) || 'AN';
-  const c = rows.filter(x => Number(x.anno) === y && (x.meta || {}).mode === 'giovani' && !/^Esempio/i.test(x.titolo || '')).sort((a, b) => ((b.meta.tipo || 'AN') === mine) - ((a.meta.tipo || 'AN') === mine) || b.ts - a.ts);
-  return c[0] ? {id:c[0].id, titolo:c[0].titolo, anno:c[0].anno} : null;
+  const rows = await dbList(); const sc = scheda || {};
+  if(sc.cicloDa){ const r = rows.find(x => x.id === sc.cicloDa); if(r) return {kind:'ciclo', ids:[r.id], titolo:r.titolo, da:'da «' + r.titolo + '»', anno:r.anno}; }
+  const y = Number(CL.ctx.anno) - 1; const mine = sc.tipoProgetto || 'AN';
+  const all = rows.filter(x => Number(x.anno) === y && (x.meta || {}).mode === 'giovani' && !/^Esempio/i.test(x.titolo || ''));
+  let c = all.filter(x => ((x.meta || {}).tipo || 'AN') === 'AN'); if(!c.length) c = all.slice(0, 1);
+  if(!c.length) return null;
+  let annoId = null; try{ const ar = await annoRow(y); if(ar) annoId = ar.id; }catch(e){}
+  return {kind:'anno', ids:c.map(x => x.id), titolo:c[0].titolo, da:c.length > 1 ? 'dai ' + c.length + ' cicli del ' + y + '-' + String((y + 1) % 100).padStart(2, '0') : 'da «' + c[0].titolo + '»', anno:y, annoId};
 }
 function prevBar(){
   const on = document.body.getAttribute('data-ctx') || '';
@@ -17101,10 +17161,13 @@ function prevBar(){
   if(!SH._prev){ if(old) old.remove(); return; }
   if(old && card.contains(old)) return;
   if(old) old.remove();
-  const d = document.createElement('div'); d.id = 'sh-prev'; d.className = 'sh-prev';
-  d.innerHTML = `<div><b>Hai già lavorato qui l’anno scorso.</b> Puoi riprendere alcune voci da «${esc(SH._prev.titolo)}» e rileggere i tuoi appunti di verifica.</div><button type="button" class="sh-btn" onclick="shPrev()">Riprendi dall’anno scorso</button>`;
+  const P = SH._prev; const d = document.createElement('div'); d.id = 'sh-prev'; d.className = 'sh-prev';
+  d.innerHTML = P.kind === 'ciclo'
+    ? `<div><b>Questo ciclo parte dal precedente.</b> Puoi riprendere alcune voci ${esc(P.da)} e rileggere gli appunti della sua verifica.</div><button type="button" class="sh-btn" onclick="shPrev()">Riprendi dal ciclo precedente</button>`
+    : `<div><b>Hai già lavorato qui l’anno scorso.</b> Puoi riprendere alcune voci ${esc(P.da)} e rileggere gli appunti di verifica.</div><button type="button" class="sh-btn" onclick="shPrev()">Riprendi dall’anno scorso</button>`;
   card.insertBefore(d, card.firstChild);
 }
+// appunti di verifica: un blocco per ciclo (percorsi e attività) e, per l'anno scorso, la verifica dell'anno
 function prevNotes(d){
   const sc = d.scheda || {}; const out = []; const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
   (sc.percorsiExtra || []).forEach(per => { if(!per) return; const P = DBx.find(q => q.id === per.percorsoId);
@@ -17113,21 +17176,28 @@ function prevNotes(d){
     if(vc || att.length) out.push({nm:(P ? P.name : per.percorsoId) || 'Percorso', vc, att}); });
   return out;
 }
+const VER_Q = [['bene', 'Che cosa è andato bene nell’anno'], ['migl', 'Che cosa cambieremmo'], ['porta', 'Che cosa portiamo nell’anno che viene'], ['ambiti', 'Come si sono equilibrati i tre Ambiti'], ['staff', 'Lo staff: come siamo stati e come stiamo']];
 window.shPrev = async function(){
-  if(!SH._prev) return;
-  modalShow('<h3 style="margin:0 0 8px;font-size:17px">Dall’anno scorso</h3><p class="sh-hint">Carico «' + esc(SH._prev.titolo) + '»…</p>');
-  let pd = null; try{ const r = await dbGet(SH._prev.id); pd = r && r.data; }catch(e){}
-  if(!pd){ modalShow('<h3 style="margin:0 0 8px;font-size:17px">Dall’anno scorso</h3><p class="sh-hint">Non riesco a leggere il progetto dell’anno scorso: riprova tra poco.</p>'); return; }
-  const ppo = (pd.scheda || {}).pp || {}, cur = scheda.pp || {}; SH._prevData = pd;
+  const PV = SH._prev; if(!PV) return; const tt = PV.kind === 'ciclo' ? 'Dal ciclo precedente' : 'Dall’anno scorso';
+  modalShow('<h3 style="margin:0 0 8px;font-size:17px">' + tt + '</h3><p class="sh-hint">Carico…</p>');
+  const L = []; for(const id of PV.ids){ try{ const r = await dbGet(id); if(r && r.data) L.push({id, titolo:r.titolo, data:r.data}); }catch(e){} }
+  let ar = null; if(PV.annoId){ try{ const g = await dbGet(PV.annoId); ar = g && g.data; }catch(e){} }
+  if(!L.length){ modalShow('<h3 style="margin:0 0 8px;font-size:17px">' + tt + '</h3><p class="sh-hint">Non riesco a leggere il progetto precedente: riprova tra poco.</p>'); return; }
+  L.forEach(x => { x.ci = annoCicloInfo(x); }); L.sort((a, b) => String(a.ci.dal || '9').localeCompare(String(b.ci.dal || '9')));
+  L.forEach((x, i) => { if(!((x.data.scheda || {}).ciclo || {}).nome) x.ci.nome = L.length > 1 ? 'Ciclo ' + (i + 1) : ''; });
+  const last = L[L.length - 1]; const pd = last.data; SH._prevData = pd;
+  const ppo = (pd.scheda || {}).pp || {}, cur = scheda.pp || {};
   const has = (x, v) => x === 'staffTab' ? (Array.isArray(v) && v.some(r => r && Object.keys(r).some(q => q !== 'ruolo' && !ppbEmpty(r[q])))) : !ppbEmpty(v);
   const rowsH = PREV_V.map(([k, t, keys]) => {
     const av = keys.some(x => has(x, ppo[x])); if(!av) return '';
     const mine = keys.some(x => has(x, cur[x]));
     return `<label class="sh-pv"><input type="checkbox" class="sh-pvc" value="${k}" ${mine ? '' : 'checked'}><span><b>${esc(t)}</b>${mine ? '<em>Hai già scritto qualcosa: se la spunti, viene sostituito.</em>' : ''}</span></label>`;
   }).join('');
-  const notes = prevNotes(pd);
-  const nH = notes.length ? `<details class="u-fold sh-pn"><summary>Appunti dalla programmazione precedente<span class="u-sub">${notes.length} percorso${notes.length === 1 ? '' : 'i'} con verifica o valutazione</span></summary><div class="u-fold-in">${notes.map(n => `<div class="sh-pnb"><b>${esc(n.nm)}</b>${n.vc ? `<p><i>Valutazione complessiva</i><br>${esc(n.vc).replace(/\n/g, '<br>')}</p>` : ''}${n.att.map(a => `<p><i>${esc(a.testo || 'Attività')}</i>${a.vBene ? `<br><u>Andato bene</u> ${esc(a.vBene)}` : ''}${a.vMigl ? `<br><u>Da migliorare</u> ${esc(a.vMigl)}` : ''}${a.vAgg ? `<br><u>Aggiustamenti</u> ${esc(a.vAgg)}` : ''}</p>`).join('')}</div>`).join('')}</div></details>` : '<p class="sh-hint">Nel progetto dell’anno scorso non ci sono ancora verifiche o valutazioni da rileggere.</p>';
-  modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Dall’anno scorso</h3><p class="sh-hint" style="margin:0 0 10px">Da «${esc(SH._prev.titolo)}». Scegli le voci da riprendere: potrai modificarle.</p>${rowsH ? `<div class="sh-pvl">${rowsH}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" class="sh-btn" onclick="shPrevApply()">Riprendi le voci scelte</button><button type="button" class="sh-btn gh" onclick="modalClose()">Chiudi</button></div>` : '<p class="sh-hint">Non ci sono voci da riprendere (contesto, sede, numeri, staff) nel progetto dell’anno scorso.</p>'}${nH}`);
+  const blocks = L.map(x => ({x, n:prevNotes(x.data)})).filter(z => z.n.length);
+  const nBody = z => z.n.map(n => `<div class="sh-pnb"><b>${esc(n.nm)}</b>${n.vc ? `<p><i>Valutazione complessiva</i><br>${esc(n.vc).replace(/\n/g, '<br>')}</p>` : ''}${n.att.map(a => `<p><i>${esc(a.testo || 'Attività')}</i>${a.vBene ? `<br><u>Andato bene</u> ${esc(a.vBene)}` : ''}${a.vMigl ? `<br><u>Da migliorare</u> ${esc(a.vMigl)}` : ''}${a.vAgg ? `<br><u>Aggiustamenti</u> ${esc(a.vAgg)}` : ''}</p>`).join('')}</div>`).join('');
+  const ver = ar && ar.ver && VER_Q.some(q => String(ar.ver[q[0]] || '').trim()) ? `<details class="u-fold sh-pn" open><summary>Verifica dell’anno<span class="u-sub">la riflessione dell’anno intero</span></summary><div class="u-fold-in">${VER_Q.filter(q => String(ar.ver[q[0]] || '').trim()).map(q => `<div class="sh-pnb"><b>${esc(q[1])}</b><p>${esc(ar.ver[q[0]]).replace(/\n/g, '<br>')}</p></div>`).join('')}</div></details>` : '';
+  const nH = (ver + blocks.map(z => `<details class="u-fold sh-pn"><summary>${PV.kind === 'ciclo' || L.length === 1 ? 'Appunti dalla programmazione precedente' : esc(z.x.ci.nome || z.x.titolo)}<span class="u-sub">${z.n.length} percorso${z.n.length === 1 ? '' : 'i'} con verifica o valutazione</span></summary><div class="u-fold-in">${nBody(z)}</div></details>`).join('')) || '<p class="sh-hint">Non ci sono ancora verifiche o valutazioni da rileggere.</p>';
+  modalShow(`<h3 style="margin:0 0 4px;font-size:17px">${tt}</h3><p class="sh-hint" style="margin:0 0 10px">${esc(PV.da.charAt(0).toUpperCase() + PV.da.slice(1))}. Scegli le voci da riprendere: potrai modificarle. Contesto, sede, numeri e staff li prendo dall’ultimo ciclo.</p>${rowsH ? `<div class="sh-pvl">${rowsH}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" class="sh-btn" onclick="shPrevApply()">Riprendi le voci scelte</button><button type="button" class="sh-btn gh" onclick="modalClose()">Chiudi</button></div>` : '<p class="sh-hint">Non ci sono voci da riprendere (contesto, sede, numeri, staff).</p>'}<h4 class="gd-h" style="margin:8px 0 4px">Appunti dalla programmazione precedente</h4>${nH}`);
 };
 window.shPrevApply = function(){
   const pd = SH._prevData; if(!pd) return; const ppo = (pd.scheda || {}).pp || {};
@@ -17234,6 +17304,10 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
   .hd .hd-box{width:44px;height:44px}
 }
 @media(max-width:380px){ .hd .hd-links{flex-wrap:wrap} .hd .hd-lnk{padding:0 5px;font-size:12px} .hd .hd-box{width:40px;height:40px} }
+/* Verifica dell'anno */
+.anv-q{display:flex;flex-direction:column;gap:6px}
+.anv-q .sh-lb{margin-top:8px}
+.anv-act{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
 /* Il mio anno · Il mio ciclo */
 .sh-seg{display:inline-flex;gap:0;border:1.5px solid #8a8a82;border-radius:12px;overflow:hidden;margin:0 0 14px;background:#fff;flex-wrap:wrap}
 .sh-seg button{min-height:44px;padding:0 18px;border:0;background:transparent;font:700 13px 'Montserrat',sans-serif;cursor:pointer;color:#1a1a18}

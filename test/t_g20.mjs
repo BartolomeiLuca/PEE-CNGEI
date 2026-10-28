@@ -23,10 +23,16 @@ ok(s.h1 === 'Il mio ciclo' && /Il mio anno:false,Il mio ciclo:true/.test(s.seg),
 ok(/I trimestre/.test(s.sub) && /ottobre 2026 a dicembre 2026/.test(s.sub), 'il ciclo mostra nome e periodo (' + s.sub + ')');
 ok(s.card === 'Il mio ciclo in un colpo d’occhio', 'la vecchia grafica dell’anno è sostituita dalla linea del tempo del ciclo');
 ok(await ev(() => document.querySelectorAll('[data-c="anno"] .vis-bar').length === 3 && !!document.querySelector('[data-c="anno"] .vis-fl')), 'nel ciclo: tre blocchi e la bandierina della verifica');
+ok(await ev(() => /di solito di 3-4 mesi/.test(document.querySelector('.an-exp').textContent)), 'sotto «Il mio ciclo» c’è la spiegazione');
+await P.click('.an-exp button:has-text("Rinomina")'); await sleep(200);
+await P.fill('#sh-cf textarea', 'Ciclo d’autunno'); await sleep(300);
+ok(await ev(() => scheda.ciclo.nome === 'Ciclo d’autunno'), 'il ciclo si rinomina dal pulsante «Rinomina il ciclo»');
+await ev(() => shDash()); await sleep(300);
+ok(/Ciclo d’autunno/.test(await ev(() => document.querySelector('#panel-dash .sub').textContent)), 'il nuovo nome compare nell’intestazione');
 // 2 · Il mio anno
 await P.click('.sh-seg button:has-text("Il mio anno")'); await sleep(2500);
 s = await ev(() => ({h1: document.querySelector('#panel-dash h1').textContent, cy: [...document.querySelectorAll('.an-cy')].map(c => c.querySelector('b').textContent.replace(/\s+/g, ' ').trim()), rows: document.querySelectorAll('#an-year .vis-bar').length}));
-ok(s.h1 === 'Il mio anno scout' && s.cy.length === 2 && /I trimestre \(aperto ora\)/.test(s.cy[0]) && /II trimestre/.test(s.cy[1]), 'Il mio anno: due cicli in ordine di tempo ' + JSON.stringify(s.cy));
+ok(s.h1 === 'Il mio anno scout' && s.cy.length === 2 && /Ciclo d’autunno \(aperto ora\)/.test(s.cy[0]) && /II trimestre/.test(s.cy[1]), 'Il mio anno: due cicli in ordine di tempo ' + JSON.stringify(s.cy));
 ok(s.rows === 6, 'sei blocchi (tre percorsi per ciclo) ' + s.rows);
 await P.click('.vis-opt .sh-seg >> nth=0 >> button:has-text("Attività per attività")'); await sleep(300);
 s = await ev(() => ({dots: document.querySelectorAll('#an-year .vis-dl').length, tr: document.querySelectorAll('#an-year .vis-lst tbody tr').length, txt: document.querySelector('#an-year .vis-lst').textContent}));
