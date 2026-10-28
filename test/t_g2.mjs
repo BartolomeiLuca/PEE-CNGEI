@@ -21,7 +21,7 @@ ok(s.dash && s.on === 'Dashboard', 'Programmazione Annuale: si apre sulla Dashbo
 ok(s.grp.join('|') === 'Capire|Osservare|Progettare|Realizzare|Misurare|Conservare|Condividere', 'menu: gruppi Capire / Osservare / Progettare / Realizzare / Misurare / Conservare / Condividere');
 await ev(() => ['Capire','Osservare','Progettare','Realizzare','Misurare','Conservare','Condividere'].forEach(g => { if(!document.querySelector('#sh-side .sh-gh.open[onclick*="' + g + '"]')) shGrp(g); })); await sleep(300);
 s.items = await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()));
-ok(['La mia unità','Il mio contesto','Il mio staff','Come ho osservato','Sviluppo Personale','Sviluppo Comunitario','Sviluppo Spirituale','Lettura del gruppo','Priorità','Obiettivi e indicatori','Percorsi educativi','Uscite e campi','Verifica delle attività','Valutazione finale','Archivio degli anni','Condividi con lo staff','Controllo e invio'].every(x => s.items.includes(x)), 'menu: tutte le voci dei sette gruppi');
+ok(['La mia unità','Il mio contesto','Il mio staff','Come ho osservato','Sviluppo Personale','Sviluppo Comunitario','Sviluppo Spirituale','Lettura del gruppo','Priorità','Obiettivi e indicatori','Percorsi educativi','Calendario e attività','Verifica delle attività','Valutazione finale','Archivio degli anni','Condividi con lo staff','Controllo e invio'].every(x => s.items.includes(x)), 'menu: tutte le voci dei sette gruppi');
 ok(s.ph === 'none' && s.theme === 'E', 'schede di fase vecchie nascoste, tema verde della Branca E');
 const hdr = await ev(() => document.getElementById('hdr').innerText);
 ok(/Progetti/.test(hdr) && /Guida/.test(hdr) && !/Video/.test(hdr) && /Suggerimenti/.test(hdr) && await ev(() => !!document.querySelector('#hdr #hd-search') && !!document.querySelector('#hdr #hd-hist') && !!document.querySelector('#hdr .hd-zoom') && !!document.querySelector('#hdr .hd-name')), 'intestazione: Progetti, Guida, Suggerimenti, lente, orologio, A a, nome (Video dentro la Guida)');
@@ -36,7 +36,7 @@ r = await go('Obiettivi e indicatori'); ok(!r.dash && r.p[0] === 4 && r.step ===
 r = await go('Percorsi educativi'); ok(r.step === 'C' && r.on === 'Percorsi educativi', 'voce Percorsi educativi');
 r = await go('Verifica delle attività'); ok(r.step === 'ver' && r.on === 'Verifica delle attività', 'voce Verifica delle attività');
 r = await go('Valutazione finale'); ok(r.step === 'val' && r.on === 'Valutazione finale', 'voce Valutazione finale');
-r = await go('Uscite e campi'); ok(r.step === 'usc' && /Uscite/.test(r.on), 'voce Uscite e campi');
+r = await go('Calendario e attività'); ok(await ev(() => document.getElementById('panel-pp').classList.contains('active') && /Calendario e attività/.test(document.getElementById('panel-pp').innerText)), 'voce Calendario e attività: la pagina a contenitori');
 r = await go('Controllo e invio'); ok(r.step === 'chk' && /Controllo/.test(r.on), 'voce Controllo e invio');
 await ev(() => shNum()); await sleep(900); ok(await ev(() => !!document.getElementById('num-box') && document.getElementById('num-box').getBoundingClientRect().height > 0), 'Numeri dell’Unità (da dashboard): porta al riquadro dei numeri in «La mia unità»');
 r = await go('Dashboard'); ok(r.dash && r.p.length === 0, 'voce Dashboard: torna alla dashboard');
