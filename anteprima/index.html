@@ -17278,6 +17278,82 @@ window.shNum = async function(){
   if(SH.ppv === 'num') $('panel-pp').innerHTML = numHTML();
 };
 window.numCalc = numCalc;
+
+// ── Registro delle spese: spese libere e voci recuperate dalle attività, con importo effettivo, giustificativo e report ──
+const SP_PAG = [['', '—'], ['contanti', 'Contanti'], ['carta', 'Carta'], ['bonifico', 'Bonifico'], ['altro', 'Altro']];
+function spList(R){ R = R || SH._av; if(!R) return []; R.data.sp = Array.isArray(R.data.sp) ? R.data.sp : []; return R.data.sp; }
+function bilRegSum(R){ const o = {}; spList(R).forEach(r => { if(r.conf === false) return; const m = /^\d{4}-\d{2}/.test(r.data || '') ? r.data.slice(0, 7) : ''; if(m) o[m] = (o[m] || 0) + (Number(r.importo) || 0); }); return o; }
+function spSave(){ const R = SH._av; if(!R || window.BRO) return; R.data.ts = Date.now(); clearTimeout(SH._spT);
+  SH._spT = setTimeout(async () => { try{ await dbUpdate(R.id, R.data, R.meta, null); const e = $('sp-st'); if(e) e.textContent = '✓ Salvato ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); }catch(err){ const e = $('sp-st'); if(e) e.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700); }
+function spConts(){ const o = []; (SH._ay || []).forEach(it => { const U = (it.data.scheda || {}).uscite || {}; Object.keys(U).forEach(k => { const u = U[k]; if(u && typeof u === 'object' && !u.del && u.id) o.push({key:it.id + '|' + u.id, cid:it.id, uid:u.id, nome:uscTit(u) + ((SH._ay || []).length > 1 ? ' · ' + it.ci.nome : '')}); }); }); return o; }
+function spFilt(){ const f = SH._sf = SH._sf || {}; return spList().filter(r => { const m = (r.data || '').slice(0, 7);
+  return (!f.da || m >= f.da) && (!f.a || m <= f.a) && (!f.cat || r.cat === f.cat) && (!f.att || r.att === f.att) && (!f.doc || (f.doc === 'con' ? !!(r.giust || '').trim() : !(r.giust || '').trim())); }); }
+function spRecup(){ // voci del preventivo non ancora registrate
+  const done = new Set(spList().map(r => r.src).filter(Boolean)); const out = [];
+  bilRows(SH._ay).forEach((r, i) => { const key = r.cid + '|' + r.cont + '|' + r.voce + '|' + r.cat + '|' + r.mese; if(!done.has(key)) out.push(Object.assign({}, r, {key})); }); return out; }
+function spHTML(){
+  const R = SH._av, items = SH._ay; if(!R || !items) return ''; const can = !window.BRO; const L = spFilt(), all = spList(), f = SH._sf || {}, conts = spConts(); const cats = Object.keys(AX_CATI);
+  const catO = v => cats.map(c => `<option value="${c}"${v === c ? ' selected' : ''}>${AX_CATI[c][0]}</option>`).join('');
+  const attO = v => '<option value="">Nessuna (spesa generale)</option>' + conts.map(c => `<option value="${esc(c.key)}"${v === c.key ? ' selected' : ''}>${esc(c.nome)}</option>`).join('');
+  const rows = L.map(r => { const i = all.indexOf(r); const d = (k, v) => `oninput="spSet(${i},'${k}',this.value)"`;
+    return `<div class="sp-r${r.conf === false ? ' sp-pr' : ''}"><label class="sp-c"><input type="checkbox" aria-label="Importo confermato" ${r.conf === false ? '' : 'checked'} ${can ? '' : 'disabled'} onchange="spSet(${i},'conf',this.checked)"> <span>${r.conf === false ? 'Da confermare' : 'Confermata'}</span></label>
+      <input type="date" class="sh-in" aria-label="Data" value="${esc(r.data || '')}" ${can ? '' : 'readonly'} onchange="spSet(${i},'data',this.value,true)">
+      <input class="sh-in sp-d" aria-label="Descrizione" placeholder="Descrizione" value="${esc(r.desc || '')}" ${can ? '' : 'readonly'} ${d('desc')}>
+      <select class="sh-in" aria-label="Categoria" ${can ? '' : 'disabled'} onchange="spSet(${i},'cat',this.value,true)">${catO(r.cat || 'altro')}</select>
+      <input type="number" min="0" step="0.01" inputmode="decimal" class="sh-in sp-i" aria-label="Importo" placeholder="€" value="${esc(r.importo == null ? '' : r.importo)}" ${can ? '' : 'readonly'} ${d('importo')} onchange="spRe()">
+      <select class="sh-in" aria-label="Attività collegata" ${can ? '' : 'disabled'} onchange="spSet(${i},'att',this.value)">${attO(r.att || '')}</select>
+      <input class="sh-in" aria-label="Chi ha pagato" placeholder="Chi ha pagato" value="${esc(r.chi || '')}" ${can ? '' : 'readonly'} ${d('chi')}>
+      <select class="sh-in" aria-label="Pagamento" ${can ? '' : 'disabled'} onchange="spSet(${i},'pag',this.value)">${SP_PAG.map(([k, t]) => `<option value="${k}"${(r.pag || '') === k ? ' selected' : ''}>${t}</option>`).join('')}</select>
+      <input class="sh-in sp-g" aria-label="Link al giustificativo" placeholder="Link allo scontrino o alla fattura (Drive)" value="${esc(r.giust || '')}" ${can ? '' : 'readonly'} ${d('giust')}>${/^https?:\/\//.test(r.giust || '') ? `<a class="sh-lk" href="${esc(r.giust)}" target="_blank" rel="noopener">Apri</a>` : ''}
+      <input class="sh-in sp-n" aria-label="Note" placeholder="Note" value="${esc(r.nota || '')}" ${can ? '' : 'readonly'} ${d('nota')}>${can ? `<button type="button" class="btn-ghost sp-x" aria-label="Togli la spesa" onclick="spDel(${i})">Togli</button>` : ''}</div>`; }).join('');
+  const ok = L.filter(r => r.conf !== false); const tot = ok.reduce((a, r) => a + (Number(r.importo) || 0), 0); const noDoc = ok.filter(r => !(r.giust || '').trim()).length;
+  const optM = (id, v) => `<input type="month" id="${id}" class="sh-in" value="${esc(v || '')}" onchange="spFlt('${id === 'sp-da' ? 'da' : 'a'}',this.value)">`;
+  return `<section class="sh-card2 wide"><h3>Registro delle spese</h3><p class="sh-hint">Qui scrivi quanto hai speso davvero. Puoi recuperare le voci dal preventivo delle attività: arrivano «da confermare» con l’importo previsto, che correggi e confermi. Una voce recuperata non si conta due volte.</p>
+  ${can ? `<div class="anv-act"><button type="button" class="sh-btn" onclick="spAdd()">Nuova spesa</button><button type="button" class="btn-ghost" onclick="spRecupOpen()">Recupera dalle attività</button></div><div id="sp-rec"></div>` : ''}
+  <div class="bil-flt"><label class="sh-lb" for="sp-da">Dal mese</label>${optM('sp-da', f.da)}<label class="sh-lb" for="sp-a">Al mese</label>${optM('sp-a', f.a)}<label class="sh-lb" for="sp-cat">Categoria</label><select id="sp-cat" class="sh-in" onchange="spFlt('cat',this.value)"><option value="">Tutte</option>${cats.map(c => `<option value="${c}"${f.cat === c ? ' selected' : ''}>${AX_CATI[c][0]}</option>`).join('')}</select><label class="sh-lb" for="sp-att">Attività</label><select id="sp-att" class="sh-in" onchange="spFlt('att',this.value)"><option value="">Tutte</option>${conts.map(c => `<option value="${esc(c.key)}"${f.att === c.key ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select><label class="sh-lb" for="sp-doc">Giustificativo</label><select id="sp-doc" class="sh-in" onchange="spFlt('doc',this.value)"><option value="">Tutti</option><option value="con"${f.doc === 'con' ? ' selected' : ''}>Con giustificativo</option><option value="senza"${f.doc === 'senza' ? ' selected' : ''}>Senza giustificativo</option></select></div>
+  <div class="sp-l">${rows || '<p class="sh-hint">Nessuna spesa registrata con questi filtri.</p>'}</div>
+  <p class="sp-tot"><b>Speso e confermato: ${axEur(tot)}</b>${ok.length ? ` · ${noDoc ? noDoc + ' senza giustificativo' : 'tutte con giustificativo'}` : ''}</p>
+  ${spReportHTML(L)}
+  <div class="anv-act"><button type="button" class="sh-btn" onclick="spCsv()">Rendiconto per Excel</button><button type="button" class="sh-btn" onclick="spDocx(false)">Word sintetico</button><button type="button" class="sh-btn" onclick="spDocx(true)">Word dettagliato</button><span id="sp-st" class="sh-hint" role="status">Si salva da solo. I filtri valgono anche per i file.</span></div></section>`;
+}
+function spReportData(L){ const cats = {}; const prev = {}; const f = SH._sf || {};
+  L.filter(r => r.conf !== false).forEach(r => { const c = r.cat || 'altro'; cats[c] = (cats[c] || 0) + (Number(r.importo) || 0); });
+  bilRows(SH._ay).filter(r => (!f.da || (r.mese && r.mese >= f.da)) && (!f.a || (r.mese && r.mese <= f.a)) && (!f.cat || r.cat === f.cat) && (!f.att || (r.cid + '|' + spConts().filter(c => c.cid === r.cid && c.nome.startsWith(r.cont))[0]?.uid) === f.att || false)).forEach(r => { prev[r.cat] = (prev[r.cat] || 0) + r.c; });
+  return {cats, prev}; }
+function spReportHTML(L){ const D = spReportData(L); const ks = Object.keys(AX_CATI).filter(c => D.cats[c] || D.prev[c]); if(!ks.length) return '';
+  const tp = ks.reduce((a, c) => a + (D.prev[c] || 0), 0), tc = ks.reduce((a, c) => a + (D.cats[c] || 0), 0);
+  return `<div class="vis-lst"><table class="bil-t"><thead><tr><th>Categoria</th><th>Preventivo</th><th>Speso</th><th>Differenza</th></tr></thead><tbody>${ks.map(c => `<tr><th>${AX_CATI[c][0]}</th><td class="n">${axEur(D.prev[c] || 0)}</td><td class="n">${axEur(D.cats[c] || 0)}</td><td class="n">${axEur((D.cats[c] || 0) - (D.prev[c] || 0))}</td></tr>`).join('')}<tr class="bil-tot"><th>Totale</th><td class="n">${axEur(tp)}</td><td class="n">${axEur(tc)}</td><td class="n">${axEur(tc - tp)}</td></tr></tbody></table></div>`; }
+window.spRe = function(){ const p = $('panel-pp'); if(p && SH.ppv === 'bil') p.innerHTML = bilHTML(); };
+window.spAdd = function(){ spList().push({id:'s' + Date.now().toString(36), data:new Date().toISOString().slice(0, 10), desc:'', cat:'altro', importo:'', att:'', chi:'', pag:'', giust:'', nota:'', conf:true}); spSave(); spRe(); };
+window.spDel = function(i){ if(window.BRO) return; spList().splice(i, 1); spSave(); spRe(); };
+window.spSet = function(i, k, v, re){ if(window.BRO) return; const r = spList()[i]; if(!r) return; r[k] = k === 'importo' ? (v === '' ? '' : Number(v)) : v; spSave(); if(re || k === 'conf' || k === 'importo' || k === 'att' || k === 'giust'){ if(k === 'importo' || k === 'giust'){ const t = document.querySelector('.sp-tot'); if(t && k === 'importo'){ spTotUp(); return; } if(k === 'giust') return; } spRe(); } };
+function spTotUp(){ const t = document.querySelector('.sp-tot'); if(!t) return; const ok = spFilt().filter(r => r.conf !== false); const noDoc = ok.filter(r => !(r.giust || '').trim()).length; t.innerHTML = `<b>Speso e confermato: ${axEur(ok.reduce((a, r) => a + (Number(r.importo) || 0), 0))}</b>${ok.length ? ` · ${noDoc ? noDoc + ' senza giustificativo' : 'tutte con giustificativo'}` : ''}`; }
+window.spFlt = function(k, v){ (SH._sf = SH._sf || {})[k] = v; spRe(); };
+window.spRecupOpen = function(){ const L = spRecup(); const b = $('sp-rec'); if(!b) return; if(!L.length){ b.innerHTML = '<p class="sh-hint">Tutte le voci del preventivo sono già nel registro (o non ce ne sono).</p>'; return; }
+  b.innerHTML = `<div class="sp-rc"><b>Voci del preventivo non ancora registrate</b>${L.map((r, i) => `<label class="sp-rcr"><input type="checkbox" class="sp-rcc" data-i="${i}" checked> <span>${esc(r.cont)} · ${esc(r.voce)} · ${esc((AX_CATI[r.cat] || AX_CATI.altro)[0])} · ${axEur(r.c)}${r.mese ? '' : ' · senza data'}</span></label>`).join('')}<div class="anv-act"><button type="button" class="sh-btn" onclick="spRecupGo()">Registra le selezionate</button><button type="button" class="btn-ghost" onclick="document.getElementById('sp-rec').innerHTML=''">Chiudi</button></div></div>`; SH._rc = L; };
+window.spRecupGo = function(){ const L = SH._rc || []; const sel = [...document.querySelectorAll('.sp-rcc')].filter(c => c.checked).map(c => L[+c.dataset.i]); if(!sel.length) return; const conts = spConts();
+  sel.forEach(r => { const c = conts.find(x => x.cid === r.cid && x.nome.startsWith(r.cont)); spList().push({id:'s' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), data:r.mese ? r.mese + '-01' : '', desc:r.voce, cat:r.cat || 'altro', importo:Math.round(r.c * 100) / 100, att:c ? c.key : '', chi:'', pag:'', giust:'', nota:'', conf:false, src:r.key}); });
+  spSave(); SH._rc = null; spRe(); showToast(sel.length + (sel.length === 1 ? ' voce registrata, da confermare' : ' voci registrate, da confermare')); };
+function spMat(){ const L = spFilt(); const conts = spConts(); return {L, nm:k => (conts.find(c => c.key === k) || {nome:''}).nome, D:spReportData(L)}; }
+window.spCsv = function(){
+  if(!SH._av) return; const {L, nm, D} = spMat(); const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', n = v => String(Math.round((Number(v) || 0) * 100) / 100).replace('.', ',');
+  const out = [['Categoria', 'Preventivo', 'Speso'].map(q).join(';')]; Object.keys(AX_CATI).filter(c => D.cats[c] || D.prev[c]).forEach(c => out.push([AX_CATI[c][0], n(D.prev[c]), n(D.cats[c])].map(q).join(';')));
+  out.push('', ['Data', 'Descrizione', 'Categoria', 'Importo', 'Stato', 'Attività', 'Chi ha pagato', 'Pagamento', 'Giustificativo', 'Note'].map(q).join(';'));
+  L.slice().sort((a, b) => (a.data || '9').localeCompare(b.data || '9')).forEach(r => out.push([r.data, r.desc, (AX_CATI[r.cat] || AX_CATI.altro)[0], n(r.importo), r.conf === false ? 'Da confermare' : 'Confermata', nm(r.att), r.chi, (SP_PAG.find(p => p[0] === (r.pag || '')) || [0, ''])[1] === '—' ? '' : (SP_PAG.find(p => p[0] === (r.pag || '')) || [0, ''])[1], r.giust, r.nota].map(q).join(';')));
+  saveBlob(new Blob(['﻿' + out.join('\r\n')], {type:'text/csv;charset=utf-8'}), 'Rendiconto-' + String(scheda.annoScout || '').replace(/[^0-9-]/g, '') + '.csv');
+};
+window.spDocx = async function(det){
+  if(!SH._av) return; try{ showToast('Preparo il documento…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: ' + e.message); return; }
+  const {L, nm, D} = spMat(), f = SH._sf || {}; const fl = [f.da ? 'dal ' + f.da : '', f.a ? 'al ' + f.a : '', f.cat ? 'categoria: ' + (AX_CATI[f.cat] || [''])[0] : '', f.att ? 'attività: ' + nm(f.att) : '', f.doc === 'con' ? 'con giustificativo' : f.doc === 'senza' ? 'senza giustificativo' : ''].filter(Boolean).join(' · ');
+  const ch = dTitleBlock('Rendiconto delle spese', 'Anno scout ' + (scheda.annoScout || '') + (fl ? ' · ' + fl : ''));
+  const ks = Object.keys(AX_CATI).filter(c => D.cats[c] || D.prev[c]); const tc = ks.reduce((a, c) => a + (D.cats[c] || 0), 0), tp = ks.reduce((a, c) => a + (D.prev[c] || 0), 0);
+  ch.push(dH3('Riepilogo per categoria')); ch.push(dKV(ks.map(c => [AX_CATI[c][0], 'preventivo ' + axEur(D.prev[c] || 0) + ' · speso ' + axEur(D.cats[c] || 0)]).concat([['Totale', 'preventivo ' + axEur(tp) + ' · speso ' + axEur(tc)]])));
+  const ok = L.filter(r => r.conf !== false); ch.push(dPara('Giustificativi: ' + ok.filter(r => (r.giust || '').trim()).length + ' su ' + ok.length + ' spese confermate.', {size:19, italics:true, color:'555555'}));
+  if(det){ ch.push(dH3('Dettaglio delle spese')); L.slice().sort((a, b) => (a.data || '9').localeCompare(b.data || '9')).forEach(r => { ch.push(dPara((r.data || 'senza data') + ' · ' + (r.desc || 'spesa') + ' · ' + (AX_CATI[r.cat] || AX_CATI.altro)[0] + ' · ' + axEur(r.importo) + (r.conf === false ? ' (da confermare)' : ''), {size:19, bold:true}));
+    const d = [r.att ? 'Attività: ' + nm(r.att) : '', r.chi ? 'Pagata da: ' + r.chi : '', r.giust ? 'Giustificativo: ' + r.giust : 'Giustificativo: mancante', r.nota ? 'Note: ' + r.nota : ''].filter(Boolean).join(' · '); ch.push(dPara(d, {size:18, color:'555555', after:100})); }); }
+  const doc = dDocument(ch, 'Rendiconto delle spese'); await dSave(doc, 'Rendiconto-' + String(scheda.annoScout || '').replace(/[^0-9-]/g, '') + (det ? '-dettaglio' : '') + '.docx');
+};
+window.spHTML = spHTML; window.spList = spList;
 // ── Realizzare · «Spese mese per mese»: preventivo di tutte le uscite dell'anno, mese per mese, con filtri, speso davvero ed export ──
 const BIL_MESI = ['Settembre','Ottobre','Novembre','Dicembre','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto'];
 function bilKeys(y){ const o = []; for(let i = 0; i < 12; i++){ const m = (8 + i) % 12; o.push((y + (8 + i >= 12 ? 1 : 0)) + '-' + String(m + 1).padStart(2, '0')); } return o; }
@@ -17293,17 +17369,18 @@ function bilRows(items){
 }
 function bilFilt(rows){ const f = SH._bf || {}; return rows.filter(r => (!f.ciclo || r.cid === f.ciclo) && (!f.cat || r.cat === f.cat)); }
 function bilTot(rows, keys){ const T = {}; keys.concat(['']).forEach(k => T[k] = {tot:0, cat:{}}); rows.forEach(r => { const t = T[keys.includes(r.mese) ? r.mese : '']; if(!t) return; t.tot += r.c; t.cat[r.cat] = (t.cat[r.cat] || 0) + r.c; }); return T; }
-function bilHTML(){
+function bilHTML(){ return bilHTML0() + spHTML(); }
+function bilHTML0(){
   const items = SH._ay, R = SH._av; if(!items || !R) return '<p class="sh-sub" role="status">Carico l’anno…</p>';
   const y = Number(CL.ctx.anno), keys = bilKeys(y), all = bilRows(items), f = SH._bf = SH._bf || {}, rows = bilFilt(all), T = bilTot(rows, keys), can = !window.BRO;
-  const eff = (R.data.bil = R.data.bil || {}); const mx = Math.max(1, ...keys.map(k => Math.max(T[k].tot, Number(eff[k]) || 0)));
+  R.data.bil = R.data.bil || {}; const reg = bilRegSum(R); const eff = Object.assign({}, R.data.bil, reg); const mx = Math.max(1, ...keys.map(k => Math.max(T[k].tot, Number(eff[k]) || 0)));
   const cats = Object.keys(AX_CATI);
   const bars = keys.map((k, i) => { const t = T[k], e = Number(eff[k]) || 0; const seg = cats.filter(c => t.cat[c] > 0).map(c => `<i style="height:${(t.cat[c] / mx * 100).toFixed(1)}%;background:${AX_CATI[c][1]}" title="${AX_CATI[c][0]}: ${axEur(t.cat[c])}"></i>`).join('');
     return `<div class="bil-col"><div class="bil-pl">${e ? `<b class="bil-eff" style="bottom:${(e / mx * 100).toFixed(1)}%" title="Speso davvero: ${axEur(e)}"></b>` : ''}<div class="bil-st">${seg}</div></div><span class="bil-m">${BIL_MESI[i].slice(0, 3)}</span><span class="bil-v">${t.tot ? axEur(t.tot).replace('€ ', '') : '–'}</span></div>`; }).join('');
   const leg = cats.map(c => `<span><i style="background:${AX_CATI[c][1]}"></i>${AX_CATI[c][0]}</span>`).join('') + '<span><b class="bil-lg"></b>Speso davvero</span>';
   const det = k => { const L = rows.filter(r => (k ? r.mese === k : !keys.includes(r.mese))); if(!L.length) return ''; return `<table class="bil-dt"><tbody>${L.map(r => `<tr><td>${esc(r.cont)}${items.length > 1 ? ' · <span class="sh-hint">' + esc(r.ciclo) + '</span>' : ''}</td><td>${esc(r.voce)}</td><td>${AX_CATI[r.cat] ? AX_CATI[r.cat][0] : 'Altre spese'}</td><td class="n">${axEur(r.c)}</td></tr>`).join('')}</tbody></table>`; };
   const trs = keys.concat(['']).map((k, i) => { const t = T[k]; if(!k && !t.tot) return ''; const e = eff[k];
-    return `<tr><th>${k ? BIL_MESI[i] + ' ' + k.slice(0, 4) : 'Senza data'}</th><td class="n">${t.tot ? axEur(t.tot) : '–'}</td><td class="n">${k ? `<input class="sh-in bil-in" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Speso davvero a ${BIL_MESI[i]}" value="${e == null ? '' : esc(e)}" ${can ? '' : 'readonly'} oninput="bilEff('${k}',this.value)">` : '—'}</td><td class="n">${k && e !== undefined && e !== '' ? axEur(Number(e) - t.tot) : ''}</td><td>${t.tot ? `<details><summary>voci</summary>${det(k)}</details>` : ''}</td></tr>`; }).join('');
+    return `<tr><th>${k ? BIL_MESI[i] + ' ' + k.slice(0, 4) : 'Senza data'}</th><td class="n">${t.tot ? axEur(t.tot) : '–'}</td><td class="n">${k ? `<input class="sh-in bil-in" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Speso davvero a ${BIL_MESI[i]}" value="${e == null ? '' : esc(e)}" ${can && reg[k] === undefined ? '' : 'readonly'} ${reg[k] !== undefined ? 'title="Somma delle spese registrate qui sotto"' : ''} oninput="bilEff('${k}',this.value)">` : '—'}</td><td class="n">${k && e !== undefined && e !== '' ? axEur(Number(e) - t.tot) : ''}</td><td>${t.tot ? `<details><summary>voci</summary>${det(k)}</details>` : ''}</td></tr>`; }).join('');
   const sumP = keys.concat(['']).reduce((a, k) => a + T[k].tot, 0), sumE = keys.reduce((a, k) => a + (Number(eff[k]) || 0), 0);
   const optC = '<option value="">Tutti i cicli</option>' + items.map(it => `<option value="${esc(it.id)}"${f.ciclo === it.id ? ' selected' : ''}>${esc(it.ci.nome)}</option>`).join('');
   const optK = '<option value="">Tutte le categorie</option>' + cats.map(c => `<option value="${c}"${f.cat === c ? ' selected' : ''}>${AX_CATI[c][0]}</option>`).join('');
@@ -17326,7 +17403,7 @@ window.shBil = async function(){
   try{ SH._ay = await annoLoad(); SH._av = await annoRowEnsure(Number(CL.ctx.anno)); }catch(e){ console.error(e); $('panel-pp').innerHTML = '<p class="sh-sub">Non riesco a leggere l’anno: controlla la connessione.</p>'; return; }
   if(SH.ppv === 'bil') $('panel-pp').innerHTML = bilHTML();
 };
-function bilMat(){ const keys = bilKeys(Number(CL.ctx.anno)), rows = bilFilt(bilRows(SH._ay)), eff = (SH._av.data.bil || {}); return {keys, rows, eff, T:bilTot(rows, keys)}; }
+function bilMat(){ const keys = bilKeys(Number(CL.ctx.anno)), rows = bilFilt(bilRows(SH._ay)), eff = Object.assign({}, SH._av.data.bil || {}, bilRegSum(SH._av)); return {keys, rows, eff, T:bilTot(rows, keys)}; }
 window.bilCsv = function(){
   if(!SH._ay || !SH._av) return; const {keys, rows, eff, T} = bilMat(); const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', n = v => String(Math.round(v * 100) / 100).replace('.', ',');
   const L = [['Mese', 'Preventivo', 'Speso davvero', 'Differenza'].map(q).join(';')];
@@ -17778,6 +17855,10 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .chk-nm{min-height:44px}.chk-w,.chk-a{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}.chk-nx{margin-left:auto;font-size:13px}
 .chk-sel{width:auto;min-height:44px;min-width:130px}.chk-on{display:flex;gap:6px;align-items:center;min-height:44px;font-weight:700}.chk-on input{width:20px;height:20px}.chk-del{grid-column:1/-1;justify-self:end;min-height:40px}
 .chk-a .sh-lb{margin:0}
+/* Registro delle spese */
+.sp-l{display:flex;flex-direction:column;gap:10px;margin:10px 0}.sp-r{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 8px;align-items:center;padding:10px;border:1px solid #d6dcd5;border-radius:12px}.sp-pr{background:#fff8e6;border-color:#e0b84a}
+.sp-r .sh-in{min-height:40px;width:100%}.sp-d,.sp-g,.sp-n{grid-column:span 2}.sp-c{display:flex;gap:6px;align-items:center;font-weight:700;font-size:12.5px}.sp-c input{width:20px;height:20px}.sp-x{justify-self:end;min-height:40px}
+.sp-tot{margin:8px 0}.sp-rc{border:1px dashed #8a8a82;border-radius:12px;padding:10px;margin:8px 0}.sp-rcr{display:flex;gap:8px;align-items:flex-start;min-height:36px;font-size:13px}.sp-rcr input{width:20px;height:20px;flex:none}
 /* Numeri dell'anno */
 .num-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:8px}.num-k{border:1px solid #d6dcd5;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.num-k b{font:800 26px 'Montserrat',sans-serif}.num-k span{font-size:13px;font-weight:700}.num-k small{font-size:12px;color:#555}
 .num-h{margin:14px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#3d3d38}.num-b{display:flex;flex-direction:column;gap:6px}.num-r{display:grid;grid-template-columns:minmax(110px,200px) minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}.num-t{background:#eef1ec;border-radius:6px;height:14px;overflow:hidden}.num-t i{display:block;height:100%;background:var(--brand-fill,#1B5E42)}.num-v small{color:#555}
