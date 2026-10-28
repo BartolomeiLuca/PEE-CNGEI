@@ -17360,7 +17360,7 @@ function calHTML(){
     bl.forEach(o => { if(o.m && o.m.k === 'att'){ const f = uscAttFind(o.m); if(f && byK[f.idx + '-' + f.j]) mine.push({r:byK[f.idx + '-' + f.j], k:o.k, g:Math.max(1, Number(o.m.g) || 1)}); } });
     const other = bl.length - mine.length;
     return `<section class="cal-c" data-u="${u.id}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
-      <header><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><b>${esc(uscTit(u))}</b>${uscTipoLab(u) ? `<span class="cal-tp">${esc(uscTipoLab(u))}</span>` : ''}<span class="cal-dt">${esc(calDateTxt(u))}</span><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri ${T[0] === 'Riunione' ? 'la riunione' : 'l’uscita'}</button></header>
+      <header><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><b>${esc(uscTit(u))}</b>${uscTipoLab(u) ? `<span class="cal-tp">${esc(uscTipoLab(u))}</span>` : ''}<span class="cal-dt">${esc(calDateTxt(u))}</span><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri ${T[0] === 'Riunione' ? 'la riunione' : 'l’uscita'}</button>${can ? `<button type="button" class="cal-bt2" onclick="calDup('${u.id}')" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button>` : ''}</header>
       <div class="cal-cb">${mine.length ? mine.map(m => calBlock(m.r, {u, k:m.k})).join('') : '<div class="cal-empty">Trascina qui le attività, oppure usa «Sposta in…».</div>'}${other > 0 ? `<div class="cal-more">${other} ${other === 1 ? 'altro momento' : 'altri momenti'} (pasti, giochi, spostamenti…) nell’${T[0] === 'Riunione' ? 'evento' : 'uscita'}.</div>` : ''}</div></section>`;
   }).join('');
   return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui l’Unità vive le attività dei percorsi: crea una riunione, un’uscita, un bivacco o un campo e metti le attività nei contenitori. La data del contenitore diventa la data dell’attività.</p></div></div>
@@ -17373,6 +17373,15 @@ function calHTML(){
 function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ p.innerHTML = calHTML(); } }
 window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); $('panel-pp').innerHTML = calHTML(); own('panel-pp'); };
 window.calOrg = function(i, j){ const k = i + '-' + j; window._calOpen[k] = !window._calOpen[k]; calRe(); };
+// duplica un contenitore (persone, luogo, spese, programma) una settimana dopo; le attività dei percorsi non si copiano: restano dove sono
+window.calDup = function(id){
+  if(!calCan()) return; const u = uscGet(id); if(!u) return; const c = JSON.parse(JSON.stringify(u)); const nid = uscNewId('u');
+  c.id = nid; c.cr = Date.now(); c.testo = String(u.testo || '').replace(/\s*\(copia\)$/, '') + ' (copia)'; delete c.riservata; c.prog = c.prog || {};
+  Object.keys(c.prog).forEach(k => { const m = c.prog[k]; if(m && m.k === 'att') delete c.prog[k]; });
+  const sh = d => { if(!/^\d{4}-\d{2}-\d{2}/.test(d || '')) return d; const t = new Date(d.slice(0, 10) + 'T12:00'); t.setDate(t.getDate() + 7); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); };
+  c.ax = c.ax || {}; c.ax.data = sh(c.ax.data); if(c.ax.dataFine) c.ax.dataFine = sh(c.ax.dataFine);
+  uscMap()[nid] = c; saveData(true); try{ uscNavSync(); }catch(e){} showToast('Duplicato una settimana dopo: cambia la data se serve'); calRe();
+};
 window.calTpAltro = function(sel){ const l = $('cal-tpa'); if(l) l.hidden = sel.value !== '__altro'; };
 window.calNew = function(m){ SH._calNew = m; calRe(); setTimeout(() => { const e = $('cal-nt'); if(e) e.focus(); }, 40); };
 window.calMake = function(){

@@ -27,6 +27,8 @@ ok(await ev(i => uscGet(i).tipo === 'Consiglio di Akela', id), 'cambio il tipo s
 await P.selectOption('select[aria-label="Tipo di attività"]', '__altro'); await sleep(500);
 await P.fill('[aria-label="Altro tipo di attività"]', 'Veglia'); await sleep(300);
 ok(await ev(i => uscTipoLab(uscGet(i)) === 'Veglia', id), 'Altro anche dalla scheda');
+await ev(() => shCal()); await sleep(500); await P.click('.cal-c >> nth=0 >> button:has-text("Duplica")'); await sleep(600);
+ok(await ev(() => { const L = Object.values(scheda.uscite); const c = L.find(x => /\(copia\)$/.test(x.testo)); const o = L.find(x => x.testo === 'Caccia di novembre'); return !!c && c.id !== o.id && c.ax.data === '2026-11-21' && c.tipo === o.tipo; }), 'Duplica un contenitore: una settimana dopo, stesso tipo');
 const st = await ev(() => { MODE = 'staff'; const r = uscTipi(); MODE = 'giovani'; return r; });
 ok(st.includes('Attività formativa') && st.includes('Riunione di staff') && st.includes('Uscita di staff') && st.includes('Bivacco di staff'), 'staff: tipi propri');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
