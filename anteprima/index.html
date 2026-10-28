@@ -7882,7 +7882,7 @@ const NOVITA = [
     '<b>Cerca un’attività</b>: ora c’è anche nell’Archivio. Chi propone un’attività all’archivio nazionale vede lo stato in <b>Le mie proposte</b>; chi approva trova in «Per te» l’avviso delle proposte da leggere.',
     'I video della home sono raggruppati per argomento: apri il gruppo che ti interessa.']},
   {d:'20 ottobre 2026', t:'In anteprima: uscite e campi', i:[
-    '<b>Uscite e campi</b> (facoltativo): Evento in sede, Uscita, Bivacco, Campo. Ogni giornata si costruisce a <b>blocchi colorati</b> presi da una tavolozza (sveglia, pasti, quadrato, attività della Sezione 3 o nuove, hike, gioco, tempo libero, serata…), che si aprono, si spostano con le frecce o trascinandoli e hanno un time table in cima; si può fissare l’ora di un blocco.',
+    '<b>Uscite e campi</b> (facoltativo): Riunione, Uscita, Bivacco, Campo. Ogni giornata si costruisce a <b>blocchi colorati</b> presi da una tavolozza (sveglia, pasti, quadrato, attività della Sezione 3 o nuove, hike, gioco, tempo libero, serata…), che si aprono, si spostano con le frecce o trascinandoli e hanno un time table in cima; si può fissare l’ora di un blocco.',
     'In alto <b>Campo</b> (time table di tutto il campo, sintesi dei costi e riepilogo per giornata) e un pulsante per ogni modulo: Persone e date, Ritrovo e spostamenti, Pasti, Trasporti, Locazioni, Quota, Sicurezza, Benessere, Piano B, Materiali, Circolare, più quelli che create voi. Ogni modulo si apre a tutta pagina con la parte generale e il dettaglio giornata per giornata; sotto, le giornate. Pasti con colonne uguali per tutte le giornate e piatti «per pochi» (es. la Pattuglia in hike); materiali dei blocchi con quantità, prezzo e chi li procura; tutto si <b>esporta in Word</b> (il menù anche in Excel).',
     'Nelle attività della Sezione 3 messe in un’uscita scaletta, materiali, sicurezza, benessere, piano B e link sono gli stessi della Sezione 3 (si scrive di qua o di là). I campi dei blocchi si aprono e si chiudono. Gli <b>spostamenti</b> hanno partenza, arrivo, ora, mezzo, km e ritorno (anche in giornata). <b>Quota e cassa</b> mostra quanto costano i capi e come cambia la quota se pagano; nei pasti sono segnati gli ingredienti senza prezzo.',
     'Nella Sezione 3, dentro «Quando arriva il momento di organizzarla», c’è «Hai un’uscita o un campo?»: se l’attività è fuori sede o con il pernotto, l’app invita a organizzarla come uscita. Un’attività nuova nata in un’uscita, con gli obiettivi e gli Indicatori presi dalla programmazione, si porta nella Sezione 3 con «Porta nella programmazione»: l’app propone il percorso giusto. Il nome dell’Unità ora è nella 1.1, prima dei Numeri dell’Unità.']},
@@ -8889,7 +8889,7 @@ const USC_PCOL={colazione:'#3B9AD9',merendam:'#D9A800',pranzo:'#E2761B',merenda:
 function uscPCol(m){ return USC_PCOL[m]||'#6B8E7F'; }
 function uscMCol(k){ return USC_MCOL[k]||''; }
 let USC_CUR=null, USC_TAB='campo', USC_IDX=[], USC_NEW=false, USC_TILE=null, USC_OPEN={}, USC_EDIT={}, USC_MEAL=null, USC_ADDMOD=false, USC_PAL=false, USC_DRAG=null, USC_PICK=false;
-const USC_MODELLI=[['sede','Evento in sede','in sede, niente trasporti'],['giorno','Uscita','in giornata'],['bivacco','Bivacco','2 giorni con pernotto'],['campo','Campo','più di 2 giorni']];
+const USC_MODELLI=[['sede','Riunione','in sede, niente trasporti'],['giorno','Uscita','in giornata'],['bivacco','Bivacco','2 giorni con pernotto'],['campo','Campo','più di 2 giorni']];
 const USC_HID={sede:{log:1,trasp:1},giorno:{},bivacco:{},campo:{}};
 const USC_HID_ST={obs:0,scatto:0,energy:0,casa:0};
 const USC_MOD=[['chi','Persone e date','presenti, date, documenti dei genitori, cose da fare'],['log','Ritrovo e spostamenti','luogo, spostamenti, km e CO₂'],['trasp','Trasporti','pullman, treno, auto: quanto costano'],['loc','Locazioni','case, strutture, energia e altre spese'],['costi','Quota','cassa, parte dei capi, come si paga'],['sic','Sicurezza','rischi, numeri utili, cassetta'],['ben','Benessere e inclusione','attenzioni per tutto il campo'],['pb','Piano B','le situazioni da prevedere'],['mat','Materiali','quello che serve a tutto il campo e giornata per giornata'],['circ','Circolare per le famiglie','carta intestata nazionale, Word e PDF']];
@@ -9024,6 +9024,24 @@ function uscCreate(from){ if(!uscCan()) return; const t=((document.getElementByI
   saveData(true); USC_NEW=false; uscNavSync(); uscOpen(id); showToast('Uscita creata: costruisci le giornate con i momenti della tavolozza'); return id; }
 function uscDel(){ const u=uscCur(); if(!u||!uscCan()) return; if(!confirm('Eliminare l’uscita «'+uscTit(u)+'»? Le attività restano nella Sezione 3.')) return; u.del=true; saveData(true); USC_CUR=null; uscNavSync(); uscOpen(null); }
 function uscSetTitle(v){ const u=uscCur(); if(!u) return; u.testo=String(v||'').slice(0,90); uscSave(); const h=document.getElementById('usc-crumb-t'); if(h) h.textContent=uscTit(u); }
+
+// ── Tipo di attività (dai manuali di Branca) accanto al Formato (Riunione, Uscita, Bivacco, Campo): contestualizza senza vincolare; «Altro» è libero ──
+const USC_TIPI_B = {
+  L:['Riunione in Tana', 'Caccia', 'Caccia con pernotto', 'Vacanze di Branco', 'Consiglio di Akela', 'Passaggi di Branca'],
+  E:['Riunione di Reparto', 'Uscita di Reparto', 'Bivacco', 'Campo', 'Consiglio di Reparto / Plancia', 'Consiglio della Legge', 'Consiglio di Pattuglia', 'Missione', 'Impresa', 'Alta Pattuglia', 'Gara'],
+  R:['Riunione di Compagnia', 'Consiglio di Compagnia', 'Attività di Ronda', 'Hike', 'Servizio', 'Estate Rover', 'Officine e CIR']
+};
+const USC_TIPI_ALL = ['Attività di Gruppo o Sezione', 'Evento regionale o nazionale', 'Attività di staff'];
+const USC_TIPI_ST = ['Attività formativa', 'Riunione di staff', 'Uscita di staff', 'Bivacco di staff'];
+function uscTipi(){ return uscSt() ? USC_TIPI_ST.slice() : (USC_TIPI_B[FASCIA] || []).concat(USC_TIPI_ALL); }
+function uscTipoLab(u){ const t = u && u.tipo; if(!t) return ''; return t === '__altro' ? String(u.tipoAltro || '').trim() || 'Altro' : t; }
+function uscTipoSel(u, can){
+  const L = uscTipi(); const cur = u.tipo || ''; const known = !cur || cur === '__altro' || L.includes(cur);
+  return `<select class="ax-in usc-msel" aria-label="Tipo di attività" ${can ? '' : 'disabled'} onchange="uscSetTipo(this.value)"><option value="">Tipo di attività…</option>${(known ? L : L.concat([cur])).map(n => `<option value="${uscE(n)}"${cur === n ? ' selected' : ''}>${uscE(n)}</option>`).join('')}<option value="__altro"${cur === '__altro' ? ' selected' : ''}>Altro (lo scrivo io)</option></select>${cur === '__altro' ? `<input class="ax-in usc-msel" maxlength="60" placeholder="Che tipo di attività è?" aria-label="Altro tipo di attività" value="${uscE(u.tipoAltro || '')}" ${can ? '' : 'readonly'} oninput="uscSetTipoAltro(this.value)">` : ''}`;
+}
+function uscSetTipo(v){ const u = uscCur(); if(!u || !uscCan()) return; u.tipo = v || ''; if(v !== '__altro') delete u.tipoAltro; uscSave(); uscRe(); }
+function uscSetTipoAltro(v){ const u = uscCur(); if(!u || !uscCan()) return; u.tipoAltro = String(v || '').slice(0, 60); uscSave(); }
+window.uscSetTipo = uscSetTipo; window.uscSetTipoAltro = uscSetTipoAltro; window.uscTipoLab = uscTipoLab; window.uscTipi = uscTipi;
 function uscSetModello(m){ const u=uscCur(); if(!u||!uscCan()) return; const L=(u.ax.luogo=u.ax.luogo||{});
   if(m==='sede') uscLuogoTipo(u.ax,'sede'); else if(L.tipo==='sede'){ uscLuogoTipo(u.ax,'uscita'); L.tipo='uscita'; }
   u.modello=m; if(m==='sede'){ if(!u.hid) u.hid={}; } uscSave(); uscRe(); }
@@ -9399,7 +9417,7 @@ function uscMini(u){ const g={}; uscBlocks(u).forEach(o=>{ const k=USC_GRP(o.m.k
 function uscNewHTML(){ return `<div class="usc-new" id="usc-new"><div class="usc-newh">Nuova uscita</div>
   <label class="usc-lb" for="usc-new-t"><span class="usc-lt">Nome</span><input id="usc-new-t" class="ax-in" maxlength="90" placeholder="es. Campo invernale, Uscita di Pattuglia"></label>
   <div class="usc-dates"><label class="usc-lb" for="usc-new-d1"><span class="usc-lt">Dal</span><input id="usc-new-d1" class="ax-in" type="date" onchange="uscNewModel()"></label><label class="usc-lb" for="usc-new-d2"><span class="usc-lt">Al <span class="ax-opt">vuoto se in giornata</span></span><input id="usc-new-d2" class="ax-in" type="date" onchange="uscNewModel()"></label></div>
-  <div class="ax-sub" style="margin-top:6px">Tipo <span class="ax-opt" id="usc-new-h"></span></div><div class="usc-mds">${USC_MODELLI.map(([k,l,d],i)=>`<button type="button" class="usc-md${k==='giorno'?' on':''}" data-m="${k}" aria-pressed="${k==='giorno'}" onclick="uscNewSel('${k}')"><b>${l}</b><span>${d}</span></button>`).join('')}</div>
+  <div class="ax-sub" style="margin-top:6px">Formato <span class="ax-opt" id="usc-new-h"></span></div><div class="usc-mds">${USC_MODELLI.map(([k,l,d],i)=>`<button type="button" class="usc-md${k==='giorno'?' on':''}" data-m="${k}" aria-pressed="${k==='giorno'}" onclick="uscNewSel('${k}')"><b>${l}</b><span>${d}</span></button>`).join('')}</div>
   <div class="ax-hint">${uscSt()?'I partecipanti partono dai membri dello staff. Il tipo si propone dalle date e si può cambiare.':'Ragazzi e capi partono dai Numeri dell’Unità e dalla tabella dello staff (1.1). Il tipo si propone dalle date e si può cambiare.'}</div>
   <div class="ax-chips" style="margin-top:8px"><button type="button" class="btn-primary" onclick="uscCreate()">Crea l’uscita</button><button type="button" class="btn-ghost" onclick="USC_NEW=false;uscRe()">Annulla</button></div></div>`; }
 function uscListHTML(){ const L=uscList(); const can=uscCan();
@@ -9432,7 +9450,7 @@ function uscOneHTML(u){ const j=uscJ(u.id), x=u.ax, N=axN(x), can=uscCan(); cons
   h+=`<div class="usc-hero"><div class="usc-hrow"><div style="min-width:0;flex:1"><div class="usc-eye">${uscE(md[1])} · ${uscE(md[2])}</div>
     <input class="usc-title" value="${uscE(u.testo)}" placeholder="Titolo dell’uscita" maxlength="90" ${can?'':'readonly'} oninput="uscSetTitle(this.value)" aria-label="Titolo dell’uscita">
     <div class="usc-sub" id="usc-sub">${uscE([d||'Date da scegliere in «Persone e date»',dove,n>1?n+' giornate, '+(n-1)+(n-1===1?' notte':' notti'):''].filter(Boolean).join(' · '))}</div></div>
-    <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Tipo di uscita" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}</div></div>
+    <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Formato" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}${can||uscTipoLab(u)?uscTipoSel(u,can):''}</div></div>
     <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.riservata?'checked':''} onchange="uscSetRis(this.checked)"> Uscita riservata <span class="ax-opt">chi collabora vede solo il proprio momento</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita riservata: vedi solo i momenti che conduci tu.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
   const tb=(id,t,s,cls)=>`<button type="button" role="tab"${typeof id==='string'&&uscMCol(id.replace(/^m:/,''))&&/^(m:|pasti)/.test(id)?` style="--mc:${uscMCol(id.replace(/^m:/,''))}"`:''} class="usc-tab ${cls||''}${USC_TAB===id?' on':''}" aria-selected="${USC_TAB===id}" id="usc-tab-${typeof id==='string'?id.replace(':','-'):id}" onclick="uscTab(${typeof id==='string'?`'${id}'`:id})">${uscE(t)}${s?`<small>${uscE(s)}</small>`:''}</button>`;
   const mods=uscModList(u).map(([k,l])=>tb(k==='pasti'?'pasti':'m:'+k,l,'',' mod'+(k!=='pasti'&&uscModFilled(u,k)?' done':''))).join('')+uscOwn(u).map(({k,o})=>tb('o:'+k,o.t||'Modulo','',' mod own')).join('');
@@ -17130,7 +17148,7 @@ function bilRows(items){
       try{ Object.defineProperty(x, '__u', {value:u.id, enumerable:false, configurable:true, writable:true}); }catch(e){}
       let C = []; try{ C = axCosti(x).filter(i => !i.contrib); }catch(e){ bad++; }
       const mese = /^\d{4}-\d{2}/.test(x.data || '') ? x.data.slice(0, 7) : '';
-      C.forEach(i => { if(!(i.c > 0)) return; out.push({ciclo:it.ci.nome, cid:it.id, cont:uscTit(u), tipo:(CAL_T[uscModK(u)] || ['Uscita'])[0], mese, voce:String(i.voce).replace(/ · (metà della )?parte dei capi$/, ''), cat:i.cat || 'altro', c:i.c}); }); }); });
+      C.forEach(i => { if(!(i.c > 0)) return; out.push({ciclo:it.ci.nome, cid:it.id, cont:uscTit(u), tipo:uscTipoLab(u) || (CAL_T[uscModK(u)] || ['Uscita'])[0], mese, voce:String(i.voce).replace(/ · (metà della )?parte dei capi$/, ''), cat:i.cat || 'altro', c:i.c}); }); }); });
   out.bad = bad; return out;
 }
 function bilFilt(rows){ const f = SH._bf || {}; return rows.filter(r => (!f.ciclo || r.cid === f.ciclo) && (!f.cat || r.cat === f.cat)); }
@@ -17247,6 +17265,7 @@ function calHTML(){
     <label>Nome <input id="cal-nt" class="sh-in" maxlength="80" placeholder="${esc(CAL_T[SH._calNew][0])}"></label>
     <label>Data${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? ' di inizio' : ''} <input id="cal-d1" type="date" class="sh-in"></label>
     ${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? '<label>Data di fine <input id="cal-d2" type="date" class="sh-in"></label>' : ''}
+    <label>Tipo di attività <select id="cal-tp" class="sh-in" onchange="calTpAltro(this)"><option value="">—</option>${uscTipi().map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}<option value="__altro">Altro (lo scrivo io)</option></select></label><label id="cal-tpa" hidden>Quale? <input id="cal-tpt" class="sh-in" maxlength="60"></label>
     <div class="cal-wa"><button type="button" class="sh-btn" onclick="calMake()">Crea</button><button type="button" class="sh-btn gh" onclick="SH._calNew=null;calRe()">Annulla</button></div></div>` : '';
   const addB = can ? `<div class="cal-add" role="group" aria-label="Aggiungi un contenitore">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<button type="button" class="sh-btn gh" onclick="calNew('${m}')">+ ${esc(CAL_T[m][0])}</button>`).join('')}</div>` : '';
   const contH = conts.map(u => {
@@ -17254,7 +17273,7 @@ function calHTML(){
     bl.forEach(o => { if(o.m && o.m.k === 'att'){ const f = uscAttFind(o.m); if(f && byK[f.idx + '-' + f.j]) mine.push({r:byK[f.idx + '-' + f.j], k:o.k, g:Math.max(1, Number(o.m.g) || 1)}); } });
     const other = bl.length - mine.length;
     return `<section class="cal-c" data-u="${u.id}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
-      <header><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><b>${esc(uscTit(u))}</b><span class="cal-dt">${esc(calDateTxt(u))}</span><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri ${T[0] === 'Riunione' ? 'la riunione' : 'l’uscita'}</button></header>
+      <header><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><b>${esc(uscTit(u))}</b>${uscTipoLab(u) ? `<span class="cal-tp">${esc(uscTipoLab(u))}</span>` : ''}<span class="cal-dt">${esc(calDateTxt(u))}</span><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri ${T[0] === 'Riunione' ? 'la riunione' : 'l’uscita'}</button></header>
       <div class="cal-cb">${mine.length ? mine.map(m => calBlock(m.r, {u, k:m.k})).join('') : '<div class="cal-empty">Trascina qui le attività, oppure usa «Sposta in…».</div>'}${other > 0 ? `<div class="cal-more">${other} ${other === 1 ? 'altro momento' : 'altri momenti'} (pasti, giochi, spostamenti…) nell’${T[0] === 'Riunione' ? 'evento' : 'uscita'}.</div>` : ''}</div></section>`;
   }).join('');
   return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui l’Unità vive le attività dei percorsi: crea una riunione, un’uscita, un bivacco o un campo e metti le attività nei contenitori. La data del contenitore diventa la data dell’attività.</p></div></div>
@@ -17267,6 +17286,7 @@ function calHTML(){
 function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ p.innerHTML = calHTML(); } }
 window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); $('panel-pp').innerHTML = calHTML(); own('panel-pp'); };
 window.calOrg = function(i, j){ const k = i + '-' + j; window._calOpen[k] = !window._calOpen[k]; calRe(); };
+window.calTpAltro = function(sel){ const l = $('cal-tpa'); if(l) l.hidden = sel.value !== '__altro'; };
 window.calNew = function(m){ SH._calNew = m; calRe(); setTimeout(() => { const e = $('cal-nt'); if(e) e.focus(); }, 40); };
 window.calMake = function(){
   if(!calCan()) return; const md = SH._calNew || 'giorno'; const t = String(($('cal-nt') || {}).value || '').trim(); const d1 = ($('cal-d1') || {}).value || '', d2 = ($('cal-d2') || {}).value || '';
@@ -17276,7 +17296,9 @@ window.calMake = function(){
   const multi = d2 && d2 > d1; const x = {data:d1, durata:multi ? 'piu' : 'giorno', pres:{ad}, cibo:{carico:'ragazzi'}}; if(multi) x.dataFine = d2;
   const nt = parseInt(pp.numTot, 10); if(nt) x.pres.rag = String(nt); const nf = parseInt(pp.numF, 10), nm = parseInt(pp.numM, 10); if(nf) x.pres.ragF = String(nf); if(nm) x.pres.ragM = String(nm);
   x.luogo = {}; if(md === 'sede') uscLuogoTipo(x, 'sede');
+  const tp = ($('cal-tp') || {}).value || '', tpt = String(($('cal-tpt') || {}).value || '').trim().slice(0, 60);
   uscMap()[id] = {id, cr:Date.now(), testo:t || CAL_T[md][0], modello:md, ax:x, prog:{}, hid:Object.assign({}, USC_HID[md] || {}), own:{}};
+  if(tp){ uscMap()[id].tipo = tp; if(tp === '__altro') uscMap()[id].tipoAltro = tpt; }
   saveData(true); SH._calNew = null; try{ uscNavSync(); }catch(e){} showToast(CAL_T[md][0] + ' creata'); calRe();
 };
 function calOut(idx, j, uid, k){ const u = uscGet(uid); const m = u && u.prog && u.prog[k]; if(m && !m.del) m.del = true; }
@@ -17607,6 +17629,9 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .chk-nm{min-height:44px}.chk-w,.chk-a{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}.chk-nx{margin-left:auto;font-size:13px}
 .chk-sel{width:auto;min-height:44px;min-width:130px}.chk-on{display:flex;gap:6px;align-items:center;min-height:44px;font-weight:700}.chk-on input{width:20px;height:20px}.chk-del{grid-column:1/-1;justify-self:end;min-height:40px}
 .chk-a .sh-lb{margin:0}
+/* Tipo di attività */
+.cal-tp{font-size:12px;border:1px solid #8a8a82;border-radius:999px;padding:1px 8px;background:#fff;color:#3d3d38}
+#cal-tpa[hidden]{display:none}
 /* Spese mese per mese */
 .bil-flt{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:12px}.bil-flt .sh-lb{margin:0}.bil-flt select{width:auto;min-width:160px;min-height:44px}
 .bil-ch{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;align-items:end;height:200px;padding-top:6px}
