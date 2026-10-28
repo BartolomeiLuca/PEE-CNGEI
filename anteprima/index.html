@@ -16038,9 +16038,57 @@ window.shRename = async function(id){
   if(SH.rows.some(r => r.id !== id && r.anno === cur.anno && r.titolo === nuovo)){ clToast('Esiste già un progetto con questo titolo in quell’anno'); return; }
   try{ await dbRename(id, nuovo); if(CL.ctx && CL.ctx.id === id){ CL.ctx.titolo = nuovo; clSaveCtx(); } SH.rows = null; show('home'); }catch(e){ clToast('Errore: ' + clErr(e)); }
 };
-window.shDup = async function(id){
-  const r = (SH.rows || []).find(x => x.id === id); if(!r) return;
-  try{ await clDup(id, Number(r.anno)); SH.rows = null; show('home'); }catch(e){ clToast('Non riesco a duplicare'); }
+// ── Duplicazione selettiva: si sceglie voce per voce cosa copiare; cambiando anno le date si azzerano e le verifiche non si copiano di default ──
+const DUP_BLK = [
+  ['ctx', 'Unità, contesto e staff', 'Dati dell’Unità, contesto del territorio e della Sezione, tabella dello staff, Check dello staff'],
+  ['obs', 'Osservazione', 'Griglia, livelli osservati, sintesi per Ambito'],
+  ['prior', 'Obiettivi, indicatori e priorità', 'Le tre priorità con obiettivi e indicatori (senza le date di periodo)'],
+  ['perc', 'Percorsi educativi e attività', 'Le attività scritte nei percorsi, con strumenti e obiettivi collegati'],
+  ['usc', 'Calendario: riunioni, uscite, bivacchi e campi', 'I contenitori con programma, persone e spese'],
+  ['ver', 'Verifiche e valutazioni', 'Verifica delle attività e valutazione finale: di norma si riprendono come «Appunti dalla programmazione precedente», non si copiano']
+];
+window.shDup = function(id){
+  const r = (SH.rows || []).find(x => x.id === id); if(!r) return; const y = Number(r.anno);
+  const row = ([k, t, d]) => `<label class="dup-r"><input type="checkbox" class="dup-c" data-k="${k}" checked> <span><b>${esc(t)}</b><small>${esc(d)}</small></span></label>`;
+  modalShow(`<div class="sch dup"><div class="sch-t">Duplica «${esc(r.titolo)}»</div><div class="sch-m">Scegli cosa copiare. Inviti e condivisioni non si copiano.</div>
+    <label class="sh-lb" for="dup-y">Anno scout di arrivo</label><select id="dup-y" class="sh-in" onchange="shDupYear()"><option value="${y}">${esc(annoScoutTxt(y))} (stesso anno)</option><option value="${y + 1}">${esc(annoScoutTxt(y + 1))} (anno successivo)</option></select>
+    <p class="sh-hint" id="dup-h">Stesso anno: la copia è identica a ciò che selezioni.</p>
+    <div class="dup-act"><button type="button" class="btn-ghost" onclick="shDupAll(true)">Seleziona tutto</button><button type="button" class="btn-ghost" onclick="shDupAll(false)">Deseleziona tutto</button></div>
+    <div class="dup-l">${DUP_BLK.map(row).join('')}</div>
+    <div class="dup-act"><button type="button" class="sh-btn" onclick="shDupGo('${id}')">Crea la copia</button><button type="button" class="btn-ghost" onclick="modalClose()">Annulla</button></div></div>`);
+};
+window.shDupAll = function(on){ document.querySelectorAll('.dup-c').forEach(c => { c.checked = !!on; }); };
+window.shDupYear = function(){ const first = $('dup-y').selectedIndex === 0; const h = $('dup-h'); if(h) h.textContent = first ? 'Stesso anno: la copia è identica a ciò che selezioni.' : 'Anno successivo: le date di attività, riunioni e periodi si azzerano (le scegli di nuovo) e i numeri ripartono da 1. Le verifiche passano come «Appunti dalla programmazione precedente», quindi qui non si copiano.'; const v = document.querySelector('.dup-c[data-k="ver"]'); if(v) v.checked = first; };
+function dupBuild(src, anno, keys){
+  const data = JSON.parse(JSON.stringify(src || {})); const sc = data.scheda = data.scheda || {}; const def = JSON.parse(SCHEDA_DEFAULT); const has = k => keys.includes(k);
+  const diff = Number(anno) !== Number(data.anno || 0) && (sc.annoScout ? String(sc.annoScout).slice(0, 4) !== String(anno) : true);
+  if(!has('ctx')) sc.pp = def.pp;
+  if(!has('obs')){ data.obs = {}; sc.osservazione = def.osservazione; delete sc.riobs; }
+  if(!has('prior')){ sc.priorita = def.priorita; data.pris = {}; }
+  if(!has('perc')) sc.percorsiExtra = [];
+  if(!has('usc')) sc.uscite = {};
+  if(!has('ver')){ sc.idrComp = {}; sc.valCompl = {}; delete sc.riobs; (sc.percorsiExtra || []).forEach(p => (p.attivita || []).forEach(a => { a.vBene = ''; a.vMigl = ''; a.vAgg = ''; })); }
+  if(diff){
+    (sc.percorsiExtra || []).forEach(p => (p.attivita || []).forEach(a => { if(a.ax){ delete a.ax.data; delete a.ax.dataFine; } }));
+    Object.keys(sc.uscite || {}).forEach(k => { const u = sc.uscite[k]; if(u && u.ax){ delete u.ax.data; delete u.ax.dataFine; } });
+    (sc.priorita || []).forEach(p => { p.tDal = ''; p.tAl = ''; });
+    delete sc.ciclo; delete sc.cicloDa; delete sc.calOk;
+  }
+  delete sc.ppImp; sc.annoScout = annoScoutTxt(Number(anno)); data.ts = Date.now();
+  return data;
+}
+window.dupBuild = dupBuild;
+window.shDupGo = async function(id){
+  const keys = [...document.querySelectorAll('.dup-c')].filter(c => c.checked).map(c => c.dataset.k); const anno = Number(($('dup-y') || {}).value);
+  if(!keys.length){ showToast('Scegli almeno una voce da copiare'); return; }
+  try{ const r = await dbGet(id); if(!r){ showToast('Progetto non trovato'); return; }
+    const rows = await dbList(); const meta = Object.assign({}, (rows.find(x => x.id === id) || {}).meta || clMeta(r.data || {}));
+    let tit = String(r.titolo || 'Progetto').replace(/\s*\(copia( \d+)?\)$/, '') + ' (copia)', n = 2; while(rows.some(x => Number(x.anno) === anno && x.titolo === tit)) tit = String(r.titolo || 'Progetto').replace(/\s*\(copia( \d+)?\)$/, '') + ' (copia ' + (n++) + ')';
+    let src = r.data || {}; if(CL.ctx && CL.ctx.id === id){ try{ saveData(true); src = clSnapshot(); }catch(e){} }
+    src = JSON.parse(JSON.stringify(src)); src.anno = Number(r.anno);
+    const data = dupBuild(src, anno, keys); delete data.anno;
+    const nr = await dbInsert(anno, tit, data, meta); modalClose(); CL._arc = null; SH.rows = null; showToast('Copia creata: ' + nr.anno + ' · ' + nr.titolo); show('home');
+  }catch(e){ showToast('Non riesco a duplicare: ' + clErr(e)); }
 };
 window.shDel = async function(id){
   await clDelete(id);
@@ -17668,6 +17716,9 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .chk-nm{min-height:44px}.chk-w,.chk-a{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}.chk-nx{margin-left:auto;font-size:13px}
 .chk-sel{width:auto;min-height:44px;min-width:130px}.chk-on{display:flex;gap:6px;align-items:center;min-height:44px;font-weight:700}.chk-on input{width:20px;height:20px}.chk-del{grid-column:1/-1;justify-self:end;min-height:40px}
 .chk-a .sh-lb{margin:0}
+/* Duplicazione selettiva */
+.dup-l{display:flex;flex-direction:column;gap:6px;margin:10px 0}.dup-r{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 10px;border:1px solid #d6dcd5;border-radius:10px;cursor:pointer}.dup-r input{width:20px;height:20px;margin-top:2px;flex:none}.dup-r small{display:block;color:#555;font-size:12px;margin-top:2px}
+.dup-act{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 /* Elenco dell'anno */
 .ele-go{cursor:pointer}.ele-go:hover{background:#f1f5ef}.ele-t .n{font-weight:800;text-align:right}.ele-stf{font-size:10.5px;font-weight:800;border:1px solid #111;border-radius:4px;padding:0 4px;margin-left:4px}
 /* Tipo di attività */
