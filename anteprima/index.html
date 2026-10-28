@@ -16512,11 +16512,11 @@ function navHTML(){
 function bbHTML(){
   const pp = isPP();
   if(isST()){ const B2 = [['st1','Osservazione','eye','goPhase(1)'],['st2','Riepilogo','list','goPhase(2)'],['usc','Uscite','tent',"shSec('usc')"],['more','Altro','more',"shSheet('Altro')"]];
-    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
+    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal','r-bil','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
@@ -16528,7 +16528,7 @@ window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on
 window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
-    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['sha','arc'] : ['m-4','m-5','k-arc','d-sha','d-chk'];
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','sha','arc'] : ['m-4','m-5','k-arc','d-sha','d-chk'];
     h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else if(!isPP() && !isST()){
@@ -17617,7 +17617,9 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .bil-leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px}.bil-leg i{display:inline-block;width:12px;height:12px;margin-right:6px;border-radius:2px;vertical-align:-1px}
 .bil-t{width:100%;border-collapse:collapse}.bil-t th,.bil-t td{text-align:left;padding:8px;border-bottom:1px solid #d6dcd5;vertical-align:top}.bil-t .n,.bil-dt .n{text-align:right;white-space:nowrap}.bil-in{width:110px;min-height:40px;text-align:right}
 .bil-dt{width:100%;margin-top:6px;font-size:12.5px}.bil-dt td{padding:3px 6px;border:0}.bil-tot th,.bil-tot td{font-weight:800;border-top:2px solid #111}
-@media(max-width:600px){.bil-v{display:none}.bil-ch{height:160px}}
+@media(max-width:600px){.bil-v{display:none}.bil-ch{height:160px;gap:3px}.bil-m{font-size:9.5px;letter-spacing:-.2px}}
+.vis-lst:has(.bil-t){overflow-x:auto}.bil-t{min-width:560px}.bil-t th{white-space:nowrap}
+.chk-a .att-how{min-height:44px;padding:0 12px;border:1px solid currentColor;border-radius:8px;background:#fff;cursor:pointer;font:700 12.5px 'Montserrat',sans-serif}
 /* Verifica dell'anno */
 .anv-q{display:flex;flex-direction:column;gap:6px}
 .anv-q .sh-lb{margin-top:8px}
