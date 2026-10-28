@@ -16516,6 +16516,7 @@ const NAV_AN = [
   {g:'Misurare'},
   {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
   {id:'m-5', k:'5', t:'Valutazione finale', ic:'up', go:"shSec('5')"},
+  {id:'m-num', t:'Numeri dell’anno', ic:'dash', go:'shNum()'},
   {id:'m-anno', t:'Verifica dell’anno', ic:'check', go:'shAnnoV()'},
   {g:'Conservare'},
   {id:'k-arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'},
@@ -16583,7 +16584,7 @@ function bbHTML(){
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal','r-ele','r-bil','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal','r-ele','r-bil','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
@@ -16595,7 +16596,7 @@ window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on
 window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
-    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','sha','arc'] : ['m-4','m-5','k-arc','d-sha','d-chk'];
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','sha','arc'] : ['m-4','m-5','m-num','m-anno','k-arc','d-sha','d-chk'];
     h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else if(!isPP() && !isST()){
@@ -16616,7 +16617,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-she
 function active(){
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -17225,6 +17226,58 @@ window.eleCsv = function(){
   saveBlob(new Blob(['﻿' + L.join('\r\n')], {type:'text/csv;charset=utf-8'}), 'Attivita-' + String(scheda.annoScout || '').replace(/[^0-9-]/g, '') + '.csv');
 };
 window.eleSeq = eleSeq; window.eleLoad = eleLoad;
+
+// ── Misurare · «Numeri dell'anno»: i dati già scritti nell'app, sommati. Quantitativi calcolati; qualitativi solo contati o riportati, mai trasformati in punteggi ──
+function numCalc(items, staffItems){
+  const oggi = new Date().toISOString().slice(0, 10); const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
+  const R = {cont:0, fmt:{Riunione:0, Uscita:0, Bivacco:0, Campo:0}, fatte:0, daFare:0, senzaData:0, giorni:0, notti:0, fuori:0, resid:0, pres:0, presN:0, km:0, staffN:0, mese:{}, tipo:{}, spese:{}, spTot:0, amb:{P:0, C:0, S:0}, perc:{}, strum:{}, att:0, ver:0, migl:[], bene:[], idr:{spontaneo:0, stimolato:0, no:0}, cicli:items.length};
+  const ing = (u, staff) => { const x = u.ax || {}; try{ Object.defineProperty(x, '__u', {value:u.id, enumerable:false, configurable:true, writable:true}); }catch(e){}
+    if(staff){ R.staffN++; return; }
+    R.cont++; const f = (CAL_T[uscModK(u)] || ['Uscita'])[0]; R.fmt[f] = (R.fmt[f] || 0) + 1;
+    const d = /^\d{4}-\d{2}-\d{2}/.test(x.data || '') ? x.data.slice(0, 10) : ''; if(!d) R.senzaData++; else { if((x.dataFine || d) < oggi) R.fatte++; else R.daFare++; const m = d.slice(0, 7); R.mese[m] = (R.mese[m] || 0) + 1; }
+    const ng = uscNG(u); R.giorni += ng; R.notti += Math.max(0, ng - 1); if((x.luogo || {}).tipo !== 'sede') R.fuori++; if(f === 'Bivacco' || f === 'Campo') R.resid++;
+    try{ const N = axN(x); if(N.tot){ R.pres += N.tot; R.presN++; } }catch(e){} R.km += Number((x.luogo || {}).km) || 0;
+    const t = uscTipoLab(u) || f; R.tipo[t] = (R.tipo[t] || 0) + 1;
+    try{ axCosti(x).filter(i => !i.contrib && i.c > 0).forEach(i => { const c = i.cat || 'altro'; R.spese[c] = (R.spese[c] || 0) + i.c; R.spTot += i.c; }); }catch(e){} };
+  items.forEach(it => { const sc = it.data.scheda || {}; const U = sc.uscite || {}; Object.keys(U).forEach(k => { const u = U[k]; if(u && typeof u === 'object' && !u.del && u.id) ing(u, false); });
+    (sc.percorsiExtra || []).forEach(per => { if(!per || !per.percorsoId) return; const am = per.ambito || per.percorsoId[0]; const P = DBx.find(q => q.id === per.percorsoId); const nm = P ? P.name : per.percorsoId;
+      Object.keys(per.strumSel || {}).forEach(k => { R.strum[k] = (R.strum[k] || 0) + 1; });
+      (per.attivita || []).forEach(a => { if(!a || !['testo', 'lancio', 'sviluppo', 'conclusione'].some(k => String(a[k] || '').trim())) return; R.att++; if(R.amb[am] !== undefined) R.amb[am]++; R.perc[nm] = (R.perc[nm] || 0) + 1;
+        const vb = String(a.vBene || '').trim(), vm = String(a.vMigl || '').trim(); if(vb || vm || String(a.vAgg || '').trim()) R.ver++; if(vm) R.migl.push(vm); if(vb) R.bene.push(vb); }); });
+    const ic = sc.idrComp || {}; Object.keys(ic).forEach(pid => Object.keys(ic[pid] || {}).forEach(j => { const c = (ic[pid][j] || {}).c; if(c && R.idr[c] !== undefined) R.idr[c]++; })); });
+  staffItems.forEach(sc => { const U = (sc || {}).uscite || {}; Object.keys(U).forEach(k => { const u = U[k]; if(u && typeof u === 'object' && !u.del && u.id) ing(u, true); }); });
+  return R;
+}
+async function numLoad(){
+  const items = await annoLoad(); const st = []; const y = Number(CL.ctx.anno);
+  try{ const rows = await dbList(); for(const r of rows.filter(r => Number(r.anno) === y && (r.meta || {}).mode === 'staff')){ try{ const g = await dbGet(r.id); st.push(((g && g.data) || {}).scheda); }catch(e){} } }catch(e){}
+  return {R:numCalc(items, st), items};
+}
+function numBar(rows, fmt){ const mx = Math.max(1, ...rows.map(r => r[1])); const tot = rows.reduce((a, r) => a + r[1], 0) || 1;
+  return `<div class="num-b">${rows.map(([n, v]) => `<div class="num-r"><span class="num-l">${esc(n)}</span><span class="num-t"><i style="width:${(v / mx * 100).toFixed(1)}%"></i></span><span class="num-v">${fmt ? fmt(v) : v} <small>${Math.round(v / tot * 100)}%</small></span></div>`).join('')}</div>`; }
+function numHTML(){
+  const D = SH._nm; if(!D) return '<p class="sh-sub" role="status">Carico l’anno…</p>'; const R = D.R; const tot = (R.cont + R.staffN);
+  const tile = (n, t, h) => `<div class="num-k"><b>${n}</b><span>${esc(t)}</span>${h ? `<small>${esc(h)}</small>` : ''}</div>`;
+  const sort = o => Object.keys(o).map(k => [k, o[k]]).sort((a, b) => b[1] - a[1]);
+  const AMB = {P:'Personale', C:'Comunitario', S:'Spirituale'};
+  const sp = Object.keys(R.spese).map(c => [(AX_CATI[c] || AX_CATI.altro)[0], R.spese[c]]).sort((a, b) => b[1] - a[1]);
+  const q = (arr, t) => arr.length ? `<details class="num-d"><summary>${esc(t)} (${arr.length})</summary><ul>${arr.slice(0, 12).map(x => `<li>${esc(x.length > 220 ? x.slice(0, 219) + '…' : x)}</li>`).join('')}</ul></details>` : '';
+  const idrT = R.idr.spontaneo + R.idr.stimolato + R.idr.no;
+  return `<div class="sh-dh"><div><h1>Numeri dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Anno scout ${esc(String(scheda.annoScout || ''))}, ${R.cicli} ${R.cicli === 1 ? 'ciclo' : 'cicli'}. Qui sommo ciò che hai già scritto nell’app: non devi inserire nulla di nuovo. I numeri vengono dal preventivo e dalle date che hai messo; dove un dato manca lo segnalo.</p></div></div>
+  <section class="sh-card2 wide"><h3>Le attività dell’Unità</h3><div class="num-g">${tile(R.cont, 'attività nel calendario', R.fatte + ' già passate · ' + R.daFare + ' da fare' + (R.senzaData ? ' · ' + R.senzaData + ' senza data' : ''))}${tile(R.giorni, 'giornate di attività', R.notti + (R.notti === 1 ? ' notte' : ' notti') + ' fuori casa')}${tile(R.fuori, 'attività fuori sede', R.cont ? Math.round(R.fuori / R.cont * 100) + '% del totale' : '')}${tile(R.resid, 'bivacchi e campi')}${tile(R.staffN, 'attività di staff', R.staffN ? '' : 'nessun progetto staff dell’anno')}${tile(R.presN ? Math.round(R.pres / R.presN) : '—', 'presenti in media', R.presN ? 'su ' + R.presN + ' attività con i presenti indicati' : 'indica i presenti nelle uscite')}${tile(R.km ? Math.round(R.km) + ' km' : '—', 'chilometri indicati', R.km ? 'andata e ritorno, solo dove inseriti' : 'indicali nei luoghi delle uscite')}${tile(R.spTot ? axEur(R.spTot) : '—', 'spesa prevista', 'preventivo, non speso davvero')}</div>
+  ${R.cont ? `<h4 class="num-h">Per formato</h4>${numBar(Object.keys(R.fmt).map(k => [k, R.fmt[k]]).filter(r => r[1] > 0))}<h4 class="num-h">Per tipo di attività</h4>${numBar(sort(R.tipo))}` : '<p class="sh-hint">Ancora nessuna attività nel calendario.</p>'}
+  ${sp.length ? `<h4 class="num-h">Spesa prevista per categoria</h4>${numBar(sp, axEur)}` : ''}</section>
+  <section class="sh-card2 wide"><h3>Il percorso educativo</h3>${R.att ? `<div class="num-g">${tile(R.att, 'attività nei percorsi')}${tile(R.ver, 'già verificate', Math.round(R.ver / R.att * 100) + '%')}</div><h4 class="num-h">Attività per Ambito</h4>${numBar(['P', 'C', 'S'].map(a => [AMB[a], R.amb[a]]))}<h4 class="num-h">Percorsi più affrontati</h4>${numBar(sort(R.perc).slice(0, 6))}${Object.keys(R.strum).length ? `<h4 class="num-h">Strumenti del metodo più usati</h4>${numBar(sort(R.strum).slice(0, 8))}` : ''}` : '<p class="sh-hint">Ancora nessuna attività scritta nei percorsi.</p>'}
+  ${idrT ? `<h4 class="num-h">Indicatori di Risultato</h4>${numBar([['Spontaneo', R.idr.spontaneo], ['Stimolato', R.idr.stimolato], ['Non adottato', R.idr.no]])}` : ''}
+  ${q(R.bene, 'Cosa è andato bene, dalle verifiche') + q(R.migl, 'Cosa migliorare, dalle verifiche')}<p class="sh-hint">Le verifiche sono testi: te le riporto, non le trasformo in numeri.</p></section>
+  <section class="sh-card2 wide"><h3>Come sono calcolati</h3><p class="sh-hint">Periodo: anno scout ${esc(String(scheda.annoScout || ''))}. Dati: ${R.cont} attività dell’Unità${R.staffN ? ' e ' + R.staffN + ' di staff' : ''}, ${R.att} attività nei percorsi. Le percentuali sono sul totale della singola barra. «Già passate» vuol dire con data anteriore a oggi, non che siano state verificate.</p></section>`;
+}
+window.shNum = async function(){
+  ensurePanels(); SH.ppv = 'num'; ownOff(); $('panel-pp').innerHTML = '<p class="sh-sub" role="status">Carico l’anno…</p>'; own('panel-pp');
+  try{ SH._nm = await numLoad(); }catch(e){ console.error(e); $('panel-pp').innerHTML = '<p class="sh-sub">Non riesco a leggere l’anno: controlla la connessione.</p>'; return; }
+  if(SH.ppv === 'num') $('panel-pp').innerHTML = numHTML();
+};
+window.numCalc = numCalc;
 // ── Realizzare · «Spese mese per mese»: preventivo di tutte le uscite dell'anno, mese per mese, con filtri, speso davvero ed export ──
 const BIL_MESI = ['Settembre','Ottobre','Novembre','Dicembre','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto'];
 function bilKeys(y){ const o = []; for(let i = 0; i < 12; i++){ const m = (8 + i) % 12; o.push((y + (8 + i >= 12 ? 1 : 0)) + '-' + String(m + 1).padStart(2, '0')); } return o; }
@@ -17725,6 +17778,11 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .chk-nm{min-height:44px}.chk-w,.chk-a{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}.chk-nx{margin-left:auto;font-size:13px}
 .chk-sel{width:auto;min-height:44px;min-width:130px}.chk-on{display:flex;gap:6px;align-items:center;min-height:44px;font-weight:700}.chk-on input{width:20px;height:20px}.chk-del{grid-column:1/-1;justify-self:end;min-height:40px}
 .chk-a .sh-lb{margin:0}
+/* Numeri dell'anno */
+.num-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:8px}.num-k{border:1px solid #d6dcd5;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.num-k b{font:800 26px 'Montserrat',sans-serif}.num-k span{font-size:13px;font-weight:700}.num-k small{font-size:12px;color:#555}
+.num-h{margin:14px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#3d3d38}.num-b{display:flex;flex-direction:column;gap:6px}.num-r{display:grid;grid-template-columns:minmax(110px,200px) minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}.num-t{background:#eef1ec;border-radius:6px;height:14px;overflow:hidden}.num-t i{display:block;height:100%;background:var(--brand-fill,#1B5E42)}.num-v small{color:#555}
+.num-d{margin-top:8px}.num-d ul{margin:6px 0 6px 18px}
+@media(max-width:600px){.num-r{grid-template-columns:minmax(90px,130px) minmax(0,1fr) auto}}
 /* Duplicazione selettiva */
 .dup-l{display:flex;flex-direction:column;gap:6px;margin:10px 0}.dup-r{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 10px;border:1px solid #d6dcd5;border-radius:10px;cursor:pointer}.dup-r input{width:20px;height:20px;margin-top:2px;flex:none}.dup-r small{display:block;color:#555;font-size:12px;margin-top:2px}
 .dup-act{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}

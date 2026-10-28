@@ -1,0 +1,24 @@
+// Numeri dell'anno
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(engine);
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:+(process.env.VW || 1280), height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+const usc = (id, md, t, d, extra) => ({id, cr:1, testo:t, modello:md, ax:Object.assign({data:d, durata:'giorno', pres:{ad:['A', 'B'], rag:'10'}, luogo:md === 'sede' ? {tipo:'sede'} : {km:40}}, extra || {}), prog:{}, hid:{}, own:{}});
+const att = (t, v) => ({testo:t, link:'', lancio:'x', sviluppo:'', conclusione:'', vBene:v || '', vMigl:v ? 'Più tempo' : '', vAgg:'', aid:'a' + t.length});
+db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Programmazione 2026-27', meta:{mode:'giovani', fascia:'E', tipo:'AN', nome:'Reparto'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'Reparto', obs:{}, pris:{P1:true}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', priorita:[{ambito:'P', necessita:'n', percorso:'P1', obiettivi:[0], idr:[0], tempistica:''}], pp:{}, percorsiExtra:[{prioritaIdx:0, percorsoId:'P1', ambito:'P', strumSel:{Hike:'', Gioco:''}, attivita:[att('Gioco A', 'Bene'), att('Gioco BB')]}], uscite:{a:usc('a', 'sede', 'Riunione', '2026-10-04'), b:usc('b', 'giorno', 'Uscita', '2027-03-14', {spese:[{voce:'Pullman', importo:300, cat:'trasporti', carico:'unita'}]}), c:usc('c', 'bivacco', 'Bivacco', '2027-05-01', {dataFine:'2027-05-02', durata:'piu'})}}}, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
+await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
+ok(await ev(() => { shGrp('Misurare'); return [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Numeri dell’anno/.test(b.textContent)); }), 'menu Misurare: «Numeri dell’anno»');
+await ev(() => shNum()); await sleep(2500);
+const t = await ev(() => document.getElementById('panel-pp').textContent);
+ok(/3attività nel calendario/.test(t) && /1 già passate · 2 da fare/.test(t), 'attività del calendario e quante già passate');
+ok(/4giornate di attività/.test(t) && /1 notte/.test(t), 'giornate e notti');
+ok(/2attività fuori sede/.test(t) && /2bivacchi e campi|1bivacchi e campi/.test(t), 'fuori sede e residenziali');
+ok(/80 km/.test(t) && /€ 300,00/.test(t), 'km e spesa prevista ' + JSON.stringify(t.slice(t.indexOf('presenti in media') - 20, t.indexOf('presenti in media') + 260)));
+ok(/2attività nei percorsi/.test(t) && /1già verificate50%/.test(t), 'attività nei percorsi e verificate');
+ok(/Hike/.test(t) && /Cosa migliorare, dalle verifiche \(1\)/.test(t), 'strumenti usati e verifiche riportate come testo');
+ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
+summary(); await br.close(); process.exit(0);
