@@ -1775,7 +1775,8 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
     </div>
     <div id="kos-obs-hint" style="display:none;font-size:12px;line-height:1.5;background:#FFFBEF;border:1px solid #F0DFAF;border-radius:8px;padding:8px 12px;margin:0 0 10px"></div>
     <div id="percorsi-root"></div>
-    <div class="foot-nav">
+    <div class="foot-nav" id="amb-foot" style="display:none"></div>
+    <div class="foot-nav" id="amb-foot0">
       <button class="btn-primary" onclick="goPhase(2)">Vedi il riepilogo →</button>
     </div>
   </div>
@@ -3250,7 +3251,8 @@ function grAltDel(pid, k, i, btn){ const g = grG(pid, k); const arr = g.falt || 
 function grInner(pid){
   const rows = grRows(pid); const G = ((scheda.griglia || {})[pid]) || {}; const amb = pid[0]; const start = grStart();
   const L = ['Comportamenti positivi emersi', 'Comportamenti da migliorare', 'Note specifiche del singolo o del gruppetto'];
-  const ta = (k, f, v, lab, ro) => `<label class="gr-f"><span>${lab}</span><textarea rows="2"${ro ? ' readonly' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(v || '')}</textarea></label>`;
+  const GR_PH = {pos:'Che cosa hai visto fare al gruppo? Descrivi in modo oggettivo, senza giudicare.', mig:'Quali comportamenti vorresti veder crescere? Racconta che cosa succede, non chi sbaglia.', note:'Solo se rilevante per il gruppo: singoli o gruppetti che meritano attenzione.'};
+  const ta = (k, f, v, lab, ro) => `<label class="gr-f"><span>${lab}</span><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(v || '')}</textarea></label>`;
   const focBlock = (r, g, free) => {
     if(free) return ta(r.k, 'foc', g.foc, 'Focus osservativo');
     const kos = grKosFoc(pid, r); const sel = g.fsel || []; const els = grElems(pid);
@@ -7700,7 +7702,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610281040'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610281130'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -10752,9 +10754,9 @@ function renderSchedaCtx(root){
       <label style="${SC_LBL}">Codice fiscale della Sezione<input style="${IN}" maxlength="20" value="${sEsc(pp.sedeCF)}" oninput="ppSet('sedeCF',this.value)"></label></div></details>`:''}
     ${MODE==='giovani'?`<label style="${SC_LBL};margin-top:16px;max-width:420px" id="unit-name-11">Nome dell'Unità<input style="${IN}" maxlength="60" placeholder="${({L:'es. Branco Popolo Libero',E:'es. Reparto Kontiki',R:'es. Compagnia Orsa Maggiore'})[FASCIA]||''}" value="${sEsc(UNIT_NAME)}" oninput="setUnitName(this.value);const u=document.getElementById('unit-name-in');if(u)u.value=this.value"></label>`+numeriUnitaHTML(pp,IN):''}
     <label style="${SC_LBL};margin-top:16px">Contesto territoriale <span style="font-weight:400;color:var(--ink-faint)">— elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte del territorio…)</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
+    <textarea style="${SC_TA}" placeholder="Quali elementi del territorio (trasporti, parchi, offerte) aiutano o limitano le attività della tua Unità?" oninput="ppSet('ctxTerr',this.value)">${sEsc(pp.ctxTerr)}</textarea>
     <label style="${SC_LBL}">Contesto Sezione e Gruppo <span style="font-weight:400;color:var(--ink-faint)">— composizione della Sezione e del Gruppo, numero di Unità, rapporti con il Consiglio di Gruppo…</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
+    <textarea style="${SC_TA}" placeholder="Come sono composti la Sezione e il Gruppo? Quanti Adulti in staff, con quale esperienza e disponibilità?" oninput="ppSet('ctxSez',this.value)">${sEsc(pp.ctxSez)}</textarea>
     <div style="font-size:12px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">${FASCIA==='R'?'Adulti in Compagnia <span style="font-weight:400;color:var(--ink-faint)">— in Compagnia non c\'è un vero staff: di solito ci sei tu (CC) e, se c\'è, il VCC. Esperienza, formazione e disponibilità; aggiungi o togli righe</span>':'Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span>'}</div>
     <div style="font-size:12px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (ICdF, Capo Gruppo, Commissario di Sezione). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).</div>
     <div id="staff-tab">${staffTabHTML()}</div>
@@ -10765,7 +10767,7 @@ function renderSchedaCtx(root){
     <div id="kos-cov" style="margin-top:14px;padding:8px 10px;background:#F6FBF6;border:1px dashed #BBD9BB;border-radius:6px">${kosCovHTML()}</div>
     <div id="gr-coinc">${grCoincHTML()}</div>
     <label style="${SC_LBL}">Condizioni dell'osservazione <span style="font-weight:400;color:var(--ink-faint)">— cosa può aver influito (stanchezza, clima di staff, un’attività riuscita particolarmente bene…)</span></label>
-    <textarea style="${SC_TA};min-height:48px" oninput="ppSet('condizioni',this.value)">${sEsc(pp.condizioni)}</textarea>
+    <textarea style="${SC_TA};min-height:48px" placeholder="In quali condizioni hai osservato? Quante occasioni hai avuto, con quali ragazzi, che cosa ha limitato l’osservazione?" oninput="ppSet('condizioni',this.value)">${sEsc(pp.condizioni)}</textarea>
     ${gCrit(['osservazione basata su attività concrete (2–3 attività iniziali)','riferimenti importanti da segnalare su Adulti, contesto territoriale e associativo'])}
     <div style="margin-top:12px;text-align:right"><button class="btn-primary" onclick="gGo('1b')">Avanti — 1.2 Scheda di osservazione →</button></div>`;
   root.appendChild(el);
@@ -10797,14 +10799,14 @@ function gRenderLettura(){
   const lab={P:'Sviluppo Personale',C:'Sviluppo Comunitario',S:'Sviluppo Spirituale'};
   const rows=['P','C','S'].map(a=>`<tr>
       <td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:14%">${lab[a]}<button type="button" class="oss-resync" onclick="grProponiBozza('${a}',this)" title="Facoltativo: aggiunge in coda, in forma modificabile, i testi che hai scritto nella griglia osservativa (1.2) per i percorsi di questo Ambito">Proponi bozza dalla griglia</button></td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:positivi"></div></td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:necessita"></div></td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Che cosa funziona già bene nel gruppo, in questo Ambito?" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:positivi"></div></td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Su che cosa il gruppo ha più bisogno di crescere? Sii concreto." oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:necessita"></div></td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Solo elementi rilevanti per il gruppo…" oninput="ppSetObs('${a}','singoli',this.value)">${sEsc(scheda.osservazione[a].singoli||'')}</textarea></td></tr>`).join('');
   const th=t=>`<th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left">${t}</th>`;
   box.innerHTML=`<div class="gblock"><h3>1.3 — Lettura del gruppo</h3>
     <p style="font-size:12px;color:var(--ink-mid);margin:0 0 6px">Dalla fotografia qui sopra alla tua lettura: le dinamiche del gruppo, gli aspetti positivi e le necessità educative per ciascun Ambito di Sviluppo.</p>
     <label style="${SC_LBL}">Analisi delle dinamiche di gruppo emerse dall'osservazione <span style="font-weight:400;color:var(--ink-faint)">— come il gruppo sta insieme: clima, ruoli, sottogruppi, partecipazione, relazioni</span></label>
-    <textarea style="${SC_TA};min-height:80px" oninput="ppSet('dinamiche',this.value)">${sEsc(pp.dinamiche)}</textarea>
+    <textarea style="${SC_TA};min-height:80px" placeholder="Come si relaziona il gruppo nel suo insieme? Come prende le decisioni? Come gestisce i disaccordi? Descrivi senza giudicare." oninput="ppSet('dinamiche',this.value)">${sEsc(pp.dinamiche)}</textarea>
     <div style="font-size:12px;font-weight:800;margin:16px 0 4px;color:var(--ink)">Aspetti positivi e necessità educative</div>
     <p style="font-size:12px;color:var(--ink-mid);margin-bottom:8px">Le prime due colonne partono dall'osservazione dei percorsi: rivedile e completale con comportamenti concreti.</p>
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:620px"><thead><tr>${th('Ambito')}${th('Aspetti positivi emersi')}${th('Necessità educative')}${th('Necessità educative specifiche del singolo/gruppetto meritevoli di attenzione')}</tr></thead><tbody>${rows}</tbody></table></div>
@@ -10818,7 +10820,7 @@ function gRenderMotiv(){
   const pp=scheda.pp||(scheda.pp={});
   box.innerHTML=`<div class="gblock"><h3>Perché queste priorità</h3>
     <p style="font-size:12px;color:var(--ink-mid);margin:0 0 6px">Una breve spiegazione della scelta fatta, perché chi legge la Scheda (staff, Capo Gruppo, ICdF) possa capire il ragionamento svolto.</p>
-    <textarea style="${SC_TA};min-height:80px" oninput="ppSet('scelta',this.value)">${sEsc(pp.scelta)}</textarea></div>`;
+    <textarea style="${SC_TA};min-height:80px" placeholder="Perché hai scelto proprio queste necessità? Che cosa ti ha convinto, e che cosa hai lasciato per dopo? Il tutor leggerà il tuo ragionamento." oninput="ppSet('scelta',this.value)">${sEsc(pp.scelta)}</textarea></div>`;
 }
 
 // ── Segnala un problema o un'idea (beta) ──
@@ -10949,8 +10951,8 @@ function renderSchedaA(root,selected){
   const el=document.createElement('div');el.className='profile-card';
   const tbody = ['P','C','S'].map(a=>`<tr>
       <td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:14%">${ambitoLabel[a]}</td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:positivi"></div></td>
-      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:necessita"></div></td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Che cosa funziona già bene nel gruppo, in questo Ambito?" oninput="ppSetObs('${a}','positivi',this.value)">${sEsc(scheda.osservazione[a].positivi)}</textarea>${(scheda._userEditedA||{})[a+'_pos']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','pos',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:positivi"></div></td>
+      <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Su che cosa il gruppo ha più bisogno di crescere? Sii concreto." oninput="ppSetObs('${a}','necessita',this.value)">${sEsc(scheda.osservazione[a].necessita)}</textarea>${(scheda._userEditedA||{})[a+'_neg']?`<button type="button" class="oss-resync" onclick="ossResync('${a}','neg',this)" title="Sostituisce il testo con la bozza ricavata dai valori che hai dato ai percorsi nell’osservazione (1.2)">↻ Riproponi la bozza dalla 1.2</button>`:''}<div class="sg13" data-k="13:${a}:necessita"></div></td>
       <td style="padding:4px;border:1px solid var(--border-light)"><textarea style="${SC_TA};border:none;min-height:90px" placeholder="Solo se rilevante per il gruppo…" oninput="ppSetObs('${a}','singoli',this.value)">${sEsc(scheda.osservazione[a].singoli||'')}</textarea></td>
     </tr>`).join('');
   const ST=MODE==='staff';
@@ -10966,7 +10968,7 @@ function renderSchedaA(root,selected){
         <th style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left">Necessità specifiche ${ST?'di singoli educatori':'di singoli/gruppetti'}</th>
       </tr></thead><tbody>${tbody}</tbody></table></div>
     <label style="${SC_LBL}">Perché queste priorità <span style="font-weight:400;color:var(--ink-faint)">— breve spiegazione della scelta delle necessità su cui lavori quest'anno (almeno 1 per ambito)</span></label>
-    <textarea style="${SC_TA}" oninput="ppSet('scelta',this.value)">${sEsc(pp.scelta)}</textarea>
+    <textarea style="${SC_TA}" placeholder="Perché hai scelto proprio queste necessità? Che cosa ti ha convinto, e che cosa hai lasciato per dopo? Il tutor leggerà il tuo ragionamento." oninput="ppSet('scelta',this.value)">${sEsc(pp.scelta)}</textarea>
     <div style="margin-top:12px;text-align:right"><button class="btn-primary" onclick="schedaStep='B';renderValuation()">Avanti — Sezione 2 →</button></div>`;
   root.appendChild(el);
 }
@@ -10988,7 +10990,7 @@ function renderSchedaB(root,selected){
         <div style="margin-bottom:10px">
           <label style="font-size:12px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Necessità educativa</label>
           <input type="text" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;box-sizing:border-box"
-            placeholder="Descrivi la necessità educativa osservata..."
+            placeholder="Quale necessità del gruppo vuoi affrontare in questo Ambito? Sii concreto: che cosa serve, e a chi?"
             value="${sEsc(scheda.priorita[i].necessita||'')}" oninput="priNec(${i},this.value)">
           ${!(scheda.priorita[i].necessita||'').trim()&&(scheda._userEditedA||{})[a+'_neg']&&(scheda.osservazione[a].necessita||'').trim()?`<button type="button" class="oss-resync" style="margin:4px 0 0" onclick="priNec(${i},scheda.osservazione['${a}'].necessita);renderValuation()" title="Riprende le necessità educative che hai scritto per questo ambito nella 1.3">↓ Riprendi dalla 1.3 Lettura del gruppo</button>`:''}
         </div>
@@ -11110,7 +11112,7 @@ function renderSchedaC(root,selected){
     html+=`<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top">Necessità educativa</td>
       <td style="padding:4px;border:1px solid var(--border-light)">
         <input type="text" style="width:100%;padding:8px;border:none;font-family:inherit;font-size:12px;box-sizing:border-box"
-          placeholder="Necessità educativa osservata..." value="${(per.necessita||'').replace(/"/g,'&quot;')}"
+          placeholder="Quale necessità del gruppo vuoi affrontare? Sii concreto." value="${(per.necessita||'').replace(/"/g,'&quot;')}"
           oninput="${typeof per.prioritaIdx==='number'?`priNec(${per.prioritaIdx},this.value)`:`updatePercorsoField(${idx},'necessita',this.value);saveDataDebounced()`}">
       </td></tr>`;
 
@@ -11199,8 +11201,8 @@ function renderSchedaC(root,selected){
             <textarea style="${SC_TA};min-height:56px" placeholder="Che cosa fanno i ragazzi, con quali ruoli, materiali e tempi…" oninput="updateAttivita(${idx},${j},'sviluppo',this.value);saveDataDebounced()">${sEsc(att.sviluppo)}</textarea>
             <label style="${SC_LBL}">Conclusione <span style="font-weight:400;color:var(--ink-faint)">— compresa l'eventuale rielaborazione</span></label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
-            ${attLinksHTML(idx,j,att)}
-            ${attExtraHTML(idx,j,att,`<div style="display:flex;gap:8px;align-items:center;margin-top:2px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:12px;flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>`)}
+            ${scheda.tipoProgetto==='PP'?'<div class="ax-hint" style="margin-top:6px">Se vuoi richiamare un materiale (Drive, Canva, video…), scrivi qui sopra il link: nel Word diventa cliccabile.</div>':attLinksHTML(idx,j,att)}
+            ${scheda.tipoProgetto==='PP'?'':attExtraHTML(idx,j,att,`<div style="display:flex;gap:8px;align-items:center;margin-top:2px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:12px;flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>`)}
           </details>`; }).join('')}
         <button class="btn-ghost" style="font-size:12px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
       </td></tr>
@@ -11684,11 +11686,11 @@ function renderSchedaVer(root,selected){
       h+=`<div class="ver-c${window._verOpen&&window._verOpen[idx+'-'+j]?'':' closed'}" id="ver-c-${idx}-${j}" data-verat="${idx}-${j}" data-aff="${sEsc(shV?(a.aff||''):'')}" style="border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;margin:8px 0;background:var(--bg-card)">
         <div class="ver-hd" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${attNum(per,j)}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+attNum(per,j))+'»')}</div>`:''}<div class="ver-b">
         <label style="${SC_LBL}">Cosa è andato bene <span style="font-weight:400;color:var(--ink-faint)">— aspetti positivi, coinvolgimento dei ragazzi, efficacia rispetto all'obiettivo</span></label>
-        <textarea style="${SC_TA}" oninput="updateAttivita(${idx},${j},'vBene',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vBene)}</textarea>
+        <textarea style="${SC_TA}" placeholder="Aspetti positivi, coinvolgimento dei ragazzi, efficacia rispetto all’obiettivo." oninput="updateAttivita(${idx},${j},'vBene',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vBene)}</textarea>
         <label style="${SC_LBL}">Cosa è da migliorare <span style="font-weight:400;color:var(--ink-faint)">— criticità, elementi da modificare, imprevisti</span></label>
-        <textarea style="${SC_TA}" oninput="updateAttivita(${idx},${j},'vMigl',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vMigl)}</textarea>
+        <textarea style="${SC_TA}" placeholder="Criticità emerse, elementi da modificare, aspetti non previsti." oninput="updateAttivita(${idx},${j},'vMigl',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vMigl)}</textarea>
         <label style="${SC_LBL}">Aggiustamenti necessari <span style="font-weight:400;color:var(--ink-faint)">— modifiche fatte in corso d'opera, perché, con quale effetto</span></label>
-        <textarea style="${SC_TA};min-height:48px" oninput="updateAttivita(${idx},${j},'vAgg',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vAgg)}</textarea>
+        <textarea style="${SC_TA};min-height:48px" placeholder="Modifiche fatte in corso d’opera, perché, e con quale effetto." oninput="updateAttivita(${idx},${j},'vAgg',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vAgg)}</textarea>
         ${verIdrHTML(idx,j,a,per)}
         ${verPartiHTML(idx,j,a)}
       </div></div>`;
@@ -11932,7 +11934,7 @@ function riobsHTML(pid){
 function ppSpuntiRefresh(pid){ const el=document.getElementById('pp5sp-'+pid); if(el) el.innerHTML=ppSpuntiInner(pid,JSON.parse(el.dataset.idx||'[]')); }
 function ppComplessivaHTML(pid,idxs){
   return `<div id="pp5sp-${pid}" data-idx='${JSON.stringify(idxs||[])}'>${ppSpuntiInner(pid,idxs)}</div><div style="margin-top:14px"><label style="${SC_LBL}">Valutazione complessiva <span style="font-weight:400;color:var(--ink-faint)">— hai raggiunto l'obiettivo? Perché? Che cosa riproporresti o modificheresti?</span></label>
-    <textarea style="${SC_TA};min-height:78px" oninput="if(!scheda.valCompl)scheda.valCompl={};scheda.valCompl['${pid}']=this.value;saveDataDebounced();ppRefreshReady()">${sEsc((scheda.valCompl||{})[pid])}</textarea></div>`+riobsHTML(pid);
+    <textarea style="${SC_TA};min-height:78px" placeholder="Hai raggiunto l’Obiettivo prefissato? Motiva la risposta. Che cosa riproporresti nelle prossime programmazioni e che cosa modificheresti?" oninput="if(!scheda.valCompl)scheda.valCompl={};scheda.valCompl['${pid}']=this.value;saveDataDebounced();ppRefreshReady()">${sEsc((scheda.valCompl||{})[pid])}</textarea></div>`+riobsHTML(pid);
 }
 
 
@@ -12383,9 +12385,18 @@ function linkNorm(u){ u=String(u||'').trim(); if(!u) return ''; if(/^(https?:|ma
 function dLink(url, o={}){ const D=dxLib(); const u=linkNorm(url);
   if(!/^(https?:|mailto:)/i.test(u) || !D.ExternalHyperlink) return dTxt(url, o);
   return new D.ExternalHyperlink({link:u, children:[new D.TextRun({text:o.label||String(url), font:MF, size:o.size||18, color:'1155CC', underline:{}})]}); }
+function dLinkRuns(text, o={}){
+  const s = String(text == null ? '' : text);
+  const re = /((?:https?:\/\/|www\.)[^\s<>"]*[^\s<>"'.,;:!?)\]]|(?:drive\.google\.com|docs\.google\.com|canva\.com|youtu\.be|youtube\.com)\/[^\s<>"]*[^\s<>"'.,;:!?)\]])/gi;
+  if(!re.test(s)) return [dTxt(s, o)];
+  re.lastIndex = 0; const out = []; let last = 0, m;
+  while((m = re.exec(s))){ if(m.index > last) out.push(dTxt(s.slice(last, m.index), o)); out.push(dLink(m[0], {size:o.size || 18, label:m[0]})); last = m.index + m[0].length; }
+  if(last < s.length) out.push(dTxt(s.slice(last), o));
+  return out;
+}
 function dPara(content, o={}){
   const D = dxLib();
-  const kids = Array.isArray(content) ? content : [dTxt(content, o)];
+  const kids = Array.isArray(content) ? content : dLinkRuns(content, o);
   const p = {
     children: kids,
     spacing: {before:o.before||0, after: o.after===undefined?100:o.after, line: o.line||300},
@@ -12824,7 +12835,7 @@ async function exportPPDocx(mode){
     const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
       dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40,keepNext:true}),
-      ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,q,arr) => [dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), dTxt(plain(x[k]),{size:18})],{after:30,indent:240}), ...(q<arr.length-1?[dPara('',{size:12,after:60})]:[])]),
+      ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,q,arr) => [dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(plain(x[k]),{size:18})],{after:30,indent:240}), ...(q<arr.length-1?[dPara('',{size:12,after:60})]:[])]),
       ...(acts[acts.length-1].j===j?[]:[dPara('',{size:12,after:240})]),
       ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
     ]) : '—';
@@ -15551,6 +15562,8 @@ SH.profOk = profOk;
 // ── schermate ──
 function show(view, arg){
   SH.view = view; const r = $('sh-root');
+  // fuori dai progetti (accesso, profilo, elenco) i colori sono neutri: il colore di Branca vale solo dentro il progetto aperto
+  try{ const bd = document.body; if(view){ const t = bd.getAttribute('data-theme'); if(t){ SH._th = t; bd.removeAttribute('data-theme'); } } else { if(SH._th && !bd.hasAttribute('data-theme')) bd.setAttribute('data-theme', SH._th); SH._th = null; } }catch(e){}
   if(!view){ r.classList.remove('show'); r.innerHTML = ''; document.body.classList.remove('sh-pend'); document.body.style.overflow = ''; return; }
   document.body.classList.remove('sh-pend'); r.classList.add('show'); r.scrollTop = 0;
   if(view === 'wait') r.innerHTML = top(false) + '<div class="sh-wrap narrow"><p class="sh-sub" role="status">Un attimo…</p></div>';
@@ -16120,6 +16133,28 @@ body.sh-in :is(.pc-chev,.istr-chev,.pcx-chev){font-size:0!important;line-height:
 body.sh-in :is(.pc.expanded .pc-chev,.istr-box[open] .istr-chev,.pcx:not(.closed) .pcx-chev){transform:rotate(90deg)}
 body.sh-in :is(.pc.expanded .pc-chev,.istr-box[open] .istr-chev){transform:rotate(90deg)}
 body.sh-in .pcx.closed .pcx-chev{transform:none}
+/* Branca L fuori dai progetti (profilo, home, nuovo progetto): intestazione e pulsanti gialli con testo scuro */
+body[data-theme="L"] .sh-top{background:#f0e603;color:#1a1800}
+body[data-theme="L"] .sh-top .sh-mark{background:#1a1800;color:#f0e603}
+body[data-theme="L"] .sh-btn{background:#f0e603;color:#1a1800;box-shadow:inset 0 0 0 1.5px #1a1800}
+body[data-theme="L"] .sh-btn:hover{background:#ffee00}
+body[data-theme="L"] .sh-btn:disabled{background:#e9e6b0;color:#5f5b00;box-shadow:inset 0 0 0 1.5px #9a9500}
+/* sottovoci della Sezione 1 e pagina per Ambito */
+.sh-sub{display:flex;flex-direction:column;gap:2px;margin:2px 0 8px 22px;padding-left:10px;border-left:2px solid var(--u-line-s,#e4e8e2)}
+.sh-si.sh-ss{min-height:38px;padding:7px 12px;font-size:12.5px;font-weight:600;color:#3D3D38}
+.sh-si.sh-ss.on{background:var(--green-pale,#e6f3ec);color:#1A1A18;font-weight:800;box-shadow:inset 3px 0 0 var(--brand-ink,var(--green))}
+body.sh-in[data-mode="giovani"][data-amb="P"] #percorsi-root .ambito-sec:nth-child(n+2),
+body.sh-in[data-mode="giovani"][data-amb="C"] #percorsi-root .ambito-sec:not(:nth-child(2)),
+body.sh-in[data-mode="giovani"][data-amb="S"] #percorsi-root .ambito-sec:not(:nth-child(3)){display:none}
+body.sh-in[data-amb="P"] #amb-foot0,body.sh-in[data-amb="C"] #amb-foot0,body.sh-in[data-amb="S"] #amb-foot0{display:none}
+#amb-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+@media(min-width:1100px){body.sh-in .gsn-steps,body.sh-in .gsn-title{display:none}}
+/* istruzioni di compilazione (PP) */
+.lg-in .lg-h{font:800 12px/1.3 'Montserrat',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);margin:12px 0 4px}
+.lg-in .lg-h:first-child{margin-top:0}
+.lg-in ul{margin:0 0 4px;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)}
+.lg-in li{margin:3px 0}
+.lg-in .lg-src{font-size:12px;color:var(--ink-light);margin:12px 0 0}
 /* testo di lettura nelle schede: almeno 13,5 px (i testi di servizio restano a 12 px) */
 body.sh-in .gblock :is(label,p,li)[style*="font-size:12px"]:not(table *),body.sh-in .gblock :is(label,p,li)[style*="font-size:12.5px"]:not(table *),body.sh-in .gblock :is(label,p,li)[style*="font-size:13px"]:not(table *){font-size:13.5px!important;line-height:1.5!important}
 
@@ -16150,7 +16185,7 @@ const ico = k => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[k]
 const NAV_AN = [
   {id:'dash', t:'Dashboard', ic:'dash', go:'shDash()'},
   {g:'Progettare'},
-  {id:'s1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shSec('1')"},
+  {id:'s1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shSec('1')", sub:true},
   {id:'s2', t:'2 · Obiettivi e Indicatori di Risultato', ic:'star', go:"shSec('2')"},
   {id:'s3', t:'3 · Percorsi Educativi Esperienziali', ic:'list', go:"shSec('3')"},
   {id:'s4', t:'4 · Verifica delle Attività', ic:'check', go:"shSec('4')"},
@@ -16166,7 +16201,7 @@ const NAV_AN = [
 const NAV_PP = [
   {id:'pp0', t:'A che punto sei', ic:'clock', go:"shPP('0')"},
   {g:'Progettare'},
-  {id:'pp1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shPP('1')"},
+  {id:'pp1', t:'1 · Osservazione del Gruppo di Pari', ic:'eye', go:"shPP('1')", sub:true},
   {id:'pp2', t:'2 · Obiettivi e Indicatori di Risultato', ic:'star', go:"shPP('2')"},
   {id:'pp3', t:'3 · Percorso Educativo Esperienziale', ic:'list', go:"shPP('3')"},
   {id:'pp4', t:'4 · Verifica delle Attività', ic:'check', go:"shPP('4')"},
@@ -16192,8 +16227,15 @@ const isST = () => { try{ return MODE === 'staff'; }catch(e){ return false; } };
 const navItems = () => isPP() ? NAV_PP : isST() ? NAV_ST : NAV_AN;
 let cur = null;
 
+// Sezione 1: sottovoci (Sviluppo Personale, Comunitario, Spirituale = una pagina per Ambito, niente scroll infinito)
+const SUB1 = [['1a','Contesto e KOS'],['1b:P','Sviluppo Personale'],['1b:C','Sviluppo Comunitario'],['1b:S','Sviluppo Spirituale'],['1c','Lettura del gruppo'],['1d','Priorità']];
+function subCur(){ try{ const g = gCur(); if(g === '1b') return '1b:' + (window._ambF || 'P'); return g; }catch(e){ return ''; } }
+function subHTML(inSheet){
+  const sc = subCur();
+  return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[1] || ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
+}
 function navHTML(){
-  return navItems().map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('');
+  return navItems().map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
 }
 function bbHTML(){
   const pp = isPP();
@@ -16220,7 +16262,7 @@ window.shSheet = function(g){
   }else{
     let on = false; const out = [];
     it.forEach(i => { if(i.g){ on = i.g === g; return; } if(on) out.push(i); });
-    h = `<div class="sh-sg">${esc(g)}</div>` + out.map(i => `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('');
+    h = `<div class="sh-sg">${esc(g)}</div>` + out.map(i => `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(true) : '')).join('');
   }
   $('sh-sheet-in').innerHTML = h; $('sh-sheet').classList.add('show');
   const f = $('sh-sheet-in').querySelector('button'); if(f) f.focus();
@@ -16239,7 +16281,56 @@ function active(){
   if(isPP() && sec){ const m = {s1:'pp1', s2:'pp2', s3:'pp3', s4:'pp4', s5:'pp5', chk:'ppc'}[sec]; if(m){ SH.ppv = m.slice(2); return m; } }
   return sec;
 }
-window.shSync = function(){ const a = active(); if(a !== cur){ cur = a; paint(); } };
+window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ applyAmb(); lgInstr(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; cur = a; paint(); } };
+// una pagina per Ambito nella scheda di osservazione (filtro sulle tre sezioni dei percorsi)
+function applyAmb(){
+  const on = (MODE === 'giovani' && gCur() === '1b') ? (window._ambF || 'P') : '';
+  if(document.body.getAttribute('data-amb') !== on) document.body.setAttribute('data-amb', on);
+  const f = $('amb-foot'); if(!f) return;
+  if(!on){ f.style.display = 'none'; return; }
+  const ord = ['P','C','S'], i = ord.indexOf(on), nm = {P:'Sviluppo Personale', C:'Sviluppo Comunitario', S:'Sviluppo Spirituale'};
+  const prev = i > 0 ? `<button type="button" class="btn-ghost" onclick="shSub('1b','${ord[i-1]}')">← ${nm[ord[i-1]]}</button>` : `<button type="button" class="btn-ghost" onclick="shSub('1a','')">← Contesto e KOS</button>`;
+  const next = i < 2 ? `<button type="button" class="btn-primary" onclick="shSub('1b','${ord[i+1]}')">${nm[ord[i+1]]} →</button>` : `<button type="button" class="btn-primary" onclick="shSub('1c','')">Lettura del gruppo →</button>`;
+  const h = prev + next; if(f.dataset.k !== on){ f.dataset.k = on; f.innerHTML = h; } f.style.display = '';
+}
+// ── Istruzioni di compilazione dalle Linee Guida (solo Progetto Personale): paragrafo chiuso a inizio pagina ──
+const LG_ISTR = {
+ '1a': {s:'Sezione 1', mod:['Contesto territoriale: Indicare qui gli elementi rilevanti che possono influenzare la tua Unità (vicinanza o lontananza da mezzi di trasporto, parchi pubblici, offerte che il territorio offre, etc)','Contesto Sezione e Gruppo: Indicare qui gli elementi rilevanti che possono influenzare la tua Unità (composizione della Sezione e del Gruppo, numero di Adulti in staff, esperienza e disponibilità, etc)'], crit:['Osservazione basata su attività concrete (2-3 attività iniziali)','Riferimenti importanti da segnalare su Adulti, Contesto territoriale e associativo, etc.']},
+ '1b': {s:'Sezione 1', cosa:['Compilazione della scheda di osservazione utilizzando il Kit di Osservazione e Scoperta del gruppo Unità'], crit:['Osservazione basata su attività concrete (2-3 attività iniziali)','Focus sul gruppo nel suo complesso, non solo sui singoli','Descrizione oggettiva e non giudicante']},
+ '1c': {s:'Sezione 1', cosa:['Analisi delle dinamiche di gruppo emerse dall’osservazione','Evidenziazione di aspetti positivi emersi e necessità educative dell’Unità','Eventuali note significative sui singoli (solo elementi rilevanti per il gruppo)'], crit:['Focus sul gruppo nel suo complesso, non solo sui singoli','Descrizione oggettiva e non giudicante','Bilanciamento tra aspetti positivi e necessità']},
+ '1d': {s:'Sezione 1', cosa:['Priorizzazione e scelta delle necessità educative sulle quali si vuole lavorare durante l’anno (almeno 1 per ciascun Ambito di Sviluppo)','Breve spiegazione finale della scelta fatta, per permettere al tutor di capire il ragionamento che è stato svolto'], crit:['Necessità concrete, risolvibili e rilevanti']},
+ '2': {s:'Sezione 2', cosa:['Per ciascun Ambito di Sviluppo (Personale, Comunitario e Spirituale) scegliere almeno un Obiettivo che si vuole raggiungere con la propria Unità e i rispettivi Indicatori di Risultato (sono consigliabili almeno 2 ad obiettivo) che possono essere adattati sulla base dei percorsi educativi che verranno progettati'], crit:['Almeno un obiettivo per ogni Ambito di Sviluppo','Obiettivi scelti dal manuale PEE','Indicatori di Risultato scelti dal manuale PEE','Coerenza tra necessità educative e obiettivi scelti','Priorizzazione motivata'], mod:['Priorità 1: Ambito di Sviluppo (Personale/Comunitario/Spirituale) · Necessità educativa · Percorso · Obiettivo di percorso (indicarne 1) · Indicatori di risultato (indicarne almeno 2) · Tempistica: indicare qui l’orizzonte temporale, non inferiore a un trimestre, per raggiungere l’obiettivo']},
+ '3': {s:'Sezione 3', intro:'Per UN obiettivo prioritario (a scelta), sviluppare:', cosa:['Identificazione degli Strumenti del Metodo declinati per la propria Branca, tra quelli più opportuni per affrontare le proprie priorità educative','Ipotesi di una tempistica congrua per lavorare sull’Obiettivo','Traccia delle singole attività che daranno vita al percorso esperienziale con una descrizione sintetica per ciascuna di Lancio, Sviluppo, Conclusione','Al termine della progettazione del percorso verificare nel suo complesso se è Nuovo - Stimolante - Progressivo - Co-costruito - Rielaborativo - Esperienziale - Educativo'], nota:['Co-Costruzione dell’esperienza: facciamo attenzione a esplicitare nel PP in quale/i momento/i questa co-costruzione è garantita e quali sono le forme con cui la mettiamo in atto (ricordiamo che il metodo è un sistema di autoeducazione progressiva)','Rielaborazione: va evitato di inserire un solo momento al termine dell’intero percorso… La rielaborazione (cognitiva ed emotiva) può avvenire in diverse fasi e anche col supporto degli educandi, o avvenire una sola volta. E non è detto che la fase cognitiva debba essere contemporanea a quella emotiva'], crit:['Almeno 3-4 attività coerenti tra loro','Utilizzo appropriato degli Strumenti del Metodo','Progressione logica del percorso','Presenza di momento/i di rielaborazione','Rispetto delle 7 caratteristiche dell’esperienza educativa','Fattibilità concreta nel contesto descritto']},
+ '4': {s:'Sezione 4', intro:'Al termine di ciascuna attività svolta è richiesta una semplice verifica su:', cosa:['Cosa è andato bene: aspetti positivi riscontrati · coinvolgimento dei ragazzi · efficacia rispetto all’obiettivo','Cosa è da migliorare: criticità emerse · elementi da modificare · aspetti non previsti','Aggiustamenti necessari: modifiche apportate in corso d’opera · motivazioni delle modifiche · impatto degli aggiustamenti'], crit:['Analisi oggettiva e non auto-giustificativa','Capacità di riconoscere sia i successi che le criticità','Riflessione sul proprio ruolo di educatore','Apprendimenti per il futuro']},
+ '5': {s:'Sezione 5', intro:'Al termine del Percorso Educativo Esperienziale progettato dare risposta a ciascun Indicatore di Risultato definito nella Sezione 2 e infine scrivere una breve e semplice valutazione complessiva dell’esperienza.', mod:['Indicatore · Comportamento (Spontaneo/Stimolato/Non adottato) · Note: osservazioni qualitative','Valutazione complessiva: scrivi qui se hai raggiunto l’Obiettivo prefissato e motiva la tua risposta. Indica se ci sono elementi che riproporresti nelle future programmazioni o che modificheresti nelle prossime esperienze'], crit:['Onestà nella valutazione','Utilizzo di dati oggettivi (IdR)','Integrazione di diverse prospettive','Capacità di auto-riflessione','Orientamento al miglioramento continuo']}
+};
+function lgBoxHTML(k){
+  const d = LG_ISTR[k]; if(!d) return '';
+  const ul = (t, a) => (a && a.length) ? `<div class="lg-h">${t}</div><ul>${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+  return `<summary>Istruzioni di compilazione<span class="u-sub">dalle Linee Guida del PP · ${d.s}</span></summary><div class="u-fold-in lg-in">${d.intro ? `<p>${esc(d.intro)}</p>` : ''}${ul('Cosa fare', d.cosa)}${ul('Da tenere presente', d.nota)}${ul('Criteri di compilazione', d.crit)}${ul('Modello di scheda', d.mod)}<p class="lg-src">Fonte: Linee Guida per il Progetto Personale di Programmazione Educativa Esperienziale.</p></div>`;
+}
+function lgInstr(){
+  try{
+    if(!isPP()) return;
+    const k = gCur(); const pn = ({'1b':'panel1','1c':'panel2','1d':'panel3'})[k] || 'panel4';
+    const panel = $(pn); if(!panel || !panel.classList.contains('active')) return;
+    const old = document.getElementById('lg-istr');
+    if(!LG_ISTR[k]){ if(old) old.remove(); return; }
+    if(old && old.dataset.k === k && panel.contains(old)) return;
+    if(old) old.remove();
+    const d = document.createElement('details'); d.className = 'u-fold u-lg'; d.id = 'lg-istr'; d.dataset.k = k; if(window._lgOpen) d.open = true;
+    d.addEventListener('toggle', () => { window._lgOpen = d.open; });
+    d.innerHTML = lgBoxHTML(k);
+    const anchor = panel.querySelector('.tutorial-box') || panel.querySelector('.hero');
+    if(anchor && anchor.parentNode === panel){ if(anchor.classList.contains('hero')) anchor.after(d); else panel.insertBefore(d, anchor); } else panel.insertBefore(d, panel.firstChild);
+  }catch(e){}
+}
+window.shSub = function(k, amb){
+  ownOff(); if(k === '1b') window._ambF = amb || window._ambF || 'P';
+  if(isPP()){ SH._ppHold = true; try{ gGo(k); }finally{ SH._ppHold = false; } } else gGo(k);
+  try{ applyAmb(); }catch(e){} setTimeout(shSync, 30); try{ window.scrollTo(0, 0); }catch(e){}
+};
+(function(){ const g0 = window.gotoObs; if(typeof g0 === 'function') window.gotoObs = function(id){ try{ if(MODE === 'giovani' && /^[PCS]\d/.test(String(id))) window._ambF = String(id)[0]; }catch(e){} return g0.apply(this, arguments); }; })();
 function panelsOff(){ [1,2,3,4].forEach(i => { const e = $('panel' + i); if(e) e.classList.remove('active'); }); }
 function ownOff(){ window._cfOn = false; ['panel-dash','panel-pp'].forEach(id => { const e = $(id); if(e) e.classList.remove('active'); }); document.body.classList.remove('sh-own'); }
 function own(id){
