@@ -5136,7 +5136,8 @@ async function stUnitLoad(force){
   const job = (async () => { await null;
     let rows = null, src = '', titolo = '', unit = null;
     try{
-      if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
+      if(window._stEmb){ const t = (scheda.pp || {}).staffTab; if(Array.isArray(t)){ rows = t; src = 'embed'; titolo = UNIT_NAME || 'Unità'; } }
+      else if(typeof clOn==='function' && clOn() && CL.sb && CL.user){
         const anno = (CL.ctx && CL.ctx.anno) || new Date().getFullYear();
         const list = await dbList();
         const ex = pjUnitPick(list, anno);
@@ -8057,7 +8058,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610291321'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610291440'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -14275,6 +14276,8 @@ async function pjSwitch(){
 }
 // progetti in cui Unità e staff sono finiti insieme: li separo in due progetti (una volta, in automatico)
 async function pjSplitAll(){
+  // 29/10: l'osservazione dello staff vive DENTRO la programmazione (stesso progetto): niente più separazione automatica
+  CL._pjSplit = true; return;
   if(window.BRO || !CL.sb || !CL.user || CL._pjSplit) return; CL._pjSplit = true;
   let changedCur = false;
   // se il progetto aperto è misto, da subito niente salvataggi: la pagina ha ancora in memoria i dati insieme
@@ -15954,6 +15957,7 @@ body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
 .sh-msg.ok{color:#1b5e42;font-weight:600}
 .sh-prof-line{display:flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:#3D3D38;flex-wrap:wrap}.sh-prof-line a{color:var(--brand-ink);font-weight:700}.sh-big small{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f5f58}.sh-big ul{margin:2px 0 0;padding-left:18px;font-size:13px;line-height:1.5;color:#3D3D38;flex:1}.sh-big em{font-style:normal;font-weight:700;color:var(--brand-ink);margin-top:6px}.sh-tag-line{font-size:12px;opacity:.85;font-weight:500}.sh-h2{margin:0!important;font-size:18px!important;font-weight:800!important;letter-spacing:0!important;text-transform:none!important;color:inherit!important}.sh-rrs{display:flex;flex-direction:column;gap:8px}#sh-brw .sh-rrs{flex-direction:row;flex-wrap:wrap}#sh-brw .sh-rr{min-width:72px;justify-content:center}.sh-dis{opacity:.55}.sh-card a{color:var(--brand-ink);font-weight:700}
 .sh-rr{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;padding:10px 12px;border:1px solid #D8D8D0;border-radius:8px;min-height:44px;cursor:pointer;background:#fff}
+.sh-rr[hidden]{display:none}
 .sh-rr input{width:18px;height:18px;margin:0;accent-color:var(--green,#25734e)}
 .sh-rr.on{border:2px solid var(--green);background:var(--green-pale,#e6f3ec)}
 .sh-pr{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:12px 14px;align-items:center;padding:14px 18px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;font-size:13.5px}
@@ -15980,6 +15984,10 @@ body.sh-in[data-pca="P"] .pcx[data-a]:not([data-a="P"]):not([data-a=""]),
 body.sh-in[data-pca="C"] .pcx[data-a]:not([data-a="C"]):not([data-a=""]),
 body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display:none}
 .vis-dot.vis-ev{border-radius:2px;width:10px;height:10px;transform:translateX(-5px)}.vis-dot.vis-ev.stf{outline:2px dashed #1d4f8f;outline-offset:1px}
+.st-emb{background:#F3F6FB;border:1px solid #cdd8ea;border-radius:12px;padding:10px 14px;margin:0 0 12px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;justify-content:space-between}.st-emb-h span{color:#5f5f58;font-size:12.5px;margin-left:6px}.st-emb-t{display:flex;gap:8px;flex-wrap:wrap}
+.pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
+.pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
+.pf-pa{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid #e4e8e2}
 .sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
 .sh-tag{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
 .sh-tag.L{background:#f7f19a}.sh-tag.E{background:#d7ecdf}.sh-tag.R{background:#f8c9c7}.sh-tag.X{background:#e3e8f2}
@@ -16084,7 +16092,7 @@ SH.profOk = profOk;
 
 // ── schermate ──
 function show(view, arg){
-  SH.view = view; const r = $('sh-root');
+  SH.view = view; const r = $('sh-root'); if(view) try{ window.stEmbExit && window.stEmbExit(); }catch(e){}
   // il colore dipende dal profilo (Branca), uguale dentro e fuori dai progetti
   try{ brandApply(); }catch(e){}
   if(!view){ r.classList.remove('show'); r.innerHTML = ''; document.body.classList.remove('sh-pend'); document.body.style.overflow = ''; return; }
@@ -16276,7 +16284,7 @@ window.shProfileOpen = function(){ SH._profEdit = true; try{ saveData(true); }ca
 
 // ── elenco progetti ──
 const tipoOf = m => (m && m.mode === 'staff' && (m.sruolo === 'CG' || (!m.sruolo && !m.fascia && m.tipo === 'AN'))) ? 'CG' : ((m && m.mode === 'staff' && !m.tipo) ? 'ST' : ((m && m.tipo) || (m && m.mode === 'staff' ? 'ST' : (m && m.mode === 'giovani' ? 'AN' : ''))));
-const TIPO_TXT = {PP:'Progetto Personale', AN:'Programmazione di Unità', ST:'Adulti dello staff', CG:'Adulti dello staff · Gruppo'};
+const TIPO_TXT = {PP:'Progetto Personale', AN:'Programmazione di Unità', ST:'Adulti dello staff', CG:'Programmazione formativa annuale · adulti del Gruppo'};
 const brOf = m => (m && (m.fascia || m.branca)) || '';
 // ── veste: il ruolo con cui si crea un progetto (una persona può essere Capo Compagnia e Capo Gruppo). Sta in scheda.veste e nei metadati ──
 const UNITROLE = {L:'Capo Branco', E:'Capo Reparto', R:'Capo Compagnia'};
@@ -16478,8 +16486,8 @@ window.shNew = function(tipo){
   const nb = noBranca(p.ruolo);
   dlgOpen(`<h2 id="sh-dlg-t">Nuovo progetto</h2>
     <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">Tipo</legend><div class="sh-g2">
-      <label class="sh-rr${SH.tipo === 'PP' ? ' on' : ''}"><input type="radio" name="sh-tipo" value="PP"${SH.tipo === 'PP' ? ' checked' : ''} onchange="shTipo()">Progetto Personale</label>
-      <label class="sh-rr${SH.tipo === 'AN' ? ' on' : ''}"><input type="radio" name="sh-tipo" value="AN"${SH.tipo === 'AN' ? ' checked' : ''} onchange="shTipo()">Programmazione Annuale</label></div></fieldset>
+      <label class="sh-rr${SH.tipo === 'PP' ? ' on' : ''}" id="sh-lbl-pp"><input type="radio" name="sh-tipo" value="PP"${SH.tipo === 'PP' ? ' checked' : ''} onchange="shTipo()">Progetto Personale</label>
+      <label class="sh-rr${SH.tipo === 'AN' ? ' on' : ''}" id="sh-lbl-an"><input type="radio" name="sh-tipo" value="AN"${SH.tipo === 'AN' ? ' checked' : ''} onchange="shTipo()"><span id="sh-lbl-ant">Programmazione Annuale</span></label></div></fieldset>
     <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">In che veste lo crei?</legend><div class="sh-g2">
       <div><label class="sh-lb" for="sh-nru">Ruolo</label><select class="sh-in" id="sh-nru" onchange="shVeste()">${RUOLI.map(([k, t]) => `<option value="${k}"${p.ruolo === k ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
       <div id="sh-nbrw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nbr">Branca</label><select class="sh-in" id="sh-nbr" onchange="shVeste()">${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b} · ${BN_FULL[b]}</option>`).join('')}</select></div></div></fieldset>
@@ -16488,12 +16496,16 @@ window.shNew = function(tipo){
     <div class="sh-hint" id="sh-nhint">Sezione e Gruppo si compilano dal tuo profilo${sezgr ? ': ' + esc(sezgr) : ''}. La veste vale solo per questo progetto: il profilo non cambia.${nb ? ' Come ' + esc(RUOLO_TXT[p.ruolo]) + ' non scegli Branca né Nome Unità.' : ''}</div>
     <div class="sh-msg" id="sh-nmsg" role="alert"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="sh-ncre" onclick="shCreate()">Crea il progetto</button></div>`);
+  try{ shVeste(); }catch(e){}
 };
 window.shVeste = function(){
   const r = ($('sh-nru') || {}).value, nb = noBranca(r), b = $('sh-nbr');
   ['sh-nbrw', 'sh-nunw'].forEach(i => { const e = $(i); if(e) e.hidden = nb; });
   const u = $('sh-nun'); if(u && b) u.placeholder = BR_UNIT[b.value] || 'Es. Reparto Kontiki';
-  const h = $('sh-nhint'); if(h) h.textContent = 'Sezione e Gruppo si compilano dal tuo profilo. La veste vale solo per questo progetto: il profilo non cambia.' + (nb ? ' Come ' + RUOLO_TXT[r] + ' non scegli Branca né Nome Unità.' : '');
+  const lp = $('sh-lbl-pp'), la = $('sh-lbl-an'), lt = $('sh-lbl-ant');
+  if(lp && la && lt){ lp.hidden = nb; lt.textContent = nb ? 'Programmazione formativa annuale (per gli adulti)' : 'Programmazione Annuale'; if(nb){ SH.tipo = 'AN'; const a = la.querySelector('input'); if(a){ a.checked = true; } la.classList.add('on'); } }
+  const pp0 = SH.prof || {}; const sg0 = [pp0.sezione, pp0.gruppo ? (/^\d+$/.test(pp0.gruppo) ? 'Gruppo ' + pp0.gruppo : (pp0.gruppo === 'unico' ? 'Monogruppo' : pp0.gruppo)) : ''].filter(Boolean).join(' · ');
+  const h = $('sh-nhint'); if(h) h.textContent = 'Sezione e Gruppo si compilano dal tuo profilo' + (sg0 ? ': ' + sg0 : '') + '. La veste vale solo per questo progetto: il profilo non cambia.' + (nb ? ' Come ' + RUOLO_TXT[r] + ' non scegli Branca né Nome Unità.' : '');
 };
 window.shTipo = function(){
   const v = (document.querySelector('input[name="sh-tipo"]:checked') || {}).value; if(v) SH.tipo = v;
@@ -16512,7 +16524,7 @@ window.shCreate = async function(){
   try{
     const rows = await dbList();
     const as = annoScoutTxt(y);
-    const base = (tipo === 'PP' ? 'Progetto Personale ' : 'Programmazione Annuale ') + as + (unit ? ' · ' + unit : '');
+    const base = (nb ? 'Programmazione formativa ' : (tipo === 'PP' ? 'Progetto Personale ' : 'Programmazione Annuale ')) + as + (unit ? ' · ' + unit : '');
     const titolo = await uniqueTitle(rows, y, base);
     const pp = {}; if(p.sezione) pp.sezione = p.sezione; if(p.gruppo) pp.gruppo = p.gruppo;
     let d;
@@ -16876,19 +16888,20 @@ const NAV_AN = [
   {id:'a-staff', k:'1a:staff', t:'Il mio staff', ic:'user', go:"shSub('1a','','staff')"},
   {g:'Osservare'},
   {id:'o-occ', k:'1a:occ', t:'Come osservo', ic:'eye', go:"shSub('1a','','occ')"},
-  {id:'o-staff', t:'Il mio staff', ic:'user', go:'shStaffPage()'},
   {id:'o-P', k:'1b:P', t:'Sviluppo Personale', ic:'eye', go:"shSub('1b','P')"},
   {id:'o-C', k:'1b:C', t:'Sviluppo Comunitario', ic:'eye', go:"shSub('1b','C')"},
   {id:'o-S', k:'1b:S', t:'Sviluppo Spirituale', ic:'eye', go:"shSub('1b','S')"},
   {id:'o-conf', k:'1s', t:'Confronto e sintesi', ic:'users', go:"shSub('1s','')", cond:'conf'},
   {id:'o-1c', k:'1c', t:'Lettura del gruppo', ic:'list', go:"shSub('1c','')"},
   {id:'o-1d', k:'1d', t:'Priorità', ic:'star', go:"shSub('1d','')"},
+  {id:'o-staff', t:'Il mio staff', ic:'user', go:'shStaffPage()', cond:'owner'},
   {g:'Progettare'},
   {id:'p-2', k:'2', t:'Obiettivi e indicatori', ic:'star', go:"shSec('2')"},
   {id:'p-3P', k:'3:P', t:'Percorso Personale', ic:'list', go:"shPerc('P')"},
   {id:'p-3C', k:'3:C', t:'Percorso Comunitario', ic:'list', go:"shPerc('C')"},
   {id:'p-3S', k:'3:S', t:'Percorso Spirituale', ic:'list', go:"shPerc('S')"},
   {id:'p-vis', t:'Visione d’insieme', ic:'cal', go:'shVis()'},
+  {id:'p-pf', t:'Percorso formativo dello staff', ic:'users', go:'shPF()', cond:'owner'},
   {g:'Realizzare'},
   {id:'r-cal', t:'Calendario e attività', ic:'cal', go:'shCal()'},
   {id:'r-ele', t:'Elenco dell’anno', ic:'list', go:'shEle()'},
@@ -16920,6 +16933,7 @@ const NAV_PP = [
   {id:'ppa', t:'Le attività del mio percorso', ic:'cal', go:"shPP('a')"}
 ];
 const NAV_ST = [
+  {id:'st-pf0', t:'Percorso formativo', ic:'users', go:'shPF()'},
   {id:'st-back', t:'← Programmazione di Unità', ic:'dash', go:'shStaffBack()', cond:'back'},
   {g:'Progettare'},
   {id:'st1', t:'Osservazione dello staff', ic:'eye', go:'goPhase(1)'},
@@ -16932,8 +16946,21 @@ const NAV_ST = [
   {id:'arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'}
 ];
 const isPP = () => { try{ return (scheda && scheda.tipoProgetto) === 'PP' && MODE !== 'staff'; }catch(e){ return false; } };
-const isST = () => { try{ return MODE === 'staff'; }catch(e){ return false; } };
-const navItems = () => isPP() ? NAV_PP : isST() ? NAV_ST : NAV_AN;
+const isST = () => { try{ return MODE === 'staff' && !window._stEmb; }catch(e){ return false; } };
+const isCGp = () => { try{ return MODE === 'staff' && !window._stEmb && STAFF_RUOLO === 'CG'; }catch(e){ return false; } };
+const NAV_CG = [
+  {g:'Progettare'},
+  {id:'st1', t:'I miei Capi Unità', ic:'eye', go:'goPhase(1)'},
+  {id:'st2', t:'Lettura dei Capi Unità', ic:'list', go:'goPhase(2)'},
+  {id:'p-pf', t:'Percorso formativo', ic:'users', go:'shPF()'},
+  {g:'Realizzare'},
+  {id:'usc', t:'Eventi per gli adulti', ic:'tent', go:"shSec('usc')"},
+  {id:'r-chk', t:'Check degli adulti', ic:'users', go:'shChk()'},
+  {g:'Misurare e conservare'},
+  {id:'sha', t:'Condividi', ic:'users', go:'shShare()'},
+  {id:'arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'}
+];
+const navItems = () => isPP() ? NAV_PP : isCGp() ? NAV_CG : isST() ? NAV_ST : NAV_AN;
 window.shNavItems = navItems;
 let cur = null;
 
@@ -16944,7 +16971,7 @@ function subHTML(inSheet){
   const sc = subCur();
   return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
-function navCond(i){ if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navCond(i){ if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
 function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
 function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
 SH._gt = SH._gt || {};
@@ -16966,13 +16993,13 @@ function bbHTML(){
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-staff','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3P','p-3C','p-3S','p-vis','r-cal','r-ele','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3P','p-3C','p-3S','p-vis','p-pf','r-cal','r-ele','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
   const s = $('sh-side'); if(s) s.innerHTML = navHTML();
   const b = $('sh-bb'); if(b) b.innerHTML = bbHTML();
-  try{ const nm = $('sh-pjn'); if(nm && CL.ctx){ const t = isST() ? 'Staff' : (scheda && scheda.tipoProgetto === 'PP' ? 'Progetto Personale' : 'Programmazione di Unità'); const br = (typeof FASCIA !== 'undefined' && FASCIA) ? 'Branca ' + FASCIA + ': ' : ''; const ti = String(CL.ctx.titolo || '').trim(); let ci = ''; try{ if(!isST() && !isPP()){ const c0 = annoCicloInfo(annoCur()); ci = (c0 && c0.nome && c0.nome !== 'Il ciclo') ? c0.nome : ''; } }catch(e){} const full = br + (ti || (t + (CL.ctx.anno ? ' ' + CL.ctx.anno : ''))) + (ci && ci !== ti && !ti.endsWith(' · ' + ci) ? ' · ' + ci : ''); nm.textContent = full; nm.title = full; } const nn = $('sh-name'); if(nn && CL.user){ try{ nn.textContent = clShortName(); }catch(e){} } }catch(e){}
+  try{ const nm = $('sh-pjn'); if(nm && CL.ctx){ const t = isST() ? (STAFF_RUOLO === 'CG' ? 'Programmazione formativa annuale' : 'Staff') : (scheda && scheda.tipoProgetto === 'PP' ? 'Progetto Personale' : 'Programmazione di Unità'); const br = (typeof FASCIA !== 'undefined' && FASCIA) ? 'Branca ' + FASCIA + ': ' : ''; const ti = String(CL.ctx.titolo || '').trim(); let ci = ''; try{ if(!isST() && !isPP()){ const c0 = annoCicloInfo(annoCur()); ci = (c0 && c0.nome && c0.nome !== 'Il ciclo') ? c0.nome : ''; } }catch(e){} const full = br + (ti || (t + (CL.ctx.anno ? ' ' + CL.ctx.anno : ''))) + (ci && ci !== ti && !ti.endsWith(' · ' + ci) ? ' · ' + ci : ''); nm.textContent = full; nm.title = full; } const nn = $('sh-name'); if(nn && CL.user){ try{ nn.textContent = clShortName(); }catch(e){} } }catch(e){}
 }
 window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on); const h = $('sh-hb'); if(h) h.setAttribute('aria-expanded', on ? 'true' : 'false'); };
 window.shSheet = function(g){
@@ -16997,9 +17024,10 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-she
 
 // ── quale voce è attiva ──
 function active(){
+  if(window._stEmb) return 'o-staff';
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -17113,7 +17141,7 @@ window.shSub = function(k, amb, ctx){
 };
 (function(){ const g0 = window.gotoObs; if(typeof g0 === 'function') window.gotoObs = function(id){ try{ if(MODE === 'giovani' && /^[PCS]\d/.test(String(id))) window._ambF = String(id)[0]; }catch(e){} return g0.apply(this, arguments); }; })();
 function panelsOff(){ [1,2,3,4].forEach(i => { const e = $('panel' + i); if(e) e.classList.remove('active'); }); }
-function ownOff(){ window._cfOn = false; ['panel-dash','panel-pp'].forEach(id => { const e = $(id); if(e) e.classList.remove('active'); }); document.body.classList.remove('sh-own'); }
+function ownOff(){ if(!window._stKeep) stEmbExit(); window._cfOn = false; ['panel-dash','panel-pp'].forEach(id => { const e = $(id); if(e) e.classList.remove('active'); }); document.body.classList.remove('sh-own'); }
 function own(id){
   panelsOff(); ownOff(); const e = $(id); if(e){ e.classList.add('active'); document.body.classList.add('sh-own'); }
   try{ const sn = $('g-subnav'); if(sn) sn.style.display = 'none'; }catch(e){}
@@ -17846,6 +17874,7 @@ window.bilDocx = async function(){
   const doc = dDocument(ch, 'Spese mese per mese'); await dSave(doc, 'Spese-' + String(scheda.annoScout || '').replace(/[^0-9-]/g, '') + '.docx');
 };
 // ── Realizzare · «Calendario e attività»: contenitori (Riunione, Uscita, Bivacco, Campo) e blocchi (le attività dei percorsi) ──
+const CAL_NEW = {sede:'Nuova riunione', giorno:'Nuova uscita', bivacco:'Nuovo bivacco', campo:'Nuovo campo'};
 const CAL_T = {sede:['Riunione', '#4a6b8a'], giorno:['Uscita', '#2f7d5b'], bivacco:['Bivacco', '#a0612b'], campo:['Campo', '#7a3f8f']};
 window._calOpen = window._calOpen || {};
 function calCan(){ try{ return !window.BRO && uscCan(); }catch(e){ return false; } }
@@ -17902,7 +17931,7 @@ function calHTML(){
   const conf = calConf(acts);
   const banner = conf.map(c => `<div class="cal-warn" role="status"><b>L’ordine ipotizzato del percorso «${esc(c.nm)}» sta cambiando.</b> Con le date scelte l’attività «${esc(c.inv[0].titolo)}» (la ${c.inv[0].num}ª, ${esc(fmtDL(c.inv[0].date))}) viene prima di «${esc(c.inv[1].titolo)}» (la ${c.inv[1].num}ª, ${esc(fmtDL(c.inv[1].date))}). Non riordino niente da solo.<div class="cal-wa"><button type="button" class="sh-btn" onclick="calReorder(${c.idx})">Aggiorna l’ordine del percorso</button><button type="button" class="sh-btn gh" onclick="calKeep('${esc(c.key).replace(/'/g, '')}')">Lascio com’è</button></div></div>`).join('');
   const dr = SH._calDraft || {}; const dst = SH._calDest === 'staff' ? 'staff' : 'unita';
-  const form = (can && SH._calNew) ? `<div class="cal-new" role="group" aria-label="Nuova ${esc(CAL_T[SH._calNew][0].toLowerCase())}"><b>Nuova ${esc(CAL_T[SH._calNew][0].toLowerCase())}</b>
+  const form = (can && SH._calNew) ? `<div class="cal-new" role="group" aria-label="${esc(CAL_NEW[SH._calNew])}"><b>${esc(CAL_NEW[SH._calNew])}</b>
     <fieldset class="cal-for-f"><legend class="sh-lb">Per chi</legend><label><input type="radio" name="cal-dest" value="unita"${dst === 'unita' ? ' checked' : ''} onchange="calDest(this.value)"> Per l’Unità</label><label><input type="radio" name="cal-dest" value="staff"${dst === 'staff' ? ' checked' : ''} onchange="calDest(this.value)"> Solo per lo staff</label></fieldset>
     <label>Nome <input id="cal-nt" class="sh-in" maxlength="80" placeholder="${esc(CAL_T[SH._calNew][0])}" value="${esc(dr.nt || '')}"></label>
     <label>Data${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? ' di inizio' : ''} <input id="cal-d1" type="date" class="sh-in" value="${esc(dr.d1 || '')}"></label>
@@ -17964,7 +17993,7 @@ window.calMake = function(){
   uscMap()[id] = {id, cr:Date.now(), testo:t || CAL_T[md][0], modello:md, ax:x, prog:{}, hid:Object.assign({}, USC_HID[md] || {}), own:{}};
   if(SH._calDest === 'staff'){ const uu = uscMap()[id]; uu.dest = 'staff'; uu.riservata = false; delete uu.ax.pres.rag; delete uu.ax.pres.ragF; delete uu.ax.pres.ragM; }
   if(tp){ uscMap()[id].tipo = tp; if(tp === '__altro') uscMap()[id].tipoAltro = tpt; }
-  const wasStf = SH._calDest === 'staff'; saveData(true); SH._calNew = null; SH._calDraft = null; SH._calDest = null; try{ uscNavSync(); }catch(e){} showToast(CAL_T[md][0] + (wasStf ? ' dello staff creata' : ' creata')); calRe();
+  const wasStf = SH._calDest === 'staff'; saveData(true); SH._calNew = null; SH._calDraft = null; SH._calDest = null; try{ uscNavSync(); }catch(e){} showToast(CAL_T[md][0] + (wasStf ? ' dello staff' : '') + ((md === 'sede' || md === 'giorno') ? ' creata' : ' creato')); calRe();
 };
 function calOut(idx, j, uid, k){ const u = uscGet(uid); const m = u && u.prog && u.prog[k]; if(m && !m.del) m.del = true; }
 function calIn(idx, j, uid){
@@ -18258,56 +18287,91 @@ function discHTML(k){
 }
 function discDom(){ try{ if(MODE !== 'staff') return; const root = $('percorsi-root'); if(!root || root.querySelector('.sh-disc')) return; const ph = document.getElementById('panel1'); if(!ph || !ph.classList.contains('active')) return; root.insertAdjacentHTML('afterbegin', discHTML('staffobs')); }catch(e){} }
 (function(){ const r0 = window.renderStaffPhase1; if(typeof r0 === 'function') window.renderStaffPhase1 = function(){ const x = r0.apply(this, arguments); discDom(); return x; }; })();
-function staffTabNomi(){ try{ return (staffTab() || []).filter(r => r && String(r.nome || '').trim()); }catch(e){ return []; } }
-function staffPageHTML(){
-  const mem = staffTabNomi(); const can = !window.BRO;
-  return `<div class="sh-dh"><div><h1>Il mio staff</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui osservi gli adulti con cui programmi. È uno strumento distinto da quello con cui osservi i ragazzi: i dati sono conservati a parte e non si mescolano. Chi c’è nello staff lo scrivi in «Capire · Il mio staff».</p></div></div>
-  ${discHTML('staffobs')}
-  <section class="sh-card2 wide"><h3>Osservazione degli adulti</h3><p class="sh-sub" style="margin:0">${mem.length ? 'Nella tabella dello staff ' + (mem.length === 1 ? 'c’è' : 'ci sono') + ' ' + mem.length + (mem.length === 1 ? ' persona' : ' persone') + '. ' : 'Nella tabella dello staff non c’è ancora nessuno: puoi comunque cominciare dall’auto osservazione. '}L’osservazione si apre come progetto collegato a questa Unità, con il suo menu; da lì torni qui con «← Programmazione di Unità».</p>${can ? `<div class="anv-act"><button type="button" class="sh-btn" onclick="shStaffOpen()">Apri l’osservazione dello staff</button></div>` : ''}</section>
-  <section class="sh-card2 wide" id="st-ins"><h3>Lettura d’insieme: Unità e staff</h3><p class="sh-sub" role="status" style="margin:0">Carico…</p></section>`;
+// ── Osservazione dello staff DENTRO la programmazione annuale: stessa schermata dello staff, stessi dati del progetto (chiavi staff* separate da quelli dei ragazzi) ──
+window._stEmb = false;
+(function(){
+  const s0 = window.saveData; if(typeof s0 === 'function') window.saveData = function(){ if(window._stEmb && MODE === 'staff'){ MODE = 'giovani'; try{ return s0.apply(this, arguments); } finally{ MODE = 'staff'; } } return s0.apply(this, arguments); };
+  const p0 = window.posSave; if(typeof p0 === 'function') window.posSave = function(){ if(window._stEmb) return; return p0.apply(this, arguments); };
+})();
+function stEmbEnter(){
+  if(window._stEmb || MODE !== 'giovani') return;
+  try{ staffTab(); }catch(e){}   // la tabella degli adulti esiste prima di cambiare schermata
+  window._stEmb = true; MODE = 'staff'; STAFF_RUOLO = 'CU'; if(!STAFF_TYPE) STAFF_TYPE = 'misto'; ST_UNIT.tried = false; ST_UNIT.rows = null;
+  try{ applyTheme(); }catch(e){}
 }
-window.shStaffPage = function(){ ensurePanels(); SH.ppv = 'staffobs'; ownOff(); $('panel-pp').innerHTML = staffPageHTML(); own('panel-pp'); stInsight(); };
-function obsCount(o){ return Object.values(o || {}).filter(v => v && v !== 'n').length; }
-async function stInsight(){
-  const box = () => $('st-ins'); let st = null;
+function stEmbExit(){
+  if(!window._stEmb) return;
+  window._stEmb = false; MODE = 'giovani';
+  try{ saveData(true); }catch(e){}
+  try{ applyTheme(); refreshUnitName(); }catch(e){}
+  document.querySelectorAll('#st-emb-bar').forEach(e => e.remove());
+  try{ renderPhase1(); }catch(e){ console.error(e); }
+}
+window.stEmbExit = stEmbExit;
+function stEmbBar(n){
+  const b = (k, t, go) => `<button type="button" class="sh-btn sm${k ? '' : ' gh'}" onclick="${go}"${k ? ' aria-current="page"' : ''}>${t}</button>`;
+  return `<div id="st-emb-bar" class="st-emb" data-n="${n}"><div class="st-emb-h"><b>Il mio staff</b> <span>osservazione degli adulti, dentro questa programmazione</span></div><div class="st-emb-t">${b(n === 1, 'Osservazione', 'stEmbGo(1)')}${b(n === 2, 'Riepilogo', 'stEmbGo(2)')}${b(0, 'Percorso formativo →', 'shPF()')}</div></div>`;
+}
+window.stEmbGo = function(n){ window._stKeep = true; try{ goPhaseInternal(n); if(n === 1) renderPhase1(); }finally{ window._stKeep = false; } try{ stEmbDom(); }catch(e){} setTimeout(shSync, 30); };
+function stEmbDom(){
   try{
-    if(!CL.sb || !CL.user || !CL.ctx) throw 0;
-    const rows = await dbList(); const anno = Number(CL.ctx.anno); const cur = rows.find(r => r.id === CL.ctx.id); const vk = cur ? vesteKey(cur.meta) : null;
-    const ex = rows.find(r => Number(r.anno) === anno && (r.meta || {}).mode === 'staff' && ((r.meta || {}).sruolo || 'CU') !== 'CG' && (vk === null || vesteKey(r.meta) === vk));
-    if(ex){ const g = await dbGet(ex.id); st = (g && g.data) || {}; }
+    if(!window._stEmb || MODE !== 'staff') return;
+    [[1, 'panel1'], [2, 'panel2']].forEach(([n, id]) => { const p = $(id); if(!p || !p.classList.contains('active')) return; const old = p.querySelector('#st-emb-bar'); if(old && +old.dataset.n === n) return; if(old) old.remove(); document.querySelectorAll('#st-emb-bar').forEach(e => e.remove()); p.insertAdjacentHTML('afterbegin', stEmbBar(n)); });
+    const root = $('percorsi-root'), p1 = $('panel1'); if(root && p1 && p1.classList.contains('active') && !root.querySelector('.sh-disc')) root.insertAdjacentHTML('afterbegin', discHTML('staffobs'));
   }catch(e){}
-  const b = box(); if(!b) return;
-  const uN = obsCount(obs), uT = (() => { try{ return Object.values(DB).flat().length; }catch(e){ return 0; } })();
-  const m = st ? (st.STAFF_MEMBERS || []) : []; const sN = st ? m.reduce((a, n) => a + obsCount((st.staffObs || {})[n]), 0) + obsCount(st.autoObs) : 0;
-  b.innerHTML = `<h3>Lettura d’insieme: Unità e staff</h3><p class="sh-sub" style="margin:0 0 4px">Qui i due lavori si leggono affiancati, in sola lettura: non si mescolano i dati e ognuno si modifica dove è nato.</p>
-    <div class="st-ins"><div><b>L’Unità</b><span>${uN} comportamenti osservati${uT ? ' su ' + uT : ''}</span></div><div><b>Lo staff</b><span>${st ? (m.length ? m.length + (m.length === 1 ? ' persona osservata' : ' persone osservate') + ' · ' : '') + sN + ' comportamenti osservati (compresa l’auto osservazione)' : 'Non hai ancora aperto l’osservazione dello staff.'}</span></div></div>
-    <p class="sh-hint" style="margin:6px 0 0">Il confronto fra punti di forza e punti deboli dell’Unità e dello staff arriva nella lettura del gruppo, quando entrambi i lavori sono avviati.</p>`;
 }
-window.shStaffOpen = async function(){
-  if(window.BRO || !CL.ctx || !CL.user) return;
-  try{
-    saveData(true); try{ await clPush(true); }catch(e){}
-    const rows = await dbList(); const anno = Number(CL.ctx.anno); const cur = rows.find(r => r.id === CL.ctx.id); const vk = cur ? vesteKey(cur.meta) : null;
-    const ex = rows.find(r => Number(r.anno) === anno && (r.meta || {}).mode === 'staff' && ((r.meta || {}).sruolo || 'CU') !== 'CG' && (vk === null || vesteKey(r.meta) === vk));
-    if(ex){ await clOpenProject(ex.id); return; }
-    const ud = clSnapshot(); const as = (scheda && scheda.annoScout) || annoScoutTxt(anno); const unit = String(UNIT_NAME || '').trim();
-    const fresh = {v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CU', UNIT_NAME:''};
-    pjStaffSeed(fresh, ud);
-    fresh.scheda = Object.assign({}, fresh.scheda || {}, {annoScout:as, veste:{ruolo:(scheda.veste && scheda.veste.ruolo) || 'cu', branca:FASCIA || ''}, staffDi:CL.ctx.id});
-    fresh.ts = Date.now();
-    const titolo = await uniqueTitle(rows, anno, 'Staff ' + as + (unit ? ' · ' + unit : ''));
-    const r = await dbInsert(anno, titolo, fresh, clMeta(fresh));
-    SH.rows = null; SH._ay = null; CL.ctx = null; try{ localStorage.removeItem(CL_LS); }catch(e){}
-    await clOpenProject(r.id);
-  }catch(e){ clToast('Non sono riuscito ad aprire lo staff: ' + ((e && e.message) || 'riprova')); }
-};
-window.shStaffBack = async function(){
-  const id = scheda && scheda.staffDi; if(!id){ shGoHome(); return; }
-  try{ saveData(true); try{ await clPush(true); }catch(e){} }catch(e){}
-  try{ sessionStorage.setItem('pee_goto', 'staff'); }catch(e){}
-  await clOpenProject(id);
+function discDom(){ stEmbDom(); }
+(function(){ const r0 = window.renderRiepilogo; if(typeof r0 === 'function') window.renderRiepilogo = function(){ const x = r0.apply(this, arguments); stEmbDom(); return x; }; })();
+window.shStaffPage = function(){
+  ownOff(); stEmbEnter(); STAFF_VIEW = STAFF_VIEW || 'oss'; ensurePanels();
+  window._stKeep = true; try{ goPhaseInternal(1); renderPhase1(); }finally{ window._stKeep = false; } stEmbDom(); setTimeout(shSync, 30);
 };
 
+// ── Percorso formativo dello staff (o dei Capi Unità per il Capo Gruppo): vive nella programmazione annuale ──
+const PF_CAT = {tb:'Team Building', af:'Affiliativa', ps:'Problem Solving', ri:'Riflessione profonda', vf:'Verifica', av:'Autovalutazione'};
+function pfList(){ if(!Array.isArray(scheda.pf)) scheda.pf = []; return scheda.pf; }
+const pfCG = () => { try{ return STAFF_RUOLO === 'CG' && !window._stEmb && MODE === 'staff'; }catch(e){ return false; } };
+function pfEvents(){ try{ return uscList().filter(u => u.dest === 'staff' || MODE === 'staff'); }catch(e){ return []; } }
+function pfHTML(){
+  const cg = pfCG(), can = !window.BRO, L = pfList(); const ev = pfEvents();
+  let rec = new Set(); try{ rec = new Set(getSituazioniAttive().map(x => x.id)); }catch(e){}
+  const sits = SITUAZIONI_STAFF.slice().sort((x, y) => (rec.has(y.id) ? 1 : 0) - (rec.has(x.id) ? 1 : 0));
+  const used = new Set(L.map(x => x.nome));
+  const ta = (id, k, v, lab, ph) => `<label class="gr-f"><span>${lab}</span><textarea rows="2" ${can ? '' : 'readonly'} placeholder="${esc(ph || '')}" oninput="pfSet('${id}','${k}',this.value)">${esc(v || '')}</textarea></label>`;
+  const card = (x, i) => {
+    const e = ev.find(u => u.id === x.ev); const when = e ? calDateTxt(e) : '';
+    return `<section class="sh-card2 wide pf-c" data-id="${x.id}"><header class="pf-h"><span class="pf-n">${i + 1}</span><input class="sh-in pf-t" aria-label="Titolo dell’attività" value="${esc(x.nome)}" ${can ? '' : 'readonly'} oninput="pfSet('${x.id}','nome',this.value)">
+      <span class="pf-tags">${x.cat && PF_CAT[x.cat] ? `<span class="st-pill">${esc(PF_CAT[x.cat])}</span>` : ''}${x.sit ? `<span class="st-pill st-q">${esc(x.sit)}</span>` : '<span class="st-pill st-q">attività mia</span>'}</span>
+      ${can ? `<span class="pf-a"><button type="button" class="btn-ghost" aria-label="Sposta su" onclick="pfMove('${x.id}',-1)">↑</button><button type="button" class="btn-ghost" aria-label="Sposta giù" onclick="pfMove('${x.id}',1)">↓</button><button type="button" class="btn-ghost" onclick="pfDel('${x.id}')">Togli</button></span>` : ''}</header>
+      ${x.desc ? `<p class="sh-hint" style="margin:0">${esc(x.desc)}${ATT_SCHEDE[x.nome] ? ` <button type="button" class="att-how" data-n="${esc(x.nome)}" onclick="attSchedaOpen(this.dataset.n)">Come si fa →</button>` : ''}</p>` : ''}
+      ${ta(x.id, 'obiettivo', x.obiettivo, cg ? 'Che cosa vuoi far crescere nei Capi Unità' : 'Che cosa vuoi far crescere nello staff', 'Una frase: dopo questa attività, che cosa dovrebbe essere diverso?')}
+      <div class="pf-lsc">${ta(x.id, 'lancio', x.lancio, 'Lancio')}${ta(x.id, 'sviluppo', x.sviluppo, 'Sviluppo')}${ta(x.id, 'conclusione', x.conclusione, 'Conclusione')}</div>
+      <div class="pf-ev"><label class="sh-lb" for="pf-ev-${x.id}">Dove la fai</label><select id="pf-ev-${x.id}" class="sh-in" ${can ? '' : 'disabled'} onchange="pfSet('${x.id}','ev',this.value,true)"><option value="">scegli un evento…</option>${ev.map(u => `<option value="${u.id}"${x.ev === u.id ? ' selected' : ''}>${esc(uscTit(u) + ' · ' + calDateTxt(u))}</option>`).join('')}</select>${can ? `<button type="button" class="btn-ghost" onclick="pfNewEv()">+ Nuovo evento</button>` : ''}${when ? `<span class="sh-hint">${esc(when)}</span>` : ''}</div>
+      ${ta(x.id, 'verifica', x.verifica, 'Dopo averla fatta: cosa è andato bene, cosa cambieresti', '')}</section>`; };
+  const pan = sits.map(sx => `<details class="st-fold"><summary>${esc(sx.label)}${rec.has(sx.id) ? '<span class="st-pill">consigliata</span>' : ''}</summary><div class="st-foldb">${sx.attivita.map(y => { const on = used.has(y.nome); return `<div class="pf-pa"><div><b>${esc(y.nome)}</b> <span class="st-pill">${esc(PF_CAT[y.cat] || '')}</span><div class="sh-hint">${esc(y.desc || '')}${y.durata ? ' · ' + esc(y.durata) : ''}</div></div>${can ? `<button type="button" class="btn-ghost" ${on ? 'disabled' : ''} onclick="pfAdd('${sx.id}','${esc(y.nome).replace(/'/g, '&#39;')}')">${on ? 'Già nel percorso' : 'Aggiungi'}</button>` : ''}</div>`; }).join('')}</div></details>`).join('');
+  return `<div class="sh-dh"><div><h1>${cg ? 'Percorso formativo dei Capi Unità' : 'Percorso formativo dello staff'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${cg ? 'Come formare gli adulti del Gruppo nel corso dell’anno: scegli le attività dal paniere o scrivine di tue, mettile in ordine di priorità e collocale negli eventi per gli adulti.' : 'Come far crescere lo staff nel corso dell’anno: scegli le attività dal paniere (quelle «consigliate» partono dai percorsi meno presenti nello staff) o scrivine di tue, mettile in ordine di priorità e collocale negli eventi dello staff.'} Le attività più in alto sono le più importanti.</p></div></div>
+    <div class="anv-act">${can ? `<button type="button" class="sh-btn" onclick="pfOwn()">+ Una mia attività nuova</button>` : ''}<button type="button" class="btn-ghost" onclick="pfDocx()">Scarica il Word del percorso formativo</button></div>
+    ${L.length ? L.map(card).join('') : `<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">Il percorso è ancora vuoto: aggiungi un’attività dal paniere qui sotto, oppure scrivine una tua.</p></section>`}
+    <section class="sh-card2 wide"><h3>Il paniere di attività formative</h3><p class="sh-hint" style="margin:0 0 6px">Divise per area. «Verifica» e «Autovalutazione» si fanno di persona: nella scheda trovi gli spunti per condurle. <button type="button" class="att-how" onclick="facGuideOpen()">Guida per chi conduce →</button></p>${pan}</section>`;
+}
+function pfRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'pf' && p.classList.contains('active')) p.innerHTML = pfHTML(); }
+window.shPF = function(){ ownOff(); ensurePanels(); SH.ppv = 'pf'; $('panel-pp').innerHTML = pfHTML(); own('panel-pp'); };
+window.pfSet = function(id, k, v, re){ const x = pfList().find(z => z.id === id); if(!x || window.BRO) return; x[k] = v; saveDataDebounced(); if(re) pfRe(); };
+window.pfAdd = function(sid, nome){ if(window.BRO) return; const sx = SITUAZIONI_STAFF.find(z => z.id === sid); const y = sx && sx.attivita.find(z => z.nome === nome); if(!y) return; pfList().push({id:'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nome:y.nome, cat:y.cat, sit:sx.label, desc:y.desc || '', obiettivo:'', lancio:'', sviluppo:'', conclusione:'', ev:'', verifica:''}); saveData(true); pfRe(); showToast('Aggiunta in fondo al percorso: spostala dove serve'); };
+window.pfOwn = function(){ if(window.BRO) return; const id = 'f' + Date.now().toString(36); pfList().push({id, nome:'', cat:'', sit:'', desc:'', obiettivo:'', lancio:'', sviluppo:'', conclusione:'', ev:'', verifica:''}); saveData(true); pfRe(); setTimeout(() => { const e = document.querySelector('.pf-c[data-id="' + id + '"] .pf-t'); if(e) e.focus(); }, 60); };
+window.pfMove = function(id, d){ const L = pfList(); const i = L.findIndex(z => z.id === id), j = i + d; if(i < 0 || j < 0 || j >= L.length) return; const t = L[i]; L[i] = L[j]; L[j] = t; saveData(true); pfRe(); };
+window.pfDel = function(id){ const L = pfList(); const i = L.findIndex(z => z.id === id); if(i < 0) return; if(!confirm('Togliere «' + (L[i].nome || 'questa attività') + '» dal percorso formativo?')) return; L.splice(i, 1); saveData(true); pfRe(); };
+window.pfNewEv = function(){ SH._calDest = 'staff'; shCal(); setTimeout(() => { try{ calNew('sede'); }catch(e){} }, 60); };
+window.pfDocx = async function(){
+  try{ showToast('Preparo il Word…'); await needDocx(); }catch(e){ showToast('Impossibile generare il Word: ' + e.message); return; }
+  const cg = pfCG(), L = pfList(), ev = pfEvents(); const ch = [...dTitleBlock(cg ? 'Percorso formativo dei Capi Unità' : 'Percorso formativo dello staff', 'Programmazione formativa ' + (scheda.annoScout || ''))];
+  if(!L.length) ch.push(dPara('Il percorso formativo è ancora vuoto.', {size:19}));
+  L.forEach((x, i) => { const e = ev.find(u => u.id === x.ev);
+    ch.push(dH2((i + 1) + '. ' + (x.nome || 'Attività senza titolo')));
+    ch.push(dKV([['Da dove viene', x.sit || 'Attività propria'], ['Che cosa vuole far crescere', plain(x.obiettivo) || '—'], ['Dove e quando', e ? uscTit(e) + ' · ' + calDateTxt(e) : '—']]));
+    [['Lancio', x.lancio], ['Sviluppo', x.sviluppo], ['Conclusione', x.conclusione], ['Verifica', x.verifica]].forEach(([l, t]) => { if(String(t || '').trim()){ ch.push(dH3(l)); dMulti(t).forEach(p => ch.push(p)); } }); });
+  const doc = dDocument(ch, 'Percorso formativo'); await dSave(doc, 'Percorso_formativo_' + String(scheda.annoScout || 'anno').replace(/[^\w\-]+/g, '_') + '.docx');
+};
 // tornando indietro da un evento si torna al calendario (non alla vecchia lista delle uscite)
 (function(){ const o = window.uscOpen; if(typeof o === 'function') window.uscOpen = function(id, tab){ try{ if(!id && MODE === 'giovani' && !isPP() && !window.BRO_NOREDIR){ USC_CUR = null; shCal(); return; } }catch(e){} return o.apply(this, arguments); }; })();
 // Check dello staff dentro il calendario: ogni check attivo si mette in calendario come evento dello staff
