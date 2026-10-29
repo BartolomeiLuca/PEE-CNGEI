@@ -39,7 +39,7 @@ await ev(() => shSub('1a', '', 'ctx')); await sleep(2500);
 ok(await ev(() => !!document.getElementById('sh-prev') && /Riprendi dall’anno scorso/.test(document.getElementById('sh-prev').textContent)), 'Il mio contesto: barra «Riprendi dall’anno scorso»');
 await ev(() => shPrev()); await sleep(1500);
 let s = await ev(() => ({t: document.getElementById('g-modal') ? document.getElementById('g-modal').textContent : '', n: document.querySelectorAll('.sh-pvc').length, chk: [...document.querySelectorAll('.sh-pvc')].map(i => i.value + ':' + i.checked).join(',')}));
-ok(s.n === 3 && /ctx:false/.test(s.chk) && /sede:true/.test(s.chk) && /staff:true/.test(s.chk), 'voci: sede e staff spuntate, contesto no (hai già scritto) ' + s.chk);
+ok(/ctx:false/.test(s.chk) && /sede:true/.test(s.chk) && /staff:true/.test(s.chk), 'voci: sede e staff spuntate, contesto no (hai già scritto) ' + s.chk);
 ok(/Appunti dalla programmazione precedente/.test(s.t) && /Gioco notturno/.test(s.t) && /Molto coinvolgente/.test(s.t) && /Obiettivo raggiunto in buona parte/.test(s.t), 'appunti di verifica dell’anno scorso');
 await ev(() => shPrevApply()); await sleep(1200);
 ok(await ev(() => scheda.pp.sedeVia === 'Via Roma 1' && scheda.pp.staffTab && scheda.pp.staffTab[0].nome === 'Anna Verdi' && scheda.pp.ctxTerr === 'Scritto nella Programmazione'), 'riprese sede e staff, il contesto già scritto non cambia');

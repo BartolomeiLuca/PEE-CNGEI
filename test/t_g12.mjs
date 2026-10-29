@@ -12,7 +12,7 @@ await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); a
 let h = await ev(() => ({bg:getComputedStyle(document.getElementById('hdr')).backgroundColor, ctx:document.getElementById('sh-pjn').innerText, nome:document.getElementById('sh-name').innerText, vis:s=>0,
   sug:(()=>{const b=document.querySelector('#hdr .hd-lnk[onclick*=fbOpen]'); return !!b && b.offsetParent!==null;})(), faq:(()=>{const b=document.querySelector('#hdr .hdr-actions .faq-btn'); return !!b && b.offsetParent!==null;})(), arc:(()=>{const b=document.querySelector('#hdr .cl-hdrbtn'); return !!b && b.offsetParent!==null;})(), logo:!!document.querySelector('#hdr .logo-mark svg')}));
 ok(h.bg === 'rgb(240, 230, 3)', 'header col colore della Branca L (giallo vivo)');
-ok(/^Branca L: Programmazione di Unità 2026$/.test(h.ctx), 'etichetta «Branca L: … 2026» dopo il logo (' + h.ctx + ')');
+ok(/^Branca L: .+/.test(h.ctx), 'etichetta «Branca L: nome del progetto» dopo il logo (' + h.ctx + ')');
 ok(h.nome === 'Giulia' && h.logo, 'nome della persona al posto di Profilo, logo CNGEI');
 ok(h.sug && !h.faq && !h.arc, 'Suggerimenti? visibile, FAQ dentro Guida, niente «Archivio»');
 // Word

@@ -23,12 +23,14 @@ ok(/Visione d’insieme/.test(s.on || ''), 'voce del menu evidenziata');
 await P.click('#panel-pp .vis-r >> nth=1 >> button:has-text("un mese ▶")'); await sleep(400);
 let pr = await ev(() => { const p = getAllPercorsi()[0]; return p.tDal + '→' + p.tAl; });
 ok(pr === '2026-11→2027-02', 'un mese avanti: novembre-febbraio (' + pr + ')');
-ok(await ev(() => scheda.priorita[0].tDal === '2026-10'), 'la Sezione 2 non viene toccata: la modifica vale per il percorso');
+ok(await ev(() => scheda.priorita[0].tDal === '2026-11' && scheda.priorita[0].tAl === '2027-02'), 'le date sono collegate: anche la Sezione 2 segue la Visione d’insieme');
+await P.selectOption('#panel-pp .vis-r >> nth=1 >> select[aria-label^="Mese di fine"]', {index: 7}); await sleep(400);
+ok(await ev(() => { const p = getAllPercorsi()[0]; return p.tAl === '2027-03' && scheda.priorita[0].tAl === '2027-03' && p.tDal === '2026-11'; }), 'il mese di fine si cambia dalla Visione d’insieme e arriva anche alla Sezione 2');
 // trascinare
 const bb = await P.locator('#panel-pp .vis-bar >> nth=0').boundingBox(); const tb = await P.locator('#panel-pp .vis-t >> nth=1').boundingBox(); const col = tb.width / 12;
 await P.mouse.move(bb.x + 20, bb.y + 14); await P.mouse.down(); await P.mouse.move(bb.x + 20 + col * 0.6, bb.y + 14, {steps:4}); await P.mouse.move(bb.x + 20 + col * 1.1, bb.y + 14, {steps:4}); await P.mouse.up(); await sleep(500);
 pr = await ev(() => { const p = getAllPercorsi()[0]; return p.tDal + '→' + p.tAl; });
-ok(pr === '2026-12→2027-03', 'trascinando il blocco di un mese: dicembre-marzo (' + pr + ')');
+ok(pr === '2026-12→2027-04', 'trascinando il blocco di un mese: dicembre-aprile (' + pr + ')');
 // scegliere l'inizio di un percorso senza periodo
 await P.selectOption('#panel-pp .vis-r >> nth=3 >> select', '4'); await sleep(400);
 pr = await ev(() => { const p = getAllPercorsi()[2]; return p.tDal + '→' + p.tAl; });

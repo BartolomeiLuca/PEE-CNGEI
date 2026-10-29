@@ -19,7 +19,7 @@ db.t.pee_archivi.push(Object.assign(row('pp', 'Progetto Personale 2026-27', {sch
 await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('c1', 0)); await sleep(3800);
 // 1 · intestazione e interruttore
 let s = await ev(() => ({h1: document.querySelector('#panel-dash h1').textContent, seg: [...document.querySelectorAll('.sh-seg button')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')).join(), card: document.querySelector('[data-c="anno"] h3') && document.querySelector('[data-c="anno"] h3').textContent, sub: document.querySelector('#panel-dash .sub').textContent}));
-ok(s.h1 === 'Il mio ciclo' && /Il mio anno:false,Il mio ciclo:true/.test(s.seg), 'dashboard: «Il mio ciclo» con interruttore «Il mio anno | Il mio ciclo»');
+ok(s.h1 === 'Il mio ciclo' && /Il mio ciclo:true,Il mio anno:false/.test(s.seg), 'dashboard: «Il mio ciclo» con interruttore «Il mio ciclo | Il mio anno»');
 ok(/I trimestre/.test(s.sub) && /ottobre 2026 a dicembre 2026/.test(s.sub), 'il ciclo mostra nome e periodo (' + s.sub + ')');
 ok(s.card === 'Il mio ciclo in un colpo d’occhio', 'la vecchia grafica dell’anno è sostituita dalla linea del tempo del ciclo');
 ok(await ev(() => document.querySelectorAll('[data-c="anno"] .vis-bar').length === 3 && !!document.querySelector('[data-c="anno"] .vis-fl')), 'nel ciclo: tre blocchi e la bandierina della verifica');
