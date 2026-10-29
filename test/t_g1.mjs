@@ -63,6 +63,6 @@ ok(await ev(() => document.getElementById('sh-brw').style.display === 'none'), '
 await P.click('#sh-psave'); await sleep(1500);
 await P.click('text=+ Nuovo progetto'); await sleep(300);
 const d2 = await ev(() => document.getElementById('sh-dlg').textContent);
-ok(!(await ev(() => !!document.getElementById('sh-nun') || !!document.getElementById('sh-nbr'))) && /Capo Gruppo non scegli Branca/.test(d2), 'Nuovo progetto per Capo Gruppo: senza Branca e Nome Unità');
+ok(await ev(() => document.getElementById('sh-nbrw').hidden && document.getElementById('sh-nunw').hidden) && /Capo Gruppo non scegli Branca/.test(d2), 'Nuovo progetto per Capo Gruppo: senza Branca e Nome Unità (la veste si sceglie nel progetto)');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

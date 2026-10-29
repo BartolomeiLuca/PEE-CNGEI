@@ -17,37 +17,35 @@ await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); a
 await ev(() => ['Realizzare'].forEach(g => { if(!document.querySelector('#sh-side .sh-gh.open[onclick*="' + g + '"]')) shGrp(g); })); await sleep(200);
 ok(await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Calendario e attività/.test(b.textContent))), 'menu Realizzare: «Calendario e attività»');
 await ev(() => shCal()); await sleep(800);
-let s = await ev(() => ({pool: document.querySelectorAll('.cal-pool .cal-b').length, cs: [...document.querySelectorAll('.cal-c')].map(c => c.querySelector('.cal-ty').textContent + ':' + c.querySelectorAll('.cal-b').length), on: document.querySelector('#sh-side .sh-si.on') && document.querySelector('#sh-side .sh-si.on').textContent.trim()}));
+let s = await ev(() => ({pool: document.querySelectorAll('.cal-pool .cal-b').length, cs: [...document.querySelectorAll('.cal-c')].map(c => c.querySelector('.cal-ty').textContent + ':' + uscBlocks(uscGet(c.dataset.u)).filter(o => o.m && o.m.k === 'att').length), on: document.querySelector('#sh-side .sh-si.on') && document.querySelector('#sh-side .sh-si.on').textContent.trim()}));
 ok(s.pool === 3 && s.cs.join() === 'Riunione:0,Uscita:0', 'tre attività da collocare, contenitori Riunione e Uscita vuoti ' + JSON.stringify(s));
 ok(/Calendario e attività/.test(s.on || ''), 'voce del menu evidenziata');
 // 2 · sposta con «Sposta in…»
 await P.selectOption('.cal-pool .cal-b >> nth=1 >> .cal-sel', {label: 'Uscita · Uscita al parco'}); await sleep(500);
-s = await ev(() => ({pool: document.querySelectorAll('.cal-pool .cal-b').length, cs: [...document.querySelectorAll('.cal-c')].map(c => c.querySelector('.cal-ty').textContent + ':' + c.querySelectorAll('.cal-b').length), d: scheda.percorsiExtra[0].attivita[1].ax && scheda.percorsiExtra[0].attivita[1].ax.data, inU: uscOfAtt(scheda.percorsiExtra[0], scheda.percorsiExtra[0].attivita[1]).map(z => z.u.id).join()}));
+s = await ev(() => ({pool: document.querySelectorAll('.cal-pool .cal-b').length, cs: [...document.querySelectorAll('.cal-c')].map(c => c.querySelector('.cal-ty').textContent + ':' + uscBlocks(uscGet(c.dataset.u)).filter(o => o.m && o.m.k === 'att').length), d: scheda.percorsiExtra[0].attivita[1].ax && scheda.percorsiExtra[0].attivita[1].ax.data, inU: uscOfAtt(scheda.percorsiExtra[0], scheda.percorsiExtra[0].attivita[1]).map(z => z.u.id).join()}));
 ok(s.pool === 2 && s.cs.join() === 'Riunione:0,Uscita:1' && s.inU === 'u1', 'Gioco B nell’uscita: sta nel contenitore');
 ok(s.d === '2026-11-15', 'la data dell’attività diventa quella del contenitore (' + s.d + ')');
 // 3 · trascinamento vero
-await P.dragAndDrop('.cal-pool .cal-b >> nth=0 >> .cal-bt', '.cal-c[data-u="u2"] .cal-cb'); await sleep(600);
-s = await ev(() => ({cs: [...document.querySelectorAll('.cal-c')].map(c => c.querySelectorAll('.cal-b').length).join(), d: scheda.percorsiExtra[0].attivita[0].ax && scheda.percorsiExtra[0].attivita[0].ax.data}));
+await P.dragAndDrop('.cal-pool .cal-b >> nth=0 >> .cal-bt', '.cal-c[data-u="u2"]'); await sleep(600);
+s = await ev(() => ({cs: [...document.querySelectorAll('.cal-c')].map(c => uscBlocks(uscGet(c.dataset.u)).filter(o => o.m && o.m.k === 'att').length).join(), d: scheda.percorsiExtra[0].attivita[0].ax && scheda.percorsiExtra[0].attivita[0].ax.data}));
 ok(s.cs === '1,1' && s.d === '2026-11-08', 'trascinando Gioco A nella riunione: contenitore e data (' + JSON.stringify(s) + ')');
 // 4 · l'ordine logico: A (1ª) l'8 novembre, B (2ª) il 15: nessun avviso. Sposto C (3ª) nella riunione: ancora nessun avviso. Poi B nella riunione e A nell'uscita: avviso
 ok(await ev(() => !document.querySelector('.cal-warn')), 'ordine coerente con le date: nessun avviso');
-await P.selectOption('.cal-c[data-u="u1"] .cal-b >> nth=0 >> .cal-sel', {label: 'Riunione · Riunione di novembre'}); await sleep(400);
-await P.selectOption('.cal-c[data-u="u2"] .cal-b >> nth=0 >> .cal-sel', {label: 'Uscita · Uscita al parco'}); await sleep(500);
+const mvA = (idx, j, fromU, toU) => ev(([idx, j, fromU, toU]) => { const f = fromU ? fromU + '|' + uscBlocks(uscGet(fromU)).find(o => { const z = o.m && o.m.k === 'att' && uscAttFind(o.m); return z && z.idx === idx && z.j === j; }).k : ''; calSel({value: toU}, idx, j, f); }, [idx, j, fromU, toU]);
+await mvA(0, 1, 'u1', 'u2'); await sleep(400); await mvA(0, 0, 'u2', 'u1'); await sleep(500);
 s = await ev(() => ({w: document.querySelector('.cal-warn') ? document.querySelector('.cal-warn').textContent : '', ord: attOrd(scheda.percorsiExtra[0], 3).join()}));
 ok(/L’ordine ipotizzato del percorso/.test(s.w) && /Non riordino niente da solo/.test(s.w) && s.ord === '0,1,2', 'se la data cambia l’ordine: avviso, e nessun riordino automatico (' + s.ord + ')');
 await P.click('.cal-warn button:has-text("Aggiorna l’ordine")'); await sleep(500);
 s = await ev(() => ({w: !!document.querySelector('.cal-warn'), ord: attOrd(scheda.percorsiExtra[0], 3).join()}));
 ok(!s.w && s.ord.startsWith('1,0') , '«Aggiorna l’ordine del percorso»: B passa prima di A (' + s.ord + ')');
 // 5 · «Lascio com'è»
-await P.selectOption('.cal-pool .cal-b >> nth=0 >> .cal-sel', {label: 'Uscita · Uscita al parco'}); await sleep(400);
+await ev(() => calSel({value: 'u1'}, 0, 2, '')); await sleep(400);
 await ev(() => { const a = scheda.percorsiExtra[0].attivita; a[2].ax = a[2].ax || {}; a[2].ax.data = '2026-10-01'; saveData(true); }); await ev(() => shCal()); await sleep(300);
 ok(await ev(() => !!document.querySelector('.cal-warn')), 'una data precedente fa comparire di nuovo l’avviso');
 await P.click('.cal-warn button:has-text("Lascio")'); await sleep(400);
 ok(await ev(() => !document.querySelector('.cal-warn')), '«Lascio com’è»: l’avviso sparisce e non torna');
-// 6 · organizza
-await P.click('.cal-b >> nth=0 >> button:has-text("Organizza")'); await sleep(500);
-s = await ev(() => ({t: document.querySelector('.cal-org') ? document.querySelector('.cal-org').textContent : ''}));
-ok(/Allegati e link/.test(s.t) && /Quando arriva il momento di organizzarla/.test(s.t) && /Proponi all’archivio nazionale/.test(await ev(() => document.querySelector('.cal-org').innerHTML.replace(/<[^>]+>/g, ''))), 'Organizza: allegati, organizzazione pratica e archivio nazionale sono qui');
+// 6 · l'organizzazione della singola attività non sta più nella home del calendario
+ok(await ev(() => !document.querySelector('.cal-org') && ![...document.querySelectorAll('#panel-pp button')].some(b => b.textContent.trim() === 'Organizza')), 'home del calendario: nessuna organizzazione delle singole attività (si fa dentro l’evento o nei percorsi)');
 // 7 · Percorsi educativi non li ha più
 await ev(() => shSec('3')); await sleep(900);
 s = await ev(() => ({t: document.getElementById('panel4').innerText}));

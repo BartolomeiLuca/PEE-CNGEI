@@ -15,7 +15,7 @@ await ev(() => shCal()); await sleep(500);
 await P.click('button:has-text("+ Uscita")'); await sleep(300);
 await P.fill('#cal-nt', 'Caccia di novembre'); await P.fill('#cal-d1', '2026-11-14'); await P.selectOption('#cal-tp', 'Caccia'); await P.click('.cal-new button:has-text("Crea")'); await sleep(600);
 ok(await ev(() => Object.values(scheda.uscite).some(x => x.tipo === 'Caccia' && x.modello === 'giorno')), 'creata con tipo «Caccia» e formato Uscita');
-ok(await ev(() => /Caccia/.test(document.querySelector('.cal-c header').textContent) && !!document.querySelector('.cal-tp')), 'il tipo compare nell’intestazione');
+ok(await ev(() => [...document.querySelectorAll('.cal-c')].some(c => /Caccia di novembre/.test(c.textContent) && /Caccia/.test(c.querySelector('.cal-meta').textContent))), 'il tipo compare nella riga dell’evento');
 await P.click('button:has-text("+ Riunione")'); await sleep(300);
 await P.fill('#cal-nt', 'Riunione speciale'); await P.fill('#cal-d1', '2026-11-20'); await P.selectOption('#cal-tp', '__altro'); await P.fill('#cal-tpt', 'Serata con i genitori'); await P.click('.cal-new button:has-text("Crea")'); await sleep(600);
 ok(await ev(() => Object.values(scheda.uscite).some(x => x.tipo === '__altro' && x.tipoAltro === 'Serata con i genitori' && uscTipoLab(x) === 'Serata con i genitori')), '«Altro» personalizzato');

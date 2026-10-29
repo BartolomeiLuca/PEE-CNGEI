@@ -17,9 +17,9 @@ async function run(label, prof, exp){
   const bg = () => ev(() => { const h = [...document.querySelectorAll('.sh-top, #hdr')].find(e => e.getBoundingClientRect().height > 0); return h ? getComputedStyle(h).backgroundColor : null; });
   ok(await th() === exp && await bg() === cols[exp], label + ': elenco progetti, tema ' + exp + ' (' + await bg() + ')');
   await ev(() => shOpen('pL', 0)); await sleep(3000);
-  ok(await th() === exp && await bg() === cols[exp], label + ': progetto Branco, stesso colore');
+  ok(await th() === 'L' && await bg() === cols['L'], label + ': progetto Branco, il colore è quello del progetto (Branca L)');
   await ev(() => shOpen('pE', 0)).catch(() => {}); await sleep(3000);
-  ok(await th() === exp && await bg() === cols[exp], label + ': progetto Reparto, stesso colore');
+  ok(await th() === 'E' && await bg() === cols['E'], label + ': progetto Reparto, il colore è quello del progetto (Branca E)');
   await ev(() => shProfileOpen()); await sleep(700);
   ok(await th() === exp && await bg() === cols[exp], label + ': pagina del profilo, stesso colore');
   ok(!pa.errors.length, label + ': nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));

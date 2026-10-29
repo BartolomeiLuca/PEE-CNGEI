@@ -12,7 +12,7 @@ const row = (id, nome, dal, al, uscite) => ({id, user_id:u.id, anno:2026, titolo
 db.t.pee_archivi.push(row('c1', 'Autunno', '2026-10', '2027-01', {u1:usc('u1', 'giorno', 'Uscita al parco', '2026-11-15', [{voce:'Pullman', importo:300, cat:'trasporti', carico:'unita'}]), u2:usc('u2', 'sede', 'Riunione', '2026-12-03', [{voce:'Materiali di cancelleria', importo:40, carico:'unita'}])}));
 db.t.pee_archivi.push(row('c2', 'Primavera', '2027-02', '2027-05', {u3:usc('u3', 'giorno', 'Uscita di primavera', '2027-03-20', [{voce:'Pullman', importo:500, cat:'trasporti', carico:'unita'}])}));
 await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('c1', 0)); await sleep(3500);
-ok(await ev(() => { shGrp('Realizzare'); return [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Spese mese per mese/.test(b.textContent)); }), 'menu Realizzare: «Spese mese per mese»');
+ok(await ev(() => { shGrp('Misurare'); return [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Spese mese per mese/.test(b.textContent)); }), 'menu Misurare: «Spese mese per mese»');
 await ev(() => shBil()); await sleep(3500);
 let s = await ev(() => document.getElementById('panel-pp').textContent);
 ok(/Novembre 2026/.test(s) && /Marzo 2027/.test(s), 'tabella con i mesi dei due cicli');

@@ -3255,9 +3255,17 @@ function grFocParts(pid, r, g){ g = g || {}; const out = []; const own = g.foc !
 function grG(pid, k){ if(!scheda.griglia) scheda.griglia = {}; if(!scheda.griglia[pid]) scheda.griglia[pid] = {}; if(!scheda.griglia[pid][k]) scheda.griglia[pid][k] = {}; return scheda.griglia[pid][k]; }
 function grChipsHTML(arr){ return (arr || []).map(x => `<span class="gr-chip">${sEsc(x)}</span>`).join(''); }
 function grAltsHTML(pid, k, arr){ return (arr || []).map((a, i) => `<div class="gr-alt"><input type="text" value="${sEsc(a)}" placeholder="Altro focus" aria-label="Altro focus" oninput="grAltSet('${pid}','${k}',${i},this.value)"><button type="button" class="btn-ghost" title="Togli" aria-label="Togli questo focus" onclick="grAltDel('${pid}','${k}',${i},this)">×</button></div>`).join(''); }
-function grPick(pid, k, i, el){ const e = grElems(pid)[i]; if(e === undefined) return; const g = grG(pid, k); const arr = g.fsel || (g.fsel = []); const at = arr.indexOf(e);
-  if(el.checked && at < 0) arr.push(e); if(!el.checked && at >= 0) arr.splice(at, 1); saveDataDebounced();
-  const box = el.closest('.gr-foc'); if(box){ const c = box.querySelector('.gr-chips'); if(c) c.innerHTML = grChipsHTML(arr); const n = box.querySelector('.gr-n'); if(n) n.textContent = arr.length; } }
+function grFocLines(t){ return String(t || '').split(/\n+/).map(x => x.trim()).filter(Boolean); }
+// lo spunto scelto entra nel campo del focus (una riga per spunto); togliendo la spunta la riga esce
+function grPick(pid, k, i, el){ const e = grElems(pid)[i]; if(e === undefined) return; const g = grG(pid, k);
+  let lines = grFocLines(g.foc !== undefined ? g.foc : grKosFoc(pid, {k:k})); const at = lines.indexOf(e);
+  if(el.checked && at < 0) lines.push(e); if(!el.checked && at >= 0) lines.splice(at, 1);
+  g.foc = lines.join('\n'); saveDataDebounced();
+  const box = el.closest('.gr-foc'); if(box){ const ta = box.querySelector('textarea.gr-focta'); if(ta) ta.value = g.foc; const n = box.querySelector('.gr-n'); if(n) n.textContent = grElems(pid).filter(x => lines.indexOf(x) >= 0).length; } }
+// spunti scelti e campi «Altro» di versioni precedenti confluiscono nel testo del focus (nessun dato si perde)
+function grFocMigra(pid, k, g, kos){ if(!((g.fsel && g.fsel.length) || (g.falt && g.falt.length))) return;
+  const lines = grFocLines(g.foc !== undefined ? g.foc : kos); (g.fsel || []).concat(g.falt || []).forEach(x => { x = String(x || '').trim(); if(x && lines.indexOf(x) < 0) lines.push(x); });
+  g.foc = lines.join('\n'); delete g.fsel; delete g.falt; try{ saveDataDebounced(); }catch(e){} }
 function grAltAdd(pid, k, btn){ const g = grG(pid, k); const arr = g.falt || (g.falt = []); arr.push(''); const box = btn.closest('.gr-foc'); const c = box && box.querySelector('.gr-alts'); if(c){ c.innerHTML = grAltsHTML(pid, k, arr); const ins = c.querySelectorAll('input'); if(ins.length) ins[ins.length - 1].focus(); } }
 function grAltSet(pid, k, i, v){ const g = grG(pid, k); const arr = g.falt || (g.falt = []); arr[i] = v; saveDataDebounced(); }
 function grAltDel(pid, k, i, btn){ const g = grG(pid, k); const arr = g.falt || []; arr.splice(i, 1); saveDataDebounced(); const c = btn.closest('.gr-alts'); if(c) c.innerHTML = grAltsHTML(pid, k, arr); }
@@ -3268,9 +3276,10 @@ function grInner(pid){
   const ta = (k, f, v, lab, ro) => `<label class="gr-f"><span>${lab}</span><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(v || '')}</textarea></label>`;
   const focBlock = (r, g, free) => {
     if(free) return ta(r.k, 'foc', g.foc, 'Focus osservativo');
-    const kos = grKosFoc(pid, r); const sel = g.fsel || []; const els = grElems(pid);
-    const txt = (kos || g.foc !== undefined) ? `<textarea rows="2" aria-label="Focus osservativo" oninput="grSet('${pid}','${r.k}','foc',this.value)">${sEsc(g.foc !== undefined ? g.foc : kos)}</textarea>${kos ? '<div class="gr-old">Proposto dal KOS 2.0: puoi modificarlo o cancellarlo.</div>' : ''}` : '';
-    return `<div class="gr-foc"><div class="gr-fl">Focus osservativo</div>${txt}<details class="gr-pick"><summary>Scegli tra gli spunti «cosa osservare» (<span class="gr-n">${sel.length}</span> scelti)</summary><div class="gr-pl">${els.map((e, i) => `<label class="gr-pi"><input type="checkbox"${sel.includes(e) ? ' checked' : ''} onchange="grPick('${pid}','${r.k}',${i},this)"><i>${sEsc(e)}</i></label>`).join('')}</div></details><div class="gr-chips">${grChipsHTML(sel)}</div><div class="gr-alts">${grAltsHTML(pid, r.k, g.falt)}</div><button type="button" class="btn-ghost gr-add" onclick="grAltAdd('${pid}','${r.k}',this)">+ Altro</button></div>`; };
+    const kos = grKosFoc(pid, r); grFocMigra(pid, r.k, g, kos); const els = grElems(pid);
+    const cur = g.foc !== undefined ? g.foc : kos; const lines = grFocLines(cur); const nSel = els.filter(x => lines.indexOf(x) >= 0).length;
+    const txt = `<textarea class="gr-focta" rows="3" aria-label="Focus osservativo" placeholder="Che cosa osservi in questa attività? Scrivilo qui, oppure scegli tra gli spunti qui sotto." oninput="grSet('${pid}','${r.k}','foc',this.value)">${sEsc(cur)}</textarea>${(kos && g.foc === undefined) ? '<div class="gr-old">Proposto dal KOS 2.0: puoi modificarlo o cancellarlo.</div>' : ''}`;
+    return `<div class="gr-foc"><div class="gr-fl">Focus osservativo</div>${txt}<details class="gr-pick"><summary>Scegli tra gli spunti «cosa osservare» (<span class="gr-n">${nSel}</span> nel focus)</summary><div class="gr-pl">${els.map((e, i) => `<label class="gr-pi"><input type="checkbox"${lines.indexOf(e) >= 0 ? ' checked' : ''} onchange="grPick('${pid}','${r.k}',${i},this)"><i>${sEsc(e)}</i></label>`).join('')}</div></details></div>`; };
   const row = (r, i, free) => { const g = G[r.k] || {}; const iso = grIso(r.data); const early = iso && iso < start;
     return `<div class="gr-row${free ? '' : ' gr-hl'}"><div class="gr-h"><b>${free ? 'Altre osservazioni' : 'Attività:'}</b>${free ? '' : ' ' + sEsc(r.nome) + (r.data ? ' · ' + sEsc(grDateTxt(r.data)) : '')}${early ? '<span class="gr-warn">prima del 1° settembre</span>' : ''}</div><div class="gr-g">${focBlock(r, g, free)}${ta(r.k, 'pos', g.pos, L[0])}${ta(r.k, 'mig', g.mig, L[1])}${ta(r.k, 'note', g.note, L[2])}</div></div>`; };
   if(!rows.length) return `<div class="gr-empty">Nessuna attività svolta ha ancora toccato questo percorso: nell’Allegato resta «Non osservato». Se hai comunque elementi, scrivili qui.</div>` + row({k:'x'}, 0, true);
@@ -6074,7 +6083,7 @@ function renderPhase1(){
   const root=document.getElementById('percorsi-root');
   root.innerHTML='';
   Object.entries(DB).forEach(([a,percorsi])=>{
-    const sec=document.createElement('div'); sec.className='ambito-sec';
+    const sec=document.createElement('div'); sec.className='ambito-sec'; sec.setAttribute('data-a', a);
     const hdr=document.createElement('div'); hdr.className='ambito-hdr ah-'+a;
     hdr.innerHTML=`<span>${AMBITI[a].full}</span><span class="ah-count" id="ahc-${a}">0 / ${percorsi.length}</span>`;
     sec.appendChild(hdr);
@@ -6330,8 +6339,8 @@ function mvWaHref(a){ let txt=''; try{ const first=n=>String(n||'').trim().split
   return 'https://wa.me/'+(typeof clStaffTel==='function'?clStaffTel(a.mail):'')+'?text='+encodeURIComponent(txt); }
 function mvModeHTML(){
   const on=mvOn(), can=mvCanDecide(); const ob=mvObservers();
-  let h=`<div class="mv-mode"><div class="mv-mode-t">Come osservate? ${OPT}</div><div class="mv-opts">
-    <button class="mv-opt${on?'':' on'}" ${can?'':'disabled'} onclick="mvSetMode(false)"><b>Osservo da solo/a</b><span>un solo valore per percorso, come sempre</span></button>
+  let h=`<div class="mv-mode"><div class="mv-mode-t">Tipo di osservazione ${OPT}</div><div class="mv-opts">
+    <button class="mv-opt${on?'':' on'}" ${can?'':'disabled'} onclick="mvSetMode(false)"><b>Osservazione individuale</b><span>un solo valore per percorso, il tuo</span></button>
     <button class="mv-opt${on?' on':''}" ${can?'':'disabled'} onclick="mvSetMode(true)"><b>Osservazione condivisa</b><span>ogni capo del progetto dà il suo valore, poi vi confrontate</span></button></div>`;
   if(!can) h+=`<div class="mv-sub">La scelta la fa chi ha il progetto o chi è co-titolare.</div>`;
   if(on){ const all=Object.values(DB).flat(); const mieiN=all.filter(p=>mvMineAns(p.id)!==undefined).length; const conf=all.filter(p=>!((scheda.mv.dec||{})[p.id])&&mvConf(p.id)).length; const decN=Object.keys(scheda.mv.dec||{}).length;
@@ -6369,16 +6378,39 @@ function cfDetail(){
   const pid=cfPercSel(); const p=Object.values(DB).flat().find(x=>x.id===pid); const M=mvM(); const me=mvMe(); const vis=cfVisible(pid);
   const names=occChiNames(); const rows=grRows(pid);
   const att = rows.length ? rows.map(r=>`<li><b>${sEsc(r.nome)}</b>${r.data?` <span class="cf-dt">${sEsc(grDateTxt(r.data))}</span>`:''}${names.length?`<div class="cf-pr">${names.map(n=>{ const ab=occAbsent(r.k,n); return `<span class="cf-pc${ab?'':' on'}">${sEsc(n.split(/\s+/)[0])} · ${ab?'assente':'c’era'}</span>`; }).join('')}</div>`:''}</li>`).join('') : `<li class="cf-none">Nessuna attività collegata a questo percorso in 1.1.</li>`;
-  const all=mvAll(pid);
-  const liv = !vis ? `<div class="mv-lock">${MV_LOCK}<span>I livelli e le note degli altri si vedono dopo che hai dato il tuo valore su questo percorso (anche «Non osservato»).</span></div>` : (all.length ? all.map(x=>`<div class="cf-lv"><span class="cf-c ${cfLvl(x.v)}">${x.v==='n'?'n.o.':x.v}</span><div><b>${sEsc(x.em===me?'Tu':x.nome)}</b> · ${sEsc(mvLbl(x.v))}${x.note?`<div class="cf-note">«${sEsc(x.note)}»</div>`:''}</div></div>`).join('') : `<div class="cf-none">Nessuno ha ancora risposto.</div>`);
+  const all=mvAll(pid); const soloNote = vis ? mvObs().filter(o => String((o.note||{})[pid]||'').trim() && !all.some(x => x.em===o.em)) : [];
+  const liv = !vis ? `<div class="mv-lock">${MV_LOCK}<span>I livelli e le note degli altri si vedono dopo che hai dato il tuo valore su questo percorso (anche «Non osservato»).</span></div>` : (all.length ? all.map(x=>`<div class="cf-lv"><span class="cf-c ${cfLvl(x.v)}">${x.v==='n'?'n.o.':x.v}</span><div><b>${sEsc(x.em===me?'Tu':x.nome)}</b> · ${sEsc(mvLbl(x.v))}${x.note?`<div class="cf-note">«${sEsc(x.note)}»</div>`:''}</div></div>`).join('') + soloNote.map(o => `<div class="cf-lv"><span class="cf-c">·</span><div><b>${sEsc(o.em===me?'Tu':o.nome)}</b> · solo nota, senza livello<div class="cf-note">«${sEsc(o.note[pid])}»</div></div></div>`).join('') : `<div class="cf-none">Nessuno ha ancora risposto.</div>`);
   const S=(M.sint||{})[pid]||{};
   const f=(k,l)=>`<label class="gr-f"><span>${l}</span><textarea rows="3" oninput="cfSint('${pid}','${k}',this.value)">${sEsc(S[k]||'')}</textarea></label>`;
   return `<div id="cf-detail" class="cf-det"><h3>${sEsc(p.name)} <small>${CF_AMB.find(x=>x[0]===pid[0])[1]}</small></h3>
     <h4>Attività e presenze</h4><ul class="cf-att">${att}</ul>
     <h4>Livelli e note personali</h4>${liv}
+    ${cfGridHTML(pid)}
     ${vis?`<h4>Valore del percorso</h4><div class="mv-box cf-mv">${mvCardHTML(p)}</div>`:''}
-    <h4>Sintesi dello staff <small>testo condiviso</small></h4>${f('pos','Comportamenti positivi emersi')}${f('mig','Comportamenti da migliorare')}${f('note','Note su singoli o gruppetti')}
-    <div class="cf-bt"><button type="button" class="btn-ghost" onclick="grProponiBozza('${pid[0]}',this)" title="Aggiunge in coda alla Lettura del gruppo (1.3) di questo Ambito i testi scritti nella griglia, in forma modificabile">Proponi bozza dalla griglia</button></div></div>`;
+    <h4>Sintesi dello staff per questo percorso <small>il testo comune, scritto insieme</small></h4><p class="sh-hint" style="margin:0 0 6px">Dopo aver confrontato i livelli, scrivete qui in poche righe ciò che condividete. Questi testi sono gli stessi per tutto lo staff e poi entrano nella Lettura del gruppo.</p>${f('pos','Comportamenti positivi emersi')}${f('mig','Comportamenti da migliorare')}${f('note','Note su singoli o gruppetti')}
+    <div class="cf-bt"><button type="button" class="btn-ghost" onclick="cfFromGrid('${pid}')" title="Aggiunge alla sintesi di questo percorso i testi già scritti nella griglia, senza cancellare ciò che c’è">Precompila dalla griglia</button><button type="button" class="btn-ghost" onclick="cfToLettura('${pid[0]}')" title="Aggiunge in fondo alla Lettura del gruppo (1.3) le sintesi dei percorsi di questo Ambito">Porta le sintesi nella Lettura del gruppo</button></div></div>`;
+}
+function cfGridRows(pid){ const g=(scheda.griglia||{})[pid]||{}; const nm={}; grRows(pid).forEach(r=>{ nm[r.k]=r.nome; }); return Object.keys(g).map(k=>({nome:nm[k]||'Altre osservazioni', d:g[k]||{}})).filter(x=>['pos','mig','note'].some(f=>String(x.d[f]||'').trim())); }
+function cfGridHTML(pid){
+  const L=cfGridRows(pid); if(!L.length) return '<h4>Dalla griglia osservativa</h4><div class="cf-none">Nella griglia non avete ancora scritto nulla su questo percorso (colonne «punti di forza», «da migliorare», «note»).</div>';
+  const f=(l,t)=>String(t||'').trim()?`<div class="cf-note"><b>${l}:</b> ${sEsc(t)}</div>`:'';
+  return `<h4>Dalla griglia osservativa <small>quello che è già stato scritto, attività per attività</small></h4>`+L.map(x=>`<div class="cf-lv"><span class="cf-c">·</span><div><b>${sEsc(x.nome)}</b>${f('Punti di forza',x.d.pos)}${f('Da migliorare',x.d.mig)}${f('Note su singoli o gruppetti',x.d.note)}</div></div>`).join('');
+}
+// «Precompila dalla griglia»: porta nella sintesi di questo percorso i testi della griglia (senza cancellare ciò che c'è già)
+function cfFromGrid(pid){
+  const M=mvM(); if(!M.sint) M.sint={}; const S=M.sint[pid]||(M.sint[pid]={}); let n=0;
+  ['pos','mig','note'].forEach(k=>{ const add=cfGridRows(pid).map(x=>String(x.d[k]||'').trim()).filter(Boolean); const cur=String(S[k]||''); const nuovi=add.filter(l=>cur.indexOf(l)<0); if(!nuovi.length) return; n+=nuovi.length; S[k]=(cur.trim()?cur.replace(/\s+$/,'')+'\n':'')+nuovi.join('\n'); });
+  if(!n){ showToast('Dalla griglia non c’è nulla di nuovo da portare nella sintesi di questo percorso.'); return; }
+  saveData(true); confRender(); showToast('Testi della griglia aggiunti alla sintesi: rivedili insieme allo staff.');
+}
+// «Porta nella Lettura del gruppo»: le sintesi dei percorsi di un Ambito vanno in coda ai testi della Sezione 1.3 (modificabili)
+function cfToLettura(a){
+  const M=mvM(); const d={positivi:[],necessita:[],singoli:[]};
+  (DB[a]||[]).forEach(p=>{ const S=(M.sint||{})[p.id]||{}; const nm=p.id+' '+p.name; if(String(S.pos||'').trim()) d.positivi.push(nm+': '+String(S.pos).trim().replace(/\n+/g,'; ')); if(String(S.mig||'').trim()) d.necessita.push(nm+': '+String(S.mig).trim().replace(/\n+/g,'; ')); if(String(S.note||'').trim()) d.singoli.push(nm+': '+String(S.note).trim().replace(/\n+/g,'; ')); });
+  const o=scheda.osservazione[a]; let n=0;
+  ['positivi','necessita','singoli'].forEach(f=>{ const cur=String(o[f]||''); const add=d[f].filter(l=>cur.indexOf(l)<0); if(!add.length) return; n+=add.length; ppSetObs(a,f,(cur.trim()?cur.replace(/\s+$/,'')+'\n':'')+add.join('\n')); });
+  if(!n){ showToast('Non c’è nulla di nuovo da portare: scrivi prima le sintesi dei percorsi di questo Ambito (o sono già nella Lettura del gruppo).'); return; }
+  try{ gRenderLettura(); }catch(e){} saveData(true); showToast('Sintesi portate in fondo alla Lettura del gruppo ('+CF_AMB.find(x=>x[0]===a)[1]+'): le trovi lì e le puoi modificare.');
 }
 function cfSint(pid,k,v){ const M=mvM(); if(!M.sint) M.sint={}; if(!M.sint[pid]) M.sint[pid]={}; M.sint[pid][k]=v; saveDataDebounced(); }
 function confHTML(){
@@ -6409,9 +6441,16 @@ function mvDecorate(){
   try{
     if(MODE!=='giovani') return; if(window._cfOn) confRender(); const root=document.getElementById('percorsi-root'); if(!root) return;
     const ro=!!window.BRO;
+    // l'interruttore «Osservazione individuale / condivisa» sta una volta sola, all'inizio di «Come osservo» (pagina 1a); mai dentro gli Sviluppi
+    const old0=root.querySelector(':scope > #mv-mode'); if(old0) old0.remove();
     let mb=document.getElementById('mv-mode');
-    const showMode=!ro && (mvOn() || mvShared());
-    if(showMode){ if(!mb){ mb=document.createElement('div'); mb.id='mv-mode'; root.insertAdjacentElement('afterbegin', mb); } const hh=mvModeHTML(); if(mb.dataset.h!==hh){ mb.innerHTML=hh; mb.dataset.h=hh; } }
+    const occCard=document.querySelector('#val-root .profile-card');
+    const showMode=!ro && scheda.tipoProgetto!=='PP' && !!occCard;
+    if(showMode){
+      if(!mb || !occCard.contains(mb)){ if(mb) mb.remove(); mb=document.createElement('div'); mb.id='mv-mode'; mb.setAttribute('data-blk','occ');
+        const anchor=Array.prototype.slice.call(occCard.children).find(e=>e.tagName==='DIV' && /^Osservazione con il Kit/.test((e.textContent||'').trim()));
+        if(anchor) occCard.insertBefore(mb, anchor); else occCard.appendChild(mb); }
+      const hh=mvModeHTML(); if(mb.dataset.h!==hh){ mb.innerHTML=hh; mb.dataset.h=hh; } }
     else if(mb) mb.remove();
     Object.values(DB).flat().forEach(p=>{
       const card=document.getElementById('card-'+p.id); if(!card) return;
@@ -8018,7 +8057,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610291058'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610291321'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -9069,13 +9108,13 @@ const USC_MOD_ST=USC_MOD.map(m=>m[0]==='chi'?['chi','Persone e date','presenti, 
 const USC_MOD_ST2=USC_MOD_ST.concat([['obs','Obiettivi','su cosa lavorare, dal Riepilogo dello staff'],['scatto','Scatti','una fotografia dello staff, prima e dopo'],['energy','Energy Check','come state, giornata per giornata'],['casa','Cosa portiamo a casa','Start · Stop · Continue, con le azioni']]);
 function uscMods(){ return MODE==='staff'?USC_MOD_ST2:USC_MOD; }
 const USC_BT={sveglia:['Sveglia','#6D5BD0',['desc','chi'],30],pasto:['Pasto','#D98A00',['menu','chi'],60],cerim:['Cerimonia','#C0392B',['desc','chi'],20],att:['Attività del percorso','#1B7A4E',['lsc','mat','sic','ben','pb'],120],
-  nuova:['Attività','#0E8A8A',['desc','scal','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['desc','scal','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['desc','scal','mat','sic','chi'],90],
+  nuova:['Attività','#0E8A8A',['lsn','scal','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['desc','scal','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['lsn','scal','mat','sic','chi'],90],
   libero:['Tempo libero','#2E8FD6',['desc'],60],serata:['Serata','#9C2D5B',['desc','mat','chi'],90],riposo:['Riposo','#55606E',['desc'],30],sposta:['Spostamento','#8C8C84',['trip','chi'],60],mio:['Blocco tuo','#8E44AD',['desc'],60],mf:['Momento formativo','#7B3FA0',['sch','scal','mat','sic','ben','pb','chi'],45]};
 // il blocco «Attività del percorso» prende il colore della Branca (verde E, rosso R, blu CG, giallo scuro L)
 const BR_ATT = {E:'#25734e', R:'#8f1d19', S:'#1d4f8f', L:'#7a6e00'};
 try{ Object.defineProperty(USC_BT.att, 1, {get(){ let b = null; try{ b = (typeof FASCIA !== 'undefined' && FASCIA) || brandOf(); }catch(e){} return BR_ATT[b] || '#25734e'; }, enumerable:true, configurable:true}); }catch(e){}
 const USC_PALS=[['sveglia','Sveglia','ginnastica, igiene'],['pasto','Colazione','',{pasto:'colazione',dur:45}],['cerim','Cerimonia','Alzabandiera, Quadrato, ecc.'],['att','Attività','dalla programmazione'],['mf','Momento formativo','da una scheda, scritto da te'],['nuova','Attività nuova','gioco, tecnica, impresa…'],['hike','Hike','con link alla traccia'],['gioco','Gioco',''],['libero','Tempo libero','angolo di Pattuglia'],['pasto','Pranzo','',{pasto:'pranzo',dur:75}],['pasto','Merenda','',{pasto:'merenda',dur:20}],['pasto','Cena','',{pasto:'cena',dur:75}],['pasto','Altro pasto','nome a scelta',{pasto:'__x',dur:45}],['serata','Fuoco di bivacco','serata, veglia'],['riposo','Silenzio','e notte'],['sposta','Spostamento','pullman, cammino'],['mio','Blocco tuo','nome e colore a scelta']];
-const USC_F={sch:'Il momento (scopo, passi e tempi)',trip:'Viaggio',scal:'Scaletta',desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce'};
+const USC_F={sch:'Il momento (scopo, passi e tempi)',trip:'Viaggio',scal:'Scaletta',desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',lsn:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce'};
 const USC_FALL=['desc','scal','mat','sic','ben','pb','link','obj','chi'];
 const USC_HIDSET=new WeakSet();
 const USC_GRP=k=>({mf:'Attività',att:'Attività',nuova:'Attività',hike:'Attività',gioco:'Attività',pasto:'Pasti',libero:'Tempo libero',cerim:'Cerimonie e serate',serata:'Cerimonie e serate'})[k]||'Altro';
@@ -9087,7 +9126,7 @@ const USC_SCHEMI={tipo:[['sveglia','Sveglia e ginnastica',30],['pasto','Colazion
   arrivo:[['sposta','Viaggio',90],['libero','Sistemazione',60],['cerim','Quadrato di apertura',30],['gioco','Gioco di ambientazione',120],['pasto','Cena',75,{pasto:'cena'}],['serata','Fuoco di bivacco',90],['riposo','Silenzio',30]],
   rientro:[['sveglia','Sveglia',30],['pasto','Colazione',45,{pasto:'colazione'}],['nuova','Verifica in Pattuglia',90],['libero','Pulizie e smontaggio',120],['cerim','Quadrato di chiusura',30],['pasto','Pranzo',45,{pasto:'pranzo'}],['sposta','Rientro',90]]};
 function uscOn(){ return MODE==='giovani'||MODE==='staff'; }
-function uscSt(){ return MODE==='staff'; }
+function uscSt(){ if(MODE==='staff') return true; try{ const u=(typeof USC_CUR!=='undefined'&&USC_CUR)?uscGet(USC_CUR):null; return !!(u&&u.dest==='staff'); }catch(e){ return false; } }
 function uscCan(){ return !window.BRO; }
 function uscFull(){ try{ return typeof CL==='undefined'||!CL.ctx||!CL.ctx.ruolo||CL.ctx.ruolo==='cotitolare'; }catch(e){ return true; } }
 function uscRes(u){ return !!(uscSt()&&u&&u.riservata&&!uscFull()); }
@@ -9203,11 +9242,12 @@ function uscSetTitle(v){ const u=uscCur(); if(!u) return; u.testo=String(v||'').
 
 // ── Tipo di attività (dai manuali di Branca) accanto al Formato (Riunione, Uscita, Bivacco, Campo): contestualizza senza vincolare; «Altro» è libero ──
 const USC_TIPI_B = {
-  L:['Riunione in Tana', 'Caccia', 'Caccia con pernotto', 'Vacanze di Branco', 'Consiglio di Akela', 'Passaggi di Branca'],
-  E:['Riunione di Reparto', 'Uscita di Reparto', 'Bivacco', 'Campo', 'Consiglio di Reparto / Plancia', 'Consiglio della Legge', 'Consiglio di Pattuglia', 'Missione', 'Impresa', 'Alta Pattuglia', 'Gara'],
-  R:['Riunione di Compagnia', 'Consiglio di Compagnia', 'Attività di Ronda', 'Hike', 'Servizio', 'Estate Rover', 'Officine e CIR']
+  // dai manuali di Branca (L «Attorno alla Rupe», E «Trova la Quadra», R «Guiderà la sua Canoa»), compresi i calendari annuali
+  L:['Riunione in Tana', 'Caccia', 'Caccia con pernotto', 'Vacanze di Branco invernali', 'Vacanze di Branco estive', 'Vacanze di Branco', 'Consiglio di Akela', 'Accoglienza dei Cuccioli', 'Percorso Promessa', 'Cerimonia della Promessa', 'Cerimonia di PO o PV', 'Passaggi di Branca', 'Corsa di Primavera', 'Gioco o Racconto Giungla', 'Fiutiamo la Preda'],
+  E:['Riunione di Reparto', 'Uscita di Reparto', 'Bivacco', 'Campo invernale', 'Campo estivo', 'Campo', 'Consiglio di Reparto / Plancia', 'Consiglio della Legge', 'Consiglio di Pattuglia', 'Missione', 'Impresa', 'Alta Pattuglia', 'Gara', 'Hike di Pattuglia o di Reparto', 'Veglia', 'Grande gioco', 'Percorso Promessa', 'Cerimonia della Promessa', 'Cerimonia dei passaggi', 'Cerimonia di nomina dei Capi Pattuglia', 'Consegna di specialità e tracce', 'Passaggi di Branca', 'Corso Capi Pattuglia'],
+  R:['Riunione di Compagnia', 'Consiglio di Compagnia', 'Consiglio d’Autunno', 'Consiglio d’Inverno', 'Consiglio di Primavera', 'Consiglio d’Estate', 'Attività di Ronda', 'Hike', 'Servizio', 'Rover in Servizio', 'Campo Invernale (Inverno Rover)', 'Pasqua Rover', 'Settimana di Convivenza', 'Estate Rover', 'Officine e CIR', 'Percorso Promessa', 'Rinnovo della Promessa', 'Percorso Partenza (tappa)', 'Riflessione sul Cammino', 'Autoprogrammazione Rover']
 };
-const USC_TIPI_ALL = ['Attività di Gruppo o Sezione', 'Evento regionale o nazionale', 'Attività di staff'];
+const USC_TIPI_ALL = ['Giornata del Pensiero', 'San Giorgio', 'Riunione con i genitori', 'Attività di Gruppo o Sezione', 'Evento regionale o nazionale', 'Attività di staff'];
 const USC_TIPI_ST = ['Attività formativa', 'Riunione di staff', 'Uscita di staff', 'Bivacco di staff'];
 function uscTipi(){ return uscSt() ? USC_TIPI_ST.slice() : (USC_TIPI_B[FASCIA] || []).concat(USC_TIPI_ALL); }
 function uscTipoLab(u){ const t = u && u.tipo; if(!t) return ''; return t === '__altro' ? String(u.tipoAltro || '').trim() || 'Altro' : t; }
@@ -9304,6 +9344,44 @@ function uscMoveHTML(k,m){ const S=uscSuggest(m); const O=m.obj||{}; const P=O.p
 function percProvAdd(per,K,key,aid){ if(!per||!aid) return; if(!per[K]) per[K]={}; const L=per[K][key]||(per[K][key]=[]); if(!L.includes(aid)) L.push(aid); }
 function percProvForget(per,kind,i){ if(!per) return; if(kind==='o'&&per.provO) delete per.provO[i]; if(kind==='i'&&per.provI){ delete per.provI['p'+i]; delete per.provI['s'+i]; } }
 function percProvForgetPri(priIdx,kind,i){ try{ getAllPercorsi().forEach(per=>{ if(per&&per.prioritaIdx===priIdx) percProvForget(per,kind,i); }); }catch(e){} }
+
+// ── Obiettivi e Indicatori propri di ogni attività del percorso, e «Sposta in un altro percorso» ──
+function percProvDrop(per,kind,q,aid){ if(!per||!aid) return; const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null;
+  if(kind==='o'){ const M=per.provO||{}; const L=M[q]; if(!L) return; const n=L.indexOf(aid); if(n<0) return; L.splice(n,1); if(L.length) return; delete M[q]; if(per.obiettiviExtra) per.obiettiviExtra=per.obiettiviExtra.filter(z=>z!==q); if(pr&&pr.obiettivi) pr.obiettivi=pr.obiettivi.filter(z=>z!==q); }
+  else { const N=per.provI||{}; ['p'+q,'s'+q].forEach(key=>{ const L=N[key]; if(!L) return; const n=L.indexOf(aid); if(n<0) return; L.splice(n,1); if(L.length) return; delete N[key]; if(key[0]==='p'){ if(pr&&pr.idr) pr.idr=pr.idr.filter(z=>z!==q); } else if(per.idrSelezionati) per.idrSelezionati=per.idrSelezionati.filter(z=>z!==q); }); } }
+function attObjAdd(per,a,kind,q){ const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null;
+  if(kind==='o'){ const has=(per.obiettiviExtra||[]).includes(q)||((pr&&pr.obiettivi)||[]).includes(q); if(!has){ per.obiettiviExtra=(per.obiettiviExtra||[]).concat([q]); if(pr){ if(!pr.obiettivi) pr.obiettivi=[]; pr.obiettivi.push(q); } percProvAdd(per,'provO',q,a.aid); } }
+  else { const inPr=!!(pr&&pr.idr&&pr.idr.length); const L=inPr?pr.idr:(per.idrSelezionati||(per.idrSelezionati=[])); if(!L.includes(q)){ L.push(q); percProvAdd(per,'provI',(inPr?'p':'s')+q,a.aid); } } }
+function attObjHTML(p,j,a){
+  try{ const per=getAllPercorsi()[p]; if(!per||!per.percorsoId) return ''; const P=Object.values(DB).flat().find(q=>q.id===per.percorsoId); if(!P) return '';
+    const can=!window.BRO; const O=a.obj||{o:[],i:[]}; const X=uscPercObj(per); const inO=new Set(X.o.map(o=>o.k)), inI=new Set(X.i.map(o=>o.k));
+    const ob=(P.obiettivi||[]).map((t,q)=>({k:q,t})).sort((x,y)=>(inO.has(y.k)-inO.has(x.k))||x.k-y.k);
+    const id=(P.idr||[]).map((t,q)=>({k:q,t})).sort((x,y)=>(inI.has(y.k)-inI.has(x.k))||x.k-y.k);
+    const so=O.o||[], si=O.i||[]; const n=so.length+si.length;
+    const row=(kind,o,sel,inP)=>`<label class="ax-check usc-objl"><input type="checkbox" ${sel.includes(o.k)?'checked':''} ${can?'':'disabled'} onchange="attObjTog(${p},${j},'${kind}',${o.k},this.checked)"> <span>${sEsc(o.t)}${inP.has(o.k)?' <span class="usc-inp">nel percorso</span>':''}</span></label>`;
+    const others=getAllPercorsi().map((q,i)=>({q,i})).filter(z=>z.q&&z.q.percorsoId&&z.i!==p);
+    const mv=(can&&others.length)?`<label class="usc-lb" style="max-width:420px;margin-top:8px"><span class="usc-lt" style="white-space:normal">Sposta in un altro percorso <span class="ax-opt">testo e date restano; gli obiettivi e gli Indicatori vanno scelti di nuovo</span></span><select class="ax-in" onchange="if(this.value!=='')attMove(${p},${j},this.value)"><option value="">scegli…</option>${others.map(z=>`<option value="${z.i}">${sEsc(typeof uscPercLabel==='function'?uscPercLabel(z.q,z.i):('Percorso '+(z.i+1)))}</option>`).join('')}</select></label>`:'';
+    return `<details class="att-obj" ${n?'':'open'}><summary>Obiettivi e Indicatori di questa attività<b style="font-weight:700;color:var(--green)">${n?' · '+n+(n===1?' scelta':' scelte'):''}</b></summary>
+      <div class="ax-hint" style="margin:4px 0">Scegli su quali obiettivi e Indicatori di Risultato lavora questa attività, tra quelli del percorso «${sEsc(P.name)}». Se ne scegli uno che il percorso non aveva, entra nel percorso; se la togli, esce.</div>
+      <div class="ax-sub">Obiettivi</div>${ob.map(o=>row('o',o,so,inO)).join('')}
+      ${id.length?`<div class="ax-sub">Indicatori di Risultato</div>${id.map(o=>row('i',o,si,inI)).join('')}`:''}${mv}</details>`;
+  }catch(e){ return ''; } }
+function attObjTog(p,j,kind,q,on){ const per=getAllPercorsi()[p]; if(!per||!per.attivita||!per.attivita[j]) return; attIdsEnsure(per); const a=per.attivita[j];
+  if(!a.obj||typeof a.obj!=='object') a.obj={o:[],i:[]}; if(!Array.isArray(a.obj.o)) a.obj.o=[]; if(!Array.isArray(a.obj.i)) a.obj.i=[];
+  const A=kind==='o'?a.obj.o:a.obj.i; const n=A.indexOf(q);
+  if(on){ if(n<0) A.push(q); attObjAdd(per,a,kind,q); if(kind==='i'){ const x=a.ax=a.ax||{}; if(!x.oss) x.oss={}; if(!x.oss[q]) x.oss[q]={on:true,chi:''}; } }
+  else { if(n>=0) A.splice(n,1); percProvDrop(per,kind,q,a.aid); if(kind==='i'&&a.ax&&a.ax.oss&&a.ax.oss[q]) delete a.ax.oss[q]; }
+  saveData(true); try{ renderValuation(); }catch(e){} try{ if(typeof uscRe==='function') uscRe(); }catch(e){} try{ if(typeof calRe==='function') calRe(); }catch(e){} }
+// sposta un'attività in un altro percorso: testo, date, materiali restano; gli obiettivi e gli Indicatori appartengono al percorso e vanno scelti di nuovo
+function attMove(p,j,to){ to=Number(to); if(isNaN(to)||to===p) return; const L=getAllPercorsi(); const src=L[p], dst=L[to]; if(!src||!dst||!dst.percorsoId||!src.attivita||!src.attivita[j]) return;
+  const a=src.attivita[j]; const nm=(a.testo||'').trim()||'questa attività'; const dn=(()=>{ try{ return uscPercLabel(dst,to); }catch(e){ return 'Percorso '+(to+1); } })();
+  if(!confirm('Spostare «'+nm+'» in «'+dn+'»?\n\nTesto, date e materiali restano. Gli obiettivi e gli Indicatori scelti per l’attività si tolgono: nel nuovo percorso li scegli di nuovo.')){ renderValuation(); return; }
+  attIdsEnsure(src); attIdsEnsure(dst); const aid=a.aid;
+  percProvRelease(src,aid); src.attivita.splice(j,1); if(Array.isArray(src.attOrder)) src.attOrder=src.attOrder.filter(z=>z!==aid);
+  a.obj={o:[],i:[]}; if(a.ax&&a.ax.oss) delete a.ax.oss;
+  if(!dst.attivita) dst.attivita=[]; dst.attivita.push(a); if(Array.isArray(dst.attOrder)) dst.attOrder=dst.attOrder.concat([aid]);
+  try{ uscListAll().forEach(u=>Object.values(u.prog||{}).forEach(m=>{ if(m&&m.k==='att'&&m.aid===aid&&m.pid===src.percorsoId) m.pid=dst.percorsoId; })); }catch(e){}
+  saveData(true); showToast('Spostata in «'+dn+'»: scegli ora gli obiettivi e gli Indicatori'); try{ renderValuation(); }catch(e){} try{ if(typeof calRe==='function') calRe(); }catch(e){} }
 function percProvRelease(per,aid){ if(!per||!aid) return; const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null;
   const M=per.provO||{}; Object.keys(M).forEach(i=>{ const L=M[i]; const n=L.indexOf(aid); if(n<0) return; L.splice(n,1); if(L.length) return; delete M[i]; const ix=Number(i);
     if(per.obiettiviExtra) per.obiettiviExtra=per.obiettiviExtra.filter(q=>q!==ix); if(pr&&pr.obiettivi) pr.obiettivi=pr.obiettivi.filter(q=>q!==ix); });
@@ -9320,7 +9398,7 @@ function uscToSez3(k,idx){ const u=uscCur(); const m=uscBlk(k); if(!u||!m||!uscC
     (O.i||[]).forEach(i=>{ const inPr=!!(pr&&pr.idr&&pr.idr.length); const L=inPr?pr.idr:(per.idrSelezionati||(per.idrSelezionati=[])); if(!L.includes(i)){ L.push(i); addI.push((inPr?'p':'s')+i); } }); }
   if(!per.attivita) per.attivita=[]; const A=per.attivita; const empty=a=>a&&!['testo','lancio','sviluppo','conclusione'].some(q=>(a[q]||'').trim())&&!(a.ax&&Object.keys(a.ax).length);
   let j=A.findIndex(empty); if(j<0){ A.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); j=A.length-1; }
-  const a=A[j]; attIdsEnsure(per); addO.forEach(o=>percProvAdd(per,'provO',o,a.aid)); addI.forEach(k=>percProvAdd(per,'provI',k,a.aid)); a.testo=uscBlkTitle(m); if((m.desc||'').trim()) a.sviluppo=m.desc;
+  const a=A[j]; attIdsEnsure(per); addO.forEach(o=>percProvAdd(per,'provO',o,a.aid)); addI.forEach(k=>percProvAdd(per,'provI',k,a.aid)); a.obj={o:O.pid===per.percorsoId?(O.o||[]).slice():[],i:O.pid===per.percorsoId?(O.i||[]).slice():[]}; a.testo=uscBlkTitle(m); if((m.desc||'').trim()) a.sviluppo=m.desc;
   const x=a.ax=a.ax||{}; const iso=uscDayIso(u,Number(m.g)||1); if(iso) x.data=iso;
   const bm=uscBM(u,k); if(m.f.includes('mat')&&bm.length){ x.mat=(x.mat||[]).concat(JSON.parse(JSON.stringify(bm))); }
   if(u.ax.bm) delete u.ax.bm[k];
@@ -9799,6 +9877,7 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
   if(USC_MOVE===k) h+=uscMoveHTML(k,m);
   return h+`</div></div>`; }
 function uscFieldHTML0(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.ax; const N=axN(x);
+  if(fk==='lsn'){ const LS=[['Lancio','lan','Come si apre l’attività: cosa dici o proponi per partire'],['Sviluppo','svi','Cosa fanno i ragazzi, passo per passo'],['Conclusione','con','Come si chiude e cosa si riprende insieme']]; return uscFld(k,fk,can,LS.map(([l,q,ph])=>`<label class="ax-sub">${l}</label><textarea class="ax-ta" style="min-height:52px" ${ro} placeholder="${ph}" oninput="uscBlkSet('${k}','${q}',this.value)">${uscE(m[q])}</textarea>`).join('')); }
   if(fk==='lsc'){ if(!f){ if(!can) return uscFld(k,fk,can,'<div class="ax-hint">Nessuna attività scelta.</div>');
       const L=getAllPercorsi(); let h='', any=false;
       L.forEach((per,idx)=>{ if(!per||!per.percorsoId) return; const PI=uscPercInfo(per,idx); const A=per.attivita||[]; const items=attOrd(per,Math.max(3,A.length)).filter(j=>A[j]&&['testo','lancio','sviluppo','conclusione'].some(q=>(A[j][q]||'').trim()));
@@ -9836,6 +9915,7 @@ function uscPrintBlk(u,o,T,full){ const m=o.m, t=T&&T[o.k]; const f=m.k==='att'?
   const P=(l,v)=>(v||'').trim()?`<p><b>${l}:</b> ${E(v).replace(/\n/g,'<br>')}</p>`:'';
   uscFOrd(m).forEach(fk=>{
     if(fk==='lsc'){ if(f) h+=P('Lancio',f.a.lancio)+P('Sviluppo',f.a.sviluppo)+P('Conclusione',f.a.conclusione); }
+    else if(fk==='lsn') h+=P('Lancio',m.lan)+P('Sviluppo',m.svi)+P('Conclusione',m.con);
     else if(fk==='desc') h+=P('Cosa si fa',m.desc);
     else if(fk==='sch') h+=P('A cosa serve',m.mfScopo)+(uscScalRows(u,o,T).length?'':P('Passi e tempi',m.mfPassi))+P('Domande per ripensarci',m.mfDom)+P('Attenzioni',m.mfAtt);
     else if(fk==='scal'){ const R=uscScalRows(u,o,T); if(R.length) h+=`<p><b>Scaletta:</b></p><table class="tt">${R.map(r=>`<tr><td class="h">${E(r.h)}${r.dur?' ('+r.dur+'′)':''}</td><td>${E(r.cosa)}${r.chi?' · '+E(String(r.chi).replace(/\s*\([^)]*\)\s*$/,'')):''}</td></tr>`).join('')}</table>`; }
@@ -10112,6 +10192,7 @@ async function uscExport(kind,arg){ const u=uscCur(); if(!u) return; try{ docume
   const ttDay=g=>{ const T=uscTimes(u,g); const R=uscBlocks(u,g); if(!R.length){ ch.push(dNote('Nessun momento in programma.')); return; } ch.push(dTTWord(uscTTModel(u,g))); };
   const blk=(o,T)=>{ const m=o.m, t=T[o.k]; const f=m.k==='att'?uscAttFind(m):null; const rows=[];
     if(f) [['Lancio',f.a.lancio],['Sviluppo',f.a.sviluppo],['Conclusione',f.a.conclusione]].forEach(r=>{ if((r[1]||'').trim()) rows.push(r); });
+    if(m.f.includes('lsn')) [['Lancio',m.lan],['Sviluppo',m.svi],['Conclusione',m.con]].forEach(r=>{ if((r[1]||'').trim()) rows.push(r); });
     if(m.f.includes('desc')&&(m.desc||'').trim()) rows.push(['Cosa si fa',m.desc]);
     if(m.k==='mf') [['A cosa serve',m.mfScopo],['Passi e tempi',m.mfPassi],['Domande per ripensarci',m.mfDom],['Attenzioni',m.mfAtt]].forEach(r=>{ if((r[1]||'').trim()) rows.push(r); });
     if(m.k==='pasto'){ const M=uscMeals(x,Number(m.g)||1,m.pasto||'pranzo'); if(M.length) rows.push(['Menù',M.join('\n')]); }
@@ -10166,18 +10247,18 @@ function uscAttMig(u,k,m){ if(m._mig) return; const f=uscAttFind(m); if(!f) retu
 // campi dei blocchi: chiusi, con un riassunto; si aprono a richiesta
 let USC_FOPEN={};
 // Posizione dei moduli dentro un'attività: ordine fisso e logico (come si legge il foglio del giorno), riordinabile con le frecce.
-const USC_FBASE=['trip','sch','desc','lsc','menu','scal','obj','mat','sic','ben','pb','link'];
+const USC_FBASE=['trip','sch','desc','lsc','lsn','menu','scal','obj','mat','sic','ben','pb','link'];
 function uscFOrd(m){ if(!m) return []; const F=(m.k==='att'?USC_ATTF:(m.f||[])).filter(f=>f!=='chi'); const ci=f=>{ const i=USC_FBASE.indexOf(f); return i<0?99:i; };
   let order=Array.isArray(m.fo)?m.fo.filter(f=>F.includes(f)):[];
   if(!order.length&&!Array.isArray(m.fo)) return F.slice().sort((a,b)=>ci(a)-ci(b));
   F.forEach(f=>{ if(order.includes(f)) return; const at=order.findIndex(o=>ci(o)>ci(f)); if(at<0) order.push(f); else order.splice(at,0,f); }); return order; }
 function uscFldMove(k,f,dir){ const m=uscBlk(k); if(!m||!uscCan()) return; const O=uscFOrd(m); const i=O.indexOf(f), j=i+dir; if(i<0||j<0||j>=O.length) return; const t=O[i]; O[i]=O[j]; O[j]=t; m.fo=O.slice(); USC_OPEN[k]=true; uscSave(); uscRe(); setTimeout(()=>{ const e=document.querySelector('#usc-b-'+k+' .usc-fld[data-f="'+(m.k==='att'&&f!=='lsc'?'a:'+f:f)+'"]'); if(e) e.scrollIntoView({block:'nearest'}); },60); }
 function uscFldReset(k){ const m=uscBlk(k); if(!m) return; delete m.fo; uscSave(); uscRe(); }
-const USC_ATTF=['lsc','scal','mat','sic','ben','pb','link'];
+const USC_ATTF=['lsc','obj','scal','mat','sic','ben','pb','link'];
 function uscSumTxt(v,n){ v=String(v||'').replace(/\s+/g,' ').trim(); return v?uscE(v.length>(n||48)?v.slice(0,n||48)+'…':v):''; }
 // i campi di un'attività della Sezione 3: sono gli stessi della scheda nei percorsi (si scrive qui o lì, è la stessa cosa)
 function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=f.idx, j=f.j; const W=h=>`<div class="usc-axw" id="ax-${p}-${j}" data-usc="1">${h}</div>`; const N=axN(x);
-  const T={scal:'a:scal',mat:'a:mat',sic:'a:sic',ben:'a:ben',pb:'a:pb',link:'a:link'}[fk]; let sum='', inner='';
+  const T={scal:'a:scal',mat:'a:mat',sic:'a:sic',ben:'a:ben',pb:'a:pb',link:'a:link',obj:'a:obj'}[fk]; let sum='', inner='';
   try{
     if(fk==='scal'){ const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()); sum=S.length?S.length+(S.length===1?' momento':' momenti'):''; try{ const tb=uscTimes(u,Number(m.g)||1)[k]; if(tb&&Array.isArray(x.tt2)&&x.tt2.length&&x.tt2[0]){ const hm=axHM(tb.s); if(x.tt2[0].start!==hm){ x.tt2[0].start=hm; saveDataDebounced(); } } }catch(e){} inner=W(axDurante(p,j,a,x)); }
     else if(fk==='mat'){ const M=(x.mat||[]).filter(r=>(r.cosa||'').trim()); sum=M.length?M.map(r=>uscE(r.cosa)).slice(0,3).join(', ')+(M.length>3?'…':''):''; inner=W(axMat(p,j,a,x)); }
@@ -10185,6 +10266,7 @@ function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=
     else if(fk==='ben'){ sum=uscSumTxt(a.incRischi||a.incAzioni); inner=W(axBen(p,j,a,x)); }
     else if(fk==='pb'){ const n=Object.keys(x.pb||{}).filter(q=>(x.pb[q]||'').trim()).length; sum=n?n+(n===1?' situazione':' situazioni'):uscSumTxt(a.pianoB); inner=W(axPB2(p,j,a,x)); }
     else if(fk==='link'){ const n=attLinks(a).filter(l=>(l.u||'').trim()).length; sum=n?n+' link':''; inner=attLinksHTML(p,j,a); }
+    else if(fk==='obj'){ const O=a.obj||{}; const n=(O.o||[]).length+(O.i||[]).length; sum=n?n+(n===1?' scelta':' scelte'):''; inner=attObjHTML(p,j,a); }
   }catch(e){ console.error(e); inner='<div class="ax-hint">Non riesco a mostrare questa parte: aprila nella Sezione 3.</div>'; }
   if(!can) inner=inner.replace(/<(input|textarea|select|button)(?![^>]*\bdisabled)/g,'<$1 disabled');
   return uscFld(k,T,can,inner,sum); }
@@ -10287,6 +10369,7 @@ function uscFieldHTML(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.a
   return uscFieldHTML0(u,k,m,fk,f,I,can); }
 function uscFieldSum(m,fk,u,k){ const x=u.ax;
   if(fk==='pb'){ const n=AX_PB.filter(([q])=>((m.pbo||{})[q]||'').trim()).length; return n?n+(n===1?' situazione':' situazioni'):uscSumTxt(m.pb); }
+  if(fk==='lsn') return uscSumTxt([m.lan,m.svi].filter(Boolean).join(' · '));
   if(fk==='desc'||fk==='sic'||fk==='ben') return uscSumTxt(m[fk]);
   if(fk==='mat'){ const B=uscBM(u,k).filter(r=>(r.cosa||'').trim()); return B.length?B.map(r=>uscE(r.cosa)).slice(0,3).join(', ')+(B.length>3?'…':''):''; }
   if(fk==='link'){ const n=(m.links||[]).filter(l=>(l.u||'').trim()).length; return n?n+' link':''; }
@@ -10319,7 +10402,7 @@ function uscCostiAll(rows,tot,car,x){ return `${x?uscCatTblHTML(x):''}${rows.len
 
 function attExtraHTML(p,j,a){ const n=axFilledN(a); const anb=(MODE==='giovani'&&p!==USC_P&&!window.BRO)?`<div class="an-prop" style="${AN.st!=='no'&&typeof CL!=='undefined'&&CL&&CL.user?'':'display:none'}"><button type="button" class="btn-ghost ax-btn" onclick="anPropose(${p},${j})">📚 Proponi all’archivio nazionale</button> <span class="ax-opt">senza nomi, Unità e date, dopo una revisione</span></div>`:'';
   if(!document.getElementById('ax-food-dl')){ const dl=document.createElement('datalist'); dl.id='ax-food-dl'; dl.innerHTML=Object.keys(AX_FOOD).map(k=>`<option value="${k}">`).join(''); document.body.appendChild(dl); }
-  return anb+`<details class="att-extra"><summary>${OPT}Quando arriva il momento di organizzarla<b style="font-weight:700;color:var(--green)" id="ax-n-${p}-${j}">${n?' · '+n+' compilat'+(n===1?'a':'e'):''}</b><span class="ax-sumd">${(window.SH&&SH.on&&scheda.tipoProgetto!=='PP')?'Il cuore educativo dell’attività è già scritto in «Percorsi educativi».':'Il Progetto Personale chiede il cuore educativo dell’attività, che hai già scritto sopra.'} Qui trovi strumenti pratici per prepararla: usali solo se ti semplificano il lavoro.</span></summary><div id="ax-${p}-${j}" class="ax-body">${axBody(p,j)}</div></details>`; }
+  return anb+attObjHTML(p,j,a)+`<details class="att-extra"><summary>${OPT}Quando arriva il momento di organizzarla<b style="font-weight:700;color:var(--green)" id="ax-n-${p}-${j}">${n?' · '+n+' compilat'+(n===1?'a':'e'):''}</b><span class="ax-sumd">${(window.SH&&SH.on&&scheda.tipoProgetto!=='PP')?'Il cuore educativo dell’attività è già scritto in «Percorsi educativi».':'Il Progetto Personale chiede il cuore educativo dell’attività, che hai già scritto sopra.'} Qui trovi strumenti pratici per prepararla: usali solo se ti semplificano il lavoro.</span></summary><div id="ax-${p}-${j}" class="ax-body">${axBody(p,j)}</div></details>`; }
 
 // ── Word: scheda della singola attività ──
 async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
@@ -11384,8 +11467,8 @@ function renderSchedaB(root,selected){
           ${!(scheda.priorita[i].necessita||'').trim()&&(scheda._userEditedA||{})[a+'_neg']&&(scheda.osservazione[a].necessita||'').trim()?`<button type="button" class="oss-resync" style="margin:4px 0 0" onclick="priNec(${i},scheda.osservazione['${a}'].necessita);renderValuation()" title="Riprende le necessità educative che hai scritto per questo ambito nella 1.3">↓ Riprendi dalla 1.3 Lettura del gruppo</button>`:''}
         </div>
         <div style="margin-bottom:10px">
-          <label style="font-size:12px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Obiettivo di percorso PEE <span style="font-weight:400;color:var(--ink-faint)">(scegline 1)</span></label>
-          <div id="ob-warn-${i}" style="font-size:12px;color:#B26A00;margin:0 0 4px;${(scheda.priorita[i].obiettivi||[]).length>1?'':'display:none'}">ⓘ Le Linee Guida chiedono 1 obiettivo per priorità: se ne hai scelti più di uno, tieni quello principale.</div>
+          <label style="font-size:12px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Obiettivo di percorso PEE <span style="font-weight:400;color:var(--ink-faint)">${scheda.tipoProgetto==='PP'?'(scegline 1)':'(di norma 1 per priorità)'}</span></label>
+          <div id="ob-warn-${i}" style="font-size:12px;color:#B26A00;margin:0 0 4px;${(scheda.priorita[i].obiettivi||[]).length>1?'':'display:none'}">${scheda.tipoProgetto==='PP'?'ⓘ Le Linee Guida chiedono 1 obiettivo per priorità: se ne hai scelti più di uno, tieni quello principale.':'ⓘ La Scheda di Programmazione indica un obiettivo di percorso per ogni priorità; il manuale PEE prevede tre obiettivi prioritari (uno per Ambito) più altri di secondaria importanza. Se ne scegli più di uno, valuta qual è il principale.'}</div>
           ${(p.obiettivi||[]).map((o,j)=>`<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12px;cursor:pointer">
             <input type="checkbox" style="margin-top:2px;flex-shrink:0" ${(scheda.priorita[i].obiettivi||[]).includes(j)?'checked':''}
               onchange="toggleObiettivo(${i},${j},this.checked);var w=document.getElementById('ob-warn-${i}');if(w)w.style.display=(scheda.priorita[${i}].obiettivi||[]).length>1?'':'none';saveDataDebounced()">
@@ -11464,7 +11547,7 @@ function renderSchedaC(root,selected){
 
     const pcN = (per.attivita||[]).filter(x => ['testo','lancio','sviluppo','conclusione'].some(k => (x[k]||'').trim())).length;
     const pcOpen = !!(window._pcOpen && window._pcOpen[idx]);
-    html+=`<div id="pc-card-${idx}" class="pcx${pcOpen?'':' closed'}" style="border:1px solid var(--border-light);border-radius:var(--radius);margin-bottom:16px;overflow:hidden">
+    html+=`<div id="pc-card-${idx}" data-a="${a||''}" class="pcx${pcOpen?'':' closed'}" style="border:1px solid var(--border-light);border-radius:var(--radius);margin-bottom:16px;overflow:hidden">
       <div class="pcx-hd" onclick="pcxToggle(${idx})" style="background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;cursor:pointer">
         <span class="pcx-chev" aria-hidden="true">▼</span>
         <span style="font-weight:800;font-size:14px;flex:1">${percorsoLabel}<small class="pcx-sum">${pcN ? pcN + (pcN===1?' attività scritta':' attività scritte') : 'da iniziare'}</small></span>
@@ -11591,6 +11674,7 @@ function renderSchedaC(root,selected){
             <label style="${SC_LBL}">Conclusione <span style="font-weight:400;color:var(--ink-faint)">— compresa l'eventuale rielaborazione</span></label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
             ${scheda.tipoProgetto==='PP'?'<div class="ax-hint" style="margin-top:6px">Se vuoi richiamare un materiale (Drive, Canva, video…), scrivi qui sopra il link: nel Word diventa cliccabile.</div>':(window.SH&&SH.on?'<div class="ax-hint" style="margin-top:6px">Qui progetti il cuore educativo. Allegati, materiali, logistica e archivio nazionale si gestiscono in <button type="button" class="sh-lk" onclick="shCal()">Calendario e attività</button>.</div>':attLinksHTML(idx,j,att))}
+            ${(scheda.tipoProgetto!=='PP'&&window.SH&&SH.on)?attObjHTML(idx,j,att):''}
             ${(scheda.tipoProgetto==='PP'||(window.SH&&SH.on))?'':attExtraHTML(idx,j,att,`<div style="display:flex;gap:8px;align-items:center;margin-top:2px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:12px;flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>`)}
           </details>`; }).join('')}
         <button class="btn-ghost" style="font-size:12px;margin-top:4px;border-style:dashed" onclick="attAdd(${idx})">+ Aggiungi attività</button>
@@ -15495,8 +15579,8 @@ async function clRename(id){
     clRenderArchive();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
-async function clDelete(id){
-  if(!confirm('Eliminare questo progetto?\n\nVa nel cestino dell’archivio e resta recuperabile per '+CL_TRASH_DAYS+' giorni; poi viene cancellato definitivamente.')) return;
+async function clDelete(id, msg){
+  if(!confirm(msg || ('Eliminare questo progetto?\n\nVa nel cestino e resta recuperabile per '+CL_TRASH_DAYS+' giorni; poi viene cancellato definitivamente.'))) return;
   try{ await dbTrash(id); clToast('Spostato nel cestino: lo puoi recuperare per '+CL_TRASH_DAYS+' giorni'); }catch(e){ clToast('Errore: '+clErr(e)); return; }
   if(CL.ctx && CL.ctx.id === id){
     // era il progetto aperto: tolgo anche la copia di lavoro di questo dispositivo, così un nuovo progetto parte pulito
@@ -15505,7 +15589,7 @@ async function clDelete(id){
     try{ localStorage.removeItem(CL_LS); clBaseSet({}); CL.pending = false; sessionStorage.removeItem('bussola_autoresume'); sessionStorage.setItem('bussola_opened_msg', 'Progetto eliminato. Scegli da dove ripartire: puoi aprirne un altro dall’archivio o iniziarne uno nuovo.'); }catch(e){}
     appReload(); return;
   }
-  clRenderArchive();
+  if(!(window.SH && SH.on)) clRenderArchive();
 }
 function clDetach(){ CL.ctx = null; clSaveCtx(); clSetStatus(''); if($cl('cl-ov').classList.contains('show') && CL.user) clRenderArchive(); }
 window.cloudDetach = clDetach;
@@ -15876,6 +15960,27 @@ body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
 .sh-pr .t{font-weight:800}
 .sh-pr .s{font-size:12px;color:#5f5f58;margin-top:2px;line-height:1.4}
 .sh-pr.act{border:2px solid var(--green)}
+.sh-vg{margin:22px 0 10px}.sh-vh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--green);padding-bottom:6px;margin-bottom:10px}.sh-vh h2{margin:0;font-size:18px}.sh-vh span{font-size:13px;color:#5f5f58;font-weight:600}
+.sh-an{margin:10px 0 12px;padding:10px 12px 12px;border:1px solid #D8D8D0;border-radius:14px;background:#F6F6F1;display:grid;gap:8px}.sh-anh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}.sh-anh small{display:block;font-size:12px;color:#5f5f58;line-height:1.4;max-width:62ch}
+.sh-disc{background:#FFF8E6;border:1px solid #F0DFAF;border-radius:12px;padding:10px 14px;margin:0 0 14px}.sh-disc summary{cursor:pointer;font-weight:800;font-size:14px;display:flex;flex-direction:column;gap:2px}.sh-disc summary span{font-weight:500;font-size:12px;color:#5f5f58}.sh-disc-in h4{margin:12px 0 2px;font-size:13px}.sh-disc-in p{margin:0;font-size:13px;line-height:1.55}
+.st-ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.st-ins>div{border:1px solid #D8D8D0;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:#F6F6F1}.st-ins b{font-size:13px}.st-ins span{font-size:12.5px;color:#3D3D38}
+.cal-mese{margin:0 0 14px}.cal-mese h3{margin:0 0 6px;font-size:15px;text-transform:none}
+.cal-row{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;background:#fff;border:1px solid #D8D8D0;border-left:5px solid var(--c);border-radius:10px;padding:8px 10px;margin:0 0 6px}
+.cal-row.cal-stf{background:repeating-linear-gradient(135deg,#F3F6FB 0 8px,#fff 8px 16px);border-style:dashed;border-left-style:solid}
+.cal-rd{display:flex;flex-direction:column;align-items:center;line-height:1.1}.cal-rd b{font-size:20px}.cal-rd small{font-size:11px;color:#5f5f58}
+.cal-rm{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;padding:4px 2px}.cal-rm:focus-visible{outline:3px solid var(--brand-ink,#1B5E42);outline-offset:2px;border-radius:6px}.cal-rm b{font-size:14.5px}.cal-meta{font-size:12px;color:#5f5f58}
+.cal-chs{display:flex;gap:6px;flex-wrap:wrap}.cal-fo{font-size:11px;font-weight:800;border-radius:999px;padding:1px 8px;border:1px solid}.cal-fo.uni{color:#1B5E42;border-color:#1B5E42;background:#E6F3EC}.cal-fo.stf{color:#1d4f8f;border-color:#1d4f8f;background:#E4ECF7}
+.cal-ra{display:flex;gap:6px;flex-wrap:wrap}.cal-del{color:#9a2020}
+.cal-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:0 0 10px;align-items:center}.cal-leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}.cal-leg em{font-style:normal}
+.cal-for-f{border:0;padding:0;margin:0;display:flex;gap:16px;flex-wrap:wrap;flex:1 1 100%}.cal-for-f legend{padding:0}.cal-for-f label{font-size:13px;display:flex;gap:6px;align-items:center}
+.ele-vw{display:flex;gap:8px;margin:0 0 10px}.ele-t tr{border-left:4px solid var(--c,transparent)}.ele-t tr.ele-s{background:repeating-linear-gradient(135deg,#F3F6FB 0 8px,#fff 8px 16px)}
+@media(max-width:640px){.cal-row{grid-template-columns:44px minmax(0,1fr)}.cal-ra{grid-column:1/-1}}
+.cal-chks{background:#F3F6FB;border:1px solid #cdd8ea;border-radius:12px;padding:8px 12px;margin:0 0 12px}.cal-chks summary{cursor:pointer;font-weight:800;font-size:13.5px}.cal-chk{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px solid #dfe6f2;margin-top:6px}.cal-chk b{font-size:13px}
+body.sh-in[data-pca="P"] .pcx[data-a]:not([data-a="P"]):not([data-a=""]),
+body.sh-in[data-pca="C"] .pcx[data-a]:not([data-a="C"]):not([data-a=""]),
+body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display:none}
+.vis-dot.vis-ev{border-radius:2px;width:10px;height:10px;transform:translateX(-5px)}.vis-dot.vis-ev.stf{outline:2px dashed #1d4f8f;outline-offset:1px}
+.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
 .sh-tag{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
 .sh-tag.L{background:#f7f19a}.sh-tag.E{background:#d7ecdf}.sh-tag.R{background:#f8c9c7}.sh-tag.X{background:#e3e8f2}
 .sh-role{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;border:1px solid #8a8a82;color:#3D3D38;background:#fff;white-space:nowrap}
@@ -15931,7 +16036,16 @@ function annoScoutTxt(y){ return y + '-' + String((y + 1) % 100).padStart(2,'0')
 SH.annoScoutStart = annoScoutStart; SH.annoScoutTxt = annoScoutTxt;
 
 // ── colore dal profilo: E verde, L giallo, R rosso; Capo Gruppo, Commissario e chi non indica la Branca: blu. Vale per tutta l'app ──
-function brandOf(p){ p = p || SH.prof; if(!p || !profOk(p)) return null; if(noBranca(p.ruolo)) return 'S'; return BRANCHE.indexOf(p.branca) >= 0 ? p.branca : 'S'; }
+function brandProj(){
+  try{
+    if(!(CL && CL.ctx) || typeof MODE === 'undefined' || !MODE) return null;
+    const v = (typeof scheda !== 'undefined' && scheda && scheda.veste) || null;
+    if(MODE === 'staff'){ if(STAFF_RUOLO === 'CG' || (v && noBranca(v.ruolo))) return 'S'; return BRANCHE.indexOf(FASCIA) >= 0 ? FASCIA : null; }
+    if(BRANCHE.indexOf(FASCIA) >= 0) return FASCIA;
+  }catch(e){}
+  return null;
+}
+function brandOf(p){ if(!p && !SH.view){ const bp = brandProj(); if(bp) return bp; } p = p || SH.prof; if(!p || !profOk(p)) return null; if(noBranca(p.ruolo)) return 'S'; return BRANCHE.indexOf(p.branca) >= 0 ? p.branca : 'S'; }
 function brandApply(){ const b = brandOf(); if(b === null) return; const bd = document.body; if(bd.getAttribute('data-theme') !== b) bd.setAttribute('data-theme', b); }
 SH.brand = brandOf; SH.brandApply = brandApply; window.shBrandNow = () => brandOf();
 // ── profilo (tabella pee_profili; copia sul dispositivo se il servizio non risponde) ──
@@ -16161,14 +16275,41 @@ window.shProfSubmit = async function(ev){
 window.shProfileOpen = function(){ SH._profEdit = true; try{ saveData(true); }catch(e){} show('profile', 'edit'); };
 
 // ── elenco progetti ──
-const tipoOf = m => (m && m.tipo) || (m && m.mode === 'staff' ? 'ST' : (m && m.mode === 'giovani' ? 'AN' : ''));
-const TIPO_TXT = {PP:'Progetto Personale', AN:'Programmazione Annuale', ST:'Staff (versione precedente)'};
+const tipoOf = m => (m && m.mode === 'staff' && (m.sruolo === 'CG' || (!m.sruolo && !m.fascia && m.tipo === 'AN'))) ? 'CG' : ((m && m.mode === 'staff' && !m.tipo) ? 'ST' : ((m && m.tipo) || (m && m.mode === 'staff' ? 'ST' : (m && m.mode === 'giovani' ? 'AN' : ''))));
+const TIPO_TXT = {PP:'Progetto Personale', AN:'Programmazione di Unità', ST:'Adulti dello staff', CG:'Adulti dello staff · Gruppo'};
 const brOf = m => (m && (m.fascia || m.branca)) || '';
+// ── veste: il ruolo con cui si crea un progetto (una persona può essere Capo Compagnia e Capo Gruppo). Sta in scheda.veste e nei metadati ──
+const UNITROLE = {L:'Capo Branco', E:'Capo Reparto', R:'Capo Compagnia'};
+const BN_FULL = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
+function vesteOf(m){
+  m = m || {}; const p = SH.prof || {};
+  let ruolo = m.vruolo, br = m.vbranca;
+  if(!ruolo){
+    if(m.mode === 'staff' && (m.sruolo === 'CG' || (!m.sruolo && !m.fascia))) ruolo = noBranca(p.ruolo) ? p.ruolo : 'cg';
+    else ruolo = noBranca(p.ruolo) ? 'cu' : (p.ruolo || 'cu');
+  }
+  if(br === undefined || br === null) br = noBranca(ruolo) ? '' : (m.fascia || m.branca || p.branca || '');
+  const sez = m.sez != null ? m.sez : (p.sezione || ''), gr = m.gr != null ? m.gr : (p.gruppo || '');
+  return {ruolo, branca: br, sezione: sez, gruppo: gr};
+}
+const vesteKey = m => { const v = vesteOf(m); return [v.ruolo, v.branca, v.sezione, v.gruppo].join('|'); };
+function vesteNome(v){
+  if(v.ruolo === 'cu' && v.branca) return UNITROLE[v.branca] || 'Capo Unità';
+  if(v.ruolo === 'vcu' && v.branca) return 'Vice ' + (UNITROLE[v.branca] || 'Capo Unità');
+  return RUOLO_TXT[v.ruolo] || 'Adulto';
+}
+function vesteSub(v){
+  const g = v.gruppo ? (/^\d+$/.test(v.gruppo) ? 'Gruppo ' + v.gruppo : (v.gruppo === 'unico' ? 'Monogruppo' : v.gruppo)) : '';
+  return [v.branca ? BN_FULL[v.branca] : '', v.sezione ? (/^sezione/i.test(v.sezione) ? v.sezione : 'Sezione ' + v.sezione) : '', g].filter(Boolean).join(' · ');
+}
+const isCiclo = m => !!m && m.mode === 'giovani' && (m.tipo || 'AN') === 'AN';
+Object.assign(window, {vesteOf, vesteKey, vesteNome, vesteSub, isCiclo, uniqueTitle, annoScoutTxt, annoScoutStart}); // usati anche dal secondo script del guscio
 function rowHTML(r, shared){
   const m = r.meta || {}; const t = tipoOf(m); const br = brOf(m);
   const act = CL.ctx && CL.ctx.id === r.id;
   const tit = esc(r.titolo);
-  const sub = shared ? 'Di ' + esc(r.owner || 'un’altra persona') : esc(m.nome || '') ;
+  const cyc = (isCiclo(m) && m.cn) ? esc(m.cn) + (m.cdal || m.cal ? ' (' + esc(tmRange(m.cdal, m.cal)) + ')' : '') : '';
+  const sub = shared ? 'Di ' + esc(r.owner || 'un’altra persona') : [cyc, esc(m.nome || '')].filter(Boolean).join(' · ');
   const ts = r.ts ? new Date(r.ts) : null; const hs = ts ? 'Modificato ' + dayTxt(ts) : '';
   const role = shared ? `<span class="sh-role">Il tuo ruolo: ${esc(SH_RUOLI_CLIENT[r.ruolo] || 'Lettore')}</span>` : `<span class="sh-role">Titolare</span>`;
   const tag = br ? `<span class="sh-tag ${br}">Branca ${esc(br)}</span>` : `<span class="sh-tag X">${t === 'ST' ? 'Staff' : 'Gruppo'}</span>`;
@@ -16182,6 +16323,37 @@ function dayTxt(d){
   if(diff <= 0) return 'oggi'; if(diff === 1) return 'ieri';
   return 'il ' + d.toLocaleDateString('it-IT', {day:'numeric', month:'long'});
 }
+function vesteListHTML(rows){
+  const groups = new Map();
+  rows.forEach(x => { const k = vesteKey(x.meta); if(!groups.has(k)) groups.set(k, {v:vesteOf(x.meta), rows:[]}); groups.get(k).rows.push(x); });
+  const pk = vesteKey({});
+  const arr = [...groups.entries()].sort((a, b) => ((b[0] === pk) - (a[0] === pk)) || vesteNome(a[1].v).localeCompare(vesteNome(b[1].v)));
+  return arr.map(([k, g]) => {
+    const others = g.rows.filter(x => !isCiclo(x.meta)); const byYear = {};
+    g.rows.filter(x => isCiclo(x.meta)).forEach(x => { (byYear[x.anno] = byYear[x.anno] || []).push(x); });
+    let h = `<section class="sh-vg" aria-label="Come ${esc(vesteNome(g.v))}"><div class="sh-vh"><h2>Come ${esc(vesteNome(g.v))}</h2><span>${esc(vesteSub(g.v))}</span></div>`;
+    Object.keys(byYear).sort((a, b) => b - a).forEach(y => {
+      const L = byYear[y].slice().sort((a, b) => String((a.meta || {}).cdal || '9').localeCompare(String((b.meta || {}).cdal || '9')) || (a.ts || 0) - (b.ts || 0));
+      h += `<div class="sh-an"><div class="sh-anh"><div><b>Programmazione di Unità · ${esc(annoScoutTxt(+y))}</b><small>${L.length === 1 ? 'Un ciclo' : L.length + ' cicli'}. Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi: ogni anno ne può avere più di uno.</small></div><button class="sh-btn sm" type="button" onclick="shCicloNuovo('${L[L.length - 1].id}')">+ Nuovo ciclo</button></div>${L.map(x => rowHTML(x, false)).join('')}</div>`;
+    });
+    h += others.map(x => rowHTML(x, false)).join('');
+    return h + `</section>`;
+  }).join('');
+}
+window.shCicloNuovo = function(id){ try{ sessionStorage.setItem('pee_want_nc', '1'); }catch(e){} shOpen(id, 0); };
+async function shLoadTrash(){
+  const box = $('sh-trash'); if(!box || !CL.sb || !CL.user) return;
+  let rows = []; try{ rows = (await dbTrashList()).filter(r => (r.meta || {}).mode !== 'anno'); }catch(e){ return; }
+  const lim = Date.now() - CL_TRASH_DAYS * 864e5;
+  for(const r of rows.filter(r => r.at && r.at < lim)){ try{ await dbDelete(r.id); }catch(e){} }
+  rows = rows.filter(r => !r.at || r.at >= lim); const b2 = $('sh-trash'); if(!b2) return;
+  if(!rows.length){ b2.innerHTML = ''; return; }
+  const fmt = ts => new Date(ts).toLocaleDateString('it-IT', {day:'numeric', month:'short', year:'numeric'});
+  b2.innerHTML = `<details class="sh-trash"><summary>Cestino · ${rows.length} ${rows.length === 1 ? 'elemento' : 'elementi'}</summary><p class="sh-hint">Progetti e cicli eliminati restano qui ${CL_TRASH_DAYS} giorni e si possono recuperare; poi vengono cancellati per sempre.</p>`
+    + rows.map(r => `<div class="sh-pr"><div style="min-width:0"><div class="t">${esc(r.anno)} · ${esc(r.titolo)}</div><div class="s">Eliminato il ${fmt(r.at)} · si cancella definitivamente il ${fmt(r.at + CL_TRASH_DAYS * 864e5)}</div></div><span></span><span></span><div class="sh-act"><button class="sh-btn sm" type="button" onclick="shTrashRestore('${r.id}')">Recupera</button><button class="sh-btn gh sm" type="button" onclick="shTrashKill('${r.id}')">Elimina ora</button></div></div>`).join('') + `</details>`;
+}
+window.shTrashRestore = async function(id){ try{ await dbRestoreTrash(id); clToast('Recuperato'); }catch(e){ clToast('Errore: ' + clErr(e)); return; } SH.rows = null; show('home'); };
+window.shTrashKill = async function(id){ if(!confirm('Eliminare per sempre? Non si potrà più recuperare.')) return; try{ await dbDelete(id); clToast('Eliminato per sempre'); }catch(e){ clToast('Errore: ' + clErr(e)); return; } shLoadTrash(); };
 async function homeHTML(){
   const r = $('sh-root');
   const draw = () => {
@@ -16198,10 +16370,10 @@ async function homeHTML(){
       </div><p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.</p>`;
     }else{
       h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1>I tuoi progetti</h1><button class="sh-btn" type="button" style="margin-left:auto" onclick="shNew()">+ Nuovo progetto</button></div>`;
-      h += rows.length ? rows.map(x => rowHTML(x, false)).join('') : '<p class="sh-sub">Non hai ancora progetti tuoi.</p>';
+      h += rows.length ? vesteListHTML(rows) : '<p class="sh-sub">Non hai ancora progetti tuoi.</p>';
       if(shr.length) h += `<h2>Condivisi con te</h2>` + shr.map(x => rowHTML(x, true)).join('');
     }
-    h += `</main>`; r.innerHTML = h;
+    h += `<div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shLoadTrash(); }catch(e){}
   };
   if(SH.rows) draw(); else r.innerHTML = top(true) + '<div class="sh-wrap"><p class="sh-sub" role="status">Carico i tuoi progetti…</p></div>';
   try{
@@ -16287,7 +16459,8 @@ window.shDupGo = async function(id){
   }catch(e){ showToast('Non riesco a duplicare: ' + clErr(e)); }
 };
 window.shDel = async function(id){
-  await clDelete(id);
+  const r0 = (SH.rows || []).find(x => x.id === id); const cyc = r0 && isCiclo(r0.meta);
+  await clDelete(id, 'Eliminare ' + (cyc ? 'questo ciclo' : 'questo progetto') + (r0 ? ' «' + r0.titolo + '»' : '') + '?\n\nVa nel cestino e resta recuperabile per ' + CL_TRASH_DAYS + ' giorni; poi viene cancellato definitivamente.');
   if(!window._appReload){ SH.rows = null; show('home'); }
 };
 window.shLogout = function(){ clLogout(); };
@@ -16307,12 +16480,20 @@ window.shNew = function(tipo){
     <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">Tipo</legend><div class="sh-g2">
       <label class="sh-rr${SH.tipo === 'PP' ? ' on' : ''}"><input type="radio" name="sh-tipo" value="PP"${SH.tipo === 'PP' ? ' checked' : ''} onchange="shTipo()">Progetto Personale</label>
       <label class="sh-rr${SH.tipo === 'AN' ? ' on' : ''}"><input type="radio" name="sh-tipo" value="AN"${SH.tipo === 'AN' ? ' checked' : ''} onchange="shTipo()">Programmazione Annuale</label></div></fieldset>
-    <div class="${nb ? '' : 'sh-g2'}"><div><label class="sh-lb" for="sh-nas">Anno scout</label><select class="sh-in" id="sh-nas">${anni.map(y => `<option value="${y}">${annoScoutTxt(y)}</option>`).join('')}</select></div>
-      ${nb ? '' : `<div><label class="sh-lb" for="sh-nbr">Branca</label><select class="sh-in" id="sh-nbr">${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b}</option>`).join('')}</select></div>`}</div>
-    ${nb ? '' : `<div><label class="sh-lb" for="sh-nun">Nome Unità</label><input class="sh-in" id="sh-nun" maxlength="60" placeholder="${BR_UNIT[p.branca] || 'Es. Reparto Kontiki'}"></div>`}
-    <div class="sh-hint">Sezione e Gruppo si compilano dal tuo profilo${sezgr ? ': ' + esc(sezgr) : ''}.${nb ? ' Come ' + esc(RUOLO_TXT[p.ruolo]) + ' non scegli Branca né Nome Unità.' : ''}</div>
+    <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">In che veste lo crei?</legend><div class="sh-g2">
+      <div><label class="sh-lb" for="sh-nru">Ruolo</label><select class="sh-in" id="sh-nru" onchange="shVeste()">${RUOLI.map(([k, t]) => `<option value="${k}"${p.ruolo === k ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+      <div id="sh-nbrw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nbr">Branca</label><select class="sh-in" id="sh-nbr" onchange="shVeste()">${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b} · ${BN_FULL[b]}</option>`).join('')}</select></div></div></fieldset>
+    <div><label class="sh-lb" for="sh-nas">Anno scout</label><select class="sh-in" id="sh-nas">${anni.map(y => `<option value="${y}">${annoScoutTxt(y)}</option>`).join('')}</select></div>
+    <div id="sh-nunw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nun">Nome Unità</label><input class="sh-in" id="sh-nun" maxlength="60" placeholder="${BR_UNIT[p.branca] || 'Es. Reparto Kontiki'}"></div>
+    <div class="sh-hint" id="sh-nhint">Sezione e Gruppo si compilano dal tuo profilo${sezgr ? ': ' + esc(sezgr) : ''}. La veste vale solo per questo progetto: il profilo non cambia.${nb ? ' Come ' + esc(RUOLO_TXT[p.ruolo]) + ' non scegli Branca né Nome Unità.' : ''}</div>
     <div class="sh-msg" id="sh-nmsg" role="alert"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="sh-ncre" onclick="shCreate()">Crea il progetto</button></div>`);
+};
+window.shVeste = function(){
+  const r = ($('sh-nru') || {}).value, nb = noBranca(r), b = $('sh-nbr');
+  ['sh-nbrw', 'sh-nunw'].forEach(i => { const e = $(i); if(e) e.hidden = nb; });
+  const u = $('sh-nun'); if(u && b) u.placeholder = BR_UNIT[b.value] || 'Es. Reparto Kontiki';
+  const h = $('sh-nhint'); if(h) h.textContent = 'Sezione e Gruppo si compilano dal tuo profilo. La veste vale solo per questo progetto: il profilo non cambia.' + (nb ? ' Come ' + RUOLO_TXT[r] + ' non scegli Branca né Nome Unità.' : '');
 };
 window.shTipo = function(){
   const v = (document.querySelector('input[name="sh-tipo"]:checked') || {}).value; if(v) SH.tipo = v;
@@ -16325,7 +16506,7 @@ async function uniqueTitle(rows, anno, base){
 }
 window.shCreate = async function(){
   const p = SH.prof || {}; const tipo = SH.tipo; const msg = $('sh-nmsg'); const btn = $('sh-ncre');
-  const y = +$('sh-nas').value; const nb = noBranca(p.ruolo);
+  const y = +$('sh-nas').value; const ruolo = ($('sh-nru') || {}).value || p.ruolo; const nb = noBranca(ruolo);
   const br = nb ? '' : $('sh-nbr').value; const unit = nb ? '' : String(($('sh-nun') || {}).value || '').trim().slice(0, 60);
   btn.disabled = true; msg.className = 'sh-msg'; msg.textContent = 'Creo il progetto…';
   try{
@@ -16336,9 +16517,9 @@ window.shCreate = async function(){
     const pp = {}; if(p.sezione) pp.sezione = p.sezione; if(p.gruppo) pp.gruppo = p.gruppo;
     let d;
     if(nb){
-      d = {v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CG', UNIT_NAME:'', scheda:{tipoProgetto:'AN', annoScout:as, pp}};
+      d = {v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CG', UNIT_NAME:'', scheda:{tipoProgetto:'AN', annoScout:as, pp, veste:{ruolo, branca:''}}};
     }else{
-      d = {v:1, MODE:'giovani', FASCIA:br, UNIT_NAME:unit, scheda:{tipoProgetto:tipo, annoScout:as, pp}};
+      d = {v:1, MODE:'giovani', FASCIA:br, UNIT_NAME:unit, scheda:{tipoProgetto:tipo, annoScout:as, pp, veste:{ruolo, branca:br}}};
     }
     d.ts = Date.now();
     const meta = clMeta(d);
@@ -16383,7 +16564,7 @@ window.confirmBackToLanding = function(){ shGoHome(); };
 // il tipo di progetto sta in scheda (i campi in cima ai dati non sopravvivono al salvataggio) e nei dati dell'archivio
 const _clMeta = window.clMeta;
 window.clMeta = function(d){
-  const m = _clMeta(d); try{ const s = (d && d.scheda) || {}; if(s.tipoProgetto) m.tipo = s.tipoProgetto; if(s.annoScout) m.anno_scout = s.annoScout; }catch(e){}
+  const m = _clMeta(d); try{ const s = (d && d.scheda) || {}; if(s.tipoProgetto) m.tipo = s.tipoProgetto; if(s.annoScout) m.anno_scout = s.annoScout; if(s.veste){ m.vruolo = s.veste.ruolo; m.vbranca = s.veste.branca || ''; const q = s.pp || {}; m.sez = q.sezione || ''; m.gr = q.gruppo || ''; } if(d && d.STAFF_RUOLO) m.sruolo = d.STAFF_RUOLO; if(s.ciclo){ m.cn = s.ciclo.nome || ''; m.cdal = s.ciclo.dal || ''; m.cal = s.ciclo.al || ''; } }catch(e){}
   return m;
 };
 const _clInit = window.clInit;
@@ -16616,9 +16797,9 @@ body[data-theme="L"] .sh-btn:disabled{background:#e9e6b0;color:#5f5b00;box-shado
 .sh-sub{display:flex;flex-direction:column;gap:2px;margin:2px 0 8px 22px;padding-left:10px;border-left:2px solid var(--u-line-s,#e4e8e2)}
 .sh-si.sh-ss{min-height:38px;padding:7px 12px;font-size:12.5px;font-weight:600;color:#3D3D38}
 .sh-si.sh-ss.on{background:var(--green-pale,#e6f3ec);color:#1A1A18;font-weight:800;box-shadow:inset 3px 0 0 var(--brand-ink,var(--green))}
-body.sh-in[data-mode="giovani"][data-amb="P"] #percorsi-root .ambito-sec:nth-child(n+2),
-body.sh-in[data-mode="giovani"][data-amb="C"] #percorsi-root .ambito-sec:not(:nth-child(2)),
-body.sh-in[data-mode="giovani"][data-amb="S"] #percorsi-root .ambito-sec:not(:nth-child(3)){display:none}
+body.sh-in[data-mode="giovani"][data-amb="P"] #percorsi-root .ambito-sec:not([data-a="P"]),
+body.sh-in[data-mode="giovani"][data-amb="C"] #percorsi-root .ambito-sec:not([data-a="C"]),
+body.sh-in[data-mode="giovani"][data-amb="S"] #percorsi-root .ambito-sec:not([data-a="S"]){display:none}
 body.sh-in[data-amb="P"] #amb-foot0,body.sh-in[data-amb="C"] #amb-foot0,body.sh-in[data-amb="S"] #amb-foot0{display:none}
 #amb-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
 @media(min-width:1100px){body.sh-in .gsn-steps,body.sh-in .gsn-title{display:none}}
@@ -16695,6 +16876,7 @@ const NAV_AN = [
   {id:'a-staff', k:'1a:staff', t:'Il mio staff', ic:'user', go:"shSub('1a','','staff')"},
   {g:'Osservare'},
   {id:'o-occ', k:'1a:occ', t:'Come osservo', ic:'eye', go:"shSub('1a','','occ')"},
+  {id:'o-staff', t:'Il mio staff', ic:'user', go:'shStaffPage()'},
   {id:'o-P', k:'1b:P', t:'Sviluppo Personale', ic:'eye', go:"shSub('1b','P')"},
   {id:'o-C', k:'1b:C', t:'Sviluppo Comunitario', ic:'eye', go:"shSub('1b','C')"},
   {id:'o-S', k:'1b:S', t:'Sviluppo Spirituale', ic:'eye', go:"shSub('1b','S')"},
@@ -16703,17 +16885,19 @@ const NAV_AN = [
   {id:'o-1d', k:'1d', t:'Priorità', ic:'star', go:"shSub('1d','')"},
   {g:'Progettare'},
   {id:'p-2', k:'2', t:'Obiettivi e indicatori', ic:'star', go:"shSec('2')"},
-  {id:'p-3', k:'3', t:'Percorsi educativi', ic:'list', go:"shSec('3')"},
+  {id:'p-3P', k:'3:P', t:'Percorso Personale', ic:'list', go:"shPerc('P')"},
+  {id:'p-3C', k:'3:C', t:'Percorso Comunitario', ic:'list', go:"shPerc('C')"},
+  {id:'p-3S', k:'3:S', t:'Percorso Spirituale', ic:'list', go:"shPerc('S')"},
   {id:'p-vis', t:'Visione d’insieme', ic:'cal', go:'shVis()'},
   {g:'Realizzare'},
   {id:'r-cal', t:'Calendario e attività', ic:'cal', go:'shCal()'},
   {id:'r-ele', t:'Elenco dell’anno', ic:'list', go:'shEle()'},
-  {id:'r-bil', t:'Spese mese per mese', ic:'doc', go:'shBil()'},
   {id:'r-chk', t:'Check dello staff', ic:'users', go:'shChk()'},
   {g:'Misurare'},
   {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
   {id:'m-5', k:'5', t:'Valutazione finale', ic:'up', go:"shSec('5')"},
   {id:'m-num', t:'Numeri dell’anno', ic:'dash', go:'shNumAnno()'},
+  {id:'r-bil', t:'Spese mese per mese', ic:'doc', go:'shBil()'},
   {id:'m-anno', t:'Verifica dell’anno', ic:'check', go:'shAnnoV()'},
   {g:'Conservare'},
   {id:'k-arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'},
@@ -16736,6 +16920,7 @@ const NAV_PP = [
   {id:'ppa', t:'Le attività del mio percorso', ic:'cal', go:"shPP('a')"}
 ];
 const NAV_ST = [
+  {id:'st-back', t:'← Programmazione di Unità', ic:'dash', go:'shStaffBack()', cond:'back'},
   {g:'Progettare'},
   {id:'st1', t:'Osservazione dello staff', ic:'eye', go:'goPhase(1)'},
   {id:'st2', t:'Riepilogo', ic:'list', go:'goPhase(2)'},
@@ -16759,7 +16944,7 @@ function subHTML(inSheet){
   const sc = subCur();
   return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
-function navCond(i){ if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navCond(i){ if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
 function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
 function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
 SH._gt = SH._gt || {};
@@ -16780,20 +16965,20 @@ function bbHTML(){
     return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
-  const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3','p-vis','r-cal','r-ele','r-bil','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-staff','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3P','p-3C','p-3S','p-vis','r-cal','r-ele','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
   const s = $('sh-side'); if(s) s.innerHTML = navHTML();
   const b = $('sh-bb'); if(b) b.innerHTML = bbHTML();
-  try{ const nm = $('sh-pjn'); if(nm && CL.ctx){ const t = isST() ? 'Staff' : (scheda && scheda.tipoProgetto === 'PP' ? 'Progetto Personale' : 'Programmazione di Unità'); const br = (typeof FASCIA !== 'undefined' && FASCIA) ? 'Branca ' + FASCIA + ': ' : ''; const ti = String(CL.ctx.titolo || '').trim(); let ci = ''; try{ if(!isST() && !isPP()){ const c0 = annoCicloInfo(annoCur()); ci = (c0 && c0.nome && c0.nome !== 'Il ciclo') ? c0.nome : ''; } }catch(e){} const full = br + (ti || (t + (CL.ctx.anno ? ' ' + CL.ctx.anno : ''))) + (ci && ci !== ti ? ' · ' + ci : ''); nm.textContent = full; nm.title = full; } const nn = $('sh-name'); if(nn && CL.user){ try{ nn.textContent = clShortName(); }catch(e){} } }catch(e){}
+  try{ const nm = $('sh-pjn'); if(nm && CL.ctx){ const t = isST() ? 'Staff' : (scheda && scheda.tipoProgetto === 'PP' ? 'Progetto Personale' : 'Programmazione di Unità'); const br = (typeof FASCIA !== 'undefined' && FASCIA) ? 'Branca ' + FASCIA + ': ' : ''; const ti = String(CL.ctx.titolo || '').trim(); let ci = ''; try{ if(!isST() && !isPP()){ const c0 = annoCicloInfo(annoCur()); ci = (c0 && c0.nome && c0.nome !== 'Il ciclo') ? c0.nome : ''; } }catch(e){} const full = br + (ti || (t + (CL.ctx.anno ? ' ' + CL.ctx.anno : ''))) + (ci && ci !== ti && !ti.endsWith(' · ' + ci) ? ' · ' + ci : ''); nm.textContent = full; nm.title = full; } const nn = $('sh-name'); if(nn && CL.user){ try{ nn.textContent = clShortName(); }catch(e){} } }catch(e){}
 }
 window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on); const h = $('sh-hb'); if(h) h.setAttribute('aria-expanded', on ? 'true' : 'false'); };
 window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
-    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','sha','arc'] : ['m-4','m-5','m-num','m-anno','k-arc','d-sha','d-chk'];
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','sha','arc'] : ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk'];
     h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else if(!isPP() && !isST()){
@@ -16814,18 +16999,18 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if($('sh-she
 function active(){
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
-    if(p(4)){ if(schedaStep === 'ctx') return ({unit:'a-unit', ctx:'a-ctx', staff:'a-staff', occ:'o-occ'})[window._ctxF || 'unit']; return ({A:'p-2', B:'p-2', C:'p-3', ver:'m-4', val:'m-5', chk:'d-chk', usc:'r-cal'})[schedaStep] || 'p-2'; }
+    if(p(4)){ if(schedaStep === 'ctx') return ({unit:'a-unit', ctx:'a-ctx', staff:'a-staff', occ:'o-occ'})[window._ctxF || 'unit']; return ({A:'p-2', B:'p-2', C:'p-3' + (window._pcAmb || 'P'), ver:'m-4', val:'m-5', chk:'d-chk', usc:'r-cal'})[schedaStep] || 'p-2'; }
     if(p(1)) return 'o-' + (window._ambF || 'P'); if(p(2)) return 'o-1c'; if(p(3)) return 'o-1d'; return null;
   }
   const sec = (() => { if(p(4)){ return ({ctx:'s1', A:'s2', B:'s2', C:'s3', ver:'s4', val:'s5', chk:'chk', usc:'usc'})[schedaStep] || 's2'; } if(p(1) || p(2) || p(3)) return 's1'; return null; })();
   if(isPP() && sec){ const m = {s1:'pp1', s2:'pp2', s3:'pp3', s4:'pp4', s5:'pp5', chk:'ppc'}[sec]; if(m){ SH.ppv = m.slice(2); return m; } }
   return sec;
 }
-window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); lgInstr(); ppProfDefaults(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
+window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
 function gFootFix(){
   try{
     if(MODE !== 'giovani') return;
@@ -16855,7 +17040,7 @@ const CTX_PAGES = ['unit','ctx','staff','occ']; const PCTX_PAGES = ['pctx','occ'
 const CTX_NAME = {unit:'La mia unità', ctx:'Il mio contesto', staff:'Il mio staff', occ:'Come osservo', pctx:'Contesto'};
 const CTX_TITLE = {unit:'La mia unità', ctx:'Il mio contesto', staff:'Il mio staff', occ:'Occasioni osservative', pctx:'Contesto'};
 const CTX_DESC = {pctx:'Chi compila, il contesto in cui opera l’Unità e chi c’è nello staff.', unit:'Chi compila, come si chiama l’Unità e quanti siete.', ctx:'Il territorio, la Sezione e il Gruppo in cui lavori.', staff:'Chi c’è nello staff e come programmate: da soli o insieme.', occ:'Le occasioni in cui hai osservato il gruppo e a quali condizioni.'};
-function ctxObserve(){ if(SH._mo) return; const r = $('val-root'); if(!r) return; try{ SH._mo = new MutationObserver(() => { try{ tagCtx(); applyCtx(); }catch(e){} }); SH._mo.observe(r, {childList:true, subtree:true}); }catch(e){} }
+function ctxObserve(){ if(SH._mo) return; const r = $('val-root'); if(!r) return; try{ SH._mo = new MutationObserver(() => { try{ tagCtx(); applyCtx(); if(typeof mvDecorate === 'function' && !SH._mvBusy){ SH._mvBusy = true; try{ mvDecorate(); }finally{ SH._mvBusy = false; } } }catch(e){} }); SH._mo.observe(r, {childList:true, subtree:true}); }catch(e){} }
 function tagCtx(){
   const card = document.querySelector('#val-root .profile-card'); if(!card) return;
   const kids = Array.prototype.slice.call(card.children).filter(e => e.id !== 'ctx-foot' && e.id !== 'sh-prev');
@@ -16863,7 +17048,8 @@ function tagCtx(){
   let g = 'unit';
   kids.forEach(e => {
     const t = (e.textContent || '').trim();
-    if(e.tagName === 'LABEL' && /^Contesto territoriale/.test(t)) g = 'ctx';
+    if(e.id === 'mv-mode') g = 'occ';
+    else if(e.tagName === 'LABEL' && /^Contesto territoriale/.test(t)) g = 'ctx';
     else if(e.tagName === 'DIV' && /^Adulti in staff/.test(t)) g = 'staff';
     else if(e.tagName === 'DIV' && /^Osservazione con il Kit/.test(t)) g = 'occ';
     let b = g; if(e.id === 'prog-mode') b = isPP() ? 'x' : 'staff'; if(e.tagName === 'H3') b = '*'; if(/^Avanti/.test(t) && e.tagName === 'DIV') b = 'x';
@@ -16965,7 +17151,7 @@ function collect(){
   try{ o.sel = priSel(); }catch(e){}
   try{ o.per = getAllPercorsi() || []; }catch(e){}
   o.per.forEach((per, pi) => (per.attivita || []).forEach((a, j) => { if(!a) return; const x = a.ax || {}; const st = (()=>{ try{ return tlStato(a); }catch(e){ return {k:'nd'}; } })();
-    const has = (a.testo || '').trim() || x.data; if(!has) return;
+    const has = ['testo', 'lancio', 'sviluppo', 'conclusione'].some(q => String(a[q] || '').trim()) || x.data; if(!has) return;
     o.acts.push({pi, j, amb:per.ambito || (per.percorsoId || '')[0], txt:(a.testo || '').trim() || ('Attività ' + (j + 1)), data:x.data || '', fine:(x.durata === 'piu' && x.dataFine) ? x.dataFine : (x.data || ''), st}); }));
   try{ const U = (scheda && scheda.uscite) || {}; Object.keys(U).map(k => U[k]).filter(u => u && typeof u === 'object' && !u.del && u.id).forEach(u => { const x = u.ax || {}; const ct = (typeof CAL_T !== 'undefined' && typeof uscModK === 'function' && CAL_T[uscModK(u)]) || ['Uscita', '#2f7d5b']; o.usc.push({id:u.id, txt:(typeof uscTit === 'function' ? uscTit(u) : 'Uscita'), data:x.data || '', fine:x.dataFine || x.data || '', tp:ct[0], col:ct[1]}); }); }catch(e){}
   return o;
@@ -16985,11 +17171,13 @@ function nextStep(o){
 function pct(a, b){ return b ? Math.round(100 * a / b) : 0; }
 const CARDS = [
   {id:'passo', t:'Prossimo passo suggerito', wide:1, av:() => true, html:o => { const n = nextStep(o); return `<h3>${esc('Prossimo passo suggerito')}</h3><div style="font-size:15px;font-weight:700">${esc(n[0])}</div><div class="sub" style="font-size:13px">${esc(n[1])}</div><div><button type="button" class="sh-lk" onclick="${n[2]}">Vai</button></div>`; }},
-  {id:'anno', t:'Il mio ciclo in un colpo d’occhio', wide:1, av:() => true, html:o => `<h3>Il mio ciclo in un colpo d’occhio</h3>` + annoTL([annoCur()], 'percorso', 'ambito', true) + `<div class="sub">I blocchi sono i percorsi, i pallini le attività con la data. La bandierina è la verifica del ciclo. Per spostare i blocchi: <button type="button" class="sh-lk" onclick="shVis()">Visione d’insieme</button>.</div>`},
+  {id:'anno', t:'Il mio ciclo in un colpo d’occhio', wide:1, av:() => true, html:o => `<h3>Il mio ciclo in un colpo d’occhio</h3>` + annoTL([annoCur()], 'percorso', 'ambito', true) + `<div class="sub">I blocchi sono i percorsi, i pallini le attività con la data, i quadratini le riunioni e le uscite (con il bordo tratteggiato quelle dello staff). La bandierina è la verifica del ciclo. Per spostare i blocchi: <button type="button" class="sh-lk" onclick="shVis()">Visione d’insieme</button>.</div>`},
   {id:'chk', t:'Check dello staff', av:() => true, html:o => { const n = chkSoon(); return `<h3>Check dello staff</h3>` + (n ? `<div style="font-size:15px;font-weight:700">${esc(n.c.nome)}</div><div class="sub" style="font-size:13px">${n.n.now ? 'È il momento: ' : 'Prossimo: '}${esc(chkWhen(n.c))}${n.c.att ? ' · ' + esc(n.c.att) : ''}</div>` : `<div class="sub" style="font-size:13px;color:#3D3D38">Nessun check in programma.</div>`) + `<div><button type="button" class="sh-lk" onclick="shChk()">Vedi e personalizza</button></div>`; }},
   {id:'prossime', t:'Prossime attività', av:() => true, html:o => {
-    const oggi = td(); const L0 = o.acts.concat(o.usc).filter(x => x.data && x.fine >= oggi).sort((a, b) => a.data.localeCompare(b.data)); const L = L0.slice(0, 6);
-    return `<h3>Prossime attività</h3>` + (L.length ? L.map(x => `<div class="row"><b style="min-width:76px">${esc(fmtDL(x.data))}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:${x.col || 'var(--green)'}" aria-hidden="true"></i>${esc(x.txt)}${x.tp ? ' <small style="color:#55605a">· ' + esc(x.tp) + '</small>' : ''}</span></div>`).join('') + (L0.length > L.length ? `<div><button type="button" class="sh-lk" onclick="shEle()">Vedi tutte (${L0.length}) nell’Elenco dell’anno</button></div>` : '') : `<div class="sub" style="font-size:13px;color:#3D3D38">Nessuna attività in calendario. Le metti in calendario da «Calendario e attività».</div><div><button type="button" class="sh-lk" onclick="shCal()">Vai a Calendario e attività</button></div>`); }},
+    const oggi = td(); const ALL = o.acts.concat(o.usc); const L0 = ALL.filter(x => x.data && x.fine >= oggi).sort((a, b) => a.data.localeCompare(b.data)); const L = L0.slice(0, 6);
+    const nd = ALL.filter(x => !x.data).length, np = ALL.filter(x => x.data && x.fine < oggi).length;
+    const note = (nd || np) ? `<div class="sub" style="font-size:12.5px;margin-top:6px">${[nd ? nd + (nd === 1 ? ' attività o evento senza data' : ' attività o eventi senza data') : '', np ? np + (np === 1 ? ' già passato' : ' già passati') : ''].filter(Boolean).join(' · ')}: <button type="button" class="sh-lk" onclick="shEle()">Elenco dell’anno</button> · <button type="button" class="sh-lk" onclick="shCal()">Calendario</button></div>` : '';
+    return `<h3>Prossime attività</h3>` + (L.length ? L.map(x => `<div class="row"><b style="min-width:76px">${esc(fmtDL(x.data))}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:${x.col || 'var(--green)'}" aria-hidden="true"></i>${esc(x.txt)}${x.tp ? ' <small style="color:#55605a">· ' + esc(x.tp) + '</small>' : ''}</span></div>`).join('') + (L0.length > L.length ? `<div><button type="button" class="sh-lk" onclick="shEle()">Vedi tutte (${L0.length}) nell’Elenco dell’anno</button></div>` : '') + note : `<div class="sub" style="font-size:13px;color:#3D3D38">${(nd || np) ? 'Nessuna attività con una data futura.' : 'Nessuna attività in calendario. Le metti in calendario da «Calendario e attività».'}</div>` + note + `<div><button type="button" class="sh-lk" onclick="shCal()">Vai a Calendario e attività</button></div>`); }},
   {id:'avanz', t:'Avanzamento programmazione', av:() => true, html:o => {
     const pr = (scheda && scheda.priorita) || []; const per = o.per;
     const v = [pct(o.obsN, o.obsTot), pct([0,1,2].filter(i => pr[i] && (pr[i].idr || []).length).length, 3), pct(per.filter(p => (p.attivita || []).some(a => a && ((a.testo || '').trim() || (a.ax || {}).data))).length, Math.max(per.length, 3)),
@@ -17227,8 +17415,8 @@ window.shScope = function(v){ SH.dscope = v === 'anno' ? 'anno' : 'ciclo'; try{ 
 async function annoLoad(){
   if(!CL.ctx || !CL.user) return [];
   try{ if(!window.BRO) saveData(true); }catch(e){}
-  const rows = await dbList(); const y = Number(CL.ctx.anno);
-  const mine = rows.filter(x => Number(x.anno) === y && (x.meta || {}).mode === 'giovani' && ((x.meta || {}).tipo || 'AN') === 'AN' && !/^Esempio/i.test(x.titolo || ''));
+  const rows = await dbList(); const y = Number(CL.ctx.anno); const cur0 = rows.find(x => x.id === CL.ctx.id); const vk0 = cur0 ? vesteKey(cur0.meta) : null;
+  const mine = rows.filter(x => Number(x.anno) === y && isCiclo(x.meta) && (vk0 === null || vesteKey(x.meta) === vk0) && !/^Esempio/i.test(x.titolo || ''));
   const items = [];
   for(const r of mine){
     if(CL.ctx.id === r.id){ items.push(annoCur()); continue; }
@@ -17246,6 +17434,13 @@ function annoColor(mode, it, ci, p, a){
   return (AMB[p.amb] || ['', '#666'])[1];
 }
 // linea del tempo: items = progetti-ciclo; lettura = percorso | attivita | ciclo; colore = ambito | ciclo | stato
+function annoEvRow(items, y0){
+  const pts = []; items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const [yy, mm, dd] = d.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return; pts.push({x:(i + (dd - 1) / 31) / 12 * 100, c:(CAL_T[uscModK(u)] || CAL_T.giorno)[1], t:uscTit(u) + ' · ' + fmtDL(d.slice(0, 10)) + (u.dest === 'staff' ? ' · staff' : ''), stf:u.dest === 'staff'}); }); });
+  if(!pts.length) return '';
+  pts.sort((a, b) => a.x - b.x); const last = []; const mk = pts.map(p => { let l = 0; while(last[l] !== undefined && p.x - last[l] < 2.2) l++; last[l] = p.x; return `<span class="vis-dot vis-ev${p.stf ? ' stf' : ''}" style="left:${p.x}%;top:${4 + l * 16}px;background:${p.c}" title="${esc(p.t)}"></span>`; }).join('');
+  const nl = Math.max(1, last.length);
+  return `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b><small>${pts.length} con la data</small></div><div class="vis-t" style="height:${nl * 16 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${mk}</div></div>`;
+}
 function annoTL(items, lettura, colore, compact){
   const y0 = visY0(); const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map(m => `<span>${m}</span>`).join('') + '</div>';
   const grid = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${e === i ? 'pit' : ''}"></i>`).join('') + '</div>'; };
@@ -17269,6 +17464,7 @@ function annoTL(items, lettura, colore, compact){
   } else {
     items.forEach((it, ci) => { it.ci.per.forEach(p => { rows += `<div class="vis-r"><div class="vis-l">${lab(p, it, ci)}</div><div class="vis-t">${grid(it, ci)}${bar(p, it, ci)}${dots(p, it, ci)}${flag(it, ci)}</div></div>`; }); });
     if(!rows) rows = '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi con un periodo: scegli le priorità e il periodo in «Obiettivi e indicatori».</div>';
+    rows += annoEvRow(items, y0);
   }
   const leg = colore === 'stato' ? Object.keys(AN_ST).map(k => `<span><i class="vis-sw" style="background:${AN_ST[k][1]}"></i>${AN_ST[k][2]} ${AN_ST[k][0]}</span>`).join('') : colore === 'ciclo' ? items.map((it, ci) => `<span><i class="vis-sw" style="background:${AN_COLC[ci % AN_COLC.length]}"></i>${esc(it.ci.nome)}</span>`).join('') : ['P', 'C', 'S'].map(k => `<span><i class="vis-sw" style="background:${AMB[k][1]}"></i>${AMB[k][0]}</span>`).join('');
   return `<div class="vis-wrap${compact ? ' vis-c' : ''}"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${compact ? '' : `<div class="vis-leg">${leg}<span><svg viewBox="0 0 12 14" width="11" height="13" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4"/></svg> verifica del ciclo</span></div>`}</div>`;
@@ -17306,7 +17502,7 @@ window.ncMake = async function(){
     let base0 = String(CL.ctx.titolo || 'Programmazione Annuale'); const cn0 = ((scheda.ciclo || {}).nome || '').trim(); if(cn0 && base0.endsWith(' · ' + cn0)) base0 = base0.slice(0, -(' · ' + cn0).length); const base = base0 + ' · ' + nome; let titolo = base, k = 2; while(rows.some(r => Number(r.anno) === y && r.titolo === titolo)) titolo = base + ' (' + (k++) + ')';
     const nobs = {}; Object.keys(obs || {}).forEach(pid => { const r = Number(((scheda.riobs || {})[pid]) || 0); nobs[pid] = r > 0 ? r : obs[pid]; });
     const pp = {}; const sp = scheda.pp || {}; NC_PP.forEach(q => { if(sp[q] !== undefined) pp[q] = JSON.parse(JSON.stringify(sp[q])); });
-    const d = {v:1, MODE:'giovani', FASCIA, UNIT_NAME:UNIT_NAME || '', obs:nobs, scheda:{tipoProgetto:'AN', annoScout:scheda.annoScout, pp, ciclo:{nome, dal, al}, cicloDa:CL.ctx.id}, ts:Date.now()};
+    const d = {v:1, MODE:'giovani', FASCIA, UNIT_NAME:UNIT_NAME || '', obs:nobs, scheda:{tipoProgetto:'AN', annoScout:scheda.annoScout, pp, veste:scheda.veste ? JSON.parse(JSON.stringify(scheda.veste)) : undefined, ciclo:{nome, dal, al}, cicloDa:CL.ctx.id}, ts:Date.now()};
     const r = await dbInsert(y, titolo, d, clMeta(d));
     SH.rows = null; SH._ay = null; CL.ctx = null; try{ localStorage.removeItem(CL_LS); }catch(e){}
     await clOpenProject(r.id);
@@ -17315,7 +17511,7 @@ window.ncMake = async function(){
 // ── Misurare · «Verifica dell'anno»: la riflessione sull'anno intero, sopra la verifica di ogni ciclo. Sta in una riga propria (non è un ciclo) ──
 async function annoRow(y){
   const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,data,meta,updated_at').eq('user_id', CL.user.id); if(error) throw error;
-  return (data || []).find(r => Number(r.anno) === Number(y) && (r.meta || {}).mode === 'anno' && !(r.meta || {}).cest) || null;
+  return (data || []).find(r => Number(r.anno) === Number(y) && (r.meta || {}).mode === 'anno' && !(r.meta || {}).cest && (!(r.meta || {}).fascia || !FASCIA || (r.meta || {}).fascia === FASCIA)) || null;
 }
 async function annoRowEnsure(y){
   let r = await annoRow(y); if(r){ r.data = r.data || {}; if(!r.data.ver) r.data.ver = {}; return r; }
@@ -17409,9 +17605,9 @@ async function eleLoad(){
   const items = await annoLoad(); const out = []; const y = Number(CL.ctx.anno);
   const take = (sc, ciclo, staff, cur, pid) => { const U = (sc || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return;
     Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const x = u.ax || {};
-      out.push({id:u.id, pid, cur, staff, ciclo, titolo:uscTit(u), formato:(CAL_T[uscModK(u)] || ['Uscita'])[0], tipo:uscTipoLab(u), data:/^\d{4}-\d{2}-\d{2}/.test(x.data || '') ? x.data.slice(0, 10) : '', fine:/^\d{4}-\d{2}-\d{2}/.test(x.dataFine || '') ? x.dataFine.slice(0, 10) : '', cr:Number(u.cr) || 0}); }); };
+      out.push({id:u.id, pid, cur, staff:staff || u.dest === 'staff', mk:uscModK(u), ciclo, titolo:uscTit(u), formato:(CAL_T[uscModK(u)] || ['Uscita'])[0], tipo:uscTipoLab(u), data:/^\d{4}-\d{2}-\d{2}/.test(x.data || '') ? x.data.slice(0, 10) : '', fine:/^\d{4}-\d{2}-\d{2}/.test(x.dataFine || '') ? x.dataFine.slice(0, 10) : '', cr:Number(u.cr) || 0}); }); };
   items.forEach(it => take((it.data || {}).scheda, it.ci.nome, false, !!it.cur, it.id));
-  try{ const rows = await dbList(); const st = rows.filter(r => Number(r.anno) === y && (r.meta || {}).mode === 'staff');
+  try{ const rows = await dbList(); const cur0 = rows.find(r => r.id === CL.ctx.id); const vk0 = cur0 ? vesteKey(cur0.meta) : null; const st = rows.filter(r => Number(r.anno) === y && (r.meta || {}).mode === 'staff' && ((r.meta || {}).sruolo || 'CU') !== 'CG' && (vk0 === null || vesteKey(r.meta) === vk0));
     for(const r of st){ try{ const g = await dbGet(r.id); take(((g && g.data) || {}).scheda, 'Staff', true, false, r.id); }catch(e){} } }catch(e){}
   return out;
 }
@@ -17422,11 +17618,23 @@ function eleHTML(){
   const all = eleSeq(L0), f = SH._ef = SH._ef || {}, L = eleFilt(all), y = Number(CL.ctx.anno);
   const nStaff = all.filter(o => o.staff).length;
   const sel = (id, v, opts, lab) => `<select id="${id}" class="sh-in" aria-label="${lab}" onchange="eleFlt('${id === 'ele-s' ? 's' : 'f'}',this.value)">${opts.map(([k, t]) => `<option value="${esc(k)}"${v === k ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
-  const rows = L.map(o => `<tr${o.cur ? ` class="ele-go" tabindex="0" role="button" onclick="shSrUsc('${o.id}')" onkeydown="if(event.key==='Enter')this.click()"` : ''}><td class="n">${o.n ? o.n : '—'}</td><td>${o.data ? esc(fmtDL(o.data)) + (o.fine && o.fine > o.data ? ' → ' + esc(fmtDL(o.fine)) : '') : '<span class="sh-hint">senza data</span>'}</td><td><b>${esc(o.titolo)}</b>${o.staff ? ' <span class="ele-stf">STF</span>' : ''}</td><td>${esc(o.formato)}${o.tipo ? '<div class="sh-hint">' + esc(o.tipo) + '</div>' : ''}</td><td>${esc(o.ciclo)}</td></tr>`).join('');
+  const rows = L.map(o => `<tr class="${o.staff ? 'ele-s' : 'ele-u'}${o.cur ? ' ele-go' : ''}" style="--c:${(CAL_T[o.mk] || CAL_T.giorno)[1]}"${o.cur ? ` tabindex="0" role="button" onclick="shSrUsc('${o.id}')" onkeydown="if(event.key==='Enter')this.click()"` : ''}><td class="n">${o.n ? o.n : '—'}</td><td>${o.data ? esc(fmtDL(o.data)) + (o.fine && o.fine > o.data ? ' → ' + esc(fmtDL(o.fine)) : '') : '<span class="sh-hint">senza data</span>'}</td><td><b>${esc(o.titolo)}</b>${o.staff ? ' <span class="ele-stf">STF</span>' : ''}</td><td>${esc(o.formato)}${o.tipo ? '<div class="sh-hint">' + esc(o.tipo) + '</div>' : ''}</td><td>${esc(o.ciclo)}</td></tr>`).join('');
   return `<div class="sh-dh"><div><h1>Elenco dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Tutte le attività dell’anno scout ${esc(String(scheda.annoScout || y))} in ordine di data, numerate da 1: quelle dell’Unità in tutti i cicli${nStaff ? ' e quelle dello staff (STF)' : ' e, se hai un progetto staff dello stesso anno, anche quelle (STF)'}. Il numero si aggiorna da solo se ne aggiungi o sposti una: nei documenti citale sempre anche con data e titolo.</p></div></div>
-  <section class="sh-card2 wide"><div class="bil-flt"><label class="sh-lb" for="ele-s">Mostra</label>${sel('ele-s', f.s || '', [['', 'Tutte'], ['unita', 'Solo Unità'], ['staff', 'Solo staff']], 'Unità o staff')}<label class="sh-lb" for="ele-f">Formato</label>${sel('ele-f', f.f || '', [['', 'Tutti'], ['Riunione', 'Riunioni'], ['Uscita', 'Uscite'], ['Bivacco', 'Bivacchi'], ['Campo', 'Campi']], 'Formato')}</div>
+  <section class="sh-card2 wide"><div class="ele-vw" role="group" aria-label="Vista"><button type="button" class="sh-btn sm${SH._ev === 'tl' ? ' gh' : ''}" aria-pressed="${SH._ev !== 'tl'}" onclick="eleView('lista')">Lista</button><button type="button" class="sh-btn sm${SH._ev === 'tl' ? '' : ' gh'}" aria-pressed="${SH._ev === 'tl'}" onclick="eleView('tl')">Timeline</button></div><div class="bil-flt"><label class="sh-lb" for="ele-s">Mostra</label>${sel('ele-s', f.s || '', [['', 'Tutte'], ['unita', 'Solo Unità'], ['staff', 'Solo staff']], 'Unità o staff')}<label class="sh-lb" for="ele-f">Formato</label>${sel('ele-f', f.f || '', [['', 'Tutti'], ['Riunione', 'Riunioni'], ['Uscita', 'Uscite'], ['Bivacco', 'Bivacchi'], ['Campo', 'Campi']], 'Formato')}</div>
+  ${SH._ev === 'tl' ? eleTL(L) : ''}
   ${rows ? `<div class="vis-lst"><table class="bil-t ele-t"><thead><tr><th>N.</th><th>Quando</th><th>Attività</th><th>Formato e tipo</th><th>Ciclo</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sh-hint">Nessuna attività: le crei da «Calendario e attività».</p>'}
   <div class="anv-act"><button type="button" class="sh-btn" onclick="shCal()">Vai a Calendario e attività</button><button type="button" class="btn-ghost" onclick="eleCsv()">Scarica per Excel</button></div></section>`;
+}
+window.eleView = function(v){ SH._ev = v === 'tl' ? 'tl' : 'lista'; const p = $('panel-pp'); if(p && SH.ppv === 'ele') p.innerHTML = eleHTML(); };
+// timeline: due corsie (Unità e staff) lungo i dodici mesi dell'anno scout; gli eventi su più giorni sono barre
+function eleTL(L){
+  const y0 = visY0(); const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map(m => `<span>${m}</span>`).join('') + '</div>';
+  const pos = iso => { if(!/^\d{4}-\d{2}-\d{2}/.test(iso || '')) return null; const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return null; return (i + (dd - 1) / 31) / 12 * 100; };
+  const lane = (lab, arr) => { const mk = []; const lastX = []; arr.filter(o => o.data).forEach(o => { const a = pos(o.data); if(a === null) return; const b = (o.fine && o.fine > o.data) ? pos(o.fine) : null; const col = (CAL_T[o.mk] || CAL_T.giorno)[1]; let l = 0; while(lastX[l] !== undefined && a - lastX[l] < 2.4) l++; lastX[l] = b !== null ? Math.max(b, a + 2.4) : a;
+      const tt = esc(o.titolo + ' · ' + fmtDL(o.data) + (o.fine && o.fine > o.data ? ' → ' + fmtDL(o.fine) : '') + ' · ' + o.formato);
+      mk.push(b !== null ? `<div class="vis-bar" style="left:${a}%;width:${Math.max(1.2, b - a)}%;top:${4 + l * 22}px;--c:${col}" title="${tt}"><span>${esc(o.titolo)}</span></div>` : `<span class="vis-dot vis-dl" style="left:${a}%;top:${4 + l * 22}px;background:${col}" title="${tt}"></span>`); });
+    const n = Math.max(1, lastX.length); return `<div class="vis-r"><div class="vis-l"><b>${lab}</b><small>${arr.filter(o => o.data).length} con la data</small></div><div class="vis-t" style="height:${n * 22 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${mk.join('')}</div></div>`; };
+  return `<div class="vis-wrap"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${lane('Unità', L.filter(o => !o.staff))}${lane('Staff', L.filter(o => o.staff))}<div class="vis-leg">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i class="vis-sw" style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}</div></div>`;
 }
 window.eleFlt = function(k, v){ (SH._ef = SH._ef || {})[k] = v; const p = $('panel-pp'); if(p && SH.ppv === 'ele') p.innerHTML = eleHTML(); };
 window.shEle = async function(){
@@ -17685,7 +17893,7 @@ function calBlock(r, cx){
   const org = open ? `<div class="cal-org" id="cal-org-${key}"><div class="cal-orgh">Organizzazione dell’attività</div>${attLinksHTML(r.idx, r.j, r.a)}${attExtraHTML(r.idx, r.j, r.a)}</div>` : '';
   return `<div class="cal-b${open ? ' open' : ''}" ${can ? 'draggable="true"' : ''} data-i="${r.idx}" data-j="${r.j}" data-from="${cx ? cx.u.id + '|' + cx.k : ''}" ondragstart="calDrag(event)" ondragend="calDragEnd()" style="--c:${col}">
     <div class="cal-bt"><b>${esc(r.titolo)}</b><span>${esc((AMB[r.amb] || [''])[0])} · ${esc(r.pn)} · attività ${r.num}${r.date ? ' · ' + esc(fmtDL(r.date)) : ''}</span></div>
-    <div class="cal-ba">${sel}<button type="button" class="cal-bt2" aria-expanded="${open}" onclick="calOrg(${r.idx},${r.j})">${open ? 'Chiudi' : 'Organizza'}</button><button type="button" class="cal-bt2" onclick="anJump({t:'att',pid:'${r.per.percorsoId}',aid:'${r.a.aid || ''}',pi:${r.idx},j:${r.j}})">Apri nel percorso</button></div>${org}</div>`;
+    <div class="cal-ba">${sel}<button type="button" class="cal-bt2" onclick="anJump({t:'att',pid:'${r.per.percorsoId}',aid:'${r.a.aid || ''}',pi:${r.idx},j:${r.j}})">Apri nel percorso</button></div>${org}</div>`;
 }
 function calHTML(){
   const can = calCan(); const acts = calActs(); const pl = calPlaced(); const conts = uscList();
@@ -17693,26 +17901,35 @@ function calHTML(){
   const byK = {}; acts.forEach(r => { byK[r.idx + '-' + r.j] = r; });
   const conf = calConf(acts);
   const banner = conf.map(c => `<div class="cal-warn" role="status"><b>L’ordine ipotizzato del percorso «${esc(c.nm)}» sta cambiando.</b> Con le date scelte l’attività «${esc(c.inv[0].titolo)}» (la ${c.inv[0].num}ª, ${esc(fmtDL(c.inv[0].date))}) viene prima di «${esc(c.inv[1].titolo)}» (la ${c.inv[1].num}ª, ${esc(fmtDL(c.inv[1].date))}). Non riordino niente da solo.<div class="cal-wa"><button type="button" class="sh-btn" onclick="calReorder(${c.idx})">Aggiorna l’ordine del percorso</button><button type="button" class="sh-btn gh" onclick="calKeep('${esc(c.key).replace(/'/g, '')}')">Lascio com’è</button></div></div>`).join('');
+  const dr = SH._calDraft || {}; const dst = SH._calDest === 'staff' ? 'staff' : 'unita';
   const form = (can && SH._calNew) ? `<div class="cal-new" role="group" aria-label="Nuova ${esc(CAL_T[SH._calNew][0].toLowerCase())}"><b>Nuova ${esc(CAL_T[SH._calNew][0].toLowerCase())}</b>
-    <label>Nome <input id="cal-nt" class="sh-in" maxlength="80" placeholder="${esc(CAL_T[SH._calNew][0])}"></label>
-    <label>Data${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? ' di inizio' : ''} <input id="cal-d1" type="date" class="sh-in"></label>
-    ${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? '<label>Data di fine <input id="cal-d2" type="date" class="sh-in"></label>' : ''}
-    <label>Tipo di attività <select id="cal-tp" class="sh-in" onchange="calTpAltro(this)"><option value="">—</option>${uscTipi().map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}<option value="__altro">Altro (lo scrivo io)</option></select></label><label id="cal-tpa" hidden>Quale? <input id="cal-tpt" class="sh-in" maxlength="60"></label>
+    <fieldset class="cal-for-f"><legend class="sh-lb">Per chi</legend><label><input type="radio" name="cal-dest" value="unita"${dst === 'unita' ? ' checked' : ''} onchange="calDest(this.value)"> Per l’Unità</label><label><input type="radio" name="cal-dest" value="staff"${dst === 'staff' ? ' checked' : ''} onchange="calDest(this.value)"> Solo per lo staff</label></fieldset>
+    <label>Nome <input id="cal-nt" class="sh-in" maxlength="80" placeholder="${esc(CAL_T[SH._calNew][0])}" value="${esc(dr.nt || '')}"></label>
+    <label>Data${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? ' di inizio' : ''} <input id="cal-d1" type="date" class="sh-in" value="${esc(dr.d1 || '')}"></label>
+    ${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? `<label>Data di fine <input id="cal-d2" type="date" class="sh-in" value="${esc(dr.d2 || '')}"></label>` : ''}
+    <label>${dst === 'staff' ? 'Tipo di attività formativa' : 'Tipo di attività'} <select id="cal-tp" class="sh-in" onchange="calTpAltro(this)"><option value="">—</option>${(dst === 'staff' ? USC_TIPI_ST : uscTipi()).map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}<option value="__altro">Altro (lo scrivo io)</option></select></label><label id="cal-tpa" hidden>Quale? <input id="cal-tpt" class="sh-in" maxlength="60"></label>
     <div class="cal-wa"><button type="button" class="sh-btn" onclick="calMake()">Crea</button><button type="button" class="sh-btn gh" onclick="SH._calNew=null;calRe()">Annulla</button></div></div>` : '';
   const addB = can ? `<div class="cal-add" role="group" aria-label="Aggiungi un contenitore">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<button type="button" class="sh-btn gh" onclick="calNew('${m}')">+ ${esc(CAL_T[m][0])}</button>`).join('')}</div>` : '';
-  const contH = conts.map(u => {
-    const md = uscModK(u); const T = CAL_T[md] || CAL_T.giorno; const bl = uscBlocks(u); const mine = [];
-    bl.forEach(o => { if(o.m && o.m.k === 'att'){ const f = uscAttFind(o.m); if(f && byK[f.idx + '-' + f.j]) mine.push({r:byK[f.idx + '-' + f.j], k:o.k, g:Math.max(1, Number(o.m.g) || 1)}); } });
-    const other = bl.length - mine.length;
-    return `<section class="cal-c" data-u="${u.id}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
-      <header><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><b>${esc(uscTit(u))}</b>${uscTipoLab(u) ? `<span class="cal-tp">${esc(uscTipoLab(u))}</span>` : ''}<span class="cal-dt">${esc(calDateTxt(u))}</span><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri ${T[0] === 'Riunione' ? 'la riunione' : 'l’uscita'}</button>${can ? `<button type="button" class="cal-bt2" onclick="calDup('${u.id}')" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button>` : ''}</header>
-      <div class="cal-cb">${mine.length ? mine.map(m => calBlock(m.r, {u, k:m.k})).join('') : '<div class="cal-empty">Trascina qui le attività, oppure usa «Sposta in…».</div>'}${other > 0 ? `<div class="cal-more">${other} ${other === 1 ? 'altro momento' : 'altri momenti'} (pasti, giochi, spostamenti…) nell’${T[0] === 'Riunione' ? 'evento' : 'uscita'}.</div>` : ''}</div></section>`;
-  }).join('');
-  return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui l’Unità vive le attività dei percorsi: crea una riunione, un’uscita, un bivacco o un campo e metti le attività nei contenitori. La data del contenitore diventa la data dell’attività.</p></div></div>
-    ${banner}${addB}${form}
+  const MN = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  const dk = u => { const d = String((u.ax || {}).data || ''); return /^\d{4}-\d{2}/.test(d) ? d.slice(0, 7) : ''; };
+  const srt = conts.slice().sort((a, b) => (dk(a) || '9999').localeCompare(dk(b) || '9999') || String((a.ax || {}).data || '').localeCompare(String((b.ax || {}).data || '')) || (a.cr || 0) - (b.cr || 0));
+  const row = u => {
+    const md = uscModK(u); const T = CAL_T[md] || CAL_T.giorno; const stf = u.dest === 'staff'; const d = String((u.ax || {}).data || '').slice(0, 10);
+    const dd = /^\d{4}-\d{2}-\d{2}$/.test(d) ? `<b>${+d.slice(8)}</b><small>${esc(new Date(d + 'T12:00').toLocaleDateString('it-IT', {weekday:'short'}).replace(/\.$/, ''))}</small>` : '<b>—</b><small>senza data</small>';
+    return `<section class="cal-c cal-row${stf ? ' cal-stf' : ''}" style="--c:${T[1]}" data-u="${u.id}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
+      <div class="cal-rd" aria-hidden="true">${dd}</div>
+      <button type="button" class="cal-rm" onclick="shSrUsc('${u.id}')" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span></span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span></button>
+      <div class="cal-ra"><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri</button>${can ? `<button type="button" class="cal-bt2" onclick="calDup('${u.id}')" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button><button type="button" class="cal-bt2 cal-del" onclick="calDel('${u.id}')" aria-label="Elimina ${esc(uscTit(u))}">Elimina</button>` : ''}</div></section>`;
+  };
+  let contH = ''; let curM = null;
+  srt.forEach(u => { const m = dk(u); if(m !== curM){ if(curM !== null) contH += '</div>'; curM = m; contH += `<div class="cal-mese"><h3>${m ? esc(MN[+m.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4)) : 'Senza data'}</h3>`; } contH += row(u); });
+  if(curM !== null) contH += '</div>';
+  const leg = `<div class="cal-leg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}<span><em class="cal-fo uni">Unità</em></span><span><em class="cal-fo stf">Staff</em></span></div>`;
+  return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui trovi tutti gli eventi dell’anno, mese per mese: riunioni, uscite, bivacchi e campi, dell’Unità e dello staff. Aprine uno per organizzarlo. Le attività dei percorsi ancora senza un posto stanno nel riquadro «Da collocare»: trascinale su un evento dell’Unità, o usa «Sposta in…». La data dell’evento diventa la data dell’attività.</p></div></div>
+    ${banner}${addB}${form}${calChkStrip(can)}
     <div class="cal-grid">
       <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${pool.length}</span></header><div class="cal-cb">${pool.length ? pool.map(r => calBlock(r, null)).join('') : `<div class="cal-empty">${acts.length ? 'Tutte le attività hanno un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi».'}</div>`}</div></section>
-      <div class="cal-cs">${contH || '<div class="cal-empty cal-empty2">Nessun contenitore: con i pulsanti qui sopra crei una riunione, un’uscita, un bivacco o un campo.</div>'}</div>
+      <div class="cal-cs">${leg}${contH || '<div class="cal-empty cal-empty2">Nessun evento: con i pulsanti qui sopra crei una riunione, un’uscita, un bivacco o un campo.</div>'}</div>
     </div>`;
 }
 function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ p.innerHTML = calHTML(); } }
@@ -17727,8 +17944,14 @@ window.calDup = function(id){
   c.ax = c.ax || {}; c.ax.data = sh(c.ax.data); if(c.ax.dataFine) c.ax.dataFine = sh(c.ax.dataFine);
   uscMap()[nid] = c; saveData(true); try{ uscNavSync(); }catch(e){} showToast('Duplicato una settimana dopo: cambia la data se serve'); calRe();
 };
+window.calDest = function(v){ SH._calDraft = {nt:($('cal-nt') || {}).value || '', d1:($('cal-d1') || {}).value || '', d2:($('cal-d2') || {}).value || ''}; SH._calDest = v === 'staff' ? 'staff' : 'unita'; calRe(); };
+window.calDel = function(id){
+  if(!calCan()) return; const u = uscGet(id); if(!u) return;
+  if(!confirm('Eliminare «' + uscTit(u) + '»? Le attività dei percorsi che contiene tornano in «Da collocare».')) return;
+  u.del = true; saveData(true); try{ if(typeof USC_CUR !== 'undefined' && USC_CUR === id) USC_CUR = null; }catch(e){} try{ uscNavSync(); }catch(e){} showToast('Evento eliminato'); calRe();
+};
 window.calTpAltro = function(sel){ const l = $('cal-tpa'); if(l) l.hidden = sel.value !== '__altro'; };
-window.calNew = function(m){ SH._calNew = m; calRe(); setTimeout(() => { const e = $('cal-nt'); if(e) e.focus(); }, 40); };
+window.calNew = function(m){ SH._calNew = m; SH._calDraft = null; calRe(); setTimeout(() => { const e = $('cal-nt'); if(e) e.focus(); }, 40); };
 window.calMake = function(){
   if(!calCan()) return; const md = SH._calNew || 'giorno'; const t = String(($('cal-nt') || {}).value || '').trim(); const d1 = ($('cal-d1') || {}).value || '', d2 = ($('cal-d2') || {}).value || '';
   if(!d1){ showToast('Scegli la data'); const e = $('cal-d1'); if(e) e.focus(); return; }
@@ -17739,8 +17962,9 @@ window.calMake = function(){
   x.luogo = {}; if(md === 'sede') uscLuogoTipo(x, 'sede');
   const tp = ($('cal-tp') || {}).value || '', tpt = String(($('cal-tpt') || {}).value || '').trim().slice(0, 60);
   uscMap()[id] = {id, cr:Date.now(), testo:t || CAL_T[md][0], modello:md, ax:x, prog:{}, hid:Object.assign({}, USC_HID[md] || {}), own:{}};
+  if(SH._calDest === 'staff'){ const uu = uscMap()[id]; uu.dest = 'staff'; uu.riservata = false; delete uu.ax.pres.rag; delete uu.ax.pres.ragF; delete uu.ax.pres.ragM; }
   if(tp){ uscMap()[id].tipo = tp; if(tp === '__altro') uscMap()[id].tipoAltro = tpt; }
-  saveData(true); SH._calNew = null; try{ uscNavSync(); }catch(e){} showToast(CAL_T[md][0] + ' creata'); calRe();
+  const wasStf = SH._calDest === 'staff'; saveData(true); SH._calNew = null; SH._calDraft = null; SH._calDest = null; try{ uscNavSync(); }catch(e){} showToast(CAL_T[md][0] + (wasStf ? ' dello staff creata' : ' creata')); calRe();
 };
 function calOut(idx, j, uid, k){ const u = uscGet(uid); const m = u && u.prog && u.prog[k]; if(m && !m.del) m.del = true; }
 function calIn(idx, j, uid){
@@ -17750,6 +17974,7 @@ function calIn(idx, j, uid){
   if(m){ const iso = uscDayIso(u, Math.max(1, Number(m.g) || 1)); const a = per.attivita[j]; if(iso && a){ a.ax = a.ax || {}; a.ax.data = iso; } }
 }
 function calMove(idx, j, from, to){
+  try{ const tu = to ? uscGet(to) : null; if(tu && tu.dest === 'staff'){ showToast('Gli eventi dello staff sono formativi: non ricevono le attività educative dei percorsi.'); return; } }catch(e){}
   if(!calCan()) return; const [fu, fk] = (from || '').split('|');
   if(to === '' || to === '-'){ if(!fu){ return; } calOut(idx, j, fu, fk); }
   else { if(fu && fu === to) return; if(fu) calOut(idx, j, fu, fk); calIn(idx, j, to); }
@@ -18012,15 +18237,138 @@ window.shSearchRun = function(v){
   out.push('<div class="sh-sf"><button type="button" class="sh-sl" onclick="shSearchClose();anOpen(\'an\')">Cerca nell’archivio nazionale delle attività →</button></div>');
   box.innerHTML = out.join('');
 };
+
+// ── Adulti dello staff: modulo collegato alla Programmazione di Unità (stessi strumenti dello staff, dati in chiavi separate da quelli dei ragazzi) ──
+const DISC_STAFF = [
+  ['Perché osservare anche gli adulti?', 'I 24 percorsi descrivono quello che vogliamo far crescere nei ragazzi. Ma non puoi accompagnare qualcuno verso qualcosa che tu per primo non conosci un po’ da dentro. I ragazzi imparano più da quello che vedono fare ai loro capi che da quello che sentono dire: guardare il tuo staff con la stessa lente dell’Unità aiuta a tenere insieme le due cose.'],
+  ['Prima di leggere', 'Le osservazioni formative non sono giudizi: sono strumenti di orientamento. Nascono da ciò che è emerso in un contesto specifico e in un momento preciso. Usale come punto di partenza per un dialogo aperto con ogni membro dello staff, non come valutazioni definitive.'],
+  ['Uno spazio sicuro', 'Questo strumento non serve a giudicare: è uno spazio di riflessione, senza conseguenze sulle persone (è il «safe space»). Sentirsi al sicuro però non basta per cambiare: serve anche scegliere di mettersi in gioco nonostante l’incertezza (è il «brave space»). Nell’auto osservazione, ciò che segue non è un giudizio su di te: misura solo un istante del tuo cammino educativo.'],
+  ['Attenzione ai dati personali', 'Ciò che scrivi riguarda persone reali. Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).']
+];
+const discVisto = k => { try{ return !!((((SH.prof || {}).dashboard || {}).visti || {})[k]); }catch(e){ return false; } };
+function discMark(k){
+  const d = Object.assign({}, (SH.prof && SH.prof.dashboard) || {}); const v = Object.assign({}, d.visti || {}); if(v[k]) return; v[k] = 1; d.visti = v; SH.prof = SH.prof || {}; SH.prof.dashboard = d;
+  clearTimeout(SH._discT); SH._discT = setTimeout(() => { try{ SH.profSave({nome:SH.prof.nome, ruolo:SH.prof.ruolo, branca:SH.prof.branca, sezione:SH.prof.sezione, gruppo:SH.prof.gruppo, area_rcdf:SH.prof.area_rcdf, dashboard:SH.prof.dashboard}); }catch(e){} }, 600);
+}
+// aperto la prima volta (poi lo stato «già visto» è nel profilo), richiudibile quando si vuole
+function discHTML(k){
+  const O = SH._discOpen = SH._discOpen || {};
+  if(!discVisto(k) && O[k] === undefined){ O[k] = true; if(!window.BRO) discMark(k); }
+  return `<details class="sh-disc" id="sh-disc-${k}"${O[k] ? ' open' : ''} ontoggle="SH._discOpen['${k}']=this.open"><summary>Prima di osservare gli adulti<span>Quattro cose da sapere, valide per tutte le pagine sull’osservazione dello staff</span></summary><div class="sh-disc-in">${DISC_STAFF.map(x => `<h4>${esc(x[0])}</h4><p>${esc(x[1])}</p>`).join('')}</div></details>`;
+}
+function discDom(){ try{ if(MODE !== 'staff') return; const root = $('percorsi-root'); if(!root || root.querySelector('.sh-disc')) return; const ph = document.getElementById('panel1'); if(!ph || !ph.classList.contains('active')) return; root.insertAdjacentHTML('afterbegin', discHTML('staffobs')); }catch(e){} }
+(function(){ const r0 = window.renderStaffPhase1; if(typeof r0 === 'function') window.renderStaffPhase1 = function(){ const x = r0.apply(this, arguments); discDom(); return x; }; })();
+function staffTabNomi(){ try{ return (staffTab() || []).filter(r => r && String(r.nome || '').trim()); }catch(e){ return []; } }
+function staffPageHTML(){
+  const mem = staffTabNomi(); const can = !window.BRO;
+  return `<div class="sh-dh"><div><h1>Il mio staff</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui osservi gli adulti con cui programmi. È uno strumento distinto da quello con cui osservi i ragazzi: i dati sono conservati a parte e non si mescolano. Chi c’è nello staff lo scrivi in «Capire · Il mio staff».</p></div></div>
+  ${discHTML('staffobs')}
+  <section class="sh-card2 wide"><h3>Osservazione degli adulti</h3><p class="sh-sub" style="margin:0">${mem.length ? 'Nella tabella dello staff ' + (mem.length === 1 ? 'c’è' : 'ci sono') + ' ' + mem.length + (mem.length === 1 ? ' persona' : ' persone') + '. ' : 'Nella tabella dello staff non c’è ancora nessuno: puoi comunque cominciare dall’auto osservazione. '}L’osservazione si apre come progetto collegato a questa Unità, con il suo menu; da lì torni qui con «← Programmazione di Unità».</p>${can ? `<div class="anv-act"><button type="button" class="sh-btn" onclick="shStaffOpen()">Apri l’osservazione dello staff</button></div>` : ''}</section>
+  <section class="sh-card2 wide" id="st-ins"><h3>Lettura d’insieme: Unità e staff</h3><p class="sh-sub" role="status" style="margin:0">Carico…</p></section>`;
+}
+window.shStaffPage = function(){ ensurePanels(); SH.ppv = 'staffobs'; ownOff(); $('panel-pp').innerHTML = staffPageHTML(); own('panel-pp'); stInsight(); };
+function obsCount(o){ return Object.values(o || {}).filter(v => v && v !== 'n').length; }
+async function stInsight(){
+  const box = () => $('st-ins'); let st = null;
+  try{
+    if(!CL.sb || !CL.user || !CL.ctx) throw 0;
+    const rows = await dbList(); const anno = Number(CL.ctx.anno); const cur = rows.find(r => r.id === CL.ctx.id); const vk = cur ? vesteKey(cur.meta) : null;
+    const ex = rows.find(r => Number(r.anno) === anno && (r.meta || {}).mode === 'staff' && ((r.meta || {}).sruolo || 'CU') !== 'CG' && (vk === null || vesteKey(r.meta) === vk));
+    if(ex){ const g = await dbGet(ex.id); st = (g && g.data) || {}; }
+  }catch(e){}
+  const b = box(); if(!b) return;
+  const uN = obsCount(obs), uT = (() => { try{ return Object.values(DB).flat().length; }catch(e){ return 0; } })();
+  const m = st ? (st.STAFF_MEMBERS || []) : []; const sN = st ? m.reduce((a, n) => a + obsCount((st.staffObs || {})[n]), 0) + obsCount(st.autoObs) : 0;
+  b.innerHTML = `<h3>Lettura d’insieme: Unità e staff</h3><p class="sh-sub" style="margin:0 0 4px">Qui i due lavori si leggono affiancati, in sola lettura: non si mescolano i dati e ognuno si modifica dove è nato.</p>
+    <div class="st-ins"><div><b>L’Unità</b><span>${uN} comportamenti osservati${uT ? ' su ' + uT : ''}</span></div><div><b>Lo staff</b><span>${st ? (m.length ? m.length + (m.length === 1 ? ' persona osservata' : ' persone osservate') + ' · ' : '') + sN + ' comportamenti osservati (compresa l’auto osservazione)' : 'Non hai ancora aperto l’osservazione dello staff.'}</span></div></div>
+    <p class="sh-hint" style="margin:6px 0 0">Il confronto fra punti di forza e punti deboli dell’Unità e dello staff arriva nella lettura del gruppo, quando entrambi i lavori sono avviati.</p>`;
+}
+window.shStaffOpen = async function(){
+  if(window.BRO || !CL.ctx || !CL.user) return;
+  try{
+    saveData(true); try{ await clPush(true); }catch(e){}
+    const rows = await dbList(); const anno = Number(CL.ctx.anno); const cur = rows.find(r => r.id === CL.ctx.id); const vk = cur ? vesteKey(cur.meta) : null;
+    const ex = rows.find(r => Number(r.anno) === anno && (r.meta || {}).mode === 'staff' && ((r.meta || {}).sruolo || 'CU') !== 'CG' && (vk === null || vesteKey(r.meta) === vk));
+    if(ex){ await clOpenProject(ex.id); return; }
+    const ud = clSnapshot(); const as = (scheda && scheda.annoScout) || annoScoutTxt(anno); const unit = String(UNIT_NAME || '').trim();
+    const fresh = {v:1, MODE:'staff', STAFF_TYPE:'misto', STAFF_RUOLO:'CU', UNIT_NAME:''};
+    pjStaffSeed(fresh, ud);
+    fresh.scheda = Object.assign({}, fresh.scheda || {}, {annoScout:as, veste:{ruolo:(scheda.veste && scheda.veste.ruolo) || 'cu', branca:FASCIA || ''}, staffDi:CL.ctx.id});
+    fresh.ts = Date.now();
+    const titolo = await uniqueTitle(rows, anno, 'Staff ' + as + (unit ? ' · ' + unit : ''));
+    const r = await dbInsert(anno, titolo, fresh, clMeta(fresh));
+    SH.rows = null; SH._ay = null; CL.ctx = null; try{ localStorage.removeItem(CL_LS); }catch(e){}
+    await clOpenProject(r.id);
+  }catch(e){ clToast('Non sono riuscito ad aprire lo staff: ' + ((e && e.message) || 'riprova')); }
+};
+window.shStaffBack = async function(){
+  const id = scheda && scheda.staffDi; if(!id){ shGoHome(); return; }
+  try{ saveData(true); try{ await clPush(true); }catch(e){} }catch(e){}
+  try{ sessionStorage.setItem('pee_goto', 'staff'); }catch(e){}
+  await clOpenProject(id);
+};
+
+// tornando indietro da un evento si torna al calendario (non alla vecchia lista delle uscite)
+(function(){ const o = window.uscOpen; if(typeof o === 'function') window.uscOpen = function(id, tab){ try{ if(!id && MODE === 'giovani' && !isPP() && !window.BRO_NOREDIR){ USC_CUR = null; shCal(); return; } }catch(e){} return o.apply(this, arguments); }; })();
+// Check dello staff dentro il calendario: ogni check attivo si mette in calendario come evento dello staff
+function calChkStrip(can){
+  let L = []; try{ L = chkList().filter(c => c.on); }catch(e){} if(!L.length) return '';
+  const U = uscList().filter(u => u.dest === 'staff' && u.chk);
+  const row = c => { const n = (() => { try{ return chkNext(c); }catch(e){ return null; } })(); const ex = U.find(u => u.chk === c.id && n && String((u.ax || {}).data || '').slice(0, 7) >= (n.y + '-' + String(n.m).padStart(2, '0')) && String((u.ax || {}).data || '').slice(0, 7) <= (n.y2 + '-' + String(n.m2).padStart(2, '0')));
+    return `<div class="cal-chk"><b>${esc(c.nome)}</b><span class="cal-meta">Prossimo: ${esc(chkWhen(c))}</span>${ex ? `<button type="button" class="cal-bt2" onclick="shSrUsc('${ex.id}')">In calendario: ${esc(calDateTxt(ex))} · apri</button>` : (can && n ? `<button type="button" class="cal-bt2" onclick="calChkPlan('${c.id}')">Metti in calendario</button>` : '')}</div>`; };
+  return `<details class="cal-chks"><summary>Check dello staff <span class="sh-hint">momenti per vedere come sta lo staff: li metti in calendario come eventi dello staff</span></summary>${L.map(row).join('')}<div class="anv-act"><button type="button" class="btn-ghost" onclick="shChk()">Imposta i check</button></div></details>`;
+}
+window.calChkPlan = function(id){
+  if(!calCan()) return; const c = chkList().find(x => x.id === id); if(!c) return; const n = chkNext(c); if(!n){ showToast('Questo check non ha ancora una data: imposta i mesi in «Check dello staff».'); return; }
+  const d1 = n.y + '-' + String(n.m).padStart(2, '0') + '-15'; const uid = uscNewId('u'); const ad = [];
+  try{ (staffTab() || []).forEach(r => { const q = (r.nome || '').trim(); if(q) ad.push(q + (r.ruolo ? ' (' + r.ruolo + ')' : '')); }); }catch(e){}
+  const x = {data:d1, durata:'giorno', pres:{ad}, cibo:{carico:'ragazzi'}, luogo:{}}; uscLuogoTipo(x, 'sede');
+  uscMap()[uid] = {id:uid, cr:Date.now(), testo:c.nome, modello:'sede', ax:x, prog:{}, hid:Object.assign({}, USC_HID.sede || {}), own:{}, dest:'staff', riservata:false, chk:c.id, tipo:'Attività formativa'};
+  saveData(true); try{ uscNavSync(); }catch(e){} showToast('«' + c.nome + '» messo in calendario a metà ' + CHK_MN[n.m - 1] + ': scegli tu il giorno'); calRe();
+};
+
+// ── Percorsi educativi: tre pagine, una per Ambito (come in Osservare) ──
+window.shPerc = function(a){ window._pcAmb = ['P','C','S'].indexOf(a) >= 0 ? a : 'P'; ownOff(); gGo('3'); try{ applyPca(); }catch(e){} setTimeout(shSync, 30); try{ window.scrollTo(0, 0); }catch(e){} };
+function applyPca(){
+  const on = (MODE === 'giovani' && !isPP() && gCur() === '3') ? (window._pcAmb || 'P') : '';
+  if(document.body.getAttribute('data-pca') !== on) document.body.setAttribute('data-pca', on);
+}
+// ── Testi guida: ogni pagina della Scheda dice cosa fare, cosa si aspettano le Linee Guida e come compilare bene ──
+const GUIDA = {
+  unit:{t:'La mia unità', cosa:'Scrivi chi compila la scheda, come si chiama l’Unità e quanti siete.', lg:'Le Linee Guida chiedono di segnalare i riferimenti importanti su adulti, contesto territoriale e associativo.', sug:['I numeri che scrivi qui tornano più avanti (cassa, quote, circolari): tienili aggiornati.','Se riprendi da un ciclo precedente, controlla che i dati siano ancora quelli giusti.']},
+  ctx:{t:'Il mio contesto', cosa:'Descrivi il territorio in cui opera l’Unità e la Sezione e il Gruppo di cui fa parte.', lg:'Contesto territoriale: gli elementi che possono influenzare l’Unità (distanza dai mezzi di trasporto, parchi, offerte del territorio…). Contesto di Sezione e Gruppo: com’è composto, quanti adulti ci sono in staff, esperienza e disponibilità.', sug:['Scrivi ciò che cambia davvero il modo di programmare (distanze, spazi, risorse), non una descrizione generica.']},
+  staff:{t:'Il mio staff', cosa:'Elenca gli adulti dello staff con ruolo, esperienza, formazione e disponibilità. Tu ci sei già, con il ruolo del tuo profilo.', lg:'Le Linee Guida chiedono di indicare il numero di adulti in staff, l’esperienza e la disponibilità.', sug:['Inserisci solo ciò che le persone sono d’accordo a condividere, in modo rispettoso e non giudicante, senza dati sensibili.','Se programmate insieme, spunta chi invitare e scegli il suo ruolo: serve l’email.']},
+  occ:{t:'Come osservo', cosa:'Indica le occasioni in cui hai osservato il gruppo (attività del KOS o tue) con la data, e scegli se osservi da solo o insieme allo staff.', lg:'L’osservazione deve basarsi su attività concrete (2-3 attività iniziali) e il gruppo osservato deve coincidere con quello per cui programmi.', sug:['Osserva con il gruppo che vivrà il percorso: se lo hai fatto prima di settembre o con un gruppo diverso, scrivilo tra i limiti dell’osservazione.','Con l’osservazione condivisa ogni capo dà il suo valore e poi lo confrontate; i dati dell’osservazione individuale restano sempre conservati.']},
+  '2':{t:'Obiettivi e indicatori', cosa:'Per ogni priorità scegli la necessità educativa, il percorso, l’obiettivo e gli Indicatori di Risultato, con la tempistica.', lg:'Almeno un obiettivo per ogni Ambito (Personale, Comunitario, Spirituale), scelti dal manuale PEE e coerenti con le necessità emerse; Indicatori di Risultato dal manuale (nelle Linee Guida del PP almeno 2 per obiettivo, il manuale rev25 chiede almeno uno); priorità motivate; tempistica non inferiore a un trimestre.', sug:['Parti dalle necessità emerse nell’osservazione e scegli l’obiettivo che risponde meglio a ciascuna.','Le date stanno sempre insieme a Visione d’insieme e Percorsi: se le cambi in un posto, cambiano anche negli altri.']},
+  '3':{t:'Percorsi educativi', cosa:'Per ogni priorità: strumenti del metodo, tempistica e la traccia delle attività del percorso, ciascuna con Lancio, Sviluppo e Conclusione.', lg:'Strumenti del Metodo declinati per la tua Branca; una tempistica congrua con l’obiettivo; la traccia delle attività; alla fine la verifica delle sette caratteristiche (nuovo, stimolante, progressivo, co-costruito, rielaborativo, esperienziale, educativo).', sug:['Dedica almeno un’attività alla rielaborazione, cognitiva ed emotiva.','Nella verifica delle sette caratteristiche spiega il perché di ciascuna: non basta spuntarla.','Una pagina per Ambito: lavora un percorso alla volta, dal menu a sinistra.']},
+  '4':{t:'Verifica delle attività', k:'4'},
+  '5':{t:'Valutazione finale', k:'5'},
+  chk:{t:'Controllo e invio', cosa:'Rileggi la scheda e controlla che sia completa prima di condividerla o scaricarla.', lg:'Le Sezioni 4 e 5 si compilano dopo aver vissuto il percorso.', sug:['Controlla di aver collegato ogni attività al suo percorso e di aver scritto date e obiettivi.']}
+};
+function guidaKey(){ try{ if(MODE !== 'giovani' || isPP()) return ''; const p4 = $('panel4'); if(!p4 || !p4.classList.contains('active')) return ''; if(schedaStep === 'ctx') return window._ctxF || 'unit'; return ({A:'2', B:'2', C:'3', ver:'4', val:'5', chk:'chk'})[schedaStep] || ''; }catch(e){ return ''; } }
+function guideApply(){
+  const k = guidaKey(); if(!k) return; const g = GUIDA[k]; const h = $('tut4-hdr'), l = $('tut4-list'); if(!g || !h || !l) return;
+  const L = g.k ? LG_ISTR[g.k] : null; const li = (a, b) => `<li><strong>${a}</strong> ${b}</li>`;
+  let html;
+  if(L){ html = li('Cosa fare.', esc((L.intro ? L.intro + ' ' : '') + (L.cosa || []).join(' · '))) + li('Cosa si aspettano le Linee Guida.', esc((L.crit || []).join(' · '))) + li('Per compilare bene.', k === '4' ? 'Scrivi una verifica per ogni attività appena la vivi, mentre è fresca.' : 'Usa gli Indicatori di Risultato scelti nella Sezione 2 e rispondi con esempi concreti, non con impressioni.'); }
+  else html = li('Cosa fare.', esc(g.cosa)) + li('Cosa si aspettano le Linee Guida.', esc(g.lg)) + g.sug.map(x => li('Per compilare bene.', esc(x))).join('');
+  const head = 'Come funziona — ' + g.t;
+  if(h.textContent !== head) h.textContent = head;
+  if(l.dataset.gh !== html || l.innerHTML.indexOf('Cosa fare.') < 0){ l.innerHTML = html; l.dataset.gh = html; }
+}
 window.shEnter = function(){
   if(window.BRO && !$('main-app')) return;
-  document.body.classList.add('sh-in', 'sh-ready');
+  document.body.classList.add('sh-in', 'sh-ready'); try{ brandApply(); }catch(e){}
   headerSetup(); ensurePanels(); paint();
+  let wantNC = false; try{ wantNC = sessionStorage.getItem('pee_want_nc') === '1'; sessionStorage.removeItem('pee_want_nc'); }catch(e){}
   let pos = null; try{ pos = localStorage.getItem('bussola_pos:' + (CL.ctx && CL.ctx.id) + ':' + MODE); }catch(e){}
   const anyOwn = $('panel-dash').classList.contains('active') || $('panel-pp').classList.contains('active');
   if(isPP()){ if(!anyOwn) shPP('0'); }
   else if(isST()){ /* progetto dello staff (versione precedente o Capo Gruppo): resta com'è */ }
   else if(!anyOwn && !pos && !window.BRO){ shDash(); }
+  let gotoSt = false; try{ gotoSt = sessionStorage.getItem('pee_goto') === 'staff'; sessionStorage.removeItem('pee_goto'); }catch(e){}
+  if(gotoSt && !isST() && !isPP()){ shStaffPage(); }
+  if(wantNC && !window.BRO && !isST()){ SH.dscope = 'anno'; SH._ay = null; SH._ncForm = true; shDash(); }
   shSync();
 };
 // l'app aggiorna le sezioni da sola (ricarica del progetto, altre persone): la dashboard si ridisegna

@@ -21,7 +21,7 @@ ok(s.dash && s.on === 'Dashboard', 'Programmazione Annuale: si apre sulla Dashbo
 ok(s.grp.join('|') === 'Capire|Osservare|Progettare|Realizzare|Misurare|Conservare|Condividere', 'menu: gruppi Capire / Osservare / Progettare / Realizzare / Misurare / Conservare / Condividere');
 await ev(() => ['Capire','Osservare','Progettare','Realizzare','Misurare','Conservare','Condividere'].forEach(g => { if(!document.querySelector('#sh-side .sh-gh.open[onclick*="' + g + '"]')) shGrp(g); })); await sleep(300);
 s.items = await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()));
-ok(['La mia unità','Il mio contesto','Il mio staff','Come osservo','Sviluppo Personale','Sviluppo Comunitario','Sviluppo Spirituale','Lettura del gruppo','Priorità','Obiettivi e indicatori','Percorsi educativi','Calendario e attività','Verifica delle attività','Valutazione finale','Archivio degli anni','Condividi con lo staff','Controllo e invio'].every(x => s.items.includes(x)), 'menu: tutte le voci dei sette gruppi');
+ok(['La mia unità','Il mio contesto','Il mio staff','Come osservo','Sviluppo Personale','Sviluppo Comunitario','Sviluppo Spirituale','Lettura del gruppo','Priorità','Obiettivi e indicatori','Percorso Personale','Percorso Comunitario','Percorso Spirituale','Calendario e attività','Verifica delle attività','Valutazione finale','Archivio degli anni','Condividi con lo staff','Controllo e invio'].every(x => s.items.includes(x)), 'menu: tutte le voci dei sette gruppi');
 ok(s.ph === 'none' && s.theme === 'E', 'schede di fase vecchie nascoste, tema verde della Branca E');
 const hdr = await ev(() => document.getElementById('hdr').innerText);
 ok(/Progetti/.test(hdr) && /Guida/.test(hdr) && !/Video/.test(hdr) && /Suggerimenti/.test(hdr) && await ev(() => !!document.querySelector('#hdr #hd-search') && !!document.querySelector('#hdr #hd-hist') && !!document.querySelector('#hdr .hd-zoom') && !!document.querySelector('#hdr .hd-name')), 'intestazione: Progetti, Guida, Suggerimenti, lente, orologio, A a, nome (Video dentro la Guida)');
@@ -33,7 +33,7 @@ r = await go('La mia unità'); ok(r.p[0] === 4 && r.step === 'ctx' && r.on === '
 r = await go('Lettura del gruppo'); ok(r.p[0] === 2 && r.on === 'Lettura del gruppo', 'voce Lettura del gruppo');
 r = await go('Priorità'); ok(r.p[0] === 3 && r.on === 'Priorità', 'voce Priorità');
 r = await go('Obiettivi e indicatori'); ok(!r.dash && r.p[0] === 4 && r.step === 'B' && r.on === 'Obiettivi e indicatori', 'voce Obiettivi e indicatori');
-r = await go('Percorsi educativi'); ok(r.step === 'C' && r.on === 'Percorsi educativi', 'voce Percorsi educativi');
+r = await go('Percorso Comunitario'); ok(r.step === 'C' && r.on === 'Percorso Comunitario', 'voce Percorso Comunitario (tre pagine, una per Ambito)');
 r = await go('Verifica delle attività'); ok(r.step === 'ver' && r.on === 'Verifica delle attività', 'voce Verifica delle attività');
 r = await go('Valutazione finale'); ok(r.step === 'val' && r.on === 'Valutazione finale', 'voce Valutazione finale');
 r = await go('Calendario e attività'); ok(await ev(() => document.getElementById('panel-pp').classList.contains('active') && /Calendario e attività/.test(document.getElementById('panel-pp').innerText)), 'voce Calendario e attività: la pagina a contenitori');

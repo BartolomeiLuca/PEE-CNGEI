@@ -21,33 +21,33 @@ await ev(() => gGo('1b')); await sleep(800);
 await ev(() => document.getElementById('card-P1').classList.add('expanded'));
 const s = await ev(() => ({sub:(document.querySelector('#card-P1 .gr-sub')||{}).textContent||'', rows:document.querySelectorAll('#card-P1 .gr-row.gr-hl').length, ta:[...document.querySelectorAll('#card-P1 .gr-foc textarea')].map(t => t.value), note:document.querySelector('#card-P1 .gr-foc .gr-old')?.textContent||'', picks:[...document.querySelectorAll('#card-P1 .gr-row.gr-hl')].map(r => r.querySelectorAll('.gr-pi input').length), els:grElems('P1').length}));
 ok(/Corporeità: Espressività, consapevolezza fisica, gestione stress fisico/.test(s.sub), 'sottotitolo del Reparto accanto al percorso');
-ok(s.rows === 2 && s.ta.length === 1 && s.ta[0] === kosTxt && /Proposto dal KOS 2\.0/.test(s.note), 'attività del KOS: il focus del KOS 2.0 è già scritto e modificabile; attività propria: nessun testo precompilato');
+ok(s.rows === 2 && s.ta.length === 2 && s.ta[0] === kosTxt && s.ta[1] === '' && /Proposto dal KOS 2\.0/.test(s.note), 'attività del KOS: il focus del KOS 2.0 è già scritto e modificabile; attività propria: campo vuoto');
 ok(s.els >= 3 && s.picks.every(n => n === s.els), 'ogni riga ha la tendina con gli spunti «cosa osservare» della Branca (' + s.els + ')');
 // spunta
 await P.click('#card-P1 .gr-row.gr-hl >> nth=1 >> summary'); await sleep(200);
 await P.check('#card-P1 .gr-row.gr-hl >> nth=1 >> .gr-pi input >> nth=0'); await sleep(300);
 const el0 = await ev(() => grElems('P1')[0]);
 const mid = await ev(() => scheda.pp.occMan[0].id);
-ok(await ev(([k, e]) => { const g = (scheda.griglia.P1 || {})[k]; return !!(g && g.fsel && g.fsel.length === 1 && g.fsel[0] === e); }, ['m:' + mid, el0]), 'spunta salvata (anche su attività propria)');
-ok(await ev(() => document.querySelectorAll('#card-P1 .gr-row.gr-hl')[1].querySelector('.gr-chip') !== null && document.querySelectorAll('#card-P1 .gr-row.gr-hl')[1].querySelector('.gr-n').textContent === '1'), 'la scelta compare come etichetta e il contatore sale');
-// altro
-await P.click('#card-P1 .gr-row.gr-hl >> nth=0 >> .gr-add'); await sleep(300);
-await P.fill('#card-P1 .gr-row.gr-hl >> nth=0 >> .gr-alt textarea', 'Mio focus speciale'); await sleep(300);
-await P.click('#card-P1 .gr-row.gr-hl >> nth=0 >> .gr-add'); await sleep(200);
-ok(await ev((k) => { const g = scheda.griglia.P1[k]; return g && g.falt && g.falt[0] === 'Mio focus speciale' && g.falt.length === 2; }, 'k:' + key), '«+ Altro»: più campi liberi, il testo si salva');
+ok(await ev(([k, e]) => { const g = (scheda.griglia.P1 || {})[k]; return !!(g && String(g.foc || '').split('\n').includes(e)); }, ['m:' + mid, el0]), 'spunta salvata: lo spunto entra nel campo del focus (anche su attività propria)');
+ok(await ev((e) => { const r = document.querySelectorAll('#card-P1 .gr-row.gr-hl')[1]; return r.querySelector('.gr-chip') === null && r.querySelector('.gr-add') === null && r.querySelector('textarea.gr-focta').value.includes(e) && r.querySelector('.gr-n').textContent === '1'; }, el0), 'nessuna etichetta né «+ Altro»: lo spunto è nel campo e il contatore sale');
+// deselezione: lo spunto esce dal campo
+await P.uncheck('#card-P1 .gr-row.gr-hl >> nth=1 >> .gr-pi input >> nth=0'); await sleep(300);
+ok(await ev((e) => !document.querySelectorAll('#card-P1 .gr-row.gr-hl')[1].querySelector('textarea.gr-focta').value.includes(e), el0), 'togliendo la spunta lo spunto esce dal campo');
+await P.check('#card-P1 .gr-row.gr-hl >> nth=1 >> .gr-pi input >> nth=0'); await sleep(300);
+await P.fill('#card-P1 .gr-row.gr-hl >> nth=0 >> .gr-foc textarea', kosTxt + '\nMio focus speciale'); await sleep(300);
 // Word
 const exp = async () => { const [dl] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(() => exportSchedaDocx('full'))]); const path = await dl.path(); return execSync('unzip -p ' + path + ' word/document.xml').toString().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); };
 let xml = await exp();
 ok(xml.includes('Focus: ' + kosTxt.slice(0, 20)) || xml.includes(kosTxt), 'Word: il focus del KOS 2.0 compare nella cella');
-ok(xml.includes(el0) && xml.includes('Mio focus speciale'), 'Word: anche gli spunti scelti e i campi «Altro»');
+ok(xml.includes(el0) && xml.includes('Mio focus speciale'), 'Word: anche gli spunti scelti e il testo aggiunto a mano');
 ok(xml.includes('Attività: ' + nome + ' · 10 ottobre') && xml.includes('Attività: Gioco mio · 20 ottobre'), 'Word: «Attività: nome · data», senza numero');
 // svuoto il focus KOS
 await P.fill('#card-P1 .gr-row.gr-hl >> nth=0 >> .gr-foc textarea', ''); await sleep(300);
 xml = await exp();
-ok(!xml.includes(kosTxt) && xml.includes('Mio focus speciale'), 'se cancelli il focus del KOS non rientra da solo; il resto resta');
+ok(!xml.includes(kosTxt) && !xml.includes('Mio focus speciale') && xml.includes(el0), 'se cancelli il focus del KOS non rientra da solo; gli spunti delle altre righe restano');
 // dopo il ricaricamento i dati della griglia sono ancora agganciati all'attività propria
 await ev(() => { _clTouched = true; _clUserAt = Date.now(); saveData(true); }); await sleep(2500);
 await P.reload(); await sleep(2500); await ev(() => shOpen('p1', 0)); await sleep(3500); await ev(() => gGo('1b')); await sleep(800);
-ok(await ev(() => { const rows = grRows('P1'); const m = rows.find(r => /^m:/.test(r.k)); const g = m && (scheda.griglia.P1 || {})[m.k]; return !!(g && g.fsel && g.fsel.length === 1); }), 'dopo il ricaricamento la scelta sull\'attività propria è ancora lì');
+ok(await ev(() => { const rows = grRows('P1'); const m = rows.find(r => /^m:/.test(r.k)); const g = m && (scheda.griglia.P1 || {})[m.k]; return !!(g && String(g.foc || '').split('\n').filter(Boolean).length === 1); }), 'dopo il ricaricamento la scelta sull\'attività propria è ancora lì');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

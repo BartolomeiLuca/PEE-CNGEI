@@ -28,7 +28,7 @@ const noHScroll = ev => ev(() => document.documentElement.scrollWidth <= innerWi
   ok(await vis(ev, '#sh-side') && await ev(() => document.getElementById('sh-hb').getAttribute('aria-expanded') === 'true'), '820 px: il pulsante apre il menu a cassetto');
   await P.keyboard.press('Escape'); await sleep(400);
   ok(!(await vis(ev, '#sh-side')), '820 px: Esc chiude il cassetto');
-  await P.click('#sh-hb'); await sleep(300); await ev(() => shGrp('Progettare')); await sleep(200); await P.click('#sh-side .sh-si:has-text("Percorsi educativi")'); await sleep(500);
+  await P.click('#sh-hb'); await sleep(300); await ev(() => shGrp('Progettare')); await sleep(200); await P.click('#sh-side .sh-si:has-text("Percorso Personale")'); await sleep(500);
   ok(!(await vis(ev, '#sh-side')) && await ev(() => schedaStep === 'C'), '820 px: scegliere una voce chiude il cassetto e apre la sezione');
   await P.click('#sh-hb'); await sleep(300); await P.mouse.click(800, 500); await sleep(400);
   ok(!(await vis(ev, '#sh-side')), '820 px: un tocco fuori dal cassetto lo chiude');
@@ -40,7 +40,7 @@ const noHScroll = ev => ev(() => document.documentElement.scrollWidth <= innerWi
   ok((await ev(() => [...document.querySelectorAll('#sh-bb .sh-bbb')].map(b => b.textContent.trim()))).join('|') === 'Dashboard|Osservare|Progettare|Altro', '390 px: Dashboard, Osservare, Progettare, Altro');
   ok(await ev(() => [...document.querySelectorAll('#sh-bb .sh-bbb')].every(b => { const r = b.getBoundingClientRect(); return r.height >= 44 && r.width >= 44; })), '390 px: pulsanti di almeno 44 px');
   await P.click('#sh-bb .sh-bbb:has-text("Progettare")'); await sleep(300);
-  ok((await ev(() => document.querySelectorAll('#sh-sheet-in .sh-si').length)) === 7, '390 px: «Progettare» elenca Obiettivi, Percorsi, Visione d’insieme, Calendario, Elenco, Spese e Check dello staff');
+  ok((await ev(() => document.querySelectorAll('#sh-sheet-in .sh-si').length)) === 8, '390 px: «Progettare» elenca Obiettivi, i tre Percorsi, Visione d’insieme, Calendario, Elenco e Check dello staff (Spese ora è in Misurare)');
   await P.click('#sh-sheet-in .sh-si:has-text("Obiettivi e indicatori")'); await sleep(500);
   ok(await ev(() => schedaStep === 'B' && !document.getElementById('sh-sheet').classList.contains('show')), '390 px: scegliere una Sezione chiude il foglio e la apre');
   ok(await ev(() => document.querySelector('#sh-bb .sh-bbb.on').textContent.trim()) === 'Progettare', '390 px: la barra evidenzia «Progettare»');
