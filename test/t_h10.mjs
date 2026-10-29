@@ -1,0 +1,14 @@
+import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(engine);
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cg', branca:'', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+await loginAs(P, base, u); await sleep(1800);
+const s = await ev(() => ({t: document.getElementById('sh-root').textContent, big: document.querySelectorAll('.sh-big').length}));
+ok(s.big === 1 && /Programmazione formativa annuale/.test(s.t) && !/Progetto Personale|Programmazione Educativa Annuale/.test(s.t), 'Capo Gruppo senza progetti: una sola carta, in termini per adulti');
+await P.click('.sh-big'); await sleep(400);
+ok(await ev(() => /formativa annuale/.test(document.getElementById('sh-dlg').textContent) && document.getElementById('sh-lbl-pp').hidden), 'il «Nuovo progetto» parte già come programmazione formativa');
+process.exit(summary() ? 1 : 0);

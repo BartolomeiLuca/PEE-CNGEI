@@ -8058,7 +8058,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610291440'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610291500'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'22 ottobre 2026', t:'Uscite e campi, Cerca e archivio nazionale, trenta video', i:[
@@ -16371,6 +16371,10 @@ async function homeHTML(){
     const riga = `<div class="sh-prof-line"><span>${esc([RN[p.ruolo] || '', p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
     let h = top(true) + `<main class="sh-wrap">` + riga;
     if(!rows.length && !shr.length){
+      if(noBranca(p.ruolo)){
+        h += `<h1>Da dove vuoi cominciare?</h1><p class="sh-sub">Come ${esc(RUOLO_TXT[p.ruolo] || 'responsabile')} lavori con gli adulti del Gruppo: osservi, programmi la loro formazione e organizzi gli eventi per loro. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
+      <div class="sh-two" style="margin-top:6px"><button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout, per gli adulti</small><b>Programmazione formativa annuale</b><span>La formazione degli adulti del Gruppo nel corso dell’anno scout, dall’osservazione alla verifica.</span><ul><li>Osservazione dei Capi Unità e lettura d’insieme</li><li>Percorso formativo: attività dal paniere o tue, in ordine di priorità</li><li>Eventi per gli adulti: riunioni, uscite, bivacchi, attività formative</li><li>Check degli adulti e Word del percorso formativo da scaricare</li></ul><em>Inizia la programmazione formativa</em></button></div><p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.</p>`;
+      } else
       h += `<h1>Che cosa vuoi progettare?</h1><p class="sh-sub">La scelta decide quali Sezioni vedi, le regole di compilazione e gli invii. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
       <div class="sh-two" style="margin-top:6px">
         <button class="sh-big" type="button" onclick="shNew('PP')"><small>Per un adulto in formazione</small><b>Progetto Personale</b><span>Il Progetto Personale previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge). Chiunque voglia può aprirlo.</span><ul><li>Il tuo Progetto Personale passo passo, con la struttura indicata nelle Linee Guida</li><li>Osservazione del Gruppo di Pari con il KOS e la griglia osservativa</li><li>Un Percorso Educativo Esperienziale dettagliato, per l’obiettivo che scegli</li><li>Gli invii previsti (avvio, primo invio, invio finale) con i destinatari giusti</li><li>La checklist dei criteri, per controllare il lavoro prima di inviarlo</li></ul><em>Inizia il Progetto Personale</em></button>
