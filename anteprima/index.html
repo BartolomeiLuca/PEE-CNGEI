@@ -1443,6 +1443,7 @@ body.usc-on #tut-panel4,body.usc-on #panel4 .foot-nav,body.usc-on #g-dl,body.usc
 .ax-chipw{display:inline-flex;align-items:center;gap:2px}.ax-chipx{font:inherit;font-size:12px;line-height:1;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:10px}.ax-chipx:hover{background:#f1e4e4;color:#a33}.ax-chip-alt{border-style:dashed}.ax-altro{display:flex;gap:6px;align-items:center;margin:6px 0}.ax-altro .ax-in{flex:1;min-width:0}
 .usc-npgo{cursor:pointer}.usc-npgo:hover td{background:#fff3c4}.usc-flash{outline:3px solid #E0A800;outline-offset:1px}.usc-npw a{color:inherit;font-weight:700;text-decoration:underline}
 .usc-objp{display:flex;flex-wrap:wrap;gap:5px}.usc-objp .ax-chip{text-align:left}
+.att-ind-on{background:var(--green-pale);border-left:3px solid var(--green);border-radius:6px;padding:4px 8px}.att-ind-h{color:var(--green)}
 .usc-inp{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--green);background:var(--green-pale);border-radius:4px;padding:1px 5px;margin-left:4px;white-space:nowrap}
 /* time table della giornata: più bassa, solo il titolo */
 .usc-tseg{padding:0 7px;align-items:center;font-size:12px}.usc-tseg b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -9367,17 +9368,16 @@ function attObjAdd(per,a,kind,q){ const pr=typeof per.prioritaIdx==='number'?sch
 function attObjHTML(p,j,a){
   try{ const per=getAllPercorsi()[p]; if(!per||!per.percorsoId) return ''; const P=Object.values(DB).flat().find(q=>q.id===per.percorsoId); if(!P) return '';
     const can=!window.BRO; const O=a.obj||{o:[],i:[]}; const X=uscPercObj(per); const inO=new Set(X.o.map(o=>o.k)), inI=new Set(X.i.map(o=>o.k));
-    const ob=(P.obiettivi||[]).map((t,q)=>({k:q,t})).sort((x,y)=>(inO.has(y.k)-inO.has(x.k))||x.k-y.k);
-    const id=(P.idr||[]).map((t,q)=>({k:q,t})).sort((x,y)=>(inI.has(y.k)-inI.has(x.k))||x.k-y.k);
-    const so=O.o||[], si=O.i||[]; const n=so.length+si.length;
-    const row=(kind,o,sel,inP)=>`<label class="ax-check usc-objl"><input type="checkbox" ${sel.includes(o.k)?'checked':''} ${can?'':'disabled'} onchange="attObjTog(${p},${j},'${kind}',${o.k},this.checked)"> <span>${sEsc(o.t)}${inP.has(o.k)?' <span class="usc-inp">nel percorso</span>':''}</span></label>`;
+    const id=(P.idr||[]).map((t,q)=>({k:q,t}));
+    const idOn=id.filter(o=>inI.has(o.k)), idOff=id.filter(o=>!inI.has(o.k));
+    const si=O.i||[]; const n=si.length;
+    const row=(kind,o,sel,inP)=>`<label class="ax-check usc-objl${inP.has(o.k)?' att-ind-on':''}"><input type="checkbox" ${sel.includes(o.k)?'checked':''} ${can?'':'disabled'} onchange="attObjTog(${p},${j},'${kind}',${o.k},this.checked)"> <span>${sEsc(o.t)}</span></label>`;
     const others=getAllPercorsi().map((q,i)=>({q,i})).filter(z=>z.q&&z.q.percorsoId&&z.i!==p);
     const mv=can?`<div class="att-mvb"><button type="button" class="btn-ghost ax-btn" onclick="attMoveAsk(${p},${j})">Sposta questa attività in un altro percorso o ciclo…</button><span class="ax-opt">testo, materiali e date restano; gli indicatori specifici vanno scelti di nuovo nel nuovo percorso</span></div>`:'';
     const _ok=p+'-'+j, _os=(window._attObjOpen||{})[_ok]; const _op=(_os===undefined)?!n:_os;
     return `<details class="att-obj" ${_op?'open':''} ontoggle="(window._attObjOpen=window._attObjOpen||{})['${_ok}']=this.open"><summary>Indicatori specifici di questa attività<b style="font-weight:700;color:var(--green)">${n?' · '+n+(n===1?' scelta':' scelte'):''}</b></summary>
-      <div class="ax-hint" style="margin:4px 0">Scegli su quali obiettivi e Indicatori di Risultato lavora questa attività, tra quelli del percorso «${sEsc(P.name)}». Se ne scegli uno che il percorso non aveva, entra nel percorso; se la togli, esce.</div>
-      <div class="ax-sub">Obiettivi</div>${ob.map(o=>row('o',o,so,inO)).join('')}
-      ${id.length?`<div class="ax-sub">Indicatori di Risultato</div>${id.map(o=>row('i',o,si,inI)).join('')}`:''}</details>${mv}`;
+      <div class="ax-hint" style="margin:4px 0">Spunta gli Indicatori di Risultato del percorso «${sEsc(P.name)}» su cui questa attività insiste di più. Se ne spunti uno che il percorso non aveva ancora scelto, viene aggiunto in «Obiettivi e indicatori» e alla scheda del percorso. Se poi lo togli da tutte le attività, esce di nuovo; quelli che hai scelto tu in «Obiettivi e indicatori» restano sempre.</div>
+      ${id.length?(idOn.length?`<div class="ax-sub att-ind-h">Scelti per il percorso</div>${idOn.map(o=>row('i',o,si,inI)).join('')}`:'')+(idOff.length?`<div class="ax-sub">${idOn.length?'Altri indicatori del percorso':'Indicatori del percorso (nessuno ancora scelto)'}</div>${idOff.map(o=>row('i',o,si,inI)).join('')}`:''):`<div class="ax-hint">Questo percorso non ha Indicatori di Risultato.</div>`}</details>${mv}`;
   }catch(e){ return ''; } }
 function attObjTog(p,j,kind,q,on){ const per=getAllPercorsi()[p]; if(!per||!per.attivita||!per.attivita[j]) return; (window._attObjOpen=window._attObjOpen||{})[p+'-'+j]=true; attIdsEnsure(per); const a=per.attivita[j];
   if(!a.obj||typeof a.obj!=='object') a.obj={o:[],i:[]}; if(!Array.isArray(a.obj.o)) a.obj.o=[]; if(!Array.isArray(a.obj.i)) a.obj.i=[];
@@ -10280,7 +10280,7 @@ function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=
     else if(fk==='ben'){ sum=uscSumTxt(a.incRischi||a.incAzioni); inner=W(axBen(p,j,a,x)); }
     else if(fk==='pb'){ const n=Object.keys(x.pb||{}).filter(q=>(x.pb[q]||'').trim()).length; sum=n?n+(n===1?' situazione':' situazioni'):uscSumTxt(a.pianoB); inner=W(axPB2(p,j,a,x)); }
     else if(fk==='link'){ const n=attLinks(a).filter(l=>(l.u||'').trim()).length; sum=n?n+' link':''; inner=attLinksHTML(p,j,a); }
-    else if(fk==='obj'){ const O=a.obj||{}; const n=(O.o||[]).length+(O.i||[]).length; sum=n?n+(n===1?' scelta':' scelte'):''; inner=attObjHTML(p,j,a); }
+    else if(fk==='obj'){ const O=a.obj||{}; const n=(O.i||[]).length; sum=n?n+(n===1?' scelta':' scelte'):''; inner=attObjHTML(p,j,a); }
   }catch(e){ console.error(e); inner='<div class="ax-hint">Non riesco a mostrare questa parte: aprila nei percorsi.</div>'; }
   if(!can) inner=inner.replace(/<(input|textarea|select|button)(?![^>]*\bdisabled)/g,'<$1 disabled');
   return uscFld(k,T,can,inner,sum); }
@@ -13846,6 +13846,7 @@ function clSnapshot(){ try{ return JSON.parse(localStorage.getItem(CL_LS)||'{}')
 function clHasLocal(){ const d = clSnapshot(); return !!(d.MODE || (d.STAFF_MEMBERS||[]).length || Object.values(d.obs||{}).some(v=>v&&v!=='n')); }
 function clMeta(d){
   return {nome:d.UNIT_NAME||'', mode:d.MODE||null, fascia:d.FASCIA||null, staff:(d.STAFF_MEMBERS||[]).length,
+          ...(((d.scheda||{}).ppImp||{}).later?{ppl:1}:{}),
           ...(()=>{ const u=uscMeta(d); return u.length?{usc:u}:{}; })(),
           osservati: d.MODE==='staff' ? Object.values(d.staffObs||{}).reduce((a,o)=>a+Object.values(o).filter(v=>v&&v!=='n').length,0) : Object.values(d.obs||{}).filter(v=>v&&v!=='n').length};
 }
@@ -15999,7 +16000,7 @@ body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
 .sh-rr.on{border:2px solid var(--green);background:var(--green-pale,#e6f3ec)}
 .sh-pr{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:12px 14px;align-items:center;padding:14px 18px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;font-size:13.5px}
 .sh-pr .t{font-weight:800}
-.sh-pr .s{font-size:12px;color:#5f5f58;margin-top:2px;line-height:1.4}
+.sh-pr .s{font-size:12px;color:#5f5f58;margin-top:2px;line-height:1.4}.sh-pr .sh-ppn{margin-top:6px;max-width:62ch}
 .sh-pr.act{border:2px solid var(--green)}
 .sh-vg{margin:22px 0 10px}.sh-vh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--green);padding-bottom:6px;margin-bottom:10px}.sh-vh h2{margin:0;font-size:18px}.sh-vh span{font-size:13px;color:#5f5f58;font-weight:600}
 .sh-an{margin:10px 0 12px;padding:10px 12px 12px;border:1px solid #CFCDBE;border-left:4px solid #B9B59F;border-radius:14px;background:#ECEADD;display:grid;gap:8px}.sh-anh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}.sh-anh small{display:block;font-size:12px;color:#5f5f58;line-height:1.4;max-width:62ch}
@@ -16349,7 +16350,7 @@ function vesteSub(v){
 }
 const isCiclo = m => !!m && m.mode === 'giovani' && (m.tipo || 'AN') === 'AN';
 Object.assign(window, {vesteOf, vesteKey, vesteNome, vesteSub, isCiclo, uniqueTitle, annoScoutTxt, annoScoutStart}); // usati anche dal secondo script del guscio
-function rowHTML(r, shared, cl){
+function rowHTML(r, shared, cl, pp){
   const m = r.meta || {}; const t = tipoOf(m); const br = brOf(m);
   const act = CL.ctx && CL.ctx.id === r.id;
   const tit = esc(r.titolo);
@@ -16360,7 +16361,10 @@ function rowHTML(r, shared, cl){
   const tag = br ? `<span class="sh-tag ${br}">Branca ${esc(br)}</span>` : `<span class="sh-tag X">${t === 'ST' ? 'Staff' : 'Gruppo'}</span>`;
   const open = act ? `<button class="sh-btn sm" type="button" onclick="shOpen('${r.id}',${shared ? 1 : 0})">Continua</button>` : `<button class="sh-btn sm" type="button" onclick="shOpen('${r.id}',${shared ? 1 : 0})">Apri</button>`;
   const more = shared ? '' : `<button class="sh-btn gh sm" type="button" onclick="shRename('${r.id}')">Rinomina</button><button class="sh-btn gh sm" type="button" onclick="shDup('${r.id}')">Duplica</button><button class="sh-btn gh sm" type="button" onclick="shDel('${r.id}')">Elimina</button>`;
-  return `<div class="sh-pr${act ? ' act' : ''}" data-id="${r.id}"><div style="min-width:0"><div class="t">${tit}</div><div class="s">${TIPO_TXT[t] ? esc(TIPO_TXT[t]) + (sub ? ' · ' : '') : ''}${sub}</div></div>${tag}${role}<span class="sh-hs">${hs}</span><div class="sh-act">${open}${more}</div></div>`;
+  const ppq = pp && !shared && !!m.ppl;
+  const ppb = ppq ? `<button class="sh-btn gh sm" type="button" onclick="shPpPortaDa('${r.id}')">Porta dal Progetto Personale</button>` : '';
+  const ppn = ppq ? `<div class="s sh-ppn">Alla prima apertura hai scelto «Più tardi» sul Progetto Personale di questo anno scout: da qui puoi decidere ora cosa portare in questa Programmazione. Quando hai deciso, il pulsante sparisce. Nei cicli successivi non serve: ereditano dal ciclo precedente.</div>` : '';
+  return `<div class="sh-pr${act ? ' act' : ''}" data-id="${r.id}"><div style="min-width:0"><div class="t">${tit}</div><div class="s">${TIPO_TXT[t] ? esc(TIPO_TXT[t]) + (sub ? ' · ' : '') : ''}${sub}</div>${ppn}</div>${tag}${role}<span class="sh-hs">${hs}</span><div class="sh-act">${open}${more}${ppb}</div></div>`;
 }
 function dayTxt(d){
   const now = new Date(); const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()), b = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -16379,7 +16383,7 @@ function vesteListHTML(rows){
     let h = `<section class="sh-vg" aria-label="Come ${esc(vesteNome(g.v))}"><div class="sh-vh"><h2>Come ${esc(vesteNome(g.v))}</h2><span>${esc(vesteSub(g.v))}</span></div>`;
     Object.keys(byYear).sort((a, b) => b - a).forEach(y => {
       const L = byYear[y].slice().sort((a, b) => String((a.meta || {}).cdal || '9').localeCompare(String((b.meta || {}).cdal || '9')) || (a.ts || 0) - (b.ts || 0));
-      h += `<div class="sh-an"><div class="sh-anh"><div><b>Programmazione di Unità · ${esc(annoScoutTxt(+y))}</b><small>${L.length === 1 ? 'Un ciclo' : L.length + ' cicli'}. Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi: ogni anno ne può avere più di uno.</small></div><button class="sh-btn sm" type="button" onclick="shCicloNuovo('${L[L.length - 1].id}')">+ Nuovo ciclo</button></div>${L.map(x => rowHTML(x, false, L.length > 1 ? 'Ciclo ' + (1 + L.filter(y => (y.ts || 0) < (x.ts || 0) || ((y.ts || 0) === (x.ts || 0) && String(y.id) < String(x.id))).length) : '')).join('')}</div>`;
+      h += `<div class="sh-an"><div class="sh-anh"><div><b>Programmazione di Unità · ${esc(annoScoutTxt(+y))}</b><small>${L.length === 1 ? 'Un ciclo' : L.length + ' cicli'}. Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi: ogni anno ne può avere più di uno.</small></div><button class="sh-btn sm" type="button" onclick="shCicloNuovo('${L[L.length - 1].id}')">+ Nuovo ciclo</button></div>${L.map((x, i) => rowHTML(x, false, L.length > 1 ? 'Ciclo ' + (1 + L.filter(y => (y.ts || 0) < (x.ts || 0) || ((y.ts || 0) === (x.ts || 0) && String(y.id) < String(x.id))).length) : '', (rows || []).some(z => Number(z.anno) === Number(y) && (z.meta || {}).tipo === 'PP'))).join('')}</div>`;
     });
     h += others.map(x => rowHTML(x, false)).join('');
     return h + `</section>`;
@@ -17289,7 +17293,7 @@ function dashHTML(){
   const sco = SH.dscope === 'anno' ? 'anno' : 'ciclo'; const cc = annoCicloInfo(annoCur());
   const seg = `<div class="sh-seg" role="group" aria-label="Che cosa vuoi vedere"><button type="button" aria-pressed="${sco === 'ciclo'}" onclick="shScope('ciclo')">Il mio ciclo</button><button type="button" aria-pressed="${sco === 'anno'}" onclick="shScope('anno')">Il mio anno</button></div>`;
   if(sco === 'anno') return `<div class="sh-dh"><div><h1>Il mio anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">Un anno scout può avere più cicli di programmazione, di solito di 3-4 mesi ciascuno. Qui li vedi insieme.</p></div></div>${seg}<div id="an-year">${annoYearHTML()}</div>`;
-  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button>${(!window.BRO && ppHaPP()) ? ' · <button type="button" class="sh-lk" onclick="shPpPorta()">Porta dal Progetto Personale</button>' : ''}</p></div>
+  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button></p></div>
     <div style="margin-left:auto"><button type="button" class="sh-btn gh sm" id="sh-pers" onclick="shDashEdit(${editing ? 0 : 1})" style="min-height:44px;padding:0 16px;border:1px solid #8a8a82;border-radius:10px;background:#fff;font:700 13px 'Montserrat',sans-serif;cursor:pointer">${editing ? 'Fatto' : 'Personalizza'}</button></div></div>${resumeBarHTML()}${seg}${cicloFormHTML()}`;
   if(editing) h += `<div class="sh-ebanner" role="note"><b>Personalizza la dashboard.</b> Trascina le schede, oppure selezionane una e usa le frecce della tastiera (o i pulsanti «Prima» e «Dopo»). «Nascondi» la toglie dalla vista. La disposizione è tua e si salva nel tuo profilo.<div id="sh-live" class="sub" aria-live="polite" style="margin-top:4px"></div></div>`;
   h += `<div class="sh-dgrid">` + shown.map((c, i) => `<section class="sh-card2${c.wide ? ' wide' : ''}${editing ? ' edit' : ''}" data-c="${c.id}" ${editing ? `tabindex="0" draggable="true" aria-label="Scheda ${esc(c.t)}, posizione ${i + 1} di ${shown.length}. Usa le frecce per spostarla."` : ''}>${c.html(o)}${editing ? `<div class="sh-etool"><button type="button" onclick="shMove('${c.id}',-1)">‹ Prima</button><button type="button" onclick="shMove('${c.id}',1)">Dopo ›</button><button type="button" onclick="shHide('${c.id}',1)">Nascondi</button></div>` : ''}</section>`).join('') + `</div>`;
@@ -17307,7 +17311,7 @@ function resumeBarHTML(){
   return `<div class="sh-ebanner" role="note" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span>Eri rimasto a: <b>${esc(nm)}</b></span><button type="button" class="sh-btn" onclick="shResume()">Riprendi da dove eri</button></div>`;
 }
 function drawDash(){
-  const e = $('panel-dash'); if(!e) return; e.innerHTML = dashHTML();
+  const e = $('panel-dash'); if(!e) return; const h0 = dashHTML(); e._ph = h0; e.innerHTML = h0;
   if(focusId){ const f = e.querySelector(`[data-c="${focusId}"]`); if(f){ f.focus(); } focusId = null; }
 }
 function curOrder(){ const o = collect(); return ordered(o).shown.map(c => c.id); }
@@ -18223,8 +18227,8 @@ function calHTML(){
       <div class="cal-cs">${leg}${contH || '<div class="cal-empty cal-empty2">Nessun evento: con i pulsanti qui sopra crei una riunione, un’uscita, un bivacco o un campo.</div>'}</div>
     </div>`;
 }
-function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ shKeep(p, () => { p.innerHTML = calHTML(); }); } }
-window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); $('panel-pp').innerHTML = calHTML(); own('panel-pp'); };
+function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ shKeep(p, () => { const h = calHTML(); p._ph = h; p.innerHTML = h; }); } }
+window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); { const h = calHTML(); $('panel-pp')._ph = h; $('panel-pp').innerHTML = h; } own('panel-pp'); };
 window.calOrg = function(i, j){ const k = i + '-' + j; window._calOpen[k] = !window._calOpen[k]; calRe(); };
 // duplica un contenitore (persone, luogo, spese, programma) una settimana dopo; le attività dei percorsi non si copiano: restano dove sono
 window.calDup = function(id){
@@ -18477,14 +18481,14 @@ function ppbNew(pe, pp){ const imp = ((pe.scheda || {}).ppImp || {}).blocks || {
 // only: insieme dei gruppi da portare per la prima volta (undefined = tutti); later: chi sceglie «più tardi» non segna nulla
 function ppbMerge(pe, pp, only, later){
   const sc = pe.scheda = pe.scheda || {}; const imp = sc.ppImp = sc.ppImp || {}; imp.blocks = imp.blocks || {};
-  const done = [];
+  const done = []; let rimasto = false;
   ppbBlocks(pe, pp).forEach(B => {
     const ppv = B.g(pp), pev = B.g(pe), rec = imp.blocks[B.n];
     if(ppbEmpty(ppv)) return;
     const hp = ppbHash(ppv);
     if(!rec){
       if(ppbEmpty(pev)){
-        if(only && !only.has(ppbGroup(B.n))){ if(!later) imp.blocks[B.n] = {own:true}; return; }
+        if(only && !only.has(ppbGroup(B.n))){ if(!later) imp.blocks[B.n] = {own:true}; else rimasto = true; return; }
         B.s(pe, JSON.parse(JSON.stringify(ppv))); imp.blocks[B.n] = {h:hp}; done.push(B.n);
         if(B.n === 's.percorsiExtra') ((B.g(pe)) || []).forEach(per => (per && per.attivita || []).forEach(a => { if(a && typeof a === 'object') a.dalPP = true; }));
       }
@@ -18494,6 +18498,7 @@ function ppbMerge(pe, pp, only, later){
     if(rec.own || !rec.h || ppbEmpty(pev)) return;
     if(ppbHash(pev) === rec.h && hp !== rec.h){ B.s(pe, JSON.parse(JSON.stringify(ppv))); rec.h = hp; done.push(B.n); }
   });
+  if(rimasto) imp.later = true; else delete imp.later; // «Più tardi»: la scheda in Progetti offre ancora il pulsante; deciso tutto, sparisce
   return done;
 }
 // «Cosa porto?»: al primo passaggio dal Progetto Personale si sceglie cosa portare nella Programmazione (le osservazioni personali e la valutazione no, di default)
@@ -18509,7 +18514,19 @@ function ppbAsk(groups, anno){
     const iv = setInterval(() => { if(!document.querySelector('#g-modal.show .ppb-ask')) end(null); }, 300);
   });
 }
-// Pulsante «Porta dal Progetto Personale» nella dashboard della Programmazione
+// «Porta dal Progetto Personale» dalla scheda della Programmazione nell'elenco Progetti: solo se alla prima apertura si è scelto «Più tardi» (meta.ppl)
+window.shPpPortaDa = async function(id){
+  if(window.BRO || !SH.on) return;
+  try{ const aperto = !!(CL.ctx && CL.ctx.id === id); // se è il progetto aperto, prima si salva ciò che c'è in memoria e dopo lo si ricarica: altrimenti il vecchio stato riscriverebbe la scelta
+    if(aperto){ saveData(true); try{ await clPush(true); }catch(e){} }
+    const r = await dbGet(id); if(!r) return;
+    const b = await shPpBridge(r, true);
+    if(!b){ showToast('Non c’è altro da portare dal Progetto Personale'); return; }
+    if(aperto){ await clOpenProject(id); return; }
+    showToast((b.msg || 'Fatto.').trim()); SH.rows = null; try{ shGoHome(); }catch(e){}
+  }catch(e){ console.error(e); showToast('Non sono riuscito a leggere il Progetto Personale: ' + ((e && e.message) || 'riprova')); }
+};
+// (vecchio) pulsante nella dashboard: non più offerto, resta per compatibilità
 window.shPpPorta = async function(){
   if(window.BRO || !CL.ctx) return;
   try{ saveData(true); try{ await clPush(true); }catch(e){} const id = CL.ctx.id; const r = await dbGet(id); if(!r) return;
@@ -18842,7 +18859,7 @@ window.shEnter = function(){
 };
 // l'app aggiorna le sezioni da sola (ricarica del progetto, altre persone): la dashboard si ridisegna
 function tutorialFold(){ try{ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.dataset.tb) return; b.dataset.tb = '1'; b.classList.add('tb-c'); const h = b.querySelector('.tutorial-hdr'); if(!h) return; h.setAttribute('role', 'button'); h.tabIndex = 0; h.setAttribute('aria-expanded', 'false'); const f = () => { const c = b.classList.toggle('tb-c'); h.setAttribute('aria-expanded', c ? 'false' : 'true'); }; h.addEventListener('click', f); h.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); f(); } }); }); }catch(e){} }
-setInterval(() => { tutorialFold(); try{ const d = $('panel-dash'); if(d && d.classList.contains('active') && !editing && !d.contains(document.activeElement)) { const h = dashHTML(); if(d.innerHTML !== h) d.innerHTML = h; } const pc = $('panel-pp'); if(pc && SH.ppv === 'cal' && pc.classList.contains('active') && !SH._calDrag && !pc.contains(document.activeElement)){ const h2 = calHTML(); if(pc.innerHTML !== h2) pc.innerHTML = h2; } shSync(); }catch(e){} }, 1500);
+setInterval(() => { tutorialFold(); try{ const d = $('panel-dash'); if(d && d.classList.contains('active') && !editing && !d.contains(document.activeElement)) { const h = dashHTML(); if(d._ph !== h){ d._ph = h; shKeep(d, () => { d.innerHTML = h; }); } } const pc = $('panel-pp'); if(pc && SH.ppv === 'cal' && pc.classList.contains('active') && !SH._calDrag && !pc.contains(document.activeElement)){ const h2 = calHTML(); if(pc._ph !== h2){ pc._ph = h2; shKeep(pc, () => { pc.innerHTML = h2; }); } } shSync(); }catch(e){} }, 1500);
 })();
 </script>
 <style id="sh-css3">

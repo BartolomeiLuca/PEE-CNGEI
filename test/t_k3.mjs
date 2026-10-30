@@ -29,6 +29,19 @@ const sn = () => db.t.pee_versioni.length;
 const h = await ev(() => { const per = getAllPercorsi()[0]; return attObjHTML(0, 0, per.attivita[0]); });
 ok(/Indicatori specifici di questa attività/.test(h) && !/Obiettivi e Indicatori di questa attività/.test(h), 'titolo: «Indicatori specifici di questa attività»');
 ok(h.indexOf('att-mvb') > h.indexOf('</details>') && h.indexOf('<details') < h.indexOf('</details>') && /attMoveAsk\(0,0\)/.test(h), '«Sposta» vive da solo, subito sotto gli indicatori specifici');
+// 1b · solo Indicatori: tutti quelli del percorso, i già scelti per primi e in evidenza, spuntabili
+const ind = await ev(() => { const per = getAllPercorsi()[0]; const P = Object.values(DB).flat().find(q => q.id === per.percorsoId); const d = document.createElement('div'); d.innerHTML = attObjHTML(0, 0, per.attivita[0]);
+  const labs = [...d.querySelectorAll('label.usc-objl')]; return {tot: P.idr.length, n: labs.length, on: labs.filter(l => l.classList.contains('att-ind-on')).length, firstOn: labs[0] && labs[0].classList.contains('att-ind-on'), onFirst: labs.every((l, i, A) => !l.classList.contains('att-ind-on') || A.slice(0, i).every(x => x.classList.contains('att-ind-on'))), sub: [...d.querySelectorAll('.ax-sub')].map(x => x.textContent), kinds: [...new Set(labs.map(l => /'(\w)'/.exec(l.querySelector('input').getAttribute('onchange'))[1]))], chosen: (scheda.priorita[per.prioritaIdx].idr || []).length}; });
+ok(ind.n === ind.tot && ind.kinds.length === 1 && ind.kinds[0] === 'i' && !ind.sub.some(x => /^Obiettivi$/.test(x)), 'elenco: tutti gli Indicatori del percorso (' + ind.n + ' su ' + ind.tot + '), nessun obiettivo (' + JSON.stringify(ind.sub) + ')');
+ok(ind.on === ind.chosen && ind.firstOn && ind.onFirst && ind.sub.includes('Scelti per il percorso'), 'quelli già scelti per il percorso stanno per primi, evidenziati (' + ind.on + ')');
+const t1 = await ev(() => { const per = getAllPercorsi()[0]; const a = per.attivita[0]; const pr = scheda.priorita[per.prioritaIdx]; a.obj = a.obj || {o: [], i: []}; a.obj.o = [1]; const before = pr.idr.slice(); const nw = [0, 1, 2, 3, 4, 5].find(k => !pr.idr.includes(k));
+  attObjTog(0, 0, 'i', nw, true); const added = pr.idr.includes(nw) && a.obj.i.includes(nw); const inPage = (document.querySelector('#pc-card-0') || document.body) && true; const X = uscPercObj(per).i.map(o => o.k).includes(nw);
+  attObjTog(0, 0, 'i', nw, false); const gone = !pr.idr.includes(nw) && !a.obj.i.includes(nw); return {nw, added, X, gone, keepO: a.obj.o.join(','), same: JSON.stringify(before) === JSON.stringify(pr.idr)}; });
+ok(t1.added && t1.X, 'spuntare un Indicatore non ancora scelto lo aggiunge a «Obiettivi e indicatori» e alla scheda del percorso (' + JSON.stringify(t1) + ')');
+ok(t1.gone && t1.same && t1.keepO === '1', 'toglierlo dall’unica attività lo toglie dal percorso; i dati degli obiettivi dell’attività non si perdono');
+const t2 = await ev(() => { const per = getAllPercorsi()[0]; const a = per.attivita[0]; const pr = scheda.priorita[per.prioritaIdx]; const k = pr.idr[0];
+  attObjTog(0, 0, 'i', k, true); attObjTog(0, 0, 'i', k, false); return {k, still: pr.idr.includes(k)}; });
+ok(t2.still, 'un Indicatore scelto da te in «Obiettivi e indicatori» resta anche se lo spunti e lo togli da un’attività (' + JSON.stringify(t2) + ')');
 // 2 · data dal Calendario
 const tl = await ev(() => tlHTML(0));
 ok(/dal Calendario/.test(tl) && /Cambia nel Calendario/.test(tl), 'l’attività messa nel Calendario mostra la data «dal Calendario» (non modificabile a mano)');
