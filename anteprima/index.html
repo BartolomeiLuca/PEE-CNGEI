@@ -8058,7 +8058,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610301200'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610301311'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9318,13 +9318,15 @@ function uscPercObj(per){ if(!per||!per.percorsoId) return {o:[],i:[]}; const P=
   const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null; const sel=[...new Set([...((pr&&pr.obiettivi)||[]),...(per.obiettiviExtra||[])])].sort((a,b)=>a-b);
   return {o:sel.map(k=>({k,t:(P.obiettivi||[])[k]})).filter(x=>x.t), i:axIdr(per), nome:P.name}; }
 // Eventi dello staff: i percorsi tra cui scegliere sono le aree emerse dall'osservazione dello staff (le più fragili), non le priorità dell'Unità
-function uscStaffPrio(){ try{ const agg=getAggregatedProfile(); const L=[]; Object.keys(agg).forEach(a=>Object.keys(agg[a]).forEach(id=>{ const d=agg[a][id]; if(d.observed>0&&d.media>0&&d.media<=5) L.push({id,media:d.media}); })); return L.sort((x,y)=>x.media-y.media).slice(0,6).map(z=>uscDBP(z.id)).filter(Boolean); }catch(e){ return []; } }
+function uscStaffPrioX(){ try{ const agg=getAggregatedProfile(); const L=[]; Object.keys(agg).forEach(a=>Object.keys(agg[a]).forEach(id=>{ const d=agg[a][id]; if(d.observed>0&&d.media>0) L.push({id,media:d.media}); })); L.sort((x,y)=>x.media-y.media); const low=L.filter(z=>z.media<=5); const fb=!low.length&&L.length>0; return {L:(fb?L.slice(0,2):low.slice(0,6)).map(z=>uscDBP(z.id)).filter(Boolean), fb}; }catch(e){ return {L:[], fb:false}; } }
+function uscStaffPrio(){ return uscStaffPrioX().L; }
 function uscObjHTML(k,m,can){ const O=m.obj||{}; let stf=false; try{ stf=uscSt(); }catch(e){}
-  const L=stf?[]:getAllPercorsi(); const opts=stf?uscStaffPrio().map(P=>({per:{percorsoId:P.id},idx:-1,P})):L.map((per,idx)=>({per,idx})).filter(z=>z.per&&z.per.percorsoId); let h='';
+  const L=stf?[]:getAllPercorsi(); const sx=stf?uscStaffPrioX():{L:[],fb:false}; const opts=stf?sx.L.map(P=>({per:{percorsoId:P.id},idx:-1,P})):L.map((per,idx)=>({per,idx})).filter(z=>z.per&&z.per.percorsoId); let h='';
   const inProg=stf?true:O.pid&&opts.some(z=>z.per.percorsoId===O.pid);
   h+=`<div class="ax-sub" style="margin-top:0">Percorso della programmazione</div><div class="usc-objp">${opts.map(({per,idx,P})=>`<button type="button" class="ax-chip${O.pid===per.percorsoId?' on':''}" ${can?`onclick="uscObj('${k}','pid','${O.pid===per.percorsoId?'':per.percorsoId}',true)"`:'disabled'}>${uscE(stf?(P.id+' · '+P.name):uscPercLabel(per,idx))}</button>`).join('')||(stf?'<span class="ax-hint">Prima individua le priorità dello staff, in «Il mio staff» (osservazione degli adulti).</span>':'<span class="ax-hint">Nessun percorso scelto ancora in «Obiettivi e indicatori».</span>')}</div>`;
   const AMB=[['P','Personale'],['C','Comunitario'],['S','Spirituale']]; const others=Object.values(DB).flat().filter(q=>!opts.some(z=>z.per.percorsoId===q.id));
-  if(can&&!stf) h+=`<label class="usc-lb" style="max-width:420px;margin-top:6px"><span class="usc-lt" style="white-space:normal">…oppure un altro percorso PEE <span class="ax-opt">se lo porti nella programmazione diventa un percorso in più</span></span><select class="ax-in" onchange="if(this.value)uscObj('${k}','pid',this.value,true)"><option value="">scegli…</option>${AMB.map(([a,l])=>`<optgroup label="${l}">${others.filter(q=>q.id[0]===a).map(q=>`<option value="${q.id}" ${O.pid===q.id?'selected':''}>${uscE(q.id+' '+q.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
+  if(stf&&sx.fb) h+=`<div class="ax-hint">Nessuna area dello staff è sotto la soglia (media 5 o meno): ti propongo le due più basse.</div>`;
+  if(can) h+=`<label class="usc-lb" style="max-width:420px;margin-top:6px"><span class="usc-lt" style="white-space:normal">…oppure un altro percorso PEE ${stf?'':'<span class="ax-opt">se lo porti nella programmazione diventa un percorso in più</span>'}</span><select class="ax-in" onchange="if(this.value)uscObj('${k}','pid',this.value,true)"><option value="">scegli…</option>${AMB.map(([a,l])=>`<optgroup label="${l}">${others.filter(q=>q.id[0]===a).map(q=>`<option value="${q.id}" ${O.pid===q.id?'selected':''}>${uscE(q.id+' '+q.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
   const P=O.pid&&uscDBP(O.pid);
   if(P){ const z=opts.find(z=>z.per.percorsoId===O.pid); const X=(z&&!stf)?uscPercObj(z.per):{o:[],i:[]}; const so=O.o||[], si=O.i||[]; const inO=new Set(stf?[]:X.o.map(o=>o.k)), inI=new Set(stf?[]:X.i.map(o=>o.k));
     if(!inProg) h+=`<div class="ax-hint" style="margin-top:4px"><b>${uscE(P.id+' '+P.name)}</b> non è ancora nella programmazione.</div>`;
@@ -17508,42 +17510,95 @@ function annoColor(mode, it, ci, p, a){
   if(mode === 'stato'){ const L = a ? [a] : p.acts; const st = !L.length ? 'nd' : L.every(x => x.st === 'ok') ? 'ok' : L.some(x => x.st === 'ver') ? 'ver' : 'fare'; return AN_ST[st][1]; }
   return (AMB[p.amb] || ['', '#666'])[1];
 }
+// ── Linea del tempo: simboli (forma + colore + stato), disposizione senza sovrapposizioni, avanzamento ──
+const TLK_SH = {sede:'riu', giorno:'usc', bivacco:'biv', campo:'camp'};
+const TLK_OC = {riu:'Riunione', usc:'Uscita', biv:'Bivacco', camp:'Campo'};
+function tlkShape(t, col, fill, sz, stf){
+  const S = sz || 18, f = fill ? col : '#fff', d = stf ? ' stroke-dasharray="3 2"' : '';
+  const P = {riu:`<rect x="3" y="3" width="${S - 6}" height="${S - 6}" rx="2.5"/>`, usc:`<path d="M${S / 2} 2.5L${S - 2.5} ${S - 3}L2.5 ${S - 3}Z" stroke-linejoin="round"/>`, biv:`<path d="M${S / 2} 2L${S - 2} ${S / 2}L${S / 2} ${S - 2}L2 ${S / 2}Z" stroke-linejoin="round"/>`, camp:`<path d="M9 1.3l2.3 5 5.4.6-4 3.7 1.1 5.3L9 13.2 4.2 15.9l1.1-5.3-4-3.7 5.4-.6z" stroke-linejoin="round" transform="scale(${S / 18})"/>`}[t] || '';
+  return `<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" fill="${f}" stroke="${col}" stroke-width="2"${d} aria-hidden="true">${P}</svg>`;
+}
+function tlkAct(st, col, sz){
+  const S = sz || 20;
+  if(st === 'ok') return `<svg width="${S}" height="${S}" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8" fill="${col}" stroke="#fff" stroke-width="1.5"/><path d="M5.2 9.3l2.6 2.6 5-5.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  if(st === 'ver') return `<svg width="${S}" height="${S}" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8" fill="#fff6dc" stroke="#d6a935" stroke-width="2"/><path d="M9 4.8v5M9 12.6v.1" stroke="#8A5300" stroke-width="2" stroke-linecap="round"/></svg>`;
+  return `<svg width="${S}" height="${S}" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7.5" fill="#fff" stroke="${col}" stroke-width="2"/></svg>`;
+}
+// punti = [{x (% sulla linea), ...}] → assegna .l (riga) e .dd (c'è spazio per la data sotto il segno); restituisce quante righe servono
+function tlkLay(pts, gap){
+  const o = pts.slice().sort((a, b) => a.x - b.x), last = []; const g = gap || 3.4;
+  o.forEach(p => { let l = 0; while(last[l] !== undefined && p.x - last[l] < g) l++; last[l] = p.x; p.l = l; });
+  o.forEach((p, i) => { const a = o[i - 1], b = o[i + 1]; p.dd = p.l === 0 && (!a || p.x - a.x >= 7) && (!b || b.x - p.x >= 7); });
+  return Math.max(1, last.length);
+}
+const tlkTop = l => l === 0 ? 11 : 37 + (l - 1) * 22;
+const tlkH = n => n <= 1 ? 48 : 15 + n * 22;
+function tlkX(iso, y0){ if(!/^\d{4}-\d{2}-\d{2}/.test(iso || '')) return null; const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return null; return (i + (dd - 1) / 31) / 12 * 100; }
+function tlkShort(iso){ const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Number); return dd + ' ' + VIS_M[((mm - 1) + 4) % 12]; }
+// i segni delle attività di una riga (percorso): lista [{x, st, col, t, d}] → {html, n}
+function tlkActs(list, wd, dn){
+  const n = tlkLay(list); let h = '';
+  list.forEach(p => { const L = {ok:'verificata', ver:'vissuta, da verificare', fare:'in programma'}[p.st] || ''; const lab = p.t + ' · ' + fmtDL(p.d) + ' · ' + L;
+    h += `<span class="vis-mk vis-dot vis-at st-${p.st}${dn ? ' mvm' : ''}" ${dn ? `onpointerdown="visDownM(event,${dn})" ` : ''}tabindex="0" role="img" aria-label="${esc(lab)}" title="${esc(lab)}" style="left:${p.x}%;top:${tlkTop(p.l)}px">${tlkAct(p.st, p.col, 20)}</span>`;
+    if(wd && p.dd) h += `<span class="vis-dd" aria-hidden="true" style="left:${p.x}%">${tlkShort(p.d)}</span>`; });
+  return {html:h, n};
+}
+// «oggi»: posizione sulla linea del tempo
+function tlkToday(y0){ return tlkX(td(), y0); }
+function tlkTodayI(y0){ const x = tlkToday(y0); return x === null ? '' : `<b class="vis-td" style="left:${x}%" aria-hidden="true"></b>`; }
+// avanzamento del tempo di una barra: quota già trascorsa, in %
+function tlkFill(aa, bb, y0){ const x = tlkToday(y0); if(x === null) return (td() > (visYM(bb, y0) + '-31')) ? 100 : 0; const t = x / 100 * 12; return Math.max(0, Math.min(100, (t - aa) / (bb + 1 - aa) * 100)); }
+// quante attività del percorso sono vissute (verificate o da verificare) sul totale
+function tlkProg(acts){ const n = acts.length, v = acts.filter(a => a.st === 'ok' || a.st === 'ver').length, nd = acts.filter(a => a.st === 'nd').length; return `<span class="vis-pgt"><b>${v} di ${n}</b> ${n === 1 ? 'attività vissuta' : 'attività vissute'}${nd ? `<span class="vis-nd">${nd} senza data</span>` : ''}</span><span class="vis-pg" role="presentation"><i style="width:${n ? v / n * 100 : 0}%"></i></span>`; }
+function tlkSum(items){ let ok = 0, ver = 0, fa = 0, nd = 0; items.forEach(it => it.ci.per.forEach(p => p.acts.forEach(a => { if(a.st === 'ok') ok++; else if(a.st === 'ver') ver++; else if(a.st === 'fare') fa++; else nd++; })));
+  return `<div class="vis-sum" role="group" aria-label="Il lavoro dell’anno in cifre"><div class="ok"><b>${ok}</b><span>attività vissute e verificate</span></div><div class="ver"><b>${ver}</b><span>vissute, da verificare</span></div><div class="pr"><b>${fa}</b><span>in programma</span></div><div class="nd"><b>${nd}</b><span>ancora senza data</span></div></div>`; }
+function tlkLeg(withEv){ const a = (st, t) => `<span>${tlkAct(st, '#555', 16)} ${t}</span>`; return a('ok', 'attività vissuta e verificata') + a('ver', 'da verificare') + a('fare', 'in programma') + (withEv ? Object.keys(TLK_OC).map(k => `<span>${tlkShape(k, '#4a6b8a', true, 15)} ${TLK_OC[k].toLowerCase()}</span>`).join('') + `<span>${tlkShape('riu', '#1d4f8f', false, 15, true)} dello staff (tratteggio)</span><span class="vis-lg-n">segno vuoto = non ancora avvenuta · il numero raggruppa più riunioni dello stesso mese</span>` : ''); }
 // linea del tempo: items = progetti-ciclo; lettura = percorso | attivita | ciclo; colore = ambito | ciclo | stato
 function annoEvRow(items, y0){
-  const pts = []; items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const [yy, mm, dd] = d.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return; const sc0 = ((it.data || {}).scheda || {}).ciclo || {}; const fuori = !!(/^\d{4}-\d{2}$/.test(sc0.dal || '') && /^\d{4}-\d{2}$/.test(sc0.al || '') && (d.slice(0, 7) < sc0.dal || d.slice(0, 7) > sc0.al));
-      pts.push({x:(i + (dd - 1) / 31) / 12 * 100, c:(CAL_T[uscModK(u)] || CAL_T.giorno)[1], t:uscTit(u) + ' · ' + fmtDL(d.slice(0, 10)) + (u.dest === 'staff' ? ' · staff' : '') + (fuori ? ' · fuori dal ciclo' : ''), stf:u.dest === 'staff', fuori}); }); });
+  const oggi = td(); const pts = [];
+  items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const x = tlkX(d, y0); if(x === null) return; const [yy, mm] = d.slice(0, 10).split('-').map(Number); const mi = (yy * 12 + mm - 1) - (y0 * 12 + 8); const sc0 = ((it.data || {}).scheda || {}).ciclo || {}; const fuori = !!(/^\d{4}-\d{2}$/.test(sc0.dal || '') && /^\d{4}-\d{2}$/.test(sc0.al || '') && (d.slice(0, 7) < sc0.dal || d.slice(0, 7) > sc0.al)); const mk = uscModK(u); const T = CAL_T[mk] || CAL_T.giorno;
+      pts.push({x, mi, k:mk, c:T[1], stf:u.dest === 'staff', fuori, d:d.slice(0, 10), t:T[0] + ' · ' + uscTit(u) + ' · ' + fmtDL(d.slice(0, 10)) + (u.dest === 'staff' ? ' · staff' : '') + (fuori ? ' · fuori dal ciclo' : '')}); }); });
   if(!pts.length) return '';
-  pts.sort((a, b) => a.x - b.x); const last = []; const mk = pts.map(p => { let l = 0; while(last[l] !== undefined && p.x - last[l] < 2.2) l++; last[l] = p.x; return `<span class="vis-dot vis-ev${p.stf ? ' stf' : ''}${p.fuori ? ' fuori' : ''}" style="left:${p.x}%;top:${4 + l * 16}px;background:${p.c}" title="${esc(p.t)}"></span>`; }).join('');
-  const nl = Math.max(1, last.length);
-  return `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b><small>${pts.length} con la data</small></div><div class="vis-t" style="height:${nl * 16 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${mk}</div></div>`;
+  // tre o più riunioni nello stesso mese diventano un solo segno con il numero
+  const G = {}; pts.filter(p => p.k === 'sede').forEach(p => { const key = p.mi + (p.stf ? 's' : 'u'); (G[key] = G[key] || []).push(p); });
+  const rest = pts.filter(p => p.k !== 'sede' || G[p.mi + (p.stf ? 's' : 'u')].length < 3); const all = rest.slice();
+  Object.keys(G).forEach(key => { const L = G[key]; if(L.length < 3) return; all.push({x:L.reduce((n, p) => n + p.x, 0) / L.length, k:'sede', c:L[0].c, stf:L[0].stf, fuori:L.every(p => p.fuori), n:L.length, d:L[L.length - 1].d, t:L.length + ' riunioni' + (L[0].stf ? ' dello staff' : '') + ' · ' + L.map(p => tlkShort(p.d)).join(', ')}); });
+  const nl = tlkLay(all);
+  const mk = all.map(p => `<span class="vis-mk vis-ev${p.stf ? ' stf' : ''}${p.fuori ? ' fuori' : ''}${p.n ? ' vis-grp' : ''}" tabindex="0" role="img" aria-label="${esc(p.t)}" title="${esc(p.t)}" style="left:${p.x}%;top:${4 + p.l * 22}px;color:${p.c}">${tlkShape(TLK_SH[p.k] || 'usc', p.c, p.d <= oggi, 18, p.stf)}${p.n ? `<em>${p.n}</em>` : ''}</span>`).join('');
+  return `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b><small>${pts.length} con la data</small></div><div class="vis-t" style="height:${nl * 22 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${tlkTodayI(y0)}${mk}</div></div>`;
 }
 function annoTL(items, lettura, colore, compact){
-  const y0 = visY0(); const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map(m => `<span>${m}</span>`).join('') + '</div>';
-  const grid = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${e === i ? 'pit' : ''}"></i>`).join('') + '</div>'; };
+  const y0 = visY0(); const wd = !compact; const xo = tlkToday(y0);
+  const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map(m => `<span>${m}</span>`).join('') + '</div>' + (xo === null ? '' : `<b class="vis-tdl" style="left:${xo}%" aria-hidden="true">oggi</b>`);
+  const grid = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${e === i ? 'pit' : ''}"></i>`).join('') + '</div>' + tlkTodayI(y0); };
   const flag = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); if(e === null || e < 0 || e > 11) return ''; return `<span class="vis-fl" style="left:${(e + 1) / 12 * 100}%" title="Verifica di ${esc(c.nome)}"><svg viewBox="0 0 12 14" width="12" height="14" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span>`; };
-  const bar = (p, it, ci) => { const a = visIdx(p.dal, y0), b = visIdx(p.al, y0); if(a === null || b === null) return ''; const aa = Math.max(0, Math.min(11, a)), bb = Math.max(0, Math.min(11, b)); const col = annoColor(colore, it, ci, p);
-    return `<div class="vis-bar" style="left:${aa / 12 * 100}%;width:${(bb - aa + 1) / 12 * 100}%;--c:${col}" title="${esc(p.nm + ' · ' + tmRange(p.dal, p.al))}"><span>${esc(compact ? p.pid : p.nm)}</span></div>`; };
-  const dots = (p, it, ci) => p.acts.filter(a => a.d).map(a => { const [yy, mm, dd] = a.d.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return ''; return `<span class="vis-dot" style="left:${(i + (dd - 1) / 31) / 12 * 100}%;background:${annoColor(colore, it, ci, p, a)}" title="${esc(a.t + ' · ' + fmtDL(a.d) + ' · ' + AN_ST[a.st][0])}"></span>`; }).join('');
-  const lab = (p, it, ci) => `<div class="vis-l"><span class="vis-amb" style="background:${(AMB[p.amb] || ['', '#666'])[1]}">${esc((AMB[p.amb] || [''])[0])}</span><b>${esc(compact ? p.pid + ' · ' + (p.nm.split(' · ')[1] || '') : p.nm)}</b>${(items.length > 1 && !compact) ? `<small>${esc(it.ci.nome)}</small>` : ''}</div>`;
+  const bar = (p, it, ci) => { const a = visIdx(p.dal, y0), b = visIdx(p.al, y0); if(a === null || b === null) return ''; const aa = Math.max(0, Math.min(11, a)), bb = Math.max(0, Math.min(11, b)); const col = annoColor(colore, it, ci, p); const tt = p.nm + ' · ' + tmRange(p.dal, p.al);
+    return `<div class="vis-bar av" style="left:${aa / 12 * 100}%;width:${(bb - aa + 1) / 12 * 100}%;--c:${col}" title="${esc(tt)}"><div class="f" style="width:${tlkFill(aa, bb, y0)}%"></div><span class="sr-only">${esc(tt)}</span></div>`; };
+  const trk = (p, it, ci, withFlag) => { const M = tlkActs(p.acts.filter(a => a.d && tlkX(a.d, y0) !== null).map(a => ({x:tlkX(a.d, y0), st:a.st, col:annoColor(colore, it, ci, p, a), t:a.t, d:a.d})), wd);
+    return `<div class="vis-t" style="height:${tlkH(M.n)}px">${grid(it, ci)}${bar(p, it, ci)}${M.html}${withFlag ? flag(it, ci) : ''}</div>`; };
+  const lab = (p, it, ci) => `<div class="vis-l"><span class="vis-amb" style="background:${(AMB[p.amb] || ['', '#666'])[1]}">${esc((AMB[p.amb] || [''])[0])}</span><b>${esc(compact ? p.pid + ' · ' + (p.nm.split(' · ')[1] || '') : p.nm)}</b>${(items.length > 1 && !compact) ? `<small>${esc(it.ci.nome)}</small>` : ''}${compact ? '' : tlkProg(p.acts)}</div>`;
   let rows = '';
   if(lettura === 'attivita'){
-    const all = []; items.forEach((it, ci) => annoPer(it.data).forEach(p => p.acts.forEach(a => { if(a.d) all.push({a, p, it, ci}); })));
-    all.sort((x, y) => x.a.d.localeCompare(y.a.d)); const lastX = []; const mk = all.map(z => { const [yy, mm, dd] = z.a.d.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return ''; const x = (i + (dd - 1) / 31) / 12 * 100; let l = 0; while(lastX[l] !== undefined && x - lastX[l] < 2.2) l++; lastX[l] = x;
-      return `<span class="vis-dot vis-dl" style="left:${x}%;top:${4 + l * 16}px;background:${annoColor(colore, z.it, z.ci, z.p, z.a)}" title="${esc(z.a.t + ' · ' + fmtDL(z.a.d) + ' · ' + z.p.nm + (items.length > 1 ? ' · ' + z.it.ci.nome : ''))}"></span>`; }).join('');
-    const nl = Math.max(1, lastX.length); const fl = items.map((it, ci) => flag(it, ci)).join('');
-    rows = `<div class="vis-r"><div class="vis-l"><b>Tutte le attività</b><small>${all.length} con la data</small></div><div class="vis-t" style="height:${nl * 16 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${fl}${mk}</div></div>`;
-    if(!compact) rows += `<div class="vis-lst"><table><caption class="sr-only">Le attività dell’anno in ordine di data</caption><thead><tr><th>Data</th><th>Attività</th><th>Percorso</th>${items.length > 1 ? '<th>Ciclo</th>' : ''}<th>Stato</th></tr></thead><tbody>${all.map(z => `<tr><td>${esc(fmtDL(z.a.d))}</td><td>${esc(z.a.t)}</td><td>${esc(z.p.nm)}</td>${items.length > 1 ? `<td>${esc(z.it.ci.nome)}</td>` : ''}<td>${AN_ST[z.a.st][2]} ${AN_ST[z.a.st][0]}</td></tr>`).join('') || '<tr><td colspan="5">Nessuna attività ha ancora una data.</td></tr>'}</tbody></table></div>`;
+    const all = []; items.forEach((it, ci) => annoPer(it.data).forEach(p => p.acts.forEach(a => { if(a.d && tlkX(a.d, y0) !== null) all.push({a, p, it, ci, x:tlkX(a.d, y0), st:a.st}); })));
+    const nl = tlkLay(all); const lst = [];
+    items.forEach((it, ci) => annoPer(it.data).forEach(p => p.acts.forEach(a => { if(a.d) lst.push({a, p, it, ci}); })));
+    lst.sort((x, y) => x.a.d.localeCompare(y.a.d));
+    const mk = all.map(z => { const L = {ok:'verificata', ver:'vissuta, da verificare', fare:'in programma'}[z.st] || ''; const tt = z.a.t + ' · ' + fmtDL(z.a.d) + ' · ' + z.p.nm + (items.length > 1 ? ' · ' + z.it.ci.nome : '') + ' · ' + L;
+      return `<span class="vis-mk vis-dot vis-dl vis-at st-${z.st}" tabindex="0" role="img" aria-label="${esc(tt)}" title="${esc(tt)}" style="left:${z.x}%;top:${4 + z.l * 24}px">${tlkAct(z.st, annoColor(colore, z.it, z.ci, z.p, z.a), 20)}</span>`; }).join('');
+    const fl = items.map((it, ci) => flag(it, ci)).join('');
+    rows = `<div class="vis-r"><div class="vis-l"><b>Tutte le attività</b><small>${lst.length} con la data</small></div><div class="vis-t" style="height:${nl * 24 + 12}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${tlkTodayI(y0)}${fl}${mk}</div></div>`;
+    if(!compact) rows += `<div class="vis-lst"><table><caption class="sr-only">Le attività dell’anno in ordine di data</caption><thead><tr><th>Data</th><th>Attività</th><th>Percorso</th>${items.length > 1 ? '<th>Ciclo</th>' : ''}<th>Stato</th></tr></thead><tbody>${lst.map(z => `<tr><td>${esc(fmtDL(z.a.d))}</td><td>${esc(z.a.t)}</td><td>${esc(z.p.nm)}</td>${items.length > 1 ? `<td>${esc(z.it.ci.nome)}</td>` : ''}<td>${AN_ST[z.a.st][2]} ${AN_ST[z.a.st][0]}</td></tr>`).join('') || '<tr><td colspan="5">Nessuna attività ha ancora una data.</td></tr>'}</tbody></table></div>`;
   } else if(lettura === 'ciclo'){
     items.forEach((it, ci) => { const c = it.ci; const a = visIdx(c.dal, y0), b = visIdx(c.al, y0); const col = AN_COLC[ci % AN_COLC.length];
       rows += `<div class="vis-r"><div class="vis-l"><b>${esc(c.nome)}</b><small>${esc(c.txt || 'periodo da scegliere')}</small></div><div class="vis-t">${grid(it, ci)}${(a !== null && b !== null) ? `<div class="vis-bar" style="left:${Math.max(0, Math.min(11, a)) / 12 * 100}%;width:${(Math.max(0, Math.min(11, b)) - Math.max(0, Math.min(11, a)) + 1) / 12 * 100}%;--c:${col}"><span>${esc(c.nome)}</span></div>` : ''}${flag(it, ci)}</div></div>`;
-      c.per.forEach(p => { rows += `<div class="vis-r vis-sub"><div class="vis-l">${lab(p, it, ci)}</div><div class="vis-t">${grid(it, ci)}${bar(p, it, ci)}${dots(p, it, ci)}</div></div>`; }); });
+      c.per.forEach(p => { rows += `<div class="vis-r vis-sub"><div class="vis-l">${lab(p, it, ci)}</div>${trk(p, it, ci, false)}</div>`; }); });
   } else {
-    items.forEach((it, ci) => { it.ci.per.forEach(p => { rows += `<div class="vis-r"><div class="vis-l">${lab(p, it, ci)}</div><div class="vis-t">${grid(it, ci)}${bar(p, it, ci)}${dots(p, it, ci)}${flag(it, ci)}</div></div>`; }); });
+    items.forEach((it, ci) => { it.ci.per.forEach(p => { rows += `<div class="vis-r"><div class="vis-l">${lab(p, it, ci)}</div>${trk(p, it, ci, true)}</div>`; }); });
     if(!rows) rows = '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi con un periodo: scegli le priorità e il periodo in «Obiettivi e indicatori».</div>';
     rows += annoEvRow(items, y0);
   }
   const leg = colore === 'stato' ? Object.keys(AN_ST).map(k => `<span><i class="vis-sw" style="background:${AN_ST[k][1]}"></i>${AN_ST[k][2]} ${AN_ST[k][0]}</span>`).join('') : colore === 'ciclo' ? items.map((it, ci) => `<span><i class="vis-sw" style="background:${AN_COLC[ci % AN_COLC.length]}"></i>${esc(it.ci.nome)}</span>`).join('') : ['P', 'C', 'S'].map(k => `<span><i class="vis-sw" style="background:${AMB[k][1]}"></i>${AMB[k][0]}</span>`).join('');
-  return `<div class="vis-wrap${compact ? ' vis-c' : ''}"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${compact ? '' : `<div class="vis-leg">${leg}<span><svg viewBox="0 0 12 14" width="11" height="13" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4"/></svg> verifica del ciclo</span></div>`}</div>`;
+  return `${compact ? '' : tlkSum(items)}<div class="vis-wrap${compact ? ' vis-c' : ''}"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${compact ? '' : `<div class="vis-leg">${leg}<span><svg viewBox="0 0 12 14" width="11" height="13" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4"/></svg> verifica del ciclo</span></div><div class="vis-leg vis-leg2">${tlkLeg(lettura === 'percorso')}</div>`}</div>`;
 }
 SH.alet = SH.alet || 'percorso'; SH.acol = SH.acol || 'ambito';
 function annoYearHTML(){
@@ -17775,7 +17830,7 @@ function eleTL(L){
   const pos = iso => { if(!/^\d{4}-\d{2}-\d{2}/.test(iso || '')) return null; const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return null; return (i + (dd - 1) / 31) / 12 * 100; };
   const lane = (lab, arr) => { const mk = []; const lastX = []; arr.filter(o => o.data).forEach(o => { const a = pos(o.data); if(a === null) return; const b = (o.fine && o.fine > o.data) ? pos(o.fine) : null; const col = (CAL_T[o.mk] || CAL_T.giorno)[1]; let l = 0; while(lastX[l] !== undefined && a - lastX[l] < 2.4) l++; lastX[l] = b !== null ? Math.max(b, a + 2.4) : a;
       const tt = esc(o.titolo + ' · ' + fmtDL(o.data) + (o.fine && o.fine > o.data ? ' → ' + fmtDL(o.fine) : '') + ' · ' + o.formato);
-      mk.push(b !== null ? `<div class="vis-bar" style="left:${a}%;width:${Math.max(1.2, b - a)}%;top:${4 + l * 22}px;--c:${col}" title="${tt}"><span>${esc(o.titolo)}</span></div>` : `<span class="vis-dot vis-dl" style="left:${a}%;top:${4 + l * 22}px;background:${col}" title="${tt}"></span>`); });
+      mk.push(b !== null ? `<div class="vis-bar" style="left:${a}%;width:${Math.max(1.2, b - a)}%;top:${4 + l * 22}px;--c:${col}" title="${tt}"><span>${esc(o.titolo)}</span></div>` : `<span class="vis-mk vis-dot vis-dl" tabindex="0" role="img" aria-label="${tt}" style="left:${a}%;top:${4 + l * 22}px" title="${tt}">${tlkShape(TLK_SH[o.mk] || 'usc', col, o.data <= td(), 18, !!o.staff)}</span>`); });
     const n = Math.max(1, lastX.length); return `<div class="vis-r"><div class="vis-l"><b>${lab}</b><small>${arr.filter(o => o.data).length} con la data</small></div><div class="vis-t" style="height:${n * 22 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${mk.join('')}</div></div>`; };
   return `<div class="vis-wrap"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${lane('Unità', L.filter(o => !o.staff))}${lane('Staff', L.filter(o => o.staff))}<div class="vis-leg">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i class="vis-sw" style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}</div></div>`;
 }
@@ -18141,29 +18196,36 @@ function visRows(){
   const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
   L.forEach((per, idx) => { if(!per || !per.percorsoId) return;
     const t = percTempo(per); const a = visIdx(t.dal, y0), b = visIdx(t.al, y0); const P = DBx.find(q => q.id === per.percorsoId);
-    const dots = []; (per.attivita || []).forEach((at, j) => { const d = at && at.ax && at.ax.data; if(!d) return; const [yy, mm, dd] = d.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i >= 0 && i < 12) dots.push({x:(i + (dd - 1) / 31) / 12 * 100, t:String(at.testo || '').trim() || 'Attività ' + (j + 1), d}); });
+    const dots = []; (per.attivita || []).forEach((at, j) => { const d = at && at.ax && at.ax.data; if(!d) return; const [yy, mm, dd] = d.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i >= 0 && i < 12){ const dn = ['vBene', 'vMigl', 'vAgg'].some(k => String(at[k] || '').trim()); dots.push({x:(i + (dd - 1) / 31) / 12 * 100, t:String(at.testo || '').trim() || 'Attività ' + (j + 1), d, st:d > td() ? 'fare' : dn ? 'ok' : 'ver'}); } });
     out.push({idx, per, amb:per.ambito || per.percorsoId[0], nm:per.percorsoId + ' · ' + (P ? P.name : ''), a, b, t, dots}); });
   return out;
 }
 function visHTML(){
   const y0 = visY0(); const R = visRows(); const can = !window.BRO; const nm = {P:'Personale', C:'Comunitario', S:'Spirituale'};
   const cie = visIdx(annoCicloInfo(annoCur()).al, y0);
-  const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map((m, i) => `<span class="${i === cie ? 'pit' : ''}">${m}</span>`).join('') + '</div>';
+  const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map((m, i) => `<span class="${i === cie ? 'pit' : ''}">${m}</span>`).join('') + '</div>' + (tlkToday(y0) === null ? '' : `<b class="vis-tdl" style="left:${tlkToday(y0)}%" aria-hidden="true">oggi</b>`);
   const grid = '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${i === cie ? 'pit' : ''}"></i>`).join('') + '</div>';
   // occasioni: riunioni, uscite, bivacchi, campi
-  let occ = ''; try{ occ = uscList().map(u => { const x = u.ax || {}; if(!x.data) return ''; const a = visIdx(x.data.slice(0, 7), y0); const [yy, mm, dd] = x.data.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return ''; const T = (typeof CAL_T !== 'undefined' && CAL_T[uscModK(u)]) || ['Uscita', '#2f7d5b']; const c0 = scheda.ciclo || {}; const fu = !!(/^\d{4}-\d{2}$/.test(c0.dal || '') && /^\d{4}-\d{2}$/.test(c0.al || '') && (x.data.slice(0, 7) < c0.dal || x.data.slice(0, 7) > c0.al)); return `<span class="vis-oc${fu ? ' fuori' : ''}" style="left:${(i + (dd - 1) / 31) / 12 * 100}%;background:${T[1]}" title="${esc(T[0] + ' · ' + uscTit(u) + (fu ? ' · fuori dal ciclo' : ''))}"><span class="sr-only">${esc(T[0] + ' ' + uscTit(u))}</span></span>`; }).join(''); }catch(e){}
+  let occ = '', occN = 1; try{ const oggi = td(); const pts = []; uscList().forEach(u => { const x = u.ax || {}; if(!x.data) return; const px = tlkX(x.data, y0); if(px === null) return; const mk = uscModK(u); const T = (typeof CAL_T !== 'undefined' && CAL_T[mk]) || ['Uscita', '#2f7d5b']; const c0 = scheda.ciclo || {}; const fu = !!(/^\d{4}-\d{2}$/.test(c0.dal || '') && /^\d{4}-\d{2}$/.test(c0.al || '') && (x.data.slice(0, 7) < c0.dal || x.data.slice(0, 7) > c0.al)); const [yy, mm] = x.data.split('-').map(Number);
+      pts.push({x:px, mi:(yy * 12 + mm - 1) - (y0 * 12 + 8), k:mk, c:T[1], fu, d:x.data.slice(0, 10), stf:u.dest === 'staff', t:T[0] + ' · ' + uscTit(u) + ' · ' + fmtDL(x.data.slice(0, 10)) + (fu ? ' · fuori dal ciclo' : '')}); });
+    const G = {}; pts.filter(p => p.k === 'sede').forEach(p => { const key = p.mi + (p.stf ? 's' : 'u'); (G[key] = G[key] || []).push(p); });
+    const all = pts.filter(p => p.k !== 'sede' || G[p.mi + (p.stf ? 's' : 'u')].length < 3);
+    Object.keys(G).forEach(key => { const L = G[key]; if(L.length < 3) return; all.push({x:L.reduce((n, p) => n + p.x, 0) / L.length, k:'sede', c:L[0].c, fu:L.every(p => p.fu), stf:L[0].stf, n:L.length, d:L[L.length - 1].d, t:L.length + ' riunioni' + (L[0].stf ? ' dello staff' : '') + ' · ' + L.map(p => tlkShort(p.d)).join(', ')}); });
+    occN = tlkLay(all);
+    occ = all.map(p => `<span class="vis-mk vis-oc${p.fu ? ' fuori' : ''}${p.stf ? ' stf' : ''}${p.n ? ' vis-grp' : ''}" tabindex="0" role="img" aria-label="${esc(p.t)}" title="${esc(p.t)}" style="left:${p.x}%;top:${4 + p.l * 22}px;color:${p.c}">${tlkShape(TLK_SH[p.k] || 'usc', p.c, p.d <= oggi, 18, p.stf)}${p.n ? `<em>${p.n}</em>` : ''}</span>`).join(''); }catch(e){}
   const rows = R.map(r => {
     const col = (AMB[r.amb] || ['', '#666'])[1]; const has = r.a !== null && r.b !== null;
     const a = has ? Math.max(0, Math.min(11, r.a)) : 0, b = has ? Math.max(0, Math.min(11, r.b)) : 0;
     const cut = has && (r.a < 0 || r.b > 11 || r.a > 11 || r.b < 0);
     const warn = has ? tmWarn(r.t.dal, r.t.al, true) : '';
-    const bar = has ? `<div class="vis-bar${can ? ' mv' : ''}" data-i="${r.idx}" style="left:${a / 12 * 100}%;width:${(b - a + 1) / 12 * 100}%;--c:${col}" ${can ? `onpointerdown="visDown(event,${r.idx})"` : ''} title="${esc(tmRange(r.t.dal, r.t.al))}"><span>${esc(tmRange(r.t.dal, r.t.al))}${cut ? ' (continua fuori dall’anno scout)' : ''}</span></div>` : '';
-    const dots = r.dots.map(d => `<span class="vis-dot" style="left:${d.x}%;background:${col}" title="${esc(d.t + ' · ' + fmtDL(d.d))}"></span>`).join('');
+    const bar = has ? `<div class="vis-bar av${can ? ' mv' : ''}" data-i="${r.idx}" style="left:${a / 12 * 100}%;width:${(b - a + 1) / 12 * 100}%;--c:${col}" ${can ? `onpointerdown="visDown(event,${r.idx})"` : ''} title="${esc(tmRange(r.t.dal, r.t.al) + (cut ? ' (continua fuori dall’anno scout)' : ''))}"><div class="f" style="width:${tlkFill(a, b, y0)}%"></div><span class="sr-only">${esc(tmRange(r.t.dal, r.t.al))}${cut ? ' (continua fuori dall’anno scout)' : ''}</span>${cut ? '<i class="vis-cutm" aria-hidden="true">▸</i>' : ''}</div>` : '';
+    const MK = tlkActs(r.dots.map(d => ({x:d.x, st:d.st, col, t:d.t, d:d.d})), true, (can && has) ? String(r.idx) : '');
+    const dots = MK.html;
     const ctl = can ? `<div class="vis-ctl"><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese prima" onclick="visShift(${r.idx},-1)" ${has ? '' : 'disabled'}>◀ un mese</button><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese dopo" onclick="visShift(${r.idx},1)" ${has ? '' : 'disabled'}>un mese ▶</button><label class="vis-sl">Comincia a <select class="cal-sel" aria-label="Mese di inizio di ${esc(r.nm)}" onchange="visStart(${r.idx},this.value)"><option value="">${has ? 'scegli…' : 'scegli il mese'}</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.a === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label><label class="vis-sl">Finisce a <select class="cal-sel" aria-label="Mese di fine di ${esc(r.nm)}" onchange="visEnd(${r.idx},this.value)" ${has ? '' : 'disabled'}><option value="">scegli…</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.b === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label>${has ? `<span class="vis-du">${tmMonths(r.t.dal, r.t.al) + 1} ${tmMonths(r.t.dal, r.t.al) + 1 === 1 ? 'mese' : 'mesi'}</span>` : '<span class="vis-du">Quanto dura il percorso? Scegli il mese di inizio e poi quello di fine.</span>'}</div>` : '';
-    return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t">${grid}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}${tmCicloBtn(r.t.al)}</div>` : ''}</div>`;
+    return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t" style="height:${tlkH(MK.n)}px">${grid}${tlkTodayI(y0)}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}${tmCicloBtn(r.t.al)}</div>` : ''}</div>`;
   }).join('');
   return `<div class="sh-dh"><div><h1>Visione d’insieme</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">I percorsi dell’anno scout ${esc(String(y0) + '-' + String((y0 + 1) % 100).padStart(2, '0'))} su una linea del tempo. Trascina un blocco per spostarlo di mese in mese, oppure usa i pulsanti e il menu sotto ogni percorso. Il mese più scuro è quello in cui finisce il ciclo e si fa la verifica.</p></div></div>
-    <div class="vis-wrap">${R.length ? `<div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${occ ? `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b></div><div class="vis-t">${grid}${occ}</div></div>` : ''}<div class="vis-leg"><span><i class="vis-dot" style="background:#555"></i> un’attività con la data</span><span><i class="vis-oc2"></i> una riunione, un’uscita, un bivacco o un campo</span></div>` : '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi: scegli le priorità in «Osservare» e gli obiettivi in «Obiettivi e indicatori».</div>'}</div>`;
+    <div class="vis-wrap">${R.length ? `<div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${occ ? `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b></div><div class="vis-t" style="height:${occN * 22 + 14}px">${grid}${tlkTodayI(y0)}${occ}</div></div>` : ''}<div class="vis-leg vis-leg2">${tlkLeg(true)}</div>` : '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi: scegli le priorità in «Osservare» e gli obiettivi in «Obiettivi e indicatori».</div>'}</div>`;
 }
 window.shVis = function(){ ensurePanels(); SH.ppv = 'vis'; ownOff(); $('panel-pp').innerHTML = visHTML(); own('panel-pp'); };
 function visRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'vis' && p.classList.contains('active')) p.innerHTML = visHTML(); }
@@ -18178,6 +18240,7 @@ window.visStart = function(idx, v){
   const dur = (a !== null && b !== null && b >= a) ? b - a : 2;   // se non c'è una durata, un trimestre
   visSet(idx, visYM(st, y0), visYM(st + dur, y0));
 };
+window.visDownM = function(e, idx){ const bar = document.querySelector('#panel-pp .vis-bar[data-i="' + idx + '"]'); if(bar) visDown({button:e.button, clientX:e.clientX, pointerId:e.pointerId, currentTarget:bar}, idx); };
 window.visDown = function(e, idx){
   if(e.button > 0) return; const bar = e.currentTarget; const tr = bar.parentElement; const w = tr.getBoundingClientRect().width / 12; if(!w) return;
   const x0 = e.clientX; let dx = 0; let moved = false; try{ bar.setPointerCapture(e.pointerId); }catch(x){}
@@ -18738,6 +18801,34 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .vis-du{font-size:12px;color:#55554f}
 .vis-w{grid-column:2;font-size:12px;color:#8A5300}
 .vis-leg{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#55554f;border-top:1px solid #eef1ec;padding-top:10px}
+/* Linea del tempo: segni, avanzamento, oggi */
+.vis-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 12px}
+.vis-sum div{background:#f4f8f4;border-radius:12px;padding:10px 14px}
+.vis-sum b{display:block;font:800 26px/1.1 'Montserrat',sans-serif}
+.vis-sum span{font-size:12px;color:#55554f}
+.vis-sum .ok b{color:#1f6b41}.vis-sum .ver b{color:#8A5300}.vis-sum .pr b{color:#2d5ea8}.vis-sum .nd b{color:#55554f}
+.vis-mk{position:absolute;transform:translateX(-50%);z-index:3;line-height:0}
+.vis-dot.vis-mk,.vis-mk.vis-oc{width:auto;height:auto;border:0;box-shadow:none;border-radius:0;background:transparent;transform:translateX(-50%)}
+.vis-mk svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.vis-mk:focus-visible{outline:2px solid #1a1a18;outline-offset:2px;border-radius:50%}
+.vis-mk.fuori{opacity:.35}.vis-mk.mvm{touch-action:none;cursor:grab}
+.vis-grp{display:inline-flex;align-items:center;gap:2px;background:#fff;border:1.5px solid currentColor;border-radius:11px;padding:1px 6px 1px 3px;line-height:1}
+.vis-mk.vis-grp{background:#fff;border:1.5px solid currentColor;border-radius:11px}.vis-grp svg{width:15px;height:15px;filter:none}.vis-grp em{font:800 11px 'Montserrat',sans-serif;font-style:normal}
+.vis-dd{position:absolute;top:35px;transform:translateX(-50%);font:700 10.5px 'Montserrat',sans-serif;color:#55554f;white-space:nowrap;z-index:2;pointer-events:none}
+.vis-bar.av{top:8px;height:26px;padding:0;border:1.5px solid var(--c);box-shadow:none;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 20%,#fff) 0 6px,color-mix(in srgb,var(--c) 10%,#fff) 6px 12px)}
+.vis-bar.av .f{position:absolute;inset:0 auto 0 0;background:var(--c);opacity:.92}
+.vis-sub .vis-bar.av{top:8px;height:26px}
+.vis-cutm{position:absolute;right:3px;top:3px;font-size:12px;font-style:normal;color:var(--c);z-index:2}
+.vis-td{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#c62828;z-index:2;opacity:.85;pointer-events:none}
+.vis-tdl{position:absolute;top:0;transform:translateX(-50%);background:#c62828;color:#fff;font:800 10px 'Montserrat',sans-serif;border-radius:8px;padding:0 7px;line-height:16px;z-index:4}
+.vis-rh .vis-t{height:38px}.vis-rh .vis-hd span{align-items:flex-end;padding-bottom:3px}
+.vis-pgt{font-size:12px;color:#55554f}.vis-pgt b{color:#1a1a18}
+.vis-nd{display:inline-block;margin-left:6px;background:#eee;border-radius:10px;padding:0 8px;font-weight:700;font-size:11px}
+.vis-pg{display:block;height:6px;border-radius:3px;background:#e6ebe4;overflow:hidden;margin-top:2px}.vis-pg i{display:block;height:100%;background:#2f7d5b;border-radius:3px}
+.vis-leg2{border-top:0;padding-top:2px;margin-top:0}.vis-leg2 span{display:inline-flex;align-items:center;gap:5px}.vis-leg2 svg{flex:0 0 auto}.vis-lg-n{flex-basis:100%}
+.vis-wrap{container-type:inline-size}
+@container (max-width:960px){.vis-r{grid-template-columns:minmax(0,1fr)}.vis-rh .vis-l{display:none}.vis-ctl,.vis-w{grid-column:1}.vis-l{flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 12px}.vis-l .vis-pg{flex:0 0 150px}.vis-sub .vis-l{padding-left:0}}
+@media(max-width:760px){.vis-sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:699px){.vis-r{grid-template-columns:minmax(0,1fr)}.vis-ctl,.vis-w{grid-column:1}.vis-wrap{padding:12px}.vis-hd{font-size:10px}}
 /* Realizzare · Calendario e attività */
 .cal-add{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
