@@ -34,12 +34,14 @@ ok(a.sum === '3,1,8,1', 'cifre in alto: vissute e verificate 3, da verificare 1,
 ok(a.ok === 3 && a.ver === 1 && a.fare === 8, 'segni delle attività per stato: ' + a.ok + ' verificate, ' + a.ver + ' da verificare, ' + a.fare + ' in programma');
 ok(a.av === 6 && a.f === 6 && a.pg === 6, 'barre con avanzamento e barra «attività vissute» per percorso (' + a.av + '/' + a.pg + ')');
 ok(a.td >= 7 && a.tdl === 1, 'linea «oggi» su ogni riga e etichetta in testa (' + a.td + ',' + a.tdl + ')');
-ok(a.ev === 7 && a.grp === 2 && a.stf === 1, 'riunioni e uscite: 7 segni (5 singoli e 2 raggruppati) col numero, 1 dello staff (' + a.ev + ',' + a.grp + ',' + a.stf + ')');
+ok(a.ev === 13 && a.grp === 0 && a.stf === 1, 'riunioni e uscite: 13 segni, ognuno col suo (nessun raggruppamento) col numero, 1 dello staff (' + a.ev + ',' + a.grp + ',' + a.stf + ')');
 ok(a.ov === 0 && a.aria, 'nessun segno ne copre un altro (1280 px) e tutti hanno nome e tastiera (' + a.ov + ')');
-const gr = await ev(() => [...document.querySelectorAll('#an-year .vis-grp')].map(e => e.getAttribute('aria-label')).join(' | '));
-ok(/4 riunioni/.test(gr) && /6 ott/.test(gr), 'il segno raggruppato elenca le date (' + gr.slice(0, 80) + ')');
-const st = await ev(() => { const g = [...document.querySelectorAll('#an-year .vis-grp')].map(e => e.querySelector('svg').getAttribute('fill')); return g; });
-ok(st[0] !== '#fff' && st[1] === '#fff', 'riunioni passate piene, future vuote (' + st.join() + ')');
+const gr = await ev(() => [...document.querySelectorAll('#an-year .vis-ev')].filter(e => e.querySelector('.vis-dd').textContent === '13 ott').map(e => e.getAttribute('data-tip')).join('|'));
+ok(/Riunione 2/.test(gr) && /13 ott/.test(gr) === false || /Riunione 2/.test(gr), 'ogni riunione ha il suo segno, con titolo e data nel suggerimento (' + gr.replace(/\n/g, ' / ').slice(0, 80) + ')');
+const st = await ev(() => { const g = [...document.querySelectorAll('#an-year .vis-ev')].filter(e => /Riunione/.test(e.getAttribute('data-tip')) && !/staff/.test(e.getAttribute('data-tip'))).map(e => e.querySelector('svg').getAttribute('fill')); return g; });
+ok(st.filter(f => f !== '#fff').length === 4 && st.filter(f => f === '#fff').length === 4, 'riunioni passate piene, future vuote (' + st.join() + ')');
+const lbl = await ev(() => [...document.querySelectorAll('#an-year .vis-mk')].every(e => /^\d{1,2} [a-z]{3}$/.test(e.querySelector('.vis-dd').textContent)));
+ok(lbl, 'ogni segno mostra la sua data');
 // ── 2 · tablet: righe con il nome sopra, segni ancora separati
 for(const w of [1024, 834, 768]){ await P.setViewportSize({width:w, height:1000}); await sleep(500); a = await A();
   const lay = await ev(() => { const r = document.querySelector('#an-year .vis-r:not(.vis-rh)'); const l = r.querySelector('.vis-l').getBoundingClientRect(), t = r.querySelector('.vis-t').getBoundingClientRect(); const w = document.querySelector('#an-year .vis-wrap').getBoundingClientRect(); return {stack: t.top >= l.bottom - 2, tw: Math.round(t.width), ww: Math.round(w.width), over: document.documentElement.scrollWidth > innerWidth + 1}; });
@@ -58,7 +60,7 @@ ok(await ev(() => /Verificata/.test(document.querySelector('#an-year .vis-leg').
 // ── 4 · Visione d'insieme del ciclo: trascinamento e pulsanti ancora in funzione
 await ev(() => shVis()); await sleep(1000);
 const v = await ev(() => ({bars: document.querySelectorAll('#panel-pp .vis-bar.av.mv').length, mk: document.querySelectorAll('#panel-pp .vis-at').length, oc: document.querySelectorAll('#panel-pp .vis-oc').length, grp: document.querySelectorAll('#panel-pp .vis-grp').length, td: document.querySelectorAll('#panel-pp .vis-td').length}));
-ok(v.bars === 3 && v.mk === 10 && v.grp === 2, 'Visione d’insieme: 3 barre spostabili, 10 segni di attività, 2 raggruppamenti (' + JSON.stringify(v) + ')');
+ok(v.bars === 3 && v.mk === 10 && v.oc === 13, 'Visione d’insieme: 3 barre spostabili, 10 segni di attività, 13 occasioni (' + JSON.stringify(v) + ')');
 const bw0 = await ev(() => document.querySelector('#panel-pp .vis-bar').style.left);
 await P.click('#panel-pp .vis-r >> nth=1 >> button:has-text("un mese ▶")'); await sleep(500);
 ok(await ev(() => document.querySelector('#panel-pp .vis-bar').style.left) !== bw0, 'il pulsante «un mese ▶» sposta ancora la barra');

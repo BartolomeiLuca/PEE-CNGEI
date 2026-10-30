@@ -1902,7 +1902,7 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
     </div>
   </div>
 
-  <div id="g-dl" class="g-dl" style="display:none"><span>Vuoi vedere a che punto è il documento?</span><button class="btn-ghost" onclick="exportSchedaDocx('completo')">↓ Scarica la Scheda (Word)</button></div>
+  <div id="g-dl" class="g-dl" style="display:none"><span>Vuoi vedere a che punto è il documento?</span><button class="btn-ghost" onclick="exportSchedaDocx('completo')">↓ Scarica la Scheda (Word)</button><button class="btn-ghost" id="gr-dl-btn2" style="display:none" onclick="exportSchedaDocx('griglia')" title="Scarica solo la griglia osservativa, nel formato CNGEI, da caricare su Drive quando l’ICdF la richiede">↓ Scarica griglia (formato CNGEI)</button></div>
 </main>
 <div class="mobile-nav" id="mobile-nav" style="display:none">
   <button class="mnav-btn active" id="mnav1" onclick="goPhase(1)">
@@ -9372,22 +9372,23 @@ function attObjHTML(p,j,a){
     const so=O.o||[], si=O.i||[]; const n=so.length+si.length;
     const row=(kind,o,sel,inP)=>`<label class="ax-check usc-objl"><input type="checkbox" ${sel.includes(o.k)?'checked':''} ${can?'':'disabled'} onchange="attObjTog(${p},${j},'${kind}',${o.k},this.checked)"> <span>${sEsc(o.t)}${inP.has(o.k)?' <span class="usc-inp">nel percorso</span>':''}</span></label>`;
     const others=getAllPercorsi().map((q,i)=>({q,i})).filter(z=>z.q&&z.q.percorsoId&&z.i!==p);
-    const mv=(can&&others.length)?`<label class="usc-lb" style="max-width:420px;margin-top:8px"><span class="usc-lt" style="white-space:normal">Sposta in un altro percorso <span class="ax-opt">testo e date restano; gli obiettivi e gli Indicatori vanno scelti di nuovo</span></span><select class="ax-in" onchange="if(this.value!=='')attMove(${p},${j},this.value)"><option value="">scegli…</option>${others.map(z=>`<option value="${z.i}">${sEsc(typeof uscPercLabel==='function'?uscPercLabel(z.q,z.i):('Percorso '+(z.i+1)))}</option>`).join('')}</select></label>`:'';
-    return `<details class="att-obj" ${n?'':'open'}><summary>Obiettivi e Indicatori di questa attività<b style="font-weight:700;color:var(--green)">${n?' · '+n+(n===1?' scelta':' scelte'):''}</b></summary>
+    const mv=can?`<div class="att-mvb"><button type="button" class="btn-ghost ax-btn" onclick="attMoveAsk(${p},${j})">Sposta questa attività in un altro percorso o ciclo…</button><span class="ax-opt">testo, materiali e date restano; gli indicatori specifici vanno scelti di nuovo nel nuovo percorso</span></div>`:'';
+    const _ok=p+'-'+j, _os=(window._attObjOpen||{})[_ok]; const _op=(_os===undefined)?!n:_os;
+    return `<details class="att-obj" ${_op?'open':''} ontoggle="(window._attObjOpen=window._attObjOpen||{})['${_ok}']=this.open"><summary>Indicatori specifici di questa attività<b style="font-weight:700;color:var(--green)">${n?' · '+n+(n===1?' scelta':' scelte'):''}</b></summary>
       <div class="ax-hint" style="margin:4px 0">Scegli su quali obiettivi e Indicatori di Risultato lavora questa attività, tra quelli del percorso «${sEsc(P.name)}». Se ne scegli uno che il percorso non aveva, entra nel percorso; se la togli, esce.</div>
       <div class="ax-sub">Obiettivi</div>${ob.map(o=>row('o',o,so,inO)).join('')}
-      ${id.length?`<div class="ax-sub">Indicatori di Risultato</div>${id.map(o=>row('i',o,si,inI)).join('')}`:''}${mv}</details>`;
+      ${id.length?`<div class="ax-sub">Indicatori di Risultato</div>${id.map(o=>row('i',o,si,inI)).join('')}`:''}</details>${mv}`;
   }catch(e){ return ''; } }
-function attObjTog(p,j,kind,q,on){ const per=getAllPercorsi()[p]; if(!per||!per.attivita||!per.attivita[j]) return; attIdsEnsure(per); const a=per.attivita[j];
+function attObjTog(p,j,kind,q,on){ const per=getAllPercorsi()[p]; if(!per||!per.attivita||!per.attivita[j]) return; (window._attObjOpen=window._attObjOpen||{})[p+'-'+j]=true; attIdsEnsure(per); const a=per.attivita[j];
   if(!a.obj||typeof a.obj!=='object') a.obj={o:[],i:[]}; if(!Array.isArray(a.obj.o)) a.obj.o=[]; if(!Array.isArray(a.obj.i)) a.obj.i=[];
   const A=kind==='o'?a.obj.o:a.obj.i; const n=A.indexOf(q);
   if(on){ if(n<0) A.push(q); attObjAdd(per,a,kind,q); if(kind==='i'){ const x=a.ax=a.ax||{}; if(!x.oss) x.oss={}; if(!x.oss[q]) x.oss[q]={on:true,chi:''}; } }
   else { if(n>=0) A.splice(n,1); percProvDrop(per,kind,q,a.aid); if(kind==='i'&&a.ax&&a.ax.oss&&a.ax.oss[q]) delete a.ax.oss[q]; }
   saveData(true); try{ renderValuation(); }catch(e){} try{ if(typeof uscRe==='function') uscRe(); }catch(e){} try{ if(typeof calRe==='function') calRe(); }catch(e){} }
 // sposta un'attività in un altro percorso: testo, date, materiali restano; gli obiettivi e gli Indicatori appartengono al percorso e vanno scelti di nuovo
-function attMove(p,j,to){ to=Number(to); if(isNaN(to)||to===p) return; const L=getAllPercorsi(); const src=L[p], dst=L[to]; if(!src||!dst||!dst.percorsoId||!src.attivita||!src.attivita[j]) return;
+function attMoveTo(p,j,to,sure){ to=Number(to); if(isNaN(to)||to===p) return; const L=getAllPercorsi(); const src=L[p], dst=L[to]; if(!src||!dst||!dst.percorsoId||!src.attivita||!src.attivita[j]) return;
   const a=src.attivita[j]; const nm=(a.testo||'').trim()||'questa attività'; const dn=(()=>{ try{ return uscPercLabel(dst,to); }catch(e){ return 'Percorso '+(to+1); } })();
-  if(!confirm('Spostare «'+nm+'» in «'+dn+'»?\n\nTesto, date e materiali restano. Gli obiettivi e gli Indicatori scelti per l’attività si tolgono: nel nuovo percorso li scegli di nuovo.')){ renderValuation(); return; }
+  if(!sure&&!confirm('Spostare «'+nm+'» in «'+dn+'»?\n\nTesto, date e materiali restano. Gli indicatori specifici scelti per l’attività si tolgono: nel nuovo percorso li scegli di nuovo.')){ renderValuation(); return; }
   attIdsEnsure(src); attIdsEnsure(dst); const aid=a.aid;
   percProvRelease(src,aid); src.attivita.splice(j,1); if(Array.isArray(src.attOrder)) src.attOrder=src.attOrder.filter(z=>z!==aid);
   a.obj={o:[],i:[]}; if(a.ax&&a.ax.oss) delete a.ax.oss;
@@ -10785,7 +10786,7 @@ function tlHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''; const
   const out=[]; const pill=st=>`<span class="tl-st tl-${st.k}">${st.l}</span>`;
   const row=o=>{ const x=o.a.ax||{}; const fuori=o.d&&((t.dal&&ym(o.d)<t.dal)||(t.al&&ym(o.d)>t.al));
     return `<div class="tl-it tl-b-${o.st.k}"><div class="tl-dot"></div><div class="tl-body"><div class="tl-top"><a href="javascript:void(0)" class="tl-name" onclick="tlGo(${idx},${o.j})">Attività ${attNum(idx,o.j)}${(o.a.testo||'').trim()?' · '+sEsc(o.a.testo.trim().slice(0,60)):''}</a>${pill(o.st)}</div>
-      <div class="tl-meta">${o.d&&x.durata==='piu'&&x.dataFine&&x.dataFine!==x.data?'<b>'+tlDataTxt(x)+'</b>':''}<input type="date" class="tl-date" value="${sEsc(o.d)}" title="Data dell’attività" onchange="tlSetDate(${idx},${o.j},this.value)">${o.st.k==='ver'?`<a href="javascript:void(0)" class="tl-act" onclick="gGo('4')">Vai alla verifica →</a>`:''}</div>
+      <div class="tl-meta">${o.d&&x.durata==='piu'&&x.dataFine&&x.dataFine!==x.data?'<b>'+tlDataTxt(x)+'</b>':''}${(()=>{ const pl=(window.calPlacedFor?window.calPlacedFor(idx,o.j):[]); return pl.length?`<span class="tl-cal" title="La data viene dall’evento del Calendario in cui hai messo l’attività">${sEsc(pl.map(z=>new Date(z+'T12:00').toLocaleDateString('it-IT',{day:'numeric',month:'long'})).join(' · '))} · dal Calendario <a href="javascript:void(0)" class="tl-act" onclick="shCal()">Cambia nel Calendario</a></span>`:`<input type="date" class="tl-date" value="${sEsc(o.d)}" title="Data provvisoria: si fissa mettendo l’attività nel Calendario" onchange="tlSetDate(${idx},${o.j},this.value)">`; })()}${o.st.k==='ver'?`<a href="javascript:void(0)" class="tl-act" onclick="gGo('4')">Vai alla verifica →</a>`:''}</div>
       ${fuori?'<div class="tl-warn">Fuori dalle tempistiche del percorso ('+percTempoTxt(per)+').</div>':''}</div></div>`; };
   if(a0&&a1&&a0<=a1){ let [y,m]=a0.split('-').map(Number); const [y1,m1]=a1.split('-').map(Number); let guard=0; let todayDone=false;
     while((y<y1||(y===y1&&m<=m1))&&guard++<36){ const key=y+'-'+String(m).padStart(2,'0'); const inM=dated.filter(o=>ym(o.d)===key);
@@ -11065,7 +11066,7 @@ function gCur(){
   return ({ctx:'1a',A:'1a',B:'2',C:'3',ver:'4',val:'5',chk:'chk',usc:'usc'})[schedaStep]||'2';
 }
 function gSync(){ try{ setTimeout(()=>window.ptCheck&&ptCheck(),0); }catch(e){}
-  { const d=document.getElementById('g-dl'); if(d) d.style.display=(MODE==='giovani'&&gCur()!=='chk')?'':'none'; }
+  { const d=document.getElementById('g-dl'); if(d) d.style.display=(MODE==='giovani'&&gCur()!=='chk')?'':'none'; const gb=document.getElementById('gr-dl-btn2'); if(gb) gb.style.display=(MODE==='giovani'&&gCur()==='1b')?'':'none'; }
   try{ document.body.classList.toggle('usc-on', (MODE==='giovani'&&gCur()==='usc')||(MODE==='staff'&&schedaStep==='usc'&&!!document.getElementById('panel4')&&document.getElementById('panel4').classList.contains('active'))); }catch(e){}
   if(MODE==='staff'){ uscNavSync(); return; }
   if(MODE!=='giovani') return;
@@ -11078,7 +11079,7 @@ function gSync(){ try{ setTimeout(()=>window.ptCheck&&ptCheck(),0); }catch(e){}
   const GS=gSteps(); const i=GS.findIndex(x=>x[0]===cur);
   sn.style.display='';
   sn.innerHTML=`<div class="gsn-wrap"><div class="gsn-title">Sezione 1 · Osservazione del Gruppo di Pari &amp; Identificazione e Priorizzazione delle Necessità Educative</div>
-    <div class="gsn-steps">${GS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${k==='1s'?'↔':(GS.slice(0,j).filter(x=>x[0]!=='1s').length+1)+' ·'}</b> ${l}</button>`).join('')}</div>${(cur==='1b'&&MODE==='giovani')?'<div class="gsn-act" style="margin-top:8px"><button type="button" class="btn-ghost" id="gr-dl-btn" onclick="exportSchedaDocx(\'griglia\')" title="Scarica solo la griglia osservativa, nel formato CNGEI, da caricare su Drive quando l’ICdF la richiede">Scarica griglia (formato CNGEI)</button></div>':''}</div>`;
+    <div class="gsn-steps">${GS.map(([k,n,l],j)=>`<button class="gsn-step ${k===cur?'on':''} ${j<i?'done':''}" onclick="gGo('${k}')"><b>${k==='1s'?'↔':(GS.slice(0,j).filter(x=>x[0]!=='1s').length+1)+' ·'}</b> ${l}</button>`).join('')}</div></div>`;
   if(cur==='1a'||cur==='1b'){ const e=document.getElementById('hero-eye1'); if(e) e.textContent=crumbTxt(CRUMB1); } if(cur==='1c'){ const e=document.querySelector('#panel2 .hero-eye'); if(e) e.textContent=crumbTxt(CRUMB1); }
   if(cur==='1b'){ const t0=null; const t=document.getElementById('hero-title1'); if(t) t.textContent='Scheda di osservazione dei percorsi'; }
 }
@@ -16720,7 +16721,8 @@ body.sh-in .gsn-step b{display:inline;font-size:inherit;color:inherit;font-weigh
 body.sh-in .gsn-step.on{background:var(--green);color:#fff}
 body.sh-in .gsn-step.done b{color:inherit}
 body.sh-in #g-subnav.stuck .gsn-step{padding:6px 12px;min-height:36px;font-size:12px}
-body.sh-in .gsn-act{margin-top:10px}
+body.sh-in .gsn-act{margin:0;display:flex;justify-content:flex-end}
+body.sh-in #g-subnav{max-width:1106px}
 
 /* ══ SISTEMA VISIVO UNICO (fase 1) — stesso linguaggio in tutta l'app: pasticche, card morbide, campi larghi e leggibili ══ */
 body.sh-in{--u-line:#d6dcd5;--u-line-s:#e4e8e2;--u-soft:#f5f7f3;--u-r-card:18px;--u-r-ctl:12px;--u-shadow:0 1px 2px rgba(30,50,30,.05),0 6px 18px -10px rgba(30,50,30,.12)}
@@ -17456,10 +17458,11 @@ function annoPer(d){
   const sc = d.scheda || {}, pr = sc.priorita || [], pe = sc.percorsiExtra || [], ps = d.pris || {}; const oggi = td();
   const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
   const sel = ['P', 'C', 'S'].map(a => Object.keys(ps).find(k => ps[k] && k[0] === a)).filter(Boolean);
+  const plc = tlkPlaced(sc);
   const mk = (pid, per, prio) => {
     const dal = per.tDal || per.tAl ? per.tDal : (prio && prio.tDal), al = per.tDal || per.tAl ? per.tAl : (prio && prio.tAl); const P = DBx.find(q => q.id === pid);
-    const acts = (per.attivita || []).filter(a => a && ['testo', 'lancio', 'sviluppo', 'conclusione'].some(k => String(a[k] || '').trim() )).map((a, j) => { const dd = (a.ax || {}).data || ''; const done = ['vBene', 'vMigl', 'vAgg'].some(k => String(a[k] || '').trim());
-      return {t:String(a.testo || '').trim() || 'Attività ' + (j + 1), d:dd, st:!dd ? 'nd' : dd > oggi ? 'fare' : done ? 'ok' : 'ver'}; });
+    const acts = (per.attivita || []).filter(a => a && ['testo', 'lancio', 'sviluppo', 'conclusione'].some(k => String(a[k] || '').trim() )).map((a, j) => { const dd = (a.ax || {}).data || ''; const done = ['vBene', 'vMigl', 'vAgg'].some(k => String(a[k] || '').trim()); const pl = (a.aid && plc[pid + '|' + a.aid]) || []; const ds = pl.length ? pl : (dd ? [dd] : []); const d0 = ds[0] || '';
+      return {t:String(a.testo || '').trim() || 'Attività ' + (j + 1), d:d0, ds, done, cal:pl.length > 0, st:tlkSt(d0, done)}; });
     return {pid, amb:pid[0], nm:pid + ' · ' + (P ? P.name : ''), dal, al, acts};
   };
   const out = [];
@@ -17510,87 +17513,110 @@ function annoColor(mode, it, ci, p, a){
   if(mode === 'stato'){ const L = a ? [a] : p.acts; const st = !L.length ? 'nd' : L.every(x => x.st === 'ok') ? 'ok' : L.some(x => x.st === 'ver') ? 'ver' : 'fare'; return AN_ST[st][1]; }
   return (AMB[p.amb] || ['', '#666'])[1];
 }
-// ── Linea del tempo: simboli (forma + colore + stato), disposizione senza sovrapposizioni, avanzamento ──
+// ── Linea del tempo: segni, zoom, suggerimenti al passaggio ──
 const TLK_SH = {sede:'riu', giorno:'usc', bivacco:'biv', campo:'camp'};
 const TLK_OC = {riu:'Riunione', usc:'Uscita', biv:'Bivacco', camp:'Campo'};
+const TLK_ST = {ok:'vissuta e verificata', ver:'vissuta, da verificare', fare:'in programma'};
 function tlkShape(t, col, fill, sz, stf){
-  const S = sz || 18, f = fill ? col : '#fff', d = stf ? ' stroke-dasharray="3 2"' : '';
+  const S = sz || 20, f = fill ? col : '#fff', d = stf ? ' stroke-dasharray="3 2"' : '';
   const P = {riu:`<rect x="3" y="3" width="${S - 6}" height="${S - 6}" rx="2.5"/>`, usc:`<path d="M${S / 2} 2.5L${S - 2.5} ${S - 3}L2.5 ${S - 3}Z" stroke-linejoin="round"/>`, biv:`<path d="M${S / 2} 2L${S - 2} ${S / 2}L${S / 2} ${S - 2}L2 ${S / 2}Z" stroke-linejoin="round"/>`, camp:`<path d="M9 1.3l2.3 5 5.4.6-4 3.7 1.1 5.3L9 13.2 4.2 15.9l1.1-5.3-4-3.7 5.4-.6z" stroke-linejoin="round" transform="scale(${S / 18})"/>`}[t] || '';
   return `<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" fill="${f}" stroke="${col}" stroke-width="2"${d} aria-hidden="true">${P}</svg>`;
 }
 function tlkAct(st, col, sz){
-  const S = sz || 20;
+  const S = sz || 22;
   if(st === 'ok') return `<svg width="${S}" height="${S}" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8" fill="${col}" stroke="#fff" stroke-width="1.5"/><path d="M5.2 9.3l2.6 2.6 5-5.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   if(st === 'ver') return `<svg width="${S}" height="${S}" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8" fill="#fff6dc" stroke="#d6a935" stroke-width="2"/><path d="M9 4.8v5M9 12.6v.1" stroke="#8A5300" stroke-width="2" stroke-linecap="round"/></svg>`;
   return `<svg width="${S}" height="${S}" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7.5" fill="#fff" stroke="${col}" stroke-width="2"/></svg>`;
 }
-// punti = [{x (% sulla linea), ...}] → assegna .l (riga) e .dd (c'è spazio per la data sotto il segno); restituisce quante righe servono
-function tlkLay(pts, gap){
-  const o = pts.slice().sort((a, b) => a.x - b.x), last = []; const g = gap || 3.4;
-  o.forEach(p => { let l = 0; while(last[l] !== undefined && p.x - last[l] < g) l++; last[l] = p.x; p.l = l; });
-  o.forEach((p, i) => { const a = o[i - 1], b = o[i + 1]; p.dd = p.l === 0 && (!a || p.x - a.x >= 7) && (!b || b.x - p.x >= 7); });
-  return Math.max(1, last.length);
-}
-const tlkTop = l => l === 0 ? 11 : 37 + (l - 1) * 22;
-const tlkH = n => n <= 1 ? 48 : 15 + n * 22;
 function tlkX(iso, y0){ if(!/^\d{4}-\d{2}-\d{2}/.test(iso || '')) return null; const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return null; return (i + (dd - 1) / 31) / 12 * 100; }
 function tlkShort(iso){ const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Number); return dd + ' ' + VIS_M[((mm - 1) + 4) % 12]; }
-// i segni delle attività di una riga (percorso): lista [{x, st, col, t, d}] → {html, n}
-function tlkActs(list, wd, dn){
-  const n = tlkLay(list); let h = '';
-  list.forEach(p => { const L = {ok:'verificata', ver:'vissuta, da verificare', fare:'in programma'}[p.st] || ''; const lab = p.t + ' · ' + fmtDL(p.d) + ' · ' + L;
-    h += `<span class="vis-mk vis-dot vis-at st-${p.st}${dn ? ' mvm' : ''}" ${dn ? `onpointerdown="visDownM(event,${dn})" ` : ''}tabindex="0" role="img" aria-label="${esc(lab)}" title="${esc(lab)}" style="left:${p.x}%;top:${tlkTop(p.l)}px">${tlkAct(p.st, p.col, 20)}</span>`;
-    if(wd && p.dd) h += `<span class="vis-dd" aria-hidden="true" style="left:${p.x}%">${tlkShort(p.d)}</span>`; });
-  return {html:h, n};
-}
-// «oggi»: posizione sulla linea del tempo
 function tlkToday(y0){ return tlkX(td(), y0); }
 function tlkTodayI(y0){ const x = tlkToday(y0); return x === null ? '' : `<b class="vis-td" style="left:${x}%" aria-hidden="true"></b>`; }
-// avanzamento del tempo di una barra: quota già trascorsa, in %
 function tlkFill(aa, bb, y0){ const x = tlkToday(y0); if(x === null) return (td() > (visYM(bb, y0) + '-31')) ? 100 : 0; const t = x / 100 * 12; return Math.max(0, Math.min(100, (t - aa) / (bb + 1 - aa) * 100)); }
-// quante attività del percorso sono vissute (verificate o da verificare) sul totale
+function tlkGrid(y0, pit){ return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${i === pit ? 'pit' : ''}"></i>`).join('') + '</div>'; }
+function tlkHead(y0, pit){ const x = tlkToday(y0); return `<div class="vis-hd" aria-hidden="true">${VIS_M.map((m, i) => `<span class="${i === pit ? 'pit' : ''}">${m}</span>`).join('')}</div><div class="vis-wk" aria-hidden="true"></div>` + (x === null ? '' : `<b class="vis-tdl" style="left:${x}%" data-tip="Oggi\n${esc(fmtDL(td()))}">oggi</b>`); }
+// un segno sulla linea: icona + data sotto; la posizione verticale la decide tlkRelayout
+function tlkMk(o){ const tip = (o.tip || []).filter(Boolean); return `<span class="vis-mk ${o.cls || ''}" data-x="${o.x}" style="left:${o.x}%" tabindex="0" role="img" aria-label="${esc(tip.join(' · '))}" data-tip="${esc(tip.join('\n'))}"${o.dn || ''}><span class="vis-sv">${o.svg}</span><span class="vis-dd">${esc(o.date || '')}</span></span>`; }
+function tlkActs(list, dn){ return list.map(p => tlkMk({x:p.x, cls:'vis-dot vis-at st-' + p.st + (dn ? ' mvm' : '') + (p.cx ? ' ' + p.cx : ''), dn:dn ? ` onpointerdown="visDownM(event,${dn})"` : '', svg:tlkAct(p.st, p.col, 22), date:tlkShort(p.d), tip:[p.t, fmtDL(p.d)].concat(p.sub || [], ['Stato: ' + TLK_ST[p.st]])})).join(''); }
+// le attività che la persona mette nel Calendario: la data è quella dell'evento (si aggiorna da sola se l'evento si sposta)
+function tlkPlaced(sc){ const out = {}; const U = (sc && sc.uscite) || {}; if(typeof U !== 'object' || Array.isArray(U)) return out;
+  Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id || u.dest === 'staff') return; const d0 = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d0)) return;
+    Object.values(u.prog || {}).forEach(m => { if(!m || typeof m !== 'object' || m.del || m.k !== 'att' || !m.aid || !m.pid) return; const d = new Date(d0.slice(0, 10) + 'T12:00'); d.setDate(d.getDate() + Math.max(1, Number(m.g) || 1) - 1); const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); const K = m.pid + '|' + m.aid; (out[K] = out[K] || []).push(iso); }); });
+  Object.keys(out).forEach(K => out[K].sort()); return out; }
+function tlkSt(d, done){ return !d ? 'nd' : d > td() ? 'fare' : done ? 'ok' : 'ver'; }
 function tlkProg(acts){ const n = acts.length, v = acts.filter(a => a.st === 'ok' || a.st === 'ver').length, nd = acts.filter(a => a.st === 'nd').length; return `<span class="vis-pgt"><b>${v} di ${n}</b> ${n === 1 ? 'attività vissuta' : 'attività vissute'}${nd ? `<span class="vis-nd">${nd} senza data</span>` : ''}</span><span class="vis-pg" role="presentation"><i style="width:${n ? v / n * 100 : 0}%"></i></span>`; }
 function tlkSum(items){ let ok = 0, ver = 0, fa = 0, nd = 0; items.forEach(it => it.ci.per.forEach(p => p.acts.forEach(a => { if(a.st === 'ok') ok++; else if(a.st === 'ver') ver++; else if(a.st === 'fare') fa++; else nd++; })));
   return `<div class="vis-sum" role="group" aria-label="Il lavoro dell’anno in cifre"><div class="ok"><b>${ok}</b><span>attività vissute e verificate</span></div><div class="ver"><b>${ver}</b><span>vissute, da verificare</span></div><div class="pr"><b>${fa}</b><span>in programma</span></div><div class="nd"><b>${nd}</b><span>ancora senza data</span></div></div>`; }
-function tlkLeg(withEv){ const a = (st, t) => `<span>${tlkAct(st, '#555', 16)} ${t}</span>`; return a('ok', 'attività vissuta e verificata') + a('ver', 'da verificare') + a('fare', 'in programma') + (withEv ? Object.keys(TLK_OC).map(k => `<span>${tlkShape(k, '#4a6b8a', true, 15)} ${TLK_OC[k].toLowerCase()}</span>`).join('') + `<span>${tlkShape('riu', '#1d4f8f', false, 15, true)} dello staff (tratteggio)</span><span class="vis-lg-n">segno vuoto = non ancora avvenuta · il numero raggruppa più riunioni dello stesso mese</span>` : ''); }
+function tlkLeg(withEv){ const a = (st, t) => `<span>${tlkAct(st, '#555', 16)} ${t}</span>`; return a('ok', 'attività vissuta e verificata') + a('ver', 'da verificare') + a('fare', 'in programma') + (withEv ? Object.keys(TLK_OC).map(k => `<span>${tlkShape(k, '#4a6b8a', true, 15)} ${TLK_OC[k].toLowerCase()}</span>`).join('') + `<span>${tlkShape('riu', '#1d4f8f', false, 15, true)} dello staff (tratteggio)</span><span class="vis-lg-n">segno vuoto = non ancora avvenuta · passa il mouse su ogni segno per i dettagli · ingrandisci per vedere i giorni</span>` : ''); }
+// righe delle occasioni: riunioni, uscite/bivacchi/campi, riunioni dello staff (ognuna col suo segno e la sua data)
+function tlkEvRows(pts, y0){ const oggi = td(); let h = '';
+  [['Riunioni', p => p.k === 'sede' && !p.stf], ['Uscite, bivacchi e campi', p => p.k !== 'sede' && !p.stf], ['Riunioni dello staff', p => p.stf]].forEach(([lab, f]) => { const L = pts.filter(f); if(!L.length) return;
+    const mk = L.map(p => tlkMk({x:p.x, cls:'vis-ev vis-oc' + (p.stf ? ' stf' : '') + (p.fuori ? ' fuori' : ''), svg:tlkShape(TLK_SH[p.k] || 'usc', p.c, p.d <= oggi, 22, p.stf), date:tlkShort(p.d), tip:[p.t, fmtDL(p.d), (TLK_OC[TLK_SH[p.k] || 'usc'] || 'Uscita') + (p.stf ? ' dello staff' : ''), p.fuori ? 'Fuori dal ciclo aperto' : '', p.d <= oggi ? 'Già avvenuta' : 'In programma']})).join('');
+    h += `<div class="vis-r"><div class="vis-l"><b>${lab}</b><small>${L.length} con la data</small></div><div class="vis-t" data-lay="free">${tlkGrid(y0, -1)}${tlkTodayI(y0)}${mk}</div></div>`; });
+  return h; }
+function tlkZoomBar(){ const z = SH.vz || 1; return `<div class="vis-zm" role="group" aria-label="Zoom della linea del tempo"><span class="vis-zl">Zoom</span><button type="button" class="vis-zb" aria-label="Rimpicciolisci" onclick="vzStep(this,-1)">−</button><input type="range" class="vis-zr" min="1" max="8" step="0.25" value="${z}" aria-label="Livello di zoom" oninput="vzSet(this,+this.value)"><button type="button" class="vis-zb" aria-label="Ingrandisci" onclick="vzStep(this,1)">+</button><span class="vis-zv">×${Math.round(z * 10) / 10}</span><button type="button" class="vis-zt" onclick="vzSet(this,1)">Tutto l’anno</button><button type="button" class="vis-zt" onclick="vzToday(this)">Vai a oggi</button><span class="vis-zh">Ctrl/⌘ + rotella o pizzico per ingrandire</span></div>`; }
+// ---- disposizione dei segni (dopo ogni disegno e a ogni cambio di larghezza o zoom) ----
+const TLK_GAP = 48, TLK_BAND = 44, TLK_BLK = 38;
+function tlkRelayout(w){
+  w.querySelectorAll('.vis-t[data-lay]').forEach(t => {
+    const W = t.clientWidth; if(!W) return; const bar = t.querySelector(':scope > .vis-bar'); const bar2 = bar ? 1 : 0;
+    const ms = [...t.querySelectorAll(':scope > .vis-mk')].map(e => ({e, x:parseFloat(e.dataset.x) / 100 * W})).sort((a, b) => a.x - b.x);
+    let last = [], cur = null; const cl = [];
+    ms.forEach(m => { if(!cur || last.every(v => m.x - v >= TLK_GAP)){ cur = {L:1, it:[]}; cl.push(cur); last = []; } let l = 0; while(last[l] !== undefined && m.x - last[l] < TLK_GAP) l++; last[l] = m.x; m.l = l; m.c = cur; cur.it.push(m); cur.L = Math.max(cur.L, l + 1); });
+    const maxL = cl.reduce((n, c) => Math.max(n, c.L), 1); const H = ms.length ? Math.max(bar2 ? 60 : 56, 18 + maxL * TLK_BAND) : (bar2 ? 46 : 40);
+    t.style.height = H + 'px'; if(bar){ bar.style.top = '5px'; bar.style.height = (H - 10) + 'px'; }
+    ms.forEach(m => { const top = H / 2 + (m.l - (m.c.L - 1) / 2) * TLK_BAND - TLK_BLK / 2; m.e.style.top = Math.round(top) + 'px'; });
+    const fl = t.querySelector(':scope > .vis-fl'); if(fl) fl.style.top = '1px';
+  });
+  w.querySelectorAll('.vis-wk').forEach(k => { const t = k.parentElement; const W = t.clientWidth; let h = ''; if(W >= 1400){ const every = W >= 4200 ? 1 : 7; for(let i = 0; i < 12; i++) for(let d = 1; d <= 31; d += every){ const x = (i + (d - 1) / 31) / 12 * 100; h += `<i style="left:${x}%">${d}</i>`; } } k.innerHTML = h; t.classList.toggle('vis-wk-on', !!h); });
+}
+const tlkRO = (typeof ResizeObserver !== 'undefined') ? new ResizeObserver(es => es.forEach(e => tlkRelayout(e.target))) : null; let tlkRaf = 0;
+function tlkAttach(){ document.querySelectorAll('.vis-wrap').forEach(w => { if(!w._tlk){ w._tlk = 1; if(tlkRO) tlkRO.observe(w); } if(!w.dataset.lay){ w.dataset.lay = '1'; tlkRelayout(w); } }); }
+try{ new MutationObserver(() => { cancelAnimationFrame(tlkRaf); tlkRaf = requestAnimationFrame(tlkAttach); }).observe(document.body, {childList:true, subtree:true}); }catch(e){}
+// ---- zoom ----
+function vzApply(w, z, ax){ z = Math.max(1, Math.min(8, Math.round(z * 100) / 100)); const sc = w.querySelector('.vis-sc'); const old = sc ? sc.scrollWidth : 0; const cx = (ax === undefined && sc) ? sc.clientWidth / 2 : (ax || 0); const fr = old ? (sc.scrollLeft + cx) / old : 0;
+  SH.vz = z; w.style.setProperty('--z', z); const zv = w.querySelector('.vis-zv'); if(zv) zv.textContent = '×' + (Math.round(z * 10) / 10); const rg = w.querySelector('.vis-zr'); if(rg) rg.value = z;
+  if(sc){ sc.scrollLeft = fr * sc.scrollWidth - cx; } tlkRelayout(w); if(sc) sc.scrollLeft = fr * sc.scrollWidth - cx; }
+window.vzSet = function(el, z){ const w = el.closest('.vis-wrap'); if(w) vzApply(w, z); };
+window.vzStep = function(el, d){ const w = el.closest('.vis-wrap'); if(w) vzApply(w, (SH.vz || 1) * (d > 0 ? 1.5 : 1 / 1.5)); };
+window.vzToday = function(el){ const w = el.closest('.vis-wrap'); if(!w) return; if((SH.vz || 1) < 3) vzApply(w, 3); const sc = w.querySelector('.vis-sc'); const x = tlkToday(visY0()); if(sc && x !== null){ const tw = sc.scrollWidth - (sc.querySelector('.vis-l') ? sc.querySelector('.vis-l').offsetWidth + 14 : 0); sc.scrollLeft = (sc.scrollWidth - tw) + x / 100 * tw - sc.clientWidth / 2; } };
+document.addEventListener('wheel', e => { if(!(e.ctrlKey || e.metaKey)) return; const sc = e.target.closest && e.target.closest('.vis-sc'); if(!sc) return; e.preventDefault(); const w = sc.closest('.vis-wrap'); const r = sc.getBoundingClientRect(); vzApply(w, (SH.vz || 1) * (e.deltaY < 0 ? 1.2 : 1 / 1.2), e.clientX - r.left); }, {passive:false});
+// ---- suggerimento al passaggio del mouse (o al tocco / con la tastiera) ----
+let tkTip = null;
+function tkHide(){ if(tkTip) tkTip.style.display = 'none'; }
+function tkShow(el){ const t = el.getAttribute('data-tip'); if(!t) return tkHide(); if(!tkTip){ tkTip = document.createElement('div'); tkTip.className = 'vis-tip'; tkTip.setAttribute('role', 'tooltip'); document.body.appendChild(tkTip); }
+  const L = t.split('\n'); tkTip.innerHTML = '<b>' + esc(L[0]) + '</b>' + L.slice(1).map(x => '<span>' + esc(x) + '</span>').join(''); tkTip.style.display = 'block';
+  const r = el.getBoundingClientRect(); const tw = tkTip.offsetWidth, th = tkTip.offsetHeight; let x = r.left + r.width / 2 - tw / 2; x = Math.max(8, Math.min(innerWidth - tw - 8, x)); let y = r.top - th - 8; if(y < 8) y = r.bottom + 8; tkTip.style.left = x + 'px'; tkTip.style.top = y + 'px'; }
+document.addEventListener('mouseover', e => { const el = e.target.closest && e.target.closest('.vis-wrap [data-tip]'); if(el) tkShow(el); else tkHide(); });
+document.addEventListener('focusin', e => { const el = e.target.closest && e.target.closest('.vis-wrap [data-tip]'); if(el) tkShow(el); });
+document.addEventListener('focusout', tkHide); window.addEventListener('scroll', tkHide, true);
 // linea del tempo: items = progetti-ciclo; lettura = percorso | attivita | ciclo; colore = ambito | ciclo | stato
 function annoEvRow(items, y0){
-  const oggi = td(); const pts = [];
-  items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const x = tlkX(d, y0); if(x === null) return; const [yy, mm] = d.slice(0, 10).split('-').map(Number); const mi = (yy * 12 + mm - 1) - (y0 * 12 + 8); const sc0 = ((it.data || {}).scheda || {}).ciclo || {}; const fuori = !!(/^\d{4}-\d{2}$/.test(sc0.dal || '') && /^\d{4}-\d{2}$/.test(sc0.al || '') && (d.slice(0, 7) < sc0.dal || d.slice(0, 7) > sc0.al)); const mk = uscModK(u); const T = CAL_T[mk] || CAL_T.giorno;
-      pts.push({x, mi, k:mk, c:T[1], stf:u.dest === 'staff', fuori, d:d.slice(0, 10), t:T[0] + ' · ' + uscTit(u) + ' · ' + fmtDL(d.slice(0, 10)) + (u.dest === 'staff' ? ' · staff' : '') + (fuori ? ' · fuori dal ciclo' : '')}); }); });
-  if(!pts.length) return '';
-  // tre o più riunioni nello stesso mese diventano un solo segno con il numero
-  const G = {}; pts.filter(p => p.k === 'sede').forEach(p => { const key = p.mi + (p.stf ? 's' : 'u'); (G[key] = G[key] || []).push(p); });
-  const rest = pts.filter(p => p.k !== 'sede' || G[p.mi + (p.stf ? 's' : 'u')].length < 3); const all = rest.slice();
-  Object.keys(G).forEach(key => { const L = G[key]; if(L.length < 3) return; all.push({x:L.reduce((n, p) => n + p.x, 0) / L.length, k:'sede', c:L[0].c, stf:L[0].stf, fuori:L.every(p => p.fuori), n:L.length, d:L[L.length - 1].d, t:L.length + ' riunioni' + (L[0].stf ? ' dello staff' : '') + ' · ' + L.map(p => tlkShort(p.d)).join(', ')}); });
-  const nl = tlkLay(all);
-  const mk = all.map(p => `<span class="vis-mk vis-ev${p.stf ? ' stf' : ''}${p.fuori ? ' fuori' : ''}${p.n ? ' vis-grp' : ''}" tabindex="0" role="img" aria-label="${esc(p.t)}" title="${esc(p.t)}" style="left:${p.x}%;top:${4 + p.l * 22}px;color:${p.c}">${tlkShape(TLK_SH[p.k] || 'usc', p.c, p.d <= oggi, 18, p.stf)}${p.n ? `<em>${p.n}</em>` : ''}</span>`).join('');
-  return `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b><small>${pts.length} con la data</small></div><div class="vis-t" style="height:${nl * 22 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${tlkTodayI(y0)}${mk}</div></div>`;
+  const pts = [];
+  items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const x = tlkX(d, y0); if(x === null) return; const sc0 = ((it.data || {}).scheda || {}).ciclo || {}; const fuori = !!(/^\d{4}-\d{2}$/.test(sc0.dal || '') && /^\d{4}-\d{2}$/.test(sc0.al || '') && (d.slice(0, 7) < sc0.dal || d.slice(0, 7) > sc0.al)); const mk = uscModK(u); const T = CAL_T[mk] || CAL_T.giorno;
+      pts.push({x, k:mk, c:T[1], stf:u.dest === 'staff', fuori, d:d.slice(0, 10), t:uscTit(u)}); }); });
+  return tlkEvRows(pts, y0);
 }
 function annoTL(items, lettura, colore, compact){
-  const y0 = visY0(); const wd = !compact; const xo = tlkToday(y0);
-  const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map(m => `<span>${m}</span>`).join('') + '</div>' + (xo === null ? '' : `<b class="vis-tdl" style="left:${xo}%" aria-hidden="true">oggi</b>`);
-  const grid = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${e === i ? 'pit' : ''}"></i>`).join('') + '</div>' + tlkTodayI(y0); };
-  const flag = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); if(e === null || e < 0 || e > 11) return ''; return `<span class="vis-fl" style="left:${(e + 1) / 12 * 100}%" title="Verifica di ${esc(c.nome)}"><svg viewBox="0 0 12 14" width="12" height="14" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span>`; };
-  const bar = (p, it, ci) => { const a = visIdx(p.dal, y0), b = visIdx(p.al, y0); if(a === null || b === null) return ''; const aa = Math.max(0, Math.min(11, a)), bb = Math.max(0, Math.min(11, b)); const col = annoColor(colore, it, ci, p); const tt = p.nm + ' · ' + tmRange(p.dal, p.al);
-    return `<div class="vis-bar av" style="left:${aa / 12 * 100}%;width:${(bb - aa + 1) / 12 * 100}%;--c:${col}" title="${esc(tt)}"><div class="f" style="width:${tlkFill(aa, bb, y0)}%"></div><span class="sr-only">${esc(tt)}</span></div>`; };
-  const trk = (p, it, ci, withFlag) => { const M = tlkActs(p.acts.filter(a => a.d && tlkX(a.d, y0) !== null).map(a => ({x:tlkX(a.d, y0), st:a.st, col:annoColor(colore, it, ci, p, a), t:a.t, d:a.d})), wd);
-    return `<div class="vis-t" style="height:${tlkH(M.n)}px">${grid(it, ci)}${bar(p, it, ci)}${M.html}${withFlag ? flag(it, ci) : ''}</div>`; };
+  const y0 = visY0(); const pitOf = it => visIdx((it.ci || annoCicloInfo(it)).al, y0);
+  const grid = it => tlkGrid(y0, pitOf(it)) + tlkTodayI(y0);
+  const flag = (it, ci) => { const c = it.ci || annoCicloInfo(it); const e = visIdx(c.al, y0); if(e === null || e < 0 || e > 11) return ''; return `<span class="vis-fl" style="left:${(e + 1) / 12 * 100}%" data-tip="Verifica di ${esc(c.nome)}\nfine ${esc(visLab(e, y0))}"><svg viewBox="0 0 12 14" width="12" height="14" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span>`; };
+  const bar = (p, it, ci) => { const a = visIdx(p.dal, y0), b = visIdx(p.al, y0); if(a === null || b === null) return ''; const aa = Math.max(0, Math.min(11, a)), bb = Math.max(0, Math.min(11, b)); const col = annoColor(colore, it, ci, p); const v = p.acts.filter(z => z.st === 'ok' || z.st === 'ver').length; const tt = [p.nm, tmRange(p.dal, p.al), v + ' di ' + p.acts.length + ' attività vissute'].join('\n');
+    return `<div class="vis-bar av" style="left:${aa / 12 * 100}%;width:${(bb - aa + 1) / 12 * 100}%;--c:${col}" data-tip="${esc(tt)}"><div class="f" style="width:${tlkFill(aa, bb, y0)}%"></div><span class="sr-only">${esc(tt.replace(/\n/g, ' · '))}</span></div>`; };
+  const pts = (p, it, ci) => { const L = []; p.acts.forEach(a => a.ds.forEach(d => { const x = tlkX(d, y0); if(x === null) return; L.push({x, st:tlkSt(d, a.done), col:annoColor(colore, it, ci, p, a), t:a.t, d, sub:[p.nm].concat(items.length > 1 ? [it.ci.nome] : [], a.cal ? ['Data dal Calendario'] : [])}); })); return L; };
+  const trk = (p, it, ci, withFlag) => `<div class="vis-t" data-lay="bar">${grid(it)}${bar(p, it, ci)}${tlkActs(pts(p, it, ci))}${withFlag ? flag(it, ci) : ''}</div>`;
   const lab = (p, it, ci) => `<div class="vis-l"><span class="vis-amb" style="background:${(AMB[p.amb] || ['', '#666'])[1]}">${esc((AMB[p.amb] || [''])[0])}</span><b>${esc(compact ? p.pid + ' · ' + (p.nm.split(' · ')[1] || '') : p.nm)}</b>${(items.length > 1 && !compact) ? `<small>${esc(it.ci.nome)}</small>` : ''}${compact ? '' : tlkProg(p.acts)}</div>`;
-  let rows = '';
+  let rows = '', after = '';
   if(lettura === 'attivita'){
-    const all = []; items.forEach((it, ci) => annoPer(it.data).forEach(p => p.acts.forEach(a => { if(a.d && tlkX(a.d, y0) !== null) all.push({a, p, it, ci, x:tlkX(a.d, y0), st:a.st}); })));
-    const nl = tlkLay(all); const lst = [];
-    items.forEach((it, ci) => annoPer(it.data).forEach(p => p.acts.forEach(a => { if(a.d) lst.push({a, p, it, ci}); })));
+    const all = [], lst = [];
+    items.forEach((it, ci) => annoPer(it.data).forEach(p => p.acts.forEach(a => { a.ds.forEach(d => { const x = tlkX(d, y0); if(x !== null) all.push({x, st:tlkSt(d, a.done), col:annoColor(colore, it, ci, p, a), t:a.t, d, sub:[p.nm].concat(items.length > 1 ? [it.ci.nome] : [])}); }); if(a.d) lst.push({a, p, it, ci}); })));
     lst.sort((x, y) => x.a.d.localeCompare(y.a.d));
-    const mk = all.map(z => { const L = {ok:'verificata', ver:'vissuta, da verificare', fare:'in programma'}[z.st] || ''; const tt = z.a.t + ' · ' + fmtDL(z.a.d) + ' · ' + z.p.nm + (items.length > 1 ? ' · ' + z.it.ci.nome : '') + ' · ' + L;
-      return `<span class="vis-mk vis-dot vis-dl vis-at st-${z.st}" tabindex="0" role="img" aria-label="${esc(tt)}" title="${esc(tt)}" style="left:${z.x}%;top:${4 + z.l * 24}px">${tlkAct(z.st, annoColor(colore, z.it, z.ci, z.p, z.a), 20)}</span>`; }).join('');
     const fl = items.map((it, ci) => flag(it, ci)).join('');
-    rows = `<div class="vis-r"><div class="vis-l"><b>Tutte le attività</b><small>${lst.length} con la data</small></div><div class="vis-t" style="height:${nl * 24 + 12}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${tlkTodayI(y0)}${fl}${mk}</div></div>`;
-    if(!compact) rows += `<div class="vis-lst"><table><caption class="sr-only">Le attività dell’anno in ordine di data</caption><thead><tr><th>Data</th><th>Attività</th><th>Percorso</th>${items.length > 1 ? '<th>Ciclo</th>' : ''}<th>Stato</th></tr></thead><tbody>${lst.map(z => `<tr><td>${esc(fmtDL(z.a.d))}</td><td>${esc(z.a.t)}</td><td>${esc(z.p.nm)}</td>${items.length > 1 ? `<td>${esc(z.it.ci.nome)}</td>` : ''}<td>${AN_ST[z.a.st][2]} ${AN_ST[z.a.st][0]}</td></tr>`).join('') || '<tr><td colspan="5">Nessuna attività ha ancora una data.</td></tr>'}</tbody></table></div>`;
+    rows = `<div class="vis-r"><div class="vis-l"><b>Tutte le attività</b><small>${lst.length} con la data</small></div><div class="vis-t" data-lay="free">${tlkGrid(y0, -1)}${tlkTodayI(y0)}${fl}${tlkActs(all).replace(/vis-dot vis-at/g, 'vis-dot vis-dl vis-at')}</div></div>`;
+    if(!compact) after = `<div class="vis-lst"><table><caption class="sr-only">Le attività dell’anno in ordine di data</caption><thead><tr><th>Data</th><th>Attività</th><th>Percorso</th>${items.length > 1 ? '<th>Ciclo</th>' : ''}<th>Stato</th></tr></thead><tbody>${lst.map(z => `<tr><td>${esc(fmtDL(z.a.d))}</td><td>${esc(z.a.t)}</td><td>${esc(z.p.nm)}</td>${items.length > 1 ? `<td>${esc(z.it.ci.nome)}</td>` : ''}<td>${AN_ST[z.a.st][2]} ${AN_ST[z.a.st][0]}</td></tr>`).join('') || '<tr><td colspan="5">Nessuna attività ha ancora una data.</td></tr>'}</tbody></table></div>`;
   } else if(lettura === 'ciclo'){
-    items.forEach((it, ci) => { const c = it.ci; const a = visIdx(c.dal, y0), b = visIdx(c.al, y0); const col = AN_COLC[ci % AN_COLC.length];
-      rows += `<div class="vis-r"><div class="vis-l"><b>${esc(c.nome)}</b><small>${esc(c.txt || 'periodo da scegliere')}</small></div><div class="vis-t">${grid(it, ci)}${(a !== null && b !== null) ? `<div class="vis-bar" style="left:${Math.max(0, Math.min(11, a)) / 12 * 100}%;width:${(Math.max(0, Math.min(11, b)) - Math.max(0, Math.min(11, a)) + 1) / 12 * 100}%;--c:${col}"><span>${esc(c.nome)}</span></div>` : ''}${flag(it, ci)}</div></div>`;
+    items.forEach((it, ci) => { const c = it.ci; const a = visIdx(c.dal, y0), b = visIdx(c.al, y0); const col = AN_COLC[ci % AN_COLC.length]; const A = Math.max(0, Math.min(11, a)), B = Math.max(0, Math.min(11, b));
+      rows += `<div class="vis-r"><div class="vis-l"><b>${esc(c.nome)}</b><small>${esc(c.txt || 'periodo da scegliere')}</small></div><div class="vis-t" style="height:46px">${grid(it)}${(a !== null && b !== null) ? `<div class="vis-bar" style="left:${A / 12 * 100}%;width:${(B - A + 1) / 12 * 100}%;--c:${col};top:6px;height:34px" data-tip="${esc(c.nome + '\n' + (c.txt || ''))}"><span>${esc(c.nome)}</span></div>` : ''}${flag(it, ci)}</div></div>`;
       c.per.forEach(p => { rows += `<div class="vis-r vis-sub"><div class="vis-l">${lab(p, it, ci)}</div>${trk(p, it, ci, false)}</div>`; }); });
   } else {
     items.forEach((it, ci) => { it.ci.per.forEach(p => { rows += `<div class="vis-r"><div class="vis-l">${lab(p, it, ci)}</div>${trk(p, it, ci, true)}</div>`; }); });
@@ -17598,21 +17624,24 @@ function annoTL(items, lettura, colore, compact){
     rows += annoEvRow(items, y0);
   }
   const leg = colore === 'stato' ? Object.keys(AN_ST).map(k => `<span><i class="vis-sw" style="background:${AN_ST[k][1]}"></i>${AN_ST[k][2]} ${AN_ST[k][0]}</span>`).join('') : colore === 'ciclo' ? items.map((it, ci) => `<span><i class="vis-sw" style="background:${AN_COLC[ci % AN_COLC.length]}"></i>${esc(it.ci.nome)}</span>`).join('') : ['P', 'C', 'S'].map(k => `<span><i class="vis-sw" style="background:${AMB[k][1]}"></i>${AMB[k][0]}</span>`).join('');
-  return `${compact ? '' : tlkSum(items)}<div class="vis-wrap${compact ? ' vis-c' : ''}"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${compact ? '' : `<div class="vis-leg">${leg}<span><svg viewBox="0 0 12 14" width="11" height="13" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4"/></svg> verifica del ciclo</span></div><div class="vis-leg vis-leg2">${tlkLeg(lettura === 'percorso')}</div>`}</div>`;
+  return `${compact ? '' : tlkSum(items)}<div class="vis-wrap${compact ? ' vis-c' : ''}" style="--z:${SH.vz || 1}">${compact ? '' : tlkZoomBar()}<div class="vis-sc"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${tlkHead(y0, -1)}</div></div>${rows}</div>${after}${compact ? '' : `<div class="vis-leg">${leg}<span><svg viewBox="0 0 12 14" width="11" height="13" aria-hidden="true"><path d="M2 1v12M2 2h8l-2 3 2 3H2" fill="currentColor" stroke="currentColor" stroke-width="1.4"/></svg> verifica del ciclo</span></div><div class="vis-leg vis-leg2">${tlkLeg(lettura === 'percorso')}</div>`}</div>`;
 }
+
 SH.alet = SH.alet || 'percorso'; SH.acol = SH.acol || 'ambito';
 function annoYearHTML(){
   if(!SH._ay){ if(!SH._ayBusy){ SH._ayBusy = true; annoLoad().then(L => { SH._ay = L; SH._ayBusy = false; const e = $('an-year'); if(e && SH.dscope === 'anno') e.innerHTML = annoYearHTML(); }).catch(() => { SH._ay = []; SH._ayBusy = false; const e = $('an-year'); if(e) e.innerHTML = annoYearHTML(); }); } return '<p class="sh-sub" role="status">Carico i cicli dell’anno…</p>'; }
   const items = SH._ay; const can = !window.BRO;
   const cards = items.map((it, i) => { const c = it.ci; const per = c.per; const na = per.reduce((n, p) => n + p.acts.length, 0), nv = per.reduce((n, p) => n + p.acts.filter(a => a.st === 'ok').length, 0), nda = per.reduce((n, p) => n + p.acts.filter(a => a.st === 'ver').length, 0);
-    return `<div class="an-cy${it.cur ? ' cur' : ''}"><span class="an-sw" style="background:${AN_COLC[i % AN_COLC.length]}" aria-hidden="true"></span><div class="an-cb"><b>${esc(c.nome)}${it.cur ? ' <em>(aperto ora)</em>' : ''}</b><span>${esc(c.txt || 'periodo da scegliere')}</span><span>${per.length} ${per.length === 1 ? 'percorso' : 'percorsi'} · ${na} ${na === 1 ? 'attività' : 'attività'}${nv ? ' · ' + nv + ' verificate' : ''}${nda ? ' · ' + nda + ' da verificare' : ''}</span></div>${it.cur ? '' : `<button type="button" class="cal-bt2" onclick="shOpen('${it.id}',0)">Apri il ciclo</button>`}</div>`; }).join('');
+    return `<div class="an-cy${it.cur ? ' cur' : ''}"><span class="an-sw" style="background:${AN_COLC[i % AN_COLC.length]}" aria-hidden="true"></span><div class="an-cb"><b>${esc(c.nome)}${it.cur ? ' <em>(aperto ora)</em>' : ''}</b><span>${esc(c.txt || 'periodo da scegliere')}</span><span>${per.length} ${per.length === 1 ? 'percorso' : 'percorsi'} · ${na} ${na === 1 ? 'attività' : 'attività'}${nv ? ' · ' + nv + ' verificate' : ''}${nda ? ' · ' + nda + ' da verificare' : ''}</span></div>${it.cur ? '' : `<button type="button" class="cal-bt2" onclick="shGoCycle('${it.id}')">Apri il ciclo</button>`}</div>`; }).join('');
   const seg = (k, lab, opts) => `<div class="sh-seg sm" role="group" aria-label="${lab}"><span class="sh-seg-l">${lab}</span>${opts.map(([v, t]) => `<button type="button" aria-pressed="${SH[k] === v}" onclick="SH.${k}='${v}';annoRe()">${t}</button>`).join('')}</div>`;
   const form = (can && SH._ncForm) ? ncFormHTML(items) : '';
   return `<section class="sh-card2 wide"><h3>I cicli di quest’anno</h3><div class="an-cl">${cards}</div>${can ? `<div><button type="button" class="sh-btn" onclick="ncOpen()">+ Nuovo ciclo</button></div>` : ''}${form}</section>
     <section class="sh-card2 wide"><h3>Visione d’insieme dell’anno</h3><div class="vis-opt">${seg('alet', 'Leggi', [['percorso', 'Per percorso'], ['attivita', 'Attività per attività'], ['ciclo', 'Per ciclo']])}${seg('acol', 'Colora per', [['ambito', 'Ambito'], ['ciclo', 'Ciclo'], ['stato', 'Stato']])}</div>${annoTL(items, SH.alet, SH.acol, false)}<div class="sub" style="font-size:12px">Per spostare un blocco apri il ciclo e usa «Visione d’insieme».</div></section>
     <section class="sh-card2 wide"><h3>Verifica dell’anno</h3><div class="sub" style="font-size:13px;color:#3D3D38">Ogni ciclo ha la sua verifica. Qui guardi l’anno intero, con un Word cumulativo che arriva all’inizio dell’anno dopo.</div><div><button type="button" class="sh-btn" onclick="shAnnoV()">Apri la verifica dell’anno</button></div></section>`;
 }
-function annoRe(){ const e = $('an-year'); if(e) e.innerHTML = annoYearHTML(); }
+// rinfresca un pezzo di pagina senza far saltare lo scroll (il contenitore tiene l'altezza finché non ha ricaricato)
+function shKeep(el, fn){ const y = window.scrollY; const sc0 = el && el.querySelector('.vis-sc'); const sl = sc0 ? sc0.scrollLeft : 0; if(el) el.style.minHeight = el.offsetHeight + 'px'; try{ fn(); } finally{ const sc1 = el && el.querySelector('.vis-sc'); if(sc1 && sl) sc1.scrollLeft = sl; if(Math.abs(window.scrollY - y) > 1){ try{ window.scrollTo({top:y, left:0, behavior:'instant'}); }catch(e){ window.scrollTo(0, y); } } if(el) setTimeout(() => { el.style.minHeight = ''; }, 80); } }
+function annoRe(){ const e = $('an-year'); if(e) shKeep(e, () => { e.innerHTML = annoYearHTML(); }); }
 window.annoRe = annoRe;
 // ── Nuovo ciclo ──
 function ncFormHTML(items){
@@ -17687,6 +17716,63 @@ async function cicloPortaIn(k, idx, tid){
     showToast('Aggiunta al ciclo «' + (cic.nome || g.titolo) + '», nel percorso ' + pid + ': la completi lì');
   }catch(e){ console.error(e); showToast(e && e.message === 'stale' ? 'Quel ciclo è stato modificato nel frattempo: riprova' : 'Non sono riuscito ad aggiungerla: ' + ((e && e.message) || 'riprova')); }
 }
+// ── Sposta un'attività: in un altro percorso (anche nuovo) di questo ciclo, o in un altro ciclo dell'anno ──
+window.attCalPlaced = function(idx, j){ try{ const per = getAllPercorsi()[idx]; const a = per && per.attivita && per.attivita[j]; if(!a || !a.aid) return []; return tlkPlaced(scheda)[per.percorsoId + '|' + a.aid] || []; }catch(e){ return []; } };
+window.calPlacedFor = window.attCalPlaced;
+window.attMoveAsk = async function(p, j){
+  const L = getAllPercorsi(); const per = L[p]; const a = per && per.attivita && per.attivita[j]; if(!a || window.BRO) return;
+  let cyc = []; try{ const A = SH._ay || await annoLoad(); cyc = A.filter(it => !it.cur && it.id); }catch(e){}
+  const here = L.map((q, i) => ({q, i})).filter(z => z.q && z.q.percorsoId).map(z => ({pid:z.q.percorsoId, lab:uscPercLabel(z.q, z.i), cur:z.i === p}));
+  const others = cyc.map(it => ({id:it.id, nome:it.ci.nome, txt:it.ci.txt, pids:annoPer(it.data).map(x => x.pid)}));
+  window._amv = {p, j, here, others}; const nm = String(a.testo || '').trim() || 'questa attività';
+  modalShow(`<div class="sch dup att-mv" style="display:block;max-width:560px"><div class="sch-t">Sposta «${esc(nm)}»</div>
+    <label class="usc-lb" style="display:block;margin:8px 0"><span class="usc-lt">In quale ciclo</span><select id="amv-c" class="ax-in" onchange="amvFill()"><option value="">Questo ciclo${(scheda.ciclo || {}).nome ? ' (' + esc(scheda.ciclo.nome) + ')' : ''}</option>${others.map(o => `<option value="${esc(o.id)}">${esc(o.nome)}${o.txt ? ' · ' + esc(o.txt) : ''}</option>`).join('')}</select></label>
+    <label class="usc-lb" style="display:block;margin:8px 0"><span class="usc-lt">In quale percorso</span><select id="amv-p" class="ax-in"></select></label>
+    <p class="sh-hint" id="amv-n"></p>
+    <div class="dup-act"><button type="button" class="sh-btn" onclick="amvGo()">Sposta</button><button type="button" class="btn-ghost" onclick="modalClose()">Annulla</button></div></div>`);
+  amvFill();
+};
+window.amvFill = function(){
+  const S = window._amv; const sel = document.getElementById('amv-p'); if(!S || !sel) return; const c = document.getElementById('amv-c').value; const DBx = Object.values(DB).flat(); let have = [];
+  if(!c) have = S.here.filter(z => !z.cur).map(z => ({pid:z.pid, lab:z.lab}));
+  else { const o = S.others.find(x => x.id === c); have = (o ? o.pids : []).map(pid => { const P = DBx.find(q => q.id === pid); return {pid, lab:pid + ' · ' + (P ? P.name : '')}; }); }
+  const hv = new Set(have.map(z => z.pid)); if(!c) S.here.forEach(z => hv.add(z.pid));
+  const AMBL = [['P', 'Personale'], ['C', 'Comunitario'], ['S', 'Spirituale']];
+  sel.innerHTML = '<option value="">scegli…</option>' + (have.length ? `<optgroup label="Percorsi di ${c ? 'quel ciclo' : 'questo ciclo'}">${have.map(z => `<option value="${esc(z.pid)}">${esc(z.lab)}</option>`).join('')}</optgroup>` : '') + AMBL.map(([k, l]) => `<optgroup label="Aggiungi un altro percorso PEE · ${l}">${DBx.filter(q => q.id[0] === k && !hv.has(q.id)).map(q => `<option value="${esc(q.id)}">${esc(q.id + ' ' + q.name)}</option>`).join('')}</optgroup>`).join('');
+  const n = document.getElementById('amv-n'); if(n) n.textContent = c ? 'L’attività passa all’altro ciclo (prima l’app salva una copia di sicurezza di quel ciclo) e qui non c’è più; esce anche dagli eventi di questo ciclo in cui era messa. Se il percorso scelto non c’è in quel ciclo, ci entra.' : 'Testo, materiali e date restano. Gli indicatori specifici si tolgono: nel nuovo percorso li scegli di nuovo. Se scegli un percorso nuovo, entra in questo ciclo.';
+};
+window.amvGo = async function(){ const S = window._amv; if(!S) return; const c = document.getElementById('amv-c').value, pid = document.getElementById('amv-p').value; if(!pid){ showToast('Scegli il percorso'); return; } modalClose(); await attMoveRun(S.p, S.j, c, pid); };
+async function attMoveRun(p, j, tid, pid){
+  const L = getAllPercorsi(); const src = L[p]; const a = src && src.attivita && src.attivita[j]; if(!a || window.BRO) return;
+  try{
+    if(!tid){
+      let to = L.findIndex(q => q && q.percorsoId === pid);
+      if(to < 0){ const cic = scheda.ciclo || {}; scheda.percorsiExtra = Array.isArray(scheda.percorsiExtra) ? scheda.percorsiExtra : []; const np = newPercorso(null); np.percorsoId = pid; np.ambito = pid[0]; np.attivo = true; np.tDal = cic.dal || src.tDal || ''; np.tAl = cic.al || src.tAl || ''; np.attivita = []; scheda.percorsiExtra.push(np); to = getAllPercorsi().findIndex(q => q && q.percorsoId === pid); }
+      if(to < 0 || to === p) return; attMoveTo(p, j, to, true); showToast('Attività spostata nel percorso ' + pid); return;
+    }
+    saveData(true); try{ await clPush(true); }catch(e){}
+    const g = await dbGet(tid); if(!g || !g.data){ showToast('Non trovo quel ciclo'); return; }
+    const nd = JSON.parse(JSON.stringify(g.data)); const sc = nd.scheda = nd.scheda || {}; const cic = sc.ciclo || {};
+    sc.percorsiExtra = Array.isArray(sc.percorsiExtra) ? sc.percorsiExtra : [];
+    let per = sc.percorsiExtra.find(q => q && q.percorsoId === pid);
+    if(!per){ per = newPercorso(null); per.percorsoId = pid; per.ambito = pid[0]; per.attivo = true; per.tDal = cic.dal || ''; per.tAl = cic.al || ''; per.attivita = []; sc.percorsiExtra.push(per); }
+    if(!Array.isArray(per.attivita)) per.attivita = [];
+    const a2 = JSON.parse(JSON.stringify(a)); delete a2.aid; a2.spostataDa = {ciclo:(scheda.ciclo || {}).nome || '', pid:src.percorsoId};
+    if(pid === src.percorsoId){ const O = a2.obj || {o:[], i:[]}; (O.o || []).forEach(q => { per.obiettiviExtra = per.obiettiviExtra || []; if(!per.obiettiviExtra.includes(q)) per.obiettiviExtra.push(q); }); (O.i || []).forEach(q => { per.idrSelezionati = per.idrSelezionati || []; if(!per.idrSelezionati.includes(q)) per.idrSelezionati.push(q); }); }
+    else { a2.obj = {o:[], i:[]}; if(a2.ax && a2.ax.oss) delete a2.ax.oss; }
+    const vuota = q => q && !['testo', 'lancio', 'sviluppo', 'conclusione'].some(z => String(q[z] || '').trim()) && !(q.ax && Object.keys(q.ax).length); const jv = per.attivita.findIndex(vuota);
+    if(jv >= 0) per.attivita[jv] = Object.assign({}, per.attivita[jv], a2); else per.attivita.push(a2);
+    attIdsEnsure(per);
+    try{ await dbSnap(tid, g.data, 'Prima di spostare un’attività da un altro ciclo'); }catch(e){}
+    nd.ts = Date.now(); await dbUpdate(tid, nd, clMeta(nd), g.raw);
+    // scritta nell'altro ciclo: ora si toglie da qui
+    attIdsEnsure(src); const aid = a.aid; percProvRelease(src, aid); src.attivita.splice(j, 1); if(Array.isArray(src.attOrder)) src.attOrder = src.attOrder.filter(z => z !== aid);
+    try{ uscListAll().forEach(u => Object.values(u.prog || {}).forEach(m => { if(m && m.k === 'att' && m.aid === aid && m.pid === src.percorsoId) m.del = true; })); }catch(e){}
+    saveData(true); SH._ay = null; try{ renderValuation(); }catch(e){} try{ if(typeof uscRe === 'function') uscRe(); }catch(e){} try{ calRe(); }catch(e){}
+    showToast('Attività spostata nel ciclo «' + (cic.nome || g.titolo) + '», percorso ' + pid);
+  }catch(e){ console.error(e); showToast(e && e.message === 'stale' ? 'Quel ciclo è stato modificato nel frattempo: riprova' : 'Non sono riuscito a spostarla: ' + ((e && e.message) || 'riprova')); }
+}
+window.attMoveRun = attMoveRun;
 window.cicloAskGo = async function(k, idx, how, tid){
   modalClose();
   if(how === 'qui'){ uscToSez3(k, idx, true); return; }
@@ -17736,7 +17822,7 @@ function annoVerHTML(){
   const can = !window.BRO; const ver = R.data.ver || {};
   const cyc = items.map(it => { const sm = annoSum(it); const rows = sm.pv.map(p => `<tr><td>${esc(p.nm)}</td><td>${p.a ? p.a : '—'} → ${p.b ? p.b : '—'}</td><td>${p.n} · ${p.ok} verificate${p.da ? ' · ' + p.da + ' da verificare' : ''}</td><td>${p.vc ? esc(p.vc.length > 220 ? p.vc.slice(0, 219) + '…' : p.vc) : '<span class="sh-hint">non ancora scritta</span>'}</td></tr>`).join('');
     const tot = sm.idr.spontaneo + sm.idr.stimolato + sm.idr.no;
-    return `<section class="sh-card2 wide"><h3>${esc(it.ci.nome)}${it.ci.txt ? ' · ' + esc(it.ci.txt) : ''}</h3>${rows ? `<div class="vis-lst"><table><thead><tr><th>Percorso</th><th>Dal punto di partenza a oggi</th><th>Attività</th><th>Valutazione complessiva</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sh-hint">Nessun percorso in questo ciclo.</p>'}<p class="sh-hint" style="margin:6px 0 0">${tot ? `Indicatori di Risultato: ${sm.idr.spontaneo} spontanei, ${sm.idr.stimolato} stimolati, ${sm.idr.no} non adottati.` : 'Indicatori di Risultato: non ancora valutati.'}${it.cur ? '' : ` <button type="button" class="sh-lk" onclick="shOpen('${it.id}',0)">Apri il ciclo</button>`}</p></section>`; }).join('');
+    return `<section class="sh-card2 wide"><h3>${esc(it.ci.nome)}${it.ci.txt ? ' · ' + esc(it.ci.txt) : ''}</h3>${rows ? `<div class="vis-lst"><table><thead><tr><th>Percorso</th><th>Dal punto di partenza a oggi</th><th>Attività</th><th>Valutazione complessiva</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sh-hint">Nessun percorso in questo ciclo.</p>'}<p class="sh-hint" style="margin:6px 0 0">${tot ? `Indicatori di Risultato: ${sm.idr.spontaneo} spontanei, ${sm.idr.stimolato} stimolati, ${sm.idr.no} non adottati.` : 'Indicatori di Risultato: non ancora valutati.'}${it.cur ? '' : ` <button type="button" class="sh-lk" onclick="shGoCycle('${it.id}')">Apri il ciclo</button>`}</p></section>`; }).join('');
   const q = VER_Q.map(([k, t]) => `<label class="sh-lb" for="anv-${k}">${esc(t)}</label><textarea id="anv-${k}" class="sh-in" rows="3" ${can ? '' : 'readonly'} oninput="annoVerSave('${k}',this.value)">${esc(ver[k] || '')}</textarea>`).join('');
   return `<div class="sh-dh"><div><h1>Verifica dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Anno scout ${esc(String(scheda.annoScout || ''))}. La verifica di ogni ciclo si fa nel ciclo; qui guardi l’anno intero. Quello che scrivi arriva all’inizio dell’anno dopo, negli «Appunti dalla programmazione precedente».</p></div></div>
     ${cyc}<section class="sh-card2 wide"><h3>La riflessione dell’anno</h3><div class="anv-q">${q}</div><div class="anv-act"><button type="button" class="sh-btn" onclick="exportAnnoDocx()">Scarica il Word dell’anno</button><span id="anv-st" class="sh-hint" role="status">${SH._avSaved ? '✓ Salvato ' + SH._avSaved : 'Si salva da solo.'}</span></div></section>`;
@@ -18088,15 +18174,18 @@ function calDateTxt(u){ try{ return axDateTxt(u.ax || {}, true) || 'Date da sceg
 function calBlock(r, cx){
   const col = (AMB[r.amb] || ['', '#666'])[1]; const key = r.idx + '-' + r.j; const open = !!window._calOpen[key]; const can = calCan();
   const conts = uscList();
-  const sel = can ? `<label class="cal-mv"><span class="sr-only">Sposta «${esc(r.titolo)}» in</span><select class="cal-sel" aria-label="Sposta «${esc(r.titolo)}» in…" onchange="calSel(this,${r.idx},${r.j},'${cx ? cx.u.id + '|' + cx.k : ''}')"><option value="">Sposta in…</option>${cx ? '<option value="-">Da collocare (toglila da qui)</option>' : ''}${conts.filter(u => !cx || u.id !== cx.u.id).map(u => `<option value="${u.id}">${esc(CAL_T[uscModK(u)] ? CAL_T[uscModK(u)][0] : 'Uscita')} · ${esc(uscTit(u))}</option>`).join('')}</select></label>` : '';
+  const sel = can ? `<label class="cal-mv"><span class="sr-only">Sposta «${esc(r.titolo)}» in</span><select class="cal-sel" aria-label="Sposta «${esc(r.titolo)}» in…" onchange="calSel(this,${r.idx},${r.j},'${cx ? cx.u.id + '|' + cx.k : ''}')"><option value="">Sposta in…</option>${cx ? '<option value="-">Da collocare (toglila da qui)</option>' : ''}${conts.filter(u => !cx || u.id !== cx.u.id).map(u => `<option value="${u.id}">${esc(CAL_T[uscModK(u)] ? CAL_T[uscModK(u)][0] : 'Uscita')} · ${esc(uscTit(u))}</option>`).join('')}${(calFXc.items || []).map(f => { const L = f.U.filter(u => u.dest !== 'staff'); return L.length ? `<optgroup label="${esc(f.nome)}">${L.map(u => `<option value="${esc(u.id)}@${esc(f.id)}">${esc(CAL_T[uscModK(u)] ? CAL_T[uscModK(u)][0] : 'Uscita')} · ${esc(uscTit(u))}</option>`).join('')}</optgroup>` : ''; }).join('')}</select></label>` : '';
   const org = open ? `<div class="cal-org" id="cal-org-${key}"><div class="cal-orgh">Organizzazione dell’attività</div>${attLinksHTML(r.idx, r.j, r.a)}${attExtraHTML(r.idx, r.j, r.a)}</div>` : '';
-  return `<div class="cal-b${open ? ' open' : ''}" ${can ? 'draggable="true"' : ''} data-i="${r.idx}" data-j="${r.j}" data-from="${cx ? cx.u.id + '|' + cx.k : ''}" ondragstart="calDrag(event)" ondragend="calDragEnd()" style="--c:${col}">
+  return `<div class="cal-b${open ? ' open' : ''}" ${can ? 'draggable="true"' : ''} data-i="${r.idx}" data-j="${r.j}" data-cy="" data-pid="${esc(r.per.percorsoId || '')}" data-aid="${esc(r.a.aid || '')}" data-from="${cx ? cx.u.id + '|' + cx.k : ''}" ondragstart="calDrag(event)" ondragend="calDragEnd()" style="--c:${col}">
+    <div class="cal-cyt">${calCyPill('', (scheda.ciclo || {}).nome || 'Questo ciclo')}</div>
     <div class="cal-bt"><b>${esc(r.titolo)}</b><span>${esc((AMB[r.amb] || [''])[0])} · ${esc(r.pn)} · attività ${r.num}${r.date ? ' · ' + esc(fmtDL(r.date)) : ''}</span></div>
     <div class="cal-ba">${sel}<button type="button" class="cal-bt2" onclick="anJump({t:'att',pid:'${r.per.percorsoId}',aid:'${r.a.aid || ''}',pi:${r.idx},j:${r.j}})">Apri nel percorso</button></div>${org}</div>`;
 }
 function calHTML(){
   const can = calCan(); const acts = calActs(); const pl = calPlaced(); const conts = uscList();
+  const scopeY = (SH.calScope || 'anno') === 'anno'; const FX = scopeY ? calFX() : {items:[], ready:true}; calFXc = FX; const nCy = FX.items.length; const curCn = (scheda.ciclo || {}).nome || 'Questo ciclo';
   const pool = acts.filter(r => !(pl[r.idx + '-' + r.j] || []).length);
+  const poolX = FX.items.reduce((A, f) => A.concat(calPoolX(f)), []);
   const byK = {}; acts.forEach(r => { byK[r.idx + '-' + r.j] = r; });
   const conf = calConf(acts);
   const banner = conf.map(c => `<div class="cal-warn" role="status"><b>L’ordine ipotizzato del percorso «${esc(c.nm)}» sta cambiando.</b> Con le date scelte l’attività «${esc(c.inv[0].titolo)}» (la ${c.inv[0].num}ª, ${esc(fmtDL(c.inv[0].date))}) viene prima di «${esc(c.inv[1].titolo)}» (la ${c.inv[1].num}ª, ${esc(fmtDL(c.inv[1].date))}). Non riordino niente da solo.<div class="cal-wa"><button type="button" class="sh-btn" onclick="calReorder(${c.idx})">Aggiorna l’ordine del percorso</button><button type="button" class="sh-btn gh" onclick="calKeep('${esc(c.key).replace(/'/g, '')}')">Lascio com’è</button></div></div>`).join('');
@@ -18107,31 +18196,34 @@ function calHTML(){
     <label>Data${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? ' di inizio' : ''} <input id="cal-d1" type="date" class="sh-in" value="${esc(dr.d1 || '')}"></label>
     ${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? `<label>Data di fine <input id="cal-d2" type="date" class="sh-in" value="${esc(dr.d2 || '')}"></label>` : ''}
     <label>${dst === 'staff' ? 'Tipo di attività formativa' : 'Tipo di attività'} <select id="cal-tp" class="sh-in" onchange="calTpAltro(this)"><option value="">—</option>${(dst === 'staff' ? USC_TIPI_ST : uscTipi()).map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}<option value="__altro">Altro (lo scrivo io)</option></select></label><label id="cal-tpa" hidden>Quale? <input id="cal-tpt" class="sh-in" maxlength="60"></label>
-    <div class="cal-wa"><button type="button" class="sh-btn" onclick="calMake()">Crea</button><button type="button" class="sh-btn gh" onclick="SH._calNew=null;calRe()">Annulla</button></div></div>` : '';
+    ${nCy ? `<label>In quale ciclo <select id="cal-cy" class="sh-in"><option value="auto">Quello che contiene la data</option><option value="">${esc(curCn)} (aperto)</option>${FX.items.map(f => `<option value="${esc(f.id)}">${esc(f.nome)}</option>`).join('')}</select></label>` : ''}<div class="cal-wa"><button type="button" class="sh-btn" onclick="calMake()">Crea</button><button type="button" class="sh-btn gh" onclick="SH._calNew=null;calRe()">Annulla</button></div></div>` : '';
   const addB = can ? `<div class="cal-add" role="group" aria-label="Aggiungi un contenitore">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<button type="button" class="sh-btn gh" onclick="calNew('${m}')">+ ${esc(CAL_T[m][0])}</button>`).join('')}</div>` : '';
   const MN = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
   const dk = u => { const d = String((u.ax || {}).data || ''); return /^\d{4}-\d{2}/.test(d) ? d.slice(0, 7) : ''; };
-  const srt = conts.slice().sort((a, b) => (dk(a) || '9999').localeCompare(dk(b) || '9999') || String((a.ax || {}).data || '').localeCompare(String((b.ax || {}).data || '')) || (a.cr || 0) - (b.cr || 0));
-  const row = u => {
+  const allE = conts.map(u => ({u, cy:'', cn:curCn})).concat(FX.items.reduce((A, f) => A.concat(f.U.map(u => ({u, cy:f.id, cn:f.nome}))), []));
+  const srt = allE.sort((A, B) => { const a = A.u, b = B.u; return (dk(a) || '9999').localeCompare(dk(b) || '9999') || String((a.ax || {}).data || '').localeCompare(String((b.ax || {}).data || '')) || (a.cr || 0) - (b.cr || 0); });
+  const row = z => { const u = z.u, cy = z.cy;
     const md = uscModK(u); const T = CAL_T[md] || CAL_T.giorno; const stf = u.dest === 'staff'; const d = String((u.ax || {}).data || '').slice(0, 10);
     const dd = /^\d{4}-\d{2}-\d{2}$/.test(d) ? `<b>${+d.slice(8)}</b><small>${esc(new Date(d + 'T12:00').toLocaleDateString('it-IT', {weekday:'short'}).replace(/\.$/, ''))}</small>` : '<b>—</b><small>senza data</small>';
-    return `<section class="cal-c cal-row${stf ? ' cal-stf' : ''}" style="--c:${T[1]}" data-u="${u.id}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
+    const opn = cy ? `calOpenCy('${esc(cy)}','${u.id}')` : `shSrUsc('${u.id}')`; const cyb = (scopeY && nCy) ? calCyPill(cy, z.cn) : '';
+    return `<section class="cal-c cal-row${stf ? ' cal-stf' : ''}${cy ? ' cal-fx' : ''}" style="--c:${T[1]}" data-u="${u.id}" data-cy="${esc(cy)}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}','${esc(cy)}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
       <div class="cal-rd" aria-hidden="true">${dd}</div>
-      <button type="button" class="cal-rm" onclick="shSrUsc('${u.id}')" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span></span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span></button>
-      <div class="cal-ra"><button type="button" class="cal-bt2" onclick="shSrUsc('${u.id}')">Apri</button>${can ? `<button type="button" class="cal-bt2" onclick="calDup('${u.id}')" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button><button type="button" class="cal-bt2 cal-del" onclick="calDel('${u.id}')" aria-label="Elimina ${esc(uscTit(u))}">Elimina</button>` : ''}</div></section>`;
+      <button type="button" class="cal-rm" onclick="${opn}" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span>${cyb}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span></button>
+      <div class="cal-ra"><button type="button" class="cal-bt2" onclick="${opn}">Apri</button>${can ? `<button type="button" class="cal-bt2" onclick="${cy ? `calDupX('${esc(cy)}','${u.id}')` : `calDup('${u.id}')`}" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button><button type="button" class="cal-bt2 cal-del" onclick="${cy ? `calDelX('${esc(cy)}','${u.id}')` : `calDel('${u.id}')`}" aria-label="Elimina ${esc(uscTit(u))}">Elimina</button>` : ''}</div></section>`;
   };
   let contH = ''; let curM = null;
-  srt.forEach(u => { const m = dk(u); if(m !== curM){ if(curM !== null) contH += '</div>'; curM = m; contH += `<div class="cal-mese"><h3>${m ? esc(MN[+m.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4)) : 'Senza data'}</h3>`; } contH += row(u); });
+  srt.forEach(z => { const u = z.u; const m = dk(u); if(m !== curM){ if(curM !== null) contH += '</div>'; curM = m; contH += `<div class="cal-mese"><h3>${m ? esc(MN[+m.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4)) : 'Senza data'}</h3>`; } contH += row(z); });
   if(curM !== null) contH += '</div>';
   const leg = `<div class="cal-leg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}<span><em class="cal-fo uni">Unità</em></span><span><em class="cal-fo stf">Staff</em></span></div>`;
   return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui trovi tutti gli eventi dell’anno, mese per mese: riunioni, uscite, bivacchi e campi, dell’Unità e dello staff. Aprine uno per organizzarlo. Le attività dei percorsi ancora senza un posto stanno nel riquadro «Da collocare»: trascinale su un evento dell’Unità, o usa «Sposta in…». La data dell’evento diventa la data dell’attività.</p></div></div>
+    <div class="vis-opt"><div class="sh-seg sm" role="group" aria-label="Che cosa vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!scopeY}" onclick="calScopeSet('ciclo')">Questo ciclo</button><button type="button" aria-pressed="${scopeY}" onclick="calScopeSet('anno')">Tutto l’anno</button></div>${scopeY && !FX.ready ? '<span class="sh-hint" role="status">Carico gli altri cicli…</span>' : ''}</div>
     ${banner}${addB}${form}${calChkStrip(can)}
     <div class="cal-grid">
-      <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${pool.length}</span></header><div class="cal-cb">${pool.length ? pool.map(r => calBlock(r, null)).join('') : `<div class="cal-empty">${acts.length ? 'Tutte le attività hanno un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi».'}</div>`}</div></section>
+      <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${pool.length + poolX.length}</span></header><div class="cal-cb">${(pool.length || poolX.length) ? pool.map(r => calBlock(r, null)).join('') + poolX.map(r => calBlockX(r)).join('') : `<div class="cal-empty">${acts.length ? 'Tutte le attività hanno un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi».'}</div>`}</div></section>
       <div class="cal-cs">${leg}${contH || '<div class="cal-empty cal-empty2">Nessun evento: con i pulsanti qui sopra crei una riunione, un’uscita, un bivacco o un campo.</div>'}</div>
     </div>`;
 }
-function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ p.innerHTML = calHTML(); } }
+function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ shKeep(p, () => { p.innerHTML = calHTML(); }); } }
 window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); $('panel-pp').innerHTML = calHTML(); own('panel-pp'); };
 window.calOrg = function(i, j){ const k = i + '-' + j; window._calOpen[k] = !window._calOpen[k]; calRe(); };
 // duplica un contenitore (persone, luogo, spese, programma) una settimana dopo; le attività dei percorsi non si copiano: restano dove sono
@@ -18163,6 +18255,8 @@ window.calMake = function(){
   uscMap()[id] = {id, cr:Date.now(), testo:t || CAL_T[md][0], modello:md, ax:x, prog:{}, hid:Object.assign({}, USC_HID[md] || {}), own:{}};
   if(SH._calDest === 'staff'){ const uu = uscMap()[id]; uu.dest = 'staff'; uu.riservata = false; delete uu.ax.pres.rag; delete uu.ax.pres.ragF; delete uu.ax.pres.ragM; }
   if(tp){ uscMap()[id].tipo = tp; if(tp === '__altro') uscMap()[id].tipoAltro = tpt; }
+  let _tg = ''; { const cyS = ($('cal-cy') || {}).value; _tg = (cyS === undefined || cyS === 'auto') ? calTarget(d1) : cyS; }
+  if(_tg){ const ev = uscMap()[id]; delete uscMap()[id]; ccEdit(_tg, sc => { sc.uscite = (sc.uscite && typeof sc.uscite === 'object' && !Array.isArray(sc.uscite)) ? sc.uscite : {}; sc.uscite[id] = ev; }, 'Prima di aggiungere un evento dal Calendario dell’anno').then(() => { SH._ay = null; calRe(); }).catch(e => { console.error(e); showToast('Non sono riuscito a crearlo nell’altro ciclo: ' + ((e && e.message) || 'riprova')); }); }
   const wasStf = SH._calDest === 'staff'; saveData(true); SH._calNew = null; SH._calDraft = null; SH._calDest = null; try{ uscNavSync(); }catch(e){} showToast(CAL_T[md][0] + (wasStf ? ' dello staff' : '') + ((md === 'sede' || md === 'giorno') ? ' creata' : ' creato')); calRe();
 };
 function calOut(idx, j, uid, k){ const u = uscGet(uid); const m = u && u.prog && u.prog[k]; if(m && !m.del) m.del = true; }
@@ -18179,12 +18273,108 @@ function calMove(idx, j, from, to){
   else { if(fu && fu === to) return; if(fu) calOut(idx, j, fu, fk); calIn(idx, j, to); }
   saveData(true); calRe();
 }
-window.calSel = function(el, idx, j, from){ const v = el.value; if(!v) return; calMove(idx, j, from, v === '-' ? '' : v); };
-window.calDrag = function(e){ const b = e.target.closest('.cal-b'); if(!b) return; SH._calDrag = {i:+b.dataset.i, j:+b.dataset.j, from:b.dataset.from || ''}; try{ e.dataTransfer.setData('text/plain', 'cal'); e.dataTransfer.effectAllowed = 'move'; }catch(x){} b.classList.add('drag'); };
+// ── Calendario dell'anno: eventi e attività di tutti i cicli, da vedere e modificare da qualsiasi ciclo ──
+// Ogni scrittura su un altro ciclo: copia di sicurezza di quel ciclo e scrittura protetta da conflitti; prima si scrive la destinazione, poi si toglie dall'origine (al peggio un doppione, mai una perdita)
+function ccFind(sc, pid, aid){ const L = (sc && sc.percorsiExtra) || []; for(const per of L){ if(!per || per.percorsoId !== pid) continue; const A = per.attivita || []; for(let j = 0; j < A.length; j++) if(A[j] && A[j].aid === aid) return {per, j, a:A[j]}; } return null; }
+async function ccEdit(tid, fn, label){
+  if(!tid){ try{ getAllPercorsi(); }catch(e){} const r = fn(scheda, null, true); saveData(true); return r; }
+  const g = await dbGet(tid); if(!g || !g.data) throw new Error('Non trovo quel ciclo');
+  const nd = JSON.parse(JSON.stringify(g.data)); nd.scheda = nd.scheda || {}; const r = fn(nd.scheda, nd, false);
+  try{ await dbSnap(tid, g.data, label || 'Prima di una modifica dal Calendario dell’anno'); }catch(e){}
+  nd.ts = Date.now(); await dbUpdate(tid, nd, clMeta(nd), g.raw); SH._ay = null; return r;
+}
+async function ccPeek(tid, pid, aid){ if(!tid){ try{ getAllPercorsi(); }catch(e){} const f = ccFind(scheda, pid, aid); return f ? {a:f.a, cn:(scheda.ciclo || {}).nome || ''} : null; } const g = await dbGet(tid); const sc = g && g.data && g.data.scheda; const f = ccFind(sc, pid, aid); return f ? {a:f.a, cn:(sc.ciclo || {}).nome || g.titolo || ''} : null; }
+function ccBlockKey(){ return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+function ccPlace(sc, u, pid, aid){ if(!u) return ''; u.prog = u.prog || {}; const iso = String((u.ax || {}).data || '').slice(0, 10); let mx = 0; Object.values(u.prog).forEach(m => { if(m && !m.del && (Number(m.g) || 1) === 1) mx = Math.max(mx, Number(m.ord) || 0); });
+  u.prog[ccBlockKey()] = {k:'att', tipo:'att', g:1, ord:mx + 1, dur:120, pid, aid, f:((typeof USC_BT !== 'undefined' && USC_BT.att && USC_BT.att[2]) || []).slice(), cr:Date.now()}; return iso; }
+function ccUnplace(sc, pid, aid){ Object.values(sc.uscite || {}).forEach(u => { if(!u || typeof u !== 'object') return; Object.values(u.prog || {}).forEach(m => { if(m && m.k === 'att' && m.aid === aid && m.pid === pid) m.del = true; }); }); }
+// l'attività passa dal ciclo srcCy al ciclo dstCy ('' = quello aperto) e va nell'evento uid di quel ciclo
+async function actCross(srcCy, pid, aid, dstCy, uid){
+  if(window.BRO) return false;
+  try{
+    const src0 = await ccPeek(srcCy, pid, aid); if(!src0){ showToast('Non trovo più questa attività'); return false; }
+    const a2 = JSON.parse(JSON.stringify(src0.a)); delete a2.aid; a2.spostataDa = {ciclo:src0.cn, pid};
+    saveData(true); try{ await clPush(true); }catch(e){}
+    let nid = '';
+    await ccEdit(dstCy, (sc) => {
+      sc.percorsiExtra = Array.isArray(sc.percorsiExtra) ? sc.percorsiExtra : []; const cic = sc.ciclo || {};
+      let per = sc.percorsiExtra.find(q => q && q.percorsoId === pid);
+      if(!per){ per = newPercorso(null); per.percorsoId = pid; per.ambito = pid[0]; per.attivo = true; per.tDal = cic.dal || ''; per.tAl = cic.al || ''; per.attivita = []; sc.percorsiExtra.push(per); }
+      if(!Array.isArray(per.attivita)) per.attivita = [];
+      const O = a2.obj || {o:[], i:[]}; (O.o || []).forEach(q => { per.obiettiviExtra = per.obiettiviExtra || []; if(!per.obiettiviExtra.includes(q)) per.obiettiviExtra.push(q); }); (O.i || []).forEach(q => { per.idrSelezionati = per.idrSelezionati || []; if(!per.idrSelezionati.includes(q)) per.idrSelezionati.push(q); });
+      const u = uid && sc.uscite && sc.uscite[uid]; if(u && !u.del){ const iso = String((u.ax || {}).data || '').slice(0, 10); if(iso){ a2.ax = a2.ax || {}; a2.ax.data = iso; } }
+      const vuota = q => q && !['testo', 'lancio', 'sviluppo', 'conclusione'].some(z => String(q[z] || '').trim()) && !(q.ax && Object.keys(q.ax).length); const jv = per.attivita.findIndex(vuota); let ob;
+      if(jv >= 0){ ob = Object.assign({}, per.attivita[jv], a2); per.attivita[jv] = ob; } else { ob = a2; per.attivita.push(ob); }
+      attIdsEnsure(per); nid = ob.aid; if(u && !u.del) ccPlace(sc, u, pid, nid);
+    }, 'Prima di spostare un’attività nel Calendario dell’anno');
+    await ccEdit(srcCy, (sc, nd, cur) => { const f = ccFind(sc, pid, aid); if(!f) return; if(cur){ try{ percProvRelease(f.per, aid); }catch(e){} } f.per.attivita.splice(f.j, 1); if(Array.isArray(f.per.attOrder)) f.per.attOrder = f.per.attOrder.filter(z => z !== aid); ccUnplace(sc, pid, aid); }, 'Prima di spostare un’attività dal Calendario dell’anno');
+    SH._ay = null; try{ renderValuation(); }catch(e){} try{ if(typeof uscRe === 'function') uscRe(); }catch(e){} calRe();
+    showToast('Attività spostata e messa nell’evento'); return true;
+  }catch(e){ console.error(e); showToast(e && e.message === 'stale' ? 'Un ciclo è stato modificato nel frattempo: riprova' : 'Non sono riuscito a spostarla: ' + ((e && e.message) || 'riprova')); return false; }
+}
+// l'attività resta nel suo ciclo (non quello aperto) e va in un altro evento dello stesso ciclo
+async function calPlaceF(cy, pid, aid, uid){
+  try{ await ccEdit(cy, (sc) => { const f = ccFind(sc, pid, aid); const u = sc.uscite && sc.uscite[uid]; if(!f || !u || u.del) return; ccUnplace(sc, pid, aid); const iso = ccPlace(sc, u, pid, aid); if(iso){ f.a.ax = f.a.ax || {}; f.a.ax.data = iso; } }, 'Prima di mettere un’attività in un evento');
+    calRe(); showToast('Attività messa nell’evento'); }catch(e){ console.error(e); showToast(e && e.message === 'stale' ? 'Quel ciclo è stato modificato nel frattempo: riprova' : 'Non sono riuscito: ' + ((e && e.message) || 'riprova')); }
+}
+function calFX(){
+  if(!SH._ay){ if(!SH._ayBusy){ SH._ayBusy = true; annoLoad().then(L => { SH._ay = L; SH._ayBusy = false; calRe(); }).catch(() => { SH._ay = []; SH._ayBusy = false; calRe(); }); } return {items:[], ready:false}; }
+  const items = SH._ay.filter(it => !it.cur && it.id).map(it => { const sc = (it.data && it.data.scheda) || {}; const U = (sc.uscite && typeof sc.uscite === 'object' && !Array.isArray(sc.uscite)) ? Object.values(sc.uscite).filter(u => u && typeof u === 'object' && !u.del && u.id) : []; let nm = ''; try{ nm = (it.ci || annoCicloInfo(it)).nome; }catch(e){} return {id:it.id, nome:nm || it.titolo || 'Altro ciclo', sc, U}; });
+  return {items, ready:true};
+}
+let calFXc = {items:[], ready:true};
+function calCyPill(cy, nome){ const L = SH._ay || []; let i = L.findIndex(it => cy ? it.id === cy : it.cur); if(i < 0) i = 0; const c = AN_COLC[i % AN_COLC.length]; return `<span class="cal-cyb col" style="background:${c}">${esc(nome)}</span>`; }
+// le attività di un altro ciclo non ancora messe in nessun evento
+function calPoolX(f){ const used = new Set(); f.U.forEach(u => Object.values(u.prog || {}).forEach(m => { if(m && !m.del && m.k === 'att') used.add(m.pid + '|' + m.aid); })); const out = []; const DBx = Object.values(DB).flat();
+  (f.sc.percorsiExtra || []).forEach(per => { if(!per || !per.percorsoId) return; const P = DBx.find(q => q.id === per.percorsoId); (per.attivita || []).forEach((a, j) => { if(!a || !a.aid || !['testo', 'lancio', 'sviluppo', 'conclusione'].some(k => String(a[k] || '').trim())) return; if(used.has(per.percorsoId + '|' + a.aid)) return; out.push({cy:f.id, cn:f.nome, pid:per.percorsoId, aid:a.aid, amb:per.ambito || per.percorsoId[0], pn:P ? P.name : per.percorsoId, titolo:String(a.testo || '').trim() || 'Attività senza titolo', date:(a.ax || {}).data || ''}); }); }); return out; }
+function calBlockX(r){
+  const col = (AMB[r.amb] || ['', '#666'])[1]; const can = calCan();
+  const opts = calEvOpts(r.cy);
+  const sel = can ? `<label class="cal-mv"><span class="sr-only">Sposta «${esc(r.titolo)}» in</span><select class="cal-sel" aria-label="Sposta «${esc(r.titolo)}» in…" onchange="calSelX(this,'${esc(r.cy)}','${esc(r.pid)}','${esc(r.aid)}')"><option value="">Sposta in…</option>${opts}</select></label>` : '';
+  return `<div class="cal-b cal-bx" ${can ? 'draggable="true"' : ''} data-cy="${esc(r.cy)}" data-pid="${esc(r.pid)}" data-aid="${esc(r.aid)}" data-i="-1" data-j="-1" data-from="" ondragstart="calDrag(event)" ondragend="calDragEnd()" style="--c:${col}">
+    <div class="cal-cyt">${calCyPill(r.cy, r.cn)}</div>
+    <div class="cal-bt"><b>${esc(r.titolo)}</b><span>${esc((AMB[r.amb] || [''])[0])} · ${esc(r.pn)}${r.date ? ' · ' + esc(fmtDL(r.date)) : ''}</span></div>
+    <div class="cal-ba">${sel}<button type="button" class="cal-bt2" onclick="calOpenCy('${esc(r.cy)}','')">Apri il ciclo</button></div></div>`;
+}
+// opzioni «Sposta in…»: gli eventi di questo ciclo e di tutti gli altri (value = uid@ciclo; ciclo vuoto = questo)
+function calEvOpts(exceptCy, exceptUid){
+  const lab = u => `${esc(CAL_T[uscModK(u)] ? CAL_T[uscModK(u)][0] : 'Uscita')} · ${esc(uscTit(u))}${(u.ax && u.ax.data) ? ' · ' + esc(String(u.ax.data).slice(0, 10).split('-').reverse().join('/')) : ''}`;
+  let h = ''; const cur = uscList().filter(u => !(exceptCy === '' && u.id === exceptUid) && u.dest !== 'staff'); const cn = (scheda.ciclo || {}).nome || 'Questo ciclo';
+  if(cur.length) h += `<optgroup label="${esc(cn)}">${cur.map(u => `<option value="${esc(u.id)}@">${lab(u)}</option>`).join('')}</optgroup>`;
+  (calFXc.items || []).forEach(f => { const L = f.U.filter(u => u.dest !== 'staff' && !(exceptCy === f.id && u.id === exceptUid)); if(L.length) h += `<optgroup label="${esc(f.nome)}">${L.map(u => `<option value="${esc(u.id)}@${esc(f.id)}">${lab(u)}</option>`).join('')}</optgroup>`; });
+  return h;
+}
+window.calSelX = function(el, cy, pid, aid){ const v = el.value; if(!v) return; const [uid, dc] = v.split('@'); el.value = ''; calMoveX({cy, pid, aid}, uid, dc || ''); };
+window.calMoveX = async function(d, uid, cy){
+  if(!calCan() || !uid) return; let pid = d.pid, aid = d.aid; const scy = d.cy || '';
+  if(!scy && (!pid || !aid)){ const per = getAllPercorsi()[d.i]; const a = per && per.attivita && per.attivita[d.j]; if(!per || !a){ return; } attIdsEnsure(per); pid = per.percorsoId; aid = a.aid; }
+  if(scy === cy){ if(!scy){ calMove(d.i, d.j, d.from || '', uid); return; } await calPlaceF(scy, pid, aid, uid); return; }
+  await actCross(scy, pid, aid, cy, uid);
+};
+window.calScopeSet = function(v){ SH.calScope = v === 'ciclo' ? 'ciclo' : 'anno'; if(SH.calScope === 'anno') SH._ay = null; calRe(); };
+// eventi di un altro ciclo: duplica, elimina e apri (si apre quel ciclo direttamente sull'evento)
+window.calDupX = async function(cy, id){
+  if(!calCan()) return; try{ await ccEdit(cy, (sc) => { const u = sc.uscite && sc.uscite[id]; if(!u) return; const c = JSON.parse(JSON.stringify(u)); const nid = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+    c.id = nid; c.cr = Date.now(); c.testo = String(u.testo || '').replace(/\s*\(copia\)$/, '') + ' (copia)'; delete c.riservata; c.prog = c.prog || {}; Object.keys(c.prog).forEach(k => { const m = c.prog[k]; if(m && m.k === 'att') delete c.prog[k]; });
+    const sh = dd => { if(!/^\d{4}-\d{2}-\d{2}/.test(dd || '')) return dd; const t = new Date(dd.slice(0, 10) + 'T12:00'); t.setDate(t.getDate() + 7); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); };
+    c.ax = c.ax || {}; c.ax.data = sh(c.ax.data); if(c.ax.dataFine) c.ax.dataFine = sh(c.ax.dataFine); sc.uscite[nid] = c; }, 'Prima di duplicare un evento dal Calendario dell’anno'); showToast('Duplicato una settimana dopo: aprilo per cambiare la data'); calRe(); }
+  catch(e){ console.error(e); showToast('Non sono riuscito: ' + ((e && e.message) || 'riprova')); }
+};
+window.calDelX = async function(cy, id){
+  if(!calCan()) return; const f = (calFXc.items || []).find(x => x.id === cy); const u = f && f.U.find(x => x.id === id); if(!u) return;
+  if(!confirm('Eliminare «' + uscTit(u) + '» dal ciclo «' + f.nome + '»? Le attività dei percorsi che contiene tornano in «Da collocare».')) return;
+  try{ await ccEdit(cy, (sc) => { const x = sc.uscite && sc.uscite[id]; if(x) x.del = true; }, 'Prima di eliminare un evento dal Calendario dell’anno'); showToast('Evento eliminato'); calRe(); }catch(e){ console.error(e); showToast('Non sono riuscito: ' + ((e && e.message) || 'riprova')); }
+};
+window.shGoCycle = function(id){ try{ sessionStorage.setItem('pee_land', '1'); }catch(e){} shOpen(id, 0); };
+window.calOpenCy = function(cy, uid){ if(!uid){ shGoCycle(cy); return; } try{ if(uid) sessionStorage.setItem('pee_goto_usc', uid); sessionStorage.setItem('pee_noland', '1'); }catch(e){} shOpen(cy, 0); };
+// in quale ciclo cade una data (YYYY-MM-DD): '' = quello aperto, altrimenti l'id dell'altro ciclo; se nessuno la contiene, quello aperto
+function calTarget(iso){ const m = String(iso || '').slice(0, 7); const c0 = scheda.ciclo || {}; if(/^\d{4}-\d{2}$/.test(c0.dal || '') && /^\d{4}-\d{2}$/.test(c0.al || '') && m >= c0.dal && m <= c0.al) return ''; const f = (calFXc.items || []).find(x => { const c = x.sc.ciclo || {}; return /^\d{4}-\d{2}$/.test(c.dal || '') && /^\d{4}-\d{2}$/.test(c.al || '') && m >= c.dal && m <= c.al; }); return f ? f.id : ''; }
+window.calSel = function(el, idx, j, from){ const v = el.value; if(!v) return; if(v.indexOf('@') > 0){ const [uid, dc] = v.split('@'); el.value = ''; calMoveX({cy:'', i:idx, j, from}, uid, dc || ''); return; } calMove(idx, j, from, v === '-' ? '' : v); };
+window.calDrag = function(e){ const b = e.target.closest('.cal-b'); if(!b) return; SH._calDrag = {i:+b.dataset.i, j:+b.dataset.j, from:b.dataset.from || '', cy:b.dataset.cy || '', pid:b.dataset.pid || '', aid:b.dataset.aid || ''}; try{ e.dataTransfer.setData('text/plain', 'cal'); e.dataTransfer.effectAllowed = 'move'; }catch(x){} b.classList.add('drag'); };
 window.calDragEnd = function(){ SH._calDrag = null; document.querySelectorAll('.cal-b.drag,.cal-over').forEach(e => e.classList.remove('drag', 'cal-over')); };
 window.calOver = function(e){ if(!SH._calDrag) return; e.preventDefault(); const c = e.currentTarget; if(c) c.classList.add('cal-over'); try{ e.dataTransfer.dropEffect = 'move'; }catch(x){} };
 window.calLeave = function(e){ const c = e.currentTarget; if(c && !c.contains(e.relatedTarget)) c.classList.remove('cal-over'); };
-window.calDrop = function(e, uid){ e.preventDefault(); const d = SH._calDrag; calDragEnd(); if(!d) return; calMove(d.i, d.j, d.from, uid); };
+window.calDrop = function(e, uid, cy){ e.preventDefault(); const d = SH._calDrag; calDragEnd(); if(!d) return; cy = cy || ''; if(!d.cy && !cy) { calMove(d.i, d.j, d.from, uid); return; } if(!uid) return; calMoveX(d, uid, cy); };
 // ── Progettare · «Visione d'insieme»: i percorsi dell'anno su una linea del tempo (blocchi spostabili, anche da tastiera) ──
 const VIS_M = ['set', 'ott', 'nov', 'dic', 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago'];
 function visY0(){ const m = String((scheda && scheda.annoScout) || '').match(/^(\d{4})/); if(m) return +m[1]; const n = new Date(); return n.getMonth() >= 8 ? n.getFullYear() : n.getFullYear() - 1; }
@@ -18194,41 +18384,37 @@ function visLab(i, y0){ const t = y0 * 12 + 8 + i; return MESI[t % 12] + ' ' + M
 function visRows(){
   const y0 = visY0(); const out = []; let L = []; try{ L = getAllPercorsi(); }catch(e){}
   const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
+  const plc = tlkPlaced(scheda);
   L.forEach((per, idx) => { if(!per || !per.percorsoId) return;
     const t = percTempo(per); const a = visIdx(t.dal, y0), b = visIdx(t.al, y0); const P = DBx.find(q => q.id === per.percorsoId);
-    const dots = []; (per.attivita || []).forEach((at, j) => { const d = at && at.ax && at.ax.data; if(!d) return; const [yy, mm, dd] = d.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i >= 0 && i < 12){ const dn = ['vBene', 'vMigl', 'vAgg'].some(k => String(at[k] || '').trim()); dots.push({x:(i + (dd - 1) / 31) / 12 * 100, t:String(at.testo || '').trim() || 'Attività ' + (j + 1), d, st:d > td() ? 'fare' : dn ? 'ok' : 'ver'}); } });
+    const dots = []; (per.attivita || []).forEach((at, j) => { if(!at) return; const dn = ['vBene', 'vMigl', 'vAgg'].some(k => String(at[k] || '').trim()); const pl = (at.aid && plc[per.percorsoId + '|' + at.aid]) || []; const ds = pl.length ? pl : ((at.ax && at.ax.data) ? [at.ax.data] : []);
+      ds.forEach(d => { const x = tlkX(d, y0); if(x === null) return; dots.push({x, t:String(at.testo || '').trim() || 'Attività ' + (j + 1), d, st:tlkSt(d, dn), cal:pl.length > 0}); }); });
     out.push({idx, per, amb:per.ambito || per.percorsoId[0], nm:per.percorsoId + ' · ' + (P ? P.name : ''), a, b, t, dots}); });
   return out;
 }
 function visHTML(){
   const y0 = visY0(); const R = visRows(); const can = !window.BRO; const nm = {P:'Personale', C:'Comunitario', S:'Spirituale'};
   const cie = visIdx(annoCicloInfo(annoCur()).al, y0);
-  const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map((m, i) => `<span class="${i === cie ? 'pit' : ''}">${m}</span>`).join('') + '</div>' + (tlkToday(y0) === null ? '' : `<b class="vis-tdl" style="left:${tlkToday(y0)}%" aria-hidden="true">oggi</b>`);
-  const grid = '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${i === cie ? 'pit' : ''}"></i>`).join('') + '</div>';
+  const head = tlkHead(y0, cie);
+  const grid = tlkGrid(y0, cie);
   // occasioni: riunioni, uscite, bivacchi, campi
-  let occ = '', occN = 1; try{ const oggi = td(); const pts = []; uscList().forEach(u => { const x = u.ax || {}; if(!x.data) return; const px = tlkX(x.data, y0); if(px === null) return; const mk = uscModK(u); const T = (typeof CAL_T !== 'undefined' && CAL_T[mk]) || ['Uscita', '#2f7d5b']; const c0 = scheda.ciclo || {}; const fu = !!(/^\d{4}-\d{2}$/.test(c0.dal || '') && /^\d{4}-\d{2}$/.test(c0.al || '') && (x.data.slice(0, 7) < c0.dal || x.data.slice(0, 7) > c0.al)); const [yy, mm] = x.data.split('-').map(Number);
-      pts.push({x:px, mi:(yy * 12 + mm - 1) - (y0 * 12 + 8), k:mk, c:T[1], fu, d:x.data.slice(0, 10), stf:u.dest === 'staff', t:T[0] + ' · ' + uscTit(u) + ' · ' + fmtDL(x.data.slice(0, 10)) + (fu ? ' · fuori dal ciclo' : '')}); });
-    const G = {}; pts.filter(p => p.k === 'sede').forEach(p => { const key = p.mi + (p.stf ? 's' : 'u'); (G[key] = G[key] || []).push(p); });
-    const all = pts.filter(p => p.k !== 'sede' || G[p.mi + (p.stf ? 's' : 'u')].length < 3);
-    Object.keys(G).forEach(key => { const L = G[key]; if(L.length < 3) return; all.push({x:L.reduce((n, p) => n + p.x, 0) / L.length, k:'sede', c:L[0].c, fu:L.every(p => p.fu), stf:L[0].stf, n:L.length, d:L[L.length - 1].d, t:L.length + ' riunioni' + (L[0].stf ? ' dello staff' : '') + ' · ' + L.map(p => tlkShort(p.d)).join(', ')}); });
-    occN = tlkLay(all);
-    occ = all.map(p => `<span class="vis-mk vis-oc${p.fu ? ' fuori' : ''}${p.stf ? ' stf' : ''}${p.n ? ' vis-grp' : ''}" tabindex="0" role="img" aria-label="${esc(p.t)}" title="${esc(p.t)}" style="left:${p.x}%;top:${4 + p.l * 22}px;color:${p.c}">${tlkShape(TLK_SH[p.k] || 'usc', p.c, p.d <= oggi, 18, p.stf)}${p.n ? `<em>${p.n}</em>` : ''}</span>`).join(''); }catch(e){}
+  let occ = ''; try{ const pts = []; uscList().forEach(u => { const x = u.ax || {}; if(!x.data) return; const px = tlkX(x.data, y0); if(px === null) return; const mk = uscModK(u); const T = (typeof CAL_T !== 'undefined' && CAL_T[mk]) || ['Uscita', '#2f7d5b']; const c0 = scheda.ciclo || {}; const fu = !!(/^\d{4}-\d{2}$/.test(c0.dal || '') && /^\d{4}-\d{2}$/.test(c0.al || '') && (x.data.slice(0, 7) < c0.dal || x.data.slice(0, 7) > c0.al));
+      pts.push({x:px, k:mk, c:T[1], fuori:fu, d:x.data.slice(0, 10), stf:u.dest === 'staff', t:uscTit(u)}); }); occ = tlkEvRows(pts, y0); }catch(e){}
   const rows = R.map(r => {
     const col = (AMB[r.amb] || ['', '#666'])[1]; const has = r.a !== null && r.b !== null;
     const a = has ? Math.max(0, Math.min(11, r.a)) : 0, b = has ? Math.max(0, Math.min(11, r.b)) : 0;
     const cut = has && (r.a < 0 || r.b > 11 || r.a > 11 || r.b < 0);
     const warn = has ? tmWarn(r.t.dal, r.t.al, true) : '';
-    const bar = has ? `<div class="vis-bar av${can ? ' mv' : ''}" data-i="${r.idx}" style="left:${a / 12 * 100}%;width:${(b - a + 1) / 12 * 100}%;--c:${col}" ${can ? `onpointerdown="visDown(event,${r.idx})"` : ''} title="${esc(tmRange(r.t.dal, r.t.al) + (cut ? ' (continua fuori dall’anno scout)' : ''))}"><div class="f" style="width:${tlkFill(a, b, y0)}%"></div><span class="sr-only">${esc(tmRange(r.t.dal, r.t.al))}${cut ? ' (continua fuori dall’anno scout)' : ''}</span>${cut ? '<i class="vis-cutm" aria-hidden="true">▸</i>' : ''}</div>` : '';
-    const MK = tlkActs(r.dots.map(d => ({x:d.x, st:d.st, col, t:d.t, d:d.d})), true, (can && has) ? String(r.idx) : '');
-    const dots = MK.html;
+    const bar = has ? `<div class="vis-bar av${can ? ' mv' : ''}" data-i="${r.idx}" style="left:${a / 12 * 100}%;width:${(b - a + 1) / 12 * 100}%;--c:${col}" ${can ? `onpointerdown="visDown(event,${r.idx})"` : ''} data-tip="${esc([r.nm, tmRange(r.t.dal, r.t.al) + (cut ? ' (continua fuori dall’anno scout)' : ''), can ? 'Trascinalo per spostarlo di mese in mese' : ''].filter(Boolean).join('\n'))}"><div class="f" style="width:${tlkFill(a, b, y0)}%"></div><span class="sr-only">${esc(tmRange(r.t.dal, r.t.al))}${cut ? ' (continua fuori dall’anno scout)' : ''}</span>${cut ? '<i class="vis-cutm" aria-hidden="true">▸</i>' : ''}</div>` : '';
+    const dots = tlkActs(r.dots.map(d => ({x:d.x, st:d.st, col, t:d.t, d:d.d, sub:d.cal ? ['Data dal Calendario'] : []})), (can && has) ? String(r.idx) : '');
     const ctl = can ? `<div class="vis-ctl"><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese prima" onclick="visShift(${r.idx},-1)" ${has ? '' : 'disabled'}>◀ un mese</button><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese dopo" onclick="visShift(${r.idx},1)" ${has ? '' : 'disabled'}>un mese ▶</button><label class="vis-sl">Comincia a <select class="cal-sel" aria-label="Mese di inizio di ${esc(r.nm)}" onchange="visStart(${r.idx},this.value)"><option value="">${has ? 'scegli…' : 'scegli il mese'}</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.a === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label><label class="vis-sl">Finisce a <select class="cal-sel" aria-label="Mese di fine di ${esc(r.nm)}" onchange="visEnd(${r.idx},this.value)" ${has ? '' : 'disabled'}><option value="">scegli…</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.b === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label>${has ? `<span class="vis-du">${tmMonths(r.t.dal, r.t.al) + 1} ${tmMonths(r.t.dal, r.t.al) + 1 === 1 ? 'mese' : 'mesi'}</span>` : '<span class="vis-du">Quanto dura il percorso? Scegli il mese di inizio e poi quello di fine.</span>'}</div>` : '';
-    return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t" style="height:${tlkH(MK.n)}px">${grid}${tlkTodayI(y0)}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}${tmCicloBtn(r.t.al)}</div>` : ''}</div>`;
+    return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t" data-lay="bar">${grid}${tlkTodayI(y0)}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}${tmCicloBtn(r.t.al)}</div>` : ''}</div>`;
   }).join('');
   return `<div class="sh-dh"><div><h1>Visione d’insieme</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">I percorsi dell’anno scout ${esc(String(y0) + '-' + String((y0 + 1) % 100).padStart(2, '0'))} su una linea del tempo. Trascina un blocco per spostarlo di mese in mese, oppure usa i pulsanti e il menu sotto ogni percorso. Il mese più scuro è quello in cui finisce il ciclo e si fa la verifica.</p></div></div>
-    <div class="vis-wrap">${R.length ? `<div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${occ ? `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b></div><div class="vis-t" style="height:${occN * 22 + 14}px">${grid}${tlkTodayI(y0)}${occ}</div></div>` : ''}<div class="vis-leg vis-leg2">${tlkLeg(true)}</div>` : '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi: scegli le priorità in «Osservare» e gli obiettivi in «Obiettivi e indicatori».</div>'}</div>`;
+    <div class="vis-wrap" style="--z:${SH.vz || 1}">${R.length ? `${tlkZoomBar()}<div class="vis-sc"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${occ}</div><div class="vis-leg vis-leg2">${tlkLeg(true)}</div>` : '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi: scegli le priorità in «Osservare» e gli obiettivi in «Obiettivi e indicatori».</div>'}</div>`;
 }
 window.shVis = function(){ ensurePanels(); SH.ppv = 'vis'; ownOff(); $('panel-pp').innerHTML = visHTML(); own('panel-pp'); };
-function visRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'vis' && p.classList.contains('active')) p.innerHTML = visHTML(); }
+function visRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'vis' && p.classList.contains('active')) shKeep(p, () => { p.innerHTML = visHTML(); }); }
 function visSet(idx, dal, al){ const per = getAllPercorsi()[idx]; if(!per) return; per.tDal = dal; per.tAl = al; tmLinkPri(per); saveData(true); visRe(); }
 window.visEnd = function(idx, v){ if(v === '') return; const per = getAllPercorsi()[idx]; if(!per || window.BRO) return; const y0 = visY0(); const t = percTempo(per); const a = visIdx(t.dal, y0); const e = +v; visSet(idx, (a !== null && a <= e) ? visYM(a, y0) : visYM(e, y0), visYM(e, y0)); };
 window.visShift = function(idx, d){
@@ -18640,6 +18826,8 @@ window.shEnter = function(){
   document.body.classList.add('sh-in', 'sh-ready'); try{ brandApply(); }catch(e){}
   headerSetup(); ensurePanels(); paint();
   let wantNC = false; try{ wantNC = sessionStorage.getItem('pee_want_nc') === '1'; sessionStorage.removeItem('pee_want_nc'); }catch(e){}
+  let land = false, gUsc = null; try{ land = sessionStorage.getItem('pee_land') === '1'; gUsc = sessionStorage.getItem('pee_goto_usc'); sessionStorage.removeItem('pee_land'); sessionStorage.removeItem('pee_goto_usc'); sessionStorage.removeItem('pee_noland'); }catch(e){}
+  if(land && !gUsc){ try{ localStorage.removeItem('bussola_pos:' + (CL.ctx && CL.ctx.id) + ':' + MODE); }catch(e){} }
   let pos = null; try{ pos = localStorage.getItem('bussola_pos:' + (CL.ctx && CL.ctx.id) + ':' + MODE); }catch(e){}
   const anyOwn = $('panel-dash').classList.contains('active') || $('panel-pp').classList.contains('active');
   if(isPP()){ if(!anyOwn) shPP('0'); }
@@ -18648,6 +18836,8 @@ window.shEnter = function(){
   let gotoSt = false; try{ gotoSt = sessionStorage.getItem('pee_goto') === 'staff'; sessionStorage.removeItem('pee_goto'); }catch(e){}
   if(gotoSt && !isST() && !isPP()){ shStaffPage(); }
   if(wantNC && !window.BRO && !isST()){ SH.dscope = 'anno'; SH._ay = null; SH._ncForm = true; shDash(); }
+  if(land && !gUsc && !wantNC && !window.BRO && !isST() && !isPP()){ SH.dscope = 'ciclo'; shDash(); try{ window.scrollTo(0, 0); }catch(e){} }
+  if(gUsc && !window.BRO){ setTimeout(() => { try{ shSrUsc(gUsc); }catch(e){} }, 80); }
   shSync();
 };
 // l'app aggiorna le sezioni da sola (ricarica del progetto, altre persone): la dashboard si ridisegna
@@ -18801,34 +18991,60 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .vis-du{font-size:12px;color:#55554f}
 .vis-w{grid-column:2;font-size:12px;color:#8A5300}
 .vis-leg{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#55554f;border-top:1px solid #eef1ec;padding-top:10px}
-/* Linea del tempo: segni, avanzamento, oggi */
+.att-mv select{width:100%;max-width:100%;min-height:42px}.att-mv .dup-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.att-mv .sh-hint{margin:10px 0 0}
+.att-mvb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:10px 0 4px}.att-mvb .ax-opt{font-size:12px;color:#55554f}
+.tl-cal{font-size:12px;color:#33332f;display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cal-cyt{margin:0 0 6px}.cal-cyb.col{color:#fff;border-color:transparent}
+.cal-cyb{display:inline-block;margin-left:6px;background:#eef1ec;border:1px solid #c9d0c8;border-radius:999px;padding:1px 9px;font:800 11px 'Montserrat',sans-serif;color:#33332f;vertical-align:middle}.cal-fx .cal-rd{opacity:.95}.cal-bx{border-style:dashed}
+/* Linea del tempo: segni, avanzamento, oggi, zoom */
+.vis-wrap{container-type:inline-size;--lw:230px}
 .vis-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 12px}
 .vis-sum div{background:#f4f8f4;border-radius:12px;padding:10px 14px}
 .vis-sum b{display:block;font:800 26px/1.1 'Montserrat',sans-serif}
 .vis-sum span{font-size:12px;color:#55554f}
 .vis-sum .ok b{color:#1f6b41}.vis-sum .ver b{color:#8A5300}.vis-sum .pr b{color:#2d5ea8}.vis-sum .nd b{color:#55554f}
-.vis-mk{position:absolute;transform:translateX(-50%);z-index:3;line-height:0}
+@media(max-width:760px){.vis-sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vis-zm{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin:0 0 10px;padding:8px 10px;background:#f4f8f4;border-radius:12px}
+.vis-zl{font:800 11px 'Montserrat',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#55554f}
+.vis-zb{width:38px;height:38px;border:1px solid #8a8a82;border-radius:10px;background:#fff;font:800 20px/1 'Montserrat',sans-serif;cursor:pointer}
+.vis-zb:hover,.vis-zt:hover{background:#eef3ec}
+.vis-zr{width:clamp(110px,22vw,220px);accent-color:#1B5E42;height:28px}
+.vis-zv{font:800 13px 'Montserrat',sans-serif;min-width:34px;text-align:center}
+.vis-zt{min-height:38px;border:1px solid #8a8a82;border-radius:10px;background:#fff;padding:0 12px;font:700 12.5px 'Montserrat',sans-serif;cursor:pointer}
+.vis-zh{font-size:12px;color:#55554f;margin-left:auto}
+.vis-sc{overflow-x:auto;overflow-y:hidden;padding:2px 0 8px;overscroll-behavior-x:contain}
+.vis-sc .vis-r{display:grid;grid-template-columns:var(--lw) calc((100cqw - var(--lw) - 14px) * var(--z,1));column-gap:14px;width:max-content;min-width:100%}
+.vis-sc .vis-l{position:sticky;left:0;z-index:8;background:#fff;padding-right:8px}
+.vis-sc .vis-ctl,.vis-sc .vis-w{position:sticky;left:calc(var(--lw) + 14px);width:calc(100cqw - var(--lw) - 14px);box-sizing:border-box;z-index:8;background:#fff}
+.vis-t{height:60px}
+.vis-mk{position:absolute;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;line-height:1;min-width:38px;cursor:default;top:8px}
 .vis-dot.vis-mk,.vis-mk.vis-oc{width:auto;height:auto;border:0;box-shadow:none;border-radius:0;background:transparent;transform:translateX(-50%)}
-.vis-mk svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
-.vis-mk:focus-visible{outline:2px solid #1a1a18;outline-offset:2px;border-radius:50%}
-.vis-mk.fuori{opacity:.35}.vis-mk.mvm{touch-action:none;cursor:grab}
-.vis-grp{display:inline-flex;align-items:center;gap:2px;background:#fff;border:1.5px solid currentColor;border-radius:11px;padding:1px 6px 1px 3px;line-height:1}
-.vis-mk.vis-grp{background:#fff;border:1.5px solid currentColor;border-radius:11px}.vis-grp svg{width:15px;height:15px;filter:none}.vis-grp em{font:800 11px 'Montserrat',sans-serif;font-style:normal}
-.vis-dd{position:absolute;top:35px;transform:translateX(-50%);font:700 10.5px 'Montserrat',sans-serif;color:#55554f;white-space:nowrap;z-index:2;pointer-events:none}
-.vis-bar.av{top:8px;height:26px;padding:0;border:1.5px solid var(--c);box-shadow:none;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 20%,#fff) 0 6px,color-mix(in srgb,var(--c) 10%,#fff) 6px 12px)}
+.vis-mk .vis-sv{display:block;line-height:0;transition:transform .12s}
+.vis-mk .vis-sv svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.vis-mk:hover{z-index:9}.vis-mk:hover .vis-sv,.vis-mk:focus-visible .vis-sv{transform:scale(1.25)}
+.vis-mk:focus-visible{outline:2px solid #1a1a18;outline-offset:2px;border-radius:8px}
+.vis-mk .vis-dd{margin-top:3px;font:700 10.5px 'Montserrat',sans-serif;color:#33332f;white-space:nowrap;background:rgba(255,255,255,.88);border-radius:6px;padding:0 3px}
+.vis-mk.fuori{opacity:.4}
+.vis-mk.mvm{touch-action:none;cursor:grab}
+.vis-bar.av{padding:0;border:1.5px solid var(--c);box-shadow:none;border-radius:12px;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 20%,#fff) 0 6px,color-mix(in srgb,var(--c) 10%,#fff) 6px 12px)}
 .vis-bar.av .f{position:absolute;inset:0 auto 0 0;background:var(--c);opacity:.92}
-.vis-sub .vis-bar.av{top:8px;height:26px}
-.vis-cutm{position:absolute;right:3px;top:3px;font-size:12px;font-style:normal;color:var(--c);z-index:2}
+.vis-cutm{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:13px;font-style:normal;color:var(--c);z-index:2}
 .vis-td{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#c62828;z-index:2;opacity:.85;pointer-events:none}
-.vis-tdl{position:absolute;top:0;transform:translateX(-50%);background:#c62828;color:#fff;font:800 10px 'Montserrat',sans-serif;border-radius:8px;padding:0 7px;line-height:16px;z-index:4}
-.vis-rh .vis-t{height:38px}.vis-rh .vis-hd span{align-items:flex-end;padding-bottom:3px}
+.vis-tdl{position:absolute;top:0;transform:translateX(-50%);background:#c62828;color:#fff;font:800 10px 'Montserrat',sans-serif;border-radius:8px;padding:0 7px;line-height:16px;z-index:4;cursor:default}
+.vis-rh .vis-t{height:52px}
+.vis-rh .vis-hd{position:absolute;left:0;right:0;top:20px;height:16px}
+.vis-rh .vis-hd span{align-items:center}
+.vis-wk{position:absolute;left:0;right:0;top:37px;height:13px}
+.vis-wk i{position:absolute;transform:translateX(-50%);font:600 9.5px 'Montserrat',sans-serif;font-style:normal;color:#77776f}
+.vis-fl{z-index:5}
 .vis-pgt{font-size:12px;color:#55554f}.vis-pgt b{color:#1a1a18}
 .vis-nd{display:inline-block;margin-left:6px;background:#eee;border-radius:10px;padding:0 8px;font-weight:700;font-size:11px}
 .vis-pg{display:block;height:6px;border-radius:3px;background:#e6ebe4;overflow:hidden;margin-top:2px}.vis-pg i{display:block;height:100%;background:#2f7d5b;border-radius:3px}
 .vis-leg2{border-top:0;padding-top:2px;margin-top:0}.vis-leg2 span{display:inline-flex;align-items:center;gap:5px}.vis-leg2 svg{flex:0 0 auto}.vis-lg-n{flex-basis:100%}
-.vis-wrap{container-type:inline-size}
-@container (max-width:960px){.vis-r{grid-template-columns:minmax(0,1fr)}.vis-rh .vis-l{display:none}.vis-ctl,.vis-w{grid-column:1}.vis-l{flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 12px}.vis-l .vis-pg{flex:0 0 150px}.vis-sub .vis-l{padding-left:0}}
-@media(max-width:760px){.vis-sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vis-tip{position:fixed;z-index:99999;display:none;max-width:300px;pointer-events:none;background:#1c2a23;color:#fff;border-radius:10px;padding:8px 12px;font:600 12px/1.45 'Montserrat',sans-serif;box-shadow:0 8px 22px rgba(0,0,0,.32)}
+.vis-tip b{display:block;font-weight:800;font-size:12.5px;margin-bottom:2px}
+.vis-tip span{display:block;color:#d6e2db;font-weight:500}
+@container (max-width:960px){.vis-sc .vis-r{grid-template-columns:calc(100cqw * var(--z,1))}.vis-rh .vis-l{display:none}.vis-sc .vis-l{width:calc(100cqw - 8px);flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 12px;box-sizing:border-box}.vis-l .vis-pg{flex:0 0 150px}.vis-sub .vis-l{padding-left:0}.vis-sc .vis-ctl,.vis-sc .vis-w{left:0;width:calc(100cqw - 8px)}}
 @media(max-width:699px){.vis-r{grid-template-columns:minmax(0,1fr)}.vis-ctl,.vis-w{grid-column:1}.vis-wrap{padding:12px}.vis-hd{font-size:10px}}
 /* Realizzare · Calendario e attività */
 .cal-add{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
