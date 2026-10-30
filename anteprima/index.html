@@ -6106,7 +6106,7 @@ function renderPhase1(){
               <option value="n" ${!curNum?'selected':''}>— Non osservato</option>
               ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${curNum===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}
             </select>
-            <span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(curT)}">${curNum?curNum+' · '+thresholdLabel(curT):'—'}</span>
+            <span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(curT)}">${curNum?curNum+' · '+thresholdLabel(curT):'—'}</span>${eredNote(p.id)}
           </div>`;
 
       // Corpo espanso — domande variano per modalità
@@ -7603,7 +7603,7 @@ function renderPriority(){
       const item=document.createElement('div');
       item.className='pri-item'+(pris[p.id]?' sel':'');
       item.id='pri-'+p.id;
-      item.innerHTML=`<div class="pi-chk">${pris[p.id]?'✓':''}</div><span class="pi-name">${p.name}</span>${bdg}`;
+      item.innerHTML=`<div class="pi-chk">${pris[p.id]?'✓':''}</div><span class="pi-name">${p.name}</span>${eredTag(p.id)}${bdg}`;
       item.onclick=()=>togglePri(p.id,a);
       div.appendChild(item);
     });
@@ -7892,7 +7892,7 @@ const PT_GRP={log:'log',camb:'pasti',cassa:'costi',sic:'sic',ben:'ben',fam:'circ
 function affRowHTML(idx,j,att){ const P=affPeople(); if(!P.length&&!att.aff) return '';
   const cur=att.aff||''; const has=P.some(r=>affNorm(affKey(r))===affNorm(cur));
   return `<div class="aff-row"><label>Referente dell’attività</label><select class="aff-sel" onchange="affSet(${idx},${j},this.value)"><option value="">— nessuno —</option>${P.map(r=>`<option value="${sEsc(affKey(r))}" ${affNorm(affKey(r))===affNorm(cur)?'selected':''}>${sEsc(r.nome)}</option>`).join('')}${cur&&!has?`<option value="${sEsc(cur)}" selected>${sEsc(cur)}</option>`:''}</select><span class="aff-note">la segue tutta: chi, quando, durante, materiali e piano B (persone dalla tabella 1.1)</span></div>`; }
-function attShareHTML(idx,j,att){ const sh=axShared(att); if(!affPeople().length&&!sh) return '';
+function attShareHTML(idx,j,att){ if((scheda.tipoProgetto||'')==='PP') return ''; const sh=axShared(att); if(!affPeople().length&&!sh) return '';
   return `<div class="att-share"><label class="ax-check" style="margin:0"><input type="checkbox" class="share-chk" ${sh?'checked':''} onchange="attShareSet(${idx},${j},this.checked)"> <b>Gestione condivisa con lo staff</b> ${OPT}</label>
     <div class="aff-note" style="margin:2px 0 0 24px">${sh?'Scegli chi è il referente dell’attività; i referenti di logistica, sicurezza, benessere, pasti, cassa e circolare li scegli in testa a ogni parte, dentro “Quando arriva il momento di organizzarla”. Chi ha un account può lavorare sulla sua parte.':'Se la attivi, puoi affidare l’attività e le sue parti a persone diverse dello staff. Altrimenti la gestisce solo chi ha il progetto.'}</div>
     ${sh?affRowHTML(idx,j,att):''}</div>`; }
@@ -8058,7 +8058,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610300914'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610301015'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -8264,7 +8264,7 @@ const FAQ = [
   ['La programmazione','Cos’è «Il mio anno» e cosa cambia da «Il mio ciclo»?','«Il mio ciclo» guarda la programmazione che stai usando; «Il mio anno» mette insieme tutti i cicli dello stesso anno scout, con la linea del tempo e la verifica dell’anno. Cambi vista con l’interruttore in dashboard.'],
   ['La programmazione','Come si fa la verifica di un ciclo e dell’anno?','La verifica e l’autovalutazione si fanno <b>di persona</b>, con lo staff: l’app non le raccoglie al posto vostro. Nel menu Misurare trovi la verifica delle attività, la valutazione finale e la <b>Verifica dell’anno</b> (una riflessione per tutti i cicli, con il Word). Quello che scrivi arriva all’inizio dell’anno dopo negli «Appunti dalla programmazione precedente».','shAnnoV()'],
   ['La programmazione','Cosa sono gli «Appunti dalla programmazione precedente»?','All’inizio di un nuovo anno (o ciclo) l’app ti propone le verifiche già scritte: le attività, le valutazioni dei percorsi, la riflessione dell’anno. Scegli cosa riprendere; non si copia nulla senza che tu lo dica.'],
-  ['La programmazione','Cosa passa dal Progetto Personale alla Programmazione?','Ciò che hai scritto nelle parti comuni (Unità, contesto, staff, osservazione) nello stesso anno scout passa alla Programmazione. Una volta passato è tuo: lo modifichi o lo svuoti e l’app non lo rimette.'],
+  ['La programmazione','Cosa passa dal Progetto Personale alla Programmazione?','La prima volta che apri la Programmazione l’app ti chiede cosa portare dal Progetto Personale dello stesso anno scout (di norma non le osservazioni personali). Ciò che porti è tuo: lo modifichi o lo svuoti e l’app non lo rimette; le attività arrivano come bozze marcate.'],
   ['La programmazione','Come duplico un progetto, o una riunione?','Dai tuoi progetti: «Duplica» ti fa scegliere voce per voce cosa copiare (Unità e staff, osservazione, priorità, percorsi, calendario, verifiche), con «Seleziona tutto» e «Deseleziona tutto». Se copi nell’anno dopo, le date si azzerano e i numeri ripartono da 1. Nel Calendario, «Duplica» su una riunione o un’uscita ne crea una copia una settimana dopo.'],
   ['La programmazione','Perché il numero di un’attività cambia?','L’<b>Elenco dell’anno</b> numera le attività per data: se ne aggiungi o sposti una, i numeri successivi scalano. Nelle circolari e nei documenti citale sempre anche con data e titolo.','shEle()'],
   ['Spese e numeri','Dove registro le spese e i giustificativi?','In <b>Spese mese per mese</b> (menu Realizzare): il preventivo viene dalle attività; nel «Registro delle spese» scrivi quanto hai speso davvero, recuperi le voci dal preventivo (arrivano «da confermare»), colleghi il link allo scontrino o alla fattura su Drive e scarichi il rendiconto in Excel o Word, sintetico o dettagliato.','shBil()'],
@@ -9317,13 +9317,16 @@ function uscObjTog(k,c,i){ const m=uscBlk(k); if(!m) return; if(!m.obj||typeof m
 function uscPercObj(per){ if(!per||!per.percorsoId) return {o:[],i:[]}; const P=Object.values(DB).flat().find(q=>q.id===per.percorsoId); if(!P) return {o:[],i:[]};
   const pr=typeof per.prioritaIdx==='number'?scheda.priorita[per.prioritaIdx]:null; const sel=[...new Set([...((pr&&pr.obiettivi)||[]),...(per.obiettiviExtra||[])])].sort((a,b)=>a-b);
   return {o:sel.map(k=>({k,t:(P.obiettivi||[])[k]})).filter(x=>x.t), i:axIdr(per), nome:P.name}; }
-function uscObjHTML(k,m,can){ const O=m.obj||{}; const L=getAllPercorsi(); const opts=L.map((per,idx)=>({per,idx})).filter(z=>z.per&&z.per.percorsoId); let h='';
-  const inProg=O.pid&&opts.some(z=>z.per.percorsoId===O.pid);
-  h+=`<div class="ax-sub" style="margin-top:0">Percorso della programmazione</div><div class="usc-objp">${opts.map(({per,idx})=>`<button type="button" class="ax-chip${O.pid===per.percorsoId?' on':''}" ${can?`onclick="uscObj('${k}','pid','${O.pid===per.percorsoId?'':per.percorsoId}',true)"`:'disabled'}>${uscE(uscPercLabel(per,idx))}</button>`).join('')||'<span class="ax-hint">Nessun percorso scelto ancora in «Obiettivi e indicatori».</span>'}</div>`;
+// Eventi dello staff: i percorsi tra cui scegliere sono le aree emerse dall'osservazione dello staff (le più fragili), non le priorità dell'Unità
+function uscStaffPrio(){ try{ const agg=getAggregatedProfile(); const L=[]; Object.keys(agg).forEach(a=>Object.keys(agg[a]).forEach(id=>{ const d=agg[a][id]; if(d.observed>0&&d.media>0&&d.media<=5) L.push({id,media:d.media}); })); return L.sort((x,y)=>x.media-y.media).slice(0,6).map(z=>uscDBP(z.id)).filter(Boolean); }catch(e){ return []; } }
+function uscObjHTML(k,m,can){ const O=m.obj||{}; let stf=false; try{ stf=uscSt(); }catch(e){}
+  const L=stf?[]:getAllPercorsi(); const opts=stf?uscStaffPrio().map(P=>({per:{percorsoId:P.id},idx:-1,P})):L.map((per,idx)=>({per,idx})).filter(z=>z.per&&z.per.percorsoId); let h='';
+  const inProg=stf?true:O.pid&&opts.some(z=>z.per.percorsoId===O.pid);
+  h+=`<div class="ax-sub" style="margin-top:0">Percorso della programmazione</div><div class="usc-objp">${opts.map(({per,idx,P})=>`<button type="button" class="ax-chip${O.pid===per.percorsoId?' on':''}" ${can?`onclick="uscObj('${k}','pid','${O.pid===per.percorsoId?'':per.percorsoId}',true)"`:'disabled'}>${uscE(stf?(P.id+' · '+P.name):uscPercLabel(per,idx))}</button>`).join('')||(stf?'<span class="ax-hint">Prima individua le priorità dello staff, in «Il mio staff» (osservazione degli adulti).</span>':'<span class="ax-hint">Nessun percorso scelto ancora in «Obiettivi e indicatori».</span>')}</div>`;
   const AMB=[['P','Personale'],['C','Comunitario'],['S','Spirituale']]; const others=Object.values(DB).flat().filter(q=>!opts.some(z=>z.per.percorsoId===q.id));
-  if(can) h+=`<label class="usc-lb" style="max-width:420px;margin-top:6px"><span class="usc-lt" style="white-space:normal">…oppure un altro percorso PEE <span class="ax-opt">se lo porti nella programmazione diventa un percorso in più</span></span><select class="ax-in" onchange="if(this.value)uscObj('${k}','pid',this.value,true)"><option value="">scegli…</option>${AMB.map(([a,l])=>`<optgroup label="${l}">${others.filter(q=>q.id[0]===a).map(q=>`<option value="${q.id}" ${O.pid===q.id?'selected':''}>${uscE(q.id+' '+q.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
+  if(can&&!stf) h+=`<label class="usc-lb" style="max-width:420px;margin-top:6px"><span class="usc-lt" style="white-space:normal">…oppure un altro percorso PEE <span class="ax-opt">se lo porti nella programmazione diventa un percorso in più</span></span><select class="ax-in" onchange="if(this.value)uscObj('${k}','pid',this.value,true)"><option value="">scegli…</option>${AMB.map(([a,l])=>`<optgroup label="${l}">${others.filter(q=>q.id[0]===a).map(q=>`<option value="${q.id}" ${O.pid===q.id?'selected':''}>${uscE(q.id+' '+q.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
   const P=O.pid&&uscDBP(O.pid);
-  if(P){ const z=opts.find(z=>z.per.percorsoId===O.pid); const X=z?uscPercObj(z.per):{o:[],i:[]}; const so=O.o||[], si=O.i||[]; const inO=new Set(X.o.map(o=>o.k)), inI=new Set(X.i.map(o=>o.k));
+  if(P){ const z=opts.find(z=>z.per.percorsoId===O.pid); const X=(z&&!stf)?uscPercObj(z.per):{o:[],i:[]}; const so=O.o||[], si=O.i||[]; const inO=new Set(stf?[]:X.o.map(o=>o.k)), inI=new Set(stf?[]:X.i.map(o=>o.k));
     if(!inProg) h+=`<div class="ax-hint" style="margin-top:4px"><b>${uscE(P.id+' '+P.name)}</b> non è ancora nella programmazione.</div>`;
     const ob=(P.obiettivi||[]).map((t,q)=>({k:q,t})).sort((a,b)=>(inO.has(b.k)-inO.has(a.k))||a.k-b.k);
     const id=(P.idr||[]).map((t,q)=>({k:q,t})).sort((a,b)=>(inI.has(b.k)-inI.has(a.k))||a.k-b.k);
@@ -9394,7 +9397,8 @@ function percProvRelease(per,aid){ if(!per||!aid) return; const pr=typeof per.pr
     if(per.obiettiviExtra) per.obiettiviExtra=per.obiettiviExtra.filter(q=>q!==ix); if(pr&&pr.obiettivi) pr.obiettivi=pr.obiettivi.filter(q=>q!==ix); });
   const N=per.provI||{}; Object.keys(N).forEach(k=>{ const L=N[k]; const n=L.indexOf(aid); if(n<0) return; L.splice(n,1); if(L.length) return; delete N[k]; const ix=Number(k.slice(1));
     if(k[0]==='p'){ if(pr&&pr.idr) pr.idr=pr.idr.filter(q=>q!==ix); } else if(per.idrSelezionati) per.idrSelezionati=per.idrSelezionati.filter(q=>q!==ix); }); }
-function uscToSez3(k,idx){ const u=uscCur(); const m=uscBlk(k); if(!u||!m||!uscCan()) return; const O=m.obj||{}; let per;
+function uscToSez3(k,idx,force){ const u=uscCur(); const m=uscBlk(k); if(!u||!m||!uscCan()) return; const O=m.obj||{}; let per;
+  if(!force){ try{ const iso0=uscDayIso(u,Number(m.g)||1); if(cicloDataFuori(iso0)){ cicloAsk(k,idx,iso0,m); return; } }catch(e){} }
   if(idx<0){ const P=uscDBP(O.pid); if(!P) return; per=newPercorso(null); per.percorsoId=P.id; per.ambito=P.id[0]; per.obiettiviExtra=(O.o||[]).slice(); per.idrSelezionati=(O.i||[]).slice(); per.attivo=true; scheda.percorsiExtra.push(per); idx=getAllPercorsi().indexOf(per); if(idx<0){ showToast('Non riesco a creare il percorso'); return; } }
   else per=getAllPercorsi()[idx];
   if(!per||!per.percorsoId) return;
@@ -10724,7 +10728,15 @@ const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','ag
 function tmTxt(v){ if(!v) return ''; const [y,m]=v.split('-').map(Number); return MESI[m-1]+' '+y; }
 function tmRange(dal,al){ if(!(dal||al)) return ''; const b=tmTxt(al)||'…'; return `da ${tmTxt(dal)||'…'} ${/^[aeiouàèéìòù]/i.test(b)?'ad':'a'} ${b}`; }
 function tmMonths(dal,al){ if(!dal||!al) return null; const [y1,m1]=dal.split('-').map(Number), [y2,m2]=al.split('-').map(Number); return (y2*12+m2)-(y1*12+m1); }
-function tmWarn(dal,al,min){ const d=tmMonths(dal,al); if(d===null) return ''; if(d<0) return 'La fine viene prima dell’inizio: controlla le date.'; if(min && d<3) return 'Le Linee Guida chiedono almeno un trimestre: valuta di allungare un po’ l’orizzonte.'; return ''; }
+// Nuovo ciclo: percorsi in evidenza e livelli arrivano dal ciclo precedente (scheda.ered), marcati e modificabili
+function eredNote(pid){ try{ const e = scheda && scheda.ered; const l = e && e.liv && e.liv[pid]; if(!l) return ''; const t = (l.a ? l.a : '—') + (l.b ? ' → ' + l.b : ''); return `<span class="ered-n" title="Livello osservato nel ciclo precedente">dal ${sEsc(e.nome || 'ciclo precedente')}: ${t}</span>`; }catch(x){ return ''; } }
+function eredTag(pid){ try{ const e = scheda && scheda.ered; return (e && e.pris && e.pris[pid]) ? `<span class="pi-ered" title="Era in evidenza nel ciclo precedente: puoi tenerlo, cambiarlo o toglierlo">dal ${sEsc(e.nome || 'ciclo precedente')}</span>` : ''; }catch(x){ return ''; } }
+// Percorsi dentro il ciclo: la fine di un percorso non dovrebbe superare la fine del ciclo (solo se il ciclo ha una fine scelta). Niente viene spostato da solo: si avvisa e si propone.
+function cicloFine(){ const c = scheda.ciclo || {}; return /^\d{4}-\d{2}$/.test(c.al || '') ? c.al : ''; }
+function tmFuoriCiclo(al){ const f = cicloFine(); return (f && /^\d{4}-\d{2}$/.test(al || '') && String(al) > f) ? f : ''; }
+function tmCicloBtn(al){ if(window.BRO || !tmFuoriCiclo(al)) return ''; return ` <button type="button" class="sh-lk" onclick="cicloAllunga('${al}')">Allunga il ciclo fino a ${tmTxt(al)}</button>`; }
+function tmWarn(dal,al,min){ const b = tmWarn0(dal,al,min), f = tmFuoriCiclo(al); return b + (f ? (b ? ' ' : '') + 'Questo percorso finisce dopo la fine del ciclo (' + tmTxt(f) + '): puoi allungare il ciclo o accorciare il percorso.' : ''); }
+function tmWarn0(dal,al,min){ const d=tmMonths(dal,al); if(d===null) return ''; if(d<0) return 'La fine viene prima dell’inizio: controlla le date.'; if(min && d<3) return 'Le Linee Guida chiedono almeno un trimestre: valuta di allungare un po’ l’orizzonte.'; return ''; }
 function tmSelHTML(val,onch,from){ const now=new Date(); const fy=Number(String(from||'').split('-')[0])||0; const y0=fy?fy:now.getFullYear()-1; const [vy,vm]=(val||'').split('-').map(Number);
   // ordine dell'anno scout: da settembre ad agosto
   const order=[8,9,10,11,0,1,2,3,4,5,6,7];
@@ -10738,7 +10750,7 @@ function tmMerge(old,part,v){ const now=new Date(); let [y,m]=(old||'').split('-
 function tmLinkPri(per){ try{ if(!per || typeof per.prioritaIdx !== 'number') return; const pr = scheda.priorita[per.prioritaIdx]; if(!pr) return; pr.tDal = per.tDal || ''; pr.tAl = per.tAl || ''; pr.tempistica = tmRange(pr.tDal, pr.tAl); }catch(e){} }
 function tmLinkPer(i){ try{ const pr = scheda.priorita[i]; if(!pr) return; (scheda.percorsiExtra || []).forEach(per => { if(per && per.prioritaIdx === i && (per.tDal || per.tAl)){ per.tDal = pr.tDal || ''; per.tAl = pr.tAl || ''; } }); }catch(e){} }
 function priTempo(i,which,part,v){ const pr=scheda.priorita[i]; if(!pr) return; const k=which==='dal'?'tDal':'tAl'; pr[k]=tmMerge(pr[k],part,v); pr.tAl=tmFixAl(pr.tDal,pr.tAl,part,which);
-  pr.tempistica=tmRange(pr.tDal,pr.tAl); tmLinkPer(i); saveDataDebounced(); const w=document.getElementById('pri-tw-'+i); if(w){ const t=tmWarn(pr.tDal,pr.tAl,true); w.textContent=t; w.style.display=t?'':'none'; }
+  pr.tempistica=tmRange(pr.tDal,pr.tAl); tmLinkPer(i); saveDataDebounced(); const w=document.getElementById('pri-tw-'+i); if(w){ const t=tmWarn(pr.tDal,pr.tAl,true); w.innerHTML=t+(t?tmCicloBtn(pr.tAl):''); w.style.display=t?'':'none'; }
   // riallinea i selettori quando l'anno è stato dedotto
   const box=document.getElementById('pri-tm-'+i); if(box&&part==='m') box.innerHTML=priTempoHTML(i); }
 function priTempoHTML(i){ const pr=scheda.priorita[i]||{}; return `<span style="font-size:12px">da </span>${tmSelHTML(pr.tDal,`(function(p,v){priTempo(${i},'dal',p,v)})`)}<span style="font-size:12px"> a </span>${tmSelHTML(pr.tAl,`(function(p,v){priTempo(${i},'al',p,v)})`,pr.tDal)}`; }
@@ -10826,7 +10838,7 @@ function percTempoHTML(idx){ const per=getAllPercorsi()[idx]; if(!per) return ''
   const note = t.own ? (typeof per.prioritaIdx==='number'?`<a href="#" style="font-size:12px;color:var(--green);margin-left:6px" onclick="percTempoReset(${idx});return false">↺ riprendi ${SZT('dalla Sezione 2')}</a>`:'')
     : `<span style="font-size:12px;color:var(--ink-faint);margin-left:6px">ripresa ${SZT('dalla Sezione 2')} · cambiala se il percorso dura meno</span>`;
   const old=t.txt&&t.own?`<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Indicata in precedenza: ${sEsc(t.txt)}</div>`:'';
-  return `<span style="font-size:12px">da </span>${tmSelHTML(t.dal,`(function(p,v){percTempoSet(${idx},'dal',p,v)})`)}<span style="font-size:12px"> a </span>${tmSelHTML(t.al,`(function(p,v){percTempoSet(${idx},'al',p,v)})`,t.dal)}${note}${warn?`<div style="font-size:12px;color:#8A5300;margin-top:4px">${warn}</div>`:''}${old}`; }
+  return `<span style="font-size:12px">da </span>${tmSelHTML(t.dal,`(function(p,v){percTempoSet(${idx},'dal',p,v)})`)}<span style="font-size:12px"> a </span>${tmSelHTML(t.al,`(function(p,v){percTempoSet(${idx},'al',p,v)})`,t.dal)}${note}${warn?`<div style="font-size:12px;color:#8A5300;margin-top:4px">${warn}${tmCicloBtn(t.al)}</div>`:''}${old}`; }
 const NOMI_MANUALE={'Specchio':'Attività Specchio','Riflessione sul Cammino':'Riflessioni sul Cammino','E.P.I.':'EPI','Officine':'Officine Rover','Rinnovo della Promessa':'Rinnovo Promessa','Cerimonia del Rinnovo della Promessa':'Cerimonia del Rinnovo Promessa','Progressione Personale Verticale (Specchio, Riflessione sul Cammino, Firma della Carta di Compagnia)':'Progressione Personale Verticale (Attività Specchio, Riflessioni sul Cammino, Firma della Carta di Compagnia)'};
 function nomiMigra(per){ const s=per&&per.strumSel; if(s) Object.keys(s).forEach(k=>{ const n=NOMI_MANUALE[k]; if(n){ if(!(n in s)) s[n]=s[k]; delete s[k]; } });
   (per&&per.attivita||[]).forEach(a=>{ if(a&&Array.isArray(a.tipi)) a.tipi=a.tipi.map(t=>NOMI_MANUALE[t]||t); }); }
@@ -11506,7 +11518,7 @@ function renderSchedaB(root,selected){
           <label style="font-size:12px;font-weight:700;color:var(--ink-mid);display:block;margin-bottom:6px">Tempistica <span style="font-weight:400;color:var(--ink-faint)">— orizzonte temporale per raggiungere l'obiettivo, non inferiore a un trimestre</span></label>
           <div id="pri-tm-${i}">${priTempoHTML(i)}</div>
           ${(scheda.priorita[i].tempistica||'').trim()&&!scheda.priorita[i].tDal&&!scheda.priorita[i].tAl?`<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Indicata in precedenza: ${sEsc(scheda.priorita[i].tempistica)}</div>`:''}
-          <div id="pri-tw-${i}" style="font-size:12px;color:#8A5300;margin-top:4px;${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)?'':'display:none'}">${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)}</div>
+          <div id="pri-tw-${i}" style="font-size:12px;color:#8A5300;margin-top:4px;${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)?'':'display:none'}">${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)}${tmWarn(scheda.priorita[i].tDal,scheda.priorita[i].tAl,true)?tmCicloBtn(scheda.priorita[i].tAl):''}</div>
         </div>
       </div>
     </details>`;
@@ -11687,7 +11699,7 @@ function renderSchedaC(root,selected){
           const has = ['testo','lancio','sviluppo','conclusione'].some(k => (att[k]||'').trim());
           return `<details id="att-${idx}-${j}" data-aff="${sEsc(axShared(att)?(att.aff||''):'')}" ${window._attOpen&&window._attOpen[idx+'-'+j]?'open':''} ontoggle="(window._attOpen=window._attOpen||{})['${idx}-${j}']=this.open" style="border:1px solid var(--border-light);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--bg-card);scroll-margin-top:80px">
             <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)"><span class="att-mv">${pos>0&&attCanMove()?`<button type="button" class="btn-ghost att-mv-up" title="Sposta su" aria-label="Sposta su l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},-1)">↑</button>`:''}${pos<attv.length-1&&attCanMove()?`<button type="button" class="btn-ghost att-mv-dn" title="Sposta giù" aria-label="Sposta giù l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},1)">↓</button>`:''}</span><span class="att-sumt" id="att-sumt-${idx}-${j}">Attività ${pos+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}</span>${att.aff&&axShared(att)?` <span class="aff-chip${affIsMe(att.aff)?' me':''}">${affIsMe(att.aff)?'affidata a te':sEsc(affName(att.aff))}</span>`:''}${attv.length>3&&j<(per.attivita||[]).length&&pos>=3?` <button class="btn-ghost" style="float:right;padding:0 7px;font-size:12px;line-height:18px" title="Togli questa attività" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button>`:''}</summary>
-            <div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
+            ${att.dalPP?'<div class="ered-n" style="margin:4px 0 0">Bozza dal Progetto Personale: controllala e adattala all’Unità</div>':''}<div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
             <input type="text" style="${SC_IN};margin:8px 0 4px" placeholder="Titolo / sintesi dell'attività" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             ${attTipiHTML(idx,j,att)}
             <label style="${SC_LBL}">Lancio</label>
@@ -15565,7 +15577,7 @@ async function clOpenProject(id, extra){
     if(CL.ctx && CL.ctx.id !== id && CL.pending){ clToast('Salvo il lavoro attuale…'); await clPush(); }
     const r = await dbGet(id);
     if(!r){ clToast('Progetto non trovato'); return; }
-    let ppMsg = ''; try{ if(window.shPpBridge && !extra){ const b = await shPpBridge(r); if(b){ r.data = b.data; ppMsg = ' ' + b.msg; } } }catch(e){ console.error(e); }
+    let ppMsg = ''; try{ if(window.shPpBridge && !extra){ const b = await shPpBridge(r); if(b){ r.data = b.data; ppMsg = b.msg ? ' ' + b.msg : ''; } } }catch(e){ console.error(e); }
     // progetto di un collega aperto in modifica: si conserva il ruolo (anche quando si ricarica la versione del cloud)
     const keep = extra || (CL.ctx && CL.ctx.id === id && CL.ctx.ruolo ? {ruolo:CL.ctx.ruolo, owner:CL.ctx.owner||''} : null);
     try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un’altra persona')+')' : '. Il progetto precedente è salvato in archivio.') + ppMsg); }catch(e){}
@@ -16005,7 +16017,7 @@ body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
 body.sh-in[data-pca="P"] .pcx[data-a]:not([data-a="P"]):not([data-a=""]),
 body.sh-in[data-pca="C"] .pcx[data-a]:not([data-a="C"]):not([data-a=""]),
 body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display:none}
-.vis-dot.vis-ev{border-radius:2px;width:10px;height:10px;transform:translateX(-5px)}.vis-dot.vis-ev.stf{outline:2px dashed #1d4f8f;outline-offset:1px}
+.vis-dot.vis-ev{border-radius:2px;width:10px;height:10px;transform:translateX(-5px)}.vis-dot.vis-ev.stf{outline:2px dashed #1d4f8f;outline-offset:1px}.vis-dot.vis-ev.fuori,.vis-oc.fuori{opacity:.35}.ered-n,.pi-ered{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;font-size:11px;line-height:1.5;color:#5b4a8f;background:#efeaf8;border:1px solid #d9d0ee;white-space:nowrap}
 .st-emb{background:#F3F6FB;border:1px solid #cdd8ea;border-radius:12px;padding:10px 14px;margin:0 0 12px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;justify-content:space-between}.st-emb-h span{color:#5f5f58;font-size:12.5px;margin-left:6px}.st-emb-t{display:flex;gap:8px;flex-wrap:wrap}
 .pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
 .pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
@@ -16474,7 +16486,7 @@ function dupBuild(src, anno, keys){
     (sc.percorsiExtra || []).forEach(p => (p.attivita || []).forEach(a => { if(a.ax){ delete a.ax.data; delete a.ax.dataFine; } }));
     Object.keys(sc.uscite || {}).forEach(k => { const u = sc.uscite[k]; if(u && u.ax){ delete u.ax.data; delete u.ax.dataFine; } });
     (sc.priorita || []).forEach(p => { p.tDal = ''; p.tAl = ''; });
-    delete sc.ciclo; delete sc.cicloDa; delete sc.calOk;
+    delete sc.ciclo; delete sc.cicloDa; delete sc.calOk; delete sc.ered;
   }
   delete sc.ppImp; sc.annoScout = annoScoutTxt(Number(anno)); data.ts = Date.now();
   return data;
@@ -17225,7 +17237,7 @@ function nextStep(o){
 function pct(a, b){ return b ? Math.round(100 * a / b) : 0; }
 const CARDS = [
   {id:'passo', t:'Prossimo passo suggerito', wide:1, av:() => true, html:o => { const n = nextStep(o); return `<h3>${esc('Prossimo passo suggerito')}</h3><div style="font-size:15px;font-weight:700">${esc(n[0])}</div><div class="sub" style="font-size:13px">${esc(n[1])}</div><div><button type="button" class="sh-lk" onclick="${n[2]}">Vai</button></div>`; }},
-  {id:'anno', t:'Il mio ciclo in un colpo d’occhio', wide:1, av:() => true, html:o => `<h3>Il mio ciclo in un colpo d’occhio</h3>` + annoTL([annoCur()], 'percorso', 'ambito', true) + `<div class="sub">I blocchi sono i percorsi, i pallini le attività con la data, i quadratini le riunioni e le uscite (con il bordo tratteggiato quelle dello staff). La bandierina è la verifica del ciclo. Per spostare i blocchi: <button type="button" class="sh-lk" onclick="shVis()">Visione d’insieme</button>.</div>`},
+  {id:'anno', t:'Il mio ciclo in un colpo d’occhio', wide:1, av:() => true, html:o => `<h3>Il mio ciclo in un colpo d’occhio</h3>` + annoTL([annoCur()], 'percorso', 'ambito', true) + `<div class="sub">I blocchi sono i percorsi, i pallini le attività con la data, i quadratini le riunioni e le uscite (con il bordo tratteggiato quelle dello staff). La bandierina è la verifica del ciclo; gli eventi più tenui cadono fuori dal periodo del ciclo. Per spostare i blocchi: <button type="button" class="sh-lk" onclick="shVis()">Visione d’insieme</button>.</div>`},
   {id:'chk', t:'Check dello staff', av:() => true, html:o => { const n = chkSoon(); return `<h3>Check dello staff</h3>` + (n ? `<div style="font-size:15px;font-weight:700">${esc(n.c.nome)}</div><div class="sub" style="font-size:13px">${n.n.now ? 'È il momento: ' : 'Prossimo: '}${esc(chkWhen(n.c))}${n.c.att ? ' · ' + esc(n.c.att) : ''}</div>` : `<div class="sub" style="font-size:13px;color:#3D3D38">Nessun check in programma.</div>`) + `<div><button type="button" class="sh-lk" onclick="shChk()">Vedi e personalizza</button></div>`; }},
   {id:'prossime', t:'Prossime attività', av:() => true, html:o => {
     const oggi = td(); const ALL = o.acts.concat(o.usc); const L0 = ALL.filter(x => x.data && x.fine >= oggi).sort((a, b) => a.data.localeCompare(b.data)); const L = L0.slice(0, 6);
@@ -17465,6 +17477,14 @@ function cicloFormHTML(){
   return `<details class="u-fold sh-cf" id="sh-cf"${SH._cfOpen ? ' open' : ''} ontoggle="SH._cfOpen=this.open"><summary>Nome e periodo del ciclo<span class="u-sub">${esc(info.nome)}${info.txt ? ' · ' + esc(info.txt) : ''}</span></summary><div class="u-fold-in"><div class="cal-new" style="border:0;padding:0;margin:0"><label>Nome del ciclo <input class="sh-in" maxlength="60" value="${esc(sc.nome || '')}" placeholder="Es. I trimestre" oninput="cicloSet('nome',this.value)"></label><label>Dal <select class="sh-in" onchange="cicloSet('dal',this.value);shDash()"><option value="">scegli…</option>${opt(sc.dal)}</select></label><label>Al <select class="sh-in" onchange="cicloSet('al',this.value);shDash()"><option value="">scegli…</option>${opt(sc.al)}</select></label></div><div class="sh-hint">Il periodo del ciclo serve alla verifica e a «Il mio anno». Se lo lasci vuoto lo ricavo dai periodi dei percorsi.</div></div></details>`;
 }
 window.cfOpen = function(){ const d = $('sh-cf'); if(!d) return; SH._cfOpen = true; d.open = true; const i = d.querySelector('input,textarea'); if(i){ i.focus(); try{ i.select(); }catch(e){} } };
+window.cicloAllunga = async function(al){
+  if(window.BRO || !scheda.ciclo || !cicloFine() || String(al) <= cicloFine()) return;
+  let msg = 'Allungo il ciclo «' + ((scheda.ciclo.nome || '').trim() || 'questo ciclo') + '» fino a ' + tmTxt(al) + '.';
+  try{ const L = SH._ay || await annoLoad(); const dal0 = scheda.ciclo.dal || ''; const alt = L.filter(i => !i.cur && i.ci.dal && i.ci.dal > dal0 && i.ci.dal <= al);
+    if(alt.length) msg += '\n\nAttenzione: così si sovrappone a ' + alt.map(i => i.ci.nome + (i.ci.txt ? ' (' + i.ci.txt + ')' : '')).join(', ') + '.'; }catch(e){}
+  if(!confirm(msg + '\n\nVuoi procedere?')) return;
+  scheda.ciclo.al = al; SH._ay = null; saveDataDebounced(); try{ paint(); }catch(e){} try{ visRe(); }catch(e){} showToast('Il ciclo ora finisce a ' + tmTxt(al));
+};
 window.cicloSet = function(k, v){ if(window.BRO) return; scheda.ciclo = scheda.ciclo || {}; scheda.ciclo[k] = v; saveDataDebounced(); if(k === 'nome'){ try{ paint(); }catch(e){} } };
 window.shScope = function(v){ SH.dscope = v === 'anno' ? 'anno' : 'ciclo'; try{ localStorage.setItem('pee_dscope', SH.dscope); }catch(e){} if(v === 'anno') SH._ay = null; shDash(); };
 async function annoLoad(){
@@ -17490,9 +17510,10 @@ function annoColor(mode, it, ci, p, a){
 }
 // linea del tempo: items = progetti-ciclo; lettura = percorso | attivita | ciclo; colore = ambito | ciclo | stato
 function annoEvRow(items, y0){
-  const pts = []; items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const [yy, mm, dd] = d.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return; pts.push({x:(i + (dd - 1) / 31) / 12 * 100, c:(CAL_T[uscModK(u)] || CAL_T.giorno)[1], t:uscTit(u) + ' · ' + fmtDL(d.slice(0, 10)) + (u.dest === 'staff' ? ' · staff' : ''), stf:u.dest === 'staff'}); }); });
+  const pts = []; items.forEach(it => { const U = ((it.data || {}).scheda || {}).uscite || {}; if(typeof U !== 'object' || Array.isArray(U)) return; Object.keys(U).forEach(k => { const u = U[k]; if(!u || typeof u !== 'object' || u.del || !u.id) return; const d = String((u.ax || {}).data || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(d)) return; const [yy, mm, dd] = d.slice(0, 10).split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return; const sc0 = ((it.data || {}).scheda || {}).ciclo || {}; const fuori = !!(/^\d{4}-\d{2}$/.test(sc0.dal || '') && /^\d{4}-\d{2}$/.test(sc0.al || '') && (d.slice(0, 7) < sc0.dal || d.slice(0, 7) > sc0.al));
+      pts.push({x:(i + (dd - 1) / 31) / 12 * 100, c:(CAL_T[uscModK(u)] || CAL_T.giorno)[1], t:uscTit(u) + ' · ' + fmtDL(d.slice(0, 10)) + (u.dest === 'staff' ? ' · staff' : '') + (fuori ? ' · fuori dal ciclo' : ''), stf:u.dest === 'staff', fuori}); }); });
   if(!pts.length) return '';
-  pts.sort((a, b) => a.x - b.x); const last = []; const mk = pts.map(p => { let l = 0; while(last[l] !== undefined && p.x - last[l] < 2.2) l++; last[l] = p.x; return `<span class="vis-dot vis-ev${p.stf ? ' stf' : ''}" style="left:${p.x}%;top:${4 + l * 16}px;background:${p.c}" title="${esc(p.t)}"></span>`; }).join('');
+  pts.sort((a, b) => a.x - b.x); const last = []; const mk = pts.map(p => { let l = 0; while(last[l] !== undefined && p.x - last[l] < 2.2) l++; last[l] = p.x; return `<span class="vis-dot vis-ev${p.stf ? ' stf' : ''}${p.fuori ? ' fuori' : ''}" style="left:${p.x}%;top:${4 + l * 16}px;background:${p.c}" title="${esc(p.t)}"></span>`; }).join('');
   const nl = Math.max(1, last.length);
   return `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b><small>${pts.length} con la data</small></div><div class="vis-t" style="height:${nl * 16 + 14}px"><div class="vis-gr" aria-hidden="true">${VIS_M.map(() => '<i></i>').join('')}</div>${mk}</div></div>`;
 }
@@ -17543,25 +17564,60 @@ function ncFormHTML(items){
   const y0 = visY0(); const last = items.map(i => i.ci.al).filter(Boolean).sort().pop(); const li = last ? visIdx(last, y0) : null; const st = li !== null ? Math.min(11, li + 1) : 4; const en = Math.min(11, st + 2);
   const opt = v => VIS_M.map((m, i) => `<option value="${visYM(i, y0)}" ${v === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('');
   return `<div class="cal-new" role="group" aria-label="Nuovo ciclo"><b>Nuovo ciclo</b><label>Nome <input id="nc-n" class="sh-in" maxlength="60" value="Ciclo ${items.length + 1}"></label><label>Dal <select id="nc-d" class="sh-in">${opt(st)}</select></label><label>Al <select id="nc-a" class="sh-in">${opt(en)}</select></label>
-    <div class="sh-hint" style="flex:1 1 100%">Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi. Il nuovo ciclo parte da quello aperto ora: contesto, unità, staff e sede passano; la rilettura di fine ciclo diventa il punto di partenza dell’osservazione. Priorità, obiettivi, percorsi e verifica sono nuovi.</div><div class="cal-wa"><button type="button" class="sh-btn" id="nc-go" onclick="ncMake()">Crea e apri</button><button type="button" class="sh-btn gh" onclick="SH._ncForm=false;annoRe()">Annulla</button></div></div>`;
+    <div class="sh-hint" style="flex:1 1 100%">Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi. Il nuovo ciclo parte da quello aperto ora: contesto, unità, staff e sede passano; passano anche i percorsi in evidenza e i livelli osservati (la rilettura di fine ciclo è il punto di partenza), marcati «dal ciclo precedente» e modificabili o eliminabili. Obiettivi, percorsi, attività e verifica sono nuovi.</div><div class="cal-wa"><button type="button" class="sh-btn" id="nc-go" onclick="ncMake()">Crea e apri</button><button type="button" class="sh-btn gh" onclick="SH._ncForm=false;annoRe()">Annulla</button></div></div>`;
 }
 window.ncOpen = function(){ SH._ncForm = true; annoRe(); setTimeout(() => { const e = $('nc-n'); if(e) e.focus(); }, 40); };
 const NC_PP = ['sezione', 'gruppo', 'ctxTerr', 'ctxSez', 'sedeVia', 'sedeCitta', 'sedeCF', 'sedeSocial', 'sedeSito', 'numTot', 'numM', 'numF', 'numAnn', 'staffTab', 'checkStaff'];
+async function ncBuild(nome, dal, al){
+    const rows = await dbList(); const y = Number(CL.ctx.anno);
+    let base0 = String(CL.ctx.titolo || 'Programmazione Annuale'); const cn0 = ((scheda.ciclo || {}).nome || '').trim(); if(cn0 && base0.endsWith(' · ' + cn0)) base0 = base0.slice(0, -(' · ' + cn0).length); const base = base0 + ' · ' + nome; let titolo = base, k = 2; while(rows.some(r => Number(r.anno) === y && r.titolo === titolo)) titolo = base + ' (' + (k++) + ')';
+    const nobs = {}; Object.keys(obs || {}).forEach(pid => { const r = Number(((scheda.riobs || {})[pid]) || 0); nobs[pid] = r > 0 ? r : obs[pid]; });
+    const pp = {}; const sp = scheda.pp || {}; NC_PP.forEach(q => { if(sp[q] !== undefined) pp[q] = JSON.parse(JSON.stringify(sp[q])); });
+    const npris = {}; Object.keys(pris || {}).forEach(k => { if(pris[k]) npris[k] = true; });
+    const ered = {da:CL.ctx.id, nome:((scheda.ciclo || {}).nome || '').trim() || 'ciclo precedente', pris:Object.assign({}, npris), liv:{}};
+    Object.keys(obs || {}).forEach(pid => { const a = obs[pid], b = Number(((scheda.riobs || {})[pid]) || 0); if(a !== 'n' || b > 0) ered.liv[pid] = {a:a === 'n' ? 0 : Number(a) || 0, b:b > 0 ? b : 0}; });
+    const d = {v:1, MODE:'giovani', FASCIA, UNIT_NAME:UNIT_NAME || '', obs:nobs, pris:npris, scheda:{tipoProgetto:'AN', annoScout:scheda.annoScout, pp, veste:scheda.veste ? JSON.parse(JSON.stringify(scheda.veste)) : undefined, ciclo:{nome, dal, al}, cicloDa:CL.ctx.id, ered}, ts:Date.now()};
+  return {y, titolo, d};
+}
 window.ncMake = async function(){
   if(window.BRO || !CL.ctx) return; const btn = $('nc-go'); if(btn) btn.disabled = true;
   const nome = String(($('nc-n') || {}).value || '').trim() || 'Nuovo ciclo', dal = ($('nc-d') || {}).value || '', al = ($('nc-a') || {}).value || '';
   if(dal && al && al < dal){ showToast('La fine viene prima dell’inizio'); if(btn) btn.disabled = false; return; }
   try{
     saveData(true); try{ await clPush(true); }catch(e){}
-    const rows = await dbList(); const y = Number(CL.ctx.anno);
-    let base0 = String(CL.ctx.titolo || 'Programmazione Annuale'); const cn0 = ((scheda.ciclo || {}).nome || '').trim(); if(cn0 && base0.endsWith(' · ' + cn0)) base0 = base0.slice(0, -(' · ' + cn0).length); const base = base0 + ' · ' + nome; let titolo = base, k = 2; while(rows.some(r => Number(r.anno) === y && r.titolo === titolo)) titolo = base + ' (' + (k++) + ')';
-    const nobs = {}; Object.keys(obs || {}).forEach(pid => { const r = Number(((scheda.riobs || {})[pid]) || 0); nobs[pid] = r > 0 ? r : obs[pid]; });
-    const pp = {}; const sp = scheda.pp || {}; NC_PP.forEach(q => { if(sp[q] !== undefined) pp[q] = JSON.parse(JSON.stringify(sp[q])); });
-    const d = {v:1, MODE:'giovani', FASCIA, UNIT_NAME:UNIT_NAME || '', obs:nobs, scheda:{tipoProgetto:'AN', annoScout:scheda.annoScout, pp, veste:scheda.veste ? JSON.parse(JSON.stringify(scheda.veste)) : undefined, ciclo:{nome, dal, al}, cicloDa:CL.ctx.id}, ts:Date.now()};
+    const B = await ncBuild(nome, dal, al); const y = B.y, titolo = B.titolo, d = B.d;
     const r = await dbInsert(y, titolo, d, clMeta(d));
     SH.rows = null; SH._ay = null; CL.ctx = null; try{ localStorage.removeItem(CL_LS); }catch(e){}
     await clOpenProject(r.id);
   }catch(e){ if(btn) btn.disabled = false; showToast('Non sono riuscito a creare il ciclo: ' + ((e && e.message) || 'riprova')); }
+};
+// ── Attività da un'uscita: se la data cade fuori dal ciclo aperto, si sceglie dove metterla (anche in un ciclo non ancora creato) ──
+window.cicloDataFuori = function(iso){ const c = scheda.ciclo || {}; const m = String(iso || '').slice(0, 7); return !!(/^\d{4}-\d{2}$/.test(m) && /^\d{4}-\d{2}$/.test(c.dal || '') && /^\d{4}-\d{2}$/.test(c.al || '') && (m < c.dal || m > c.al)); };
+window.cicloAsk = function(k, idx, iso, m){
+  const c = scheda.ciclo || {}; const quando = fmtDL(iso);
+  modalShow(`<div class="sch dup ciclo-ask"><div class="sch-t">In quale ciclo va questa attività?</div><div class="sch-m">«${esc(uscBlkTitle(m) || 'Attività')}» è del ${esc(quando)}, ma il ciclo aperto ora va ${esc(tmRange(c.dal, c.al))}.</div>
+    <div class="dup-act" style="flex-direction:column;align-items:stretch;gap:8px"><button type="button" class="sh-btn" onclick="cicloAskGo('${k}',${idx},'qui')">La metto comunque in questo ciclo</button>
+    <button type="button" class="sh-btn" onclick="cicloAskGo('${k}',${idx},'bozza')">Creo un ciclo «da progettare» che la contiene</button>
+    <button type="button" class="btn-ghost" onclick="modalClose()">Annulla</button></div>
+    <p class="sh-hint">Nel secondo caso il nuovo ciclo nasce come bozza, con questo percorso e questa attività come segnaposto; lo completi quando arriva il momento. L’uscita resta qui.</p></div>`);
+};
+window.cicloAskGo = async function(k, idx, how){
+  modalClose();
+  if(how === 'qui'){ uscToSez3(k, idx, true); return; }
+  const u = uscCur(), m = uscBlk(k); if(!u || !m || window.BRO) return;
+  try{
+    const iso = uscDayIso(u, Number(m.g) || 1); const O = m.obj || {}; const P = O.pid ? uscDBP(O.pid) : null;
+    if(!P && idx < 0){ showToast('Scegli prima il percorso dell’attività'); return; }
+    const per0 = idx >= 0 ? getAllPercorsi()[idx] : null; const pid = (per0 && per0.percorsoId) || (P && P.id); if(!pid){ showToast('Scegli prima il percorso dell’attività'); return; }
+    const y0 = visY0(); const ix = visIdx(iso.slice(0, 7), y0); const dal = iso.slice(0, 7); const al = ix !== null ? visYM(Math.min(11, ix + 2), y0) : dal;
+    saveData(true); try{ await clPush(true); }catch(e){}
+    const B = await ncBuild('Ciclo da progettare', dal, al); const d = B.d;
+    const per = newPercorso(null); per.percorsoId = pid; per.ambito = pid[0]; per.attivo = true; per.tDal = dal; per.tAl = al;
+    per.attivita = [{testo:uscBlkTitle(m), link:'', lancio:'', sviluppo:(m.desc || ''), conclusione:'', vBene:'', vMigl:'', vAgg:'', ax:{data:iso}}];
+    d.scheda.percorsiExtra = [per]; d.scheda.bozzaCiclo = true; d.pris = {}; d.scheda.ered = undefined; delete d.scheda.ered;
+    const r = await dbInsert(B.y, B.titolo, d, clMeta(d)); SH._ay = null; SH.rows = null;
+    showToast('Creato il ciclo «da progettare» (' + tmRange(dal, al) + '): lo trovi in «Il mio anno»');
+  }catch(e){ console.error(e); showToast('Non sono riuscito a creare la bozza del ciclo: ' + ((e && e.message) || 'riprova')); }
 };
 // ── Misurare · «Verifica dell'anno»: la riflessione sull'anno intero, sopra la verifica di ogni ciclo. Sta in una riga propria (non è un ciclo) ──
 async function annoRow(y){
@@ -18063,7 +18119,7 @@ function visHTML(){
   const head = '<div class="vis-hd" aria-hidden="true">' + VIS_M.map((m, i) => `<span class="${i === cie ? 'pit' : ''}">${m}</span>`).join('') + '</div>';
   const grid = '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${i === cie ? 'pit' : ''}"></i>`).join('') + '</div>';
   // occasioni: riunioni, uscite, bivacchi, campi
-  let occ = ''; try{ occ = uscList().map(u => { const x = u.ax || {}; if(!x.data) return ''; const a = visIdx(x.data.slice(0, 7), y0); const [yy, mm, dd] = x.data.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return ''; const T = (typeof CAL_T !== 'undefined' && CAL_T[uscModK(u)]) || ['Uscita', '#2f7d5b']; return `<span class="vis-oc" style="left:${(i + (dd - 1) / 31) / 12 * 100}%;background:${T[1]}" title="${esc(T[0] + ' · ' + uscTit(u))}"><span class="sr-only">${esc(T[0] + ' ' + uscTit(u))}</span></span>`; }).join(''); }catch(e){}
+  let occ = ''; try{ occ = uscList().map(u => { const x = u.ax || {}; if(!x.data) return ''; const a = visIdx(x.data.slice(0, 7), y0); const [yy, mm, dd] = x.data.split('-').map(Number); const i = (yy * 12 + mm - 1) - (y0 * 12 + 8); if(i < 0 || i > 11) return ''; const T = (typeof CAL_T !== 'undefined' && CAL_T[uscModK(u)]) || ['Uscita', '#2f7d5b']; const c0 = scheda.ciclo || {}; const fu = !!(/^\d{4}-\d{2}$/.test(c0.dal || '') && /^\d{4}-\d{2}$/.test(c0.al || '') && (x.data.slice(0, 7) < c0.dal || x.data.slice(0, 7) > c0.al)); return `<span class="vis-oc${fu ? ' fuori' : ''}" style="left:${(i + (dd - 1) / 31) / 12 * 100}%;background:${T[1]}" title="${esc(T[0] + ' · ' + uscTit(u) + (fu ? ' · fuori dal ciclo' : ''))}"><span class="sr-only">${esc(T[0] + ' ' + uscTit(u))}</span></span>`; }).join(''); }catch(e){}
   const rows = R.map(r => {
     const col = (AMB[r.amb] || ['', '#666'])[1]; const has = r.a !== null && r.b !== null;
     const a = has ? Math.max(0, Math.min(11, r.a)) : 0, b = has ? Math.max(0, Math.min(11, r.b)) : 0;
@@ -18072,7 +18128,7 @@ function visHTML(){
     const bar = has ? `<div class="vis-bar${can ? ' mv' : ''}" data-i="${r.idx}" style="left:${a / 12 * 100}%;width:${(b - a + 1) / 12 * 100}%;--c:${col}" ${can ? `onpointerdown="visDown(event,${r.idx})"` : ''} title="${esc(tmRange(r.t.dal, r.t.al))}"><span>${esc(tmRange(r.t.dal, r.t.al))}${cut ? ' (continua fuori dall’anno scout)' : ''}</span></div>` : '';
     const dots = r.dots.map(d => `<span class="vis-dot" style="left:${d.x}%;background:${col}" title="${esc(d.t + ' · ' + fmtDL(d.d))}"></span>`).join('');
     const ctl = can ? `<div class="vis-ctl"><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese prima" onclick="visShift(${r.idx},-1)" ${has ? '' : 'disabled'}>◀ un mese</button><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese dopo" onclick="visShift(${r.idx},1)" ${has ? '' : 'disabled'}>un mese ▶</button><label class="vis-sl">Comincia a <select class="cal-sel" aria-label="Mese di inizio di ${esc(r.nm)}" onchange="visStart(${r.idx},this.value)"><option value="">${has ? 'scegli…' : 'scegli il mese'}</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.a === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label><label class="vis-sl">Finisce a <select class="cal-sel" aria-label="Mese di fine di ${esc(r.nm)}" onchange="visEnd(${r.idx},this.value)" ${has ? '' : 'disabled'}><option value="">scegli…</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.b === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label>${has ? `<span class="vis-du">${tmMonths(r.t.dal, r.t.al) + 1} ${tmMonths(r.t.dal, r.t.al) + 1 === 1 ? 'mese' : 'mesi'}</span>` : '<span class="vis-du">Quanto dura il percorso? Scegli il mese di inizio e poi quello di fine.</span>'}</div>` : '';
-    return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t">${grid}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}</div>` : ''}</div>`;
+    return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t">${grid}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}${tmCicloBtn(r.t.al)}</div>` : ''}</div>`;
   }).join('');
   return `<div class="sh-dh"><div><h1>Visione d’insieme</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">I percorsi dell’anno scout ${esc(String(y0) + '-' + String((y0 + 1) % 100).padStart(2, '0'))} su una linea del tempo. Trascina un blocco per spostarlo di mese in mese, oppure usa i pulsanti e il menu sotto ogni percorso. Il mese più scuro è quello in cui finisce il ciclo e si fa la verifica.</p></div></div>
     <div class="vis-wrap">${R.length ? `<div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div>${rows}${occ ? `<div class="vis-r"><div class="vis-l"><b>Riunioni e uscite</b></div><div class="vis-t">${grid}${occ}</div></div>` : ''}<div class="vis-leg"><span><i class="vis-dot" style="background:#555"></i> un’attività con la data</span><span><i class="vis-oc2"></i> una riunione, un’uscita, un bivacco o un campo</span></div>` : '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi: scegli le priorità in «Osservare» e gli obiettivi in «Obiettivi e indicatori».</div>'}</div>`;
@@ -18134,7 +18190,11 @@ function ppbBlocks(a, b){
 }
 // pe e pp sono i «data» dei due progetti. Regole per ogni blocco: se nella Programmazione è vuoto e mai portato → si copia dal PP;
 // se è stato portato e non l'hai toccato → si aggiorna con le novità del PP; se l'hai modificato o svuotato → non si tocca più.
-function ppbMerge(pe, pp){
+function ppbGroup(n){ for(const [re, t] of PPB_LAB){ if(re.test(n)) return t; } return 'altro'; }
+// blocchi del PP che passerebbero per la prima volta (non portati prima, vuoti nella Programmazione)
+function ppbNew(pe, pp){ const imp = ((pe.scheda || {}).ppImp || {}).blocks || {}; return ppbBlocks(pe, pp).filter(B => !ppbEmpty(B.g(pp)) && !imp[B.n] && ppbEmpty(B.g(pe))).map(B => B.n); }
+// only: insieme dei gruppi da portare per la prima volta (undefined = tutti); later: chi sceglie «più tardi» non segna nulla
+function ppbMerge(pe, pp, only, later){
   const sc = pe.scheda = pe.scheda || {}; const imp = sc.ppImp = sc.ppImp || {}; imp.blocks = imp.blocks || {};
   const done = [];
   ppbBlocks(pe, pp).forEach(B => {
@@ -18142,7 +18202,11 @@ function ppbMerge(pe, pp){
     if(ppbEmpty(ppv)) return;
     const hp = ppbHash(ppv);
     if(!rec){
-      if(ppbEmpty(pev)){ B.s(pe, JSON.parse(JSON.stringify(ppv))); imp.blocks[B.n] = {h:hp}; done.push(B.n); }
+      if(ppbEmpty(pev)){
+        if(only && !only.has(ppbGroup(B.n))){ if(!later) imp.blocks[B.n] = {own:true}; return; }
+        B.s(pe, JSON.parse(JSON.stringify(ppv))); imp.blocks[B.n] = {h:hp}; done.push(B.n);
+        if(B.n === 's.percorsiExtra') ((B.g(pe)) || []).forEach(per => (per && per.attivita || []).forEach(a => { if(a && typeof a === 'object') a.dalPP = true; }));
+      }
       else imp.blocks[B.n] = {own:true};
       return;
     }
@@ -18151,6 +18215,19 @@ function ppbMerge(pe, pp){
   });
   return done;
 }
+// «Cosa porto?»: al primo passaggio dal Progetto Personale si sceglie cosa portare nella Programmazione (le osservazioni personali e la valutazione no, di default)
+const PPB_OFF = ['osservazione dei percorsi', 'valutazione'];
+const PPB_HINT = {'contesto e occasioni di osservazione':'Unità, contesto, staff, occasioni', 'osservazione dei percorsi':'I livelli e le note che hai scritto per te', 'priorità e obiettivi':'Le priorità con obiettivi e indicatori', 'indicatori':'Indicatori di Risultato', 'percorsi e attività':'Le attività arrivano come bozze marcate «dal Progetto Personale»', 'valutazione':'Valutazioni e verifiche scritte nel PP'};
+function ppbAsk(groups, anno){
+  return new Promise(res => {
+    let fin = false; const end = v => { if(fin) return; fin = true; clearInterval(iv); try{ modalClose(); }catch(e){} res(v); };
+    window._ppbGo = () => end([...document.querySelectorAll('.ppb-c')].filter(c => c.checked).map(c => c.getAttribute('data-g')));
+    window._ppbLater = () => end(null);
+    const row = g => `<label class="dup-r"><input type="checkbox" class="ppb-c" data-g="${esc(g)}" ${PPB_OFF.indexOf(g) < 0 ? 'checked' : ''}> <span><b>${esc(g.charAt(0).toUpperCase() + g.slice(1))}</b><small>${esc(PPB_HINT[g] || '')}</small></span></label>`;
+    modalShow(`<div class="sch dup ppb-ask"><div class="sch-t">Cosa porto dal Progetto Personale?</div><div class="sch-m">Nello stesso anno scout (${esc(String(anno))}) c’è un tuo Progetto Personale. Scegli cosa portare in questa Programmazione: ciò che porti diventa tuo, lo modifichi o lo svuoti e l’app non lo rimette. Il Progetto Personale non cambia.</div><div class="dup-l">${groups.map(row).join('')}</div><div class="dup-act"><button type="button" class="sh-btn" onclick="_ppbGo()">Porta le voci scelte</button><button type="button" class="btn-ghost" onclick="_ppbLater()">Più tardi</button></div></div>`);
+    const iv = setInterval(() => { if(!document.querySelector('#g-modal.show .ppb-ask')) end(null); }, 300);
+  });
+}
 window.shPpBridge = async function(r){
   const d = r.data || {}, sc = d.scheda || {};
   if(!SH.on || d.MODE !== 'giovani' || sc.tipoProgetto === 'PP' || sc.cicloDa || sc.esempio || /^Esempio/i.test(r.titolo || '')) return null;
@@ -18158,12 +18235,17 @@ window.shPpBridge = async function(r){
   const cand = rows.filter(x => x.id !== r.id && Number(x.anno) === Number(r.anno) && (x.meta || {}).tipo === 'PP').sort((a, b) => b.ts - a.ts);
   if(!cand.length) return null;
   const pp = await dbGet(cand[0].id); if(!pp || !pp.data) return null;
-  const nd = JSON.parse(JSON.stringify(d)); const done = ppbMerge(nd, pp.data);
-  if(!done.length) return null;
+  const pend = ppbNew(d, pp.data); let only, later = false;
+  if(pend.length){ const gr = []; PPB_LAB.forEach(([re, t]) => { if(pend.some(n => re.test(n)) && gr.indexOf(t) < 0) gr.push(t); });
+    const sel = gr.length ? await ppbAsk(gr, r.anno) : []; if(sel === null){ later = true; only = new Set(); } else only = new Set(sel); }
+  const nd = JSON.parse(JSON.stringify(d)); const done = ppbMerge(nd, pp.data, only, later);
+  const chg = JSON.stringify((nd.scheda || {}).ppImp || null) !== JSON.stringify(sc.ppImp || null);
+  if(!done.length && !chg) return null;
   const had = ppbBlocks(d, d).some(B => !/^pp\.(sezione|gruppo)$/.test(B.n) && !ppbEmpty(B.g(d)));
-  try{ if(had) await dbSnap(r.id, d, 'Prima di riportare dal Progetto Personale'); }catch(e){}
+  try{ if(had && done.length) await dbSnap(r.id, d, 'Prima di riportare dal Progetto Personale'); }catch(e){}
   nd.ts = Date.now();
   try{ r.ts = await dbUpdate(r.id, nd, clMeta(nd), r.raw); }catch(e){ console.error(e); return null; }
+  if(!done.length) return {data:nd, msg:''};
   const lab = []; PPB_LAB.forEach(([re, t]) => { if(done.some(n => re.test(n)) && lab.indexOf(t) < 0) lab.push(t); });
   return {data:nd, msg:'Dal Progetto Personale ' + r.anno + ' ho riportato: ' + lab.join(', ') + '. Puoi modificarlo o svuotarlo.'};
 };

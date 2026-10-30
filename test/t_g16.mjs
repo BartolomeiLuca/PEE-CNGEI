@@ -14,7 +14,10 @@ db.t.pee_archivi.push(row('pe25', 2025, 'Programmazione Annuale 2025-26 · Repar
 await loginAs(P, base, u); await sleep(1200);
 const get = id => db.t.pee_archivi.find(r => r.id === id).data;
 // 1 · apro la Programmazione 2026: le sezioni comuni arrivano dal PP
-await ev(() => shOpen('pe', 0)); await sleep(4500);
+P.evaluate(() => shOpen('pe', 0)).catch(() => {}); await sleep(3000);
+const dflt = await ev(() => [...document.querySelectorAll('#g-modal.show .ppb-ask .ppb-c')].map(c => c.getAttribute('data-g') + '=' + c.checked));
+ok(dflt.length > 0 && dflt.some(x => /^osservazione dei percorsi=false/.test(x)) && dflt.some(x => /^contesto e occasioni di osservazione=true/.test(x)), 'compare «Cosa porto?»: osservazioni spente, contesto acceso (' + dflt.join(' | ') + ')');
+await ev(() => { document.querySelectorAll('#g-modal .ppb-c').forEach(c => { c.checked = true; }); _ppbGo(); }); await sleep(4500);
 let d = get('pe');
 ok(d.scheda.pp.ctxTerr === 'Quartiere con parco e bus' && d.scheda.pp.ctxSez === 'Sezione di 4 gruppi' && d.scheda.pp.condizioni === 'Osservato a settembre', 'PP → Programmazione: contesto e condizioni arrivano da soli');
 ok(d.obs && d.obs.P1 === 7 && d.obs.C2 === 5 && d.scheda.osservazione.P.positivi === 'Sanno collaborare', 'PP → Programmazione: osservazione dei percorsi e valori');

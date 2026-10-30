@@ -16,7 +16,8 @@ db.t.pee_archivi.push(row('c2', 'Programmazione Annuale 2026-27 · Reparto · II
   priorita:[pri('P', 'P2', '2027-01', '2027-03'), pri('C', 'C2', '2027-01', '2027-03'), pri('S', 'S2', '2027-02', '2027-03')], pp:{sezione:'Pesaro', gruppo:'1'},
   percorsiExtra:[{prioritaIdx:0, percorsoId:'P2', ambito:'P', attivita:[att('Caccia al tesoro', '2027-01-18', false)]}]}}, '2026-10-21T10:00:00Z'));
 db.t.pee_archivi.push(Object.assign(row('pp', 'Progetto Personale 2026-27', {scheda:{tipoProgetto:'PP', annoScout:'2026-27', pp:{ctxTerr:'Dal PP', ctxSez:'Dal PP'}, osservazione:{P:{positivi:'dal PP', necessita:'', singoli:''}, C:{positivi:'', necessita:'', singoli:''}, S:{positivi:'', necessita:'', singoli:''}}}}, '2026-10-22T10:00:00Z'), {meta:{mode:'giovani', fascia:'E', tipo:'PP'}}));
-await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('c1', 0)); await sleep(3800);
+await loginAs(P, base, u); await sleep(1200); P.evaluate(() => shOpen('c1', 0)).catch(() => {}); await sleep(2500);
+await ev(() => { document.querySelectorAll('#g-modal .ppb-c').forEach(c => { c.checked = true; }); if(document.querySelector('#g-modal.show .ppb-ask')) _ppbGo(); }); await sleep(3800);
 // 1 · intestazione e interruttore
 let s = await ev(() => ({h1: document.querySelector('#panel-dash h1').textContent, seg: [...document.querySelectorAll('.sh-seg button')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')).join(), card: document.querySelector('[data-c="anno"] h3') && document.querySelector('[data-c="anno"] h3').textContent, sub: document.querySelector('#panel-dash .sub').textContent}));
 ok(s.h1 === 'Il mio ciclo' && /Il mio ciclo:true,Il mio anno:false/.test(s.seg), 'dashboard: «Il mio ciclo» con interruttore «Il mio ciclo | Il mio anno»');
