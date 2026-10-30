@@ -8058,7 +8058,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610301015'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610301200'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -17285,7 +17285,7 @@ function dashHTML(){
   const sco = SH.dscope === 'anno' ? 'anno' : 'ciclo'; const cc = annoCicloInfo(annoCur());
   const seg = `<div class="sh-seg" role="group" aria-label="Che cosa vuoi vedere"><button type="button" aria-pressed="${sco === 'ciclo'}" onclick="shScope('ciclo')">Il mio ciclo</button><button type="button" aria-pressed="${sco === 'anno'}" onclick="shScope('anno')">Il mio anno</button></div>`;
   if(sco === 'anno') return `<div class="sh-dh"><div><h1>Il mio anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">Un anno scout può avere più cicli di programmazione, di solito di 3-4 mesi ciascuno. Qui li vedi insieme.</p></div></div>${seg}<div id="an-year">${annoYearHTML()}</div>`;
-  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button></p></div>
+  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button>${(!window.BRO && ppHaPP()) ? ' · <button type="button" class="sh-lk" onclick="shPpPorta()">Porta dal Progetto Personale</button>' : ''}</p></div>
     <div style="margin-left:auto"><button type="button" class="sh-btn gh sm" id="sh-pers" onclick="shDashEdit(${editing ? 0 : 1})" style="min-height:44px;padding:0 16px;border:1px solid #8a8a82;border-radius:10px;background:#fff;font:700 13px 'Montserrat',sans-serif;cursor:pointer">${editing ? 'Fatto' : 'Personalizza'}</button></div></div>${resumeBarHTML()}${seg}${cicloFormHTML()}`;
   if(editing) h += `<div class="sh-ebanner" role="note"><b>Personalizza la dashboard.</b> Trascina le schede, oppure selezionane una e usa le frecce della tastiera (o i pulsanti «Prima» e «Dopo»). «Nascondi» la toglie dalla vista. La disposizione è tua e si salva nel tuo profilo.<div id="sh-live" class="sub" aria-live="polite" style="margin-top:4px"></div></div>`;
   h += `<div class="sh-dgrid">` + shown.map((c, i) => `<section class="sh-card2${c.wide ? ' wide' : ''}${editing ? ' edit' : ''}" data-c="${c.id}" ${editing ? `tabindex="0" draggable="true" aria-label="Scheda ${esc(c.t)}, posizione ${i + 1} di ${shown.length}. Usa le frecce per spostarla."` : ''}>${c.html(o)}${editing ? `<div class="sh-etool"><button type="button" onclick="shMove('${c.id}',-1)">‹ Prima</button><button type="button" onclick="shMove('${c.id}',1)">Dopo ›</button><button type="button" onclick="shHide('${c.id}',1)">Nascondi</button></div>` : ''}</section>`).join('') + `</div>`;
@@ -17593,17 +17593,49 @@ window.ncMake = async function(){
 };
 // ── Attività da un'uscita: se la data cade fuori dal ciclo aperto, si sceglie dove metterla (anche in un ciclo non ancora creato) ──
 window.cicloDataFuori = function(iso){ const c = scheda.ciclo || {}; const m = String(iso || '').slice(0, 7); return !!(/^\d{4}-\d{2}$/.test(m) && /^\d{4}-\d{2}$/.test(c.dal || '') && /^\d{4}-\d{2}$/.test(c.al || '') && (m < c.dal || m > c.al)); };
-window.cicloAsk = function(k, idx, iso, m){
-  const c = scheda.ciclo || {}; const quando = fmtDL(iso);
+window.cicloAsk = async function(k, idx, iso, m){
+  const c = scheda.ciclo || {}; const quando = fmtDL(iso); const mese = String(iso).slice(0, 7);
+  let alt = []; try{ const L = SH._ay || await annoLoad(); alt = L.filter(it => !it.cur && it.id); }catch(e){}
+  const rows = alt.map(it => { const ci = it.ci; const dentro = !!(ci.dal && ci.al && mese >= ci.dal && mese <= ci.al);
+    return `<button type="button" class="sh-btn" onclick="cicloAskGo('${k}',${idx},'ciclo','${esc(it.id)}')">La metto nel ciclo «${esc(ci.nome)}»${ci.txt ? ' (' + esc(ci.txt) + ')' : ''}${dentro ? ' · consigliato' : ''}</button>`; }).join('');
   modalShow(`<div class="sch dup ciclo-ask"><div class="sch-t">In quale ciclo va questa attività?</div><div class="sch-m">«${esc(uscBlkTitle(m) || 'Attività')}» è del ${esc(quando)}, ma il ciclo aperto ora va ${esc(tmRange(c.dal, c.al))}.</div>
-    <div class="dup-act" style="flex-direction:column;align-items:stretch;gap:8px"><button type="button" class="sh-btn" onclick="cicloAskGo('${k}',${idx},'qui')">La metto comunque in questo ciclo</button>
+    <div class="dup-act" style="flex-direction:column;align-items:stretch;gap:8px">${rows}<button type="button" class="sh-btn" onclick="cicloAskGo('${k}',${idx},'qui')">La metto comunque in questo ciclo</button>
     <button type="button" class="sh-btn" onclick="cicloAskGo('${k}',${idx},'bozza')">Creo un ciclo «da progettare» che la contiene</button>
     <button type="button" class="btn-ghost" onclick="modalClose()">Annulla</button></div>
-    <p class="sh-hint">Nel secondo caso il nuovo ciclo nasce come bozza, con questo percorso e questa attività come segnaposto; lo completi quando arriva il momento. L’uscita resta qui.</p></div>`);
+    <p class="sh-hint">${alt.length ? 'Se scegli un altro ciclo, l’attività viene aggiunta lì (prima l’app salva una copia di sicurezza di quel ciclo) e l’uscita resta in questo. ' : ''}Con «da progettare» nasce un ciclo nuovo, con questo percorso e questa attività come segnaposto; lo completi quando arriva il momento.</p></div>`);
 };
-window.cicloAskGo = async function(k, idx, how){
+// Aggiunge l'attività di un momento dell'uscita a un ALTRO ciclo dell'anno: copia di sicurezza, scrittura protetta da conflitti, nessun dato esistente toccato
+async function cicloPortaIn(k, idx, tid){
+  const u = uscCur(), m = uscBlk(k); if(!u || !m || window.BRO || !tid) return;
+  try{
+    const iso = uscDayIso(u, Number(m.g) || 1); const O = m.obj || {}; const per0 = idx >= 0 ? getAllPercorsi()[idx] : null;
+    const pid = (per0 && per0.percorsoId) || O.pid; if(!pid){ showToast('Scegli prima il percorso dell’attività'); return; }
+    if(m.portata && m.portata.id === tid && !confirm('Questa attività è già stata portata in «' + (m.portata.nome || 'quel ciclo') + '». Vuoi aggiungerla di nuovo?')) return;
+    saveData(true); try{ await clPush(true); }catch(e){}
+    const g = await dbGet(tid); if(!g || !g.data){ showToast('Non trovo quel ciclo'); return; }
+    const nd = JSON.parse(JSON.stringify(g.data)); const sc = nd.scheda = nd.scheda || {}; const cic = sc.ciclo || {};
+    sc.percorsiExtra = Array.isArray(sc.percorsiExtra) ? sc.percorsiExtra : [];
+    let per = sc.percorsiExtra.find(q => q && q.percorsoId === pid);
+    if(!per){ per = newPercorso(null); per.percorsoId = pid; per.ambito = pid[0]; per.attivo = true; per.tDal = cic.dal || String(iso).slice(0, 7); per.tAl = cic.al || String(iso).slice(0, 7); sc.percorsiExtra.push(per); }
+    if(!Array.isArray(per.attivita)) per.attivita = [];
+    const o = (O.pid === pid ? (O.o || []) : []).slice(), ii = (O.pid === pid ? (O.i || []) : []).slice();
+    o.forEach(q => { per.obiettiviExtra = per.obiettiviExtra || []; if(!per.obiettiviExtra.includes(q)) per.obiettiviExtra.push(q); });
+    ii.forEach(q => { per.idrSelezionati = per.idrSelezionati || []; if(!per.idrSelezionati.includes(q)) per.idrSelezionati.push(q); });
+    const a = {testo:uscBlkTitle(m), link:'', lancio:'', sviluppo:(m.desc || ''), conclusione:'', vBene:'', vMigl:'', vAgg:'', ax:{data:iso}, obj:{o, i:ii}, daUscita:{ciclo:(scheda.ciclo || {}).nome || '', uscita:uscTit(u)}};
+    const vuota = q => q && !['testo', 'lancio', 'sviluppo', 'conclusione'].some(z => String(q[z] || '').trim()) && !(q.ax && Object.keys(q.ax).length); const jv = per.attivita.findIndex(vuota);
+    if(jv >= 0) per.attivita[jv] = Object.assign({}, per.attivita[jv], a); else per.attivita.push(a);
+    attIdsEnsure(per);
+    try{ await dbSnap(tid, g.data, 'Prima di aggiungere un’attività da un’uscita di un altro ciclo'); }catch(e){}
+    nd.ts = Date.now();
+    await dbUpdate(tid, nd, clMeta(nd), g.raw);
+    m.portata = {id:tid, nome:cic.nome || g.titolo || '', pid}; saveData(true); SH._ay = null; try{ uscRe(); }catch(e){}
+    showToast('Aggiunta al ciclo «' + (cic.nome || g.titolo) + '», nel percorso ' + pid + ': la completi lì');
+  }catch(e){ console.error(e); showToast(e && e.message === 'stale' ? 'Quel ciclo è stato modificato nel frattempo: riprova' : 'Non sono riuscito ad aggiungerla: ' + ((e && e.message) || 'riprova')); }
+}
+window.cicloAskGo = async function(k, idx, how, tid){
   modalClose();
   if(how === 'qui'){ uscToSez3(k, idx, true); return; }
+  if(how === 'ciclo'){ await cicloPortaIn(k, idx, tid); return; }
   const u = uscCur(), m = uscBlk(k); if(!u || !m || window.BRO) return;
   try{
     const iso = uscDayIso(u, Number(m.g) || 1); const O = m.obj || {}; const P = O.pid ? uscDBP(O.pid) : null;
@@ -18228,8 +18260,19 @@ function ppbAsk(groups, anno){
     const iv = setInterval(() => { if(!document.querySelector('#g-modal.show .ppb-ask')) end(null); }, 300);
   });
 }
-window.shPpBridge = async function(r){
+// Pulsante «Porta dal Progetto Personale» nella dashboard della Programmazione
+window.shPpPorta = async function(){
+  if(window.BRO || !CL.ctx) return;
+  try{ saveData(true); try{ await clPush(true); }catch(e){} const id = CL.ctx.id; const r = await dbGet(id); if(!r) return;
+    const b = await shPpBridge(r, true);
+    if(!b){ showToast('Non c’è altro da portare dal Progetto Personale'); return; }
+    await clOpenProject(id);
+  }catch(e){ console.error(e); showToast('Non sono riuscito a leggere il Progetto Personale: ' + ((e && e.message) || 'riprova')); }
+};
+function ppHaPP(){ try{ return !!(CL.ctx && scheda.tipoProgetto !== 'PP' && (SH.rows || []).some(x => Number(x.anno) === Number(CL.ctx.anno) && (x.meta || {}).tipo === 'PP')); }catch(e){ return false; } }
+window.shPpBridge = async function(r, force){
   const d = r.data || {}, sc = d.scheda || {};
+  if(force){ try{ const bl = ((sc.ppImp || {}).blocks) || {}; ppbBlocks(d, d).forEach(B => { if(bl[B.n] && bl[B.n].own && ppbEmpty(B.g(d))) delete bl[B.n]; }); }catch(e){} }
   if(!SH.on || d.MODE !== 'giovani' || sc.tipoProgetto === 'PP' || sc.cicloDa || sc.esempio || /^Esempio/i.test(r.titolo || '')) return null;
   const rows = await dbList();
   const cand = rows.filter(x => x.id !== r.id && Number(x.anno) === Number(r.anno) && (x.meta || {}).tipo === 'PP').sort((a, b) => b.ts - a.ts);

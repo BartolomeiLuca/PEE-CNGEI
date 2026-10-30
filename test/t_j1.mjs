@@ -72,11 +72,37 @@ const sh2 = await ev(() => { const m = {k:'nuova', obj:{}}; USC_CUR = null; cons
 ok(sh2 > 0, 'selettore per eventi (non crasha)');
 
 // ── 3. attività da un'uscita con data fuori ciclo: scelta del ciclo / bozza di ciclo
-await ev(() => shOpen('c2', 0)); await sleep(3500);
+P.evaluate(() => shOpen('c2', 0)).catch(() => {}); await sleep(2500);
+await ev(() => { if(document.querySelector('#g-modal.show .ppb-ask')) _ppbLater(); }); await sleep(3000);
 const nBefore = db.t.pee_archivi.length;
-const f3 = await ev(() => { scheda.ciclo = {nome:'Ciclo 2', dal:'2027-01', al:'2027-04'}; scheda.uscite = scheda.uscite || {}; scheda.uscite.u1 = {id:'u1', testo:'Campo', modello:'giorno', ax:{data:'2027-06-10', durata:'giorno'}, prog:{b1:{k:'nuova', tipo:'mom', g:1, ord:1, dur:60, t:'Gioco finale', f:[], obj:{pid:'P4', o:[], i:[]}}}, hid:{}, own:{}}; USC_CUR = 'u1'; uscToSez3('b1', -1); return {ask: !!document.querySelector('#g-modal.show .ciclo-ask'), fuori: cicloDataFuori('2027-06-10'), dentro: cicloDataFuori('2027-02-10')}; });
-ok(f3.ask && f3.fuori && !f3.dentro, 'data fuori ciclo: chiede in quale ciclo mettere l’attività');
+const f3 = await ev(() => { scheda.ciclo = {nome:'Ciclo 2', dal:'2027-01', al:'2027-04'}; scheda.uscite = scheda.uscite || {}; scheda.uscite.u1 = {id:'u1', testo:'Campo', modello:'giorno', ax:{data:'2027-06-10', durata:'giorno'}, prog:{b1:{k:'nuova', tipo:'mom', g:1, ord:1, dur:60, t:'Gioco finale', f:[], obj:{pid:'P4', o:[], i:[]}}}, hid:{}, own:{}}; USC_CUR = 'u1'; uscToSez3('b1', -1); return {fuori: cicloDataFuori('2027-06-10'), dentro: cicloDataFuori('2027-02-10')}; });
+await sleep(4500);
+const opts3 = await ev(() => [...document.querySelectorAll('#g-modal.show .ciclo-ask button')].map(b => b.textContent));
+ok(opts3.length >= 3 && opts3.some(t => /«Ciclo 3».*consigliato/.test(t)) && opts3.some(t => /da progettare/.test(t)), 'data fuori ciclo: propone i cicli esistenti (consigliato quello che la contiene) e la bozza (' + opts3.length + ' pulsanti)');
+ok(f3.fuori && !f3.dentro, 'data fuori ciclo riconosciuta');
+const c3 = db.t.pee_archivi.find(r => (r.data.scheda || {}).ciclo && r.data.scheda.ciclo.nome === 'Ciclo 3');
+const nv0 = db.t.pee_versioni.length;
+await ev(id => cicloAskGo('b1', -1, 'ciclo', id), c3.id); await sleep(3500);
+const c3b = db.t.pee_archivi.find(r => r.id === c3.id).data.scheda;
+const per3 = (c3b.percorsiExtra || []).find(q => q.percorsoId === 'P4');
+ok(per3 && per3.attivita.filter(a => a.testo === 'Gioco finale').length === 1 && per3.attivita.find(a => a.testo === 'Gioco finale').ax.data === '2027-06-10' && per3.attivita.find(a => a.testo === 'Gioco finale').aid, 'l’attività è stata aggiunta al Ciclo 3 (percorso P4, data 10/6)');
+ok(db.t.pee_versioni.some(v => v.archivio_id === c3.id && /altro ciclo/.test(v.label)), 'prima di scrivere ha salvato una copia di sicurezza del Ciclo 3');
+ok(c3b.ciclo.nome === 'Ciclo 3' && c3b.ered && (c3b.ered.pris.P6 === true), 'il resto del Ciclo 3 non è cambiato');
+ok(await ev(() => !!scheda.uscite.u1.prog.b1 && scheda.uscite.u1.prog.b1.portata && scheda.uscite.u1.prog.b1.portata.nome === 'Ciclo 3'), 'nell’uscita resta il momento, segnato come portato nel Ciclo 3');
 await ev(() => cicloAskGo('b1', -1, 'bozza')); await sleep(3500);
 const nuovo = db.t.pee_archivi.filter(r => (r.data.scheda || {}).bozzaCiclo);
 ok(nuovo.length === 1 && nuovo[0].data.scheda.ciclo.nome === 'Ciclo da progettare' && nuovo[0].data.scheda.ciclo.dal === '2027-06' && (nuovo[0].data.scheda.percorsiExtra[0] || {}).percorsoId === 'P4' && nuovo[0].data.scheda.percorsiExtra[0].attivita[0].ax.data === '2027-06-10', 'crea la bozza «Ciclo da progettare» da giugno con P4 e l’attività come segnaposto');
+
+// ── pulsante «Porta dal Progetto Personale» (dopo «Più tardi» si può richiamare la finestra)
+db.t.pee_archivi.push({id:'c8', user_id:u.id, anno:2026, titolo:'Programmazione Annuale 2026-27 · Altra', meta:{mode:'giovani', fascia:'E', tipo:'AN', vruolo:'cu', vbranca:'E', sez:'Pesaro', gr:'1'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'Kontiki', obs:{}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', pp:{sezione:'Pesaro', gruppo:'1'}, veste:{ruolo:'cu', branca:'E'}}}, ts:Date.now()});
+await ev(() => { SH.rows = null; shGoHome(); }); await sleep(1500);
+P.evaluate(() => clOpenProject('c8')).catch(() => {}); await sleep(2500);
+await ev(() => { if(document.querySelector('#g-modal.show .ppb-ask')) _ppbLater(); }); await sleep(4000);
+await ev(() => { SH.rows = null; return shGoHome(); }); await sleep(1200);
+P.evaluate(() => shOpen('c8', 0)).catch(() => {}); await sleep(2500);
+await ev(() => { if(document.querySelector('#g-modal.show .ppb-ask')) _ppbLater(); }); await sleep(3500);
+const btn = await ev(() => /Porta dal Progetto Personale/.test(document.body.innerText));
+ok(btn, 'nella dashboard della Programmazione c’è «Porta dal Progetto Personale»');
+P.evaluate(() => shPpPorta()).catch(() => {}); await sleep(2500);
+ok(await ev(() => !!document.querySelector('#g-modal.show .ppb-ask')), 'il pulsante riapre la finestra «Cosa porto?»');
 process.exit(summary() ? 1 : 0);
