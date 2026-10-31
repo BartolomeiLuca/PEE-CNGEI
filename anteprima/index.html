@@ -8064,7 +8064,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610311721'; // sostituito a ogni pubblicazione
+const APP_BUILD='202610311752'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -17010,12 +17010,11 @@ const NAV_AN = [
   {id:'p-3C', k:'3:C', t:'Percorso Comunitario', ic:'list', go:"shPerc('C')"},
   {id:'p-3S', k:'3:S', t:'Percorso Spirituale', ic:'list', go:"shPerc('S')"},
   {id:'p-vis', t:'Visione d’insieme', ic:'cal', go:'shVis()'},
-  {id:'p-pf', t:'Percorso formativo dello staff', ic:'users', go:'shPF()', cond:'owner'},
+  {id:'p-pf', t:'Palestra dello staff', ic:'users', go:'shPF()', cond:'owner'},
   {g:'Realizzare'},
   {id:'r-cal', t:'Calendario e attività', ic:'cal', go:'shCal()'},
   {id:'r-ele', t:'Elenco dell’anno', ic:'list', go:'shEle()'},
-  {id:'r-stp', t:'Percorso dello staff', ic:'users', go:'shStp()'},
-  
+    
   {g:'Misurare'},
   {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
   {id:'m-5', k:'5', t:'Valutazione finale', ic:'up', go:"shSec('5')"},
@@ -17050,8 +17049,7 @@ const NAV_ST = [
   {id:'st2', t:'Riepilogo', ic:'list', go:'goPhase(2)'},
   {g:'Realizzare'},
   {id:'usc', t:'Uscite e campi', ic:'tent', go:"shSec('usc')"},
-  {id:'r-stp', t:'Percorso dello staff', ic:'users', go:'shStp()'},
-  
+    
   {g:'Misurare e conservare'},
   {id:'sha', t:'Condividi con lo staff', ic:'users', go:'shShare()'},
   {id:'arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'}
@@ -17063,7 +17061,7 @@ const NAV_CG = [
   {g:'Progettare'},
   {id:'st1', t:'I miei Capi Unità', ic:'eye', go:'goPhase(1)'},
   {id:'st2', t:'Lettura dei Capi Unità', ic:'list', go:'goPhase(2)'},
-  {id:'p-pf', t:'Percorso formativo', ic:'users', go:'shPF()'},
+  {id:'p-pf', t:'Palestra dei Capi Unità', ic:'users', go:'shPF()'},
   {g:'Realizzare'},
   {id:'usc', t:'Eventi per gli adulti', ic:'tent', go:"shSec('usc')"},
   {id:'r-chk', t:'Check degli adulti', ic:'users', go:'shChk()'},
@@ -18028,8 +18026,7 @@ function stpHTML(L, busy){ const E = esc; const can = !window.BRO;
     <div class="stp-l">${busy ? '<div class="sh-hint" role="status">Carico gli eventi di tutti i cicli…</div>' : (rows || '<div class="cal-empty cal-empty2">Non ci sono ancora eventi dello staff: in «Calendario e attività» crea una riunione o un’uscita «Solo per lo staff».</div>')}</div>
     <details class="u-fold" style="margin-top:14px"><summary>Di solito in questo periodo — Capo Gruppo<span class="u-sub">indicativo, dal manuale; non obbliga a nulla</span></summary><div class="u-fold-in"><div class="sh-hint"><b>Autunno (inizio dell’anno scout)</b>: verifica dei campi estivi in Consiglio di Gruppo · verifica delle programmazioni delle Unità e del Piano di Gruppo dell’anno prima · analisi della situazione del nuovo anno · attività per i passaggi · bisogni delle Unità e liste d’attesa · riunione con i genitori dei nuovi ragazzi · Interbranca e Assemblea di Sezione · costruzione del Piano di Gruppo e calendario dei Consigli di Gruppo · sostegno e raccolta delle programmazioni delle Unità · riunioni con i genitori per presentarle · incontro tra CG e CU.</div><div class="sh-hint"><b>Inverno</b>: accoglienza dei nuovi senior · momento di formazione interna dello staff di Gruppo · primo step di verifica del Piano di Gruppo, delle programmazioni di Unità e dei contratti.</div><div class="sh-hint">Fonte: «Lo sciroppo del Capo Gruppo», pp. 14-15. Primavera ed estate, e i calendari delle Branche L, E, R, sono ancora da completare.</div></div></details>
     <section class="sh-card2 wide" style="margin-top:14px"><h3>Abitudini dello staff</h3><div class="sub" style="font-size:13px">Non sono attività da riunione: sono abitudini da tenere tutto l’anno.</div><div class="stp-p">${prassi.map((n, i) => `<button type="button" class="mf-q" onclick="attSchedaOpen(_mfL[${i}])">${E(n)}</button>`).join('')}</div></section>`; }
-window.shStp = function(){ ensurePanels(); SH.ppv = 'stp'; ownOff(); const p = $('panel-pp'); p.innerHTML = stpHTML([], true); own('panel-pp');
-  stpLoad().then(L => { if(SH.ppv === 'stp'){ p.innerHTML = stpHTML(L, false); } }).catch(e => { console.error(e); p.innerHTML = stpHTML([], false); }); };
+window.shStp = function(){ shPF(); };
 window.stpAdd = function(cy, uid){ if(window.BRO) return;
   if(cy){ calOpenCy(cy, uid); showToast('Si apre l’evento nell’altro ciclo: lì aggiungi il momento formativo'); return; }
   shSrUsc(uid); setTimeout(() => { try{ USC_TAB = 1; const pi = USC_PALS.findIndex(z => z[0] === 'mf'); uscBlkAdd(pi); const u = uscCur(); const ks = Object.keys(u.prog).filter(k => u.prog[k].k === 'mf' && !u.prog[k].del).sort((a, b) => (u.prog[b].cr || 0) - (u.prog[a].cr || 0)); if(ks[0]) mfPickOpen(ks[0]); }catch(e){ console.error(e); } }, 500); };
@@ -18924,6 +18921,42 @@ const PF_CAT = {tb:'Team Building', af:'Affiliativa', ps:'Problem Solving', ri:'
 function pfList(){ if(!Array.isArray(scheda.pf)) scheda.pf = []; return scheda.pf; }
 const pfCG = () => { try{ return STAFF_RUOLO === 'CG' && !window._stEmb && MODE === 'staff'; }catch(e){ return false; } };
 function pfEvents(){ try{ return uscList().filter(u => u.dest === 'staff' || MODE === 'staff'); }catch(e){ return []; } }
+// ── La palestra: si trova un'attività partendo da un problema, da un tema, dal periodo dell'anno o a sorpresa ──
+const PF_M = {1:[9,10],2:[9,10,11],3:[10,11],4:[10,11,12],5:[11,12,1],6:[11,12,1,2],7:[11,12,1],8:[1,2,3],9:[2,3,4],10:'*',11:[3,4,5,6],12:'*',13:[5,6,7,8]};
+const PF_MS = [['set',9],['ott',10],['nov',11],['dic',12],['gen',1],['feb',2],['mar',3],['apr',4],['mag',5],['giu',6],['lug',7],['ago',8]];
+const PF_ARCOL = ['#2f7d5b','#3b8fa0','#7a3f8f','#c0663a','#b0392f','#a0612b','#1d4f8f','#8a6d00','#534AB7','#a32d2d','#0f6e56','#d4537e','#5f5e5a'];
+function pfInM(a, m){ const v = PF_M[a]; return v === '*' || (v || []).indexOf(m) >= 0; }
+function pfPool(){ return Object.keys(ATT_SCHEDE).filter(n => ATT_SCHEDE[n].tipo !== 'prassi'); }
+function pfX(){ return SH._pfx = SH._pfx || {mode:'q', area:0, q:-1, m:((new Date()).getMonth() + 1), int:'', sur:''}; }
+function pfExplorer(L, can, cg, rec, used){
+  const E = esc; const X = pfX(); const pool = pfPool(); const cov = new Set(L.map(x => mfArea(x.nome)).filter(Boolean));
+  const ok = n => !X.int || ATT_SCHEDE[n].int === X.int;
+  const mode = (k, t) => `<button type="button" class="pfx-m${X.mode === k ? ' on' : ''}" aria-pressed="${X.mode === k}" onclick="pfxSet('mode','${k}')">${t}</button>`;
+  const dots = STAFF_AREE.map(z => `<span class="pfx-d${cov.has(z.n) ? ' on' : ''}" style="--c:${PF_ARCOL[z.n - 1]}" title="${E(z.n + ' · ' + z.nome)}${cov.has(z.n) ? ' · già nel percorso' : ''}">${z.n}</span>`).join('');
+  let prev = null, warn = ''; L.forEach(x => { const t = (ATT_SCHEDE[x.nome] || {}).int; if(t === 'profonda' && prev === 'profonda' && !warn) warn = 'Due attività profonde una dopo l’altra: tra le due metti qualcosa di leggero.'; prev = t; });
+  window._pfL = [];
+  const card = n => { const a = ATT_SCHEDE[n]; const i = window._pfL.push(n) - 1; const d = String(a.desc || a.scopo || '').replace(/\s+/g, ' ').trim(); const on = used.has(n);
+    return `<div class="mf-c"><div class="mf-ct"><b>${E(n)}</b>${mfPill(a)}${a.durata ? `<span class="mf-d">${E(a.durata)}</span>` : ''}<span class="mf-d">area ${mfArea(n)}</span></div>${d ? `<div class="mf-cd">${E(d.length > 160 ? d.slice(0, 159) + '…' : d)}</div>` : ''}<div class="mf-cb">${can ? `<button type="button" class="sh-btn" ${on ? 'disabled' : ''} onclick="pfAddS(${i})">${on ? 'Già nel percorso' : 'Aggiungi al percorso'}</button>` : ''}<button type="button" class="btn-ghost" onclick="attSchedaOpen(_pfL[${i}])">Come si fa</button></div></div>`; };
+  const tile = z => `<button type="button" class="pfx-t" style="--c:${PF_ARCOL[z.n - 1]}" onclick="pfxArea(${z.n})"><b>${z.n} · ${E(z.nome)}</b><small>${E(z.per)}</small><span>${pool.filter(n => mfArea(n) === z.n).length} attività${cov.has(z.n) ? ' · nel percorso' : ''}</span></button>`;
+  let body = '';
+  if(X.sur && ATT_SCHEDE[X.sur]){ body += `<div class="pfx-sur"><div class="pfx-sl">Oggi ti propongo</div>${card(X.sur)}<button type="button" class="btn-ghost" onclick="pfSur()">Un’altra a sorpresa</button></div>`; }
+  else if(X.mode === 'q') body += `<div class="pfx-g">${STAFF_AREE.map(z => `<div class="pfx-qa" style="--c:${PF_ARCOL[z.n - 1]}"><div class="pfx-qh">${z.n} · ${E(z.nome)}</div>${z.q.map((d, i) => `<button type="button" class="pfx-q${X.area === z.n && X.q === i ? ' on' : ''}" onclick="pfxArea(${z.n},${i})">${E(d)}</button>`).join('')}</div>`).join('')}</div>`;
+  else if(X.mode === 't') body += `<div class="pfx-g">${STAFF_AREE.map(tile).join('')}</div>`;
+  else { body += `<div class="pfx-ms" role="group" aria-label="Periodo dell’anno">${PF_MS.map(([n, m]) => `<button type="button" class="pfx-mo${X.m === m ? ' on' : ''}${m === (new Date()).getMonth() + 1 ? ' now' : ''}" onclick="pfxSet('m',${m})">${n}</button>`).join('')}</div><div class="pfx-hint">Le aree di cui di solito si parla in questo periodo (indicativo: puoi scegliere qualsiasi area in ogni momento).</div><div class="pfx-g">${STAFF_AREE.filter(z => pfInM(z.n, X.m)).map(tile).join('')}</div>`; }
+  if(!(X.sur && ATT_SCHEDE[X.sur]) && X.area){ const Z = STAFF_AREE.find(z => z.n === X.area); const names = pool.filter(n => mfArea(n) === X.area && ok(n));
+    body += `<div class="pfx-res" style="--c:${PF_ARCOL[X.area - 1]}"><div class="pfx-rh"><b>${Z.n} · ${E(Z.nome)}</b>${X.q >= 0 && Z.q[X.q] ? `<span>«${E(Z.q[X.q])}»</span>` : ''}</div><div class="pfx-int" role="group" aria-label="Intensità">${[['', 'Tutte'], ['leggera', 'Leggere'], ['media', 'Medie'], ['profonda', 'Profonde']].map(([k, t]) => `<button type="button" class="pfx-i${X.int === k ? ' on' : ''}" onclick="pfxSet('int','${k}')">${t}</button>`).join('')}</div><div class="mf-list" style="max-height:none">${names.map(card).join('') || '<div class="sh-hint">Nessuna attività con questa intensità: prova con un’altra.</div>'}</div></div>`; }
+  const recs = (rec && rec.size) ? `<div class="pfx-rec">Dall’osservazione: ${SITUAZIONI_STAFF.filter(z => rec.has(z.id)).map(z => `<b>${E(z.label)}</b>`).join(', ')}. Parti da lì, se ti ritrovi.</div>` : '';
+  const cgb = cg ? `<details class="u-fold" style="margin-top:10px"><summary>Di solito in questo periodo — Capo Gruppo<span class="u-sub">indicativo, dal manuale</span></summary><div class="u-fold-in"><div class="sh-hint"><b>Autunno</b>: verifica dei campi estivi in Consiglio di Gruppo · verifica delle programmazioni delle Unità e del Piano di Gruppo · analisi della situazione · attività per i passaggi · bisogni delle Unità e liste d’attesa · riunione con i genitori dei nuovi ragazzi · Interbranca e Assemblea di Sezione · Piano di Gruppo e calendario dei Consigli di Gruppo · sostegno e raccolta delle programmazioni delle Unità · incontro tra CG e CU.</div><div class="sh-hint"><b>Inverno</b>: accoglienza dei nuovi senior · formazione interna dello staff di Gruppo · primo step di verifica del Piano di Gruppo, delle programmazioni di Unità e dei contratti.</div><div class="sh-hint">Fonte: «Lo sciroppo del Capo Gruppo», pp. 14-15. Primavera ed estate ancora da completare.</div></div></details>` : '';
+  return `<section class="sh-card2 wide pfx"><h3>Cosa serve oggi ${cg ? 'ai Capi Unità' : 'al tuo staff'}?</h3><p class="sh-hint" style="margin:0">Non partire dal foglio bianco: scegli da dove cominciare. ${pool.length} attività da scegliere, e puoi sempre scriverne una tua.</p>
+    <div class="pfx-ms2" role="group" aria-label="Da dove parti">${mode('q', 'Parto da un problema')}${mode('t', 'Parto da un tema')}${mode('m', 'Parto dal periodo')}<button type="button" class="pfx-m sur" onclick="pfSur()">Sorprendimi</button></div>
+    <div class="pfx-cov"><span>Aree toccate dal tuo percorso: <b>${cov.size} su 13</b></span><span class="pfx-dd">${dots}</span></div>${warn ? `<div class="cal-warn" role="status">${E(warn)}</div>` : ''}${recs}
+    ${body}${cgb}</section>`;
+}
+window.pfxSet = function(k, v){ const X = pfX(); X[k] = v; if(k === 'mode'){ X.sur = ''; X.area = 0; X.q = -1; } if(k === 'm'){ X.sur = ''; X.area = 0; } pfRe(); };
+window.pfxArea = function(n, q){ const X = pfX(); X.sur = ''; X.area = n; X.q = q == null ? -1 : q; pfRe(); setTimeout(() => { const e = document.querySelector('.pfx-res'); if(e) e.scrollIntoView({behavior:'smooth', block:'start'}); }, 40); };
+window.pfSur = function(){ const X = pfX(); const used = new Set(pfList().map(z => z.nome)); const m = (new Date()).getMonth() + 1; let P = pfPool().filter(n => !used.has(n) && (!X.int || ATT_SCHEDE[n].int === X.int)); const T = P.filter(n => pfInM(mfArea(n), m)); if(T.length) P = T; if(!P.length){ showToast('Le hai già usate tutte'); return; } X.sur = P[Math.floor(Math.random() * P.length)]; X.area = mfArea(X.sur); pfRe(); };
+window.pfAddS = function(i){ if(window.BRO) return; const n = (window._pfL || [])[i]; const a = ATT_SCHEDE[n]; if(!a) return; const Z = STAFF_AREE.find(z => z.n === mfArea(n)); const P = a.passi || [];
+  pfList().push({id:'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nome:n, cat:a.cat || '', sit:Z ? Z.n + ' · ' + Z.nome : '', desc:a.desc || a.scopo || '', obiettivo:'', lancio:P[0] || '', sviluppo:P.slice(1, -1).join('\n'), conclusione:P.length > 1 ? P[P.length - 1] : '', ev:'', verifica:''}); try{ SH._pfx.sur = ''; }catch(e){} saveData(true); pfRe(); showToast('Aggiunta in fondo al percorso: spostala dove serve'); };
 function pfHTML(){
   const cg = pfCG(), can = !window.BRO, L = pfList(); const ev = pfEvents();
   let rec = new Set(); try{ rec = new Set(getSituazioniAttive().map(x => x.id)); }catch(e){}
@@ -18933,18 +18966,19 @@ function pfHTML(){
   const card = (x, i) => {
     const e = ev.find(u => u.id === x.ev); const when = e ? calDateTxt(e) : '';
     return `<section class="sh-card2 wide pf-c" data-id="${x.id}"><header class="pf-h"><span class="pf-n">${i + 1}</span><input class="sh-in pf-t" aria-label="Titolo dell’attività" value="${esc(x.nome)}" ${can ? '' : 'readonly'} oninput="pfSet('${x.id}','nome',this.value)">
-      <span class="pf-tags">${x.cat && PF_CAT[x.cat] ? `<span class="st-pill">${esc(PF_CAT[x.cat])}</span>` : ''}${x.sit ? `<span class="st-pill st-q">${esc(x.sit)}</span>` : '<span class="st-pill st-q">attività mia</span>'}</span>
+      <span class="pf-tags">${x.cat && PF_CAT[x.cat] ? `<span class="st-pill">${esc(PF_CAT[x.cat])}</span>` : ''}${ATT_SCHEDE[x.nome] ? mfPill(ATT_SCHEDE[x.nome]) : ''}${x.sit ? `<span class="st-pill st-q">${esc(x.sit)}</span>` : '<span class="st-pill st-q">attività mia</span>'}</span>
       ${can ? `<span class="pf-a"><button type="button" class="btn-ghost" aria-label="Sposta su" onclick="pfMove('${x.id}',-1)">↑</button><button type="button" class="btn-ghost" aria-label="Sposta giù" onclick="pfMove('${x.id}',1)">↓</button><button type="button" class="btn-ghost" onclick="pfDel('${x.id}')">Togli</button></span>` : ''}</header>
       ${x.desc ? `<p class="sh-hint" style="margin:0">${esc(x.desc)}${ATT_SCHEDE[x.nome] ? ` <button type="button" class="att-how" data-n="${esc(x.nome)}" onclick="attSchedaOpen(this.dataset.n)">Come si fa →</button>` : ''}</p>` : ''}
       ${ta(x.id, 'obiettivo', x.obiettivo, cg ? 'Che cosa vuoi far crescere nei Capi Unità' : 'Che cosa vuoi far crescere nello staff', 'Una frase: dopo questa attività, che cosa dovrebbe essere diverso?')}
       <div class="pf-lsc">${ta(x.id, 'lancio', x.lancio, 'Lancio')}${ta(x.id, 'sviluppo', x.sviluppo, 'Sviluppo')}${ta(x.id, 'conclusione', x.conclusione, 'Conclusione')}</div>
       <div class="pf-ev"><label class="sh-lb" for="pf-ev-${x.id}">Dove la fai</label><select id="pf-ev-${x.id}" class="sh-in" ${can ? '' : 'disabled'} onchange="pfSet('${x.id}','ev',this.value,true)"><option value="">scegli un evento…</option>${ev.map(u => `<option value="${u.id}"${x.ev === u.id ? ' selected' : ''}>${esc(uscTit(u) + ' · ' + calDateTxt(u))}</option>`).join('')}</select>${can ? `<button type="button" class="btn-ghost" onclick="pfNewEv()">+ Nuovo evento</button>` : ''}${when ? `<span class="sh-hint">${esc(when)}</span>` : ''}</div>
       ${ta(x.id, 'verifica', x.verifica, 'Dopo averla fatta: cosa è andato bene, cosa cambieresti', '')}</section>`; };
-  const pan = sits.map(sx => `<details class="st-fold"><summary>${esc(sx.label)}${rec.has(sx.id) ? '<span class="st-pill">consigliata</span>' : ''}</summary><div class="st-foldb">${sx.attivita.map(y => { const on = used.has(y.nome); return `<div class="pf-pa"><div><b>${esc(y.nome)}</b> <span class="st-pill">${esc(PF_CAT[y.cat] || '')}</span><div class="sh-hint">${esc(y.desc || '')}${y.durata ? ' · ' + esc(y.durata) : ''}</div></div>${can ? `<button type="button" class="btn-ghost" ${on ? 'disabled' : ''} onclick="pfAdd('${sx.id}','${esc(y.nome).replace(/'/g, '&#39;')}')">${on ? 'Già nel percorso' : 'Aggiungi'}</button>` : ''}</div>`; }).join('')}</div></details>`).join('');
-  return `<div class="sh-dh"><div><h1>${cg ? 'Percorso formativo dei Capi Unità' : 'Percorso formativo dello staff'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${cg ? 'Come formare gli adulti del Gruppo nel corso dell’anno: scegli le attività dal paniere o scrivine di tue, mettile in ordine di priorità e collocale negli eventi per gli adulti.' : 'Come far crescere lo staff nel corso dell’anno: scegli le attività dal paniere (quelle «consigliate» partono dai percorsi meno presenti nello staff) o scrivine di tue, mettile in ordine di priorità e collocale negli eventi dello staff.'} Le attività più in alto sono le più importanti.</p></div></div>
-    <div class="anv-act">${can ? `<button type="button" class="sh-btn" onclick="pfOwn()">+ Una mia attività nuova</button>` : ''}<button type="button" class="btn-ghost" onclick="pfDocx()">Scarica il Word del percorso formativo</button></div>
-    ${L.length ? L.map(card).join('') : `<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">Il percorso è ancora vuoto: aggiungi un’attività dal paniere qui sotto, oppure scrivine una tua.</p></section>`}
-    <section class="sh-card2 wide"><h3>Il paniere di attività formative</h3><p class="sh-hint" style="margin:0 0 6px">Divise per area. «Verifica» e «Autovalutazione» si fanno di persona: nella scheda trovi gli spunti per condurle. <button type="button" class="att-how" onclick="facGuideOpen()">Guida per chi conduce →</button></p>${pan}</section>`;
+  const pan = pfExplorer(L, can, cg, rec, used);
+  return `<div class="sh-dh"><div><h1>${cg ? 'La palestra dei Capi Unità' : 'La palestra dello staff'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${cg ? 'Come formare gli adulti del Gruppo nel corso dell’anno: scegli le attività dal paniere o scrivine di tue, mettile in ordine di priorità e collocale negli eventi per gli adulti.' : 'Come far crescere lo staff nel corso dell’anno: scegli le attività dal paniere (quelle «consigliate» partono dai percorsi meno presenti nello staff) o scrivine di tue, mettile in ordine di priorità e collocale negli eventi dello staff.'} Le attività più in alto sono le più importanti.</p></div></div>
+    <div class="anv-act">${can ? `<button type="button" class="sh-btn" onclick="pfOwn()">+ Una mia attività nuova</button>` : ''}<button type="button" class="btn-ghost" onclick="stfHelpOpen()">Aiuti per chi conduce</button><button type="button" class="btn-ghost" onclick="pfDocx()">Scarica il Word del percorso formativo</button></div>
+    ${pan}
+    ${L.length ? L.map(card).join('') : `<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">Il percorso è ancora vuoto: aggiungi un’attività da quelle qui sopra, oppure scrivine una tua.</p></section>`}
+    `;
 }
 function pfRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'pf' && p.classList.contains('active')) p.innerHTML = pfHTML(); }
 window.shPF = function(){ ownOff(); ensurePanels(); SH.ppv = 'pf'; $('panel-pp').innerHTML = pfHTML(); own('panel-pp'); };
@@ -19184,6 +19218,10 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .vis-leg{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#55554f;border-top:1px solid #eef1ec;padding-top:10px}
 .att-mv select{width:100%;max-width:100%;min-height:42px}.att-mv .dup-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.att-mv .sh-hint{margin:10px 0 0}
 .stp-e{padding:12px 14px;border-left:6px solid var(--c)}.stp-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.stp-h small{color:#55554f}.stp-a{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px dashed #e0e4dd}.stp-a small{color:#55554f;font-size:12px}.stp-n{font-size:13px;color:#55554f;padding:6px 0}.stp-b{display:flex;gap:8px;margin-top:8px}.stp-l{display:flex;flex-direction:column;gap:10px;margin-top:12px}.stp-p{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.stp-p .mf-q{width:auto}
+.pfx-ms2{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.pfx-m{border:1.5px solid #534AB7;background:#fff;color:#3C3489;border-radius:999px;padding:8px 16px;font:700 13px 'Montserrat',sans-serif;cursor:pointer}.pfx-m.on{background:#534AB7;color:#fff}.pfx-m.sur{border-style:dashed;background:#EEEDFE}.pfx-cov{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;margin:4px 0 8px}.pfx-dd{display:inline-flex;gap:4px;flex-wrap:wrap}.pfx-d{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--c);color:var(--c);display:inline-flex;align-items:center;justify-content:center;font:700 11px 'Montserrat',sans-serif;background:#fff}.pfx-d.on{background:var(--c);color:#fff}
+.pfx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:8px}.pfx-qa,.pfx-t{border:1px solid #D8D8D0;border-left:6px solid var(--c);border-radius:12px;padding:10px 12px;background:#fff;text-align:left;font:inherit}.pfx-t{cursor:pointer;display:flex;flex-direction:column;gap:2px}.pfx-t:hover,.pfx-q:hover{background:#f4f1fa}.pfx-t small,.pfx-t span{font-size:12px;color:#55554f}.pfx-qh{font-weight:700;font-size:13px;margin-bottom:4px;color:var(--c)}.pfx-q{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px dashed #e0e4dd;padding:6px 2px;font:inherit;font-size:13px;cursor:pointer}.pfx-q.on{font-weight:700}
+.pfx-ms{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.pfx-mo{border:1px solid #AFA9EC;background:#fff;border-radius:10px;padding:8px 12px;font:700 12px 'Montserrat',sans-serif;text-transform:uppercase;cursor:pointer}.pfx-mo.on{background:#534AB7;color:#fff;border-color:#534AB7}.pfx-mo.now{box-shadow:0 0 0 2px #c62828}.pfx-hint{font-size:12px;color:#55554f;margin:6px 0}
+.pfx-res{margin-top:12px;border-top:3px solid var(--c);padding-top:8px}.pfx-rh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.pfx-rh span{font-size:13px;color:#55554f}.pfx-int{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.pfx-i{border:1px solid #AFA9EC;background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer}.pfx-i.on{background:#534AB7;color:#fff}.pfx-sur{margin-top:10px;padding:10px;border:2px dashed #AFA9EC;border-radius:14px;background:#faf9ff}.pfx-sl{font:800 11px 'Montserrat',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#534AB7;margin-bottom:6px}.pfx-rec{font-size:13px;background:#FFF4E0;border-left:4px solid #E0A400;padding:6px 10px;margin:6px 0}
 .mf-ar{display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;margin:8px 0}.mf-a{border:1px solid #D8D8D0;border-radius:12px;padding:8px 10px}.mf-ah{display:flex;flex-direction:column;align-items:flex-start;background:none;border:0;padding:2px 0;cursor:pointer;text-align:left;font:inherit}.mf-ah small{color:#55554f;font-size:12px}.mf-q{display:flex;gap:8px;align-items:center;justify-content:space-between;width:100%;text-align:left;background:#fff;border:1px solid #D8D8D0;border-radius:8px;padding:6px 10px;margin:4px 0 0;font:inherit;font-size:13px;cursor:pointer}.mf-q:hover,.mf-ah:hover{background:#f4f1fa}
 .mf-list{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;margin:8px 0}.mf-c{border:1px solid #D8D8D0;border-radius:12px;padding:10px 12px}.mf-ct{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mf-d{font-size:12px;color:#55554f}.mf-cd{font-size:13px;color:#33332f;margin:4px 0}.mf-cb{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .mf-p{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px}.mf-p.leggera{background:#EEEDFE;color:#3C3489;border:1px solid #AFA9EC}.mf-p.media{background:#AFA9EC;color:#26215C}.mf-p.profonda{background:#534AB7;color:#fff}
