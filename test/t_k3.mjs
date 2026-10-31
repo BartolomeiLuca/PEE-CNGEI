@@ -55,7 +55,7 @@ await ev(() => shOpen('c1', 0)).catch(() => {}); await sleep(2500);
 await ev(() => { document.querySelectorAll('#g-modal .ppb-c').forEach(c => { c.checked = true; }); if(document.querySelector('#g-modal.show .ppb-ask')) _ppbGo(); }); await sleep(2500);
 await ev(() => attMoveAsk(0, 0)); await sleep(1500);
 const md = await ev(() => ({c:[...document.querySelectorAll('#amv-c option')].map(o => o.textContent), p:[...document.querySelectorAll('#amv-p optgroup')].map(g => g.label)}));
-ok(md.c.length === 2 && /Questo ciclo/.test(md.c[0]) && /II trimestre/.test(md.c[1]), 'il modale propone questo ciclo e gli altri cicli dell’anno (' + md.c.join(' | ') + ')');
+ok(md.c.length === 3 && /ciclo nuovo/i.test(md.c[2]) && /Questo ciclo/.test(md.c[0]) && /II trimestre/.test(md.c[1]), 'il modale propone questo ciclo, gli altri cicli e «un ciclo nuovo» (' + md.c.join(' | ') + ')');
 ok(md.p.some(l => /Percorsi di questo ciclo/.test(l)) && md.p.some(l => /Aggiungi un altro percorso PEE · Spirituale/.test(l)), 'percorsi del ciclo e «Aggiungi un altro percorso PEE» per ambito');
 await ev(() => { document.getElementById('amv-c').value = document.querySelectorAll('#amv-c option')[1].value; amvFill(); }); await sleep(300);
 const md2 = await ev(() => [...document.querySelectorAll('#amv-p optgroup')].map(g => g.label + ':' + g.querySelectorAll('option').length).join(' | '));
