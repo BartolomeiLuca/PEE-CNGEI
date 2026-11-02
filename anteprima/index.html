@@ -8064,7 +8064,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611021010'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611021140'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9141,13 +9141,14 @@ const USC_SCHEMI={tipo:[['sveglia','Sveglia e ginnastica',30],['pasto','Colazion
 function uscOn(){ return MODE==='giovani'||MODE==='staff'; }
 function uscSt(){ if(MODE==='staff') return true; try{ const u=(typeof USC_CUR!=='undefined'&&USC_CUR)?uscGet(USC_CUR):null; return !!(u&&u.dest==='staff'); }catch(e){ return false; } }
 function uscCan(){ return !window.BRO; }
-function uscFull(){ try{ return typeof CL==='undefined'||!CL.ctx||!CL.ctx.ruolo||CL.ctx.ruolo==='cotitolare'; }catch(e){ return true; } }
-function uscRes(u){ return !!(uscSt()&&u&&u.riservata&&!uscFull()); }
+function uscFull(){ try{ if(window.BRO) return false; return typeof CL==='undefined'||!CL.ctx||!CL.ctx.ruolo||CL.ctx.ruolo==='cotitolare'; }catch(e){ return true; } }
+// uscite dello staff: chi non è titolare né co-titolare (collaboratore, lettore) vede solo i momenti che gli sono affidati, salvo che il titolare le «apra» (u.aperta). Nasconde l'interfaccia: il dato resta nel progetto condiviso
+function uscRes(u){ return !!(u&&(u.dest==='staff'||MODE==='staff')&&!u.aperta&&!uscFull()); }
 function uscHideBlk(u,m){ return uscRes(u)&&!(m&&m.aff&&affIsMe(m.aff)); }
-function uscSetRis(on){ const u=uscCur(); if(!u||!uscCan()||!uscFull()) return; u.riservata=!!on; uscSave(); uscRe(); }
+function uscSetRis(on){ const u=uscCur(); if(!u||!uscCan()||!uscFull()) return; u.aperta=!on; u.riservata=!!on; uscSave(); uscRe(); }
 function uscNewId(p){ return (p||'u')+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function uscMap(){ if(!scheda.uscite||typeof scheda.uscite!=='object'||Array.isArray(scheda.uscite)) scheda.uscite={}; return scheda.uscite; }
-function uscList(){ return uscListAll().filter(u=>!uscRes(u)||Object.values(u.prog||{}).some(m=>m&&!m.del&&m.aff&&affIsMe(m.aff))); }
+function uscList(){ return uscListAll(); }
 function uscListAll(){ const U=(typeof scheda!=='undefined'&&scheda&&scheda.uscite)||{}; if(typeof U!=='object'||Array.isArray(U)) return [];
   return Object.keys(U).map(k=>U[k]).filter(u=>u&&typeof u==='object'&&!u.del&&u.id).sort((a,b)=>String((a.ax||{}).data||'9')>String((b.ax||{}).data||'9')?1:String((a.ax||{}).data||'9')<String((b.ax||{}).data||'9')?-1:(a.cr||0)-(b.cr||0)); }
 function uscCount(){ return uscOn()?uscList().length:0; }
@@ -9728,7 +9729,7 @@ function uscOneHTML(u){ const j=uscJ(u.id), x=u.ax, N=axN(x), can=uscCan(); cons
     <input class="usc-title" value="${uscE(u.testo)}" placeholder="Titolo dell’uscita" maxlength="90" ${can?'':'readonly'} oninput="uscSetTitle(this.value)" aria-label="Titolo dell’uscita">
     <div class="usc-sub" id="usc-sub">${uscE([d||'Date da scegliere in «Persone e date»',dove,n>1?n+' giornate, '+(n-1)+(n-1===1?' notte':' notti'):''].filter(Boolean).join(' · '))}</div></div>
     <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Formato" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}${can||uscTipoLab(u)?uscTipoSel(u,can):''}${can?`<button type="button" class="btn-ghost usc-btn" onclick="uscCicloAsk('${u.id}')" title="Sposta questo evento in un altro ciclo">Ciclo: ${uscE(((scheda.ciclo||{}).nome||'questo ciclo'))} ▾</button>`:''}</div></div>
-    <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.riservata?'checked':''} onchange="uscSetRis(this.checked)"> Uscita riservata <span class="ax-opt">chi collabora vede solo il proprio momento</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita riservata: vedi solo i momenti che conduci tu.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
+    <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
   const tb=(id,t,s,cls)=>`<button type="button" role="tab"${typeof id==='string'&&uscMCol(id.replace(/^m:/,''))&&/^(m:|pasti)/.test(id)?` style="--mc:${uscMCol(id.replace(/^m:/,''))}"`:''} class="usc-tab ${cls||''}${USC_TAB===id?' on':''}" aria-selected="${USC_TAB===id}" id="usc-tab-${typeof id==='string'?id.replace(':','-'):id}" onclick="uscTab(${typeof id==='string'?`'${id}'`:id})">${uscE(t)}${s?`<small>${uscE(s)}</small>`:''}</button>`;
   const mods=uscModList(u).map(([k,l])=>tb(k==='pasti'?'pasti':'m:'+k,l,'',' mod'+(k!=='pasti'&&uscModFilled(u,k)?' done':''))).join('')+uscOwn(u).map(({k,o})=>tb('o:'+k,o.t||'Modulo','',' mod own')).join('');
   h+=`<div class="usc-nav"><div class="usc-navr"><div class="usc-tabs usc-tabs1" id="usc-tabs" role="tablist" aria-label="Campo e moduli">${tb('campo','Campo','visione d’insieme','gen')}${mods}${can?`<button type="button" class="usc-tab mod add" onclick="USC_ADDMOD=!USC_ADDMOD;uscRe()" aria-expanded="${USC_ADDMOD}">+ Aggiungi un modulo</button>`:''}</div>
@@ -14928,7 +14929,7 @@ function ptSeen(x){ return ptSeenSet().includes(ptKey(x)); }
 function ptMarkSeen(id,idx,j){ try{ const S=ptSeenSet(); (CL.perte||[]).filter(x=>(x.k==='att'||x.k==='mat')&&x.id===id&&(idx==null||(x.idx===idx&&x.j===j))).forEach(x=>{ const k=ptKey(x); if(!S.includes(k)) S.push(k); x.hot=ptSoon(x.d); });
   localStorage.setItem('bussola_pt_visti_'+((CL.user&&CL.user.email)||''), JSON.stringify(S.slice(-300))); clSetStatus(CL.status); }catch(e){} }
 function ptSoon(d){ if(!d) return false; const t=new Date(String(d).slice(0,10)+'T12:00:00'); if(isNaN(t)) return false; const g=(t-Date.now())/864e5; return g>=-1 && g<=7; }
-function ptHot(){ return (CL.perte||[]).filter(x=>x.hot!==false).length; }
+function ptHot(){ try{ return ptHotN(CL.perte||[]); }catch(e){ return (CL.perte||[]).filter(x=>x.hot!==false).length; } }
 // materiali da procurare affidati a me (attività non ancora verificate)
 function ptMatMine(list, people){ const out=[]; (list||[]).forEach((per,idx)=>(per.attivita||[]).forEach((a,j)=>{ if(!a||!a.ax||['vBene','vMigl'].some(k=>(a[k]||'').trim())) return;
   const cose=(a.ax.mat||[]).filter(r=>r&&r.chi&&!r.pronto&&(r.cosa||'').trim()&&affIsMe(r.chi,people)).map(r=>r.cosa.trim()); if(cose.length) out.push({idx,j,d:(a.ax||{}).data||'',t:(a.testo||'').trim(),cose}); })); return out; }
@@ -14939,7 +14940,7 @@ function ptAckKey(x){ return [x.k,x.id,x.mid,x.idx,x.j,x.av,x.u,x.g,x.k==='usc'?
 function ptAckGet(){ try{ return JSON.parse(localStorage.getItem('bussola_pt_ok_'+((CL.user&&CL.user.email)||''))||'{}')||{}; }catch(e){ return {}; } }
 // «Ho capito»: l'avviso resta nell'elenco ma non conta più fra le novità
 function ptAckPt(n){ const x=(CL.perte||[])[n]; if(!x) return; try{ const S=ptAckGet(); S[ptAckKey(x)]=Date.now(); const ks=Object.keys(S); if(ks.length>400) ks.sort((a,b)=>S[a]-S[b]).slice(0,ks.length-400).forEach(k=>delete S[k]); localStorage.setItem('bussola_pt_ok_'+((CL.user&&CL.user.email)||''), JSON.stringify(S)); }catch(e){}
-  x.ack=true; x.hot=false; if(x.k==='av'&&x.cur&&!x.ro) ptAvRead(x.av); clSetStatus(CL.status); const pt=$cl('cl-perte'); if(pt) pt.innerHTML=clPerTeHTML(); }
+  x.ack=true; x.hot=false; if(x.k==='av'&&x.cur&&!x.ro) ptAvRead(x.av); clSetStatus(CL.status); const pt=$cl('cl-perte'); if(pt) pt.innerHTML=clPerTeHTML(); try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){} }
 function ptAckWrap(h,x,n){ if(x.ack||x.letto) h=h.replace('class="cl-row"','class="cl-row" style="opacity:.72"'); if(x.hot===false) return h; const b=`<button type="button" class="cl-btn ghost sm" onclick="ptAckPt(${n})">Ho capito</button>`;
   let st=h.lastIndexOf('<div style="display:flex;gap:6px;flex-shrink:0">'); if(st<0) st=h.lastIndexOf('<button class="cl-btn'); if(st<0||!h.endsWith('</div>')) return h; return h.slice(0,st)+'<div class="cl-act">'+h.slice(st,h.length-6)+b+'</div></div>'; }
 function ptCollect(items, info, list, people, d, canVer){
@@ -14978,6 +14979,7 @@ async function clPerTe(){
     { const sk = new Set(); for(let i = items.length - 1; i >= 0; i--){ const x = items[i]; const k = [x.k, x.id, x.mid, x.idx, x.j, x.av, x.u, x.g, x.k === 'usc' ? x.t : '', x.prima, x.email, (x.parti||x.cose||[]).join(',')].join('|'); if(sk.has(k)) items.splice(i, 1); else sk.add(k); } }
     CL.perte = items; clSetStatus(CL.status);
     try{ const pt = $cl('cl-perte'); if(pt && $cl('cl-ov').classList.contains('show')) pt.innerHTML = clPerTeHTML(); }catch(e){}
+    try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){}
   }finally{ _ptBusy = false; }
   return items;
 }
@@ -14991,6 +14993,21 @@ function ptAvGrp(A){ try{ const t=String(A&&A.dove||'').toLowerCase(); const m=A
 function ptAvRead(av){ try{ const a = (scheda.avvisi||[]).find(x => x.id === av); if(a && !a.letto){ a.letto = true; a.lettoAt = Date.now(); _clTouched = true; _clUserAt = Date.now(); saveData(true); } }catch(e){}
   (CL.perte||[]).forEach(x => { if(x.k === 'av' && x.av === av){ x.letto = true; x.hot = false; } }); clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); }
 function ptAvPending(){ try{ const av = sessionStorage.getItem('bussola_av_letto'); if(!av) return; sessionStorage.removeItem('bussola_av_letto'); if(!window.BRO) setTimeout(() => ptAvRead(av), 1500); }catch(e){} }
+// le voci «Nell'uscita … è affidato a te» di una stessa uscita diventano una sola riga; l'attività del percorso già elencata dentro un'uscita non si ripete
+function ptGroup(it){
+  const out = [], G = {};
+  it.forEach((x, n) => {
+    if(x.k === 'usc'){ const key = x.id + '|' + x.u; let g = G[key];
+      if(!g){ g = G[key] = {k:'uscg', id:x.id, u:x.u, ut:x.ut, cur:x.cur, anno:x.anno, titolo:x.titolo, owner:x.owner, g:x.g, righe:[], ns:[], hot:false, ack:true, ruolo:x.ruolo}; out.push({x:g, n:-1}); }
+      g.righe.push({t:String(x.t || '').trim(), gt:x.gt, ora:x.ora}); g.ns.push(n); if(x.hot !== false) g.hot = true; if(!x.ack) g.ack = false; }
+    else out.push({x, n}); });
+  return out.filter(o => { const x = o.x; if(x.k !== 'att' || x.parti) return true;
+    const q = out.find(q => q.x.k === 'uscg' && q.x.id === x.id && q.x.righe.some(r => r.t && r.t === String(x.t || '').trim()));
+    if(q){ q.x.ns.push(o.n); if(x.hot !== false) q.x.hot = true; if(!x.ack) q.x.ack = false; return false; } return true; });
+}
+function ptHotN(it){ return ptGroup(it || CL.perte || []).filter(o => o.x.hot !== false).length; }
+function ptAckMany(ns){ (ns || []).forEach(n => { const x = (CL.perte || [])[n]; if(!x) return; try{ const S = ptAckGet(); S[ptAckKey(x)] = Date.now(); localStorage.setItem('bussola_pt_ok_' + ((CL.user && CL.user.email) || ''), JSON.stringify(S)); }catch(e){} x.ack = true; x.hot = false; });
+  clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){} }
 function clPerTeHTML(){
   const it = CL.perte || []; if(!it.length) return '';
   const row = x => {
@@ -15001,6 +15018,10 @@ function clPerTeHTML(){
     const go = x.cur ? `clPtGoAtt(${x.idx},${x.j},${x.k==='mat'?"['mat']":x.gk?JSON.stringify(x.gk).replace(/"/g,"'"):'null'})` : `clOpenShared('${x.id}')`;
     const tt = x.t ? '«'+clEsc(x.t.slice(0,60))+'»' : 'attività '+((x.j||0)+1);
     if(x.k === 'usc') return uscPtRow(x, pr);
+    if(x.k === 'uscg'){ const lst = x.righe.map(r => '«' + clEsc(r.t.slice(0, 50)) + '»').join(', ');
+      const ap = x.cur ? `clContinue(true);setTimeout(()=>uscOpen('${clEsc(x.u)}',${Number(x.g)||1}),300)` : `clOpenShared('${clEsc(x.id)}')`;
+      const ak = x.hot ? `<button type="button" class="cl-btn ghost sm" onclick="ptAckMany([${x.ns.join(',')}])">Ho capito</button>` : '';
+      return `<div class="cl-row"${x.hot ? '' : ' style="opacity:.72"'}><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» ${x.righe.length === 1 ? 'è affidato a te' : 'sono affidati a te'}: ${lst}</div><div class="s">${pr}</div></div><div class="cl-act"><button class="cl-btn sm" onclick="${ap}">Apri</button>${ak}</div></div>`; }
     if(x.k === 'mat') return `<div class="cl-row"><div style="min-width:0"><div class="t">Materiali da procurare, tocca a te: ${clEsc(x.cose.slice(0,4).join(', '))}${x.cose.length>4?'…':''}</div><div class="s">per ${tt} · ${pr}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${go}">Apri</button></div>`;
     if(x.k === 'av') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.tipo==='mv'?clEsc(x.da||'Una persona dello staff')+' ha dato il suo valore su '+clEsc(x.dove||'un percorso')+' · da riguardare':x.tipo==='mod'?clEsc(x.da||'Chi ha il progetto')+' ha modificato '+clEsc(x.dove||'una parte affidata a te'):'Suggerimento di '+clEsc(x.da||'chi ha il progetto')+' su '+clEsc(x.dove||'una parte affidata a te')}</div><div class="s">${x.testo?'«'+clEsc(String(x.testo).slice(0,140))+'» · ':''}${pr}</div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="cl-btn sm" onclick="ptAvGo('${x.id}','${x.av}',${x.cur?'true':'false'},${x.idx==null?'null':x.idx},${x.j==null?'null':x.j})">Apri</button></div></div>`;
     if(x.k === 'email') return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(x.nome||x.email)} ha cambiato email</div><div class="s">${clEsc(x.prima)} → ${clEsc(x.email)} · ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div></div><button class="cl-btn sm" onclick="clMailFix('${x.mid}')">Aggiorna nella tabella dello staff</button></div>`;
@@ -15008,8 +15029,8 @@ function clPerTeHTML(){
     const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;
     return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
   };
-  const hot=it.filter(x=>x.hot!==false).length;
-  return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${it.map((x,n)=>ptAckWrap(row(x),x,n)).join('')}${it.some(x=>x.k==='av'&&(x.letto||x.ack))?`<p class="cl-note" style="margin:6px 0 0">Gli avvisi su cui hai premuto «Ho capito» restano qui per ${PT_KEEP_DAYS} giorni, poi si archiviano.</p>`:''}${it.some(x=>x.hot===false&&!x.ack&&!x.letto)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
+  const hot=ptHotN(it);
+  return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${ptGroup(it).map(o=>o.x.k==='uscg'?row(o.x):ptAckWrap(row(o.x),o.x,o.n)).join('')}${it.some(x=>x.k==='av'&&(x.letto||x.ack))?`<p class="cl-note" style="margin:6px 0 0">Gli avvisi su cui hai premuto «Ho capito» restano qui per ${PT_KEEP_DAYS} giorni, poi si archiviano.</p>`:''}${it.some(x=>x.hot===false&&!x.ack&&!x.letto)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
 }
 function clPtGoAtt(idx, j, grp){
   clContinue(true);
@@ -16095,7 +16116,7 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 .pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
 .pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
 .pf-pa{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid #e4e8e2}
-.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
+.sh-pt{margin:10px 0 14px}.sh-pt>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b3360f;padding:6px 0}.sh-pt .cl-perte{margin-top:6px}.sh-exp{margin:22px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
 .sh-tag{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
 .sh-tag.L{background:#f7f19a}.sh-tag.E{background:#d7ecdf}.sh-tag.R{background:#f8c9c7}.sh-tag.X{background:#e3e8f2}
 .sh-role{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;border:1px solid #8a8a82;color:#3D3D38;background:#fff;white-space:nowrap}
@@ -16467,11 +16488,38 @@ async function shLoadTrash(){
   rows = rows.filter(r => !r.at || r.at >= lim); const b2 = $('sh-trash'); if(!b2) return;
   if(!rows.length){ b2.innerHTML = ''; return; }
   const fmt = ts => new Date(ts).toLocaleDateString('it-IT', {day:'numeric', month:'short', year:'numeric'});
-  b2.innerHTML = `<details class="sh-trash"><summary>Cestino · ${rows.length} ${rows.length === 1 ? 'elemento' : 'elementi'}</summary><p class="sh-hint">Progetti e cicli eliminati restano qui ${CL_TRASH_DAYS} giorni e si possono recuperare; poi vengono cancellati per sempre.</p>`
+  b2.innerHTML = `<details class="sh-trash"><summary>Cestino · ${rows.length} ${rows.length === 1 ? 'elemento' : 'elementi'}</summary><p class="sh-hint">Progetti e cicli eliminati restano qui ${CL_TRASH_DAYS} giorni e si possono recuperare; poi vengono cancellati per sempre.</p><div><button class="sh-btn sm" type="button" onclick="shTrashEmpty()">Svuota il cestino</button></div>`
     + rows.map(r => `<div class="sh-pr"><div style="min-width:0"><div class="t">${esc(r.anno)} · ${esc(r.titolo)}</div><div class="s">Eliminato il ${fmt(r.at)} · si cancella definitivamente il ${fmt(r.at + CL_TRASH_DAYS * 864e5)}</div></div><span></span><span></span><div class="sh-act"><button class="sh-btn sm" type="button" onclick="shTrashRestore('${r.id}')">Recupera</button><button class="sh-btn gh sm" type="button" onclick="shTrashKill('${r.id}')">Elimina ora</button></div></div>`).join('') + `</details>`;
 }
 window.shTrashRestore = async function(id){ try{ await dbRestoreTrash(id); clToast('Recuperato'); }catch(e){ clToast('Errore: ' + clErr(e)); return; } SH.rows = null; show('home'); };
 window.shTrashKill = async function(id){ if(!confirm('Eliminare per sempre? Non si potrà più recuperare.')) return; try{ await dbDelete(id); clToast('Eliminato per sempre'); }catch(e){ clToast('Errore: ' + clErr(e)); return; } shLoadTrash(); };
+// «Per te» nella pagina «I tuoi progetti»: inviti, parti affidate, materiali da procurare, suggerimenti. Aperta se c'è qualcosa di nuovo
+window.shPerTeRe = function(){
+  const b = $('sh-perte'); if(!b) return;
+  const it = CL.perte || []; if(!it.length){ b.innerHTML = ''; return; }
+  const hot = ptHotN(it); const was = b.querySelector('details');
+  const open = was ? was.open : hot > 0;
+  const inner = clPerTeHTML().replace(/<h4>[\s\S]*?<\/h4>/, '');
+  b.innerHTML = `<details class="sh-pt"${open ? ' open' : ''}><summary>Per te${hot ? ' · <b>' + (hot === 1 ? '1 novità' : hot + ' novità') + '</b>' : ''}</summary>${inner}</details>`;
+};
+// scarica tutti i tuoi progetti (non quelli nel cestino) in un file JSON
+function shExportBtn(){ const b = $('sh-export'); if(!b) return; b.innerHTML = `<div class="sh-exp"><button class="sh-btn sm" type="button" onclick="shExportJson()">Scarica i miei progetti (JSON)</button><span class="sh-hint">Una copia di tutti i tuoi progetti, quelli nel cestino esclusi.</span></div>`; }
+window.shExportJson = async function(){
+  try{
+    const rows = (SH.rows || []).filter(r => (r.meta || {}).mode !== 'anno'); if(!rows.length){ clToast('Non ci sono progetti da scaricare'); return; }
+    const out = []; for(const r of rows){ const g = await dbGet(r.id); if(g) out.push({id:g.id, anno:g.anno, titolo:g.titolo, meta:r.meta || {}, data:g.data || {}}); }
+    const blob = new Blob([JSON.stringify({app:'PEE CNGEI', esportato:new Date().toISOString(), progetti:out}, null, 1)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PEE_CNGEI_progetti_' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); clToast('Ho scaricato ' + out.length + (out.length === 1 ? ' progetto' : ' progetti'));
+  }catch(e){ clToast('Non sono riuscito a scaricare: ' + clErr(e)); }
+};
+window.shTrashEmpty = async function(){
+  let rows = []; try{ rows = (await dbTrashList()).filter(r => (r.meta || {}).mode !== 'anno'); }catch(e){ return; }
+  if(!rows.length) return;
+  if(!confirm('Svuotare il cestino? ' + rows.length + (rows.length === 1 ? ' elemento verrà cancellato' : ' elementi verranno cancellati') + ' per sempre e non si potranno recuperare.')) return;
+  let n = 0; for(const r of rows){ try{ await dbDelete(r.id); n++; }catch(e){} }
+  clToast(n + (n === 1 ? ' elemento cancellato' : ' elementi cancellati')); shLoadTrash();
+};
 async function homeHTML(){
   const r = $('sh-root');
   const draw = () => {
@@ -16479,7 +16527,7 @@ async function homeHTML(){
     const p = SH.prof || {};
     const RN = Object.fromEntries(RUOLI); const BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
     const riga = `<div class="sh-prof-line"><span>${esc([RN[p.ruolo] || '', p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
-    let h = top(true) + `<main class="sh-wrap">` + riga;
+    let h = top(true) + `<main class="sh-wrap">` + riga + `<div id="sh-perte"></div>`;
     if(!rows.length && !shr.length){
       if(noBranca(p.ruolo)){
         h += `<h1>Da dove vuoi cominciare?</h1><p class="sh-sub">Come ${esc(RUOLO_TXT[p.ruolo] || 'responsabile')} lavori con gli adulti del Gruppo: osservi, programmi la loro formazione e organizzi gli eventi per loro. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
@@ -16495,7 +16543,7 @@ async function homeHTML(){
       h += rows.length ? vesteListHTML(rows) : '<p class="sh-sub">Non hai ancora progetti tuoi.</p>';
       if(shr.length) h += `<h2>Condivisi con te</h2>` + shr.map(x => rowHTML(x, true)).join('');
     }
-    h += `<div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shLoadTrash(); }catch(e){}
+    h += `<div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shPerTeRe(); clPerTe(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
   };
   if(SH.rows) draw(); else r.innerHTML = top(true) + '<div class="sh-wrap"><p class="sh-sub" role="status">Carico i tuoi progetti…</p></div>';
   try{
@@ -18292,7 +18340,8 @@ window.bilDocx = async function(){
 const CAL_NEW = {sede:'Nuova riunione', giorno:'Nuova uscita', bivacco:'Nuovo bivacco', campo:'Nuovo campo'};
 const CAL_T = {sede:['Riunione', '#4a6b8a'], giorno:['Uscita', '#2f7d5b'], bivacco:['Bivacco', '#a0612b'], campo:['Campo', '#7a3f8f']};
 window._calOpen = window._calOpen || {};
-function calCan(){ try{ return !window.BRO && uscCan(); }catch(e){ return false; } }
+// creare, duplicare, eliminare e spostare eventi: titolare e co-titolari; chi collabora modifica solo le parti che gli sono affidate
+function calCan(){ try{ return !window.BRO && uscCan() && uscFull(); }catch(e){ return false; } }
 function calActs(){
   const out = []; let L = []; try{ L = getAllPercorsi(); }catch(e){}
   const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
