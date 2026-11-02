@@ -8064,7 +8064,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202610311752'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611021010'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -14555,6 +14555,8 @@ async function dbInvite(id, email, ruolo){
 }
 async function dbSetRole(mid, ruolo){ const {error} = await CL.sb.from('pee_membri').update({ruolo, visto_il:null}).eq('id', mid); if(error) throw error; }
 async function dbSeen(mid){ try{ await CL.sb.rpc('pee_segna_visto', {m:mid}); }catch(e){} }
+// l'invito risulta «visto» comunque si apra il progetto condiviso (elenco, «Continua qui», riapertura automatica)
+async function clMarkSeen(id, force){ try{ if(!CL.sb || !CL.user || !id) return; CL._seenSent = CL._seenSent || {}; if(CL._seenSent[id] && !force) return; const it = (await dbShared()).find(x => x.id === id); if(!it) return; CL._seenSent[id] = 1; if(it.nuovo) await dbSeen(it.mid); }catch(e){} }
 async function dbRevoke(mid){ const {error} = await CL.sb.from('pee_membri').delete().eq('id', mid); if(error) throw error; }
 async function dbShared(){
   const roles = await clRolesOk();
@@ -14750,6 +14752,7 @@ function clViewSave(){
     v.focus = {i: [...app.querySelectorAll('input,textarea,select')].indexOf(f), tag: f.tagName, key: clFieldKey(f)};
     try{ v.focus.s = f.selectionStart; v.focus.e = f.selectionEnd; }catch(e){}
   }
+  try{ if(window.shViewSave) v.sh = shViewSave(); }catch(e){}   // pagina del guscio (Calendario, Visione d'insieme…): senza questo, dopo una modifica altrui si finiva sulla prima pagina delle sezioni
   return v;
 }
 function clViewRestore(v){
@@ -14796,7 +14799,9 @@ function clApplyInPlace(d){
     // ciò che riguarda solo questo schermo resta com'era (membro dello staff aperto, vista)
     if(v.member !== undefined) CURRENT_MEMBER = v.member;
     if(MODE === 'staff'){ try{ if(v.sview && typeof STAFF_VIEW !== 'undefined') STAFF_VIEW = v.sview; if(STAFF_MEMBERS.length) renderStaffPhase1(); }catch(e){} }
-    if(MODE === 'giovani' && v.k) gGo(v.k);
+    let shDone = false; try{ shDone = !!(v.sh && window.shViewGo && shViewGo(v.sh)); }catch(e){}
+    if(shDone){ /* la pagina del guscio è già tornata com'era */ }
+    else if(MODE === 'giovani' && v.k) gGo(v.k);
     else if(v.n && v.n > 1){ if(v.step) schedaStep = v.step; goPhaseInternal(v.n); }
     clViewRestore(v);
     _clLast = clSnapshot(); _clUserAt = 0;
@@ -14889,6 +14894,7 @@ async function clPollRemote(){
 }
 let _rt = null;
 function clRealtime(){
+  try{ if(CL.ctx && (CL.ctx.ruolo || window.BRO)) clMarkSeen(CL.ctx.id); }catch(e){}
   try{
     if(!CL.sb || !CL.user || typeof CL.sb.channel !== 'function') return;
     if(_rt){ try{ CL.sb.removeChannel(_rt); }catch(e){} _rt = null; }
@@ -16507,6 +16513,7 @@ window.shGoHome = function(){
 window.shOpen = function(id, shared){
   if(window.BRO && !(CL.ctx && CL.ctx.id === id)){ try{ sessionStorage.removeItem('bussola_ro'); }catch(e){} }
   if(CL.ctx && CL.ctx.id === id){
+    if(shared) clMarkSeen(id, true);
     const mainOn = $('main-app') && $('main-app').style.display !== 'none';
     show(null);
     if(!mainOn){ try{ clContinue(true); }catch(e){} }
@@ -17147,6 +17154,9 @@ function active(){
   if(isPP() && sec){ const m = {s1:'pp1', s2:'pp2', s3:'pp3', s4:'pp4', s5:'pp5', chk:'ppc'}[sec]; if(m){ SH.ppv = m.slice(2); return m; } }
   return sec;
 }
+// pagina del guscio in cui si sta lavorando: si salva prima di aggiornare il progetto con le modifiche altrui e si rimette dopo
+window.shViewSave = function(){ try{ const id = active(); const it = navItems().find(i => i.id === id); return (it && it.go) ? {id:id, go:it.go} : null; }catch(e){ return null; } };
+window.shViewGo = function(v){ try{ if(!v || !v.go) return false; (new Function(v.go))(); return true; }catch(e){ return false; } };
 window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
 function gFootFix(){
   try{
