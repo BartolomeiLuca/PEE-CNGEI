@@ -3255,7 +3255,15 @@ function grRows(pid){
   const key = r => grIso(r.data) || '9999';
   return out.map((r, i) => [r, i]).sort((x, y) => key(x[0]) < key(y[0]) ? -1 : key(x[0]) > key(y[0]) ? 1 : x[1] - y[1]).map(x => x[0]);
 }
-function grSet(pid, k, f, v){ if(!scheda.griglia) scheda.griglia = {}; if(!scheda.griglia[pid]) scheda.griglia[pid] = {}; if(!scheda.griglia[pid][k]) scheda.griglia[pid][k] = {}; scheda.griglia[pid][k][f] = v; saveDataDebounced(); }
+// testi per persona: chi ha il progetto scrive nel testo principale; cotitolari e collaboratori in uno spazio proprio (g[k].by[email])
+function grMineKey(){ try{ if(window.BRO||typeof CL==='undefined'||!CL.user||!CL.ctx||!CL.ctx.ruolo) return ''; return String(CL.user.email||'').trim().toLowerCase(); }catch(e){ return ''; } }
+function grMine(d, create){ const em=grMineKey(); if(!em) return d; if(create){ if(!d.by) d.by={}; if(!d.by[em]) d.by[em]={nome:(typeof clMyName==='function'?clMyName():'')||em}; return d.by[em]; } return (d.by&&d.by[em])||{}; }
+function grOthers(d, f){ const em=grMineKey(); const out=[]; if(em && String(d[f]||'').trim()) out.push({nome:'Titolare del progetto', t:String(d[f]).trim()});
+  Object.keys(d.by||{}).forEach(e=>{ if(e===em) return; const t=String((d.by[e]||{})[f]||'').trim(); if(t) out.push({nome:(d.by[e].nome||e), t}); }); return out; }
+// testo complessivo di un campo: quello principale + quelli di ciascuno, con il nome
+function grEff(d, f){ d=d||{}; const parts=[]; const m=String(d[f]||'').trim(); if(m) parts.push(m);
+  Object.keys(d.by||{}).forEach(e=>{ const t=String((d.by[e]||{})[f]||'').trim(); if(t) parts.push(t+' ('+(d.by[e].nome||e)+')'); }); return parts.join('\n'); }
+function grSet(pid, k, f, v){ if(!scheda.griglia) scheda.griglia = {}; if(!scheda.griglia[pid]) scheda.griglia[pid] = {}; if(!scheda.griglia[pid][k]) scheda.griglia[pid][k] = {}; const d=scheda.griglia[pid][k]; const pf=['pos','mig','note'].includes(f); (pf?grMine(d,true):d)[f] = v; saveDataDebounced(); }
 function grElems(pid){ const o = (typeof KOS_OBS !== 'undefined' && KOS_OBS[pid]) || {}; const t = String(o[FASCIA || 'E'] || '').trim().replace(/\.$/, ''); return t.split(/;\s*/).map(x => x.trim()).filter(Boolean).map(x => x.charAt(0).toUpperCase() + x.slice(1)); }
 function grKosFoc(pid, r){ if(!r || !/^k:/.test(r.k || '')) return ''; return (((KOS2_FOC || {})[FASCIA || 'E'] || {})[r.k.slice(2)] || {})[pid] || ''; }
 function grSub(pid){ const f = FASCIA || 'E', a = pid[0], i = Number(pid.slice(1)) - 1; return {n:((GR_MODEL.nomi[a] || [])[i]) || '', s:((((GR_MODEL.sub[f] || {})[a]) || [])[i]) || ''}; }
@@ -3283,7 +3291,9 @@ function grInner(pid){
   const rows = grRows(pid); const G = ((scheda.griglia || {})[pid]) || {}; const amb = pid[0]; const start = grStart();
   const L = ['Comportamenti positivi emersi', 'Comportamenti da migliorare', 'Note specifiche del singolo o del gruppetto'];
   const GR_PH = {pos:'Che cosa hai visto fare al gruppo? Descrivi in modo oggettivo, senza giudicare.', mig:'Quali comportamenti vorresti veder crescere? Racconta che cosa succede, non chi sbaglia.', note:'Solo se rilevante per il gruppo: singoli o gruppetti che meritano attenzione.'};
-  const ta = (k, f, v, lab, ro) => `<label class="gr-f"><span>${lab}</span><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(v || '')}</textarea></label>`;
+  const ta = (k, f, v, lab, ro) => { const d=G[k]||{}; const pf=['pos','mig','note'].includes(f); const mine=pf?grMine(d,false)[f]:v; const oth=pf?grOthers(d,f):[];
+    return `<label class="gr-f"><span>${lab}</span><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(mine || '')}</textarea></label>`
+      + (oth.length ? `<div class="gr-oth"><b>Cosa hanno scritto gli altri</b>${oth.map(o=>`<div><i>${sEsc(o.nome)}:</i> ${sEsc(o.t)}</div>`).join('')}</div>` : ''); };
   const focBlock = (r, g, free) => {
     if(free) return ta(r.k, 'foc', g.foc, 'Focus osservativo');
     const kos = grKosFoc(pid, r); grFocMigra(pid, r.k, g, kos); const els = grElems(pid);
@@ -6403,7 +6413,7 @@ function cfDetail(){
     <h4>Sintesi dello staff per questo percorso <small>il testo comune, scritto insieme</small></h4><p class="sh-hint" style="margin:0 0 6px">Dopo aver confrontato i livelli, scrivete qui in poche righe ciò che condividete. Questi testi sono gli stessi per tutto lo staff e poi entrano nella Lettura del gruppo.</p>${f('pos','Comportamenti positivi emersi')}${f('mig','Comportamenti da migliorare')}${f('note','Note su singoli o gruppetti')}
     <div class="cf-bt"><button type="button" class="btn-ghost" onclick="cfFromGrid('${pid}')" title="Aggiunge alla sintesi di questo percorso i testi già scritti nella griglia, senza cancellare ciò che c’è">Precompila dalla griglia</button><button type="button" class="btn-ghost" onclick="cfToLettura('${pid[0]}')" title="Aggiunge in fondo alla Lettura del gruppo (1.3) le sintesi dei percorsi di questo Ambito">Porta le sintesi nella Lettura del gruppo</button></div></div>`;
 }
-function cfGridRows(pid){ const g=(scheda.griglia||{})[pid]||{}; const nm={}; grRows(pid).forEach(r=>{ nm[r.k]=r.nome; }); return Object.keys(g).map(k=>({nome:nm[k]||'Altre osservazioni', d:g[k]||{}})).filter(x=>['pos','mig','note'].some(f=>String(x.d[f]||'').trim())); }
+function cfGridRows(pid){ const g=(scheda.griglia||{})[pid]||{}; const nm={}; grRows(pid).forEach(r=>{ nm[r.k]=r.nome; }); return Object.keys(g).map(k=>({nome:nm[k]||'Altre osservazioni', d:g[k]||{}})).filter(x=>['pos','mig','note'].some(f=>grEff(x.d,f))).map(x=>{ const d=Object.assign({},x.d); ['pos','mig','note'].forEach(f=>{ d[f]=grEff(x.d,f); }); return {nome:x.nome,d}; }); }
 function cfGridHTML(pid){
   const L=cfGridRows(pid); if(!L.length) return '<h4>Dalla griglia osservativa</h4><div class="cf-none">Nella griglia non avete ancora scritto nulla su questo percorso (colonne «punti di forza», «da migliorare», «note»).</div>';
   const f=(l,t)=>String(t||'').trim()?`<div class="cf-note"><b>${l}:</b> ${sEsc(t)}</div>`:'';
@@ -8081,7 +8091,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030400'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030500'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -11386,7 +11396,7 @@ function grDraftFor(a){
   const out = {positivi:[], necessita:[], singoli:[]};
   (DB[a] || []).forEach(p => { const g = (scheda.griglia || {})[p.id]; if(!g) return;
     const pos = [], mig = [], nt = [];
-    Object.keys(g).forEach(k => { const d = g[k] || {}; if(String(d.pos || '').trim()) pos.push(String(d.pos).trim()); if(String(d.mig || '').trim()) mig.push(String(d.mig).trim()); if(String(d.note || '').trim()) nt.push(String(d.note).trim()); });
+    Object.keys(g).forEach(k => { const d = g[k] || {}; const e1=grEff(d,'pos'), e2=grEff(d,'mig'), e3=grEff(d,'note'); if(e1) pos.push(e1); if(e2) mig.push(e2); if(e3) nt.push(e3); });
     const nm = (szPP() ? p.id + ' ' : '') + p.name;   // nella Programmazione Educativa i percorsi non hanno numeri
     if(pos.length) out.positivi.push(nm + ': ' + pos.join('; ')); if(mig.length) out.necessita.push(nm + ': ' + mig.join('; ')); if(nt.length) out.singoli.push(nm + ': ' + nt.join('; ')); });
   return out;
@@ -13585,10 +13595,10 @@ async function exportPPDocx(mode){
           const g = G[p.id] || {}; const rs = grRows(p.id);
           const m = (GR_MODEL.nomi[a]||[])[i], sb = (((GR_MODEL.sub[FB]||{})[a])||[])[i];
           const list = rs.map(r => ({lab:'Attività: '+r.nome+(r.data?' · '+grDateTxt(r.data):''), d:g[r.k]||{}, foc:grFocParts(p.id, r, g[r.k])}));
-          if(g.x && ['foc','pos','mig','note'].some(k => cl(g.x[k]))) list.push({lab:'Altre osservazioni', d:g.x, foc:cl(g.x.foc)?[cl(g.x.foc)]:[]});
+          if(g.x && ['foc','pos','mig','note'].some(k => cl(k==='foc'?g.x[k]:grEff(g.x,k)))) list.push({lab:'Altre osservazioni', d:g.x, foc:cl(g.x.foc)?[cl(g.x.foc)]:[]});
           if(!list.length) list.push({lab:n?'':'Non osservato', d:{}, foc:[]});
           list.forEach((it,j) => {
-            const txt = k => { const t = cl(it.d[k]); return dPara(t ? plain(t) : '',{size:16,after:0}); };
+            const txt = k => { const t = cl(grEff(it.d,k)); return dPara(t ? plain(t) : '',{size:16,after:0}); };
             const first = j===0 ? dPara(m ? [dTxt((i+1)+'. '+m,{size:16,bold:true,color:AMB_HEX[a]}), dTxt(': '+sb,{size:16})] : [dTxt((i+1)+'. '+p.name,{size:16,bold:true,color:AMB_HEX[a]})],{after:0}) : dPara('',{size:16,after:0});
             const focTxt = it.foc.length ? dPara([dTxt('Focus: ',{size:15,bold:true,color:FOCG}), dTxt(it.foc.map(plain).join('; '),{size:16})],{after:0,before:20}) : null;
             rows.push([
@@ -19630,7 +19640,7 @@ body.sh-in.sh-ready #g-subnav .gsn-steps,body.sh-in.sh-ready #g-subnav .gsn-titl
 body.sh-in.sh-ready #g-subnav:not(:has(.gsn-act)){display:none!important}
 /* Confronto e sintesi: su schermi stretti la tabella scorre dentro il suo riquadro, non allarga la pagina */
 .cf-left,.cf-grid>*{min-width:0}
-.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
+.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
 @media(max-width:899px){.cf-grid{grid-template-columns:minmax(0,1fr)}}
 /* Guida: i video sono la prima voce */
 .gd-vid{border:1.5px solid var(--brand-ink,#1B5E42);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:#fff}
