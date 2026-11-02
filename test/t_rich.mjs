@@ -54,6 +54,14 @@ ok(/<i>/.test(await html()) && /<u>/.test(await html()) && /^\+\+_|^_\+\+|^\+\+.
 await ed.evaluate(e => { e.focus(); const r = document.createRange(); r.selectNodeContents(e); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
 await P.locator('#rt-bar [data-rt=x]').click(); await sleep(100);
 ok(await val() === 'uno due tre', 'toglie la formattazione: ' + await val());
+// semigrassetto
+await sel(4, 7); await P.locator('#rt-bar [data-rt=M]').click(); await sleep(150);
+ok(await val() === 'uno ~~due~~ tre' && /rt-M/.test(await html()), 'semigrassetto sulla parola: ' + await val());
+const stab = await ed.evaluate(e => { const before = e.innerHTML; const n = e.querySelector('.rt-M').firstChild; const r = document.createRange(); r.setStart(n, 0); r.setEnd(n, 2); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return new Promise(res => setTimeout(() => res({same: e.innerHTML === before, txt: getSelection().toString()}), 300)); });
+ok(stab.same && stab.txt === 'du', 'cambiando la selezione il testo e la selezione restano intatti ' + JSON.stringify(stab));
+await ed.evaluate(e => { e.focus(); const r = document.createRange(); r.selectNodeContents(e); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+await P.locator('#rt-bar [data-rt=x]').click(); await sleep(100);
+ok(await val() === 'uno due tre', 'e si toglie come il resto: ' + await val());
 // più grande sulla parola
 await ed.evaluate(e => { e.focus(); const n = e.firstChild; const r = document.createRange(); r.setStart(n, 4); r.setEnd(n, 7); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
 await P.locator('#rt-bar [data-rt=L]').click(); await sleep(100);

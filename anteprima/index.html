@@ -8081,7 +8081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030010'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030140'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13174,46 +13174,54 @@ function dDocument(children, headerText){
 // ── Testo formattato nei campi narrativi: grassetto, corsivo, sottolineato, corpo, elenchi ──
 // Nel testo salvato i segni sono leggeri: **grassetto**  _corsivo_  ++sottolineato++  ^^più grande^^  ,,più piccolo,,  e righe che iniziano con «• » o «1. ».
 // La barra compare sui campi lunghi; il Word (e l'anteprima sotto il campo) li mostrano formattati.
-const RT_TOK=[['b','**','**'],['u','++','++'],['L','^^','^^'],['S',',,',',,'],['i','_','_']];
+const RT_TOK=[['b','**','**'],['M','~~','~~'],['u','++','++'],['L','^^','^^'],['S',',,',',,'],['i','_','_']];   // M = semigrassetto (peso 600)
 function rtSegs(str){ str=String(str==null?'':str);
-  const re=/(\*\*|\+\+|\^\^|,,|(?<![\w\/])_(?=\S)|(?<=\S)_(?![\w]))/g; const parts=[]; let last=0, m; const cnt={};
+  const re=/(\*\*|\+\+|\^\^|~~|,,|(?<![\w\/])_(?=\S)|(?<=\S)_(?![\w]))/g; const parts=[]; let last=0, m; const cnt={};
   while((m=re.exec(str))){ parts.push({t:str.slice(last,m.index)}); parts.push({tok:m[1]==='_'?'_':m[1]}); last=m.index+m[1].length; cnt[m[1]]=(cnt[m[1]]||0)+1; }
   parts.push({t:str.slice(last)});
   const ok={}; Object.keys(cnt).forEach(k=>{ ok[k]=cnt[k]%2===0&&cnt[k]>0; });
-  const st={b:0,i:0,u:0,L:0,S:0}; const map={'**':'b','_':'i','++':'u','^^':'L',',,':'S'}; const out=[];
-  parts.forEach(p=>{ if(p.tok!=null){ if(ok[p.tok]) st[map[p.tok]]^=1; else out.push({t:p.tok,b:st.b,i:st.i,u:st.u,L:st.L,S:st.S}); } else if(p.t) out.push({t:p.t,b:st.b,i:st.i,u:st.u,L:st.L,S:st.S}); });
+  const st={b:0,i:0,u:0,L:0,S:0,M:0}; const map={'**':'b','_':'i','++':'u','^^':'L',',,':'S','~~':'M'}; const out=[];
+  parts.forEach(p=>{ if(p.tok!=null){ if(ok[p.tok]) st[map[p.tok]]^=1; else out.push({t:p.tok,b:st.b,i:st.i,u:st.u,L:st.L,S:st.S,M:st.M}); } else if(p.t) out.push({t:p.t,b:st.b,i:st.i,u:st.u,L:st.L,S:st.S,M:st.M}); });
   return out; }
-function rtHas(str){ return /(\*\*.+?\*\*|\+\+.+?\+\+|\^\^.+?\^\^|,,.+?,,|(?<![\w\/])_\S.*?\S_(?![\w])|^[•·] |^\d+\. )/m.test(String(str||'')); }
+function rtHas(str){ return /(\*\*.+?\*\*|~~.+?~~|\+\+.+?\+\+|\^\^.+?\^\^|,,.+?,,|(?<![\w\/])_\S.*?\S_(?![\w])|^[•·] |^\d+\. )/m.test(String(str||'')); }
 function rtStrip(str){ return rtSegs(str).map(s=>s.t).join(''); }
 function rtHTML(str){ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return rtSegs(str).map(s=>{ let h=esc(s.t).replace(/\n/g,'<br>'); if(s.b) h='<b>'+h+'</b>'; if(s.i) h='<i>'+h+'</i>'; if(s.u) h='<u>'+h+'</u>'; if(s.L) h='<span class="rt-L" style="font-size:1.25em">'+h+'</span>'; if(s.S) h='<span class="rt-S" style="font-size:.8em">'+h+'</span>'; return h; }).join(''); }
+  return rtSegs(str).map(s=>{ let h=esc(s.t).replace(/\n/g,'<br>'); if(s.M) h='<span class="rt-M" style="font-weight:600">'+h+'</span>'; if(s.b) h='<b>'+h+'</b>'; if(s.i) h='<i>'+h+'</i>'; if(s.u) h='<u>'+h+'</u>'; if(s.L) h='<span class="rt-L" style="font-size:1.25em">'+h+'</span>'; if(s.S) h='<span class="rt-S" style="font-size:.8em">'+h+'</span>'; return h; }).join(''); }
 // campo adatto: lungo, scrivibile, non in tabella, non nella circolare né nelle finestre
 function rtOk(t){ if(window.__RT_OFF) return false; if(!t||t.tagName!=='TEXTAREA'||t.readOnly||t.disabled||t.hasAttribute('data-nort')||(t.maxLength>0&&t.maxLength<500)) return false; if(t.hasAttribute('data-conv')&&!(t.hasAttribute('data-rt')||/descriv|osservazion|necessit|descrizion|altri ruoli|note/i.test(t.placeholder||''))) return false; if(t.closest('.rt-ed,#cl-ov,#nac-ov,.modal,[role=dialog],[data-uk="circ"],.ax-circ,#ax-circ')) return false; const r=t.getBoundingClientRect(); return r.width>=180; }
 let RT_T=null, RT_BAR=null;
 function rtBar(){ if(RT_BAR) return RT_BAR; const b=document.createElement('div'); b.id='rt-bar'; b.setAttribute('role','toolbar'); b.setAttribute('aria-label','Formattazione del testo');
-  b.innerHTML=[['b','<b>G</b>','Grassetto'],['i','<i>C</i>','Corsivo'],['u','<u>S</u>','Sottolineato'],['L','A<sup>+</sup>','Più grande'],['S','A<sub>−</sub>','Più piccolo'],['ul','•≡','Elenco puntato'],['ol','1.≡','Elenco numerato'],['x','✕','Toglie la formattazione']].map(([k,h,t])=>`<button type="button" data-rt="${k}" title="${t}" aria-label="${t}">${h}</button>`).join('');
+  b.innerHTML=[['b','<b>G</b>','Grassetto'],['M','<span style="font-weight:600">G<sup>½</sup></span>','Semigrassetto'],['i','<i>C</i>','Corsivo'],['u','<u>S</u>','Sottolineato'],['L','A<sup>+</sup>','Più grande'],['S','A<sub>−</sub>','Più piccolo'],['ul','•≡','Elenco puntato'],['ol','1.≡','Elenco numerato'],['x','✕','Toglie la formattazione']].map(([k,h,t])=>`<button type="button" data-rt="${k}" title="${t}" aria-label="${t}">${h}</button>`).join('');
   b.addEventListener('mousedown',e=>{ e.preventDefault(); }); b.addEventListener('click',e=>{ const bt=e.target.closest('button[data-rt]'); if(bt&&RT_T){ if(RT_T.classList&&RT_T.classList.contains('rt-ed')) rtApplyEd(RT_T,bt.dataset.rt); else rtApply(RT_T,bt.dataset.rt); setTimeout(rtActive,0); } });
   document.body.appendChild(b); RT_BAR=b; return b; }
 // mostra quali strumenti sono attivi nel punto in cui si scrive
+// riga in cui si trova il cursore, letta SENZA toccare il testo (prima si inserivano segni provvisori a ogni spostamento del cursore: la selezione si rompeva e il cursore «saltellava»)
+function rtLineAt(ed){ const sel=getSelection(); if(!sel||!sel.rangeCount||!ed.contains(sel.anchorNode)) return ''; const r=sel.getRangeAt(0);
+  const pre=document.createRange(); pre.selectNodeContents(ed); pre.setEnd(r.startContainer,r.startOffset); const b1=document.createElement('div'); b1.appendChild(pre.cloneContents());
+  const post=document.createRange(); post.selectNodeContents(ed); post.setStart(r.startContainer,r.startOffset); const b2=document.createElement('div'); b2.appendChild(post.cloneContents());
+  const before=rtSerNode(b1), after=rtSerNode(b2); return before.slice(before.lastIndexOf('\n')+1)+after.split('\n')[0]; }
 function rtActive(){
   try{
     const b=RT_BAR, ed=RT_T; if(!b||!ed||b.style.display==='none'||!ed.classList||!ed.classList.contains('rt-ed')) return;
     const sel=getSelection(); const on={};
     [['b','bold'],['i','italic'],['u','underline']].forEach(([k,c])=>{ try{ on[k]=document.queryCommandState(c); }catch(e){ on[k]=false; } });
     const n=sel&&sel.anchorNode?(sel.anchorNode.nodeType===3?sel.anchorNode.parentElement:sel.anchorNode):null;
-    on.L=!!(n&&n.closest&&n.closest('.rt-L')); on.S=!!(n&&n.closest&&n.closest('.rt-S'));
-    try{ const sh=rtShim(ed); const v=sh.value, a=sh.selectionStart; const s0=v.lastIndexOf('\n',a-1)+1; const e0=v.indexOf('\n',a); const line=v.slice(s0,e0<0?v.length:e0); on.ul=/^[•·] /.test(line); on.ol=/^\d+\. /.test(line); }catch(e){}
+    on.L=!!(n&&n.closest&&n.closest('.rt-L')); on.S=!!(n&&n.closest&&n.closest('.rt-S')); on.M=!!(n&&n.closest&&n.closest('.rt-M')); if(on.M) on.b=false;
+    try{ const line=rtLineAt(ed); on.ul=/^[•·] /.test(line); on.ol=/^\d+\. /.test(line); }catch(e){}
     b.querySelectorAll('button[data-rt]').forEach(x=>{ const f=!!on[x.dataset.rt]; if(x.classList.contains('on')!==f) x.classList.toggle('on',f); x.setAttribute('aria-pressed',f?'true':'false'); });
   }catch(e){}
 }
 document.addEventListener('selectionchange',()=>{ if(RT_T) rtActive(); });
-function rtPlace(){ const b=rtBar(); if(!RT_T||!document.body.contains(RT_T)){ b.style.display='none'; return; } const r=RT_T.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight){ b.style.display='none'; return; } b.style.display='flex'; b.querySelectorAll('[data-rt=ul],[data-rt=ol]').forEach(x=>{ x.style.display=RT_T._conv?'none':''; }); const bw=b.offsetWidth||300; let top=r.top-b.offsetHeight-4; if(top<4) top=Math.min(r.bottom+4,innerHeight-b.offsetHeight-4); b.style.top=Math.round(top)+'px'; b.style.left=Math.round(Math.max(6,Math.min(r.left,innerWidth-bw-6)))+'px'; }
+function rtPlace(){ const b=rtBar(); if(!RT_T||!document.body.contains(RT_T)){ b.style.display='none'; return; } const r=RT_T.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight){ b.style.display='none'; return; } b.style.display='flex'; b.querySelectorAll('[data-rt=ul],[data-rt=ol]').forEach(x=>{ x.style.display=RT_T._conv?'none':''; }); const bw=b.offsetWidth||300; let top=r.top-b.offsetHeight-4;
+  // la barra resta sempre visibile: sotto l'intestazione fissa se il campo comincia più in alto, sotto il campo solo se il campo è corto e finisce subito dopo
+  let minTop=4; try{ const H=document.querySelector('.sh-top, #app-header, header.sticky'); if(H){ const hb=H.getBoundingClientRect(); if(hb.height&&hb.top<=0&&hb.bottom>0) minTop=Math.max(4,Math.round(hb.bottom)+4); } }catch(e){}
+  if(top<minTop){ top=(r.bottom-b.offsetHeight-minTop>60)?minTop:Math.min(r.bottom+4,innerHeight-b.offsetHeight-4); } b.style.top=Math.round(top)+'px'; b.style.left=Math.round(Math.max(6,Math.min(r.left,innerWidth-bw-6)))+'px'; }
 function rtFire(t){ if(t.__shim){ t.commit(); return; } t.dispatchEvent(new Event('input',{bubbles:true})); try{ t.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} }
 function rtApply(t,k){ const v=t.value; let a=t.selectionStart, z=t.selectionEnd;
   if(k==='ul'||k==='ol'){ const s0=v.lastIndexOf('\n',a-1)+1; let e0=v.indexOf('\n',z); if(e0<0) e0=v.length; const lines=v.slice(s0,e0).split('\n'); const isL=lines.every(l=>k==='ul'?/^[•·] /.test(l):/^\d+\. /.test(l));
     const nl=lines.map((l,i)=>{ const base=l.replace(/^([•·]|\d+\.) /,''); return isL?base:(k==='ul'?'• ':(i+1)+'. ')+base; }).join('\n'); t.value=v.slice(0,s0)+nl+v.slice(e0); t.setSelectionRange(s0,s0+nl.length); rtFire(t); return; }
   if(k==='x'){ const s0=a===z?0:a, e0=a===z?v.length:z; const seg=v.slice(s0,e0); const ns=rtStrip(seg).replace(/^([•·]|\d+\.) /gm,''); t.value=v.slice(0,s0)+ns+v.slice(e0); t.setSelectionRange(s0,s0+ns.length); rtFire(t); return; }
-  const tok={b:'**',u:'++',L:'^^',S:',,',i:'_'}[k]; if(!tok) return; const sel=v.slice(a,z);
+  const tok={b:'**',M:'~~',u:'++',L:'^^',S:',,',i:'_'}[k]; if(!tok) return; const sel=v.slice(a,z);
   if(a===z){ t.value=v.slice(0,a)+tok+tok+v.slice(z); t.setSelectionRange(a+tok.length,a+tok.length); rtFire(t); return; }
   if(sel.startsWith(tok)&&sel.endsWith(tok)&&sel.length>=2*tok.length){ const inner=sel.slice(tok.length,sel.length-tok.length); t.value=v.slice(0,a)+inner+v.slice(z); t.setSelectionRange(a,a+inner.length); rtFire(t); return; }
   if(v.slice(a-tok.length,a)===tok&&v.slice(z,z+tok.length)===tok){ t.value=v.slice(0,a-tok.length)+sel+v.slice(z+tok.length); t.setSelectionRange(a-tok.length,a-tok.length+sel.length); rtFire(t); return; }
@@ -13225,9 +13233,9 @@ function rtSerNode(n){ if(n.nodeType===3) return n.nodeValue.replace(/ /g,' ').
   let s=''; const BL=/^(DIV|P|LI|UL|OL|H[1-6]|BLOCKQUOTE)$/;
   n.childNodes.forEach(c=>{ if(c.nodeType===1&&BL.test(c.nodeName)&&s&&!s.endsWith('\n')) s+='\n'; s+=rtSerNode(c); });
   if(!s.replace(/\n/g,'')) return s; const st=n.style||{}, nm=n.nodeName; let o='';
-  const bold=nm==='B'||nm==='STRONG'||st.fontWeight==='bold'||+st.fontWeight>=600, ital=nm==='I'||nm==='EM'||st.fontStyle==='italic', und=nm==='U'||/underline/.test(st.textDecoration||'');
+  const semi=!!(n.classList&&n.classList.contains('rt-M')), bold=!semi&&(nm==='B'||nm==='STRONG'||st.fontWeight==='bold'||+st.fontWeight>=700), ital=nm==='I'||nm==='EM'||st.fontStyle==='italic', und=nm==='U'||/underline/.test(st.textDecoration||'');
   const big=n.classList&&n.classList.contains('rt-L'), sml=n.classList&&n.classList.contains('rt-S');
-  let pre='', post=''; if(bold){ pre+='**'; post='**'+post; } if(ital){ pre+='_'; post='_'+post; } if(und){ pre+='++'; post='++'+post; } if(big){ pre+='^^'; post='^^'+post; } if(sml){ pre+=',,'; post=',,'+post; }
+  let pre='', post=''; if(semi){ pre+='~~'; post='~~'+post; } if(bold){ pre+='**'; post='**'+post; } if(ital){ pre+='_'; post='_'+post; } if(und){ pre+='++'; post='++'+post; } if(big){ pre+='^^'; post='^^'+post; } if(sml){ pre+=',,'; post=',,'+post; }
   return pre+s+post; }
 function rtSerV(ed){ let s=rtSerNode(ed).replace(/[]/g,''); if(s.endsWith('\n')) s=s.slice(0,-1); return s; }
 function rtRender(ed,v){ let h=rtHTML(v); if(String(v||'').endsWith('\n')) h+='<br>'; ed.innerHTML=v?h:''; ed._v=v||''; }
@@ -13265,7 +13273,7 @@ function rtEnter(ed){ const sh=rtShim(ed); let v=sh.value, a=sh.selectionStart, 
   const ins='\n'+(m[2]?(+m[2]+1)+'. ':'• '); sh.value=v.slice(0,a)+ins+v.slice(a); sh.setSelectionRange(a+ins.length,a+ins.length); sh.commit(); }
 function rtApplyEd(ed,k){ ed.focus(); const native={b:'bold',i:'italic',u:'underline'}[k];
   if(native){ document.execCommand(native,false,null); rtSync(ed); return; }
-  if(k==='L'||k==='S'){ const sl=getSelection(); if(sl.rangeCount&&sl.isCollapsed&&sl.modify){ try{ sl.modify('move','backward','word'); sl.modify('extend','forward','word'); }catch(e){} } }
+  if(k==='L'||k==='S'||k==='M'){ const sl=getSelection(); if(sl.rangeCount&&sl.isCollapsed&&sl.modify){ try{ sl.modify('move','backward','word'); sl.modify('extend','forward','word'); }catch(e){} } }
   const sh=rtShim(ed); rtApply(sh,k); }
 document.addEventListener('focusin',e=>{ const t=e.target; if(!t||!t.tagName) return;
   if(t.tagName==='TEXTAREA'&&t._rtEd&&t._rtEd.isConnected){ t._rtEd.focus(); return; }
@@ -13281,9 +13289,9 @@ function rtScan(){ if(window.__RT_OFF||document.hidden) return; try{ document.qu
 (function(){ let q=false; const go=()=>{ if(q) return; q=true; setTimeout(()=>{ q=false; rtScan(); },200); };
   new MutationObserver(go).observe(document.body||document.documentElement,{childList:true,subtree:true}); document.addEventListener('toggle',go,true); document.addEventListener('click',go,true); setInterval(rtScan,1500); go(); })();
 
-function rtXlsxBuf(wb){ try{ wb.eachSheet(ws=>ws.eachRow(r=>r.eachCell(c=>{ if(typeof c.value==='string'&&/\*\*|\+\+|\^\^|,,|_/.test(c.value)) c.value=rtStrip(c.value); if(!c.font||!c.font.name||c.font.name==='Calibri') c.font=Object.assign({},c.font||{},{name:'Montserrat'}); }))); }catch(e){} return wb.xlsx.writeBuffer(); }
+function rtXlsxBuf(wb){ try{ wb.eachSheet(ws=>ws.eachRow(r=>r.eachCell(c=>{ if(typeof c.value==='string'&&/\*\*|~~|\+\+|\^\^|,,|_/.test(c.value)) c.value=rtStrip(c.value); if(!c.font||!c.font.name||c.font.name==='Calibri') c.font=Object.assign({},c.font||{},{name:'Montserrat'}); }))); }catch(e){} return wb.xlsx.writeBuffer(); }
 function rtBody(h){ try{ const t=document.createElement('template'); t.innerHTML=h; const w=document.createTreeWalker(t.content,NodeFilter.SHOW_TEXT); const L=[]; while(w.nextNode()) L.push(w.currentNode);
-  L.forEach(n=>{ const v=n.nodeValue; if(/\*\*|\+\+|\^\^|,,|_/.test(v)&&rtSegs(v).some(q=>q.b||q.i||q.u||q.L||q.S)){ const sp=document.createElement('span'); sp.innerHTML=rtHTML(v); n.replaceWith(sp); } }); return t.innerHTML; }catch(e){ return h; } }
+  L.forEach(n=>{ const v=n.nodeValue; if(/\*\*|~~|\+\+|\^\^|,,|_/.test(v)&&rtSegs(v).some(q=>q.b||q.i||q.u||q.L||q.S||q.M)){ const sp=document.createElement('span'); sp.innerHTML=rtHTML(v); n.replaceWith(sp); } }); return t.innerHTML; }catch(e){ return h; } }
 async function dFixBreaks(blob){
   try{
     await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
@@ -13291,8 +13299,8 @@ async function dFixBreaks(blob){
     let x = await f.async('string'); const x0 = x;
     // testo formattato (**grassetto** _corsivo_ ++sottolineato++ ^^grande^^ ,,piccolo,,): ogni tratto diventa una sua riga di testo con le sue proprietà
     x = x.replace(/<w:r>(<w:rPr>[\s\S]*?<\/w:rPr>)?<w:t((?:\s[^>]*)?)>([^<]*)<\/w:t><\/w:r>/g, (m, rpr, a, t) => {
-      if(!/\*\*|\+\+|\^\^|,,|_/.test(t)) return m; const S = rtSegs(t); if(!S.some(sg => sg.b || sg.i || sg.u || sg.L || sg.S)) return m;
-      return S.map(sg => { let r = rpr || '<w:rPr></w:rPr>'; let ins = ''; if(sg.b && !/<w:b\/>/.test(r)) ins += '<w:b/>'; if(sg.i && !/<w:i\/>/.test(r)) ins += '<w:i/>';
+      if(!/\*\*|~~|\+\+|\^\^|,,|_/.test(t)) return m; const S = rtSegs(t); if(!S.some(sg => sg.b || sg.i || sg.u || sg.L || sg.S || sg.M)) return m;
+      return S.map(sg => { let r = rpr || '<w:rPr></w:rPr>'; let ins = ''; if((sg.b||sg.M) && !/<w:b\/>/.test(r)) ins += '<w:b/>'; if(sg.i && !/<w:i\/>/.test(r)) ins += '<w:i/>';
         if(ins) r = /<w:rFonts[^>]*\/>/.test(r) ? r.replace(/(<w:rFonts[^>]*\/>)/, '$1' + ins) : r.replace('<w:rPr>', '<w:rPr>' + ins);
         if(sg.L || sg.S) r = r.replace(/<w:(sz|szCs) w:val="(\d+)"\/>/g, (mm, k, v) => '<w:' + k + ' w:val="' + Math.max(14, Number(v) + (sg.L ? 4 : -3)) + '"/>');
         if(sg.u && !/<w:u /.test(r)) r = r.replace('</w:rPr>', '<w:u w:val="single"/></w:rPr>');
