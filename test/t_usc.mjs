@@ -124,7 +124,7 @@ await P.locator(`#usc-b-${kA} textarea:not([data-conv])`).first().fill('LANCIO D
 ok(await ev(k => uscAttFind(uscCur().prog[k]).a.lancio === 'LANCIO DALL’USCITA', kA), 'modificata nell’uscita, cambia nella Sezione 3 (stessa attività)');
 // campi del blocco: togli e rimetti, materiali da comprare nella spesa
 await ev(k => { USC_OPEN[k] = true; uscRe(); }, kH); await sleep(200);
-await P.locator(`#usc-b-${kH} .usc-fx`).first().click(); await sleep(200); // toglie «Cosa si fa»
+await P.locator(`#usc-b-${kH} .usc-fld`, {hasText:'Cosa si fa'}).first().locator('.usc-fx').first().click(); await sleep(200); // toglie «Cosa si fa»
 ok(!(await ev(k => uscCur().prog[k].f.includes('desc'), kH)), 'si toglie un campo del blocco');
 await P.locator(`#usc-b-${kH} .usc-addf button`, {hasText:'Cosa si fa'}).click(); await sleep(200);
 ok(await ev(k => uscCur().prog[k].f.includes('desc'), kH), '…e si rimette');

@@ -8081,7 +8081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030140'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030230'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9150,14 +9150,14 @@ const USC_MOD_ST=USC_MOD.map(m=>m[0]==='chi'?['chi','Persone e date','presenti, 
 const USC_MOD_ST2=USC_MOD_ST.concat([['obs','Obiettivi','su cosa lavorare, dal Riepilogo dello staff'],['scatto','Scatti','una fotografia dello staff, prima e dopo'],['energy','Energy Check','come state, giornata per giornata'],['casa','Cosa portiamo a casa','Start · Stop · Continue, con le azioni']]);
 function uscMods(){ const L=MODE==='staff'?USC_MOD_ST2:USC_MOD; let st=false; try{ st=uscSt(); }catch(e){} return st?L.map(m=>m[0]==='circ'?['circ','Circolare di convocazione','dove e quando ci vediamo, cosa portare, invio']:m):L; }
 const USC_BT={sveglia:['Sveglia','#6D5BD0',['desc','chi'],30],pasto:['Pasto','#D98A00',['menu','chi'],60],cerim:['Cerimonia','#C0392B',['desc','chi'],20],att:['Attività del percorso','#1B7A4E',['lsc','mat','sic','ben','pb'],120],
-  nuova:['Attività','#0E8A8A',['lsn','scal','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['desc','scal','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['lsn','scal','mat','sic','chi'],90],
+  nuova:['Attività','#0E8A8A',['tipo','met','lsn','scal','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['tipo','met','desc','scal','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['tipo','met','lsn','scal','mat','sic','chi'],90],
   libero:['Tempo libero','#2E8FD6',['desc'],60],serata:['Serata','#9C2D5B',['desc','mat','chi'],90],riposo:['Riposo','#55606E',['desc'],30],sposta:['Spostamento','#8C8C84',['trip','chi'],60],mio:['Momento personalizzato','#8E44AD',['desc'],60],mf:['Momento formativo','#7B3FA0',['sch','scal','mat','sic','ben','pb','chi'],45]};
 // il blocco «Attività del percorso» prende il colore della Branca (verde E, rosso R, blu CG, giallo scuro L)
 const BR_ATT = {E:'#25734e', R:'#8f1d19', S:'#1d4f8f', L:'#7a6e00'};
 try{ Object.defineProperty(USC_BT.att, 1, {get(){ let b = null; try{ b = (typeof FASCIA !== 'undefined' && FASCIA) || brandOf(); }catch(e){} return BR_ATT[b] || '#25734e'; }, enumerable:true, configurable:true}); }catch(e){}
 const USC_PALS=[['sveglia','Sveglia','ginnastica, igiene'],['pasto','Colazione','',{pasto:'colazione',dur:45}],['cerim','Cerimonia','Alzabandiera, Quadrato, ecc.'],['att','Attività','dalla programmazione'],['mf','Momento formativo','da una scheda, scritto da te'],['nuova','Attività nuova','gioco, tecnica, impresa…'],['hike','Hike','con link alla traccia'],['gioco','Gioco',''],['libero','Tempo libero','angolo di Pattuglia'],['pasto','Pranzo','',{pasto:'pranzo',dur:75}],['pasto','Merenda','',{pasto:'merenda',dur:20}],['pasto','Cena','',{pasto:'cena',dur:75}],['pasto','Altro pasto','nome a scelta',{pasto:'__x',dur:45}],['serata','Fuoco di bivacco','serata, veglia'],['riposo','Silenzio','e notte'],['sposta','Spostamento','pullman, cammino'],['mio','Momento personalizzato','nome e colore a scelta']];
-const USC_F={sch:'Il momento (scopo, passi e tempi)',trip:'Viaggio',scal:'Scaletta',desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',lsn:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce'};
-const USC_FALL=['desc','scal','mat','sic','ben','pb','link','obj','chi'];
+const USC_F={sch:'Il momento (scopo, passi e tempi)',trip:'Viaggio',scal:'Scaletta',desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',lsn:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce',tipo:'Tipo di attività',met:'Strumenti del Metodo'};
+const USC_FALL=['tipo','met','desc','scal','mat','sic','ben','pb','link','obj','chi'];
 const USC_HIDSET=new WeakSet();
 const USC_GRP=k=>({mf:'Attività',att:'Attività',nuova:'Attività',hike:'Attività',gioco:'Attività',pasto:'Pasti',libero:'Tempo libero',cerim:'Cerimonie e serate',serata:'Cerimonie e serate'})[k]||'Altro';
 const USC_GCOL={'Attività':'#1B7A4E','Pasti':'#D98A00','Tempo libero':'#2E8FD6','Cerimonie e serate':'#C0392B','Altro':'#55606E'};
@@ -9333,6 +9333,12 @@ function uscBlkMove(k,dir){ const u=uscCur(); const m=uscBlk(k); if(!m||!uscCan(
 function uscBlkDrop(k,beforeK,toG){ const u=uscCur(); const m=uscBlk(k); if(!m||!uscCan()||k===beforeK) return; if(toG!=null&&toG>=1&&toG<=uscNG(u)&&toG!==(Number(m.g)||1)){ m.g=toG; m.ord=1e6; } const g=Number(m.g)||1; const R=uscBlocks(u,g).filter(o=>o.k!==k); R.forEach((o,i)=>{ o.m.ord=i+1; }); const bi=beforeK?R.findIndex(o=>o.k===beforeK):-1;
   if(bi>=0){ const prev=bi>0?Number(R[bi-1].m.ord)||0:(Number(R[bi].m.ord)||0)-2; m.ord=(prev+(Number(R[bi].m.ord)||0))/2; } else m.ord=R.length?(Number(R[R.length-1].m.ord)||0)+1:1;
   uscSave(); uscRe(); showToast('Spostato: gli orari si riallineano'); }
+// un momento si può trasformare in un altro tipo (un gioco che in realtà è un'attività…) senza ricrearlo: si tiene tutto quello che hai scritto
+const USC_KINDSW=['nuova','gioco','hike','serata','libero','mio'];
+function uscBlkKind(k,nk){ const m=uscBlk(k); if(!m||!uscCan()||!USC_KINDSW.includes(m.k)||!USC_KINDSW.includes(nk)||nk===m.k) return;
+  const had=m.f.slice(); const add=USC_BT[nk][2].filter(f=>!had.includes(f)); m.k=nk; m.f=had.concat(add);
+  if(nk==='mio'&&!m.col) m.col=USC_COLS[0];
+  uscSave(); uscRe(); showToast('Ora è «'+USC_BT[nk][0]+'»: i campi che avevi compilato restano'); }
 function uscBlkRef(k,f,v){ const m=uscBlk(k); if(!m) return; if(!m.ref||typeof m.ref!=='object') m.ref={}; m.ref[f]=v; uscSave(); uscRe(); try{ if(v) refInviteCheck(v,'«'+uscBlkTitle(m)+'» ('+f+')'); }catch(e){} }
 function uscBlkSet(k,f,v,re){ const m=uscBlk(k); if(!m) return; m[f]=v; if(f==='t'&&m.k!=='att') m.t=String(v).slice(0,80); uscSave(); if(re) uscRe(); else uscLive(k); }
 function uscBlkDur(k,d){ const m=uscBlk(k); if(!m) return; m.dur=Math.max(5,(Number(m.dur)||30)+d); uscSave(); uscRe(); }
@@ -9458,6 +9464,7 @@ function uscToSez3(k,idx,force){ const u=uscCur(); const m=uscBlk(k); if(!u||!m|
   if(m.f.includes('sic')&&(m.sic||'').trim()){ x.sic=Object.assign({},x.sic,{rischi:m.sic}); }
   if(m.f.includes('ben')&&(m.ben||'').trim()) a.incRischi=m.ben;
   if(m.f.includes('pb')&&(m.pb||'').trim()) a.pianoB=m.pb;
+  if(Array.isArray(m.tpi)&&m.tpi.length) a.tipi=[...new Set([...(a.tipi||[]),...m.tpi])]; if(Array.isArray(m.strum)&&m.strum.length) x.strum=[...new Set([...(x.strum||[]),...m.strum])];
   if(m.pbo&&typeof m.pbo==='object'){ x.pb=Object.assign({},m.pbo,x.pb||{}); }
   const lk=(m.links||[]).filter(l=>(l.u||'').trim()); if(m.f.includes('link')&&lk.length){ a.links=attLinks(a).concat(lk.map(l=>({n:l.n||'',u:l.u}))); a.link=a.links[0].u; }
   if(O.pid===per.percorsoId) (O.i||[]).forEach(i=>{ if(!x.oss) x.oss={}; x.oss[i]={on:true,chi:O.chi||''}; });
@@ -9922,6 +9929,7 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
     <div class="usc-mv2"><span><label><input type="checkbox" ${m.fix?'checked':''} onchange="uscBlkFix('${k}',this.checked)"> Ora fissa</label></span>${m.fix?`<select class="ax-in" onchange="uscBlkSet('${k}','ora',this.value,true)">${axTimeOpts(m.ora)}</select>`:`<span class="usc-tm">${t?axHM(t.s)+'–'+axHM(t.e):''}</span>`}</div>
     ${m.k==='pasto'?`<label class="usc-mv2"><span>Quale pasto</span><select class="ax-in" onchange="if(this.value==='__new'){uscPastoNewFor('${k}')}else{uscBlkSet('${k}','pasto',this.value,true)}">${axOpt(AX_PASTI.concat(Object.keys(x.pastiNomi||{}).filter(q=>/^x_/.test(q)).map(q=>[q,x.pastiNomi[q]||'Altro'])).concat([['__new','+ Altro…']]),m.pasto||'pranzo')}</select></label>${/^x_/.test(m.pasto||'')?`<label class="usc-mv2"><span>Nome del pasto</span><input class="ax-in" maxlength="40" value="${uscE((x.pastiNomi||{})[m.pasto]||'')}" oninput="uscPastoRen('${m.pasto}',this.value)"></label>`:''}`:''}
     ${m.k==='mio'?`<div class="usc-mv2"><span>Colore</span><span class="usc-colors">${USC_COLS.map(c=>`<button type="button" class="usc-cdot${(m.col||USC_COLS[0])===c?' on':''}" style="background:${c}" aria-label="Colore" onclick="uscBlkSet('${k}','col','${c}',true)"></button>`).join('')}</span></div>`:''}
+    ${(can&&USC_KINDSW.includes(m.k))?`<label class="usc-mv2"><span>Che tipo di momento è</span><select class="ax-in" aria-label="Tipo di momento" onchange="uscBlkKind('${k}',this.value)">${USC_KINDSW.map(q=>`<option value="${q}"${q===m.k?' selected':''}>${uscE(USC_BT[q][0])}</option>`).join('')}</select></label>`:''}
     <label class="usc-mv2"><span>${m.k==='att'||m.k==='nuova'||m.k==='hike'||m.k==='gioco'||m.k==='mf'?'Chi conduce':'Affidato a'}</span>${axPersonMulti(m.aff||'',`uscBlkSet('${k}','aff',@V,true)`)}</label>${['att','nuova','hike','gioco','mf'].includes(m.k)?`<label class="usc-mv2"><span>Chi la pensa e prepara</span>${axPersonMulti(m.prep||'',`uscBlkSet('${k}','prep',@V,true)`)}</label>`:''}${m.k==='att'?'':[['sic','Sicurezza'],['ben','Benessere e inclusione'],['pb','Piano B']].filter(([f])=>(m.f||[]).includes(f)).map(([f,l])=>`<label class="usc-mv2"><span>Referente · ${l}</span>${axPersonMulti((m.ref||{})[f]||'',`uscBlkRef('${k}','${f}',@V)`)}</label>`).join('')}</div>
     <details class="usc-dd" ${USC_OPEN[k+'|mv']?'open':''} ontoggle="USC_OPEN['${k}|mv']=this.open"><summary>Sposta o duplica <span class="ax-opt">in un’altra giornata o in un’altra uscita</span></summary><div class="usc-brow">${uscMoveSel(u,k,m)}<label class="usc-mv2"><span>Duplica in</span><select class="ax-in" onchange="uscBlkDup('${k}',this.value);this.value=''"><option value="">scegli…</option>${days.map(g=>`<option value="${g}">${uscE(uscDayShort(u,g)+' · '+uscDayLbl(u,g))}</option>`).join('')}</select></label>${uscToUscHTML(u,k,m)}</div></details>`;
   if(t&&t.clash) h+=`<div class="ax-warn">Con l’ora fissa delle ${uscE(m.ora)} questo blocco comincia prima che finisca quello precedente (finisce alle ${axHM(t.pe)}): accorcia un blocco prima o sposta l’ora fissa.</div>`;
@@ -9931,7 +9939,15 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
   h+=`<div class="usc-bfoot">${can&&miss.length?`<span class="usc-addf">${miss.map(fk=>`<button type="button" onclick="uscFieldAdd('${k}','${fk}')">+ ${USC_F[fk]}</button>`).join('')}</span>`:''}<span class="usc-bact">${can&&Array.isArray(m.fo)?`<button type="button" class="usc-lnk" onclick="uscFldReset('${k}')">↺ Ordine consigliato dei moduli</button>`:''}${can&&USC_MOVABLE[m.k]?`<button type="button" class="usc-lnk" onclick="USC_MOVE=USC_MOVE==='${k}'?null:'${k}';uscRe()">→ Porta nella programmazione</button>`:''}${!window.BRO&&(m.k==='att'||AN_UBT[m.k])&&typeof CL!=='undefined'&&CL&&CL.user?`<span class="an-prop" style="${AN.st!=='no'?'':'display:none'}"><button type="button" class="usc-lnk" onclick="anProposeUsc('${k}')">📚 Proponi all’archivio nazionale</button></span>`:''}<button type="button" class="usc-lnk" onclick="uscExport('blocco','${k}')">⤓ Esporta il blocco</button></span></div>`;
   if(USC_MOVE===k) h+=uscMoveHTML(k,m);
   return h+`</div></div>`; }
+// Tipo di attività e Strumenti del Metodo: scelte multiple dalle liste della Branca; le scelte compaiono come etichette con ×
+function uscListGroups(fk){ if(fk==='tipo') return (ATT_TIPI[FASCIA]||[]).map(([g,it])=>({g,it})); return (STRUM_BRANCA[FASCIA]||[]).map((its,i)=>({g:STRUM_GRUPPI[i],it:its})); }
+function uscMultiHTML(k,m,fk,can){ const F=fk==='tipo'?'tpi':'strum'; const sel=Array.isArray(m[F])?m[F]:[]; const G=uscListGroups(fk); const enc=v=>encodeURIComponent(v).replace(/'/g,'%27');
+  const chips=sel.map(v=>`<span class="ax-pm-c">${uscE(v)}${can?`<button type="button" aria-label="Togli ${uscE(v)}" onclick="uscBlkTogL('${k}','${F}',decodeURIComponent('${enc(v)}'))">×</button>`:''}</span>`).join('');
+  const add=can?`<select class="ax-in ax-pm-s" style="max-width:100%" aria-label="Aggiungi" onchange="if(this.value){uscBlkTogL('${k}','${F}',decodeURIComponent(this.value));}"><option value="">${sel.length?'+ un altro…':(fk==='tipo'?'Scegli il tipo di attività…':'Scegli gli strumenti del metodo…')}</option>${G.map(o=>{ const r=o.it.filter(v=>!sel.includes(v)); return r.length?`<optgroup label="${uscE(o.g)}">${r.map(v=>`<option value="${enc(v)}">${uscE(v)}</option>`).join('')}</optgroup>`:''; }).join('')}</select>`:'';
+  return `<div class="ax-pm" style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">${chips}${add}</div>`; }
+function uscBlkTogL(k,F,v){ const m=uscBlk(k); if(!m||!uscCan()) return; if(!Array.isArray(m[F])) m[F]=[]; const i=m[F].indexOf(v); if(i>=0) m[F].splice(i,1); else m[F].push(v); uscSave(); uscRe(); }
 function uscFieldHTML0(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.ax; const N=axN(x);
+  if(fk==='tipo'||fk==='met') return uscFld(k,fk,can,uscMultiHTML(k,m,fk,can));
   if(fk==='lsn'){ const LS=[['Lancio','lan','Come si apre l’attività: cosa dici o proponi per partire'],['Sviluppo','svi','Cosa fanno i ragazzi, passo per passo'],['Conclusione','con','Come si chiude e cosa si riprende insieme']]; return uscFld(k,fk,can,LS.map(([l,q,ph])=>`<label class="ax-sub">${l}</label><textarea class="ax-ta" style="min-height:52px" ${ro} placeholder="${ph}" oninput="uscBlkSet('${k}','${q}',this.value)">${uscE(m[q])}</textarea>`).join('')); }
   if(fk==='lsc'){ if(!f){ if(!can) return uscFld(k,fk,can,'<div class="ax-hint">Nessuna attività scelta.</div>');
       const L=getAllPercorsi(); let h='', any=false;
@@ -9985,6 +10001,7 @@ function uscPrintBlk(u,o,T,full){ const m=o.m, t=T&&T[o.k]; const f=m.k==='att'?
     else if(fk==='obj'){ if(m.obj){ const O=m.obj; const z=getAllPercorsi().find(p=>p&&p.percorsoId===O.pid); if(z){ const X=uscPercObj(z); h+=P('Obiettivi',X.o.filter(q=>(O.o||[]).includes(q.k)).map(q=>q.t).join(' · '))+P('Indicatori da osservare',X.i.filter(q=>(O.i||[]).includes(q.k)).map(q=>q.t).join(' · ')); } h+=P('Osserva',O.chi); } }
     else if(fk==='mat'){ const M=(m.f.includes('mat')?uscBM(u,o.k):[]).concat(f?((f.a.ax||{}).mat||[]):[]).filter(r=>r&&(r.cosa||'').trim()); if(M.length) h+=`<p><b>Materiali:</b> ${M.map(r=>'☐ '+E(r.cosa)+(axMatQty(r,axN(x))?' ('+axMatQty(r,axN(x))+')':'')).join(' · ')}</p>`; }
     else if(fk==='sic'||fk==='ben'||fk==='pb') h+=P(USC_F[fk],fk==='pb'?uscPbTxt(m):m[fk]);
+    else if(fk==='tipo'||fk==='met'){ const A=(fk==='tipo'?m.tpi:m.strum)||[]; if(A.length) h+=P(USC_F[fk],A.join(', ')); }
     else if(fk==='link') (m.links||[]).filter(l=>(l.u||'').trim()).forEach(l=>{ h+=`<p><b>Link:</b> ${E(l.n||'')} ${E(linkNorm(l.u))}</p>`; });
   });
   if(m.k==='pasto'&&!uscFOrd(m).includes('menu')){ const D=uscMeals(x,Number(m.g)||1,m.pasto||'pranzo'); if(D.length) h+=P('Menù',D.join(', ')); }
@@ -10320,7 +10337,7 @@ function uscAttMig(u,k,m){ if(m._mig) return; const f=uscAttFind(m); if(!f) retu
 // campi dei blocchi: chiusi, con un riassunto; si aprono a richiesta
 let USC_FOPEN={};
 // Posizione dei moduli dentro un'attività: ordine fisso e logico (come si legge il foglio del giorno), riordinabile con le frecce.
-const USC_FBASE=['trip','sch','desc','lsc','lsn','menu','scal','obj','mat','sic','ben','pb','link'];
+const USC_FBASE=['tipo','met','trip','sch','desc','lsc','lsn','menu','scal','obj','mat','sic','ben','pb','link'];
 function uscFOrd(m){ if(!m) return []; const F=(m.k==='att'?USC_ATTF:(m.f||[])).filter(f=>f!=='chi'); const ci=f=>{ const i=USC_FBASE.indexOf(f); return i<0?99:i; };
   let order=Array.isArray(m.fo)?m.fo.filter(f=>F.includes(f)):[];
   if(!order.length&&!Array.isArray(m.fo)) return F.slice().sort((a,b)=>ci(a)-ci(b));
@@ -10476,6 +10493,7 @@ function uscFieldHTML(u,k,m,fk,f,I,can){ const ro=can?'':'readonly'; const x=u.a
 function uscFieldSum(m,fk,u,k){ const x=u.ax;
   if(fk==='pb'){ const n=AX_PB.filter(([q])=>((m.pbo||{})[q]||'').trim()).length; return n?n+(n===1?' situazione':' situazioni'):uscSumTxt(m.pb); }
   if(fk==='lsn') return uscSumTxt([m.lan,m.svi].filter(Boolean).join(' · '));
+  if(fk==='tipo'||fk==='met'){ const A=(fk==='tipo'?m.tpi:m.strum)||[]; return A.length?A.slice(0,3).map(uscE).join(', ')+(A.length>3?'…':''):''; }
   if(fk==='desc'||fk==='sic'||fk==='ben') return uscSumTxt(m[fk]);
   if(fk==='mat'){ const B=uscBM(u,k).filter(r=>(r.cosa||'').trim()); return B.length?B.map(r=>uscE(r.cosa)).slice(0,3).join(', ')+(B.length>3?'…':''):''; }
   if(fk==='link'){ const n=(m.links||[]).filter(l=>(l.u||'').trim()).length; return n?n+' link':''; }
