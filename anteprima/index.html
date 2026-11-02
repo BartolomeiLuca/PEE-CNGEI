@@ -6575,6 +6575,10 @@ function setObs(id,s){
   // aggiorna aspetti positivi e necessità (1.3) finché non li hai riscritti a mano
   ossAutoSync(id[0]);
   saveDataDebounced();
+  // dato il valore, si apre subito la griglia osservativa: così è chiaro che c'è anche da compilare quella
+  try{ if(MODE==='giovani' && val!=='n' && !window._clApplying){ const c=document.getElementById('card-'+id);
+    if(c){ if(!c.classList.contains('expanded')) c.classList.add('expanded'); window._mvOpen=window._mvOpen||{}; window._mvOpen[id]=true;
+      const g=c.querySelector('.gr-box'); if(g){ setTimeout(()=>{ try{ const r=g.getBoundingClientRect(); if(r.top>window.innerHeight*0.8||r.bottom<0) g.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){} },250); } } } }catch(e){}
 }
 
 function refreshObs(){
@@ -8068,7 +8072,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611021850'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611021935'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -11937,8 +11941,11 @@ function togglePercorsoObiettivo(percorsoIdx, objIdx, checked) {
     if(!per.obiettiviExtra.includes(objIdx)) per.obiettiviExtra.push(objIdx);
   } else {
     per.obiettiviExtra = per.obiettiviExtra.filter(x=>x!==objIdx);
+    // un obiettivo tolto dal percorso non resta segnato nelle attività né negli eventi
+    try{ (per.attivita||[]).forEach(a=>{ if(a&&a.obj&&Array.isArray(a.obj.o)) a.obj.o=a.obj.o.filter(q=>q!==objIdx); }); if(per.provO) delete per.provO[objIdx];
+      uscListAll().forEach(u=>Object.values(u.prog||{}).forEach(m=>{ if(m&&m.obj&&m.obj.pid===per.percorsoId&&Array.isArray(m.obj.o)) m.obj.o=m.obj.o.filter(q=>q!==objIdx); })); }catch(e){}
   }
-  saveDataDebounced();
+  saveDataDebounced(); try{ if(typeof calRe==='function') calRe(); }catch(e){}
 }
 
 function togglePercorsoIdr(percorsoIdx, idrIdx, checked) {
@@ -11950,8 +11957,11 @@ function togglePercorsoIdr(percorsoIdx, idrIdx, checked) {
     if(!per.idrSelezionati.includes(idrIdx)) per.idrSelezionati.push(idrIdx);
   } else {
     per.idrSelezionati = per.idrSelezionati.filter(x => x !== idrIdx);
+    // un indicatore tolto dal percorso non resta spuntato nelle attività né negli eventi
+    try{ (per.attivita||[]).forEach(a=>{ if(!a) return; if(a.obj&&Array.isArray(a.obj.i)) a.obj.i=a.obj.i.filter(q=>q!==idrIdx); if(a.ax&&a.ax.oss&&a.ax.oss[idrIdx]) a.ax.oss[idrIdx].on=false; }); if(per.provI){ delete per.provI['s'+idrIdx]; delete per.provI['p'+idrIdx]; }
+      uscListAll().forEach(u=>Object.values(u.prog||{}).forEach(m=>{ if(m&&m.obj&&m.obj.pid===per.percorsoId&&Array.isArray(m.obj.i)) m.obj.i=m.obj.i.filter(q=>q!==idrIdx); })); }catch(e){}
   }
-  saveDataDebounced();
+  saveDataDebounced(); try{ if(typeof calRe==='function') calRe(); }catch(e){}
 }
 
 
