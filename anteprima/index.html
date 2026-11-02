@@ -7880,9 +7880,13 @@ function affPeople(){ if(MODE==='staff') return stRows(); let t=[]; try{ t=(sche
   return t.map(r=>({nome:String(r.nome||'').trim(), mail:String(r.mail||'').trim().toLowerCase().split(/[\s,;]+/)[0]||''})).filter(r=>r.nome); }
 const affKey=r=>r.mail||r.nome;
 const affNorm=v=>String(v||'').trim().replace(/\s*\([^)]*\)\s*$/,'').toLowerCase().replace(/\s+/g,' ');
-function affName(v){ const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)||affNorm(x.nome)===affNorm(v)); return r?r.nome:String(v||'').replace(/\s*\([^)]*\)\s*$/,''); }
-function affMail(v){ const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)||affNorm(x.nome)===affNorm(v)); return r?r.mail:(/@/.test(String(v||''))?String(v).trim().toLowerCase():''); }
-function affIsMe(v,people){ if(!v) return false; try{ if(typeof CL==='undefined'||!CL.user) return false; const em=affNorm(CL.user.email), nv=affNorm(v);
+// un campo «chi» può contenere più persone, separate da «|» (conduzione e referenti): affIsMe vale se ci sei tu fra loro
+const affParts=v=>String(v==null?'':v).split('|').map(x=>x.trim()).filter(Boolean);
+function affName(v){ const P=affParts(v); if(P.length>1) return P.map(affName1).join(', '); return affName1(P[0]||''); }
+function affName1(v){ const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)||affNorm(x.nome)===affNorm(v)); return r?r.nome:String(v||'').replace(/\s*\([^)]*\)\s*$/,''); }
+function affMail(v){ v=affParts(v)[0]||''; const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)||affNorm(x.nome)===affNorm(v)); return r?r.mail:(/@/.test(String(v||''))?String(v).trim().toLowerCase():''); }
+function affIsMe(v,people){ const P=affParts(v); if(P.length>1) return P.some(x=>affIsMe1(x,people)); return affIsMe1(P[0]||'',people); }
+function affIsMe1(v,people){ if(!v) return false; try{ if(typeof CL==='undefined'||!CL.user) return false; const em=affNorm(CL.user.email), nv=affNorm(v);
   if(nv===em) return true; const nm=affNorm(typeof clMyName==='function'?clMyName():''); if(nm&&nv===nm) return true;
   const r=(people||affPeople()).find(x=>x.mail===em); return !!(r&&(nv===affNorm(r.nome))); }catch(e){ return false; } }
 function affPeopleOf(d){ if(d&&Array.isArray(d.STAFF_MEMBERS)&&d.STAFF_MEMBERS.length&&!(d.scheda&&d.scheda.pp&&Array.isArray(d.scheda.pp.staffTab)&&d.scheda.pp.staffTab.length)) return stRowsOf(d); const t=(d&&d.scheda&&d.scheda.pp&&Array.isArray(d.scheda.pp.staffTab))?d.scheda.pp.staffTab:[];
@@ -8064,7 +8068,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611021140'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611021310'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -8645,13 +8649,19 @@ function axPeople(){ const out=[]; if(MODE==='staff'){ stRows().forEach(r=>out.p
 function axNewPerson(){ const n=(prompt('Nome della persona')||'').trim(); if(!n) return ''; if(!scheda.pp) scheda.pp={}; if(!scheda.pp.axExtra) scheda.pp.axExtra=[]; if(!scheda.pp.axExtra.includes(n)) scheda.pp.axExtra.push(n); return n; }
 function axPersonSel(cur,onch){ const ppl=axPeople(); const known=!cur||ppl.includes(cur);
   return `<select class="ax-in" data-cur="${axE(cur)}" onchange="if(this.value==='__new'){const n=axNewPerson(); if(n){ ${onch.replace(/@V/g,'n')} } else this.value=this.dataset.cur; } else {const n=this.value; ${onch.replace(/@V/g,'n')}}"><option value="">—</option>${ppl.map(n=>`<option ${n===cur?'selected':''}>${axE(n)}</option>`).join('')}${known?'':`<option selected>${axE(cur)}</option>`}<option value="__new">+ Altra persona…</option></select>`; }
+// più persone: le scelte compaiono come etichette con ×, il menu aggiunge la persona successiva
+function axPersonMulti(cur,onch){ const ppl=axPeople(); const sel=affParts(cur); const js=v=>axE(JSON.stringify(v));
+  const chips=sel.map((n,i)=>`<span class="ax-pm-c">${axE(String(n).replace(/\s*\([^)]*\)\s*$/,''))}<button type="button" aria-label="Togli ${axE(String(n).replace(/\s*\([^)]*\)\s*$/,''))}" onclick="${onch.replace(/@V/g,js(sel.filter((_,x)=>x!==i).join('|')))}">×</button></span>`).join('');
+  const rest=ppl.filter(n=>!sel.includes(n));
+  const add=`<select class="ax-in ax-pm-s" aria-label="${sel.length?'Aggiungi un’altra persona':'Scegli una persona'}" onchange="var n=this.value; if(n==='__new'){ n=axNewPerson(); } if(n){ var v=${js(sel.join('|'))}; v=v?v+'|'+n:n; ${onch.replace(/@V/g,'v')} } else this.selectedIndex=0;"><option value="">${sel.length?'+ un’altra persona…':'—'}</option>${rest.map(n=>`<option>${axE(n)}</option>`).join('')}<option value="__new">Un’altra persona…</option></select>`;
+  return `<span class="ax-pm">${chips}${add}</span>`; }
 function axGroup(p,j,k,title,body){ const o=axOpen[p+'-'+j+'-'+k]; const rk=AX_REFG[k]; let pre='', who='';
   try{ const a=axA(p,j); if(rk && axShared(a)){ const x=a.ax||{}; who=axRef(x,rk);
-    pre=`<div class="ax-refrow"><span class="ax-sub" style="margin:0">Referente di questa parte</span>${axPersonSel(who,`axRefSet(${p},${j},'${rk}',@V)`).replace('class="ax-in"','class="ax-in ref-sel"')}<span class="ax-opt">la segue e, se è nel progetto come collaboratore, può modificarla</span></div>`; } }catch(e){}
+    pre=`<div class="ax-refrow"><span class="ax-sub" style="margin:0">Referente di questa parte</span>${axPersonMulti(who,`axRefSet(${p},${j},'${rk}',@V)`)}<span class="ax-opt">la segue e, se è nel progetto come collaboratore, può modificarla</span></div>`; } }catch(e){}
   return `<details class="ax-g" data-k="${k}" data-ref="${axE(who)}" ${o?'open':''}><summary>${title}${who?` <span class="aff-chip${affIsMe(who)?' me':''}">${affIsMe(who)?'affidata a te':axE(String(who).replace(/\s*\([^)]*\)\s*$/,''))}</span>`:''}</summary><div class="ax-gb">${pre}${body}</div></details>`; }
 function axRefSet(p,j,k,v){ axSet(p,j,'ref.'+k,v,true); const lbl=(Object.fromEntries(AX_REF)[k]||'').toLowerCase(); const a=axA(p,j); if(v) refInviteCheck(v, lbl+' di «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }
-const AX_REF=[['log','Ritrovo e spostamenti'],['sic','Sicurezza e primo soccorso'],['ben','Benessere e inclusione'],['camb','Pasti e spesa'],['cassa','Cassa e costi'],['fam','Rapporti con le famiglie']];
-const AX_REFG={log:'log',pasti:'camb',costi:'cassa',sic:'sic',ben:'ben',circ:'fam'};  // settore della scheda → referente
+const AX_REF=[['log','Ritrovo e spostamenti'],['sic','Sicurezza e primo soccorso'],['ben','Benessere e inclusione'],['pb','Piano B'],['camb','Pasti e spesa'],['cassa','Cassa e costi'],['fam','Rapporti con le famiglie']];
+const AX_REFG={log:'log',pasti:'camb',costi:'cassa',sic:'sic',ben:'ben',pb:'pb',circ:'fam'};  // settore della scheda → referente
 // gestione condivisa: se non è indicata, vale "sì" quando c'è già qualcuno a cui è affidata una parte
 function axShared(a){ if(!a) return false; if(a.condivisa!=null) return !!a.condivisa; return !!(a.aff || Object.values(((a.ax||{}).ref)||{}).some(Boolean)); }
 function axRef(x,k){ const R=x.ref||{}; return R[k]||(k==='sic'?(R.ps||(x.sic||{}).cassetta||''):''); }
@@ -8813,7 +8823,7 @@ function axMatRow(p,j,r,i,n,N,K){ K=K||'mat'; const buy=r.prov==='comprare'; con
     <div class="ax-mat2"><span class="ax-sub">Provenienza</span><select class="ax-in" onchange="axRowSet(${p},${j},'${K}',${i},'prov',this.value,true)">${axOpt(AX_PROV,r.prov||'unita')}</select>${r.prov==='altro'?`<input class="ax-in" placeholder="Specifica" value="${axE(r.provAltro)}" oninput="axRowSet(${p},${j},'${K}',${i},'provAltro',this.value)">`:''}</div>
     ${buy?`<div class="ax-mat2"><span class="ax-sub">Prezzo unitario €</span><input class="ax-in ax-q" type="number" min="0" step="0.01" value="${axE(r.prezzo)}" oninput="axRowSet(${p},${j},'${K}',${i},'prezzo',this.value)"><span class="ax-sub">A carico di</span><select class="ax-in" onchange="axRowSet(${p},${j},'${K}',${i},'carico',this.value,true)">${axOpt(AX_CARICO,r.carico)}</select></div>
     <div class="ax-mat2"><span class="ax-sub">Dove comprarlo</span><input class="ax-in" placeholder="negozio o link" value="${axE(r.dove)}" oninput="axRowSet(${p},${j},'${K}',${i},'dove',this.value);axLinkUpd(this)"><a class="att-link-open" target="_blank" rel="noopener" href="${axE(linkNorm(r.dove||''))}" style="${axIsUrl(r.dove)?'':'display:none'}">Apri ↗</a></div>`:''}
-    <div class="ax-mat2"><span class="ax-sub">Chi lo procura</span>${axPersonSel(r.chi,`axRowSet(${p},${j},'${K}',${i},'chi',@V,true)`)}${r.chi&&affIsMe(r.chi)&&!r.pronto?'<span class="aff-chip me">tocca a te</span>':''}${axChips(AX_ECO,r.eco,v=>`axRowSet(${p},${j},'${K}',${i},'eco',axD('${v}'),true)`)}<label class="ax-check" style="margin:0"><input type="checkbox" ${r.pronto?'checked':''} onchange="axRowSet(${p},${j},'${K}',${i},'pronto',this.checked)"> pronto</label></div></div>`; }
+    <div class="ax-mat2"><span class="ax-sub">Chi lo procura</span>${axPersonMulti(r.chi,`axRowSet(${p},${j},'${K}',${i},'chi',@V,true)`)}${r.chi&&affIsMe(r.chi)&&!r.pronto?'<span class="aff-chip me">tocca a te</span>':''}${axChips(AX_ECO,r.eco,v=>`axRowSet(${p},${j},'${K}',${i},'eco',axD('${v}'),true)`)}<label class="ax-check" style="margin:0"><input type="checkbox" ${r.pronto?'checked':''} onchange="axRowSet(${p},${j},'${K}',${i},'pronto',this.checked)"> pronto</label></div></div>`; }
 // cibo
 function axDoseMem(){ let m={}; try{ m=JSON.parse(localStorage.getItem('pee_dosi')||'{}')||{}; }catch(e){} return Object.assign(m,(scheda.pp||{}).dosi||{}); }
 function axDoseRemember(nome,dose){ nome=(nome||'').trim().toLowerCase(); if(!nome||!dose) return; if(!scheda.pp) scheda.pp={}; if(!scheda.pp.dosi) scheda.pp.dosi={}; scheda.pp.dosi[nome]=Number(dose); try{ const m=JSON.parse(localStorage.getItem('pee_dosi')||'{}')||{}; m[nome]=Number(dose); localStorage.setItem('pee_dosi',JSON.stringify(m)); }catch(e){} }
@@ -9341,7 +9351,7 @@ function uscObjHTML(k,m,can){ const O=m.obj||{}; let stf=false; try{ stf=uscSt()
     const id=(P.idr||[]).map((t,q)=>({k:q,t})).sort((a,b)=>(inI.has(b.k)-inI.has(a.k))||a.k-b.k);
     h+=`<div class="ax-sub">Obiettivi</div>`+ob.map(o=>`<label class="ax-check usc-objl"><input type="checkbox" ${so.includes(o.k)?'checked':''} ${can?'':'disabled'} onchange="uscObjTog('${k}','o',${o.k})"> <span>${uscE(o.t)}${inO.has(o.k)?' <span class="usc-inp">nella programmazione</span>':''}</span></label>`).join('');
     h+=id.length?`<div class="ax-sub">Indicatori di Risultato da osservare</div>`+id.map(o=>`<label class="ax-check usc-objl"><input type="checkbox" ${si.includes(o.k)?'checked':''} ${can?'':'disabled'} onchange="uscObjTog('${k}','i',${o.k})"> <span>${uscE(o.t)}${inI.has(o.k)?' <span class="usc-inp">nella programmazione</span>':''}</span></label>`).join(''):'';
-    h+=`<label class="usc-lb" style="max-width:260px;margin-top:6px">Chi osserva${axPersonSel(O.chi||'',`uscObj('${k}','chi',@V)`)}</label>`; }
+    h+=`<label class="usc-lb" style="max-width:260px;margin-top:6px">Chi osserva${axPersonMulti(O.chi||'',`uscObj('${k}','chi',@V)`)}</label>`; }
   if((O.ob||'').trim()||(O.idr||'').trim()) h+=`<div class="ax-hint">Scritto prima: ${uscE([O.ob,O.idr].filter(Boolean).join(' · '))}</div>`;
   return h; }
 // ── portare un'attività dell'uscita nella programmazione (Sezione 3) ──
@@ -9797,7 +9807,7 @@ function uscMealCopy(j,from,to){ if(!to) return; const x=axX(USC_P,j); const [g,
 function uscPastiHTML(u,j){ const x=u.ax, N=axN(x), C=x.cibo||{}, n=uscNG(u), can=uscCan(); const p=USC_P; const cols=uscPCols(u);
   const cell=(g,m)=>{ const sac=axSacco(x,g,m); const D=uscMeals(x,g,m); const on=USC_MEAL===g+'|'+m;
     return `<td class="${on?'on':''}" style="--mc:${uscPCol(m)}"><button type="button" class="usc-mc${sac?' sac':''}" aria-expanded="${on}" onclick="uscMealSet(${g},'${m}')">${sac?'al sacco':D.length?D.map(uscE).join('<br>'):'<span class="usc-mplus">+ menù</span>'}</button></td>`; };
-  const ref=`<label class="usc-mref"><span>Referente</span>${axPersonSel(axRef(x,'camb'),`axRefSet(${p},${j},'camb',@V)`)}</label>`;
+  const ref=`<label class="usc-mref"><span>Referente</span>${axPersonMulti(axRef(x,'camb'),`axRefSet(${p},${j},'camb',@V)`)}</label>`;
   const uref=axRef(x,'camb'); let h=`<div class="usc-card2 usc-modpage" style="--mc:${uscMCol('pasti')}"${uref?` data-uref="${uscE(uref)}" data-uk="pasti"`:''}><div class="usc-mph"><div><h3>Pasti</h3><span class="usc-hint" style="margin:0">Tocca un pasto per scrivere piatti e ingredienti: compare nel blocco del pasto di quella giornata. ${N.tot?N.tot+' persone a tavola.':'Indica i presenti in «Persone e date».'}</span></div>${ref}<span class="usc-dact"><button type="button" class="btn-ghost usc-btn" onclick="uscExcel()">⤓ Excel</button><button type="button" class="btn-ghost usc-btn" onclick="uscExport('menu')">⤓ Word</button></span></div>
     <div class="usc-modo" style="margin:8px 0 12px;padding:10px;border:1px solid var(--border-light,#ddd);border-radius:10px">${axCiboModoHTML(p,j,x,can,false)}</div>
     <div class="usc-tw" id="usc-menu-box"><table class="usc-menu"><tr><th>Giornata</th>${cols.map(m=>`<th style="--mc:${uscPCol(m)}"><span class="usc-mch">${can&&/^x_/.test(m)&&cols.indexOf(m)>0?`<button type="button" class="usc-mcx" title="Sposta prima" aria-label="Sposta ${uscE(axPastoLab(x,m))} prima" onclick="uscPColMove('${m}',-1)">‹</button>`:''}${uscE(axPastoLab(x,m))}${can&&/^x_/.test(m)&&cols.indexOf(m)<cols.length-1?`<button type="button" class="usc-mcx" title="Sposta dopo" aria-label="Sposta ${uscE(axPastoLab(x,m))} dopo" onclick="uscPColMove('${m}',1)">›</button>`:''}${can?`<button type="button" class="usc-mcx" title="Togli la colonna" aria-label="Togli ${uscE(axPastoLab(x,m))} da tutte le giornate" onclick="uscPColDel('${m}')">×</button>`:''}</span></th>`).join('')}</tr>${Array.from({length:n},(_,i)=>i+1).map(g=>`<tr><th>${uscE(uscDayShort(u,g))}</th>${cols.map(m=>cell(g,m)).join('')}</tr>`).join('')}</table></div>`;
@@ -9891,7 +9901,7 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
     <div class="usc-mv2"><span><label><input type="checkbox" ${m.fix?'checked':''} onchange="uscBlkFix('${k}',this.checked)"> Ora fissa</label></span>${m.fix?`<select class="ax-in" onchange="uscBlkSet('${k}','ora',this.value,true)">${axTimeOpts(m.ora)}</select>`:`<span class="usc-tm">${t?axHM(t.s)+'–'+axHM(t.e):''}</span>`}</div>
     ${m.k==='pasto'?`<label class="usc-mv2"><span>Quale pasto</span><select class="ax-in" onchange="if(this.value==='__new'){uscPastoNewFor('${k}')}else{uscBlkSet('${k}','pasto',this.value,true)}">${axOpt(AX_PASTI.concat(Object.keys(x.pastiNomi||{}).filter(q=>/^x_/.test(q)).map(q=>[q,x.pastiNomi[q]||'Altro'])).concat([['__new','+ Altro…']]),m.pasto||'pranzo')}</select></label>${/^x_/.test(m.pasto||'')?`<label class="usc-mv2"><span>Nome del pasto</span><input class="ax-in" maxlength="40" value="${uscE((x.pastiNomi||{})[m.pasto]||'')}" oninput="uscPastoRen('${m.pasto}',this.value)"></label>`:''}`:''}
     ${m.k==='mio'?`<div class="usc-mv2"><span>Colore</span><span class="usc-colors">${USC_COLS.map(c=>`<button type="button" class="usc-cdot${(m.col||USC_COLS[0])===c?' on':''}" style="background:${c}" aria-label="Colore" onclick="uscBlkSet('${k}','col','${c}',true)"></button>`).join('')}</span></div>`:''}
-    <label class="usc-mv2"><span>${m.k==='att'||m.k==='nuova'||m.k==='hike'||m.k==='gioco'||m.k==='mf'?'Chi conduce':'Affidato a'}</span>${axPersonSel(m.aff||'',`uscBlkSet('${k}','aff',@V,true)`)}</label></div>
+    <label class="usc-mv2"><span>${m.k==='att'||m.k==='nuova'||m.k==='hike'||m.k==='gioco'||m.k==='mf'?'Chi conduce':'Affidato a'}</span>${axPersonMulti(m.aff||'',`uscBlkSet('${k}','aff',@V,true)`)}</label></div>
     <details class="usc-dd" ${USC_OPEN[k+'|mv']?'open':''} ontoggle="USC_OPEN['${k}|mv']=this.open"><summary>Sposta o duplica <span class="ax-opt">in un’altra giornata o in un’altra uscita</span></summary><div class="usc-brow">${uscMoveSel(u,k,m)}<label class="usc-mv2"><span>Duplica in</span><select class="ax-in" onchange="uscBlkDup('${k}',this.value);this.value=''"><option value="">scegli…</option>${days.map(g=>`<option value="${g}">${uscE(uscDayShort(u,g)+' · '+uscDayLbl(u,g))}</option>`).join('')}</select></label>${uscToUscHTML(u,k,m)}</div></details>`;
   if(t&&t.clash) h+=`<div class="ax-warn">Con l’ora fissa delle ${uscE(m.ora)} questo blocco comincia prima che finisca quello precedente (finisce alle ${axHM(t.pe)}): accorcia un blocco prima o sposta l’ora fissa.</div>`;
   if(m.k==='att'){ if(!f&&USC_FOPEN[k+'|lsc']==null) USC_FOPEN[k+'|lsc']=true; uscFOrd(m).forEach(fk=>{ if(fk==='lsc') h+=uscFieldHTML(u,k,m,'lsc',f,I,can); else if(f) h+=uscAttFieldHTML(u,k,m,fk,f,can); }); }
@@ -10153,11 +10163,11 @@ function uscAddModHTML(u){ const Hd=uscMods().filter(([k])=>uscHidden(u,k));
     <div class="ax-sub">Oppure crea un modulo vostro <span class="ax-opt">(non entra nei calcoli)</span></div><div class="usc-ownf"><input class="ax-in" id="usc-own-t" maxlength="60" placeholder="es. Turni di servizio"><select class="ax-in" id="usc-own-k">${axOpt([['testo','Testo'],['lista','Lista da spuntare'],['tabella','Piccola tabella']],'testo')}</select><button type="button" class="btn-ghost usc-btn" onclick="uscOwnAdd()">Aggiungi</button></div>
     <button type="button" class="usc-lnk" style="margin-top:6px" onclick="USC_ADDMOD=false;uscRe()">Chiudi</button></div>`; }
 function uscOwnPageHTML(u,j,k){ const o=(u.own||{})[k]; if(!o) return ''; const can=uscCan();
-  const ref=`<label class="usc-mref"><span>Referente</span>${axPersonSel(o.ref||'',`uscOwnSet('${k}','ref',@V,true)`)}</label>`;
+  const ref=`<label class="usc-mref"><span>Referente</span>${axPersonMulti(o.ref||'',`uscOwnSet('${k}','ref',@V,true)`)}</label>`;
   return `<div class="usc-card2 usc-modpage"${o.ref?` data-uref="${uscE(o.ref)}" data-uk="o:${k}"`:''}><div class="usc-mph"><div><h3>${can?`<input class="ax-in usc-ownt" value="${uscE(o.t)}" maxlength="60" oninput="uscOwnSet('${k}','t',this.value)" aria-label="Nome del modulo">`:uscE(o.t)}</h3><span class="usc-tag own">creato da voi · non entra nei calcoli</span></div>${ref}${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo" onclick="uscOwnDel('${k}')">×</button>`:''}</div>${uscOwnBody(k,o,can).replace(/<div class="usc-hidebar">[\s\S]*?<\/div>$/,'')}</div>`; }
 // ── pagina di un modulo: parte generale + riepilogo per giornata ──
 function uscModPageHTML(u,j,k){ const M=uscMods().find(m=>m[0]===k); if(!M) return ''; const p=USC_P, x=u.ax, can=uscCan(); const rk=AX_REFG[k];
-  const ref=rk?`<label class="usc-mref"><span>Referente</span>${axPersonSel(axRef(x,rk),`axRefSet(${p},${j},'${rk}',@V)`)}</label>`:'';
+  const ref=rk?`<label class="usc-mref"><span>Referente</span>${axPersonMulti(axRef(x,rk),`axRefSet(${p},${j},'${rk}',@V)`)}</label>`:'';
   const body={chi:()=>axChi(p,j,u,x), log:()=>axLog(p,j,u,x), costi:()=>uscCostiHTML(u,j), trasp:()=>uscSpCatHTML(u,j,'trasporti'), loc:()=>uscSpCatHTML(u,j,'locazioni'), sic:()=>axSic(p,j,u,x), ben:()=>axBen(p,j,u,x), pb:()=>axPB2(p,j,u,x), mat:()=>axMat(p,j,u,x), circ:()=>axCirc(p,j,u,x), obs:()=>uscObsHTML(u,can), scatto:()=>uscScattoHTML(u,can), energy:()=>uscEnergyHTML(u,can), casa:()=>uscCasaHTML(u,can)}[k];
   let b=''; try{ b=body(); }catch(e){ console.error(e); b='<div class="ax-hint">Questo modulo non si è aperto.</div>'; }
   const gen={sic:'Per tutto il campo',ben:'Per tutto il campo',pb:'Per tutto il campo',mat:'Comuni a tutto il campo',chi:'Chi viene e quando',log:'Ritrovo e spostamenti',circ:uscSt()?'Convocazione per lo staff':'Circolare per le famiglie',obs:'Su cosa lavoriamo',scatto:'Le fotografie dello staff',energy:'Come state',casa:'Cosa portiamo a casa'}[k];
@@ -11245,7 +11255,7 @@ async function staffShare(i,cb){ const r=staffTab()[i]; if(!r) return; const mai
 function staffShareCancel(){ const S=window._stShare; window._stShare=null; modalClose(); if(S&&S.cb) S.cb.checked=false; }
 async function staffShareGo(ruolo){ const S=window._stShare; window._stShare=null; modalClose(); if(!S) return;
   try{ await dbInvite(CL.ctx.id, S.mail, ruolo); CL._nMem=undefined; await clMemLoad();
-    const wa=clWaBtn(S.mail, ruolo).replace('class="cl-btn ghost sm wa"','class="btn-ghost st-wa"');
+    const wa=clWaBtn(S.mail, ruolo).replace('class="cl-btn ghost sm wa"','class="btn-ghost st-wa"')+clMailBtn(S.mail, ruolo).replace('class="cl-btn ghost sm wa"','class="btn-ghost st-wa"');
     modalShow(`<div style="font-size:15px;font-weight:800;margin-bottom:6px">Fatto: ${sEsc(S.nome)} è nel progetto come ${sEsc(CL_RUOLI[ruolo].toLowerCase())}</div><p style="font-size:12.5px;line-height:1.55;margin:0 0 10px">Lo trova in <b>Archivio › Condivisi con me</b> quando accede con <b>${sEsc(S.mail)}</b>. Vuoi avvisarlo subito?</p><div style="display:flex;gap:8px;flex-wrap:wrap">${wa}<button class="btn-ghost" onclick="modalClose()">Più tardi</button></div>`);
   }catch(e){ if(S.cb) S.cb.checked=false; if(e.message==='duplicate'){ clMemLoad(); showToast(S.nome+' era già nel progetto'); } else showToast('Non riesco a invitare: '+clErr(e)); } }
 function staffMailBad(i,on){ const B=window._stBad=window._stBad||{}; if(on) B[i]=1; else delete B[i]; staffTabRefresh(); }
@@ -15416,8 +15426,8 @@ async function clLoadMem(){
       const stato = roles ? (r.visto_il ? 'ha già visto l\'invito' : 'non ha ancora aperto l\'invito') : 'sola lettura + suggerimenti';
       const nm = clStaffName(r.email);
       return `<div class="cl-row"><div style="min-width:0"><div class="t">${nm ? clEsc(nm) + ' <span style="font-weight:500;color:#666">· ' + clEsc(r.email) + '</span>' : clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}${lock?'':`<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button>`}</div></div>`;
-    }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> apre un messaggio già scritto: se nella tabella dello staff (1.1) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}${clMailBtn(r.email, ru)}${lock?'':`<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button>`}</div></div>`;
+    }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> e <strong>Avvisa via email</strong> aprono un messaggio già scritto: se nella tabella dello staff (1.1) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
   }catch(e){ box.innerHTML = `<p class="cl-note">${clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : 'Elenco non disponibile: '+clEsc(clErr(e))}</p>`; }
 }
 // ── cambio dell'email dell'account: gli inviti passano alla nuova email, chi ha il progetto lo vede in «Per te» ──
@@ -15524,7 +15534,7 @@ function clStaffPickHTML(invited){
 
 // ── referente scelto → proposta di invito come collaboratore (sempre con conferma) ──
 async function refInviteCheck(person, cosa){
-  try{
+  try{ const PP = affParts(person); if(PP.length > 1){ for(const one of PP) await refInviteCheck(one, cosa); return; }
     if(!CL.sb || !CL.user || !CL.ctx || window.BRO) return;
     if(!clEditOn() || !(await clRolesOk())) return;
     const owner = !CL.ctx.ruolo, cot = CL.ctx.ruolo === 'cotitolare';
@@ -15587,6 +15597,11 @@ function clWaBtn(email, ruolo){
   const href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(clWaText(email, ruolo));
   return `<a class="cl-btn ghost sm wa" style="text-decoration:none" href="${clEsc(href)}" target="_blank" rel="noopener" title="${n ? 'Apre la chat con il numero della tabella dello staff' : 'Numero non trovato nella tabella dello staff: sceglierai tu il contatto'}">Avvisa su WhatsApp</a>`;
 }
+// stesso messaggio, per email: non tutti usano WhatsApp
+function clMailBtn(email, ruolo){
+  const href = 'mailto:' + encodeURIComponent(String(email || '').trim()).replace(/%40/g, '@') + '?subject=' + encodeURIComponent('Ti ho invitato a un progetto su PEE CNGEI') + '&body=' + encodeURIComponent(clWaText(email, ruolo));
+  return `<a class="cl-btn ghost sm wa" style="text-decoration:none" href="${clEsc(href)}" title="Apre la tua posta con il messaggio già scritto">Avvisa via email</a>`;
+}
 async function clSetRole(mid, ruolo){
   try{ await dbSetRole(mid, ruolo); clToast('Ruolo aggiornato: ' + CL_RUOLI[ruolo]); clLoadMem(); }
   catch(e){ clToast('Errore: '+clErr(e)); clLoadMem(); }
@@ -15599,7 +15614,7 @@ async function clInvite(){
   try{
     await dbInvite(CL.ctx.id, email, ruolo); CL._nMem = undefined;
     CL._nMem = undefined; inp.value = ''; clMsg('Invitato. Il progetto gli comparirà in «Condivisi con me» quando accede con questa email.', 'ok');
-    const w = $cl('cl-wanow'); if(w) w.innerHTML = `<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="cl-note" style="margin:0">Vuoi avvisarlo subito?</span>${clWaBtn(email, CL.roles ? ruolo : 'lettore')}</div>`;
+    const w = $cl('cl-wanow'); if(w) w.innerHTML = `<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="cl-note" style="margin:0">Vuoi avvisarlo subito?</span>${clWaBtn(email, CL.roles ? ruolo : 'lettore')}${clMailBtn(email, CL.roles ? ruolo : 'lettore')}</div>`;
     clLoadMem();
   }catch(e){
     if(e.message === 'duplicate') clMsg('Questa persona è già stata invitata', 'err');
@@ -16116,7 +16131,7 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 .pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
 .pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
 .pf-pa{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid #e4e8e2}
-.sh-pt{margin:10px 0 14px}.sh-pt>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b3360f;padding:6px 0}.sh-pt .cl-perte{margin-top:6px}.sh-exp{margin:22px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
+.ax-pm{display:inline-flex;flex-wrap:wrap;gap:5px;align-items:center}.ax-pm-c{display:inline-flex;gap:3px;align-items:center;background:#e8f3ec;border:1px solid #b9d6c4;border-radius:999px;padding:2px 4px 2px 9px;font-size:12.5px;font-weight:600}.ax-pm-c button{border:0;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}.ax-pm-c button:hover,.ax-pm-c button:focus-visible{background:#cfe5d7}.ax-pm-s{max-width:210px}.sh-pt{margin:10px 0 14px}.sh-pt>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b3360f;padding:6px 0}.sh-pt .cl-perte{margin-top:6px}.sh-exp{margin:22px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
 .sh-tag{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
 .sh-tag.L{background:#f7f19a}.sh-tag.E{background:#d7ecdf}.sh-tag.R{background:#f8c9c7}.sh-tag.X{background:#e3e8f2}
 .sh-role{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;border:1px solid #8a8a82;color:#3D3D38;background:#fff;white-space:nowrap}
