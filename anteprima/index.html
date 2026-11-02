@@ -8072,7 +8072,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611021935'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611022110'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9085,7 +9085,7 @@ function axBody(p,j){ const a=axA(p,j); const x=a.ax; const slim=p!==USC_P&&uscI
     G(p,j,'sic','Sicurezza e primo soccorso <span>· rischi, numeri utili, cassetta</span>',axSic(p,j,a,x))+
     G(p,j,'ben','Benessere e inclusione <span>· attenzioni e accortezze per tutti</span>',axBen(p,j,a,x))+
     G(p,j,'pb','Piano B <span>· le situazioni da prevedere</span>',axPB2(p,j,a,x))+
-    G(p,j,'circ','Circolare per le famiglie <span>· apertura, riepilogo, cosa portare, quota, invio</span>',axCirc(p,j,a,x))+
+    G(p,j,'circ',((()=>{ try{ return MODE==='staff'||uscSt(); }catch(e){ return false; } })()?'Circolare di convocazione <span>· dove e quando ci vediamo, cosa portare, invio</span>':'Circolare per le famiglie <span>· apertura, riepilogo, cosa portare, quota, invio</span>'),axCirc(p,j,a,x))+
     `<div class="ax-chips" style="margin-top:10px"><button type="button" class="btn-ghost ax-btn" onclick="axDocx(${p},${j})">↓ Scheda di questa attività per lo staff (Word)</button><button type="button" class="btn-ghost ax-btn" onclick="icsOne(${p},${j})">📅 Aggiungi al calendario</button><button type="button" class="btn-ghost ax-btn" onclick="fdgOpen(${p},${j})">🖨 Foglio del giorno</button></div>`; }
 // prima c'era un "referente materiali": i materiali ora li segue il referente dell'attività, il nome già scritto resta come nota
 function axMatOld(x){ const n=(x.ref||{}).mat; return n?`<div class="ax-refn">Indicato in precedenza come referente dei materiali: <b>${axE(n)}</b></div>`:''; }
@@ -9133,14 +9133,14 @@ const USC_HID_ST={obs:0,scatto:0,energy:0,casa:0};
 const USC_MOD=[['chi','Persone e date','presenti, date, documenti dei genitori, cose da fare'],['log','Ritrovo e spostamenti','luogo, spostamenti, km e CO₂'],['trasp','Trasporti','pullman, treno, auto: quanto costano'],['loc','Locazioni','case, strutture, energia e altre spese'],['costi','Quota','cassa, parte dei capi, come si paga'],['sic','Sicurezza','rischi, numeri utili, cassetta'],['ben','Benessere e inclusione','attenzioni per tutto il campo'],['pb','Piano B','le situazioni da prevedere'],['mat','Materiali','quello che serve a tutto il campo e giornata per giornata'],['circ','Circolare per le famiglie','carta intestata nazionale, Word e PDF']];
 const USC_MOD_ST=USC_MOD.map(m=>m[0]==='chi'?['chi','Persone e date','presenti, date, cose da fare']:m[0]==='costi'?['costi','Quota','cassa e quota a testa']:m[0]==='circ'?['circ','Convocazione','carta intestata, Word e PDF']:m);
 const USC_MOD_ST2=USC_MOD_ST.concat([['obs','Obiettivi','su cosa lavorare, dal Riepilogo dello staff'],['scatto','Scatti','una fotografia dello staff, prima e dopo'],['energy','Energy Check','come state, giornata per giornata'],['casa','Cosa portiamo a casa','Start · Stop · Continue, con le azioni']]);
-function uscMods(){ return MODE==='staff'?USC_MOD_ST2:USC_MOD; }
+function uscMods(){ const L=MODE==='staff'?USC_MOD_ST2:USC_MOD; let st=false; try{ st=uscSt(); }catch(e){} return st?L.map(m=>m[0]==='circ'?['circ','Circolare di convocazione','dove e quando ci vediamo, cosa portare, invio']:m):L; }
 const USC_BT={sveglia:['Sveglia','#6D5BD0',['desc','chi'],30],pasto:['Pasto','#D98A00',['menu','chi'],60],cerim:['Cerimonia','#C0392B',['desc','chi'],20],att:['Attività del percorso','#1B7A4E',['lsc','mat','sic','ben','pb'],120],
   nuova:['Attività','#0E8A8A',['lsn','scal','mat','sic','ben','pb','link','obj','chi'],90],hike:['Hike','#8A5A2B',['desc','scal','link','mat','sic','pb','chi'],300],gioco:['Gioco','#E0662A',['lsn','scal','mat','sic','chi'],90],
-  libero:['Tempo libero','#2E8FD6',['desc'],60],serata:['Serata','#9C2D5B',['desc','mat','chi'],90],riposo:['Riposo','#55606E',['desc'],30],sposta:['Spostamento','#8C8C84',['trip','chi'],60],mio:['Blocco tuo','#8E44AD',['desc'],60],mf:['Momento formativo','#7B3FA0',['sch','scal','mat','sic','ben','pb','chi'],45]};
+  libero:['Tempo libero','#2E8FD6',['desc'],60],serata:['Serata','#9C2D5B',['desc','mat','chi'],90],riposo:['Riposo','#55606E',['desc'],30],sposta:['Spostamento','#8C8C84',['trip','chi'],60],mio:['Momento personalizzato','#8E44AD',['desc'],60],mf:['Momento formativo','#7B3FA0',['sch','scal','mat','sic','ben','pb','chi'],45]};
 // il blocco «Attività del percorso» prende il colore della Branca (verde E, rosso R, blu CG, giallo scuro L)
 const BR_ATT = {E:'#25734e', R:'#8f1d19', S:'#1d4f8f', L:'#7a6e00'};
 try{ Object.defineProperty(USC_BT.att, 1, {get(){ let b = null; try{ b = (typeof FASCIA !== 'undefined' && FASCIA) || brandOf(); }catch(e){} return BR_ATT[b] || '#25734e'; }, enumerable:true, configurable:true}); }catch(e){}
-const USC_PALS=[['sveglia','Sveglia','ginnastica, igiene'],['pasto','Colazione','',{pasto:'colazione',dur:45}],['cerim','Cerimonia','Alzabandiera, Quadrato, ecc.'],['att','Attività','dalla programmazione'],['mf','Momento formativo','da una scheda, scritto da te'],['nuova','Attività nuova','gioco, tecnica, impresa…'],['hike','Hike','con link alla traccia'],['gioco','Gioco',''],['libero','Tempo libero','angolo di Pattuglia'],['pasto','Pranzo','',{pasto:'pranzo',dur:75}],['pasto','Merenda','',{pasto:'merenda',dur:20}],['pasto','Cena','',{pasto:'cena',dur:75}],['pasto','Altro pasto','nome a scelta',{pasto:'__x',dur:45}],['serata','Fuoco di bivacco','serata, veglia'],['riposo','Silenzio','e notte'],['sposta','Spostamento','pullman, cammino'],['mio','Blocco tuo','nome e colore a scelta']];
+const USC_PALS=[['sveglia','Sveglia','ginnastica, igiene'],['pasto','Colazione','',{pasto:'colazione',dur:45}],['cerim','Cerimonia','Alzabandiera, Quadrato, ecc.'],['att','Attività','dalla programmazione'],['mf','Momento formativo','da una scheda, scritto da te'],['nuova','Attività nuova','gioco, tecnica, impresa…'],['hike','Hike','con link alla traccia'],['gioco','Gioco',''],['libero','Tempo libero','angolo di Pattuglia'],['pasto','Pranzo','',{pasto:'pranzo',dur:75}],['pasto','Merenda','',{pasto:'merenda',dur:20}],['pasto','Cena','',{pasto:'cena',dur:75}],['pasto','Altro pasto','nome a scelta',{pasto:'__x',dur:45}],['serata','Fuoco di bivacco','serata, veglia'],['riposo','Silenzio','e notte'],['sposta','Spostamento','pullman, cammino'],['mio','Momento personalizzato','nome e colore a scelta']];
 const USC_F={sch:'Il momento (scopo, passi e tempi)',trip:'Viaggio',scal:'Scaletta',desc:'Cosa si fa',lsc:'Lancio · Sviluppo · Conclusione',lsn:'Lancio · Sviluppo · Conclusione',mat:'Materiali',sic:'Sicurezza',ben:'Benessere e inclusione',pb:'Piano B',link:'Link',obj:'Obiettivi e Indicatori della programmazione',menu:'Menù',chi:'Chi conduce'};
 const USC_FALL=['desc','scal','mat','sic','ben','pb','link','obj','chi'];
 const USC_HIDSET=new WeakSet();
@@ -9747,7 +9747,7 @@ function uscOneHTML(u){ const j=uscJ(u.id), x=u.ax, N=axN(x), can=uscCan(); cons
     <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
   const tb=(id,t,s,cls)=>`<button type="button" role="tab"${typeof id==='string'&&uscMCol(id.replace(/^m:/,''))&&/^(m:|pasti)/.test(id)?` style="--mc:${uscMCol(id.replace(/^m:/,''))}"`:''} class="usc-tab ${cls||''}${USC_TAB===id?' on':''}" aria-selected="${USC_TAB===id}" id="usc-tab-${typeof id==='string'?id.replace(':','-'):id}" onclick="uscTab(${typeof id==='string'?`'${id}'`:id})">${uscE(t)}${s?`<small>${uscE(s)}</small>`:''}</button>`;
   const mods=uscModList(u).map(([k,l])=>tb(k==='pasti'?'pasti':'m:'+k,l,'',' mod'+(k!=='pasti'&&uscModFilled(u,k)?' done':''))).join('')+uscOwn(u).map(({k,o})=>tb('o:'+k,o.t||'Modulo','',' mod own')).join('');
-  h+=`<div class="usc-nav"><div class="usc-navr"><div class="usc-tabs usc-tabs1" id="usc-tabs" role="tablist" aria-label="Campo e moduli">${tb('campo','Campo','visione d’insieme','gen')}${mods}${can?`<button type="button" class="usc-tab mod add" onclick="USC_ADDMOD=!USC_ADDMOD;uscRe()" aria-expanded="${USC_ADDMOD}">+ Aggiungi un modulo</button>`:''}</div>
+  h+=`<div class="usc-nav"><div class="usc-navr"><div class="usc-tabs usc-tabs1" id="usc-tabs" role="tablist" aria-label="Campo e moduli">${tb('campo','Visione d’insieme','','gen')}${mods}${can?`<button type="button" class="usc-tab mod add" onclick="USC_ADDMOD=!USC_ADDMOD;uscRe()" aria-expanded="${USC_ADDMOD}">+ Aggiungi un modulo</button>`:''}</div>
     <details class="usc-pm"><summary class="btn-ghost usc-btn">⤓ Esporta ▾</summary><div class="usc-pmm" role="menu">
       <button type="button" onclick="uscExport('tutto')">Tutto il campo <small>Word</small></button>${typeof USC_TAB==='number'&&USC_TAB<=n?`<button type="button" onclick="uscExport('giorno',${USC_TAB})">Questa giornata <small>Word</small></button><button type="button" onclick="uscExport('ttg',${USC_TAB})">Time table della giornata <small>Word</small></button>`:''}
       <button type="button" onclick="uscExport('ttc')">Time table del campo <small>Word</small></button><button type="button" onclick="uscExcelTT()">Time table del campo <small>Excel</small></button><button type="button" onclick="uscExport('menu')">Menù e lista della spesa <small>Word</small></button><button type="button" onclick="uscExcel()">Menù, dosi e spesa <small>Excel</small></button><button type="button" onclick="uscExcelMat()">Materiali <small>Excel</small></button><button type="button" onclick="uscExport('quota')">Quota spiegata <small>Word</small></button>
@@ -9896,7 +9896,7 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
   const sub=[I?'Percorso '+I.n+(I.amb?' · '+I.amb:''):'', m.k==='pasto'&&uscMeals(x,Number(m.g)||1,m.pasto||'pranzo').length?uscMeals(x,Number(m.g)||1,m.pasto||'pranzo').join(', '):'', who?(affIsMe(m.aff)?'affidato a te':'conduce '+who):''].filter(Boolean).join(' · ');
   const uaff=m.aff||(f&&f.a.aff)||''; let h=`<div class="usc-blk${open?' open':''}" id="usc-b-${k}" data-blk="${k}"${uaff?` data-uaff="${uscE(uaff)}"`:''} style="--c:${col}">
     <div class="usc-bh" ${can?'draggable="true"':''} onclick="if(!event.target.closest('button,select,input'))uscBlkTog('${k}')"><div class="usc-bt">${t?axHM(t.s):'—'}${m.fix?'<span title="ora fissa"> 📌</span>':''}<small>${axDurTxt(m.dur)}</small></div>
-      <div class="usc-bn"><b><span class="usc-btype">${uscE(lab)}</span><span class="usc-btt">${uscE(uscBlkTitle(m))}</span></b><span>${uscE(sub)||'&nbsp;'}</span></div>
+      <div class="usc-bn"><b>${(m.k==='mio'&&(m.t||'').trim())?'':`<span class="usc-btype">${uscE(lab)}</span>`}<span class="usc-btt">${uscE(uscBlkTitle(m))}</span></b><span>${uscE(sub)||'&nbsp;'}</span></div>
       <div class="usc-bctl">${can?`<span class="usc-grip" aria-hidden="true">⠿</span><button type="button" class="usc-ib" data-mv="-1" aria-label="Sposta su" ${i===0?'disabled':''} onclick="uscBlkMove('${k}',-1)">↑</button><button type="button" class="usc-ib" data-mv="1" aria-label="Sposta giù" ${i===n-1?'disabled':''} onclick="uscBlkMove('${k}',1)">↓</button>`:''}<button type="button" class="usc-ib" aria-expanded="${open}" aria-label="${open?'Chiudi':'Apri'}" onclick="uscBlkTog('${k}')">${open?'▾':'▸'}</button>${can?`<button type="button" class="usc-ib usc-bx" title="Togli dal programma" aria-label="Togli dal programma" onclick="uscBlkDel('${k}')">×</button>`:''}</div></div>`;
   if(!open) return h+`</div>`;
   h+=`<div class="usc-bb">`;
@@ -9980,18 +9980,18 @@ function uscTTModel(u,g,a0,z0){ const T=uscTimes(u,g), R=uscBlocks(u,g); if(!R.l
   const a=a0!=null?a0:Math.floor(Math.min(...B.map(b=>b.s))/30)*30, z=z0!=null?z0:Math.ceil(Math.max(...B.map(b=>b.e))/30)*30; const n=Math.max(1,Math.round((z-a)/30));
   const S=Array.from({length:n},(_,i)=>({t:a+30*i,B:[],cont:null,rs:0}));
   B.forEach(b=>{ b.i=Math.max(0,Math.min(n-1,Math.floor((b.s-a)/30))); S[b.i].B.push(b); });
-  S.forEach((sl,i)=>{ if(sl.B.length!==1||sl.cont) return; const b=sl.B[0]; let j=i+1; while(j<n&&S[j].t<b.e&&!S[j].B.length&&!S[j].cont) j++; if(j>i+1){ for(let k=i+1;k<j;k++) S[k].cont=b; sl.rs=j-i; } });
+  S.forEach((sl,i)=>{ if(!sl.B.length||sl.cont) return; const b=sl.B.reduce((x,y)=>y.e>x.e?y:x); let j=i+1; while(j<n&&S[j].t<b.e&&!S[j].B.length&&!S[j].cont) j++; if(j>i+1){ for(let k=i+1;k<j;k++) S[k].cont=b; sl.rs=j-i; sl.span=b; } });
   return {a,z,S}; }
 function ttTint(hex,p){ const h=String(hex||'#888888').replace('#','').padEnd(6,'0').slice(0,6); const c=[0,2,4].map(i=>parseInt(h.substr(i,2),16)); return c.map(v=>Math.round(v+(255-v)*p).toString(16).padStart(2,'0')).join('').toUpperCase(); }
 function dTTWord(M){ const D=dxLib(); const W=[1300,CW-1300]; const TOP=D.VerticalAlign.TOP;
   const rows=[[dCell(dPara('Ora',{size:17,bold:true,color:ONG,after:0}),{w:W[0],fill:GREEN,border:GREEN}),dCell(dPara('Attività',{size:17,bold:true,color:ONG,after:0}),{w:W[1],fill:GREEN,border:GREEN})]];
   const line=b=>dPara([dTxt(axHM(b.s)+'–'+axHM(b.e)+'  ',{size:16,bold:true,color:'444444'}),dTxt(b.t,{size:18,bold:true}),...(b.chi?[dTxt('  ·  '+b.chi,{size:16,color:'555555'})]:[])],{after:30,shade:ttTint(b.col,.72),borderLeft:b.col.replace('#','')});
-  M.S.forEach(sl=>{ const full=sl.t%60===0; const left=dCell(dPara(axHM(sl.t),{size:17,bold:full,color:full?'1A1A1A':'777777',after:0}),{w:W[0],fill:'F4F4F0',vAlign:TOP});
-    let right;
-    if(sl.cont) right=dCell(dPara('',{size:8,after:0}),{w:W[1],vm:D.VerticalMergeType.CONTINUE,fill:ttTint(sl.cont.col,.72)});
+  M.S.forEach((sl,si)=>{ const full=sl.t%60===0; const left=dCell(dPara(axHM(sl.t),{size:17,bold:full,color:full?'1A1A1A':'777777',after:0}),{w:W[0],fill:'F4F4F0',vAlign:TOP});
+    let right; const nx=M.S[si+1];
+    if(sl.cont){ const tc=ttTint(sl.cont.col,.72); right=dCell(dPara('',{size:8,after:0}),{w:W[1],fill:tc,bt:tc,bb:(nx&&nx.cont===sl.cont)?tc:undefined}); }
     else if(!sl.B.length) right=dCell(dPara('',{size:8,after:0}),{w:W[1],fill:'FAFAF7'});
-    else if(sl.B.length===1) right=dCell(line(sl.B[0]),{w:W[1],vAlign:TOP,fill:ttTint(sl.B[0].col,.72),vm:sl.rs>1?D.VerticalMergeType.RESTART:undefined});
-    else right=dCell(sl.B.map(line),{w:W[1],vAlign:TOP});
+    else if(sl.B.length===1){ const tc=ttTint(sl.B[0].col,.72); right=dCell(line(sl.B[0]),{w:W[1],vAlign:TOP,fill:tc,bb:sl.rs>1?tc:undefined}); }
+    else { const tc=sl.span?ttTint(sl.span.col,.72):null; right=dCell(sl.B.map(line),{w:W[1],vAlign:TOP,bb:(sl.rs>1&&tc)?tc:undefined}); }
     rows.push([left,right]); });
   return dTable(rows,W,true); }
 function uscTTHtml(M){ const e=axE; let h='<table class="tt" style="border-collapse:collapse;width:100%">';
@@ -13020,7 +13020,8 @@ function dCell(children, o={}){
   const D = dxLib();
   const b = {style:D.BorderStyle.SINGLE, size:4, color:o.border||'D0D0D0'};
   const nb = {style:D.BorderStyle.NONE, size:0, color:'FFFFFF'};
-  const bd = o.noBorder ? {top:nb,bottom:nb,left:nb,right:nb} : {top:b,bottom:b,left:b,right:b};
+  const bc = c => ({style:D.BorderStyle.SINGLE, size:4, color:c});
+  const bd = o.noBorder ? {top:nb,bottom:nb,left:nb,right:nb} : {top:o.bt?bc(o.bt):b,bottom:o.bb?bc(o.bb):b,left:b,right:b};   // bt/bb: colore dei bordi alto/basso (per far sembrare continue le celle di un'attività lunga)
   return new D.TableCell({
     children: (Array.isArray(children)?children:[children]).map(c => typeof c==='string' ? dPara(c,{size:o.size||19, bold:o.bold, color:o.color, after:0}) : c),
     width: {size:o.w, type:D.WidthType.DXA},
@@ -18207,6 +18208,7 @@ function numHTML(){
   const idrT = R.idr.spontaneo + R.idr.stimolato + R.idr.no;
   return `<div class="sh-dh"><div><h1>Numeri dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Anno scout ${esc(String(scheda.annoScout || ''))}, ${R.cicli} ${R.cicli === 1 ? 'ciclo' : 'cicli'}. Qui sommo ciò che hai già scritto nell’app: non devi inserire nulla di nuovo. I numeri vengono dal preventivo e dalle date che hai messo; dove un dato manca lo segnalo.</p></div></div>
   <section class="sh-card2 wide"><h3>Le attività dell’Unità</h3><div class="num-g">${tile(R.cont, 'attività nel calendario', R.fatte + ' già passate · ' + R.daFare + ' da fare' + (R.senzaData ? ' · ' + R.senzaData + ' senza data' : ''))}${tile(R.giorni, 'giornate di attività', R.notti + (R.notti === 1 ? ' notte' : ' notti') + ' fuori casa')}${tile(R.fuori, 'attività fuori sede', R.cont ? Math.round(R.fuori / R.cont * 100) + '% del totale' : '')}${tile(R.resid, 'bivacchi e campi')}${tile(R.staffN, 'attività di staff', R.staffN ? '' : 'nessun progetto staff dell’anno')}${tile(R.presN ? Math.round(R.pres / R.presN) : '—', 'presenti in media', R.presN ? 'su ' + R.presN + ' attività con i presenti indicati' : 'indica i presenti nelle uscite')}${tile(R.km ? Math.round(R.km) + ' km' : '—', 'chilometri indicati', R.km ? 'andata e ritorno, solo dove inseriti' : 'indicali nei luoghi delle uscite')}${tile(R.spTot ? axEur(R.spTot) : '—', 'spesa prevista', 'preventivo, non speso davvero')}</div>
+  ${(() => { const T = sort(R.tipo).filter(x => !/^(senza|non indicat)/i.test(x[0])); return T.length ? `<div class="num-g">${tile(T[0][0], 'tipo di attività più utilizzato', T[0][1] + (T[0][1] === 1 ? ' volta' : ' volte'))}</div>` : ''; })()}
   ${R.cont ? `<h4 class="num-h">Per formato</h4>${numBar(Object.keys(R.fmt).map(k => [k, R.fmt[k]]).filter(r => r[1] > 0))}<h4 class="num-h">Per tipo di attività</h4>${numBar(sort(R.tipo))}` : '<p class="sh-hint">Ancora nessuna attività nel calendario.</p>'}
   ${sp.length ? `<h4 class="num-h">Spesa prevista per categoria</h4>${numBar(sp, axEur)}` : ''}</section>
   <section class="sh-card2 wide"><h3>Il percorso educativo</h3>${R.att ? `<div class="num-g">${tile(R.att, 'attività nei percorsi')}${tile(R.ver, 'già verificate', Math.round(R.ver / R.att * 100) + '%')}</div><h4 class="num-h">Attività per Ambito</h4>${numBar(['P', 'C', 'S'].map(a => [AMB[a], R.amb[a]]))}<h4 class="num-h">Percorsi più affrontati</h4>${numBar(sort(R.perc).slice(0, 6))}${Object.keys(R.strum).length ? `<h4 class="num-h">Strumenti del metodo più usati</h4>${numBar(sort(R.strum).slice(0, 8))}` : ''}` : '<p class="sh-hint">Ancora nessuna attività scritta nei percorsi.</p>'}
@@ -18233,6 +18235,7 @@ function spFilt(){ const f = SH._sf = SH._sf || {}; return spList().filter(r => 
 function spRecup(){ // voci del preventivo non ancora registrate
   const done = new Set(spList().map(r => r.src).filter(Boolean)); const out = [];
   bilRows(SH._ay).forEach((r, i) => { const key = r.cid + '|' + r.cont + '|' + r.voce + '|' + r.cat + '|' + r.mese; if(!done.has(key)) out.push(Object.assign({}, r, {key})); }); return out; }
+window.spPayWho = function(i, el){ let v = el.value; if(v === '__altro'){ v = (prompt('Chi ha pagato?') || '').trim(); if(!v){ spRe(); return; } } spSet(i, 'chi', v, true); };
 function spHTML(){
   const R = SH._av, items = SH._ay; if(!R || !items) return ''; const can = !window.BRO; const L = spFilt(), all = spList(), f = SH._sf || {}, conts = spConts(); const cats = Object.keys(AX_CATI);
   const catO = v => cats.map(c => `<option value="${c}"${v === c ? ' selected' : ''}>${AX_CATI[c][0]}</option>`).join('');
@@ -18244,7 +18247,7 @@ function spHTML(){
       <select class="sh-in" aria-label="Categoria" ${can ? '' : 'disabled'} onchange="spSet(${i},'cat',this.value,true)">${catO(r.cat || 'altro')}</select>
       <input type="number" min="0" step="0.01" inputmode="decimal" class="sh-in sp-i" aria-label="Importo" placeholder="€" value="${esc(r.importo == null ? '' : r.importo)}" ${can ? '' : 'readonly'} ${d('importo')} onchange="spRe()">
       <select class="sh-in" aria-label="Attività collegata" ${can ? '' : 'disabled'} onchange="spSet(${i},'att',this.value)">${attO(r.att || '')}</select>
-      <input class="sh-in" aria-label="Chi ha pagato" placeholder="Chi ha pagato" value="${esc(r.chi || '')}" ${can ? '' : 'readonly'} ${d('chi')}>
+      <select class="sh-in" aria-label="Chi ha pagato" ${can ? '' : 'disabled'} onchange="spPayWho(${i},this)"><option value="">Chi ha pagato…</option>${(() => { let P = []; try{ P = axPeople().map(n => String(n).replace(/\s*\([^)]*\)\s*$/, '')); }catch(e){} const cur = String(r.chi || '').trim(); if(cur && !P.includes(cur)) P.push(cur); return P.map(n => `<option${n === cur ? ' selected' : ''}>${esc(n)}</option>`).join(''); })()}${can ? '<option value="__altro">Altro (scrivo il nome)…</option>' : ''}</select>
       <select class="sh-in" aria-label="Pagamento" ${can ? '' : 'disabled'} onchange="spSet(${i},'pag',this.value)">${SP_PAG.map(([k, t]) => `<option value="${k}"${(r.pag || '') === k ? ' selected' : ''}>${t}</option>`).join('')}</select>
       <input class="sh-in sp-g" aria-label="Link al giustificativo" placeholder="Link allo scontrino o alla fattura (Drive)" value="${esc(r.giust || '')}" ${can ? '' : 'readonly'} ${d('giust')}>${/^https?:\/\//.test(r.giust || '') ? `<a class="sh-lk" href="${esc(r.giust)}" target="_blank" rel="noopener">Apri</a>` : ''}
       <input class="sh-in sp-n" aria-label="Note" placeholder="Note" value="${esc(r.nota || '')}" ${can ? '' : 'readonly'} ${d('nota')}>${can ? `<button type="button" class="btn-ghost sp-x" aria-label="Togli la spesa" onclick="spDel(${i})">Togli</button>` : ''}</div>`; }).join('');

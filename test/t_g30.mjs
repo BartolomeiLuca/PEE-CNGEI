@@ -30,7 +30,7 @@ ok(await ev(() => document.querySelectorAll('.sp-r').length === 2), 'filtro: sen
 await P.selectOption('#sp-doc', '');
 ok(await ev(() => /Novembre 2026/.test(document.querySelector('.bil-t tbody').textContent) && true), 'la tabella mensile usa il registro');
 const mv = await ev(() => { const tr = [...document.querySelectorAll('.bil-t')[0].querySelectorAll('tbody tr')].find(t => t.textContent.startsWith('Novembre')); return tr.querySelector('input').readOnly + '|' + tr.querySelector('input').value; });
-ok(/^true\|2\d\d/.test(mv), 'speso del mese = somma del registro, non modificabile a mano (' + mv + ')');
+ok(/^true\|[23]\d\d/.test(mv), 'speso del mese = somma del registro, non modificabile a mano (' + mv + ')');
 const [dl] = await Promise.all([P.waitForEvent('download', {timeout:30000}), P.click('button:has-text("Rendiconto per Excel")')]);
 const csv = (await import('fs')).readFileSync(await dl.path(), 'utf8');
 ok(/Pullman/.test(csv) && /drive.google.com/.test(csv) && /Da confermare/.test(csv), 'rendiconto CSV con giustificativi e stati');

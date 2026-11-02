@@ -316,7 +316,7 @@ await ed(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(35
 const uid = await ev(() => USC_CUR);
 await ed(id => uscOpen(id, 3), uid); await sleep(800);
 await P.locator('#usc-tab-3').click(); await sleep(300);
-await P.locator('.usc-pi[data-pi="6"]').click(); await PD.locator('.usc-pi', {hasText:'Blocco tuo'}).click(); await sleep(400);
+await P.locator('.usc-pi[data-pi="6"]').click(); await PD.locator('.usc-pi', {hasText:'Momento personalizzato'}).click(); await sleep(400);
 await P.locator('.usc-bti').last().fill('Gioco di Anna'); await PD.locator('.usc-bti').last().fill('Blocco di Dario');
 await P.locator('body').click({position:{x:5, y:5}}); await PD.locator('body').click({position:{x:5, y:5}});
 await sleep(14000);
