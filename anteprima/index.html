@@ -8081,7 +8081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030230'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030330'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -16185,6 +16185,7 @@ body.sh-in[data-pca="C"] .pcx[data-a]:not([data-a="C"]):not([data-a=""]),
 body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display:none}
 .vis-dot.vis-ev{border-radius:2px;width:10px;height:10px;transform:translateX(-5px)}.vis-dot.vis-ev.stf{outline:2px dashed #1d4f8f;outline-offset:1px}.vis-dot.vis-ev.fuori,.vis-oc.fuori{opacity:.35}.ered-n,.pi-ered{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;font-size:11px;line-height:1.5;color:#5b4a8f;background:#efeaf8;border:1px solid #d9d0ee;white-space:nowrap}
 .st-emb{background:#F3F6FB;border:1px solid #cdd8ea;border-radius:12px;padding:10px 14px;margin:0 0 12px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;justify-content:space-between}.st-emb-h span{color:#5f5f58;font-size:12.5px;margin-left:6px}.st-emb-t{display:flex;gap:8px;flex-wrap:wrap}
+.tip-sc{overflow:auto;border:1px solid var(--border-light);border-radius:10px;background:#fff;margin:8px 0}.tip-t{border-collapse:separate;border-spacing:0;font-size:12px;min-width:1780px;width:100%}.tip-t td{min-width:138px;overflow-wrap:break-word;hyphens:auto}.tip-t th,.tip-t td{border-bottom:1px solid #ecece6;border-right:1px solid #ecece6;padding:5px 7px;vertical-align:top;text-align:left}.tip-t thead th{position:sticky;top:0;background:#f4f4f0;z-index:2;text-align:center;font-weight:800}.tip-l{position:sticky;left:0;background:#f8f8f4;z-index:1;min-width:112px;max-width:150px;font-weight:800}.tip-t thead .tip-l{z-index:3}.tip-s{min-width:1040px}.tip-s td{min-width:230px}.tip-t .now{background:#fff6d6}.tip-t thead .tip-m.now{background:#f0b400;color:#1a1a1a}.tip-i{margin:0 0 4px;padding:3px 6px;border-left:3px solid #7fb69b;background:#f1f8f4;border-radius:0 5px 5px 0;line-height:1.35}.tip-i.h{border-left-color:#7a3f8f;background:#f5eef9;font-weight:800;font-size:11px;letter-spacing:.02em}
 .pf-cols{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}.pf-jump{display:inline-block;margin:4px 0 10px;font-size:13px;text-decoration:none;padding:6px 12px;border-radius:999px;background:#e8f3ec;border:1px solid #b9d6c4;color:#14583b}.pf-rh2{font-size:16px;margin:0 0 8px}.pf-rh2 span{display:inline-block;min-width:24px;text-align:center;background:var(--brand-ink,#1B5E42);color:#fff;border-radius:999px;font-size:13px;padding:1px 8px;margin-left:6px}
 @media (min-width:1180px){.pf-cols{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}.pf-jump{display:none}.pf-right{position:sticky;top:70px;max-height:calc(100vh - 90px);overflow:auto;padding-right:4px}}
 .pf-new{animation:pfnew 4s ease-out;box-shadow:0 0 0 3px #f0b400}@keyframes pfnew{0%{background:#fff3c4}100%{background:inherit}}.pf-ne{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0;padding:10px;background:#f4f8f5;border:1px dashed #b9d6c4;border-radius:9px}.pf-ne label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700}
@@ -17144,6 +17145,7 @@ const NAV_AN = [
   {g:'Realizzare'},
   {id:'r-cal', t:'Calendario e attività', ic:'cal', go:'shCal()'},
   {id:'r-ele', t:'Elenco dell’anno', ic:'list', go:'shEle()'},
+  {id:'r-tip', t:'L’anno di solito', ic:'cal', go:'shTip()'},
     
   {g:'Misurare'},
   {id:'m-4', k:'4', t:'Verifica delle attività', ic:'check', go:"shSec('4')"},
@@ -17232,7 +17234,7 @@ function bbHTML(){
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-staff','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
-  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3P','p-3C','p-3S','p-vis','p-pf','r-cal','r-ele','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
+  const act = b => b[0] === 'sec' ? secIds.includes(cur) : b[0] === 'usc' ? ['p-2','p-3P','p-3C','p-3S','p-vis','p-pf','r-cal','r-ele','r-tip','r-chk'].includes(cur) : b[0] === 'more' ? ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk','ppc','ppa'].includes(cur) : cur === b[0];
   return B.map(b => `<button type="button" class="sh-bbb${act(b) ? ' on' : ''}" ${act(b) ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`).join('');
 }
 function paint(){
@@ -17266,7 +17268,7 @@ function active(){
   if(window._stEmb) return 'o-staff';
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -18159,6 +18161,37 @@ function stpHTML(L, busy){ const E = esc; const can = !window.BRO;
     <div class="stp-l">${busy ? '<div class="sh-hint" role="status">Carico gli eventi di tutti i cicli…</div>' : (rows || '<div class="cal-empty cal-empty2">Non ci sono ancora eventi dello staff: in «Calendario e attività» crea una riunione o un’uscita «Solo per lo staff».</div>')}</div>
     <details class="u-fold" style="margin-top:14px"><summary>Di solito in questo periodo — Capo Gruppo<span class="u-sub">indicativo, dal manuale; non obbliga a nulla</span></summary><div class="u-fold-in"><div class="sh-hint"><b>Autunno (inizio dell’anno scout)</b>: verifica dei campi estivi in Consiglio di Gruppo · verifica delle programmazioni delle Unità e del Piano di Gruppo dell’anno prima · analisi della situazione del nuovo anno · attività per i passaggi · bisogni delle Unità e liste d’attesa · riunione con i genitori dei nuovi ragazzi · Interbranca e Assemblea di Sezione · costruzione del Piano di Gruppo e calendario dei Consigli di Gruppo · sostegno e raccolta delle programmazioni delle Unità · riunioni con i genitori per presentarle · incontro tra CG e CU.</div><div class="sh-hint"><b>Inverno</b>: accoglienza dei nuovi senior · momento di formazione interna dello staff di Gruppo · primo step di verifica del Piano di Gruppo, delle programmazioni di Unità e dei contratti.</div><div class="sh-hint">Fonte: «Lo sciroppo del Capo Gruppo», pp. 14-15. Primavera ed estate, e i calendari delle Branche L, E, R, sono ancora da completare.</div></div></details>
     <section class="sh-card2 wide" style="margin-top:14px"><h3>Abitudini dello staff</h3><div class="sub" style="font-size:13px">Non sono attività da riunione: sono abitudini da tenere tutto l’anno.</div><div class="stp-p">${prassi.map((n, i) => `<button type="button" class="mf-q" onclick="attSchedaOpen(_mfL[${i}])">${E(n)}</button>`).join('')}</div></section>`; }
+
+function tipTab(){ const X = SH._tip = SH._tip || {}; if(!X.b){ let g = false; try{ g = pfCG() || (SH.prof && /^(cg|cds)$/.test(String(SH.prof.ruolo || ''))); }catch(e){} X.b = g ? 'G' : (({L:'L', E:'E', R:'R'})[FASCIA] || 'E'); } return X.b; }
+function tipCurM(){ return (new Date()).getMonth(); }  // 0 = gennaio
+function tipMonthsHTML(righe, src){ const E = esc; const nowI = (tipCurM() + 4) % 12;   // Set = 0
+  const th = TIP_MESI.map((m, i) => `<th class="tip-m${i === nowI ? ' now' : ''}" scope="col">${m}</th>`).join('');
+  const body = righe.map(([k, lab]) => { const row = TIP_E[k] || []; return `<tr><th class="tip-l" scope="row">${E(lab)}</th>${TIP_MESI.map((m, i) => `<td class="${i === nowI ? 'now' : ''}">${(row[i] || []).map(t => `<div class="tip-i${/^BIVACCO/.test(t) ? ' h' : ''}">${E(t)}</div>`).join('')}</td>`).join('')}</tr>`; }).join('');
+  return `<div class="tip-sc" tabindex="0" role="region" aria-label="Calendario tipico dell’anno"><table class="tip-t"><thead><tr><th class="tip-l"></th>${th}</tr></thead><tbody>${body}</tbody></table></div>`; }
+function tipSeasonsHTML(T){ const E = esc; const nowS = [2, 2, 2, 3, 3, 3, 0, 0, 0, 1, 1, 1].map(() => 0); const mo = tipCurM(); const nowI = mo >= 8 && mo <= 10 ? 0 : (mo === 11 || mo <= 1) ? 1 : (mo >= 2 && mo <= 4) ? 2 : 3;
+  const th = TIP_STAG.map((m, i) => `<th class="tip-m${i === nowI ? ' now' : ''}" scope="col">${E(m)}</th>`).join('');
+  const body = Object.keys(T).map(k => `<tr><th class="tip-l" scope="row">${E(k)}</th>${T[k].map((c, i) => `<td class="${i === nowI ? 'now' : ''}">${c.map(t => `<div class="tip-i">${E(t)}</div>`).join('')}</td>`).join('')}</tr>`).join('');
+  return `<div class="tip-sc" tabindex="0" role="region" aria-label="Calendario tipico dell’anno"><table class="tip-t tip-s"><thead><tr><th class="tip-l"></th>${th}</tr></thead><tbody>${body}</tbody></table></div>`; }
+function tipHTML(){
+  const E = esc; const b = tipTab(); const BR = {G:'Gruppo', L:'Branco', E:'Reparto', R:'Compagnia'};
+  const tabs = ['G', 'L', 'E', 'R'].map(k => `<button type="button" class="pfx-m${b === k ? ' on' : ''}" aria-pressed="${b === k}" onclick="tipSet('${k}')">${BR[k]}</button>`).join('');
+  let main = '', src = '', note = '';
+  if(b === 'E'){ main = tipMonthsHTML(TIP_E_RIGHE); src = 'Calendario generale di Reparto (mese per mese). Le sigle sono quelle del calendario originale: CdR Consiglio di Reparto · CdP Consiglio di Pattuglia · CdL Consiglio della Legge · CCP Corso Capi Pattuglia · OdG ordine del giorno · PO/PV progressione orizzontale e verticale.'; }
+  else if(b === 'G'){ main = tipMonthsHTML(TIP_G_RIGHE); src = 'Righe «Consiglio di Gruppo», «Famiglie», «Link Badge» e «Uscite» del Calendario generale di Reparto, per vedere cosa chiede il Gruppo mese per mese. Non è esaustivo; il manuale del Capo Gruppo descrive in modo più discorsivo autunno e inverno (li trovi anche nella Palestra dei Capi Unità).'; note = 'Il calendario nasce dal Reparto: per Branco e Compagnia guarda le loro schede.'; }
+  else if(b === 'L'){ main = tipSeasonsHTML(TIP_L); src = 'Manuale di Branca L «Attorno alla Rupe», calendario «Un anno nella Giungla» (pp. 286-287). Il manuale propone i momenti dell’anno in una tabella per mese; qui sono raggruppati per stagione e l’ordine dentro la stagione segue quello del manuale. Per il mese preciso guarda la tabella originale.'; }
+  else { main = tipSeasonsHTML(TIP_R); src = 'Manuale di Branca R «Guiderà la sua Canoa» (programma del Consiglio di Compagnia per stagione, pp. 72 e 95-97). Il manuale non dà un calendario per mese: qui c’è l’ordine del giorno tipico del Consiglio per ogni stagione e le peculiarità della Compagnia.'; }
+  return `<div class="sh-dh"><div><h1>L’anno di solito</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Come di solito si organizza l’anno scout. Serve a non dimenticare le scadenze e a vedere cosa viene dopo; non è uno schema da seguire: ogni Unità ha il suo anno. Il mese in corso è evidenziato.</p></div></div>
+    <div class="pfx-ms2" role="group" aria-label="Quale calendario">${tabs}</div>
+    ${note ? `<p class="sh-hint">${E(note)}</p>` : ''}
+    ${main}
+    <p class="sh-hint">Fonte: Documentazione formativa CNGEI. ${E(src)}</p>
+    <div class="anv-act"><button type="button" class="btn-ghost" onclick="tipPop('pass')">Passaggi di Branca: come si curano</button><button type="button" class="btn-ghost" onclick="tipPop('fam')">Riunione con i genitori: cosa tenere a mente</button><button type="button" class="btn-ghost" onclick="shCal()">Vai al calendario dell’Unità</button></div>`;
+}
+window.tipSet = function(k){ (SH._tip = SH._tip || {}).b = k; const p = $('panel-pp'); if(p && SH.ppv === 'tip') p.innerHTML = tipHTML(); };
+window.tipPop = function(w){ const L = w === 'pass' ? TIP_PASSAGGI : TIP_FAM; const t = w === 'pass' ? 'Passaggi di Branca: come si curano' : 'Riunione con i genitori: cosa tenere a mente';
+  modalShow(`<div style="font-size:15px;font-weight:800;margin-bottom:8px">${esc(t)}</div><ul style="margin:0 0 10px;padding-left:18px;font-size:13px;line-height:1.55">${L.map(x => `<li style="margin:0 0 6px">${esc(x)}</li>`).join('')}</ul><p style="font-size:12px;color:var(--ink-mid);margin:0 0 10px">Fonte: Documentazione formativa CNGEI. Sintesi: per i dettagli e le attività guarda il materiale formativo.</p><div style="text-align:right"><button class="btn-primary" onclick="modalClose()">Chiudi</button></div>`); };
+window.shTip = function(){ ownOff(); ensurePanels(); SH.ppv = 'tip'; $('panel-pp').innerHTML = tipHTML(); own('panel-pp'); };
+
 window.shStp = function(){ shPF(); };
 window.stpAdd = function(cy, uid){ if(window.BRO) return;
   if(cy){ calOpenCy(cy, uid); showToast('Si apre l’evento nell’altro ciclo: lì aggiungi il momento formativo'); return; }
@@ -19051,6 +19084,43 @@ window.shStaffPage = function(){
   ownOff(); stEmbEnter(); STAFF_VIEW = STAFF_VIEW || 'oss'; ensurePanels();
   window._stKeep = true; try{ goPhaseInternal(1); renderPhase1(); }finally{ window._stKeep = false; } stEmbDom(); setTimeout(shSync, 30);
 };
+
+
+// ── «L'anno di solito»: calendari tipici dell'anno scout, per Branca e per Gruppo. Sono indicazioni, non obblighi ──
+const TIP_MESI = ['Set','Ott','Nov','Dic','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago'];
+const TIP_E = {"CR": [["Interbranca"], ["Riunione per CCP"], [], ["Verifica Iscrizioni Esplo"], [], [], ["OdP"], [], [], [], [], ["Autovalutazione Staff"]], "Staff": [["Verifica Contratto Staff", "Verifica Pattuglie e CP", "Progr. Apertura", "Circolare Apertura", "Calendario Annuale", "Bagigi Passaggi", "Bagigi Nomine CP", "Aggiornamento mailing list"], ["BIVACCO DI STAFF OdG:", "Sopralluogo C. Invernale", "Nuovo Contratto di Staff", "Analisi Situazione", "Progr. Educativa", "Progr. Att. Trimestrale", "Preparazione CCP", "Idee per Autofinanziamento di Reparto/Ptg"], ["Inserimento Senior", "Progr. C. Invernale", "Logistica C. Invernale", "Circolare C. Invernale"], ["Progr. C. Invernale", "Autofinanziamento", "Verifica Po e PV"], ["BIVACCO DI STAFF OdG:", "I° Sopralluogo C. Estivo", "Progr. Att. Trimestrale", "Luoghi per C. Invernale", "Progr. Thinking Day"], ["BIVACCO DI STAFF OdG:", "Sopralluogo San Giorgio", "Conferma Senior", "I° verifica Contratto Staff", "Verifica P. Educativa", "Revisione P. Educativa"], ["Progr. S. Giorgio", "Circolare San Giorgio"], ["Campo Scuola", "Logistica C. Estivo", "Verifica Po e PV"], ["Luoghi per S. Giorgio", "Verifica PO e PV"], ["BIVACCO DI STAFF OdG:", "II° Sopralluogo C. Estivo", "Verifica Progr. Educativa", "Nuova Analisi Singolo", "Programmazione C. Est.", "Circolare Campo Estivo"], ["Verifica Po e PV"], ["Campo Scuola", "Verifica C. Estivo", "II° verifica Contratto Staff", "Luoghi per C. Estivo"]], "Pattuglie": [[], ["Apertura", "Nomina CP"], ["CCP", "Consiglio di Pattuglia", "Nomina VCP", "CdR"], ["CdR (verifica pattuglie)", "Campo Invernale", "Autofinanziamento"], ["CdR"], ["CdP (progettazione impresa)"], ["Verifica Tende e Cassoni", "Missione"], ["San Giorgio", "Impresa"], ["CdP (verifica Impresa)", "CdR (proposte C. Estivo)"], ["CdP (materiali C. Estivo)"], [], ["CdR"]], "Reparto": [["Verifica C. Estivo", "Apertura"], ["Passaggi", "Accoglienza nelle Ptg", "Vita di Reparto", "Lancio gara di Reparto"], ["Lancio PO e PV", "Inizio P. Promessa", "I° Bivacco di Reparto"], ["I° contrattazione PV", "Campo Invernale", "Attività Nazionale", "CdL"], ["Fine P.Promessa"], ["Attività Nazionale"], ["II° Bivacco di Reparto"], ["II° contrattazione PV", "San Giorgio", "Attività Nazionale", "CdL"], ["III° Bivacco di Reparto"], ["Chiusura anno scout"], ["Campo Estivo", "CdL", "III° contrattazione PV"], []], "Link B": [[], [], [], [], ["Attività conoscitiva: CR in Branco e CC in Reparto"], [], ["Attività congiunta: Branco + Reparto e Reparto + Compagnia"], [], ["Link Badge: CdA in Reparto (con Akela) e Alta Pattuglia in Compagnia (con CR)"], [], [], []], "Uscite": [["Bivacco di Staff"], ["Apertura"], ["Bivacco di Reparto", "CdR"], ["CdR", "Campo Invernale"], ["Bivacco di Staff", "CdR"], ["Bivacco di Staff", "Thinking Day"], ["Bivacco di Reparto"], ["S. Giorgio"], ["CdR (proposte C. Estivo)"], ["Bivacco di Staff"], ["PreCampo", "C. Estivo"], ["CdR"]], "Cdg": [["Bivacco di Gruppo", "Apertura", "Calendario di Gruppo", "Contratto di Gruppo", "Passaggi e scambio Analisi del Singolo", "Definizione date momenti salienti anno successivo"], ["Verifica Apertura", "Riunione Genitori", "Pianificazione Ingressi", "Ricerca Casa Apertura anno seguente"], ["Progr. Educativa", "Piano di Gruppo", "Autofinanziamento", "C. Invernale Logistica"], ["C. Invernale Logistica", "Ricerca Casa Campo", "Invernale anno seguente"], ["Verifica C. Invernale", "Link Badge", "Thinking Day Logistica"], ["Autovalutazione CU", "Verifica contratto di metà anno"], ["S. Giorgio Logistica", "Link Badge", "Ricerca Casa San Giorgio anno seguente"], ["C. Estivo Logistica"], ["Verifica S. Giorgio", "Link B", "Verifica disponibilità di Staff anno successivo"], ["Campo Estivo", "Ricerca casa campo estivo anno seguente"], [], ["Verifica VdB C.E. E.R.", "Sopralluogo Apertura", "Logistica Apertura", "Verifica contratto di fine anno"]], "Famiglie": [[], ["Riunione Ingressi", "Sinergia Genitori/capi", "Buoni Propositi", "Iscrizioni Esplo", "Calendario", "Call To Action"], [], ["Riunione Campo Invernale"], [], [], ["Riunione San Giorgio"], [], [], ["Riunione Campo Estivo"], [], []]};
+const TIP_E_RIGHE = [['CR','Capo Reparto'],['Staff','Staff'],['Pattuglie','Pattuglie'],['Reparto','Reparto'],['Link B','Link Badge · passaggi tra Branche'],['Uscite','Uscite'],['Cdg','Consiglio di Gruppo'],['Famiglie','Famiglie']];
+const TIP_G_RIGHE = [['Cdg','Consiglio di Gruppo'],['Famiglie','Famiglie'],['Link B','Link Badge · passaggi tra Branche'],['Uscite','Uscite'],['Reparto','Dal Reparto (per orientarsi)']];
+// Branco e Compagnia: il manuale propone i momenti per stagione, non per mese
+const TIP_STAG = ['Autunno (set–nov)','Inverno (dic–feb)','Primavera (mar–mag)','Estate (giu–ago)'];
+const TIP_L = {
+  'Attività di Branco': [
+    ['Apertura dell’anno scout','Riunione di Branco di preparazione ai Cuccioli','Passaggi di Branca','Accoglienza dei Cuccioli e inizio del Percorso Promessa','Creazione delle Mute','Percorso Promessa e sua conclusione'],
+    ['Vacanze di Branco invernali','Giornata del Pensiero','PO, PV e Cucciolo d’Uomo: lancio','Analisi del singolo sui 12 percorsi della PV','Progressione verticale: conosciamo i percorsi e «Fiutiamo la Preda» n. 1','Prima riunione del Consiglio di Akela'],
+    ['Percorso Passaggi di Branca (tre incontri)','San Giorgio','Nuova analisi del singolo e «Fiutiamo la Preda» n. 2','Seconda riunione del Consiglio di Akela'],
+    ['Vacanze di Branco estive','Prima delle VdB: nuova analisi del singolo','«Fiutiamo la Preda» n. 3 a inizio VdB e n. 4 alla fine','Terza riunione del Consiglio di Akela']],
+  'Staff': [
+    ['Prima riunione di staff: verifica delle VdB e contratto','Riunione di staff per la programmazione educativa'],
+    ['Programmazione delle VdB invernali'],
+    ['Verifica della programmazione educativa'],
+    ['Verifica della programmazione educativa e programmazione delle VdB estive']],
+  'Genitori': [['Riunione genitori (all’avvio dell’anno)'],['Riunione genitori (prima delle VdB invernali)'],[],['Riunione genitori (prima delle VdB estive)','Contatti con i futuri Cuccioli']],
+  'Racconti di Mowgli': [['La Corsa di Primavera','I Fratelli di Mowgli'],['La Caccia di Kaa','Come venne la Paura'],['Il Fiore Rosso','La Tigre! La Tigre!','L’Ankus del Re'],['I Cani Rossi']]
+};
+const TIP_R = {
+  'Consiglio di Compagnia (di solito all’ordine del giorno)': [
+    ['Lettura della Carta','Verifica della Carta','Autoprogrammazione Rover: idee e selezione','Creazione delle Ronde e dei Progetti di Interesse','Cambio della Ronda Esecutiva','Calendario trimestrale','Proposta di regole di Compagnia'],
+    ['Lettura della Carta','Verifica della Carta e del trimestre precedente','Autoprogrammazione Rover: idee da realizzare, ultimo Consiglio, nuove idee e selezione','Proposte per l’Estate Rover','Creazione delle Ronde e dei Progetti di Interesse','Rover in servizio','Cambio della Ronda Esecutiva','Calendario trimestrale'],
+    ['Lettura della Carta','Verifica della Carta e del trimestre precedente','Autoprogrammazione Rover: idee da realizzare, ultimo Consiglio, nuove idee e selezione','Avanzamento e/o proposte per l’Estate Rover','Creazione delle Ronde e dei Progetti di Interesse','Cambio della Ronda Esecutiva','Calendario trimestrale'],
+    ['Lettura della Carta','Verifica della Carta','Verifica dell’anno','Cambio della Ronda Esecutiva']],
+  'Peculiarità della Compagnia': [
+    ['Passaggi e Corso di Introduzione al Roverismo (CIR): si svolgono prima del primo Consiglio, quello d’autunno, fuori dall’Autoprogrammazione Rover'],
+    ['Riunioni di Compagnia con attività brevi preparate dal CC o da una Ronda'],
+    ['Proposte e avanzamento dell’Estate Rover'],
+    ['Estate Rover']]
+};
+const TIP_PASSAGGI = ['Il Capo Reparto partecipa a una riunione o attività del Branco; il link badge viene consegnato e spiegato (L → E).','Branco e Reparto fanno un’attività insieme, pensata dal Consiglio di Gruppo e non lasciata al caso: si può approfittare di San Giorgio o del Thinking Day, con un momento dedicato.','Il Consiglio di Akela partecipa a un’attività di Reparto, accompagnato solo da Akela.','Da Reparto a Compagnia: il Capo Compagnia fa un’attività con tutto il Reparto; gli esploratori dell’ultimo anno ne fanno una con la Compagnia (un piccolo hike, un fuoco, un servizio).','La cerimonia del passaggio la organizza il Consiglio di Gruppo: cura solennità, atmosfera, tempo ed empatia; tradizioni positive, niente prove d’ingresso, niente distintivi staccati sul momento.','Il Capo Gruppo è presente in ogni passo come garante della continuità educativa. La programmazione si fa in Consiglio di Gruppo a inizio anno scout.'];
+const TIP_FAM = ['Si parte dalla relazione: la famiglia è la prima palestra educativa dei ragazzi, e la relazione con i genitori comincia quando ci delegano una parte della loro responsabilità educativa.','I quattro pilastri: contesto, accoglienza (onboarding), comunicazione, esemplarità.','Una riunione genitori consapevole ha un ordine del giorno chiaro (come un menù), un tempo definito e una forma che dia fiducia; le richieste dei genitori si gestiscono senza farsi travolgere dai messaggi.','Il Capo Gruppo ha un ruolo nella relazione con le famiglie; per l’anno, le riunioni tipiche sono quella degli ingressi (autunno), quella prima del campo invernale, quella di San Giorgio e quella prima del campo estivo.'];
 
 // ── Percorso formativo dello staff (o dei Capi Unità per il Capo Gruppo): vive nella programmazione annuale ──
 const PF_CAT = {tb:'Team Building', af:'Affiliativa', ps:'Problem Solving', ri:'Riflessione profonda', vf:'Verifica', av:'Autovalutazione'};
