@@ -8081,7 +8081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611022210'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611022320'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -16157,6 +16157,9 @@ body.sh-in[data-pca="C"] .pcx[data-a]:not([data-a="C"]):not([data-a=""]),
 body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display:none}
 .vis-dot.vis-ev{border-radius:2px;width:10px;height:10px;transform:translateX(-5px)}.vis-dot.vis-ev.stf{outline:2px dashed #1d4f8f;outline-offset:1px}.vis-dot.vis-ev.fuori,.vis-oc.fuori{opacity:.35}.ered-n,.pi-ered{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;font-size:11px;line-height:1.5;color:#5b4a8f;background:#efeaf8;border:1px solid #d9d0ee;white-space:nowrap}
 .st-emb{background:#F3F6FB;border:1px solid #cdd8ea;border-radius:12px;padding:10px 14px;margin:0 0 12px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;justify-content:space-between}.st-emb-h span{color:#5f5f58;font-size:12.5px;margin-left:6px}.st-emb-t{display:flex;gap:8px;flex-wrap:wrap}
+.pf-cols{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}.pf-jump{display:inline-block;margin:4px 0 10px;font-size:13px;text-decoration:none;padding:6px 12px;border-radius:999px;background:#e8f3ec;border:1px solid #b9d6c4;color:#14583b}.pf-rh2{font-size:16px;margin:0 0 8px}.pf-rh2 span{display:inline-block;min-width:24px;text-align:center;background:var(--brand-ink,#1B5E42);color:#fff;border-radius:999px;font-size:13px;padding:1px 8px;margin-left:6px}
+@media (min-width:1180px){.pf-cols{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}.pf-jump{display:none}.pf-right{position:sticky;top:70px;max-height:calc(100vh - 90px);overflow:auto;padding-right:4px}}
+.pf-new{animation:pfnew 4s ease-out;box-shadow:0 0 0 3px #f0b400}@keyframes pfnew{0%{background:#fff3c4}100%{background:inherit}}.pf-ne{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0;padding:10px;background:#f4f8f5;border:1px dashed #b9d6c4;border-radius:9px}.pf-ne label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700}
 .pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
 .pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
 .pf-pa{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid #e4e8e2}
@@ -19061,7 +19064,8 @@ window.pfxSet = function(k, v){ const X = pfX(); X[k] = v; if(k === 'mode'){ X.s
 window.pfxArea = function(n, q){ const X = pfX(); X.sur = ''; X.area = n; X.q = q == null ? -1 : q; pfRe(); setTimeout(() => { const e = document.querySelector('.pfx-res'); if(e) e.scrollIntoView({behavior:'smooth', block:'start'}); }, 40); };
 window.pfSur = function(){ const X = pfX(); const used = new Set(pfList().map(z => z.nome)); const m = (new Date()).getMonth() + 1; let P = pfPool().filter(n => !used.has(n) && (!X.int || ATT_SCHEDE[n].int === X.int)); const T = P.filter(n => pfInM(mfArea(n), m)); if(T.length) P = T; if(!P.length){ showToast('Le hai già usate tutte'); return; } X.sur = P[Math.floor(Math.random() * P.length)]; X.area = mfArea(X.sur); pfRe(); };
 window.pfAddS = function(i){ if(window.BRO) return; const n = (window._pfL || [])[i]; const a = ATT_SCHEDE[n]; if(!a) return; const Z = STAFF_AREE.find(z => z.n === mfArea(n)); const P = a.passi || [];
-  pfList().push({id:'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nome:n, cat:a.cat || '', sit:Z ? Z.n + ' · ' + Z.nome : '', desc:a.desc || a.scopo || '', obiettivo:'', lancio:P[0] || '', sviluppo:P.slice(1, -1).join('\n'), conclusione:P.length > 1 ? P[P.length - 1] : '', ev:'', verifica:''}); try{ SH._pfx.sur = ''; }catch(e){} saveData(true); pfRe(); showToast('Aggiunta in fondo al percorso: spostala dove serve'); };
+  pfList().push({id:'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nome:n, cat:a.cat || '', sit:Z ? Z.n + ' · ' + Z.nome : '', desc:a.desc || a.scopo || '', obiettivo:'', lancio:P[0] || '', sviluppo:P.slice(1, -1).join('\n'), conclusione:P.length > 1 ? P[P.length - 1] : '', ev:'', verifica:''}); try{ SH._pfx.sur = ''; }catch(e){} const nid = pfList()[pfList().length - 1].id; SH._pfNew = nid; saveData(true); pfRe(); pfSeeNew(nid); setTimeout(() => { if(SH._pfNew === nid){ SH._pfNew = null; const c = document.querySelector('.pf-c[data-id="' + nid + '"]'); if(c) c.classList.remove('pf-new'); } }, 4000); };
+window.pfSeeNew = function(nid){ setTimeout(() => { const c = document.querySelector('.pf-c[data-id="' + nid + '"]'); if(!c) return; const r = c.getBoundingClientRect(); if(r.top < 0 || r.top > window.innerHeight * 0.7) c.scrollIntoView({behavior:'smooth', block:'center'}); showToast('Aggiunta al tuo percorso: ora scegli dove farla'); }, 60); };
 function pfHTML(){
   const cg = pfCG(), can = !window.BRO, L = pfList(); const ev = pfEvents();
   let rec = new Set(); try{ rec = new Set(getSituazioniAttive().map(x => x.id)); }catch(e){}
@@ -19070,28 +19074,59 @@ function pfHTML(){
   const ta = (id, k, v, lab, ph) => `<label class="gr-f"><span>${lab}</span><textarea rows="2" ${can ? '' : 'readonly'} placeholder="${esc(ph || '')}" oninput="pfSet('${id}','${k}',this.value)">${esc(v || '')}</textarea></label>`;
   const card = (x, i) => {
     const e = ev.find(u => u.id === x.ev); const when = e ? calDateTxt(e) : '';
-    return `<section class="sh-card2 wide pf-c" data-id="${x.id}"><header class="pf-h"><span class="pf-n">${i + 1}</span><input class="sh-in pf-t" aria-label="Titolo dell’attività" value="${esc(x.nome)}" ${can ? '' : 'readonly'} oninput="pfSet('${x.id}','nome',this.value)">
+    return `<section class="sh-card2 wide pf-c${SH._pfNew === x.id ? ' pf-new' : ''}" data-id="${x.id}"><header class="pf-h"><span class="pf-n">${i + 1}</span><input class="sh-in pf-t" aria-label="Titolo dell’attività" value="${esc(x.nome)}" ${can ? '' : 'readonly'} oninput="pfSet('${x.id}','nome',this.value)">
       <span class="pf-tags">${x.cat && PF_CAT[x.cat] ? `<span class="st-pill">${esc(PF_CAT[x.cat])}</span>` : ''}${ATT_SCHEDE[x.nome] ? mfPill(ATT_SCHEDE[x.nome]) : ''}${x.sit ? `<span class="st-pill st-q">${esc(x.sit)}</span>` : '<span class="st-pill st-q">attività mia</span>'}</span>
       ${can ? `<span class="pf-a"><button type="button" class="btn-ghost" aria-label="Sposta su" onclick="pfMove('${x.id}',-1)">↑</button><button type="button" class="btn-ghost" aria-label="Sposta giù" onclick="pfMove('${x.id}',1)">↓</button><button type="button" class="btn-ghost" onclick="pfDel('${x.id}')">Togli</button></span>` : ''}</header>
       ${x.desc ? `<p class="sh-hint" style="margin:0">${esc(x.desc)}${ATT_SCHEDE[x.nome] ? ` <button type="button" class="att-how" data-n="${esc(x.nome)}" onclick="attSchedaOpen(this.dataset.n)">Come si fa →</button>` : ''}</p>` : ''}
       ${ta(x.id, 'obiettivo', x.obiettivo, cg ? 'Che cosa vuoi far crescere nei Capi Unità' : 'Che cosa vuoi far crescere nello staff', 'Una frase: dopo questa attività, che cosa dovrebbe essere diverso?')}
       <div class="pf-lsc">${ta(x.id, 'lancio', x.lancio, 'Lancio')}${ta(x.id, 'sviluppo', x.sviluppo, 'Sviluppo')}${ta(x.id, 'conclusione', x.conclusione, 'Conclusione')}</div>
-      <div class="pf-ev"><label class="sh-lb" for="pf-ev-${x.id}">Dove la fai</label><select id="pf-ev-${x.id}" class="sh-in" ${can ? '' : 'disabled'} onchange="pfSet('${x.id}','ev',this.value,true)"><option value="">scegli un evento…</option>${ev.map(u => `<option value="${u.id}"${x.ev === u.id ? ' selected' : ''}>${esc(uscTit(u) + ' · ' + calDateTxt(u))}</option>`).join('')}</select>${can ? `<button type="button" class="btn-ghost" onclick="pfNewEv()">+ Nuovo evento</button>` : ''}${when ? `<span class="sh-hint">${esc(when)}</span>` : ''}</div>
+      <div class="pf-ev"><label class="sh-lb" for="pf-ev-${x.id}">Dove la fai</label><select id="pf-ev-${x.id}" class="sh-in" ${can ? '' : 'disabled'} onchange="pfSet('${x.id}','ev',this.value,true)"><option value="">scegli un evento…</option>${ev.map(u => `<option value="${u.id}"${x.ev === u.id ? ' selected' : ''}>${esc(uscTit(u) + ' · ' + calDateTxt(u))}</option>`).join('')}</select>${can ? `<button type="button" class="btn-ghost" onclick="pfEvForm('${x.id}',${SH._pfEvF === x.id ? 'false' : 'true'})">${SH._pfEvF === x.id ? 'Annulla' : '+ Nuovo evento'}</button>` : ''}${x.ev && e ? `<button type="button" class="btn-ghost" onclick="pfOpenEv('${x.id}')">Apri nell’evento →</button>` : ''}${when ? `<span class="sh-hint">${esc(when)}</span>` : ''}</div>${(can && SH._pfEvF === x.id) ? `<div class="pf-ne" role="group" aria-label="Nuovo evento dello staff"><label>Nome <input id="pf-ne-t" class="sh-in" maxlength="80" placeholder="es. Riunione di staff"></label><label>Data <input id="pf-ne-d" type="date" class="sh-in"></label><label>Che tipo <select id="pf-ne-m" class="sh-in"><option value="sede">Riunione</option><option value="giorno">Uscita in giornata</option><option value="bivacco">Bivacco</option></select></label><button type="button" class="sh-btn" onclick="pfEvMake('${x.id}')">Crea e metti qui l’attività</button></div>` : ''}
       ${ta(x.id, 'verifica', x.verifica, 'Dopo averla fatta: cosa è andato bene, cosa cambieresti', '')}</section>`; };
   const pan = pfExplorer(L, can, cg, rec, used);
   return `<div class="sh-dh"><div><h1>${cg ? 'La palestra dei Capi Unità' : 'La palestra dello staff'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${cg ? 'Come formare gli adulti del Gruppo nel corso dell’anno: scegli le attività dal paniere o scrivine di tue, mettile in ordine di priorità e collocale negli eventi per gli adulti.' : 'Come far crescere lo staff nel corso dell’anno: scegli le attività dal paniere (quelle «consigliate» partono dai percorsi meno presenti nello staff) o scrivine di tue, mettile in ordine di priorità e collocale negli eventi dello staff.'} Le attività più in alto sono le più importanti.</p></div></div>
     <div class="anv-act">${can ? `<button type="button" class="sh-btn" onclick="pfOwn()">+ Una mia attività nuova</button>` : ''}<button type="button" class="btn-ghost" onclick="stfHelpOpen()">Aiuti per chi conduce</button><button type="button" class="btn-ghost" onclick="pfDocx()">Scarica il Word del percorso formativo</button></div>
-    ${pan}
-    ${L.length ? L.map(card).join('') : `<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">Il percorso è ancora vuoto: aggiungi un’attività da quelle qui sopra, oppure scrivine una tua.</p></section>`}
+    <a class="pf-jump" href="#pf-mine" onclick="document.getElementById('pf-mine').scrollIntoView({behavior:'smooth',block:'start'});return false">Il tuo percorso: <b>${L.length}</b> ${L.length === 1 ? 'attività' : 'attività'} ↓</a>
+    <div class="pf-cols"><div class="pf-left">${pan}</div>
+    <aside class="pf-right" id="pf-mine" aria-label="Il tuo percorso"><h2 class="pf-rh2">Il tuo percorso <span>${L.length}</span></h2>
+    ${L.length ? L.map(card).join('') : `<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">È ancora vuoto: scegli un’attività dalle proposte a sinistra, oppure scrivine una tua.</p></section>`}</aside></div>
     `;
 }
 function pfRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'pf' && p.classList.contains('active')) p.innerHTML = pfHTML(); }
 window.shPF = function(){ ownOff(); ensurePanels(); SH.ppv = 'pf'; $('panel-pp').innerHTML = pfHTML(); own('panel-pp'); };
-window.pfSet = function(id, k, v, re){ const x = pfList().find(z => z.id === id); if(!x || window.BRO) return; x[k] = v; saveDataDebounced(); if(re) pfRe(); };
+// l'attività del percorso e il momento formativo dell'evento sono la stessa cosa: scegliere «Dove la fai» la mette davvero nell'evento, e se la cambi si aggiorna
+function pfSteps(x){ return [x.lancio, x.sviluppo, x.conclusione].map(t => String(t || '').trim()).filter(Boolean).join('\n'); }
+function pfLinked(id){ const out = []; Object.values(uscMap()).forEach(u => { if(!u || u.del) return; Object.keys(u.prog || {}).forEach(k => { const m = u.prog[k]; if(m && m.pfId === id && !m.del) out.push({u, k, m}); }); }); return out; }
+window.pfPlace = function(id, quiet){
+  const x = pfList().find(z => z.id === id); if(!x || window.BRO) return false;
+  pfLinked(id).forEach(o => { if(o.u.id !== x.ev) o.m.del = true; });
+  const u = x.ev && uscMap()[x.ev]; if(!u || u.del){ if(!quiet) saveData(true); return false; }
+  let m = pfLinked(id).find(o => o.u.id === u.id); m = m && m.m;
+  const a = ATT_SCHEDE[x.nome] || {};
+  if(!m){ const R = uscBlocks(u, 1); const ord = R.length ? (Number(R[R.length - 1].m.ord) || 0) + 1 : 1; const dm = /(\d+)\s*(?:-\s*\d+\s*)?min/.exec(a.durata || ''); const kid = uscNewId('m');
+    m = u.prog[kid] = {k:'mf', tipo:'mom', g:1, ord, dur:dm ? Math.max(5, +dm[1]) : (USC_BT.mf[3] || 60), t:x.nome || 'Momento formativo', f:USC_BT.mf[2].slice(), cr:Date.now(), pfId:id}; }
+  m.t = (x.nome || '').trim() || 'Momento formativo'; m.mfSrc = ATT_SCHEDE[x.nome] ? x.nome : ''; m.mfPrev = m.mfSrc;
+  m.mfScopo = a.scopo || m.mfScopo || ''; m.mfGruppo = a.gruppo || m.mfGruppo || ''; m.mfPassi = pfSteps(x); m.mfDom = (a.domande || []).join('\n') || m.mfDom || ''; m.mfAtt = (a.attenzione || []).join('\n') || m.mfAtt || '';
+  if(!quiet) saveData(true); return true; };
+window.pfSet = function(id, k, v, re){ const x = pfList().find(z => z.id === id); if(!x || window.BRO) return; x[k] = v; saveDataDebounced();
+  if(k === 'ev'){ const ok = pfPlace(id); if(v && ok) showToast('Messa nell’evento «' + uscTit(uscMap()[v]) + '»: la ritrovi tra i momenti formativi'); }
+  else if(x.ev && /^(nome|lancio|sviluppo|conclusione)$/.test(k)) pfPlace(id, true);
+  if(re) pfRe(); };
+window.pfOpenEv = function(id){ const x = pfList().find(z => z.id === id); if(x && x.ev) shSrUsc(x.ev); };
+// nuovo evento dello staff direttamente dalla scheda dell'attività: nome, data e tipo; poi l'attività ci finisce dentro
+window.pfEvForm = function(id, on){ SH._pfEvF = on ? id : null; pfRe(); if(on) setTimeout(() => { const e = $('pf-ne-t'); if(e) e.focus(); }, 40); };
+window.pfEvMake = function(id){
+  if(window.BRO) return; const x = pfList().find(z => z.id === id); if(!x) return;
+  const t = String(($('pf-ne-t') || {}).value || '').trim(), d1 = ($('pf-ne-d') || {}).value || '', md = ($('pf-ne-m') || {}).value || 'sede';
+  if(!d1){ showToast('Scegli la data'); const e = $('pf-ne-d'); if(e) e.focus(); return; }
+  const eid = uscNewId('u'); const ad = []; try{ (staffTab() || []).forEach(r => { const n = (r.nome || '').trim(); if(n) ad.push(n + (r.ruolo ? ' (' + r.ruolo + ')' : '')); }); }catch(e){}
+  const ax = {data:d1, durata:'giorno', pres:{ad}, cibo:{carico:'ragazzi'}, luogo:{}}; if(md === 'sede') uscLuogoTipo(ax, 'sede');
+  const gs = md === 'sede' ? '21:00' : (md === 'giorno' ? '09:00' : '');
+  uscMap()[eid] = {id:eid, cr:Date.now(), testo:t || CAL_T[md][0], modello:md, ax, prog:{}, hid:Object.assign({}, USC_HID[md] || {}), own:{}, dest:'staff'}; if(gs) uscMap()[eid].gs = {1:gs};
+  x.ev = eid; SH._pfEvF = null; pfPlace(id); try{ uscNavSync(); }catch(e){} pfRe(); showToast('Evento creato e attività messa dentro: «' + uscTit(uscMap()[eid]) + '»'); };
 window.pfAdd = function(sid, nome){ if(window.BRO) return; const sx = SITUAZIONI_STAFF.find(z => z.id === sid); const y = sx && sx.attivita.find(z => z.nome === nome); if(!y) return; pfList().push({id:'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nome:y.nome, cat:y.cat, sit:sx.label, desc:y.desc || '', obiettivo:'', lancio:'', sviluppo:'', conclusione:'', ev:'', verifica:''}); saveData(true); pfRe(); showToast('Aggiunta in fondo al percorso: spostala dove serve'); };
 window.pfOwn = function(){ if(window.BRO) return; const id = 'f' + Date.now().toString(36); pfList().push({id, nome:'', cat:'', sit:'', desc:'', obiettivo:'', lancio:'', sviluppo:'', conclusione:'', ev:'', verifica:''}); saveData(true); pfRe(); setTimeout(() => { const e = document.querySelector('.pf-c[data-id="' + id + '"] .pf-t'); if(e) e.focus(); }, 60); };
 window.pfMove = function(id, d){ const L = pfList(); const i = L.findIndex(z => z.id === id), j = i + d; if(i < 0 || j < 0 || j >= L.length) return; const t = L[i]; L[i] = L[j]; L[j] = t; saveData(true); pfRe(); };
-window.pfDel = function(id){ const L = pfList(); const i = L.findIndex(z => z.id === id); if(i < 0) return; if(!confirm('Togliere «' + (L[i].nome || 'questa attività') + '» dal percorso formativo?')) return; L.splice(i, 1); saveData(true); pfRe(); };
+window.pfDel = function(id){ const L = pfList(); const i = L.findIndex(z => z.id === id); if(i < 0) return; if(!confirm('Togliere «' + (L[i].nome || 'questa attività') + '» dal percorso formativo?' + (L[i].ev ? '\n\nEsce anche dall’evento in cui l’avevi messa.' : ''))) return; try{ pfLinked(L[i].id).forEach(o => { o.m.del = true; }); }catch(e){} L.splice(i, 1); saveData(true); pfRe(); };
 window.pfNewEv = function(){ SH._calDest = 'staff'; shCal(); setTimeout(() => { try{ calNew('sede'); }catch(e){} }, 60); };
 window.pfDocx = async function(){
   try{ showToast('Preparo il Word…'); await needDocx(); }catch(e){ showToast('Impossibile generare il Word: ' + e.message); return; }
