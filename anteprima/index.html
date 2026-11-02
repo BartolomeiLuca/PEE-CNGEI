@@ -8091,7 +8091,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030500'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030600'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -17133,6 +17133,7 @@ const ico = k => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[k]
 const NAV_AN = [
   {id:'dash', t:'Dashboard', ic:'dash', go:'shDash()'},
   {g:'Capire'},
+  {id:'a-cap', t:'Capire', ic:'proj', go:'shCap()'},
   {id:'a-unit', k:'1a:unit', t:'La mia unità', ic:'users', go:"shSub('1a','','unit')"},
   {id:'a-ctx', k:'1a:ctx', t:'Il mio contesto', ic:'proj', go:"shSub('1a','','ctx')"},
   {id:'a-staff', k:'1a:staff', t:'Il mio staff', ic:'user', go:"shSub('1a','','staff')"},
@@ -17278,7 +17279,7 @@ function active(){
   if(window._stEmb) return 'o-staff';
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'cap' ? 'a-cap' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -18201,6 +18202,47 @@ window.tipSet = function(k){ (SH._tip = SH._tip || {}).b = k; const p = $('panel
 window.tipPop = function(w){ const L = w === 'pass' ? TIP_PASSAGGI : TIP_FAM; const t = w === 'pass' ? 'Passaggi di Branca: come si curano' : 'Riunione con i genitori: cosa tenere a mente';
   modalShow(`<div style="font-size:15px;font-weight:800;margin-bottom:8px">${esc(t)}</div><ul style="margin:0 0 10px;padding-left:18px;font-size:13px;line-height:1.55">${L.map(x => `<li style="margin:0 0 6px">${esc(x)}</li>`).join('')}</ul><p style="font-size:12px;color:var(--ink-mid);margin:0 0 10px">Fonte: Documentazione formativa CNGEI. Sintesi: per i dettagli e le attività guarda il materiale formativo.</p><div style="text-align:right"><button class="btn-primary" onclick="modalClose()">Chiudi</button></div>`); };
 window.shTip = function(){ ownOff(); ensurePanels(); SH.ppv = 'tip'; $('panel-pp').innerHTML = tipHTML(); own('panel-pp'); };
+
+// ——— «Capire»: il Progetto Educativo Esperienziale in breve, con due strade di lettura ———
+const CAP_AMBITI = [
+  {n:'Sviluppo Personale', c:'sfere intellettiva, fisica ed emotiva: crescere e migliorare, essere guida di sé stessi.', p:['Corporeità','Gestione delle emozioni','Creatività e fantasia','Progettualità','Capacità operative e gestionali','Senso critico','Adozione di stili di vita sani','Rispetto e consapevolezza di sé stessi']},
+  {n:'Sviluppo Comunitario', c:'la dimensione sociale: agire con gli altri e per gli altri, a partire dal gruppo di pari e dal proprio contesto.', p:['Comunicare','Relazioni interpersonali','Leadership collaborativa','Valorizzazione delle diversità','Legalità e diritti','Sostenibilità ambientale','Cittadinanza attiva','Advocacy (promozione di una causa)']},
+  {n:'Sviluppo Spirituale', c:'la maturazione interiore e la capacità di andare oltre sé stessi: dare senso alle esperienze e costruire un proprio progetto di vita.', p:['Costruire le proprie identità','Identità culturale','Meravigliarsi dell’ambiente','Connessione con le vite interiori degli altri','Vivere i valori','Vivere le proprie scelte','Progettare il proprio cammino futuro','Andare oltre']}
+];
+const CAP_PASSI = [
+  {t:'Osservazione del gruppo di pari', d:'Si guarda il gruppo nel suo insieme, con le sue dinamiche, più che il singolo (che ha già la sua traccia nella progressione personale). Bastano poche attività all’inizio dell’anno, con dei focus osservativi.', go:"shSub('1a','','occ')", b:'Vai a «Come osservo»'},
+  {t:'Identificazione delle necessità educative', d:'Si mettono in ordine i bisogni emersi, per non farsi guidare dall’emergenza o dall’emotività. Contano anche gli aspetti positivi: meglio necessità risolvibili che problemi impossibili.', go:"shSub('1b','P')", b:'Vai a «Sviluppo Personale»'},
+  {t:'Obiettivi e priorità educative', d:'Si associa ogni necessità all’Obiettivo più adatto, senza riscriverlo. Si sceglie almeno una priorità per ciascun Ambito (Personale, Comunitario, Spirituale) e si mettono in ordine di urgenza.', go:"shSub('1d','')", b:'Vai a «Priorità»'},
+  {t:'Indicatori di Risultato', d:'Per ogni Obiettivo almeno un indicatore, scritto come comportamento osservabile. A fine percorso si guarda se il comportamento c’è spontaneamente (2 punti), solo se stimolato (1) o non c’è ancora (0).', go:"shSec('2')", b:'Vai a «Obiettivi e indicatori»'},
+  {t:'Percorso Educativo Esperienziale', d:'Il cuore del lavoro: un percorso di almeno 3 o 4 attività, scelte con gli Strumenti del Metodo della propria Branca, con almeno un momento di rielaborazione (cognitiva ed emotiva). Un’esperienza è nuova, stimolante, progressiva, co-costruita, rielaborativa, esperienziale… ed educativa.', go:"shPerc('P')", b:'Vai a «Percorso Personale»'},
+  {t:'Valutazione intermedia e finale', d:'Due soste durante l’anno (verso gennaio-febbraio e aprile-maggio) per vedere cosa è cambiato e cosa aggiornare, poi la valutazione finale a fine campo o vacanze, con il contributo dei ragazzi e delle ragazze e del Capo Gruppo.', go:"shSec('5')", b:'Vai a «Valutazione finale»'}
+];
+const CAP_PEG = [
+  ['Non si scrivono obiettivi', 'Gli Obiettivi sono già dati per ogni Percorso: l’educatore li sceglie, associandoli alle necessità emerse. Chi ha più esperienza (Capo Gruppo, Commissario…) può precisarli meglio.'],
+  ['Dal singolo al gruppo di pari', 'L’osservazione iniziale riguarda il gruppo nel suo insieme; il singolo ha la sua traccia nella progressione personale.'],
+  ['Tre Ambiti con otto Percorsi ciascuno', 'Personale, Comunitario e Spirituale al posto delle aree del PEG; lo sviluppo spirituale non va più in un documento a parte (il PFS) ma è dentro lo stesso progetto.'],
+  ['Si va oltre la pedagogia per obiettivi', 'Si riparte dall’idea di educare come «trarre fuori», cioè dall’autoeducazione, con tre riferimenti: modello esperienziale, costruttivista e psicosociale.'],
+  ['Indicatori di comportamento', 'Per ogni Obiettivo ci sono Indicatori di Risultato comportamentali, non legati alla singola attività, con una scala a tre livelli.'],
+  ['Esperienze, non attività isolate', 'Il lavoro si organizza in percorsi di almeno 3-4 attività, co-costruite con i ragazzi e le ragazze e con una fase di rielaborazione.']
+];
+function capHTML(){
+  const E = esc; const w = (SH._cap && SH._cap.w) || 'nuovo';
+  const tab = (k, l) => `<button type="button" class="pfx-m${w === k ? ' on' : ''}" aria-pressed="${w === k}" onclick="capSet('${k}')">${l}</button>`;
+  const amb = CAP_AMBITI.map(a => `<div class="cap-card"><b>${E(a.n)}</b><p>${E(a.c.charAt(0).toUpperCase() + a.c.slice(1))}</p><ol>${a.p.map(x => `<li>${E(x)}</li>`).join('')}</ol></div>`).join('');
+  const passi = CAP_PASSI.map((x, i) => `<li class="cap-passo"><span class="cap-n">${i + 1}</span><div><b>${E(x.t)}</b><p>${E(x.d)}</p><button type="button" class="btn-ghost" onclick="${x.go}">${E(x.b)}</button></div></li>`).join('');
+  const body = w === 'peg'
+    ? `<p class="sh-sub" style="max-width:70ch">Se conosci il PEG, ecco che cosa cambia nel Progetto Educativo Esperienziale. I passi e gli Ambiti sono gli stessi per tutti: li trovi sotto, nella lettura per chi arriva la prima volta.</p>
+       <div class="cap-peg">${CAP_PEG.map(x => `<div><b>${E(x[0])}</b><p>${E(x[1])}</p></div>`).join('')}</div>`
+    : `<p class="sh-sub" style="max-width:70ch">L’educazione scout ha per oggetto la persona e il suo sviluppo, che guardiamo in tre Ambiti. Il lavoro dell’anno ha sei passi che si ripetono ciclicamente. Quello che segue è una sintesi: per i dettagli c’è il Manuale del Progetto Educativo Esperienziale.</p>
+       <h2 class="cap-h">I tre Ambiti e i loro Percorsi</h2><div class="cap-amb">${amb}</div>
+       <h2 class="cap-h">I sei passi dell’anno</h2><ol class="cap-passi">${passi}</ol>`;
+  return `<div class="sh-dh"><div><h1>Capire</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Prima di compilare: in pochi minuti, che cosa è il Progetto Educativo Esperienziale e come è fatto l’anno.</p></div></div>
+    <div class="pfx-ms2" role="group" aria-label="Come leggere">${tab('nuovo', 'È la prima volta')}${tab('peg', 'Vengo dal PEG')}</div>
+    ${body}
+    <p class="sh-hint">Fonte: Documentazione formativa CNGEI (Manuale del Progetto Educativo Esperienziale, versione in sperimentazione).</p>`;
+}
+window.capSet = function(k){ (SH._cap = SH._cap || {}).w = k; const p = $('panel-pp'); if(p && SH.ppv === 'cap') p.innerHTML = capHTML(); };
+window.shCap = function(){ ownOff(); ensurePanels(); SH.ppv = 'cap'; $('panel-pp').innerHTML = capHTML(); own('panel-pp'); };
 
 window.shStp = function(){ shPF(); };
 window.stpAdd = function(cy, uid){ if(window.BRO) return;
@@ -19640,7 +19682,7 @@ body.sh-in.sh-ready #g-subnav .gsn-steps,body.sh-in.sh-ready #g-subnav .gsn-titl
 body.sh-in.sh-ready #g-subnav:not(:has(.gsn-act)){display:none!important}
 /* Confronto e sintesi: su schermi stretti la tabella scorre dentro il suo riquadro, non allarga la pagina */
 .cf-left,.cf-grid>*{min-width:0}
-.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
+.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
 @media(max-width:899px){.cf-grid{grid-template-columns:minmax(0,1fr)}}
 /* Guida: i video sono la prima voce */
 .gd-vid{border:1.5px solid var(--brand-ink,#1B5E42);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:#fff}
