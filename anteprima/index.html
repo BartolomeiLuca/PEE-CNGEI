@@ -8091,7 +8091,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030700'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030800'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13219,7 +13219,7 @@ function rtHTML(str){ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,
 function rtOk(t){ if(window.__RT_OFF) return false; if(!t||t.tagName!=='TEXTAREA'||t.readOnly||t.disabled||t.hasAttribute('data-nort')||(t.maxLength>0&&t.maxLength<500)) return false; if(t.hasAttribute('data-conv')&&!(t.hasAttribute('data-rt')||/descriv|osservazion|necessit|descrizion|altri ruoli|note/i.test(t.placeholder||''))) return false; if(t.closest('.rt-ed,#cl-ov,#nac-ov,.modal,[role=dialog],[data-uk="circ"],.ax-circ,#ax-circ')) return false; const r=t.getBoundingClientRect(); return r.width>=180; }
 let RT_T=null, RT_BAR=null;
 function rtBar(){ if(RT_BAR) return RT_BAR; const b=document.createElement('div'); b.id='rt-bar'; b.setAttribute('role','toolbar'); b.setAttribute('aria-label','Formattazione del testo');
-  b.innerHTML=[['b','<b>G</b>','Grassetto'],['M','<span style="font-weight:600">G<sup>½</sup></span>','Semigrassetto'],['i','<i>C</i>','Corsivo'],['u','<u>S</u>','Sottolineato'],['L','A<sup>+</sup>','Più grande'],['S','A<sub>−</sub>','Più piccolo'],['ul','•≡','Elenco puntato'],['ol','1.≡','Elenco numerato'],['x','✕','Toglie la formattazione']].map(([k,h,t])=>`<button type="button" data-rt="${k}" title="${t}" aria-label="${t}">${h}</button>`).join('');
+  b.innerHTML=[['b','<b>G</b>','Grassetto'],['i','<i>C</i>','Corsivo'],['u','<u>S</u>','Sottolineato'],['L','A<sup>+</sup>','Più grande'],['S','A<sub>−</sub>','Più piccolo'],['ul','•≡','Elenco puntato'],['ol','1.≡','Elenco numerato'],['x','✕','Toglie la formattazione']].map(([k,h,t])=>`<button type="button" data-rt="${k}" title="${t}" aria-label="${t}">${h}</button>`).join('');
   b.addEventListener('mousedown',e=>{ e.preventDefault(); }); b.addEventListener('click',e=>{ const bt=e.target.closest('button[data-rt]'); if(bt&&RT_T){ if(RT_T.classList&&RT_T.classList.contains('rt-ed')) rtApplyEd(RT_T,bt.dataset.rt); else rtApply(RT_T,bt.dataset.rt); setTimeout(rtActive,0); } });
   document.body.appendChild(b); RT_BAR=b; return b; }
 // mostra quali strumenti sono attivi nel punto in cui si scrive
@@ -14956,6 +14956,7 @@ async function clAdoptRemote(){
 }
 // il progetto è cambiato altrove: appena sei fermo unisco (se hai modifiche) o aggiorno la pagina
 let _rmT = null;
+(function(){ const o = clApplyInPlace; if(typeof o === 'function') clApplyInPlace = function(){ const r = o.apply(this, arguments); try{ setTimeout(() => { try{ clPerTe(); }catch(e){} }, 400); }catch(e){} return r; }; })();
 function clRemoteChanged(ts){
   clearTimeout(_rmT);
   _rmT = setTimeout(() => {
@@ -15055,6 +15056,9 @@ async function clPerTe(){
     items.forEach(x => { x.hot = !x.ack && !x.letto && ((x.k !== 'att' && x.k !== 'mat') || !ptSeen(x) || ptSoon(x.d)); });
     { const sk = new Set(); for(let i = items.length - 1; i >= 0; i--){ const x = items[i]; const k = [x.k, x.id, x.mid, x.idx, x.j, x.av, x.u, x.g, x.k === 'usc' ? x.t : '', x.prima, x.email, (x.parti||x.cose||[]).join(',')].join('|'); if(sk.has(k)) items.splice(i, 1); else sk.add(k); } }
     CL.perte = items; clSetStatus(CL.status);
+    try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n;
+      document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
+      if(prev !== undefined && n > prev){ const d = n - prev; clToast(d === 1 ? 'Hai una novità in «Per te»: ti hanno affidato qualcosa o ti hanno scritto. La trovi in Progetti.' : 'Hai ' + d + ' novità in «Per te». Le trovi in Progetti.'); } }catch(e){}
     try{ const pt = $cl('cl-perte'); if(pt && $cl('cl-ov').classList.contains('show')) pt.innerHTML = clPerTeHTML(); }catch(e){}
     try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){}
   }finally{ _ptBusy = false; }
@@ -15255,7 +15259,7 @@ function edLock(){
     edBanner(self, show);
   });
   const allowCollab = chain => chain.some(x => x.who && affIsMe(x.who));
-  const special = e => e.closest('.sg-wrap,.sg13,#cl-ov,#ed-bar,.ed-aff,#g-modal,.mv-mine-w') || e.classList.contains('mv-mine');
+  const special = e => e.closest('.sg-wrap,.sg13,#cl-ov,#ed-bar,.ed-aff,#g-modal,.mv-mine-w') || e.classList.contains('mv-mine') || (e.tagName === 'TEXTAREA' && e.closest('.gr-f') && /grSet\('[^']*','[^']*','(pos|mig|note)'/.test(e.getAttribute('oninput') || ''));
   app.querySelectorAll('select,input,textarea,button').forEach(e => {
     if(special(e)) return;
     const isBtn = e.tagName === 'BUTTON';
@@ -19747,7 +19751,7 @@ body.sh-in.sh-ready #g-subnav .gsn-steps,body.sh-in.sh-ready #g-subnav .gsn-titl
 body.sh-in.sh-ready #g-subnav:not(:has(.gsn-act)){display:none!important}
 /* Confronto e sintesi: su schermi stretti la tabella scorre dentro il suo riquadro, non allarga la pagina */
 .cf-left,.cf-grid>*{min-width:0}
-.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.sh-sp{font-style:italic;opacity:.9}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
+.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.sh-sp{font-style:italic;opacity:.9}.hd-lnk[data-n]::after{content:attr(data-n);display:inline-block;min-width:18px;margin-left:6px;padding:1px 6px;border-radius:10px;background:#d4380d;color:#fff;font-size:12px;font-weight:800;text-align:center}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
 @media(max-width:899px){.cf-grid{grid-template-columns:minmax(0,1fr)}}
 /* Guida: i video sono la prima voce */
 .gd-vid{border:1.5px solid var(--brand-ink,#1B5E42);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:#fff}
