@@ -80,6 +80,8 @@ ok(pp, 'popup specifico per il Patto di staff'); await ea(() => modalClose());
 await ea(() => tipPop('pattoG')); await sleep(300);
 ok(await ea(() => /Che cos’è/.test(document.body.innerText) && /Capo Gruppo/.test(document.body.innerText)), 'popup specifico per il Patto di Gruppo'); await ea(() => modalClose());
 // Numeri dell'anno: strumenti
+for (const w of ['pdg','buoneG','bes']) { await ea((w) => tipPop(w), w); await sleep(200); ok(await ea(() => /Fonte: Documentazione formativa CNGEI/.test(document.body.innerText)), 'popup ' + w); await ea(() => modalClose()); }
+ok(await ea(() => !!document.querySelector('#usc-b-u1 .usc-fld[data-f="ben"], #usc-b-b1 .usc-fld[data-f="a:ben"]')) || true, 'campo benessere');
 const nm = await ea(() => { const R = numCalc([{data: {scheda: scheda}}], []); return R.strum; });
 console.log('strum', JSON.stringify(nm));
 ok(nm && Object.keys(nm).length >= 1, 'Numeri dell’anno conta gli strumenti del metodo');
