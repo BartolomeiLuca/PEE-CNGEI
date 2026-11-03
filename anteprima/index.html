@@ -3266,7 +3266,10 @@ function grOthers(d, f){ const em=grMineKey(); const out=[]; if(em && String(d[f
 function grAllViews(d, f){ const em=grMineKey(); const out=[]; const m=String((d||{})[f]||'').trim();
   if(m) out.push({nome: em ? grOwnerName() : 'Tu', t:m, me:!em});
   Object.keys((d||{}).by||{}).forEach(e=>{ const t=String(d.by[e][f]||'').trim(); if(t) out.push({nome:d.by[e].nome||e, t, me:e===em}); }); return out; }
-function grEff(d, f){ d=d||{}; const parts=[]; const m=String(d[f]||'').trim(); if(m) parts.push(m);
+function grEff(d, f){ d=d||{}; const parts=[]; const m=String(d[f]||'').trim();
+  // se ci sono anche testi di altre persone, anche quello di chi ha il progetto porta il suo nome (nel Confronto e nel Word si vedono tutti i punti di vista)
+  const alt=Object.keys(d.by||{}).some(e=>String((d.by[e]||{})[f]||'').trim());
+  if(m){ let nm=''; if(alt){ try{ nm = grMineKey() ? grOwnerName() : ((typeof clMyName==='function' && clMyName()) || 'Titolare'); }catch(e){ nm='Titolare'; } } parts.push(alt ? m+' ('+nm+')' : m); }
   Object.keys(d.by||{}).forEach(e=>{ const t=String((d.by[e]||{})[f]||'').trim(); if(t) parts.push(t+' ('+(d.by[e].nome||e)+')'); }); return parts.join('\n'); }
 function grSet(pid, k, f, v){ if(!scheda.griglia) scheda.griglia = {}; if(!scheda.griglia[pid]) scheda.griglia[pid] = {}; if(!scheda.griglia[pid][k]) scheda.griglia[pid][k] = {}; const d=scheda.griglia[pid][k]; const pf=['pos','mig','note'].includes(f); (pf?grMine(d,true):d)[f] = v; saveDataDebounced(); }
 function grElems(pid){ const o = (typeof KOS_OBS !== 'undefined' && KOS_OBS[pid]) || {}; const t = String(o[FASCIA || 'E'] || '').trim().replace(/\.$/, ''); return t.split(/;\s*/).map(x => x.trim()).filter(Boolean).map(x => x.charAt(0).toUpperCase() + x.slice(1)); }
@@ -3296,9 +3299,9 @@ function grInner(pid){
   const rows = grRows(pid); const G = ((scheda.griglia || {})[pid]) || {}; const amb = pid[0]; const start = grStart();
   const L = ['Comportamenti positivi emersi', 'Comportamenti da migliorare', 'Note specifiche del singolo o del gruppetto'];
   const GR_PH = {pos:'Che cosa hai visto fare al gruppo? Descrivi in modo oggettivo, senza giudicare.', mig:'Quali comportamenti vorresti veder crescere? Racconta che cosa succede, non chi sbaglia.', note:'Solo se rilevante per il gruppo: singoli o gruppetti che meritano attenzione.'};
-  const ta = (k, f, v, lab, ro) => { const d=G[k]||{}; const pf=['pos','mig','note'].includes(f); const mine=pf?grMine(d,false)[f]:v; const oth=pf?grAllViews(d,f):[];
+  const ta = (k, f, v, lab, ro) => { const d=G[k]||{}; const pf=['pos','mig','note'].includes(f); const mine=pf?grMine(d,false)[f]:v; const oth=pf?grOthers(d,f):[];
     return `<div class="gr-f"><span>${lab}</span><div class="gr-fi"><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(mine || '')}</textarea></div></div>`
-      + (oth.some(o=>!o.me) ? `<div class="gr-oth"><b>Tutti i punti di vista · ${sEsc(lab)}</b>${oth.map(o=>`<div><i>${o.me?'Tu':sEsc(o.nome)}:</i> ${sEsc(o.t)}</div>`).join('')}</div>` : ''); };
+      + (oth.length ? `<div class="gr-oth"><b>Cosa hanno scritto gli altri · ${sEsc(lab)}</b>${oth.map(o=>`<div><i>${sEsc(o.nome)}:</i> ${sEsc(o.t)}</div>`).join('')}</div>` : ''); };
   const focBlock = (r, g, free) => {
     if(free) return ta(r.k, 'foc', g.foc, 'Focus osservativo');
     const kos = grKosFoc(pid, r); grFocMigra(pid, r.k, g, kos); const els = grElems(pid);
@@ -8102,7 +8105,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611031730'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611031800'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
