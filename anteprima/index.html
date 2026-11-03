@@ -7939,7 +7939,7 @@ function attPrepSet(idx,j,v){ updateAttivita(idx,j,'prep',v); if(v){ const a=get
 function attShareSet(idx,j,on){ updateAttivita(idx,j,'condivisa',!!on); saveDataDebounced(); const v=clViewSaveSafe(); try{ renderValuation(); }catch(e){} clViewRestoreSafe(v); }
 function clViewSaveSafe(){ try{ return clViewSave(); }catch(e){ return null; } }
 function clViewRestoreSafe(v){ try{ if(v) clViewRestore(v); }catch(e){} }
-function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); s.insertBefore(c, s.querySelector('button')); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
+function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); const bt=s.querySelector(':scope > button'); if(bt) s.insertBefore(c, bt); else s.appendChild(c); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
 // verifica delle parti affidate: un campo per ogni referente di settore, già etichettato
 function verParti(a){ if(!axShared(a)) return []; const x=a.ax||{}; return AX_REF.map(([k,l])=>({k,l,chi:axRef(x,k)})).filter(o=>o.chi); }
 function verPartiHTML(idx,j,a){ const P=verParti(a); if(!P.length) return ''; const V=a.vRef||{};
@@ -8098,7 +8098,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611031600'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611031630'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -14232,7 +14232,7 @@ async function clInit(){
 
 // ── UI ──
 function clNoAcc(){ const e = document.getElementById('cl-nolog'); if(e) e.style.display = 'none'; try{ document.getElementById('step1').scrollIntoView({behavior:'smooth'}); }catch(x){} }
-function clOpen(){ if(!clOn()){ return; } if(CL.user && !window.BRO && typeof shGoHome==='function' && $('sh-root')){ try{ shGoHome(); return; }catch(e){} } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
+function clOpen(){ if(!clOn()){ return; } if(CL.user && !window.BRO && typeof shGoHome==='function' && document.getElementById('sh-root')){ try{ shGoHome(); return; }catch(e){} } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
 function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
 // "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
