@@ -27,14 +27,14 @@ A.on('pageerror', e => console.log('PAGEERR', String(e).slice(0, 250)));
 await loginAs(A, base, ua); await sleep(1200); A.evaluate(() => shOpen('c1', 0)).catch(() => {}); await sleep(3000);
 await ea(() => { document.querySelectorAll('#g-modal .ppb-c').forEach(c => { c.checked = true; }); if(document.querySelector('#g-modal.show .ppb-ask')) _ppbGo(); }); await sleep(1500);
 await ea(() => shTip()); await sleep(800);
-const ini = await ea(() => ({h: (document.querySelector('#panel-pp h1') || {}).textContent, tab: document.querySelector('.pfx-ms2 .on') && document.querySelector('.pfx-ms2 .on').textContent, side: /L’anno di solito/.test(document.getElementById('sh-side').textContent), now: document.querySelectorAll('.tip-t thead .now').length}));
+const ini = await ea(() => ({h: (document.querySelector('#panel-pp h1') || {}).textContent, tab: document.querySelector('.pfx-ms2 .on') && document.querySelector('.pfx-ms2 .on').textContent, side: /L’anno di solito/.test(document.getElementById('sh-side').textContent), now: document.querySelectorAll('.tip-mc.now').length}));
 ok(ini.h === 'L’anno di solito' && ini.side, 'la pagina «L’anno di solito» c’è nel menu Realizzare');
 ok(ini.tab === 'Reparto' && ini.now === 1, 'per un’Unità di Reparto si apre il calendario del Reparto, con il mese in corso evidenziato (' + ini.tab + ')');
-const cel = await ea(() => { const t = document.querySelector('.tip-t'); return {righe: t.querySelectorAll('tbody tr').length, ott: [...t.querySelectorAll('tbody tr')].find(r => /Staff/.test(r.querySelector('th').textContent)).children[2].textContent}; });
-ok(cel.righe === 8 && /Nuovo Contratto di Staff/.test(cel.ott), 'otto righe e i contenuti del calendario di Reparto (ottobre, Staff: ' + cel.ott.slice(0, 60) + '…)');
+const cel = await ea(() => ({n: document.querySelectorAll('.tip-mc').length, ott: document.querySelectorAll('.tip-mc')[1].textContent}));
+ok(cel.n === 12 && /Passaggi di Branca/.test(cel.ott) && /Bivacco di staff/.test(cel.ott), 'dodici mesi con i momenti principali di Reparto (ottobre: ' + cel.ott.slice(0, 60) + '…)');
 for (const k of ['L', 'R', 'G']) { await ea(k => tipSet(k), k); await sleep(200);
-  const r = await ea(() => ({righe: document.querySelectorAll('.tip-t tbody tr').length, fonte: /Fonte: Documentazione formativa CNGEI/.test(document.getElementById('panel-pp').textContent), nomi: /[A-Z][a-z]+ [A-Z][a-z]+, formator/.test(document.getElementById('panel-pp').textContent)}));
-  ok(r.righe >= 2 && r.fonte && !r.nomi, 'calendario ' + k + ': ' + r.righe + ' righe, con la fonte generica'); }
+  const r = await ea(() => ({righe: document.querySelectorAll('.tip-mc').length, fonte: /Fonte: Documentazione formativa CNGEI/.test(document.getElementById('panel-pp').textContent), nomi: /[A-Z][a-z]+ [A-Z][a-z]+, formator/.test(document.getElementById('panel-pp').textContent)}));
+  ok(r.righe >= 4 && r.fonte && !r.nomi, 'calendario ' + k + ': ' + r.righe + ' riquadri, con la fonte generica'); }
 await ea(() => tipPop('pass')); await sleep(300);
 ok(await ea(() => /Passaggi di Branca/.test(document.getElementById('g-modal').textContent) && /Documentazione formativa CNGEI/.test(document.getElementById('g-modal').textContent)), 'popup sui passaggi di Branca con la fonte generica');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));

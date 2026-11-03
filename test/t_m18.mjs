@@ -26,7 +26,7 @@ await ea(() => shCap()); await sleep(600);
 let t = await ea(() => document.getElementById('panel-pp').innerText);
 ok(/Sviluppo Spirituale/.test(t) && /Advocacy/.test(t) && /sei passi/.test(t), 'prima volta: ambiti, percorsi e passi');
 ok(!/[A-Z][a-z]+ [A-Z][a-z]+ \(sez\./.test(t) && /Documentazione formativa CNGEI/.test(t), 'fonte generica, nessun nome');
-ok(await ea(() => /Capire[\s\S]*La mia unità/.test(document.body.innerText)), 'la voce «Capire» è nel menu, prima di «La mia unità»');
+ok(await ea(() => /capire/i.test(document.getElementById('sh-side').innerText)), 'la voce principale «Capire» è nel menu');
 await ea(() => capSet('peg')); await sleep(300);
 t = await ea(() => document.getElementById('panel-pp').innerText);
 ok(/Non si scrivono obiettivi/.test(t) && /Vengo dal PEG/.test(t), 'vengo dal PEG: differenze');

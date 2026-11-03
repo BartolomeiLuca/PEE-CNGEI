@@ -22,15 +22,15 @@ const memb = () => db.t.pee_membri.find(m => m.id === 'm1');
 const pa = await person(br, db, {ctx:{viewport:{width:1400, height:900}}}); const A = pa.page, ea = (f, x) => A.evaluate(f, x);
 A.on('pageerror', e => console.log('PAGEERR', String(e).slice(0, 250)));
 await loginAs(A, base, ua); await sleep(1200); A.evaluate(() => shOpen('c1', 0)).catch(() => {}); await sleep(3000);
-for (const g of ['Osservare','Progettare','Realizzare','Misurare']) {
-  await ea(g => { if(!document.querySelector('.sh-gh.open')||!/Capire|Osservare|Progettare|Realizzare|Misurare/.test('')) {} ; const b=[...document.querySelectorAll('.sh-gh')].find(x=>x.textContent.trim()===g); if(b && !b.classList.contains('open')) shGrp(g); }, g); await sleep(400);
-  const has = await ea(() => !!document.querySelector('.sh-sp'));
-  ok(has, 'gruppo ' + g + ': c’è «Per capire meglio»');
-  await ea(g => capPop(g), g); await sleep(300);
-  const t = await ea(() => document.body.innerText);
-  ok(/Documentazione formativa CNGEI/.test(t), 'popup ' + g + ' con fonte generica');
-  await ea(() => modalClose());
+const want = {Capire:/È la prima volta/, Osservare:/KOS|Annotare comportamenti/, Progettare:/Inclusione/, Realizzare:/L’anno di solito/, Misurare:/Pensare, fare, pensare/, Conservare:/archivio nazionale/, Condividere:/Con lo staff/};
+for (const g of Object.keys(want)) {
+  await ea(g => { const b=[...document.querySelectorAll('.sh-gh')].find(x=>x.textContent.trim()===g); b.click(); }, g); await sleep(500);
+  const t = await ea(() => document.getElementById('panel-pp').innerText);
+  ok(want[g].test(t) && new RegExp(g).test(t), 'cliccando «' + g + '» si apre la pagina della voce');
+  const open = await ea(g => { const b=[...document.querySelectorAll('.sh-gh')].find(x=>x.textContent.trim()===g); return b.classList.contains('open'); }, g);
+  ok(open, '«' + g + '» apre anche il sottomenu');
 }
-await A.screenshot({path:'/tmp/pop.png'});
+ok(!(await ea(() => /Per capire meglio/.test(document.body.innerText))), 'niente voce «Per capire meglio»');
+await A.screenshot({path:'/tmp/grp.png'});
 ok(!pa.errors.length, 'nessun errore JS' + pa.errors.slice(0, 3).join(' | '));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);
