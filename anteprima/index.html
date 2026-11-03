@@ -6400,7 +6400,7 @@ function cfTable(a, cols){
 function cfDetail(){
   const pid=cfPercSel(); const p=Object.values(DB).flat().find(x=>x.id===pid); const M=mvM(); const me=mvMe(); const vis=cfVisible(pid);
   const names=occChiNames(); const rows=grRows(pid);
-  const att = rows.length ? rows.map(r=>`<li><b>${sEsc(r.nome)}</b>${r.data?` <span class="cf-dt">${sEsc(grDateTxt(r.data))}</span>`:''}${names.length?`<div class="cf-pr">${names.map(n=>{ const ab=occAbsent(r.k,n); return `<span class="cf-pc${ab?'':' on'}">${sEsc(n.split(/\s+/)[0])} · ${ab?'assente':'c’era'}</span>`; }).join('')}</div>`:''}</li>`).join('') : `<li class="cf-none">Nessuna attività collegata a questo percorso in 1.1.</li>`;
+  const att = rows.length ? rows.map(r=>`<li><b>${sEsc(r.nome)}</b>${r.data?` <span class="cf-dt">${sEsc(grDateTxt(r.data))}</span>`:''}${names.length?`<div class="cf-pr">${names.filter((n,i)=>names.findIndex(m=>occNameSame(m,n))===i).map(n=>{ const ab=occAbsent(r.k,n); return `<span class="cf-pc${ab?'':' on'}">${sEsc(n.split(/\s+/)[0])} · ${ab?'assente':'c’era'}</span>`; }).join('')}</div>`:''}</li>`).join('') : `<li class="cf-none">Nessuna attività collegata a questo percorso in 1.1.</li>`;
   const all=mvAll(pid); const soloNote = vis ? mvObs().filter(o => String((o.note||{})[pid]||'').trim() && !all.some(x => x.em===o.em)) : [];
   const liv = !vis ? `<div class="mv-lock">${MV_LOCK}<span>I livelli e le note degli altri si vedono dopo che hai dato il tuo valore su questo percorso (anche «Non osservato»).</span></div>` : (all.length ? all.map(x=>`<div class="cf-lv"><span class="cf-c ${cfLvl(x.v)}">${x.v==='n'?'n.o.':x.v}</span><div><b>${sEsc(x.em===me?'Tu':x.nome)}</b> · ${sEsc(mvLbl(x.v))}${x.note?`<div class="cf-note">«${sEsc(x.note)}»</div>`:''}</div></div>`).join('') + soloNote.map(o => `<div class="cf-lv"><span class="cf-c">·</span><div><b>${sEsc(o.em===me?'Tu':o.nome)}</b> · solo nota, senza livello<div class="cf-note">«${sEsc(o.note[pid])}»</div></div></div>`).join('') : `<div class="cf-none">Nessuno ha ancora risposto.</div>`);
   const S=(M.sint||{})[pid]||{};
@@ -8091,7 +8091,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611030600'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611030700'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -8262,7 +8262,7 @@ const FAQ = [
   ['Per cominciare','A cosa serve PEE CNGEI?','Ti accompagna nella Programmazione Educativa Esperienziale della tua Unità: osservare il gruppo, scegliere le priorità, costruire percorsi e attività, verificare e valutare. Ti risparmia le parti ripetitive; le scelte educative restano tue.'],
   ['Per cominciare','Serve per il Progetto Personale o per la programmazione dell’Unità?','Per entrambi, ma sono due progetti diversi: quando ne crei uno scegli se è il tuo <b>Progetto Personale</b> (le cinque Sezioni delle Linee Guida, da inviare al Tutor e all’ICdF) o la <b>Programmazione di Unità</b> (osservazione, priorità, percorsi, calendario, verifica). Ognuno mostra solo ciò che gli serve.'],
   ['Per cominciare','Posso provarla senza fare danni?','Sì: nella schermata iniziale premi <b>Apri un progetto di esempio</b>. È un Reparto già compilato: esplora e modifica liberamente, poi lo elimini con un clic.'],
-  ['Per cominciare','Funziona su telefono e tablet?','Sì. Per scrivere molto il computer o il tablet sono più comodi, ma il lavoro è lo stesso su ogni dispositivo (con un account).'],
+  ['Per cominciare','Su quali dispositivi e browser funziona?','Funziona su <b>Windows</b> e <b>Mac</b> con Chrome, Edge, Firefox e Safari (versioni recenti), su <b>iPad</b> (Safari) e su <b>Android</b> (Chrome). Sul <b>telefono</b> funziona, ma è pensata soprattutto per computer e tablet: per scrivere molto o per i documenti Word è molto più comodo uno schermo grande. Con un account il lavoro è lo stesso su ogni dispositivo. Se qualcosa non va nel tuo browser, scrivicelo da «Suggerimenti?» indicando quale usi.'],
   ['Account e salvataggio','Devo per forza creare un account?','No: senza account il lavoro resta solo nel browser di questo dispositivo. Con l’account lo ritrovi ovunque e puoi lavorare con lo staff.','clOpen()'],
   ['Account e salvataggio','Come si salva il lavoro?','Da solo, a ogni modifica. Nel pulsante <b>Archivio</b> in alto il pallino verde e la spunta ✓ dicono che è tutto salvato.'],
   ['Account e salvataggio','Ho sbagliato e ho perso qualcosa: posso tornare indietro?','Sì: <b>Archivio › Versioni precedenti</b> (o il pulsante con l’orologio in alto) ti riporta a com’era il lavoro qualche ora o qualche giorno prima.','clOpenHist()'],
@@ -9424,7 +9424,7 @@ function attObjHTML(p,j,a){
     const id=(P.idr||[]).map((t,q)=>({k:q,t}));
     const idOn=id.filter(o=>inI.has(o.k)), idOff=id.filter(o=>!inI.has(o.k));
     const si=O.i||[]; const n=si.length;
-    const row=(kind,o,sel,inP)=>{ const on=sel.includes(o.k); const ov=((a.ax||{}).oss||{})[o.k]||{}; return `<label class="ax-check usc-objl${inP.has(o.k)?' att-ind-on':''}"><input type="checkbox" ${on?'checked':''} ${can?'':'disabled'} onchange="attObjTog(${p},${j},'${kind}',${o.k},this.checked)"> <span>${sEsc(o.t)}</span></label>${(on&&kind==='i')?`<div class="ax-row2 att-oss"><input class="ax-in" placeholder="Da quale comportamento lo vedrai?" value="${axE(ov.comp)}" ${can?'':'disabled'} oninput="axSet(${p},${j},'oss.${o.k}.comp',this.value)">${axPersonSel(ov.chi,`axSet(${p},${j},'oss.${o.k}.chi',@V)`)}</div>`:''}`; };
+    const row=(kind,o,sel,inP)=>{ const on=sel.includes(o.k); const ov=((a.ax||{}).oss||{})[o.k]||{}; return `<label class="ax-check usc-objl${inP.has(o.k)?' att-ind-on':''}"><input type="checkbox" ${on?'checked':''} ${can?'':'disabled'} onchange="attObjTog(${p},${j},'${kind}',${o.k},this.checked)"> <span>${sEsc(o.t)}</span></label>${(on&&kind==='i')?`<div class="ax-row2 att-oss"><input class="ax-in" placeholder="Da quale comportamento lo vedrai?" value="${axE(ov.comp)}" ${can?'':'disabled'} oninput="axSet(${p},${j},'oss.${o.k}.comp',this.value)"></div>`:''}`; };
     const others=getAllPercorsi().map((q,i)=>({q,i})).filter(z=>z.q&&z.q.percorsoId&&z.i!==p);
     const mv=can?`<div class="att-mvb"><button type="button" class="btn-ghost ax-btn" onclick="attMoveAsk(${p},${j})">Sposta questa attività in un altro percorso o ciclo…</button><span class="ax-opt">testo, materiali e date restano; gli indicatori specifici vanno scelti di nuovo nel nuovo percorso</span></div>`:'';
     const _ok=p+'-'+j, _os=(window._attObjOpen||{})[_ok]; const _op=(_os===undefined)?!n:_os;
@@ -11396,7 +11396,7 @@ function grDraftFor(a){
   const out = {positivi:[], necessita:[], singoli:[]};
   (DB[a] || []).forEach(p => { const g = (scheda.griglia || {})[p.id]; if(!g) return;
     const pos = [], mig = [], nt = [];
-    Object.keys(g).forEach(k => { const d = g[k] || {}; const e1=grEff(d,'pos'), e2=grEff(d,'mig'), e3=grEff(d,'note'); if(e1) pos.push(e1); if(e2) mig.push(e2); if(e3) nt.push(e3); });
+    Object.keys(g).forEach(k => { const d = g[k] || {}; const e1=grEff(d,'pos'), e2=grEff(d,'mig'), e3=grEff(d,'note'); if(e1 && pos.indexOf(e1)<0) pos.push(e1); if(e2 && mig.indexOf(e2)<0) mig.push(e2); if(e3 && nt.indexOf(e3)<0) nt.push(e3); });
     const nm = (szPP() ? p.id + ' ' : '') + p.name;   // nella Programmazione Educativa i percorsi non hanno numeri
     if(pos.length) out.positivi.push(nm + ': ' + pos.join('; ')); if(mig.length) out.necessita.push(nm + ': ' + mig.join('; ')); if(nt.length) out.singoli.push(nm + ': ' + nt.join('; ')); });
   return out;
@@ -14197,7 +14197,7 @@ async function clInit(){
 
 // ── UI ──
 function clNoAcc(){ const e = document.getElementById('cl-nolog'); if(e) e.style.display = 'none'; try{ document.getElementById('step1').scrollIntoView({behavior:'smooth'}); }catch(x){} }
-function clOpen(){ if(!clOn()){ return; } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
+function clOpen(){ if(!clOn()){ return; } if(CL.user && !window.BRO && typeof shGoHome==='function' && $('sh-root')){ try{ shGoHome(); return; }catch(e){} } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
 function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
 // "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
@@ -15092,11 +15092,12 @@ function clPerTeHTML(){
     if(x.k === 'an') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n===1?'1 proposta':x.n+' proposte'} per l’archivio nazionale da approvare</div><div class="s">Le leggi, poi approvi o rifiuti</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};anOpen('pend')">Leggi e decidi</button></div>`;
     if(x.k === 'ver') return `<div class="cl-row"><div style="min-width:0"><div class="t">Da verificare: ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)} · l’attività è stata vissuta</div></div><button class="cl-btn sm" onclick="clContinue(true);setTimeout(()=>verGo(${x.idx},${x.j}),300)">Verifica</button></div>`;
     const pr = `${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}`;
-    const go = x.cur ? `clPtGoAtt(${x.idx},${x.j},${x.k==='mat'?"['mat']":x.gk?JSON.stringify(x.gk).replace(/"/g,"'"):'null'})` : `clOpenShared('${x.id}')`;
+    const _grp = x.k==='mat'?"['mat']":x.gk?JSON.stringify(x.gk).replace(/"/g,"'"):'null';
+    const go = x.cur ? `clPtGoAtt(${x.idx},${x.j},${_grp})` : `ptGoOpen('${x.id}',{t:'att',idx:${x.idx},j:${x.j},grp:${_grp}})`;
     const tt = x.t ? '«'+clEsc(x.t.slice(0,60))+'»' : 'attività '+((x.j||0)+1);
     if(x.k === 'usc') return uscPtRow(x, pr);
     if(x.k === 'uscg'){ const lst = x.righe.map(r => '«' + clEsc(r.t.slice(0, 50)) + '»').join(', ');
-      const ap = x.cur ? `clContinue(true);setTimeout(()=>uscOpen('${clEsc(x.u)}',${Number(x.g)||1}),300)` : `clOpenShared('${clEsc(x.id)}')`;
+      const ap = x.cur ? `clContinue(true);setTimeout(()=>uscOpen('${clEsc(x.u)}',${Number(x.g)||1}),300)` : `ptGoOpen('${clEsc(x.id)}',{t:'usc',u:'${clEsc(x.u)}',g:${Number(x.g)||1}})`;
       const ak = x.hot ? `<button type="button" class="cl-btn ghost sm" onclick="ptAckMany([${x.ns.join(',')}])">Ho capito</button>` : '';
       return `<div class="cl-row"${x.hot ? '' : ' style="opacity:.72"'}><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» ${x.righe.length === 1 ? 'è affidato a te' : 'sono affidati a te'}: ${lst}</div><div class="s">${pr}</div></div><div class="cl-act"><button class="cl-btn sm" onclick="${ap}">Apri</button>${ak}</div></div>`; }
     if(x.k === 'mat') return `<div class="cl-row"><div style="min-width:0"><div class="t">Materiali da procurare, tocca a te: ${clEsc(x.cose.slice(0,4).join(', '))}${x.cose.length>4?'…':''}</div><div class="s">per ${tt} · ${pr}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${go}">Apri</button></div>`;
@@ -15109,9 +15110,17 @@ function clPerTeHTML(){
   const hot=ptHotN(it);
   return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${ptGroup(it).map(o=>o.x.k==='uscg'?row(o.x):ptAckWrap(row(o.x),o.x,o.n)).join('')}${it.some(x=>x.k==='av'&&(x.letto||x.ack))?`<p class="cl-note" style="margin:6px 0 0">Gli avvisi su cui hai premuto «Ho capito» restano qui per ${PT_KEEP_DAYS} giorni, poi si archiviano.</p>`:''}${it.some(x=>x.hot===false&&!x.ack&&!x.letto)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
 }
+// apre un progetto condiviso e poi porta alla cosa affidata (anche se la pagina si ricarica)
+function ptGoOpen(id, act){ try{ sessionStorage.setItem('bussola_pt_go', JSON.stringify(Object.assign({id}, act))); }catch(e){} try{ clOpenShared(id); }catch(e){} setTimeout(ptGoRun, 800); }
+function ptGoRun(n){ let a = null; try{ a = JSON.parse(sessionStorage.getItem('bussola_pt_go') || 'null'); }catch(e){} if(!a) return;
+  n = n || 0; if(n > 30){ try{ sessionStorage.removeItem('bussola_pt_go'); }catch(e){} return; }
+  if(!(CL.ctx && CL.ctx.id === a.id && typeof scheda !== 'undefined' && scheda && typeof getAllPercorsi === 'function' && document.getElementById('sh-root') && document.querySelector('#sh-side .sh-gh'))){ setTimeout(() => ptGoRun(n + 1), 500); return; }
+  try{ sessionStorage.removeItem('bussola_pt_go'); }catch(e){}
+  const go = () => { try{ if(a.t === 'usc') uscOpen(a.u, a.g); else clPtGoAtt(a.idx, a.j, a.grp); }catch(e){} };
+  setTimeout(go, 1800); setTimeout(() => { if(a.t !== 'usc' && !document.getElementById('att-' + a.idx + '-' + a.j)) go(); }, 5200); }
 function clPtGoAtt(idx, j, grp){
-  clContinue(true);
-  setTimeout(() => { try{ if(MODE === 'giovani') gGo('3'); else { schedaStep = 'C'; goPhaseInternal(4); } }catch(e){}
+  try{ clClose(); }catch(e){}
+  setTimeout(() => { try{ const per = getAllPercorsi()[idx]; const amb = per && (per.ambito || (per.percorsoId || '')[0]); if(typeof shPerc === 'function' && document.getElementById('sh-root') && MODE === 'giovani') shPerc(amb || 'P'); else if(MODE === 'giovani') gGo('3'); else { schedaStep = 'C'; goPhaseInternal(4); } }catch(e){}
     setTimeout(() => { try{ tlGo(idx, j); }catch(e){} if(grp && grp.length) setTimeout(() => ptOpenPart(idx, j, grp), 700); }, 500); }, 300);
 }
 // apre, dentro l'attività, proprio la parte affidata a me (o i materiali) e la evidenzia
@@ -16119,7 +16128,7 @@ function clRestore(inp){
 document.addEventListener('DOMContentLoaded', () => {
   try{ const wb=document.getElementById('why-box'); if(wb && window.innerWidth>640) wb.open=true; }catch(e){}
   try{ if(typeof loadSaved==='function') loadSaved(); }catch(e){}
-  clInit().then(() => setTimeout(movStrip, 600)).catch(() => {});
+  clInit().then(() => { setTimeout(movStrip, 600); setTimeout(ptGoRun, 1200); }).catch(() => {});
   try{ const m = sessionStorage.getItem('bussola_opened_msg'); if(m){ sessionStorage.removeItem('bussola_opened_msg'); setTimeout(() => clToast(m), 800); } }catch(e){}
   // Se c'è già un lavoro salvato si entra direttamente (niente pagina iniziale, niente "Riprendi")
   try{
@@ -16452,8 +16461,28 @@ function profCard(p, mode, disabled){
       <div class="sh-msg" id="sh-pmsg" role="alert"></div>
       ${SH.profErr ? `<div class="sh-hint">Il profilo non si è potuto leggere dal cloud (${esc(SH.profErr)}): ti mostro la copia di questo dispositivo.</div>` : ''}
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sh-btn" type="submit" id="sh-psave">${first ? 'Continua' : 'Salva'}</button>${first ? '' : '<button class="sh-btn gh" type="button" onclick="shGoHome()">Annulla</button>'}</div>
-    </fieldset></form>${first ? '' : '<div class="sh-wrap-out"><button class="sh-btn gh" type="button" onclick="shLogout()">Esci dall’account</button></div>'}`;
+    </fieldset></form>${first ? '' : `<div class="sh-card" style="margin-top:14px"><h2 class="sh-h2">Il tuo account</h2><p class="sh-sub">Email attuale: <b>${esc((CL.user && CL.user.email) || '')}</b>${CL.user && CL.user.new_email ? ' · in attesa di conferma: ' + esc(CL.user.new_email) : ''}</p><div><label class="sh-lb" for="sh-newmail">Nuova email</label><input class="sh-in" id="sh-newmail" type="email" autocomplete="email" placeholder="nuova@indirizzo.it"><div class="sh-hint">Ti mandiamo un link di conferma. Gli inviti già ricevuti passano alla nuova email.</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"><button class="sh-btn" type="button" onclick="shEmailSend()">Cambia email</button><button class="sh-btn gh" type="button" onclick="shPwReset()">Cambia password</button></div><div class="sh-msg" id="sh-amsg" role="alert"></div></div><div class="sh-wrap-out"><button class="sh-btn gh" type="button" onclick="shLogout()">Esci dall’account</button></div>`}`;
 }
+window.shEmailSend = async function(){
+  const m = $('sh-amsg'); const nuova = String(($('sh-newmail') || {}).value || '').trim().toLowerCase();
+  const say = (t, k) => { m.className = 'sh-msg ' + k; m.textContent = t; };
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(nuova)) return say('Scrivi un indirizzo email valido.', 'err');
+  if(nuova === String(CL.user.email || '').toLowerCase()) return say('È già la tua email.', 'err');
+  say('Un attimo…', '');
+  try{
+    try{ const r = await CL.sb.rpc('pee_prepara_cambio_email', {nuova}); if(r && r.error) throw r.error; }
+    catch(e){ return say('Prima di cambiare email serve l’aggiornamento del database (script SQL del 12 ottobre): chiedi a chi cura l’app.', 'err'); }
+    const {error} = await CL.sb.auth.updateUser({email:nuova}, {emailRedirectTo: location.href.split('#')[0].split('?')[0]});
+    if(error) throw error;
+    try{ localStorage.setItem('bussola_mail_attesa', nuova); }catch(e){}
+    say('Ti ho mandato un link di conferma a ' + nuova + ' (e un avviso al vecchio indirizzo: se arriva un link anche lì, conferma da entrambe). Finché non confermi resta valida l’email di adesso. Controlla anche lo spam.', 'ok');
+  }catch(e){ say(/already|registered/i.test(String(e && e.message)) ? 'Questa email è già usata da un altro account.' : ('Non sono riuscito: ' + ((e && e.message) || 'riprova')), 'err'); }
+};
+window.shPwReset = async function(){
+  const m = $('sh-amsg'); const say = (t, k) => { m.className = 'sh-msg ' + k; m.textContent = t; };
+  try{ const {error} = await CL.sb.auth.resetPasswordForEmail(CL.user.email, {redirectTo: location.href.split('#')[0].split('?')[0]}); if(error) throw error; say('Ti ho mandato un link per scegliere una nuova password (guarda anche tra la posta indesiderata).', 'ok'); }
+  catch(e){ say('Non sono riuscito: ' + ((e && e.message) || 'riprova'), 'err'); }
+};
 function profileHTML(mode){
   const p = SH.prof || {}; const first = mode !== 'edit';
   const acc = first ? `<div class="sh-card"><h2 class="sh-h2">1 · Il tuo account</h2><p class="sh-sub">Account attivo: <b>${esc((CL.user && CL.user.email) || '')}</b> ✓</p></div>` : '';
@@ -16484,6 +16513,7 @@ window.shProfSubmit = async function(ev){
   const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
   try{
     await profSave(p);
+    try{ const cur = (CL.user && CL.user.user_metadata && CL.user.user_metadata.nome) || ''; if(p.nome && p.nome !== cur){ const r = await CL.sb.auth.updateUser({data:{nome:p.nome}}); if(r && r.data && r.data.user) CL.user = r.data.user; else CL.user.user_metadata = Object.assign({}, CL.user.user_metadata, {nome:p.nome}); } }catch(e){}
     try{ grpRemember(p.sezione, p.gruppo); }catch(e){}
     const edit = SH._profEdit; SH._profEdit = false;
     m.className = 'sh-msg ok'; m.textContent = 'Profilo salvato.';
@@ -17234,7 +17264,7 @@ function navHTML(){
     const cg = groupOf(cur);
     return navGroups().map(G => { const vis = G.items.filter(navCond); if(!G.g) return vis.map(i => itemBtn(i)).join('');
       const open = SH._gt[G.g] !== undefined ? SH._gt[G.g] : G.g === cg;
-      return `<button type="button" class="sh-sg sh-gh${open ? ' open' : ''}" aria-expanded="${open}" onclick="shGrp('${G.g}')"><span class="sh-tri" aria-hidden="true"></span>${esc(G.g)}</button>` + (open ? `<div class="sh-gi">${vis.map(i => itemBtn(i)).join('')}</div>` : ''); }).join('');
+      return `<button type="button" class="sh-sg sh-gh${open ? ' open' : ''}" aria-expanded="${open}" onclick="shGrp('${G.g}')"><span class="sh-tri" aria-hidden="true"></span>${esc(G.g)}</button>` + (open ? `<div class="sh-gi">${CAP_POP[G.g] ? `<button type="button" class="sh-si sh-sp" onclick="shDrawer(false);capPop('${G.g}')">${ico('help')}<span>Per capire meglio</span></button>` : ''}${vis.map(i => itemBtn(i)).join('')}</div>` : ''); }).join('');
   }
   return navItems().map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
 }
@@ -17746,7 +17776,7 @@ function tlkShort(iso){ const [yy, mm, dd] = iso.slice(0, 10).split('-').map(Num
 function tlkToday(y0){ return tlkX(td(), y0); }
 function tlkTodayI(y0){ const x = tlkToday(y0); return x === null ? '' : `<b class="vis-td" style="left:${x}%" aria-hidden="true"></b>`; }
 function tlkFill(aa, bb, y0){ const x = tlkToday(y0); if(x === null) return (td() > (visYM(bb, y0) + '-31')) ? 100 : 0; const t = x / 100 * 12; return Math.max(0, Math.min(100, (t - aa) / (bb + 1 - aa) * 100)); }
-function tlkGrid(y0, pit){ return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => `<i class="${i === pit ? 'pit' : ''}"></i>`).join('') + '</div>'; }
+function tlkGrid(y0, pit){ return '<div class="vis-gr" aria-hidden="true">' + VIS_M.map((m, i) => i === pit ? `<i class="pit" title="Mese della verifica: qui finisce il ciclo e lo staff fa il punto"><em>verifica</em></i>` : `<i></i>`).join('') + '</div>'; }
 function tlkHead(y0, pit){ const x = tlkToday(y0); return `<div class="vis-hd" aria-hidden="true">${VIS_M.map((m, i) => `<span class="${i === pit ? 'pit' : ''}">${m}</span>`).join('')}</div><div class="vis-wk" aria-hidden="true"></div>` + (x === null ? '' : `<b class="vis-tdl" style="left:${x}%" data-tip="Oggi\n${esc(fmtDL(td()))}">oggi</b>`); }
 // un segno sulla linea: icona + data sotto; la posizione verticale la decide tlkRelayout
 function tlkGoAttr(g){ if(!g || !g.t) return ''; return ` data-go="${esc(g.t)}" data-cy="${esc(g.cy || '')}"${g.pid ? ` data-pid="${esc(g.pid)}"` : ''}${g.aid ? ` data-aid="${esc(g.aid)}"` : ''}${g.u ? ` data-u="${esc(g.u)}"` : ''}`; }
@@ -17761,7 +17791,7 @@ function tlkSt(d, done){ return !d ? 'nd' : d > td() ? 'fare' : done ? 'ok' : 'v
 function tlkProg(acts){ const n = acts.length, v = acts.filter(a => a.st === 'ok' || a.st === 'ver').length, nd = acts.filter(a => a.st === 'nd').length; return `<span class="vis-pgt"><b>${v} di ${n}</b> ${n === 1 ? 'attività vissuta' : 'attività vissute'}${nd ? `<span class="vis-nd">${nd} senza data</span>` : ''}</span><span class="vis-pg" role="presentation"><i style="width:${n ? v / n * 100 : 0}%"></i></span>`; }
 function tlkSum(items){ let ok = 0, ver = 0, fa = 0, nd = 0; items.forEach(it => it.ci.per.forEach(p => p.acts.forEach(a => { if(a.st === 'ok') ok++; else if(a.st === 'ver') ver++; else if(a.st === 'fare') fa++; else nd++; })));
   return `<div class="vis-sum" role="group" aria-label="Il lavoro dell’anno in cifre"><div class="ok"><b>${ok}</b><span>attività vissute e verificate</span></div><div class="ver"><b>${ver}</b><span>vissute, da verificare</span></div><div class="pr"><b>${fa}</b><span>in programma</span></div><div class="nd"><b>${nd}</b><span>ancora senza data</span></div></div>`; }
-function tlkLeg(withEv){ const a = (st, t) => `<span>${tlkAct(st, '#555', 16)} ${t}</span>`; return a('ok', 'attività vissuta e verificata') + a('ver', 'da verificare') + a('fare', 'in programma') + (withEv ? Object.keys(TLK_OC).map(k => `<span>${tlkShape(k, '#4a6b8a', true, 15)} ${TLK_OC[k].toLowerCase()}</span>`).join('') + `<span>${tlkShape('riu', '#1d4f8f', false, 15, true)} dello staff (tratteggio)</span><span class="vis-lg-n">segno vuoto = non ancora avvenuta · passa il mouse su ogni segno per i dettagli · ingrandisci per vedere i giorni</span>` : ''); }
+function tlkLeg(withEv){ const a = (st, t) => `<span>${tlkAct(st, '#555', 16)} ${t}</span>`; return a('ok', 'attività vissuta e verificata') + a('ver', 'da verificare') + a('fare', 'in programma') + '<span><i class="vis-lg-v"></i> mese della verifica (fine del ciclo)</span>' + (withEv ? Object.keys(TLK_OC).map(k => `<span>${tlkShape(k, '#4a6b8a', true, 15)} ${TLK_OC[k].toLowerCase()}</span>`).join('') + `<span>${tlkShape('riu', '#1d4f8f', false, 15, true)} dello staff (tratteggio)</span><span class="vis-lg-n">segno vuoto = non ancora avvenuta · passa il mouse su ogni segno per i dettagli · ingrandisci per vedere i giorni</span>` : ''); }
 // righe delle occasioni: riunioni, uscite/bivacchi/campi, riunioni dello staff (ognuna col suo segno e la sua data)
 function tlkEvRows(pts, y0){ const oggi = td(); let h = '';
   [['Riunioni', p => p.k === 'sede' && !p.stf], ['Uscite, bivacchi e campi', p => p.k !== 'sede' && !p.stf], ['Riunioni dello staff', p => p.stf]].forEach(([lab, f]) => { const L = pts.filter(f); if(!L.length) return;
@@ -18241,6 +18271,41 @@ function capHTML(){
     ${body}
     <p class="sh-hint">Fonte: Documentazione formativa CNGEI (Manuale del Progetto Educativo Esperienziale, versione in sperimentazione).</p>`;
 }
+const CAP_POP = {
+  'Osservare': {t:'Osservare il gruppo', src:'Kit di Osservazione e Scoperta del gruppo (KOS 2.0)', pts:[
+    ['Osservare è guardare il gruppo, non solo i singoli', 'Il gruppo non è la somma dei ragazzi e delle ragazze: è un organismo educativo che, una volta attivato, trasforma chi ne fa parte. Per questo si osserva il gruppo nelle sue dinamiche; il singolo ha già la sua traccia nella progressione personale.'],
+    ['Pochi incontri, da finire entro novembre', 'Il kit propone tre occasioni: due in sede (circa 2 ore l’una) e una all’aperto (circa 6 ore). Si possono adattare (anche tre uscite all’aperto) e diluire tra altre attività. L’importante è chiudere la parte osservativa entro novembre.'],
+    ['Focus osservativi: non tutti, ogni anno', 'Ogni attività ha focus legati ai Percorsi dei tre Ambiti. Non serve osservarli tutti ogni anno: si parte da ciò che si è già vissuto l’anno prima.'],
+    ['Annotare comportamenti, non giudizi', 'Meglio «un gruppetto ha proposto tre soluzioni quando la prima non funzionava» che «il gruppo è creativo». Si distingue sempre ciò che si vede da ciò che se ne deduce, e si annota subito dopo l’attività.'],
+    ['Più contesti, più sguardi', 'Una persona timida in cerchio può guidare in un gioco di movimento: conviene osservare in contesti diversi (al chiuso e all’aperto, statici e dinamici) e, quando possibile, con più educatori sulla stessa dinamica.'],
+    ['Cambiare le condizioni per capire', 'Per sapere perché qualcuno si comporta in un modo, si può cambiare un parametro (gruppi, ruoli, tempi, tecnica) nella seconda prova e vedere se cambia anche il comportamento.'],
+    ['Alternare chi conduce e chi osserva', 'Chi conduce vede le reazioni immediate; chi osserva coglie dettagli e comunicazione non verbale. Con più educatori conviene ruotare.'],
+    ['Spirale osservazione, azione, riflessione', 'Si osserva durante, si adatta in tempo reale, si riflette dopo e si progetta l’attività successiva su ciò che è emerso. Subito dopo si condividono le osservazioni tra educatori e si compila la griglia.']
+  ]},
+  'Progettare': {t:'Progettare', src:'Manuale del Progetto Educativo Esperienziale (versione in sperimentazione)', pts:[
+    ['Dalle necessità agli Obiettivi', 'Le necessità educative si ordinano senza farsi guidare dall’emergenza o dall’emotività, guardando anche agli aspetti positivi: meglio necessità risolvibili che problemi impossibili. Poi si associa ogni necessità all’Obiettivo più adatto, senza riscriverlo.'],
+    ['Una priorità per ogni Ambito', 'Si sceglie almeno una priorità per Ambito (Personale, Comunitario, Spirituale), in ordine di urgenza: tre Obiettivi prioritari, più altri secondari.'],
+    ['Indicatori di Risultato', 'Per ogni Obiettivo almeno un indicatore, scritto come comportamento osservabile («propongono», «collaborano»; non «sanno» o «conoscono»), generale ma concreto, non legato a una sola attività. Si possono adattare e scriverne di nuovi.'],
+    ['Il percorso: almeno 3 o 4 attività', 'Un Percorso Educativo Esperienziale ha almeno 3 o 4 attività coerenti tra loro, scelte con gli Strumenti del Metodo della propria Branca. Non serve il dettaglio di ogni attività: basta avere chiare le tipologie di esperienze intermedie.'],
+    ['Durata e soste', 'Alcuni percorsi durano circa tre mesi, altri tutto l’anno. Per i più lunghi conviene una sosta per vedere se il gruppo è cambiato (per esempio nuovi ingressi) e se vanno aggiornate le priorità.'],
+    ['Rielaborazione cognitiva ed emotiva', 'Almeno una attività, di solito l’ultima, rielabora: cognitiva (che cosa ho imparato, che cosa so fare) ed emotiva (agisce sul saper essere, e può richiedere molto tempo).'],
+    ['Le sette caratteristiche di un’esperienza', 'Nuova, stimolante, progressiva, co-costruita (si ascoltano le proposte dei ragazzi e delle ragazze: «ask the boy»), rielaborativa, esperienziale… ed educativa.']
+  ]},
+  'Realizzare': {t:'Realizzare', src:'Manuale del Progetto Educativo Esperienziale (versione in sperimentazione)', pts:[
+    ['Non riproporre sempre le stesse attività', 'Esperienza dopo esperienza, anno dopo anno, il compito è immaginare attività sempre più avvincenti e intense: è attraverso l’esperienza, non attraverso attività frontali, che il Metodo trasmette valori.'],
+    ['Progressività', 'Un’esperienza deve essere adatta al punto in cui è il gruppo: se il Reparto non ha mai vissuto la dimensione internazionale, non lo si porta di colpo a un grande evento internazionale.'],
+    ['Co-costruire con i ragazzi e le ragazze', 'Si creano momenti di ascolto attivo e le proposte dei giovani entrano davvero nella struttura delle esperienze.'],
+    ['Quando fermarsi', 'Il manuale consiglia due soste valutative: la prima verso gennaio-febbraio (entro il Thinking Day), la seconda verso aprile-maggio (dopo San Giorgio). Per l’anno tipico di ogni Branca guarda «L’anno di solito».']
+  ]},
+  'Misurare': {t:'Misurare', src:'Manuale del Progetto Educativo Esperienziale (versione in sperimentazione)', pts:[
+    ['Sono comportamenti, non voti', 'Per ogni Indicatore di Risultato ci si chiede: i ragazzi e le ragazze mostrano quel comportamento da soli, solo se stimolati, o non ancora? Si traduce in Ottimo (2 punti), Bene (1), Da migliorare (0).'],
+    ['Soste durante l’anno', 'Con lo staff, verso gennaio-febbraio e aprile-maggio: si guarda sia l’andamento del gruppo sia dei singoli. Alcuni effetti sono immediati, altri a medio o lungo termine. Si decide se continuare sugli stessi Obiettivi o cambiare, e si programmano i percorsi degli Obiettivi non ancora affrontati.'],
+    ['Valutazione finale', 'Al termine del campo estivo, delle vacanze di Branco o dell’estate Rover. Si rispondono gli Indicatori scelti e si ha una nuova fotografia dell’Unità.'],
+    ['Chi si coinvolge', 'I ragazzi e le ragazze (secondo l’età è più o meno chiaro su quali competenze si è lavorato: possono dire se sentono di averle sviluppate) e il Capo Gruppo, che dà un punto di vista più alto.']
+  ]}
+};
+window.capPop = function(g){ const d = CAP_POP[g]; if(!d) return;
+  modalShow(`<div style="font-size:15px;font-weight:800;margin-bottom:8px">${esc(d.t)}</div><div style="max-height:62vh;overflow:auto;padding-right:6px">${d.pts.map(x => `<div style="margin:0 0 10px"><b style="font-size:13px">${esc(x[0])}</b><div style="font-size:13px;line-height:1.55">${esc(x[1])}</div></div>`).join('')}</div><p style="font-size:12px;color:var(--ink-mid);margin:8px 0 10px">Fonte: Documentazione formativa CNGEI (${esc(d.src)}). Sintesi: per i dettagli guarda il documento originale.</p><div style="text-align:right"><button class="btn-primary" onclick="modalClose()">Chiudi</button></div>`); };
 window.capSet = function(k){ (SH._cap = SH._cap || {}).w = k; const p = $('panel-pp'); if(p && SH.ppv === 'cap') p.innerHTML = capHTML(); };
 window.shCap = function(){ ownOff(); ensurePanels(); SH.ppv = 'cap'; $('panel-pp').innerHTML = capHTML(); own('panel-pp'); };
 
@@ -18806,7 +18871,7 @@ function visHTML(){
     const ctl = can ? `<div class="vis-ctl"><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese prima" onclick="visShift(${r.idx},-1)" ${has ? '' : 'disabled'}>◀ un mese</button><button type="button" class="cal-bt2" aria-label="Sposta ${esc(r.nm)} di un mese dopo" onclick="visShift(${r.idx},1)" ${has ? '' : 'disabled'}>un mese ▶</button><label class="vis-sl">Comincia a <select class="cal-sel" aria-label="Mese di inizio di ${esc(r.nm)}" onchange="visStart(${r.idx},this.value)"><option value="">${has ? 'scegli…' : 'scegli il mese'}</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.a === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label><label class="vis-sl">Finisce a <select class="cal-sel" aria-label="Mese di fine di ${esc(r.nm)}" onchange="visEnd(${r.idx},this.value)" ${has ? '' : 'disabled'}><option value="">scegli…</option>${VIS_M.map((m, i) => `<option value="${i}" ${has && r.b === i ? 'selected' : ''}>${visLab(i, y0)}</option>`).join('')}</select></label>${has ? `<span class="vis-du">${tmMonths(r.t.dal, r.t.al) + 1} ${tmMonths(r.t.dal, r.t.al) + 1 === 1 ? 'mese' : 'mesi'}</span>` : '<span class="vis-du">Quanto dura il percorso? Scegli il mese di inizio e poi quello di fine.</span>'}</div>` : '';
     return `<div class="vis-r"><div class="vis-l"><span class="vis-amb" style="background:${col}">${esc(nm[r.amb] || '')}</span><b>${esc(r.nm)}</b></div><div class="vis-t" data-lay="bar">${grid}${tlkTodayI(y0)}${bar}${dots}</div>${ctl}${warn ? `<div class="vis-w">${esc(warn)}${tmCicloBtn(r.t.al)}</div>` : ''}</div>`;
   }).join('');
-  return `<div class="sh-dh"><div><h1>Visione d’insieme</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">I percorsi dell’anno scout ${esc(String(y0) + '-' + String((y0 + 1) % 100).padStart(2, '0'))} su una linea del tempo. Trascina un blocco per spostarlo di mese in mese, oppure usa i pulsanti e il menu sotto ogni percorso. Il mese più scuro è quello in cui finisce il ciclo e si fa la verifica.</p></div></div>
+  return `<div class="sh-dh"><div><h1>Visione d’insieme</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">I percorsi dell’anno scout ${esc(String(y0) + '-' + String((y0 + 1) % 100).padStart(2, '0'))} su una linea del tempo. Trascina un blocco per spostarlo di mese in mese, oppure usa i pulsanti e il menu sotto ogni percorso. Il mese grigio, con la scritta «verifica», è quello in cui finisce il ciclo e si fa la verifica.</p></div></div>
     <div class="vis-wrap" style="--z:${SH.vz || 1}">${R.length ? `<div class="vis-stk">${tlkZoomBar()}<div class="vis-stkh"><div class="vis-stki"><div class="vis-r vis-rh"><div class="vis-l"></div><div class="vis-t">${head}</div></div></div></div></div><div class="vis-sc">${rows}${occ}</div><div class="vis-leg vis-leg2">${tlkLeg(true)}</div>` : '<div class="cal-empty cal-empty2">Non ci sono ancora percorsi: scegli le priorità in «Osservare» e gli obiettivi in «Obiettivi e indicatori».</div>'}</div>`;
 }
 window.shVis = function(){ ensurePanels(); SH.ppv = 'vis'; ownOff(); $('panel-pp').innerHTML = visHTML(); own('panel-pp'); };
@@ -19539,7 +19604,7 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .vis-hd span.pit{color:#1a1a18}
 .vis-gr{position:absolute;inset:0;display:grid;grid-template-columns:repeat(12,1fr);pointer-events:none}
 .vis-gr i{border-left:1px solid #e3e8e1}
-.vis-gr i.pit{background:#eef1eb}
+.vis-gr i.pit{background:#eef1eb;position:relative}.vis-gr i.pit em{position:absolute;right:4px;top:3px;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#7a8678}.vis-lg-v{display:inline-block;width:14px;height:14px;background:#eef1eb;border:1px solid #cfd6cc;vertical-align:-2px;margin-right:3px}
 .vis-gr i:last-child{border-right:1px solid #e3e8e1}
 .vis-bar{position:absolute;top:6px;height:28px;background:var(--c);border-radius:8px;color:#fff;display:flex;align-items:center;padding:0 10px;font:700 12px 'Montserrat',sans-serif;overflow:hidden;white-space:nowrap;touch-action:none;box-shadow:0 1px 3px rgba(0,0,0,.2);min-width:12px}
 .vis-bar.mv{cursor:grab}
@@ -19682,7 +19747,7 @@ body.sh-in.sh-ready #g-subnav .gsn-steps,body.sh-in.sh-ready #g-subnav .gsn-titl
 body.sh-in.sh-ready #g-subnav:not(:has(.gsn-act)){display:none!important}
 /* Confronto e sintesi: su schermi stretti la tabella scorre dentro il suo riquadro, non allarga la pagina */
 .cf-left,.cf-grid>*{min-width:0}
-.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
+.cf-t thead th{white-space:nowrap}.cf-t{table-layout:fixed}.sh-sp{font-style:italic;opacity:.9}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
 @media(max-width:899px){.cf-grid{grid-template-columns:minmax(0,1fr)}}
 /* Guida: i video sono la prima voce */
 .gd-vid{border:1.5px solid var(--brand-ink,#1B5E42);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:#fff}
