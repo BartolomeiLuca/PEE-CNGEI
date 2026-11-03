@@ -31,7 +31,7 @@ await ea(() => shCal()); await sleep(800); await ea(() => shSrUsc('r0')); await 
 const kB = await ea(() => { const u = uscCur(); const k = Object.keys(u.prog).find(k => u.prog[k].t === 'Merenda dei ragazzi'); u.prog[k].f = ['sic', 'ben', 'pb']; uscSave(); uscRe(); return k; }); await sleep(600);
 await ea(k => { const el = document.getElementById('usc-b-' + k); if(el && !el.classList.contains('open')) { const h = el.querySelector('.usc-bh, summary, header'); if(h) h.click(); } }, kB); await sleep(600);
 const nRef = await ea(k => [...document.querySelectorAll('#usc-b-' + k + ' label.usc-mv2')].filter(l => /Referente ·/.test(l.textContent)).length, kB);
-ok(nRef === 3, 'nel momento ci sono i referenti di Sicurezza, Benessere e Piano B (' + nRef + ')');
+ok(nRef === 0, 'in testa al momento non ci sono più i referenti dei settori: stanno nei singoli moduli (' + nRef + ')');
 for (const f of ['sic', 'ben', 'pb']) {
   await ea(([k, f]) => uscBlkRef(k, f, 'Carla Neri (CU)|Anna Verdi (CU)'), [kB, f]);
 }

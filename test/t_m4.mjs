@@ -31,7 +31,7 @@ await ea(() => shCal()); await sleep(800); await ea(() => shSrUsc('r0')); await 
 const kB = await ea(() => Object.keys(uscCur().prog).find(k => uscCur().prog[k].t === 'Merenda dei ragazzi'));
 await ea(k => { uscOpenBlk && 0; }, kB).catch(() => {});
 await ea(k => { const el = document.getElementById('usc-b-' + k); if(el && !el.classList.contains('open')) { const h = el.querySelector('.usc-bh, summary, header'); if(h) h.click(); } }, kB); await sleep(500);
-const sel = () => A.locator(`#usc-b-${kB} select.ax-pm-s`).first();
+const sel = () => A.locator(`#usc-b-${kB} select.ax-pm-s`).nth(1);
 ok(await sel().count() === 1, 'la conduzione ha il menu a più persone');
 await sel().selectOption({label: 'Carla Neri (CU)'}); await sleep(800);
 await sel().selectOption({label: 'Anna Verdi (CU)'}); await sleep(800);
