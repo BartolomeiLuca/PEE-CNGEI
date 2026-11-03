@@ -8105,7 +8105,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611031800'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611031900'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9973,7 +9973,16 @@ function uscBlkHTML(u,k,m,t,i,n){ if(uscHideBlk(u,m)) return `<div class="usc-bl
   if(USC_MOVE===k) h+=uscMoveHTML(k,m);
   return h+`</div></div>`; }
 // Tipo di attività e Strumenti del Metodo: scelte multiple dalle liste della Branca; le scelte compaiono come etichette con ×
-function uscListGroups(fk){ if(fk==='tipo') return (ATT_TIPI[FASCIA]||[]).map(([g,it])=>({g,it})); return (STRUM_BRANCA[FASCIA]||[]).map((its,i)=>({g:STRUM_GRUPPI[i],it:its})); }
+// per gli adulti (eventi di staff, Capo Gruppo) i tipi di attività e gli strumenti non sono quelli di una Branca
+const STAFF_TIPI = [['Formazione',['Momento formativo','Confronto sul ruolo','Verifica o autovalutazione','Studio di un documento o di una norma']],
+  ['Programmazione',['Programmazione di unità','Preparazione di un’attività','Organizzazione di un’uscita o di un campo','Logistica e materiali']],
+  ['Relazione',['Gioco o attività per conoscersi','Clima e accoglienza','Momento conviviale','Passaggio di consegne']],
+  ['Rapporti',['Incontro con le famiglie','Consiglio di Gruppo','Rapporti con la Sezione e il territorio']],['Altro',['Altro']]];
+function uscAdulti(){ try{ return uscSt() || !(ATT_TIPI[FASCIA]||[]).length; }catch(e){ return !(ATT_TIPI[FASCIA]||[]).length; } }
+function uscListGroups(fk){ const ad=uscAdulti();
+  if(fk==='tipo') return (ad?STAFF_TIPI:(ATT_TIPI[FASCIA]||[])).map(([g,it])=>({g,it}));
+  if(ad) return [{g:'Strumenti del Metodo', it:STRUM_GRUPPI.slice()}];
+  return (STRUM_BRANCA[FASCIA]||[]).map((its,i)=>({g:STRUM_GRUPPI[i],it:its})); }
 function uscMultiHTML(k,m,fk,can){ const F=fk==='tipo'?'tpi':'strum'; const sel=Array.isArray(m[F])?m[F]:[]; const G=uscListGroups(fk); const enc=v=>encodeURIComponent(v).replace(/'/g,'%27');
   const chips=sel.map(v=>`<span class="ax-pm-c">${uscE(v==='Altro'&&fk==='tipo'&&m.tpiAltro?'Altro: '+m.tpiAltro:v)}${can?`<button type="button" aria-label="Togli ${uscE(v)}" onclick="uscBlkTogL('${k}','${F}',decodeURIComponent('${enc(v)}'))">×</button>`:''}</span>`).join('');
   const add=can?`<select class="ax-in ax-pm-s" style="max-width:100%" aria-label="Aggiungi" onchange="if(this.value){uscBlkTogL('${k}','${F}',decodeURIComponent(this.value));}"><option value="">${sel.length?'+ un altro…':(fk==='tipo'?'Scegli il tipo di attività…':'Scegli gli strumenti del metodo…')}</option>${G.map(o=>{ const r=o.it.filter(v=>!sel.includes(v)); return r.length?`<optgroup label="${uscE(o.g)}">${r.map(v=>`<option value="${enc(v)}">${uscE(v)}</option>`).join('')}</optgroup>`:''; }).join('')}</select>`:'';
@@ -10384,7 +10393,7 @@ function uscSumTxt(v,n){ v=String(v||'').replace(/\s+/g,' ').trim(); return v?us
 // Tipo di attività e Strumenti del Metodo di un'attività dei percorsi: gli stessi dell'attività nuova; parte da quelli del percorso, modificabili
 function uscAttStrumEff(per,x){ if(x&&Array.isArray(x.strum)) return x.strum; try{ return strumList(per||{}).map(o=>o.s); }catch(e){ return []; } }
 function uscAttMultiHTML(p,j,a,fk,can){ const per=getAllPercorsi()[p]; const x=a.ax||{}; const enc=v=>encodeURIComponent(v).replace(/'/g,'%27');
-  const sel=fk==='tipo'?(a.tipi||[]):uscAttStrumEff(per,x); const G=fk==='tipo'?(ATT_TIPI[FASCIA]||[]).map(([g,it])=>({g,it})):(STRUM_BRANCA[FASCIA]||[]).map((its,i)=>({g:STRUM_GRUPPI[i],it:its}));
+  const sel=fk==='tipo'?(a.tipi||[]):uscAttStrumEff(per,x); const G=uscListGroups(fk==='tipo'?'tipo':'met');
   const fn=fk==='tipo'?'uscAttTipoTog':'uscAttStrumTog';
   const chips=sel.map(v=>`<span class="ax-pm-c">${uscE(v==='Altro'&&fk==='tipo'&&a.tipoAltro?'Altro: '+a.tipoAltro:v)}${can?`<button type="button" aria-label="Togli ${uscE(v)}" onclick="${fn}(${p},${j},decodeURIComponent('${enc(v)}'))">×</button>`:''}</span>`).join('');
   const add=can?`<select class="ax-in ax-pm-s" style="max-width:100%" aria-label="Aggiungi" onchange="if(this.value){${fn}(${p},${j},decodeURIComponent(this.value));}"><option value="">${sel.length?'+ un altro…':(fk==='tipo'?'Scegli il tipo di attività…':'Scegli gli strumenti del metodo…')}</option>${G.map(o=>{ const r=o.it.filter(v=>!sel.includes(v)); return r.length?`<optgroup label="${uscE(o.g)}">${r.map(v=>`<option value="${enc(v)}">${uscE(v)}</option>`).join('')}</optgroup>`:''; }).join('')}</select>`:'';
@@ -18561,7 +18570,7 @@ window.eleSeq = eleSeq; window.eleLoad = eleLoad;
 // ── Misurare · «Numeri dell'anno»: i dati già scritti nell'app, sommati. Quantitativi calcolati; qualitativi solo contati o riportati, mai trasformati in punteggi ──
 function numCalc(items, staffItems){
   const oggi = new Date().toISOString().slice(0, 10); const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
-  const R = {cont:0, fmt:{Riunione:0, Uscita:0, Bivacco:0, Campo:0}, fatte:0, daFare:0, senzaData:0, giorni:0, notti:0, fuori:0, resid:0, pres:0, presN:0, km:0, staffN:0, mese:{}, tipo:{}, spese:{}, spTot:0, amb:{P:0, C:0, S:0}, perc:{}, strum:{}, att:0, ver:0, migl:[], bene:[], idr:{spontaneo:0, stimolato:0, no:0}, cicli:items.length};
+  const R = {tpa:{}, cont:0, fmt:{Riunione:0, Uscita:0, Bivacco:0, Campo:0}, fatte:0, daFare:0, senzaData:0, giorni:0, notti:0, fuori:0, resid:0, pres:0, presN:0, km:0, staffN:0, mese:{}, tipo:{}, spese:{}, spTot:0, amb:{P:0, C:0, S:0}, perc:{}, strum:{}, att:0, ver:0, migl:[], bene:[], idr:{spontaneo:0, stimolato:0, no:0}, cicli:items.length};
   const ing = (u, staff) => { const x = u.ax || {}; try{ Object.defineProperty(x, '__u', {value:u.id, enumerable:false, configurable:true, writable:true}); }catch(e){}
     if(staff){ R.staffN++; return; }
     R.cont++; const f = (CAL_T[uscModK(u)] || ['Uscita'])[0]; R.fmt[f] = (R.fmt[f] || 0) + 1;
@@ -18569,12 +18578,13 @@ function numCalc(items, staffItems){
     const ng = uscNG(u); R.giorni += ng; R.notti += Math.max(0, ng - 1); if((x.luogo || {}).tipo !== 'sede') R.fuori++; if(f === 'Bivacco' || f === 'Campo') R.resid++;
     try{ const N = axN(x); if(N.tot){ R.pres += N.tot; R.presN++; } }catch(e){} R.km += Number((x.luogo || {}).km) || 0;
     const t = uscTipoLab(u) || f; R.tipo[t] = (R.tipo[t] || 0) + 1;
-    try{ Object.values(u.prog || {}).forEach(m => { if(m && !m.del && m.k !== 'att' && Array.isArray(m.strum)) m.strum.forEach(sn => { R.strum[sn] = (R.strum[sn] || 0) + 1; }); }); }catch(e){}
+    try{ Object.values(u.prog || {}).forEach(m => { if(m && !m.del && m.k !== 'att' && Array.isArray(m.strum)) m.strum.forEach(sn => { R.strum[sn] = (R.strum[sn] || 0) + 1; }); if(m && !m.del && m.k !== 'att' && Array.isArray(m.tpi)) m.tpi.forEach(tn => { const l = (tn === 'Altro' && m.tpiAltro) ? m.tpiAltro : tn; R.tpa[l] = (R.tpa[l] || 0) + 1; }); }); }catch(e){}
     try{ axCosti(x).filter(i => !i.contrib && i.c > 0).forEach(i => { const c = i.cat || 'altro'; R.spese[c] = (R.spese[c] || 0) + i.c; R.spTot += i.c; }); }catch(e){} };
   items.forEach(it => { const sc = it.data.scheda || {}; const U = sc.uscite || {}; Object.keys(U).forEach(k => { const u = U[k]; if(u && typeof u === 'object' && !u.del && u.id) ing(u, false); });
     (sc.percorsiExtra || []).forEach(per => { if(!per || !per.percorsoId) return; const am = per.ambito || per.percorsoId[0]; const P = DBx.find(q => q.id === per.percorsoId); const nm = P ? P.name : per.percorsoId;
       Object.keys(per.strumSel || {}).forEach(k => { R.strum[k] = (R.strum[k] || 0) + 1; });
-      (per.attivita || []).forEach(a => { try{ ((a && a.ax && a.ax.strum) || []).forEach(sn => { if(!(per.strumSel && (sn in per.strumSel))) R.strum[sn] = (R.strum[sn] || 0) + 1; }); }catch(e){}
+      (per.attivita || []).forEach(a => { try{ ((a && a.tipi) || []).forEach(tn => { const l = (tn === 'Altro' && a.tipoAltro) ? a.tipoAltro : tn; R.tpa[l] = (R.tpa[l] || 0) + 1; }); }catch(e){}
+        try{ ((a && a.ax && a.ax.strum) || []).forEach(sn => { if(!(per.strumSel && (sn in per.strumSel))) R.strum[sn] = (R.strum[sn] || 0) + 1; }); }catch(e){}
         if(!a || !['testo', 'lancio', 'sviluppo', 'conclusione'].some(k => String(a[k] || '').trim())) return; R.att++; if(R.amb[am] !== undefined) R.amb[am]++; R.perc[nm] = (R.perc[nm] || 0) + 1;
         const vb = String(a.vBene || '').trim(), vm = String(a.vMigl || '').trim(); if(vb || vm || String(a.vAgg || '').trim()) R.ver++; if(vm) R.migl.push(vm); if(vb) R.bene.push(vb); }); });
     const ic = sc.idrComp || {}; Object.keys(ic).forEach(pid => Object.keys(ic[pid] || {}).forEach(j => { const c = (ic[pid][j] || {}).c; if(c && R.idr[c] !== undefined) R.idr[c]++; })); });
@@ -18599,9 +18609,9 @@ function numHTML(){
   return `<div class="sh-dh"><div><h1>Numeri dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Anno scout ${esc(String(scheda.annoScout || ''))}, ${R.cicli} ${R.cicli === 1 ? 'ciclo' : 'cicli'}. Qui sommo ciò che hai già scritto nell’app: non devi inserire nulla di nuovo. I numeri vengono dal preventivo e dalle date che hai messo; dove un dato manca lo segnalo.</p></div></div>
   <section class="sh-card2 wide"><h3>Le attività dell’Unità</h3><div class="num-g">${tile(R.cont, 'attività nel calendario', R.fatte + ' già passate · ' + R.daFare + ' da fare' + (R.senzaData ? ' · ' + R.senzaData + ' senza data' : ''))}${tile(R.giorni, 'giornate di attività', R.notti + (R.notti === 1 ? ' notte' : ' notti') + ' fuori casa')}${tile(R.fuori, 'attività fuori sede', R.cont ? Math.round(R.fuori / R.cont * 100) + '% del totale' : '')}${tile(R.resid, 'bivacchi e campi')}${tile(R.staffN, 'attività di staff', R.staffN ? '' : 'nessun progetto staff dell’anno')}${tile(R.presN ? Math.round(R.pres / R.presN) : '—', 'presenti in media', R.presN ? 'su ' + R.presN + ' attività con i presenti indicati' : 'indica i presenti nelle uscite')}${tile(R.km ? Math.round(R.km) + ' km' : '—', 'chilometri indicati', R.km ? 'andata e ritorno, solo dove inseriti' : 'indicali nei luoghi delle uscite')}${tile(R.spTot ? axEur(R.spTot) : '—', 'spesa prevista', 'preventivo, non speso davvero')}</div>
   ${(() => { const T = sort(R.tipo).filter(x => !/^(senza|non indicat)/i.test(x[0])); return T.length ? `<div class="num-g">${tile(T[0][0], 'tipo di attività più utilizzato', T[0][1] + (T[0][1] === 1 ? ' volta' : ' volte'))}</div>` : ''; })()}
-  ${R.cont ? `<h4 class="num-h">Per formato</h4>${numBar(Object.keys(R.fmt).map(k => [k, R.fmt[k]]).filter(r => r[1] > 0))}<h4 class="num-h">Per tipo di attività</h4>${numBar(sort(R.tipo))}` : '<p class="sh-hint">Ancora nessuna attività nel calendario.</p>'}
+  ${R.cont ? `<h4 class="num-h">Per formato</h4>${numBar(Object.keys(R.fmt).map(k => [k, R.fmt[k]]).filter(r => r[1] > 0))}<h4 class="num-h">Per tipo di evento</h4>${numBar(sort(R.tipo))}` : '<p class="sh-hint">Ancora nessuna attività nel calendario.</p>'}
   ${sp.length ? `<h4 class="num-h">Spesa prevista per categoria</h4>${numBar(sp, axEur)}` : ''}</section>
-  <section class="sh-card2 wide"><h3>Il percorso educativo</h3>${R.att ? `<div class="num-g">${tile(R.att, 'attività nei percorsi')}${tile(R.ver, 'già verificate', Math.round(R.ver / R.att * 100) + '%')}</div><h4 class="num-h">Attività per Ambito</h4>${numBar(['P', 'C', 'S'].map(a => [AMB[a], R.amb[a]]))}<h4 class="num-h">Percorsi più affrontati</h4>${numBar(sort(R.perc).slice(0, 6))}` : '<p class="sh-hint">Ancora nessuna attività scritta nei percorsi.</p>'}${Object.keys(R.strum).length ? `<h4 class="num-h">Strumenti del metodo più usati</h4>${numBar(sort(R.strum).slice(0, 8))}<p class="sh-hint">Contati dai percorsi, dalle attività dei percorsi e dalle attività nuove del calendario.</p>` : ''}
+  <section class="sh-card2 wide"><h3>Il percorso educativo</h3>${R.att ? `<div class="num-g">${tile(R.att, 'attività nei percorsi')}${tile(R.ver, 'già verificate', Math.round(R.ver / R.att * 100) + '%')}</div><h4 class="num-h">Attività per Ambito</h4>${numBar(['P', 'C', 'S'].map(a => [AMB[a], R.amb[a]]))}<h4 class="num-h">Percorsi più affrontati</h4>${numBar(sort(R.perc).slice(0, 6))}` : '<p class="sh-hint">Ancora nessuna attività scritta nei percorsi.</p>'}${Object.keys(R.tpa).length ? `<h4 class="num-h">Per tipo di attività (gioco, grande gioco…)</h4>${numBar(sort(R.tpa).slice(0, 12))}<p class="sh-hint">Dal «Tipo di attività» scelto nelle attività dei percorsi e nelle attività nuove del calendario.</p>` : ''}${Object.keys(R.strum).length ? `<h4 class="num-h">Strumenti del metodo più usati</h4>${numBar(sort(R.strum).slice(0, 8))}<p class="sh-hint">Contati dai percorsi, dalle attività dei percorsi e dalle attività nuove del calendario.</p>` : ''}
   ${idrT ? `<h4 class="num-h">Indicatori di Risultato</h4>${numBar([['Spontaneo', R.idr.spontaneo], ['Stimolato', R.idr.stimolato], ['Non adottato', R.idr.no]])}` : ''}
   ${q(R.bene, 'Cosa è andato bene, dalle verifiche') + q(R.migl, 'Cosa migliorare, dalle verifiche')}<p class="sh-hint">Le verifiche sono testi: te le riporto, non le trasformo in numeri.</p></section>
   <section class="sh-card2 wide"><h3>Come sono calcolati</h3><p class="sh-hint">Periodo: anno scout ${esc(String(scheda.annoScout || ''))}. Dati: ${R.cont} attività dell’Unità${R.staffN ? ' e ' + R.staffN + ' di staff' : ''}, ${R.att} attività nei percorsi. Le percentuali sono sul totale della singola barra. «Già passate» vuol dire con data anteriore a oggi, non che siano state verificate.</p></section>`;
