@@ -8110,7 +8110,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611041520'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611041600'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -16310,8 +16310,8 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 .tg-t thead th{position:sticky;top:0;background:#eef0f4;z-index:2;font-size:12px;padding:6px 3px}
 .tg-t th.tg-f{position:sticky;left:0;min-width:130px;max-width:130px;text-align:left;font-weight:600;padding:6px;z-index:1;background:#f6f7f9}
 .tg-t thead th.tg-f{z-index:3;background:#eef0f4}
-.tg-t th.now{background:#ffe9a8}.tg-t td.now{box-shadow:inset 0 0 0 2px #f2c94c55}.tg-t td.tg-c{background:repeating-linear-gradient(135deg,#fff,#fff 6px,#f1f3f7 6px,#f1f3f7 12px)}
-.tgi{display:block;width:100%;text-align:left;font:inherit;font-size:12px;border:0;border-radius:5px;padding:4px 6px;margin:2px 0;cursor:pointer;color:#111;min-height:30px}
+.tg-t th.now{background:#ffe9a8}.tg-t td.now{background:#fff8dc}.tg-t td.tg-b{padding:2px 3px}.tg-t tr:not(.tg-last) td,.tg-t tr:not(.tg-last) th:not(.tg-f){border-bottom-color:transparent}
+.tgi{display:block;width:100%;text-align:center;font:inherit;font-size:12px;border:0;border-radius:5px;padding:4px 6px;margin:2px 0;cursor:pointer;color:#111;min-height:30px}
 .tgi:focus-visible{outline:3px solid #1b5fd1;outline-offset:1px}
 .a-r{background:#bfe6c9}.a-s{background:#bcd4f5}.a-g{background:#fbd7a1}.a-f{background:#f3c1dc}.a-a{background:#a9e3e0}
 .tg-lg i.a-r{background:#bfe6c9}.tg-lg i.a-s{background:#bcd4f5}.tg-lg i.a-g{background:#fbd7a1}.tg-lg i.a-f{background:#f3c1dc}.tg-lg i.a-a{background:#a9e3e0}
@@ -18459,7 +18459,7 @@ window.shTip = function(){ ownOff(); ensurePanels(); SH.ppv = 'tip'; $('panel-pp
 (function(){
 const M=['Set','Ott','Nov','Dic','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago'];
 const A={r:['Con i ragazzi e le ragazze','a-r'],s:['Staff','a-s'],g:['Gruppo e Sezione','a-g'],f:['Famiglie','a-f'],a:['Adulti (Percorso Senior)','a-a']};
-const F=['Programmazione educativa','Staff','Il singolo','Progressione verticale (PV)','Vita di unità','Campi e uscite','Passaggi e Partenza','Famiglie','Consiglio di Gruppo','Formazione','Percorso Senior','Territorio e sviluppo','Gestione'];
+const F=['Programmazione educativa','Staff','Percorso Promessa','Progressione verticale (PV)','Vita di unità','Campi e uscite','Passaggi e Partenza','Famiglie','Consiglio di Gruppo','Formazione','Percorso Senior','Territorio e sviluppo','Gestione'];
 // nodo: [nome, da cui parte, cosa genera, fonte, cos'è (opzionale)]
 const N={
  vercampi:['Verifica campi estivi','Campi estivi dell\'anno prima','Analisi della situazione','Sciroppo CG p.14 (Autunno 1)','Si fa in Consiglio di Gruppo a inizio anno scout, prima di costruire la nuova analisi.'],
@@ -18472,7 +18472,7 @@ const N={
  ib:['Interbranca','Calendario nazionale','Lancio dei temi di Branca; formazione informale per staff e CG','Sciroppo CG p.14 (Autunno 7)','Evento nazionale per adulti, di norma a settembre: il CG ne porta i contenuti in Consiglio di Gruppo.'],
  odp:['Occasioni di Primavera (OdP)','Calendario nazionale','Aggiornamento di Branca per staff e CG','Sciroppo CG p.16 (Primavera 5)','Evento nazionale per adulti, di norma a marzo.'],
  singolo:['Schede del Singolo','Osservazione in attività; passaggi di Branca','Obiettivi / Impegni di Verifica; risposte','Manuali L (12 Percorsi PV), R (CR su nuovi Rover)',''],
- pperprom:['Percorso Promessa','Accoglienza dei nuovi ingressi','Lancio della PV; Promessa','Manuali L, E, R','Percorso di ingresso: in L da Ott a Dic/Gen, in E da Set a Dic, in R le prime attività di introduzione al roverismo. Il lancio della PV si fa alla sua fine (in L il PO va lanciato prima).'],
+ pperprom:['Percorso Promessa','Accoglienza dei nuovi ingressi','Lancio della PV; Promessa','Manuali L, E, R','Percorso di ingresso, da ottobre a dicembre in tutte le Branche; in R le prime attività di introduzione al roverismo. Il lancio della PV si fa alla sua fine (in L il PO va lanciato prima).'],
  pvl:['PV Branco: 12 Percorsi + Fiutiamo la Preda','Analisi di staff sui 12 Percorsi (Dic); lancio PO','Autovalutazione e confronto col Vecchio Lupo; Tracce','Linee guida nuova PV L (circolare B&S 25/11/2019), pp. 8-16','Scansione consigliata: Dic analisi di staff · Gen lancio PV · Feb 1° "Fiutiamo la Preda" e lancio Cucciolo d\'Uomo · Mar nuova analisi · Apr 2° Fiutiamo · Giu analisi prima delle VdB · VdB: 3° e 4° Fiutiamo (inizio e fine). Max 4 Percorsi per Lupetto.'],
  pve:['PV Reparto: Passi, Sfide, Punti Carta (contrattazione PV)','Lancio PO e PV (novembre, durante il Percorso Promessa)','Verifica PO e PV dello staff dopo ogni contrattazione','CALENDARIO generale di Reparto; Manuale di sopravvivenza alla PV del Reparto, cap. 3-4 (ott. 2025); Trova la Quadra p.265','Tre momenti all\'anno, agganciati ai campi: 1° Punto Carta di Passo a dicembre (dopo il lancio), uno facoltativo in primavera (aprile), 2° Punto Carta di Passo a luglio (pre-campo). Corrisponde al Manuale di sopravvivenza (pp. 20-21): 2 Punti Carta di Passo + 1 facoltativo in primavera. Lo staff fa la verifica PO e PV dopo ciascuno. Punti Carta individuali dopo ogni Passo conquistato.'],
  pvr:['PV Compagnia: Specchio e riflessioni','Percorso Promessa','Firma CdC a fine anno','Guiderà la sua Canoa, calendario del Rover p.199','Nel manuale vigente: Specchio (Dic), tre Riflessioni sul cammino (Gen, Apr, Lug), Firma CdC (Ago).'],
@@ -18521,7 +18521,7 @@ const AP={
  carta:['La Carta di Compagnia è il documento più importante della Compagnia, scritto dai Rover: rielabora Legge, Promessa e Motto, indica i valori in cui la Compagnia si riconosce e gli obiettivi da raggiungere. Si aggiorna ogni anno e si riscrive ogni tre. Deve essere rappresentativa di tutti i Rover: i Rover del terzo anno possono lasciare una traccia aiutando i più giovani a scriverla. Se viene riscritta, tutta la Compagnia la firma di nuovo. Nella nuova proposta di PV la bussola valoriale segna la firma della Carta.'],
  forin:['I FOR.IN. sono i campi di Formazione Iniziale, organizzati a livello locale (distretti): due notti, da venerdì a domenica. Vi si iscrivono gli associati che hanno fatto la Promessa a conclusione del Percorso Senior.']
 };
-const FORM=[ [9,[2,3,4,5],'FOR.IN. (corsi locali)','s','forin'],[9,[6],'Campi nazionali di formazione','s','fornaz'],[9,[8,9],'Campi nazionali di formazione','s','fornaz'] ];
+const FORM=[ [9,[2,3,4,5],'FOR.IN. (corsi locali)','s','forin'],[9,[6],'Campi nazionali di formazione','s','fornaz'],[9,[11],'Campi nazionali di formazione','s','fornaz'] ];
 const U={
 'Gruppo e Sezione':{note:'Ricostruita dal Manuale del Capo Gruppo. Nel manuale "contratti" = oggi Patto; "PEG" = oggi PEE. Date della formazione: range ricavati dalla circolare Offerta formativa 2026-27.',items:[
  [0,[0],'Verifica campi estivi','s','vercampi'],[0,[0,1],'Analisi della situazione','s','analisi'],[0,[0],'Piano di Gruppo (bozza entro Set)','g','pdg'],[0,[1,2],'Sostegno alle programmazioni delle 3 Unità','s','prog'],[0,[5,6],'Verifica Piano di Gruppo (entro marzo)','g','verprog'],[0,[9],'Verifica prima dei campi','s','verprog'],
@@ -18540,9 +18540,9 @@ const U={
 'Branco':{note:'Fonti: Attorno alla Rupe cap. 14; linee guida nuova PV L (2019); Offerta formativa 2026-27. Calendario «Un anno nella Giungla» (pp. 286-287) verificato sulle pagine. Passaggi secondo Luca: Gen · Mar · Mag. I Racconti di Mowgli stanno nel popup di "Vita di unità". Bivacco di staff e programmazione educativa seguono lo schema del Reparto (calendario di Reparto).',items:[
  [0,[0],'Programmazione apertura anno e calendario annuale','s','prog'],[0,[1],'Analisi della situazione; programmazione educativa e attività trimestrale','s','analisi'],[0,[3],'Programmazione VdB invernali','s','prepcampo'],[0,[4],'Programmazione attività trimestrale','s','prog'],[0,[6],'Verifica programmazione educativa','s','verprog'],[0,[7],'Programmazione attività trimestrale','s','prog'],[0,[9],'Nuove Schede del Singolo','s','singolo'],[0,[9],'Verifica programmazione educativa e programmazione VdB estive','s','prepcampo'],[0,[11],'Chiusura programmazione','s','prog'],
  [1,[0],'Verifica VdB e patto di staff','s','patto'],[1,[1],'Bivacco di staff','s','bivstaff'],[1,[5],'Bivacco di staff','s','bivstaff'],[1,[9],'Bivacco di staff','s','bivstaff'],[1,[4],'Staff: verifica VdB invernali','s','verprog'],[1,[4],'Passaggi: il CR viene in Branco','s','link1'],[1,[6],'Passaggi: attività congiunta con il Reparto','s','link2'],[1,[8],'Passaggi: Akela con il CdA in Reparto','s','link3'],[1,[0],'Interbranca','s','ib'],[1,[6],'Occasioni di Primavera','s','odp'],
- [2,[1,2,3,4],'Percorso Promessa (accoglienza Cuccioli; conclusione dic–gen)','r','pperprom'],
+ [2,[1,2,3],'Percorso Promessa','r','pperprom'],
  [3,[3],'Analisi di staff sui 12 Percorsi','s','pvl'],[3,[4],'Lancio PV (dopo PO)','r','pvl'],[3,[5],'Fiutiamo la Preda n.1 e lancio Cucciolo d\'Uomo','r','pvl'],[3,[6],'Nuova analisi di staff','s','pvl'],[3,[7],'Fiutiamo la Preda n.2','r','pvl'],[3,[9],'Analisi prima delle VdB','s','pvl'],[3,[10],'Fiutiamo n.3 (inizio VdB) e n.4 (fine VdB)','r','pvl'],
- [4,[0],'Apertura anno scout','r'],[4,[1],'Creazione delle Mute','r'],[4,[1],'Accoglienza nelle Mute','r'],[4,[9],'Chiusura anno scout','r'],[4,[3],'Consiglio d\'Akela 1','r','cda'],[4,[6],'Consiglio d\'Akela 2','r','cda'],[4,[9],'Consiglio d\'Akela 3','r','cda'],[4,[5],'Giornata del Pensiero','r','gpens'],[5,[7],'San Giorgio (uscita)','r','sgiorgio'],
+ [4,[0],'Apertura anno scout','r'],[4,[1],'Creazione delle Mute','r'],[4,[1],'Accoglienza dei Cuccioli','r'],[4,[9],'Chiusura anno scout','r'],[4,[3],'Consiglio d\'Akela 1','r','cda'],[4,[6],'Consiglio d\'Akela 2','r','cda'],[4,[9],'Consiglio d\'Akela 3','r','cda'],[4,[5],'Giornata del Pensiero','r','gpens'],[5,[7],'San Giorgio (uscita)','r','sgiorgio'],
  [5,[3,4],'VdB invernali','r'],[5,[10,11],'VdB estive','r'],
  [6,[0],'Passaggi di Branca (Corsa di Primavera)','r','cerim'],[6,[4],'Attività di passaggio – 1ª, conoscitiva: il CR in Branco','r','link1'],[6,[6],'Attività di passaggio – 2ª, congiunta: Branco+Reparto','r','link2'],[6,[8],'Attività di passaggio – 3ª: il CdA in Reparto con Akela','r','link3'],[6,[11],'Contatti con i futuri Cuccioli','r'],
  [7,[1],'Riunione genitori (nuovi Cuccioli)','f','rgen'],[7,[3],'Riunione genitori pre VdB invernali','f','rgen'],[7,[6],'Riunione genitori pre San Giorgio','f','rgen'],[7,[9],'Riunione genitori pre VdB estive','f','rgen'],
@@ -18552,7 +18552,7 @@ const U={
 'Reparto':{note:'Fonte principale: CALENDARIO generale di Reparto (file di Luca); poi Trova la Quadra pp.266-269, Manuale di sopravvivenza alla PV (2025), Offerta formativa 2026-27. Il calendario usa "Contratto": qui "Patto".',items:[
  [0,[0],'Programmazione apertura, circolare, calendario annuale','s','prog'],[0,[1],'Analisi della situazione; programmazione educativa e attività trimestrale','s','analisi'],[0,[2],'Sopralluogo, logistica e circolare campo invernale','s','prepcampo'],[0,[3],'Programmazione campo invernale','s','prepcampo'],[0,[4],'Programmazione attività trimestrale','s','prog'],[0,[5],'Verifica e revisione programmazione educativa','s','verprog'],[0,[6],'Programmazione, logistica e circolare San Giorgio','s','prepcampo'],[0,[7],'Programmazione attività trimestrale; logistica campo estivo','s','prog'],[0,[9],'2° sopralluogo, programmazione e circolare campo estivo','s','prepcampo'],[0,[9],'Nuova Schede del Singolo','s','singolo'],[0,[10],'Programmazione campo estivo','s','prepcampo'],[0,[11],'Chiusura programmazione','s','prog'],
  [1,[0],'Interbranca','s','ib'],[1,[0],'Verifica patto di staff, pattuglie e CP; badge passaggi e nomine; mailing list','s','patto'],[1,[1],'Bivacco di staff','s','bivstaff'],[1,[1],'Nuovo patto di staff','s','patto'],[1,[1],'Idee di autofinanziamento','s','gest'],[1,[2],'Inserimento Senior','s','sen'],[1,[4],'Passaggi: il CR in Branco; il CC viene in Reparto','s','link1'],[1,[5],'Bivacco di staff; 1ª verifica patto','s','bivstaff'],[1,[6],'Passaggi: attività congiunte con Branco e Compagnia','s','link2'],[1,[8],'Passaggi: Akela e CdA in Reparto; il CR con l\'Alta Pattuglia in Compagnia','s','link3'],[1,[5],'Conferma Senior','s','sen'],[1,[6],'Occasioni di Primavera','s','odp'],[1,[9],'Bivacco di staff','s','bivstaff'],[1,[11],'Autovalutazione staff; 2ª verifica patto','s','patto'],
- [2,[0,1,2,3],'Percorso Promessa (da settembre a dicembre)','r','pperprom'],[2,[0],'Verifica percorsi personali non conclusi','s','singolo'],
+ [2,[1,2,3],'Percorso Promessa','r','pperprom'],
  [3,[2],'Lancio PO e PV','r','pve'],[3,[3],'1° Punto Carta di Passo (1ª contrattazione)','r','pve'],[3,[3],'Verifica PO e PV (staff)','s','pve'],[3,[7],'Punto Carta di primavera (facoltativo)','r','pve'],[3,[7],'Verifica PO e PV (staff)','s','pve'],[3,[10],'2° Punto Carta di Passo (pre-campo)','r','pve'],[3,[10],'Verifica PO e PV (staff)','s','pve'],
  [4,[0],'Apertura anno scout','r'],[4,[1],'Accoglienza nelle pattuglie, nomina CP, lancio gara di reparto','r'],[4,[2],'I° Bivacco di Reparto; nomina VCP','r'],[4,[3],'CdR (verifica pattuglie)','r'],[4,[3],'CdL (Consiglio della Legge)','r','cdl'],[4,[4],'CdR (verifica campo invernale con i ragazzi)','r'],[4,[5],'CdP (progettazione impresa)','r'],[4,[5],'Giornata del Pensiero','r','gpens'],[4,[6],'II° Bivacco; verifica tende e cassoni; missione','r'],[4,[7],'Impresa di pattuglia','r'],[4,[7],'CdL (Consiglio della Legge)','r','cdl'],[4,[8],'III° Bivacco; CdP (verifica impresa); CdR (proposte campo estivo)','r'],[4,[9],'CdP (materiali campo estivo)','r'],[4,[9],'Chiusura anno scout','r'],[4,[10],'CdL (Consiglio della Legge)','r','cdl'],[4,[11],'CdR','r'],
  [5,[3],'Campo invernale','r'],[5,[1],'Jota/Joti','r'],[5,[7],'San Giorgio (uscita)','r','sgiorgio'],[5,[10],'Campo estivo (con pre-campo)','r'],[5,[8],'Campo regionale di Branca (indicativo apr–mag)','r'],
@@ -18600,9 +18600,13 @@ window.tipGridHTML=function(b){
   const k=KEY[b], u=U[k]; const now=mIdx(); const its=u.items;
   const head='<tr><th class="tg-f" scope="col">Filone</th>'+M.map((m,i)=>'<th scope="col" class="'+(i===now?'now':'')+'">'+m+'</th>').join('')+'</tr>';
   const rows=F.map((fl,fi)=>{ const l=its.filter(i=>i[0]===fi); if(!l.length) return '';
-    const cells=M.map((m,mi)=>{ const st=l.filter(i=>i[1][0]===mi); const cont=!st.length&&l.some(i=>i[1].length>1&&mi>i[1][0]&&mi<=i[1][i[1].length-1]);
-      return '<td class="'+(mi===now?'now ':'')+(cont?'tg-c':'')+'">'+st.map(i=>itBtn(k,i)).join('')+'</td>'; }).join('');
-    return '<tr><th class="tg-f" scope="row">'+E(fl)+'</th>'+cells+'</tr>'; }).join('');
+    const sp=i=>[i[1][0],i[1][i[1].length-1]];
+    const lanes=[]; l.slice().sort((x,y)=>sp(x)[0]-sp(y)[0]||sp(y)[1]-sp(x)[1]).forEach(i=>{ const [s0,e0]=sp(i); let ln=lanes.find(q=>q.end<s0); if(!ln){ ln={end:-1,its:[]}; lanes.push(ln); } ln.its.push(i); ln.end=e0; });
+    return lanes.map((ln,li)=>{ let cells='', mi=0;
+      ln.its.forEach(i=>{ const [s0,e0]=sp(i); for(;mi<s0;mi++) cells+='<td class="'+(mi===now?'now':'')+'"></td>';
+        cells+='<td colspan="'+(e0-s0+1)+'" class="tg-b">'+itBtn(k,i)+'</td>'; mi=e0+1; });
+      for(;mi<12;mi++) cells+='<td class="'+(mi===now?'now':'')+'"></td>';
+      return '<tr'+(li===lanes.length-1?' class="tg-last"':'')+'>'+(li===0?'<th class="tg-f" scope="row" rowspan="'+lanes.length+'">'+E(fl)+'</th>':'')+cells+'</tr>'; }).join(''); }).join('');
   const mob=M.map((m,mi)=>{ const l=its.filter(i=>i[1].includes(mi)); if(!l.length) return '';
     return '<div class="tg-mc'+(mi===now?' now':'')+'"><h3>'+m+(mi===now?' · adesso':'')+'</h3>'+F.map((fl,fi)=>{ const q=l.filter(i=>i[0]===fi); return q.length?'<div class="tg-fl">'+E(fl)+'</div>'+q.map(i=>itBtn(k,i)).join(''):''; }).join('')+'</div>'; }).join('');
   const leg=Object.values(A).map(a=>'<span class="tg-lg"><i class="'+a[1]+'"></i>'+E(a[0])+'</span>').join('');

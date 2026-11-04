@@ -11,12 +11,12 @@ for (const [w, h] of [[1400, 900], [390, 800]]) {
   const p = await person(br, db, {ctx:{viewport:{width:w, height:h}}}); const A = p.page, ea = (f, x) => A.evaluate(f, x);
   const errs = []; A.on('pageerror', e => errs.push(String(e).slice(0, 200)));
   await loginAs(A, base, ua); await sleep(1500);
-  await ea(() => shTip()); await sleep(500);
+  await ea(() => shTip()); await sleep(500); await ea(() => { document.getElementById('main-app').style.display = 'block'; document.querySelectorAll('body > *').forEach(e => { if (e.id !== 'main-app' && !e.contains(document.getElementById('main-app')) && e.tagName !== 'SCRIPT') e.style.display = 'none'; }); }); await sleep(300);
   const tag = w + 'px ';
   for (const k of ['G', 'L', 'E', 'R']) {
     await ea(k => tipSet(k), k); await sleep(200);
     const r = await ea(() => ({ rows: document.querySelectorAll('.tg-t tbody tr').length, th: document.querySelectorAll('.tg-t thead th').length, btn: document.querySelectorAll('.tgi').length, ccpe: /CCPE|Campo scuola|Campo Scuola/i.test(document.querySelector('.tg-t').innerText) }));
-    ok(r.rows >= 8 && r.th === 13 && r.btn > 40, tag + k + ' griglia: ' + JSON.stringify(r));
+    ok(r.rows >= 13 && r.th === 13 && r.btn > 40, tag + k + ' griglia: ' + JSON.stringify(r));
     ok(!r.ccpe, tag + k + ' senza CCPE / campo scuola adulti');
   }
   await ea(() => tipSet('E')); await sleep(200);
@@ -28,7 +28,7 @@ for (const [w, h] of [[1400, 900], [390, 800]]) {
     ok(/Da cui parte/.test(m) && /Approfondimenti/.test(m) && /Documentazione formativa CNGEI/.test(m), tag + 'popup con da cui parte, approfondimenti, fonte');
     ok(await ea(() => !!document.querySelector('[onclick*="tipPop(\'pass\')"]')), tag + 'link al popup Passaggi');
     await ea(() => modalClose()); await sleep(200);
-    const staff = await ea(() => [...document.querySelectorAll('.tg-t tbody tr')].find(r => /^Staff/.test(r.querySelector('th').innerText)).innerText);
+    const staff = await ea(() => { const rs = [...document.querySelectorAll('.tg-t tbody tr')]; const i = rs.findIndex(r => r.querySelector('th') && /^Staff/.test(r.querySelector('th').innerText)); const n = rs[i].querySelector('th').rowSpan; return rs.slice(i, i + n).map(r => r.innerText).join(' '); });
     ok(/CR|Akela/.test(staff), tag + 'riga Staff con impegni di passaggio');
   } else {
     ok(await ea(() => getComputedStyle(document.querySelector('.tg-mob')).display === 'block' && getComputedStyle(document.querySelector('.tg-sc')).display === 'none'), tag + 'mobile: schede per mese');
