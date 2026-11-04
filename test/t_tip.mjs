@@ -23,11 +23,8 @@ for (const [w, h] of [[1400, 900], [390, 800]]) {
   if (w > 760) {
     const st = await ea(() => { const sc = document.querySelector('.tg-sc'); sc.scrollTop = 200; sc.scrollLeft = 300; const th = document.querySelector('.tg-t thead th:nth-child(3)').getBoundingClientRect(), f = document.querySelector('.tg-t tbody th').getBoundingClientRect(), s = sc.getBoundingClientRect(); return { top: Math.abs(th.top - s.top) < 3, left: Math.abs(f.left - s.left) < 3, ov: sc.scrollHeight > sc.clientHeight }; });
     ok(st.top && st.left, tag + 'riga e colonna intestazioni bloccate ' + JSON.stringify(st));
-    await ea(() => document.querySelector('.tgi[onclick*="link1"]').click()); await sleep(300);
-    const m = await ea(() => document.body.innerText);
-    ok(/Da cui parte/.test(m) && /Approfondimenti/.test(m) && /Documentazione formativa CNGEI/.test(m), tag + 'popup con da cui parte, approfondimenti, fonte');
-    ok(await ea(() => !!document.querySelector('[onclick*="tipPop(\'pass\')"]')), tag + 'link al popup Passaggi');
-    await ea(() => modalClose()); await sleep(200);
+    ok(await ea(() => document.querySelectorAll('.tgi button, button.tgi, .tgi[onclick]').length === 0 && !/ⓘ/.test(document.querySelector('.tg-t').innerText)), tag + 'voci non cliccabili e senza «i»');
+    ok(await ea(() => !!document.querySelector('.tg-b') && [...document.querySelectorAll('.tg-b')].some(td => td.colSpan > 1)), tag + 'barre estese su più mesi');
     const staff = await ea(() => { const rs = [...document.querySelectorAll('.tg-t tbody tr')]; const i = rs.findIndex(r => r.querySelector('th') && /^Staff/.test(r.querySelector('th').innerText)); const n = rs[i].querySelector('th').rowSpan; return rs.slice(i, i + n).map(r => r.innerText).join(' '); });
     ok(/CR|Akela/.test(staff), tag + 'riga Staff con impegni di passaggio');
   } else {
