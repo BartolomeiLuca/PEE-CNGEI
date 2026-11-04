@@ -8110,7 +8110,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611041600'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611041630'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -18523,16 +18523,16 @@ const AP={
 };
 const FORM=[ [9,[2,3,4,5],'FOR.IN. (corsi locali)','s','forin'],[9,[6],'Campi nazionali di formazione','s','fornaz'],[9,[11],'Campi nazionali di formazione','s','fornaz'] ];
 const U={
-'Gruppo e Sezione':{note:'Ricostruita dal Manuale del Capo Gruppo. Nel manuale "contratti" = oggi Patto; "PEG" = oggi PEE. Date della formazione: range ricavati dalla circolare Offerta formativa 2026-27.',items:[
+'Gruppo e Sezione':{note:'Ricostruita dal Manuale del Capo Gruppo.',items:[
  [0,[0],'Verifica campi estivi','s','vercampi'],[0,[0,1],'Analisi della situazione','s','analisi'],[0,[0],'Piano di Gruppo (bozza entro Set)','g','pdg'],[0,[1,2],'Sostegno alle programmazioni delle 3 Unità','s','prog'],[0,[5,6],'Verifica Piano di Gruppo (entro marzo)','g','verprog'],[0,[9],'Verifica prima dei campi','s','verprog'],
  [1,[0],'Interbranca (CG e staff)','s','ib'],[1,[0],'Patti di Gruppo e di staff','s','patto'],[1,[6],'Occasioni di Primavera (adulti)','s','odp'],[1,[2],'Primo step verifica patti','s','patto'],[1,[9],'Verifica patti e staff del prossimo anno','s','patto'],
- [2,[0,1],'Analisi bisogni delle Unità e liste d\'attesa','g'],[2,[9],'Rover in servizio: verifica','s'],
+ [0,[0],'Analisi bisogni delle Unità','g'],[12,[0,1],'Liste d\'attesa','g'],[6,[9],'Rover in servizio: verifica','s'],
  [5,[5],'Giornata del Pensiero','r','gpens'],[5,[3],'Festa di Natale di Gruppo','r'],[5,[7],'San Giorgio (uscita)','r','sgiorgio'],[5,[9],'Chiusura anno scout','r'],
  [5,[3],'Campi invernali (programmazione)','s','prepcampo'],[5,[7],'Campi di Pasqua (programmazione)','s','prepcampo'],[5,[10,11],'Campi estivi: recapiti, visita, rientro','s','prepcampo'],
  [6,[0,1],'Attività per i passaggi','r','cerim'],[6,[4],'Attività di passaggio (1ª)','r','link1'],[6,[6],'Attività di passaggio (2ª)','r','link2'],[6,[8],'Attività di passaggio (3ª)','r','link3'],
  [7,[1],'Riunione genitori nuovi iscritti','f','rgen'],[7,[2],'Riunioni: programmazioni','f','rgen'],[7,[9],'Riunioni pre campo','f','rgen'],
  [8,[0],'CdG (bivacco): verifica campi estivi, analisi, bozza Piano','g','cdg'],[8,[2],'CdG: approvazione Piano di Gruppo','g','cdg'],[8,[4],'CdG: verifica campi invernali','g','cdg'],[8,[6],'CdG: verifica Piano di Gruppo (entro marzo)','g','cdg'],[8,[8],'CdG: verifica campi di Pasqua','g','cdg'],[8,[9],'CdG: pre-campi','g','cdg'],[8,[0],'Assemblea di Sezione','g'],
- [9,[1],'Modulo FAD Programmazione Educativa (CG e CdS, prima del FOR.G/FOR.C)','s','fornaz'],[9,[2],'Note descrittive dei partecipanti (CG/CdS)','s','forin'],[9,[3],'Formazione interna di Gruppo','s'],[9,[6],'Formazione interna di Gruppo','s'],
+ [9,[1],'Modulo FAD Programmazione Educativa (CG e CdS, prima del FOR.G/FOR.C)','s','fornaz'],[9,[3],'Formazione interna di Gruppo','s'],[9,[6],'Formazione interna di Gruppo','s'],
  [10,[0],'Promozione e riunione genitori d\'avvio','a','sen'],[10,[1,2],'Incontri in/formativi','a','sen'],[10,[3,4],'Sperimentazione; accoglienza nuovi Senior','a','sen'],[10,[5],'Verifica, domanda al CoS, Promessa, Patto di Servizio','a','sen'],
  [11,[3,4],'Attività territoriali e autofinanziamento','g','terr'],[11,[0],'Raccordo Gruppo–Sezione sul territorio','g','terr'],
  [12,[3,4],'Ricerca case per i campi','s','gest'],[12,[4,5],'Controllo casse e censimenti','s','gest'],[12,[10,11],'Casse e saldi al tesoriere','s','gest'],
@@ -18586,7 +18586,7 @@ const POPT={pass:'Passaggi di Branca: come si curano',pv:'Progressione Verticale
 const E=esc;
 function mIdx(){ return (tipCurM()+4)%12; }
 function itBtn(u,it){ const n=it[4]||''; const cls='tgi '+A[it[3]][1];
-  return `<button type="button" class="${cls}" onclick="tipGo('${E(u)}','${E(it[2]).replace(/'/g,'&#39;')}','${n}','${it[1].join(',')}')">${E(it[2])}${n?' ⓘ':''}</button>`; }
+  return `<button type="button" class="${cls}" onclick="tipGo('${E(u)}','${E(String(it[2]).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))}','${n}','${it[1].join(',')}')">${E(it[2])}${n?' ⓘ':''}</button>`; }
 window.tipGo=function(u,t,n,ms){
   const x=N[n]||[t,'—','—','—']; const mm=ms?ms.split(',').filter(Boolean).map(i=>M[+i]).join(', '):'';
   const html='<div style="font-size:15px;font-weight:800;margin-bottom:8px">'+E(t)+'</div><div style="max-height:64vh;overflow:auto;padding-right:6px"><dl class="tg-dl">'
@@ -18610,7 +18610,7 @@ window.tipGridHTML=function(b){
   const mob=M.map((m,mi)=>{ const l=its.filter(i=>i[1].includes(mi)); if(!l.length) return '';
     return '<div class="tg-mc'+(mi===now?' now':'')+'"><h3>'+m+(mi===now?' · adesso':'')+'</h3>'+F.map((fl,fi)=>{ const q=l.filter(i=>i[0]===fi); return q.length?'<div class="tg-fl">'+E(fl)+'</div>'+q.map(i=>itBtn(k,i)).join(''):''; }).join('')+'</div>'; }).join('');
   const leg=Object.values(A).map(a=>'<span class="tg-lg"><i class="'+a[1]+'"></i>'+E(a[0])+'</span>').join('');
-  const fl=(u.float||[]).map(t=>'<button type="button" class="tgi a-r" style="width:auto" onclick="tipGo(\''+k+'\',\''+E(t).replace(/'/g,'&#39;')+'\',\'\',\'\')">Senza mese fisso: '+E(t)+'</button>').join('');
+  const fl=(u.float||[]).map(t=>'<button type="button" class="tgi a-r" style="width:auto" onclick="tipGo(\''+k+'\',\''+E(String(t).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))+'\',\'\',\'\')">Senza mese fisso: '+E(t)+'</button>').join('');
   return '<div class="tg-leg">'+leg+'</div><div class="tg-sc" tabindex="0" role="region" aria-label="Calendario tipico dell’anno: righe i filoni, colonne i mesi"><table class="tg-t"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div><div class="tg-mob">'+mob+'</div>'+(fl?'<div class="tg-float">'+fl+'</div>':'')+'<p class="sh-hint">'+E(u.note)+'</p>';
 };
 })();
