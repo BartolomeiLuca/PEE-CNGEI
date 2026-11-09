@@ -77,11 +77,11 @@ await P.click('#sh-pers');
 await open('pp1');
 s = await ev(() => ({own: document.getElementById('panel-pp').classList.contains('active'), p: [1,2,3,4].filter(i => document.getElementById('panel'+i).classList.contains('active')), items: [...document.querySelectorAll('#sh-side .sh-si')].map(b => b.textContent.trim()), grp: [...document.querySelectorAll('#sh-side .sh-sg')].map(b => b.textContent.trim()), txt: document.getElementById('panel-pp').innerText, gdl: getComputedStyle(document.getElementById('g-dl')).display}));
 ok(s.own && s.p.length === 0 && /A che punto sei/.test(s.txt), 'Progetto Personale: si apre su «A che punto sei», senza sezioni della Programmazione');
-ok(s.grp.join('|') === 'Progettare|Inviare|Attività leggere' && s.items.includes('Invii del Progetto Personale') && s.items.includes('Checklist dei criteri') && s.items.includes('Le attività del mio percorso') && s.items.includes('3 · Percorso Educativo Esperienziale'), 'Progetto Personale: menu con Progettare, Inviare, Attività leggere');
+ok(s.grp.join('|') === 'Progettare|Inviare' && s.items.includes('Invio del Progetto Personale') && s.items.includes('Check-list del progetto') && !s.items.includes('Le attività del mio percorso') && s.items.includes('3 · Percorso Educativo Esperienziale'), 'Progetto Personale: menu con Progettare e Inviare');
 ok(!s.items.includes('Dashboard') && s.gdl === 'none', 'Progetto Personale: nessuna dashboard');
 await P.click('#sh-side .sh-si:has-text("3 · Percorso")'); await sleep(300);
 ok(!/In costruzione/.test(await ev(() => document.getElementById('main-app').innerText)) && (await ev(() => document.getElementById('panel4').classList.contains('active') && !document.getElementById('panel-pp').classList.contains('active'))), 'Progetto Personale: la Sezione 3 mostra la sezione vera, non il segnaposto');
-await P.click('#sh-side .sh-si:has-text("Invii del Progetto")'); await sleep(300);
+await P.click('#sh-side .sh-si:has-text("Invio del Progetto")'); await sleep(300);
 await ev(() => goPhaseInternal(1)); await sleep(300);
 ok(await ev(() => document.getElementById('panel-pp').classList.contains('active') && !document.getElementById('panel1').classList.contains('active')), 'Progetto Personale: da Invii un salto interno dell’app resta nel guscio');
 // 6 · staff (versione precedente)

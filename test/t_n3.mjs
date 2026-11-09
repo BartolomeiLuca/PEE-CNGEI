@@ -35,9 +35,9 @@ await A.locator(foc('')).first().click(); await A.keyboard.type('Focus Anna', {d
 console.log('remote foc', JSON.stringify(db.t.pee_archivi.find(z=>z.id==='c1').data.scheda.griglia));
 console.log('C vede', await ec(() => JSON.stringify({exp:[...document.querySelectorAll('.expanded')].map(e=>e.id), card: !!document.getElementById('card-P1'), v: (document.querySelector('#card-P1 textarea.gr-focta')||{}).value})));
 console.log('DBG', await ec(()=>JSON.stringify({rows:grRows('P1').map(r=>r.k), occ:(scheda.pp||{}).occMan, box:[...document.querySelectorAll('#card-P1 .gr-box')].length, html:(document.querySelector('#card-P1 .gr-box')||{innerHTML:'none'}).innerHTML.slice(0,300), cls:document.getElementById('card-P1').className})));
-await C.locator(foc('')).first().click(); await C.keyboard.press('End'); await C.keyboard.type(' + Carla', {delay:30}); await sleep(6000);
+await sleep(1500); { const r = await ec(() => ({ta: document.querySelectorAll('#card-P1 textarea.gr-focta').length, ro: (document.querySelector('#card-P1 .gr-focro') || {}).textContent || ''})); ok(r.ta === 0 && /Focus Anna/.test(r.ro), 'il collaboratore vede il focus già scritto ma non lo modifica (' + JSON.stringify(r) + ')'); }
 console.log('remote foc 2', JSON.stringify(db.t.pee_archivi.find(z=>z.id==='c1').data.scheda.griglia));
-console.log('A ora', await ea(() => document.querySelector('#card-P1 textarea.gr-focta').value), '| C ora', await ec(() => document.querySelector('#card-P1 textarea.gr-focta').value));
+console.log('A ora', await ea(() => document.querySelector('#card-P1 textarea.gr-focta').value), '| C ora', await ec(() => (document.querySelector('#card-P1 .gr-focro') || {}).textContent));
 console.log('A griglia', await ea(()=>JSON.stringify(scheda.griglia)));
 const pos = E => E.locator('#card-P1 .gr-f textarea').first();
 await A.locator('#card-P1 .gr-f textarea').first().click(); await A.keyboard.type('Anna vede A', {delay:30}); await sleep(5000);
@@ -45,7 +45,7 @@ await C.locator('#card-P1 .gr-f textarea').first().click(); await C.keyboard.typ
 const gA = await ea(() => JSON.stringify(scheda.griglia.P1['m:o1'])), gC = await ec(() => JSON.stringify(scheda.griglia.P1['m:o1']));
 const rem = JSON.stringify(db.t.pee_archivi.find(z=>z.id==='c1').data.scheda.griglia.P1['m:o1']);
 console.log('A', gA); console.log('C', gC); console.log('R', rem);
-ok(/Anna vede A/.test(rem) && /Carla vede C/.test(rem) && /Focus Anna \+ Carla/.test(rem), 'sul server restano i testi di entrambi');
+ok(/Anna vede A/.test(rem) && /Carla vede C/.test(rem) && /Focus Anna/.test(rem), 'sul server restano i testi di entrambi');
 ok(gA === rem && gC === rem, 'le due pagine mostrano gli stessi dati');
 ok(await ea(() => !!document.querySelector('#card-P1.expanded textarea')) && await ec(() => !!document.querySelector('#card-P1.expanded textarea')), 'la scheda resta aperta dopo gli aggiornamenti dell’altro');
 const f = summary(); await br.close(); process.exit(f?1:0);

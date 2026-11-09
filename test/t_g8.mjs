@@ -15,9 +15,9 @@ for (const [n, re, onre] of [['1', /Osservazione|Contesto/, /^1 · Osservazione/
   await P.click('#sh-side .sh-si:has-text("' + n + ' · ")'); await sleep(500); s = await st();
   ok(!s.own && !/In costruzione/.test(s.txt) && re.test(s.txt) && onre.test(s.on.trim()), 'PP: la Sezione ' + n[0] + ' mostra il contenuto vero e la voce di menu è attiva (' + s.on.trim().slice(0, 30) + ')');
 }
-await P.click('#sh-side .sh-si:has-text("Checklist dei criteri")'); await sleep(500); s = await st();
-ok(!s.own && !/In costruzione/.test(s.txt) && /Checklist/.test(s.on), 'PP: Checklist dei criteri = la checklist vera');
-await P.click('#sh-side .sh-si:has-text("Invii del Progetto")'); await sleep(400); s = await st();
+await P.click('#sh-side .sh-si:has-text("Check-list del progetto")'); await sleep(500); s = await st();
+ok(!s.own && !/In costruzione/.test(s.txt) && /Check-list/.test(s.on), 'PP: Check-list del progetto = la checklist vera');
+await P.click('#sh-side .sh-si:has-text("Invio del Progetto")'); await sleep(400); s = await st();
 ok(s.own, 'PP: Invii resta nella pagina del guscio');
 await P.click('#sh-side .sh-si:has-text("1 · ")'); await sleep(500);
 await ev(() => gGo('1b')); await sleep(500); s = await st();

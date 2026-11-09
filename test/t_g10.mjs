@@ -13,7 +13,7 @@ ok(/Sezione 1 ·[^\n]*\n[^\n]*in corso/.test(t) && /Prossimo passo: la Sezione 1
 await ev(() => { scheda.priorita[0] = Object.assign(scheda.priorita[0], {obiettivi:[0], idr:[0,1], tempistica:'nov-feb'}); shPP('0'); });
 t = await ev(() => document.getElementById('panel-pp').innerText);
 ok(/Sezione 2 ·[^\n]*\n[^\n]*completata/.test(t), 'Sezione 2 completata con obiettivo, 2 indicatori e tempistica');
-await P.click('#sh-side .sh-si:has-text("Invii del Progetto")'); await sleep(500);
+await P.click('#sh-side .sh-si:has-text("Invio del Progetto")'); await sleep(500);
 t = await ev(() => document.getElementById('panel-pp').innerText);
 ok(/Comunicazione di avvio/.test(t) && /Supporto operativo/.test(t) && /Verifica della completezza del lavoro prima dell’invio/.test(t) && /Prima consegna/.test(t) && /Consegna finale/.test(t) && /Approvazione finale/.test(t), 'Invii: i passi delle Linee Guida e i compiti del Capo Gruppo mentore');
 ok(!/In costruzione/.test(t), 'Invii: non più «In costruzione»');

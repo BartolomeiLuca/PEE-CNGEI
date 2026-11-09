@@ -55,7 +55,7 @@ const noHScroll = ev => ev(() => document.documentElement.scrollWidth <= innerWi
   ok((await ev(() => [...document.querySelectorAll('#sh-bb .sh-bbb')].map(b => b.textContent.trim()))).join('|') === 'Stato|Sezioni|Invii|Altro', '390 px · PP: Stato, Sezioni, Invii, Altro');
   ok(await ev(() => getComputedStyle(document.querySelector('#hdr')).backgroundColor) === 'rgb(240, 230, 3)' && await ev(() => getComputedStyle(document.querySelector('#hdr')).color) === 'rgb(26, 24, 0)', '390 px · Branca L: intestazione gialla con testo scuro');
   await P.click('#sh-bb .sh-bbb:has-text("Invii")'); await sleep(300);
-  ok(/Invii del Progetto Personale/.test(await ev(() => document.getElementById('panel-pp').innerText)), '390 px · PP: «Invii» apre la pagina degli invii');
+  ok(/Invio del Progetto Personale/.test(await ev(() => document.getElementById('panel-pp').innerText)), '390 px · PP: «Invii» apre la pagina degli invii');
   ok(await noHScroll(ev), '390 px · PP: nessuna barra di scorrimento orizzontale');
   ok(!pa.errors.length, 'nessun errore JS (PP)'); }
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);
