@@ -13219,6 +13219,8 @@ function dLink(url, o={}){ const D=dxLib(); const u=linkNorm(url);
   return new D.ExternalHyperlink({link:u, children:[new D.TextRun({text:o.label||String(url), font:MF, size:o.size||18, color:'1155CC', underline:{}})]}); }
 function dLinkRuns(text, o={}){
   const s = String(text == null ? '' : text);
+  // un a capo dentro un testo diventa un a capo vero nel Word (prima le righe restavano attaccate: «vicinanza.Attività 3»)
+  if(/\n/.test(s)){ const P = s.replace(/\r/g,'').split('\n'); return P.flatMap((part, i) => { const r = part ? dLinkRuns(part, o) : []; if(i > 0) r.unshift(dTxt('', Object.assign({}, o, {break:1}))); return r; }); }
   const re = /((?:https?:\/\/|www\.)[^\s<>"]*[^\s<>"'.,;:!?)\]]|(?:drive\.google\.com|docs\.google\.com|canva\.com|youtu\.be|youtube\.com)\/[^\s<>"]*[^\s<>"'.,;:!?)\]])/gi;
   if(!re.test(s)) return [dTxt(s, o)];
   re.lastIndex = 0; const out = []; let last = 0, m;
@@ -13712,7 +13714,12 @@ async function exportPPDocx(mode){
       ['Obiettivo/i', ob.length ? ob.map(o=>dPara(plain(o),{size:19,after:40})) : '—'],
       ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
       ['Tempistiche', percTempoTxt(per)],
-      ['Attività', attCell],
+      // 9/11: una riga per attività (le righe piccole si spezzano bene tra le pagine anche in Pages e LibreOffice)
+      ...(acts.length ? acts.map(({x,j}) => [`Attività ${attNum(per,j)}`, [
+        dPara([dTxt(`${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40}),
+        ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap(k => rtLines(plain(x[k])).filter(l=>l.trim()).map((l,q) => dPara(q===0?[dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(l,{size:18})]:dLinkRuns(l,{size:18}),{after:30,indent:240}))),
+        ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[])
+      ]]) : [['Attività', attCell]]),
       ...(T_(per.coCostr) ? [['Co-costruzione nel percorso', dMulti(per.coCostr)]] : []),
       ...(T_(per.rielab) ? [['Rielaborazione nel percorso', dMulti(per.rielab)]] : []),
       ['Le 7 caratteristiche', clKeys.map(k => { const v=cl3Val(cl[k]); const L={si:'Sì',parte:'In parte',no:'Non ancora'}[v]||'(da indicare)'; const C={si:'2E7D32',parte:'B07D00',no:'B3261E'}[v]||'777777'; return dPara([dTxt(`${clLab[k]}: `,{size:18,bold:true}), dTxt(L,{size:18,bold:true,color:C}), dTxt(' — '+(plain(cl[k]?.note)||'—'),{size:18})],{after:30}); })]
@@ -13795,13 +13802,14 @@ async function exportPPDocx(mode){
           const n = numOf(obsVal(p));
           const g = G[p.id] || {}; const rs = grRows(p.id);
           const m = (GR_MODEL.nomi[a]||[])[i], sb = (((GR_MODEL.sub[FB]||{})[a])||[])[i];
-          const list = rs.map(r => ({lab:'Attività: '+r.nome+(r.data?' · '+grDateTxt(r.data):''), d:g[r.k]||{}, foc:grFocParts(p.id, r, g[r.k])}));
+          const one = t => plain(String(t==null?'':t)).replace(/[\t\r]+/g,' ').replace(/\s*\n+\s*/g,' · ').trim();
+          const list = rs.map(r => ({lab:'Attività: '+one(r.nome)+(r.data?' · '+grDateTxt(r.data):''), d:g[r.k]||{}, foc:grFocParts(p.id, r, g[r.k])}));
           if(g.x && ['foc','pos','mig','note'].some(k => cl(k==='foc'?g.x[k]:grEff(g.x,k)))) list.push({lab:'Altre osservazioni', d:g.x, foc:cl(g.x.foc)?[cl(g.x.foc)]:[]});
           if(!list.length) list.push({lab:n?'':'Non osservato', d:{}, foc:[]});
           list.forEach((it,j) => {
-            const txt = k => { const t = cl(grEff(it.d,k)); return dPara(t ? plain(t) : '',{size:16,after:0}); };
+            const txt = k => { const t = cl(grEff(it.d,k)); if(!t) return dPara('',{size:16,after:0}); return rtLines(plain(t).replace(/\t/g,' ')).filter(l => l.trim()).map(l => dPara(l,{size:16,after:0})); };
             const first = j===0 ? dPara(m ? [dTxt((i+1)+'. '+m,{size:16,bold:true,color:AMB_HEX[a]}), dTxt(': '+sb,{size:16})] : [dTxt((i+1)+'. '+p.name,{size:16,bold:true,color:AMB_HEX[a]})],{after:0}) : dPara('',{size:16,after:0});
-            const focTxt = it.foc.length ? dPara([dTxt('Focus: ',{size:15,bold:true,color:FOCG}), dTxt(it.foc.map(plain).join('; '),{size:16})],{after:0,before:20}) : null;
+            const focTxt = it.foc.length ? dPara([dTxt('Focus: ',{size:15,bold:true,color:FOCG}), dTxt(it.foc.map(f => one(f)).join('; '),{size:16})],{after:0,before:20}) : null;
             rows.push([
               dCell(first,{w:wc[0],border:BK,vAlign:dxLib().VerticalAlign.TOP}),
               dCell([...(it.lab?[dPara(it.lab,{size:16,bold:true,after:20})]:[]), ...(focTxt?[focTxt]:[])],{w:wc[1],border:BK,vAlign:dxLib().VerticalAlign.TOP}),
