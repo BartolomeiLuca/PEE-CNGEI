@@ -748,6 +748,8 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:12px}
 .gr-box{margin:0 0 12px}.gr-row{border:1px solid var(--border-light);border-radius:10px;padding:10px 12px;margin:6px 0;background:#fff}.gr-row.gr-hl{border-left:4px solid var(--green)}.gr-h{font-size:12px;margin-bottom:6px}.gr-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .gr-f span{display:block;font-size:12px;font-weight:700;margin-bottom:3px}.gr-f textarea{width:100%;min-height:56px;border:1px solid #8a8a82;border-radius:8px;padding:6px 8px;font:500 12.5px 'Montserrat',sans-serif;resize:vertical;box-sizing:border-box}
 .gr-warn{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:#a1260f}.gr-old{font-size:12px;color:var(--ink-mid);margin-top:3px}
+.pp-opt{opacity:.85;border-style:dashed!important}.pp-opt-t{font-size:11.5px;font-weight:700;color:var(--ink-light);background:var(--bg);border:1px solid var(--border-light);border-radius:20px;padding:2px 8px;margin-left:8px}.pp-opt-h{font-size:12.5px;color:var(--ink-light);padding:8px 12px;border:1px dashed var(--border);border-radius:10px;margin:8px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pp-risc{border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px}
 .cal-pit{border:1.5px dashed var(--amber)!important;background:repeating-linear-gradient(135deg,#fff,#fff 8px,var(--amber-pale) 8px,var(--amber-pale) 16px)!important}.cal-pit .cal-meta{white-space:normal}.cal-ty.pit{background:var(--amber)!important}
 .scad-g{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin:12px 0 4px}.scad-g.late{color:var(--red)}.scad-it{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--border-light)}.scad-d{font-weight:700;font-size:12.5px}.scad-it.late .scad-d{color:var(--red)}.scad-t b{font-weight:600}.scad-t span:last-child{display:block;color:var(--ink-light);font-size:12px}.scad-p{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:1px;display:inline-block}.scad-p.ref{background:var(--green-pale);color:var(--green)}.scad-p.con{background:var(--blue-pale);color:var(--blue)}.scad-p.pit{background:var(--amber-pale);color:var(--amber)}.scad-p.mod{background:#F1EEF8;color:#5B3E8F}@media(max-width:520px){.scad-it{grid-template-columns:70px minmax(0,1fr)}.scad-it .sh-btn{grid-column:2;justify-self:start}}
 .pt-sec{border-top:1px solid var(--border-light)}.pt-sec>summary{list-style:none;cursor:pointer;padding:10px 0;font-weight:700;display:flex;gap:8px;align-items:center}.pt-sec>summary::-webkit-details-marker{display:none}.pt-sec>summary::before{content:'▸';color:var(--ink-faint);font-size:12px}.pt-sec[open]>summary::before{content:'▾'}.pt-cnt{background:var(--coral,#C0432A);color:#fff;border-radius:20px;font-size:11px;padding:1px 8px}.pt-cnt.g{background:var(--ink-faint)}.pt-all{margin-left:auto;background:none;border:0;color:var(--green);font:600 12px 'Montserrat',sans-serif;text-decoration:underline;cursor:pointer}.pt-del{color:var(--ink-light)}
@@ -8489,6 +8491,10 @@ function percHasContent(pr){
     || ['strumenti','dal','al','coCostr','rielab'].some(k=>T(pr[k])) || Object.keys(pr.strumSel||{}).length>0
     || Object.values(pr.checklist||{}).some(c=>c&&(c.checked||T(c.note)));
 }
+// 9/11: nel Progetto Personale si sviluppa un solo percorso (Linee Guida): gli altri sono facoltativi in Verifica e Valutazione
+function ppOptPid(pid){ try{ if(!szPP()) return false; const P=scheda.priorita||[]; const ch=sez3Chosen(P.length||3); const chPid=(P[ch]&&(P[ch].pid||P[ch].percorso))||((scheda.percorsiExtra||[]).find(x=>x.prioritaIdx===ch)||{}).percorsoId; if(pid===chPid) return false;
+  const per=(scheda.percorsiExtra||[]).filter(x=>x.percorsoId===pid); const hasAct=per.some(x=>(x.attivita||[]).some(a=>a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim()))); return !hasAct; }catch(e){ return false; } }
+function ppOptHide(pid,on){ scheda.ppOptHid=Object.assign({},scheda.ppOptHid||{}); if(on) scheda.ppOptHid[pid]=1; else delete scheda.ppOptHid[pid]; saveData(true); renderValuation(); }
 function sez3Chosen(n){ const c=scheda.sez3Pri; return (typeof c==='number' && c>=0 && c<n) ? c : 0; }
 
 // ── strumenti del metodo declinati per Branca ──
@@ -12293,7 +12299,7 @@ function renderSchedaInvio(root){
   const el=document.createElement('div'); el.className='profile-card';
   el.innerHTML=`<h3 style="font-size:15px;font-weight:800;margin-bottom:4px">Il documento</h3>
     <p style="font-size:12px;color:var(--ink-mid);margin:0 0 10px">Il Word riporta le Sezioni delle Linee Guida nello stesso ordine dell’app. Le voci ancora aperte qui sopra sono solo un aiuto per non dimenticare nulla: non finiscono nel documento.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-export" onclick="exportSchedaDocx('parziale')">↓ Scheda Sezioni 1–3 (Word)</button><button class="btn-export" onclick="exportSchedaDocx('completo')">↓ Scheda completa (Word)</button><button class="btn-ghost" onclick="exportExcel()" title="Tutti i punteggi dell'osservazione, per chi vuole rielaborarli">↓ Dati dell'osservazione (Excel)</button></div>`;
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-export" onclick="exportSchedaDocx('parziale')">↓ ${szPP()?'Scheda Sezioni 1–3':'Scheda fino a Progettare'} (Word)</button><button class="btn-export" onclick="exportSchedaDocx('completo')">↓ Scheda completa (Word)</button><button class="btn-ghost" onclick="exportExcel()" title="Tutti i punteggi dell'osservazione, per chi vuole rielaborarli">↓ Dati dell'osservazione (Excel)</button></div>`;
   root.appendChild(el);
 }
 function renderSchedaChk(root,selected){
@@ -12403,12 +12409,14 @@ function renderSchedaVal(root,selected){
         }).join('')
       : `<div style="font-size:12px;color:var(--ink-faint);font-style:italic">Nessun IDR selezionato — torna allo Step B</div>`;
 
-    const card=document.createElement('div'); card.className='val-card';
+    const opt=MODE==='giovani'&&ppOptPid(pid);
+    if(opt&&(scheda.ppOptHid||{})[pid]){ const c0=document.createElement('div'); c0.className='pp-opt-h'; c0.innerHTML=`${sEsc(AMBITO_LABELS[a])} · ${sEsc(p.name)}: facoltativo, nascosto. <button type="button" class="btn-ghost" style="font-size:12px;padding:2px 9px" onclick="ppOptHide('${pid}',false)">Mostra</button>`; root.appendChild(c0); return; }
+    const card=document.createElement('div'); card.className='val-card'+(opt?' pp-opt':'');
     card.innerHTML=`
       <div class="val-card-hdr">
         <span class="val-card-num">${numInAmbito}</span>
         <span class="val-card-name">${p.name}</span>
-        <span class="val-ambito-tag vat-${a}">${AMBITO_LABELS[a]}</span>
+        <span class="val-ambito-tag vat-${a}">${AMBITO_LABELS[a]}</span>${opt?`<span class="pp-opt-t">Facoltativo · non è il percorso che sviluppi</span><button type="button" class="btn-ghost" style="font-size:12px;padding:2px 9px;margin-left:auto" onclick="ppOptHide('${pid}',true)">Nascondi</button>`:''}
       </div>
       <div class="val-card-body">
         <div class="val-idr-lbl">${MODE==='personale'?'Come mi osservo':'Indicatori di risultato — valuta ogni IDR da 1 a 10'}</div>
@@ -12554,7 +12562,7 @@ function ppChecks(){
   add(c1,'Le 7 caratteristiche: per ognuna quanto c’è e perché, in ogni percorso', percs.length>0&&percs.every(x=>clK.every(k=>x.checklist&&x.checklist[k]&&cl3Val(x.checklist[k])&&T(x.checklist[k].note))), (()=>{ let t=0,d=0; percs.forEach(x=>clK.forEach(k=>{ t++; const c=(x.checklist||{})[k]; if(c&&cl3Val(c)&&T(c.note)) d++; })); return t?d+'/'+t:''; })());
   const acts=[]; percs.forEach(x=>(x.attivita||[]).forEach(a=>{ if(T(a.lancio)||T(a.sviluppo)||T(a.conclusione)||T(a.testo)) acts.push(a); }));
   add(c2,'Verifica di ogni attività descritta (bene / da migliorare)', acts.length>0&&acts.every(a=>T(a.vBene)&&T(a.vMigl)), acts.length?`${acts.filter(a=>T(a.vBene)&&T(a.vMigl)).length}/${acts.length}`:'');
-  let nI=0,dI=0,qI=0; const perc5=getAllPercorsi().filter(x=>x.percorsoId && (typeof x.prioritaIdx==='number' || percHasContent(x))); const pids=[...new Set(perc5.map(x=>x.percorsoId))];
+  let nI=0,dI=0,qI=0; const perc5=getAllPercorsi().filter(x=>x.percorsoId && (typeof x.prioritaIdx==='number' || percHasContent(x)) && !ppOptPid(x.percorsoId)); const pids=[...new Set(perc5.map(x=>x.percorsoId))];
   pids.forEach(pid=>{ const per=perc5.find(x=>x.percorsoId===pid); const idx=(scheda.priorita[per.prioritaIdx]||{}).idr||per.idrSelezionati||[]; idx.forEach(j=>{ nI++; const cc=scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][j]; if(cc&&cc.c) dI++; if(cc&&T(cc.note)) qI++; }); });
   add(c2,'Comportamento indicato per ogni indicatore di risultato', nI>0&&dI===nI, nI?`${dI}/${nI}`:'');
   add(c2,'Osservazioni qualitative per ogni indicatore (cosa hai visto)', nI>0&&qI===nI, nI?`${qI}/${nI}`:'');
@@ -12570,7 +12578,7 @@ function ppReadyHTML(){
         ?`<div style="font-size:12px;margin:3px 0;color:#5C8F5F">✓ ${x.l}${x.det?` <span style="color:var(--ink-faint)">(${x.det})</span>`:''}</div>`
         :`<div style="font-size:12px;margin:5px 0;padding:4px 8px;font-weight:700;color:var(--ink);background:#FFF4E5;border-left:3px solid #E65100;border-radius:0">○ ${x.l}${x.det?` <span style="font-weight:400;color:var(--ink-mid)">(${x.det})</span>`:''}</div>`).join('')}</div>
     </details>`; };
-  return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('Sezioni 1–3 · prima di realizzare le attività',c1,'parziale')}${box('Sezioni 4 e 5 · dopo aver vissuto il percorso',c2,'completo')}</div>`;
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box(szPP()?'Sezioni 1–3 · prima di realizzare le attività':'Osservare e Progettare · prima di vivere le attività',c1,'parziale')}${box(szPP()?'Sezioni 4 e 5 · dopo aver vissuto il percorso':'Verifica delle attività e Valutazione finale · dopo averle vissute',c2,'completo')}</div>`;
 }
 function gPromemoriaHTML(){
   try{ if(window.SH && SH.on && scheda.tipoProgetto !== 'PP') return ''; }catch(e){}
@@ -17523,10 +17531,8 @@ const NAV_PP = [
   {id:'pp4', t:'4 · Verifica delle Attività', ic:'check', go:"shPP('4')"},
   {id:'pp5', t:'5 · Valutazione Finale', ic:'up', go:"shPP('5')"},
   {g:'Inviare'},
-  {id:'ppi', t:'Invii del Progetto Personale', ic:'mail', go:"shPP('i')"},
-  {id:'ppc', t:'Checklist dei criteri', ic:'chk', go:"shPP('c')"},
-  {g:'Attività leggere'},
-  {id:'ppa', t:'Le attività del mio percorso', ic:'cal', go:"shPP('a')"}
+  {id:'ppc', t:'Check-list del progetto', ic:'chk', go:"shPP('c')"},
+  {id:'ppi', t:'Invio del Progetto Personale', ic:'mail', go:"shPP('i')"}
 ];
 const NAV_ST = [
   {id:'st-pf0', t:'Percorso formativo', ic:'users', go:'shPF()'},
@@ -17960,13 +17966,22 @@ function iterStep(k, n, titolo, corpo, azioni, stato){
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center">${azioni || ''}
       <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;min-height:36px"><input type="checkbox" ${it.date ? 'checked' : ''} onchange="shIterSet('${k}',this.checked)">${esc(stato ? 'Segna come: ' + stato : 'Fatto')}</label></div></div>`;
 }
+// 9/11: Riscontro con la data e più riscontri (di rado va bene la prima versione)
+function ppRisc(){ const it = ppIter(); if(!Array.isArray(it.riscontri)){ const o = it.riscontro || {}; it.riscontri = (o.note || o.date) ? [{date:o.date || '', note:o.note || ''}] : []; } return it.riscontri; }
+function ppRiscSync(){ const it = ppIter(), R = ppRisc(); const last = R.filter(r => r.date).slice(-1)[0]; it.riscontro = {note:R.map(r => r.note).filter(Boolean).join('\n'), date:last ? last.date : ''}; try{ saveData(true); }catch(e){} }
+function ppRiscHTML(){ const R = ppRisc();
+  return R.map((r, i) => `<div class="pp-risc"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:12.5px">Riscontro ${i + 1}</b><label style="font-size:12px;display:flex;gap:6px;align-items:center">ricevuto il <input type="date" class="sh-in" style="min-height:30px;padding:2px 6px;font-size:12px;width:auto" value="${esc(r.date || '')}" onchange="ppRiscSet(${i},'date',this.value)"></label><button type="button" class="btn-ghost" style="margin-left:auto;padding:2px 9px;font-size:12px" title="Togli questo riscontro" onclick="ppRiscDel(${i})">×</button></div><textarea style="width:100%;box-sizing:border-box;min-height:60px;margin-top:6px;padding:8px 10px;border:1px solid #ccc;border-radius:8px;font:inherit" placeholder="Cosa ti è stato chiesto di integrare o chiarire…" oninput="ppRiscSet(${i},'note',this.value,1)">${esc(r.note || '')}</textarea></div>`).join('')
+    + `<button type="button" class="btn-ghost" style="margin-top:8px;font-size:12px" onclick="ppRiscAdd()">+ ${R.length ? 'Aggiungi un altro riscontro' : 'Aggiungi il riscontro ricevuto'}</button>`; }
+window.ppRiscSet = function(i, f, v, quiet){ const R = ppRisc(); if(!R[i]) return; R[i][f] = v; ppRiscSync(); if(!quiet) shPP('i'); };
+window.ppRiscAdd = function(){ ppRisc().push({date:td(), note:''}); ppRiscSync(); shPP('i'); };
+window.ppRiscDel = function(i){ const R = ppRisc(); const r = R[i]; if(r && (r.note || '').trim() && !confirm('Togliere il riscontro ' + (i + 1) + ' e i suoi appunti?')) return; R.splice(i, 1); ppRiscSync(); shPP('i'); };
 window.shIterSet = function(k, on){ const it = ppIter(); it[k] = on ? Object.assign(it[k] || {}, {date: td()}) : Object.assign(it[k] || {}, {date: ''}); try{ saveData(true); }catch(e){} shPP('i'); };
 window.shIterDate = function(k, v){ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(v || ''))) return; const it = ppIter(); it[k] = Object.assign(it[k] || {}, {date: v}); try{ saveData(true); }catch(e){} shPP('i'); };
 window.shIterVal = function(k, f, v){ const it = ppIter(); it[k] = Object.assign(it[k] || {}, {[f]: v}); try{ saveDataDebounced(); }catch(e){} };
 function ppIterHTML(){
   const it = ppIter(); const sel = (k, f) => (it[k] || {})[f] || '';
   const btn = (t, f, pri) => `<button type="button" class="${pri ? 'btn-primary' : 'btn-ghost'}" style="min-height:40px" onclick="${f}">${t}</button>`;
-  return `<div class="sh-dh"><div><h1>Invii del Progetto Personale</h1><div class="sub">L’iter delle Linee Guida (cap. 2). È una guida: non blocca nulla e puoi segnare i passi a mano.</div></div></div>
+  return `<div class="sh-dh"><div><h1>Invio del Progetto Personale</h1><div class="sub">L’iter delle Linee Guida (cap. 2). È una guida: non blocca nulla e puoi segnare i passi a mano.</div></div></div>
     ${iterStep('avvio', 1, 'Comunicazione di avvio', 'Dopo il Modulo FOR.A (o ex Wood Badge) mandi la mail di avvio. <b>A:</b> Tutor della Sperimentazione che ti segue. <b>CC:</b> Capo Gruppo e Commissario di Sezione. L’ICdF qui non è in copia.', btn('Prepara la mail di avvio', "ppMailOpen('avvio')", 1), 'inviata')}
     ${iterStep('presa', 2, 'Presa in carico', 'Il Tutor conferma la ricezione entro 7 giorni, indica il formatore incaricato di seguirti (se diverso dal Tutor), dà eventuali indicazioni e comunica le tempistiche del feedback, che avverrà con una checklist. Quando l’hai ricevuta puoi sviluppare il Progetto.', '', 'ricevuta')}
     <div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">3</span>Sviluppo con il Capo Gruppo mentore</h3>
@@ -17977,8 +17992,7 @@ function ppIterHTML(){
     ${iterStep('prima', 4, 'Prima consegna · Sezioni 1–3', 'Quando il Progetto è scritto fino alla Sezione 3 (anche solo abbozzata) mandi una mail per una prima verifica prima della realizzazione. <b>A:</b> Tutor. <b>CC:</b> Capo Gruppo, Commissario di Sezione e Responsabile del tuo Centro di Formazione (ICdF). <b>Oggetto:</b> Invio Progetto Personale - Nome Cognome - Sezione. <b>Allegati:</b> la Scheda compilata (PDF o Word) ed eventuali materiali integrativi. Senza Tutor scrivi all’ICdF.', btn('Prepara la mail', "ppMailOpen('parziale')", 1) + btn('Scarica il Word (Sezioni 1–3)', "exportSchedaDocx('parziale')"), 'inviata')}
     <div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">5</span>Riscontro</h3>
       <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">Il formatore valuta il Progetto con i criteri di qualità, ti dà il feedback con una checklist nei tempi comunicati e può chiederti integrazioni o chiarimenti.</div>
-      <textarea style="width:100%;box-sizing:border-box;min-height:60px;margin-top:8px;padding:8px 10px;border:1px solid #ccc;border-radius:8px;font:inherit" placeholder="Appunti sul riscontro: cosa ti è stato chiesto di integrare…" oninput="shIterVal('riscontro','note',this.value)">${esc(sel('riscontro', 'note'))}</textarea>
-      <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;min-height:36px;margin-top:6px"><input type="checkbox" ${(it.riscontro || {}).date ? 'checked' : ''} onchange="shIterSet('riscontro',this.checked)">Riscontro ricevuto${(it.riscontro || {}).date ? ' il ' + esc(fmtDL(it.riscontro.date)) : ''}</label></div>
+      ${ppRiscHTML()}</div>
     ${iterStep('finale', 6, 'Consegna finale · Sezioni 1–5', 'Una volta approvata la prima parte dal Tutor rimandi il progetto completo con la Sezione 4 realizzata (qui includiamo anche la Sezione 5). Stessi destinatari dell’invio precedente.', btn('Prepara la mail', "ppMailOpen('completo')", 1) + btn('Scarica il Word completo', "exportSchedaDocx('completo')"), 'inviata')}
     ${iterStep('appr', 7, 'Approvazione finale', 'L’approvazione del Progetto Personale completa questa tappa formativa e viene registrata negli archivi associativi tramite il Settore Risorse Adulte.', '', 'approvato')}
     <details class="sh-card2"><summary style="cursor:pointer;font-weight:800">I Responsabili dei Centri di Formazione (ICdF) per area</summary><ul style="margin:8px 0 0 18px;padding:0;font-size:12.5px;line-height:1.6">${RCDF_AREE.map(x => '<li>' + esc(x[1]) + ': <a href="mailto:' + esc(x[2]) + '">' + esc(x[2]) + '</a></li>').join('')}</ul></details>`;
@@ -18029,7 +18043,7 @@ function ppHTML(v){
   if(v === '0') return ppHomeHTML(p, as);
   if(v === 'i') return ppIterHTML();
   if(v === 'a') return ppActsHTML();
-  const t = {1:PP_SEZ[0],2:PP_SEZ[1],3:PP_SEZ[2],4:PP_SEZ[3],5:PP_SEZ[4],i:'Invii del Progetto Personale',c:'Checklist dei criteri',a:'Le attività del mio percorso'}[v] || '';
+  const t = {1:PP_SEZ[0],2:PP_SEZ[1],3:PP_SEZ[2],4:PP_SEZ[3],5:PP_SEZ[4],i:'Invio del Progetto Personale',c:'Check-list del progetto',a:'Le attività del mio percorso'}[v] || '';
   const n = /^\d$/.test(v) ? v + ' · ' : '';
   return `<div class="sh-dh"><div><h1>${n}${esc(t)}</h1></div></div><div class="sh-card2"><h3>In costruzione</h3><div class="sub" style="font-size:13px;color:#3D3D38">Questa parte del Progetto Personale si compila nei prossimi passi del lavoro, con la struttura delle Linee Guida. Per ora il menu, i dati e il colore della tua Branca sono pronti.</div><div><button type="button" class="sh-lk" onclick="shPP('0')">Torna a «A che punto sei»</button></div></div>`;
 }
