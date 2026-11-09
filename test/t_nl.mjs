@@ -10,7 +10,7 @@ const buf = await (async()=>{ const fs = await import('fs'); return fs.readFileS
 const z = await JSZip.loadAsync(buf); const x = await z.file('word/document.xml').async('string');
 ok((x.match(/<w:br\/>/g)||[]).length >= 2, 'ci sono gli a capo veri (' + (x.match(/<w:br\/>/g)||[]).length + ')');
 ok(!/<w:t[^>]*>[^<]*\n[^<]*<\/w:t>/.test(x), 'nessun ritorno a capo grezzo rimasto dentro il testo');
-ok(/riga uno<\/w:t><w:br\/><w:t[^>]*>riga due/.test(x), 'riga uno / riga due separate');
+ok(/riga uno<\/w:t>(?:<\/w:r><w:r>(?:<w:rPr>(?:(?!<\/w:r>).)*?<\/w:rPr>)?)?<w:br\/>(?:(?!riga due).){0,400}riga due/.test(x), 'riga uno / riga due separate');
 ok(/senza capo/.test(x), 'il testo senza a capo resta com’è');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors[0] : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

@@ -31,7 +31,7 @@ const v4 = await ea(i => [...document.querySelectorAll('[id^="ver-c-' + i + '-"]
 ok(v4.length && v4[0].startsWith('Attività 1 — ' + t2[0].slice(0, 20)), 'Sezione 4: stesso ordine e stessi numeri ' + JSON.stringify(v4));
 { const [d] = await Promise.all([PA.waitForEvent('download', {timeout:30000}), ea(() => exportSchedaDocx())]);
   const t = (await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string')).replace(/<[^>]+>/g, '');
-  const i1 = t.indexOf('1. ' + t2[0].slice(0, 15)), i2 = t.indexOf('2. ' + t2[1].slice(0, 15));
+  const i1 = t.indexOf('Attività 1' + t2[0].slice(0, 15)), i2 = t.indexOf('Attività 2' + t2[1].slice(0, 15));
   ok(i1 > 0 && i2 > i1, 'Word della Scheda: attività nel nuovo ordine'); }
 await sleep(2500);
 await PA.reload(); await sleep(3000); await ea(() => gGo('3')); await sleep(900);

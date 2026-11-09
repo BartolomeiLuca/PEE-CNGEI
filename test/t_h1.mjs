@@ -23,7 +23,7 @@ await ev(() => shNew('AN')); await sleep(300);
 ok(await ev(() => !!document.getElementById('sh-nru') && /In che veste/.test(document.getElementById('sh-dlg').textContent)), 'Nuovo progetto: «In che veste lo crei?»');
 await P.selectOption('#sh-nru', 'cg'); await sleep(150);
 ok(await ev(() => document.getElementById('sh-nbrw').hidden && document.getElementById('sh-nunw').hidden), 'Capo Gruppo: niente Branca né Nome Unità');
-await P.selectOption('#sh-nru', 'cu'); await P.selectOption('#sh-nbr', 'E'); await P.fill('#sh-nun', 'Kontiki2'); await P.selectOption('#sh-nas', { index: 2 }); await P.click('#sh-ncre'); await sleep(4500);
+await P.selectOption('#sh-nru', 'cu'); await P.selectOption('#sh-nbr', 'E'); await P.fill('#sh-nun', 'Kontiki2'); await P.selectOption('#sh-nas', { index: 2 }); await P.click('#sh-ncre'); await sleep(800); ok(await ev(() => /Parto da zero/.test(document.getElementById('sh-dlg').textContent)), 'c’è già un progetto: chiede se riprendere qualcosa'); await P.click('text=Parto da zero'); await sleep(4500);
 s = await ev(() => ({th: document.body.getAttribute('data-theme'), v: scheda.veste, f: FASCIA, r: SH.prof.branca}));
 ok(s.th === 'E' && s.f === 'E' && s.v && s.v.ruolo === 'cu' && s.v.branca === 'E', 'progetto Branca E creato dal profilo Rover: colore e veste del progetto (' + s.th + ' · ' + JSON.stringify(s.v) + ')');
 ok(s.r === 'R', 'il profilo resta Rover');

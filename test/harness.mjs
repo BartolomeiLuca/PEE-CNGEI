@@ -7,7 +7,7 @@ import path from 'path';
 export const ROOT = process.env.SITE || '/home/claude/pee-cngei';
 const CLIENT = fs.readFileSync(new URL('./fakesb_client.js', import.meta.url), 'utf8');
 let server = null;
-export async function serve(port = 8080){
+export async function serve(port = +(process.env.PORT||8080)){
   if(server) return `http://127.0.0.1:${port}/`;
   server = http.createServer((req, res) => {
     let p = decodeURIComponent(req.url.split('?')[0]); if(p.endsWith('/')) p += 'index.html';

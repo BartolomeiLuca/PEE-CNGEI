@@ -29,14 +29,14 @@ const c2 = () => db.t.pee_archivi.find(x => x.id === 'c2').data.scheda;
 const v0 = db.t.pee_versioni.length;
 // 1 · Calendario: tutto l'anno
 await ev(() => { SH.calScope = 'anno'; SH._ay = null; shCal(); }); await sleep(3500);
-let r = await ev(() => ({rows:document.querySelectorAll('#panel-pp .cal-row').length, fx:document.querySelectorAll('#panel-pp .cal-row.cal-fx').length, cyb:document.querySelectorAll('#panel-pp .cal-row .cal-cyb').length, pool:document.querySelectorAll('#panel-pp .cal-pool .cal-b').length, bx:document.querySelectorAll('#panel-pp .cal-pool .cal-bx').length}));
-ok(r.rows === 15 && r.fx === 2 && r.cyb === 15, 'Tutto l’anno: gli eventi dei due cicli insieme, ognuno col suo ciclo (' + JSON.stringify(r) + ')');
+let r = await ev(() => ({pit:document.querySelectorAll('#panel-pp .cal-pit').length, rows:document.querySelectorAll('#panel-pp .cal-row:not(.cal-pit)').length, fx:document.querySelectorAll('#panel-pp .cal-row.cal-fx').length, cyb:document.querySelectorAll('#panel-pp .cal-row .cal-cyb').length, pool:document.querySelectorAll('#panel-pp .cal-pool .cal-b').length, bx:document.querySelectorAll('#panel-pp .cal-pool .cal-bx').length}));
+ok(r.rows === 15 && r.fx === 2 && r.cyb === 15 && r.pit === 2, 'Tutto l’anno: gli eventi dei due cicli insieme, ognuno col suo ciclo (' + JSON.stringify(r) + ')');
 ok(r.bx === 2, 'in «Da collocare» ci sono anche le attività dell’altro ciclo (' + r.bx + ')');
 const pill = await ev(() => { const B = [...document.querySelectorAll('#panel-pp .cal-pool .cal-b')]; return {n:B.length, all:B.every(b => b.querySelector('.cal-cyt .cal-cyb') && b.firstElementChild.classList.contains('cal-cyt')), names:[...new Set(B.map(b => b.querySelector('.cal-cyb').textContent))]}; });
 ok(pill.all && pill.names.length === 2, 'ogni attività da collocare porta in alto la pastiglia del suo ciclo (' + pill.names.join(' | ') + ')');
 await ev(() => calScopeSet('ciclo')); await sleep(500);
-r = await ev(() => ({rows:document.querySelectorAll('#panel-pp .cal-row').length, bx:document.querySelectorAll('#panel-pp .cal-pool .cal-bx').length}));
-ok(r.rows === 13 && r.bx === 0, '«Questo ciclo»: solo gli eventi del ciclo aperto (' + JSON.stringify(r) + ')');
+r = await ev(() => ({pit:document.querySelectorAll('#panel-pp .cal-pit').length, rows:document.querySelectorAll('#panel-pp .cal-row:not(.cal-pit)').length, bx:document.querySelectorAll('#panel-pp .cal-pool .cal-bx').length}));
+ok(r.rows === 13 && r.bx === 0 && r.pit === 0, '«Questo ciclo»: solo gli eventi del ciclo aperto (' + JSON.stringify(r) + ')');
 await ev(() => calScopeSet('anno')); await sleep(3000);
 // 2 · crea un evento: finisce nel ciclo che contiene la data
 await ev(() => calNew('sede')); await sleep(300);
