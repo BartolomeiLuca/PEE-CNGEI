@@ -31,7 +31,7 @@ ok(await ev(() => scheda.priorita[0].obiettivi.includes(0)), 'togliere un obiett
 await ev(() => attObjTog(0, 0, 'i', 2, true)); await sleep(200);
 ok(await ev(() => getAllPercorsi()[0].attivita[0].obj.i.includes(2) && scheda.priorita[0].idr.includes(2)), 'Indicatore scelto: entra nel percorso');
 // sposta
-await ev(() => { window.confirm = () => true; attMove(0, 0, 1); }); await sleep(600);
+await ev(() => { window.confirm = () => true; attMoveTo(0, 0, 1, true); }); await sleep(600);
 s = await ev(() => { const L = getAllPercorsi(); return {a0: L[0].attivita.map(a => a.testo), a1: L[1].attivita.map(a => a.testo), moved: L[1].attivita.find(a => a.aid === 'a1'), blk: scheda.uscite.u1.prog.m1.pid, idr0: scheda.priorita[0].idr}; });
 ok(s.a0.join() === 'Gioco B' && s.a1.join() === 'Gioco C,Gioco A', 'attività spostata nel nuovo percorso (' + s.a0 + ' | ' + s.a1 + ')');
 ok(s.moved.lancio === 'L Gioco A' && s.moved.ax.data === '2026-11-08' && s.moved.obj.o.length === 0, 'testo e data restano, obiettivi azzerati');
