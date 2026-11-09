@@ -51,7 +51,7 @@ await ev(pa.page, () => occChiDel('m', 0, 0)); await sleep(200);
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('Anna Rossi'); await sleep(200);
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('Paolo Riva'); await sleep(200);
 ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Anna Rossi|Paolo Riva', '9. «Chi ha osservato»: più persone');
-pa.page.once('dialog', d => d.accept('Il Capo Gruppo'));
+await ev(pa.page, () => { window.prompt = () => 'Il Capo Gruppo'; });
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('__a'); await sleep(300);
 ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Anna Rossi|Paolo Riva|Il Capo Gruppo', '10. «Altro»: testo libero, insieme agli altri');
 await ev(pa.page, () => occRefresh()); await sleep(200);

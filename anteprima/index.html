@@ -14409,7 +14409,7 @@ async function clInit(){
       clSetStatus(CL.user && CL.ctx ? 'ok' : '');
       if(ev === 'PASSWORD_RECOVERY'){ CL.recovery = true; setTimeout(() => clShow('recovery'), 0); }
       // conferma email / accesso da altra scheda: parte da solo il progetto attivo
-      else if(ev === 'SIGNED_IN' && CL.user && !was && !CL.ctx && !CL.recovery) setTimeout(() => clAutoOpen().then(r => { if(r !== 'reload' && $cl('cl-ov').classList.contains('show')) clClose(); }), 0);
+      else if(ev === 'SIGNED_IN' && CL.user && !was && !CL.ctx && !CL.recovery) setTimeout(() => clAutoOpen().then(r => { if(r !== 'reload' && $cl('cl-ov').classList.contains('show') && !CL._creatoOn) clClose(); }), 0);
     });
     const {data} = await CL.sb.auth.getSession();
     CL.user = data.session ? data.session.user : null;
@@ -14619,7 +14619,8 @@ async function clCtxGuard(){
   }catch(e){ return false; }
 }
 // dopo la registrazione: la mail è partita
-function clCreatoShow(email){ const b = $cl('cl-body'), t = $cl('cl-title'); if(!b) return; $cl('cl-ov').classList.add('show'); t.textContent = 'Account creato';
+function clCreatoShow(em){ CL._creatoOn = true; setTimeout(() => { CL._creatoOn = false; }, 4000); return clCreatoShow0(em); }
+function clCreatoShow0(email){ const b = $cl('cl-body'), t = $cl('cl-title'); if(!b) return; $cl('cl-ov').classList.add('show'); t.textContent = 'Account creato';
   b.innerHTML = `<p style="font-size:14px;line-height:1.6;margin:0 0 10px">✓ Il tuo account è pronto.</p><p style="font-size:13px;line-height:1.6;margin:0 0 10px">Ti abbiamo mandato una mail a <strong>${clEsc(email)}</strong> con le indicazioni per entrare. Se non la trovi, guarda anche nella cartella <strong>spam</strong>.</p><p class="cl-note" style="margin:0 0 14px">Per entrare usa sempre questa email e la password che hai scelto.</p><button class="cl-btn" onclick="clClose();clCheckInvites()">Inizia</button>`; }
 
 // elenco dei progetti: la finestra si apre subito (con l'ultimo elenco noto) e si aggiorna appena arriva quello del cloud
@@ -17932,8 +17933,8 @@ function dashHTML(){
   const asx = (scheda && scheda.annoScout) || '';
   const sco = SH.dscope === 'anno' ? 'anno' : 'ciclo'; const cc = annoCicloInfo(annoCur());
   const seg = `<div class="sh-seg" role="group" aria-label="Che cosa vuoi vedere"><button type="button" aria-pressed="${sco === 'ciclo'}" onclick="shScope('ciclo')">Il mio ciclo</button><button type="button" aria-pressed="${sco === 'anno'}" onclick="shScope('anno')">Il mio anno</button></div>`;
-  if(sco === 'anno') return `<div class="sh-dh"><div><h1>Il mio anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">Un anno scout può avere più cicli di programmazione, di solito di 3-4 mesi ciascuno. Qui li vedi insieme.</p></div></div>${seg}<div id="an-year">${annoYearHTML()}</div>`;
-  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button></p></div>
+  if(sco === 'anno') return `<div class="sh-dh"><div><h1>Il mio anno scout</h1><div class="sub">${[fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">Un anno scout può avere più cicli di programmazione, di solito di 3-4 mesi ciascuno. Qui li vedi insieme. La programmazione segue un ritmo che si ripete: <b>pensare, fare, ripensare</b>. Ogni ciclo si chiude con una sosta dello staff (pit stop, a gennaio–febbraio e ad aprile–maggio) che decide come proseguire; a fine anno la valutazione finale è il punto di partenza per la programmazione successiva.</p></div></div>${seg}<div id="an-year">${annoYearHTML()}</div>`;
+  let h = `<div class="sh-dh"><div><h1>Il mio ciclo</h1><div class="sub">${[cc.nome, cc.txt, fas, asx ? 'Anno scout ' + asx : ''].filter(Boolean).map(esc).join(' · ')}</div><p class="sh-hint an-exp" style="margin:4px 0 0">La programmazione di questo periodo, di solito di 3-4 mesi: priorità, percorsi, attività e verifica. È un giro di <b>pensare, fare, ripensare</b>: si chiude con una sosta dello staff (pit stop) che decide il ciclo successivo. <button type="button" class="sh-lk" onclick="cfOpen()">Rinomina il ciclo</button></p></div>
     <div style="margin-left:auto"><button type="button" class="sh-btn gh sm" id="sh-pers" onclick="shDashEdit(${editing ? 0 : 1})" style="min-height:44px;padding:0 16px;border:1px solid #8a8a82;border-radius:10px;background:#fff;font:700 13px 'Montserrat',sans-serif;cursor:pointer">${editing ? 'Fatto' : 'Personalizza'}</button></div></div>${resumeBarHTML()}${seg}${cicloFormHTML()}`;
   if(editing) h += `<div class="sh-ebanner" role="note"><b>Personalizza la dashboard.</b> Trascina le schede, oppure selezionane una e usa le frecce della tastiera (o i pulsanti «Prima» e «Dopo»). «Nascondi» la toglie dalla vista. La disposizione è tua e si salva nel tuo profilo.<div id="sh-live" class="sub" aria-live="polite" style="margin-top:4px"></div></div>`;
   h += `<div class="sh-dgrid">` + shown.map((c, i) => `<section class="sh-card2${c.wide ? ' wide' : ''}${editing ? ' edit' : ''}" data-c="${c.id}" ${editing ? `tabindex="0" draggable="true" aria-label="Scheda ${esc(c.t)}, posizione ${i + 1} di ${shown.length}. Usa le frecce per spostarla."` : ''}>${c.html(o)}${editing ? `<div class="sh-etool"><button type="button" onclick="shMove('${c.id}',-1)">‹ Prima</button><button type="button" onclick="shMove('${c.id}',1)">Dopo ›</button><button type="button" onclick="shHide('${c.id}',1)">Nascondi</button></div>` : ''}</section>`).join('') + `</div>`;
