@@ -748,6 +748,9 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:12px}
 .gr-box{margin:0 0 12px}.gr-row{border:1px solid var(--border-light);border-radius:10px;padding:10px 12px;margin:6px 0;background:#fff}.gr-row.gr-hl{border-left:4px solid var(--green)}.gr-h{font-size:12px;margin-bottom:6px}.gr-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .gr-f span{display:block;font-size:12px;font-weight:700;margin-bottom:3px}.gr-f textarea{width:100%;min-height:56px;border:1px solid #8a8a82;border-radius:8px;padding:6px 8px;font:500 12.5px 'Montserrat',sans-serif;resize:vertical;box-sizing:border-box}
 .gr-warn{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:#a1260f}.gr-old{font-size:12px;color:var(--ink-mid);margin-top:3px}
+.cal-pit{border:1.5px dashed var(--amber)!important;background:repeating-linear-gradient(135deg,#fff,#fff 8px,var(--amber-pale) 8px,var(--amber-pale) 16px)!important}.cal-pit .cal-meta{white-space:normal}.cal-ty.pit{background:var(--amber)!important}
+.scad-g{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin:12px 0 4px}.scad-g.late{color:var(--red)}.scad-it{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--border-light)}.scad-d{font-weight:700;font-size:12.5px}.scad-it.late .scad-d{color:var(--red)}.scad-t b{font-weight:600}.scad-t span:last-child{display:block;color:var(--ink-light);font-size:12px}.scad-p{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:1px;display:inline-block}.scad-p.ref{background:var(--green-pale);color:var(--green)}.scad-p.con{background:var(--blue-pale);color:var(--blue)}.scad-p.pit{background:var(--amber-pale);color:var(--amber)}.scad-p.mod{background:#F1EEF8;color:#5B3E8F}@media(max-width:520px){.scad-it{grid-template-columns:70px minmax(0,1fr)}.scad-it .sh-btn{grid-column:2;justify-self:start}}
+.pt-sec{border-top:1px solid var(--border-light)}.pt-sec>summary{list-style:none;cursor:pointer;padding:10px 0;font-weight:700;display:flex;gap:8px;align-items:center}.pt-sec>summary::-webkit-details-marker{display:none}.pt-sec>summary::before{content:'▸';color:var(--ink-faint);font-size:12px}.pt-sec[open]>summary::before{content:'▾'}.pt-cnt{background:var(--coral,#C0432A);color:#fff;border-radius:20px;font-size:11px;padding:1px 8px}.pt-cnt.g{background:var(--ink-faint)}.pt-all{margin-left:auto;background:none;border:0;color:var(--green);font:600 12px 'Montserrat',sans-serif;text-decoration:underline;cursor:pointer}.pt-del{color:var(--ink-light)}
 .cf-gb{margin:6px 0 10px}.cf-gt{font-weight:700;font-size:13px;margin-bottom:2px}.cf-gf{margin:4px 0 6px}.cf-gl{font-size:12px;font-weight:700;color:var(--ink-mid)}.cf-gv{font-size:12.5px;line-height:1.45;padding-left:10px}.cf-ga{color:var(--ink-light);font-style:italic}
 .gr-expl{font-size:12.5px;color:var(--ink);background:var(--bg);border:1px solid var(--border-light);border-radius:8px;padding:8px 12px;margin:0 0 10px;line-height:1.5}
 .gr-lg{margin:8px 0 6px;padding:8px 12px;border-left:3px solid var(--amber);background:var(--amber-pale);border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.45;color:var(--ink)}
@@ -1049,7 +1052,7 @@ body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .sg-box textarea{min-height:70px;resize:vertical}
 .sg-note{font-size:12px;color:var(--ink);margin:8px 0 0;font-weight:600}
 .sg-st{font-size:12px;color:var(--ink-light);font-weight:600}
-#ro-bar{background:#eef2f7;border-bottom:1px solid #b8c4d6;padding:10px 16px;font:600 12.5px 'Montserrat',sans-serif;color:#26364f;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#ro-bar{background:none;border:0;border-top:1px solid var(--border-light);padding:14px 16px 24px;margin-top:24px;font:500 12px 'Montserrat',sans-serif;color:var(--ink-faint);text-align:center;line-height:1.5}
 #ro-bar .grow{flex:1;min-width:220px;line-height:1.5}
 #ro-bar button{font:700 12px 'Montserrat',sans-serif;border:1.5px solid #26364f;background:#fff;color:#26364f;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
 #ex-bar{background:#fff8e1;border-bottom:1px solid #f0d98a;padding:10px 16px;font:600 12.5px 'Montserrat',sans-serif;color:#5a4500;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#ex-bar .grow{flex:1;min-width:220px;line-height:1.5}#ex-bar button{font:700 12px 'Montserrat',sans-serif;border:1.5px solid #8a6d00;background:#fff;color:#5a4500;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
@@ -1614,7 +1617,7 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
           <li><strong>Capire</strong>: l’Unità, il contesto, lo staff. Il capitolo «Capire» spiega in breve il Progetto Educativo Esperienziale (per chi comincia e per chi viene dal PEG).</li>
           <li><strong>Osservare</strong>: occasioni osservative (KOS 2.0 e altre), griglia osservativa, scala da 1 a 10, lettura del gruppo e priorità, una per Ambito (Personale, Comunitario, Spirituale).</li>
           <li><strong>Progettare</strong>: obiettivi, Indicatori di Risultato e percorsi con le attività (Lancio, Sviluppo, Conclusione), Strumenti del Metodo e verifica delle sette caratteristiche.</li>
-          <li><strong>Realizzare</strong>: il calendario di riunioni, uscite, bivacchi e campi, l’elenco dell’anno, «Anno tipo» (cosa succede di solito nei vari mesi), la Palestra per lo staff.</li>
+          <li><strong>Realizzare</strong>: il calendario di riunioni, uscite, bivacchi e campi, l’elenco dell’anno, «Anno tipo» (cosa succede di solito nei vari mesi), il Percorso formativo dello staff.</li>
           <li><strong>Misurare</strong>: verifica delle attività, valutazione finale, numeri dell’anno, spese mese per mese, verifica dell’anno.</li>
           <li><strong>Conservare</strong>: archivio, cestino di 30 giorni, duplicazione scegliendo voce per voce, appunti dalla programmazione precedente.</li>
           <li><strong>Condividere</strong>: invitare lo staff e controllare ciò che manca prima di scaricare o inviare.</li>
@@ -5524,8 +5527,8 @@ function stRiepExtra(alertHTML){
   { const actL = SITUAZIONI_STAFF.filter(z => act.has(z.id)); const pn = id => { const q = Object.values(DB).flat().find(x => x.id === id); return q ? q.name : id; };
     const go = `try{ if(window._stEmb) stEmbExit(); }catch(e){} shPF()`;
     h += `<div class="st-sec"><div class="st-sech">Letture dello staff</div>` + (actL.length
-      ? `<div class="st-note">Dall’osservazione emergono questi temi. Sono letture da verificare insieme, non giudizi: servono a scegliere da dove cominciare. Le attività e il percorso consigliato sono nella palestra dello staff. <button type="button" class="att-how" onclick="facGuideOpen()">Guida per chi conduce →</button></div>${actL.map(z => `<div class="attivita-card"><div class="attivita-card-name">${sEsc(z.label)}</div><div class="attivita-card-desc">Percorsi poco presenti nello staff: ${z.percorsiSpia.map(pn).map(sEsc).join(', ')}.</div></div>`).join('')}<div style="margin-top:10px"><button type="button" class="btn-primary" onclick="${go}">Costruisci il percorso nella palestra dello staff →</button></div>`
-      : `<div class="st-note">Per ora non emergono letture chiare dall’osservazione. Quando compare un tema, qui trovi un rimando alla palestra dello staff, dove si costruisce il percorso di attività. Verifica e autovalutazione si fanno di persona: <button type="button" class="att-how" onclick="facGuideOpen()">guida per chi conduce →</button></div>`) + `</div>`; }
+      ? `<div class="st-note">Dall’osservazione emergono questi temi. Sono letture da verificare insieme, non giudizi: servono a scegliere da dove cominciare. Le attività e il percorso consigliato sono nel Percorso formativo. <button type="button" class="att-how" onclick="facGuideOpen()">Guida per chi conduce →</button></div>${actL.map(z => `<div class="attivita-card"><div class="attivita-card-name">${sEsc(z.label)}</div><div class="attivita-card-desc">Percorsi poco presenti nello staff: ${z.percorsiSpia.map(pn).map(sEsc).join(', ')}.</div></div>`).join('')}<div style="margin-top:10px"><button type="button" class="btn-primary" onclick="${go}">Apri il Percorso formativo →</button></div>`
+      : `<div class="st-note">Per ora non emergono letture chiare dall’osservazione. Quando compare un tema, qui trovi un rimando al Percorso formativo, dove si costruisce il percorso di attività. Verifica e autovalutazione si fanno di persona: <button type="button" class="att-how" onclick="facGuideOpen()">guida per chi conduce →</button></div>`) + `</div>`; }
   if(STAFF_RUOLO === 'CG'){ const ag = getCdGAgenda(); if(ag.length) h += `<div class="st-sec"><div class="st-sech">Agenda CdG</div><details class="st-fold"><summary>Cosa porto in CdG</summary><div class="st-foldb">${ag.map(p => `<div class="cdg-item"><strong>${p.titolo}:</strong> ${p.contenuto}</div>`).join('')}</div></details></div>`; }
   return h;
 }
@@ -8349,7 +8352,7 @@ const FAQ = [
   ['Account e salvataggio','Devo per forza creare un account?','No: senza account il lavoro resta solo nel browser di questo dispositivo. Con l’account lo ritrovi ovunque e puoi lavorare con lo staff.','clOpen()'],
   ['Account e salvataggio','Come si salva il lavoro?','Da solo, a ogni modifica. Nel pulsante <b>Archivio</b> in alto il pallino verde e la spunta ✓ dicono che è tutto salvato.'],
   ['Account e salvataggio','Ho sbagliato e ho perso qualcosa: posso tornare indietro?','Sì: <b>Archivio › Versioni precedenti</b> (o il pulsante con l’orologio in alto) ti riporta a com’era il lavoro qualche ora o qualche giorno prima.','clOpenHist()'],
-  ['Account e salvataggio','Come faccio una copia di sicurezza?','<b>Archivio › Scarica tutti i miei progetti</b>: ottieni un file da conservare sul computer o su Drive. Con <b>Carica file .json</b> li rimetti in archivio.','clOpen()'],
+  ['Account e salvataggio','Come faccio una copia di sicurezza?','Nella pagina dei progetti, in fondo: <b>Scarica i miei progetti (JSON)</b> ti dà un file da conservare sul computer o su Drive. Con <b>Carica un progetto (JSON)</b> li rimetti nell’elenco: non cancella e non sostituisce nulla.','shGoHome()'],
   ['Account e salvataggio','Ho dimenticato la password.','Nella schermata di accesso premi <b>Password dimenticata?</b>: ti arriva una mail con il link per sceglierne una nuova. Se non la trovi, guarda nello spam.'],
   ['Account e salvataggio','Posso cambiare l’email dell’account?','Sì, da <b>Archivio › cambia email</b>. Ti arriva un link di conferma al nuovo indirizzo; i progetti condivisi con te ti seguono.','clOpen()'],
   ['Lavorare con lo staff','Come invito lo staff?','In «Il mio staff» scegli <b>Programmazione condivisa</b>, spunta le persone nella tabella dello staff e scegli il loro ruolo. Puoi avvisarle con un messaggio WhatsApp già scritto.','gGo(\'1a\')'],
@@ -8365,7 +8368,7 @@ const FAQ = [
   ['Lavorare con lo staff','Dove invito le persone dello staff?','In Condividi → «Condividi con lo staff» (è una pagina). Scegli il ruolo: lettore, co-titolare o collaboratore. Puoi avvisare con un messaggio già scritto.'],
   ['Lavorare con lo staff','Una parte è affidata a me: cosa posso modificare?','La parte affidata a te, con il cartellino «affidata a te». Se sei collaboratore le altre parti dell’attività restano in sola lettura, ma puoi lasciare un suggerimento. Chi ha il progetto può modificare tutto.'],
   ['Lavorare con lo staff','Cosa vedo nella griglia osservativa scritta da più persone?','Sotto ogni campo trovi «Cosa hanno scritto gli altri», con il campo a cui si riferiscono. Nel confronto e nella sintesi dello staff compaiono tutti i punti di vista, ciascuno con il nome di chi l’ha scritto, compreso il tuo.'],
-  ['Lavorare con lo staff','Cos’è la Palestra?','Una raccolta di attività formative per lo staff, con schede «Come si fa». Si possono mettere negli eventi di staff di qualsiasi ciclo e diventano attività vere dell’evento.'],
+  ['Lavorare con lo staff','Cos’è il Percorso formativo?','Una raccolta di attività formative per lo staff, con schede «Come si fa». Si possono mettere negli eventi di staff di qualsiasi ciclo e diventano attività vere dell’evento.'],
   ['Per cominciare','Posso formattare il testo (grassetto, corsivo)?','Sì, nei campi lunghi: seleziona il testo e usa la barra che compare, oppure Ctrl o Cmd + B, I, U. Nei documenti Word la formattazione viene mantenuta.'],
   ['Lavorare con lo staff','Cos’è «Per te»?','Raccoglie quello che riguarda te: parti affidate, materiali da procurare («tocca a te»), suggerimenti ricevuti, verifiche da fare. Lo trovi in <b>Archivio</b>; il numerino sul pulsante dice quante cose ci sono.','clOpen()'],
   ['Lavorare con lo staff','Come funziona l’osservazione condivisa?','In «Come osservo» si sceglie l’osservazione condivisa: ognuno dà il proprio valore senza vedere quello degli altri; poi i valori si confrontano e chi ha il progetto, o è co-titolare, decide il valore del percorso.','gGo(\'1b\')'],
@@ -9392,7 +9395,20 @@ const USC_TIPI_B = {
 };
 const USC_TIPI_ALL = ['Giornata del Pensiero', 'San Giorgio', 'Attività di Gruppo o Sezione', 'Evento regionale o nazionale', 'Attività di staff'];
 // la riunione con i genitori è un momento dello staff (non un'attività per i ragazzi)
-const USC_TIPI_ST = ['Attività formativa', 'Riunione di staff', 'Riunione con i genitori', 'Uscita di staff', 'Bivacco di staff'];
+const USC_TIPI_ST = ['Attività formativa', 'Riunione di staff', 'Pit stop', 'Riunione con i genitori', 'Uscita di staff', 'Bivacco di staff'];
+// ── 9/11: pit stop (PEE rev25, cap. 6): due soste dello staff, gennaio–febbraio (entro il Thinking Day) e aprile–maggio (dopo San Giorgio). Solo nella Programmazione ──
+const PIT_TXT = 'Con lo staff ci si ferma a guardare come stanno andando il gruppo e i singoli: alcuni effetti si vedono subito, altri a medio o lungo termine. Si decide se continuare sugli stessi Obiettivi o cambiare qualcosa, e si programmano i percorsi degli Obiettivi non ancora affrontati.';
+function pitOn(){ try{ return typeof scheda !== 'undefined' && scheda && MODE === 'giovani' && scheda.tipoProgetto !== 'PP' && !window.BRO; }catch(e){ return false; } }
+function pitY0(){ const a = parseInt(String((scheda && scheda.annoScout) || '').slice(0, 4), 10); return a || Number((CL.ctx || {}).anno) || new Date().getFullYear(); }
+function pitList(){ if(!pitOn()) return []; const y = pitY0() + 1; const hid = scheda.pitHide || {};
+  const P = [{n:1, nome:'Primo pit stop', quando:'a gennaio–febbraio, entro il Thinking Day (22/2)', mese:y + '-02', entro:y + '-02-22', def:y + '-02-15', win:[y + '-01-01', y + '-02-29']},
+             {n:2, nome:'Secondo pit stop', quando:'ad aprile–maggio, dopo San Giorgio (23/4)', mese:y + '-05', entro:y + '-05-31', def:y + '-05-09', win:[y + '-04-01', y + '-05-31']}];
+  const evs = []; try{ Object.values(scheda.uscite || {}).forEach(u => evs.push(u)); (SH._ay || []).forEach(it => { if(!it.cur) Object.values(((it.data || {}).scheda || {}).uscite || {}).forEach(u => evs.push(u)); }); }catch(e){}
+  return P.filter(p => !hid[p.n]).map(p => { const f = evs.find(u => u && !u.del && (u.tipo === 'Pit stop' || /pit.?stop/i.test(u.testo || '')) && String((u.ax || {}).data || '') >= p.win[0] && String((u.ax || {}).data || '') <= p.win[1]); return Object.assign(p, {fixed:!!f, ev:f || null}); }); }
+window.pitFix = function(n){ const P = pitList().find(p => p.n === n); if(!P) return; try{ shCal(); }catch(e){} setTimeout(() => { try{ calNew('sede'); SH._calDest = 'staff'; SH._calDraft = {nt:P.nome, d1:P.def}; calRe(); setTimeout(() => { const t = document.getElementById('cal-tp'); if(t){ t.value = 'Pit stop'; } const d = document.getElementById('cal-d1'); if(d && !d.value) d.value = P.def; try{ calCyHint(); }catch(e){} }, 120); }catch(e){} }, 150); };
+window.pitHide = function(n){ if(!scheda) return; scheda.pitHide = Object.assign({}, scheda.pitHide || {}, {[n]:1}); saveData(true); try{ calRe(); }catch(e){} try{ shScadRe(); }catch(e){} showToast('Nascosto. Lo rimetti dalla pagina Misurare › Soste durante l’anno.'); };
+window.pitShow = function(){ if(!scheda) return; delete scheda.pitHide; saveData(true); try{ calRe(); }catch(e){} try{ shScadRe(); }catch(e){} showToast('I pit stop sono di nuovo in calendario'); };
+function pitRowHTML(P){ return `<section class="cal-c cal-row cal-pit" aria-label="${esc(P.nome)} da fissare"><div class="cal-rd" aria-hidden="true">⏱</div><div class="cal-rm" style="cursor:default"><span class="cal-chs"><span class="cal-ty pit">Pit stop</span><span class="cal-fo stf">Staff</span></span><b>${esc(P.nome)} · da fissare</b><span class="cal-meta">${esc(P.quando)}. ${esc(PIT_TXT)}</span></div><div class="cal-ra"><button type="button" class="cal-bt2" onclick="pitFix(${P.n})">Fissalo come riunione di staff</button><button type="button" class="cal-bt2" onclick="pitHide(${P.n})">Nascondi</button></div></section>`; }
 function uscTipi(){ return uscSt() ? USC_TIPI_ST.slice() : (USC_TIPI_B[FASCIA] || []).concat(USC_TIPI_ALL); }
 function uscTipoLab(u){ const t = u && u.tipo; if(!t) return ''; return t === '__altro' ? String(u.tipoAltro || '').trim() || 'Altro' : t; }
 function uscTipoSel(u, can){
@@ -14273,15 +14289,18 @@ async function dbVersionGet(id){
   if(error) throw error;
   return data;
 }
+// una versione automatica ogni 30 minuti di lavoro, anche nei progetti condivisi (prima solo da soli)
+async function clAutoSnap(id, d){ try{ if(!CL.ctx || window.BRO) return; if(CL.ctx.lastSnap && Date.now() - CL.ctx.lastSnap <= 30*60*1000) return;
+    CL.ctx.lastSnap = Date.now(); clSaveCtx(); await dbSnap(id, d, 'Automatica'); await dbVersionPrune(id); }catch(e){ try{ console.warn('Versione automatica non salvata', e); }catch(_){} } }
 async function dbVersionPrune(archId){
-  // automatiche: le ultime 10 + la più recente di ogni giorno per 14 giorni; salvate a mano: le ultime 25
+  // al massimo 30 versioni per progetto: automatiche le ultime 8 + la più recente di ogni giorno per 10 giorni; salvate a mano (e copie di sicurezza) le ultime 12
   const rows = await dbVersionList(archId);
   const auto = rows.filter(r => r.label === 'Automatica');
   const manual = rows.filter(r => r.label !== 'Automatica');
-  const keep = new Set(auto.slice(0,10).map(r => r.id));
-  const days = new Set(), lim = Date.now() - 14*86400000;
-  auto.slice(10).forEach(r => { const t = new Date(r.created_at); const k = t.getFullYear()+'-'+t.getMonth()+'-'+t.getDate(); if(t.getTime() >= lim && !days.has(k)){ days.add(k); keep.add(r.id); } });
-  const extra = auto.filter(r => !keep.has(r.id)).concat(manual.slice(25)).map(r => r.id);
+  const keep = new Set(auto.slice(0,8).map(r => r.id));
+  const days = new Set(), lim = Date.now() - 10*86400000;
+  auto.slice(8).forEach(r => { const t = new Date(r.created_at); const k = t.getFullYear()+'-'+t.getMonth()+'-'+t.getDate(); if(t.getTime() >= lim && !days.has(k)){ days.add(k); keep.add(r.id); } });
+  const extra = auto.filter(r => !keep.has(r.id)).concat(manual.slice(12)).map(r => r.id);
   if(extra.length){ const {error} = await CL.sb.from('pee_versioni').delete().in('id', extra); if(error) throw error; }
 }
 async function dbDelete(id){
@@ -14376,7 +14395,7 @@ async function clInit(){
 function clNoAcc(){ const e = document.getElementById('cl-nolog'); if(e) e.style.display = 'none'; try{ document.getElementById('step1').scrollIntoView({behavior:'smooth'}); }catch(x){} }
 function clOpen(){ if(!clOn()){ return; } if(CL.user && !window.BRO && typeof shGoHome==='function' && document.getElementById('sh-root')){ try{ shGoHome(); return; }catch(e){} } if(!CL.sb){ clToast('Servizio non raggiungibile: controlla la connessione'); return; } $cl('cl-ov').classList.add('show'); clShow(CL.user ? (window.BRO ? 'ro' : 'archive') : 'login'); }
 function clOpenHist(){ if(!clOn()||!CL.user||!CL.ctx) return; clShow('hist'); }
-function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); }
+function clClose(){ try{ clInvSeen(); }catch(e){} $cl('cl-ov').classList.remove('show'); if(CL._needHome){ CL._needHome = false; try{ if(window.SH) SH.rows = null; if(typeof shGoHome === 'function' && document.getElementById('sh-root')) shGoHome(); }catch(e){} } }
 // "Continua qui": se si è ancora sulla pagina iniziale, entra nel lavoro aperto
 function clContinue(noPos){ clClose(); try{ const main=document.getElementById('main-app'); if(main && main.style.display==='none' && clSnapshot().MODE && typeof resumeSession==='function'){ resumeSession(); if(!noPos) setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); } }catch(e){} }
 function clMsg(t, kind){ const m = $cl('cl-msg'); if(!m) return; m.className = 'cl-msg ' + (kind||'err'); m.textContent = t; }
@@ -14434,13 +14453,14 @@ function clShow(view){
   } else if(view === 'hist'){
     t.textContent = 'Versioni precedenti';
     b.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Il lavoro si salva da solo. Qui puoi tornare a com'era in un momento precedente: scegli una versione e premi <strong>Ripristina</strong>. Il lavoro di adesso non va perso: prima lo salvo anch'esso in questo elenco.</p>
+      <p class="cl-note" style="margin:0 0 10px">L’app salva da sola una versione ogni 30 minuti di lavoro («Automatica»): restano le ultime 8 e una al giorno per 10 giorni. Quelle che salvi tu con il nome restano le ultime 12.</p>
       <div class="cl-grid2"><input class="cl-in" id="cl-vl" placeholder="Nome" maxlength="60"><button class="cl-btn ghost" onclick="clSaveVersion()">★ Salva questo momento</button></div>
       <div id="cl-hist" class="cl-hist"><p class="cl-note">Carico…</p></div>
-      <div style="margin-top:12px"><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button></div>`;
+      `;
     clLoadHist();
   } else if(view === 'share'){
     t.textContent = 'Condividi con lo staff';
-    if(CL.ctx.ruolo && CL.ctx.ruolo !== 'cotitolare'){ b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un’altra persona')}</strong>: solo chi lo ha creato può invitare altre persone.</p><button class="cl-btn ghost sm" onclick="clShow('archive')">← Archivio dei PEE</button>`; return; }
+    if(window.BRO || (CL.ctx.ruolo && CL.ctx.ruolo !== 'cotitolare')){ b.innerHTML = clShareBody(false); return; }
     b.innerHTML = clShareBody(false);
     clLoadMem();
   } else if(view === 'refinv'){
@@ -14877,8 +14897,8 @@ function roInit(){
   const app = document.getElementById('main-app'); if(!app) return;
   if(!document.getElementById('ro-bar')){
     const bar = document.createElement('div'); bar.id = 'ro-bar';
-    bar.innerHTML = `<div class="grow"><strong>Sola lettura</strong> · «${clEsc(window.BRO.anno)} · ${clEsc(window.BRO.titolo)}»${window.BRO.owner?' di '+clEsc(window.BRO.owner):''}. Non puoi cambiare i punteggi, ma puoi lasciare suggerimenti sui percorsi.</div><button onclick="roRefresh(true)">Aggiorna</button><button onclick="roExit()">Torna al mio lavoro</button>`;
-    app.insertAdjacentElement('afterbegin', bar);
+    bar.innerHTML = `Sola lettura · «${clEsc(window.BRO.anno)} · ${clEsc(window.BRO.titolo)}»${window.BRO.owner?' di '+clEsc(String(window.BRO.owner).replace(/\s*\([^)]*\)\s*$/,'')):''}: puoi leggere tutto e lasciare suggerimenti.`;
+    app.insertAdjacentElement('beforeend', bar);
   }
   if(!app._rol){
     app._rol = true; let t;
@@ -15118,6 +15138,7 @@ async function clMergeNow(){
     if(out.conf.length){ try{ await dbSnap(id, remote, 'Versione sostituita'); }catch(e){} }
     try{ ts = await dbUpdate(id, merged, clMeta(merged), r.raw); }
     catch(e){ if(e.message === 'stale'){ CL.pending = true; setTimeout(() => clWhenIdle(() => clPush()), 300); return; } throw e; }
+    clAutoSnap(id, merged);
   }
   localStorage.setItem(CL_LS, JSON.stringify(merged));
   CL.ctx.ts = ts; CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(merged);
@@ -15250,7 +15271,7 @@ async function clPerTe(){
         if(x.k === 'av' && (x.letto || at) && now - Math.max(at, x.lettoAt || 0) > PT_KEEP_DAYS * 864e5) { items.splice(i, 1); continue; } } }
     items.forEach(x => { x.hot = !x.ack && !x.letto && ((x.k !== 'att' && x.k !== 'mat') || !ptSeen(x) || ptSoon(x.d)); });
     { const sk = new Set(); for(let i = items.length - 1; i >= 0; i--){ const x = items[i]; const k = [x.k, x.id, x.mid, x.idx, x.j, x.av, x.u, x.g, x.k === 'usc' ? x.t : '', x.prima, x.email, (x.parti||x.cose||[]).join(',')].join('|'); if(sk.has(k)) items.splice(i, 1); else sk.add(k); } }
-    CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status);
+    CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
     try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
       if(prev !== undefined && n > prev){ const d = n - prev; clToast(d === 1 ? 'Hai una novità in «Per te»: ti hanno affidato qualcosa o ti hanno scritto. La trovi in Progetti.' : 'Hai ' + d + ' novità in «Per te». Le trovi in Progetti.'); } }catch(e){}
@@ -15271,9 +15292,14 @@ function ptAvRead(av){ try{ const a = (scheda.avvisi||[]).find(x => x.id === av)
   (CL.perte||[]).forEach(x => { if(x.k === 'av' && x.av === av){ x.letto = true; x.hot = false; } }); clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); }
 function ptAvPending(){ try{ const av = sessionStorage.getItem('bussola_av_letto'); if(!av) return; sessionStorage.removeItem('bussola_av_letto'); if(!window.BRO) setTimeout(() => ptAvRead(av), 1500); }catch(e){} }
 // le voci «Nell'uscita … è affidato a te» di una stessa uscita diventano una sola riga; l'attività del percorso già elencata dentro un'uscita non si ripete
+// «Elimina» in Per te: l'avviso sparisce solo per te (resta nel progetto)
+function ptDelGet(){ try{ return JSON.parse(localStorage.getItem('bussola_pt_del_'+((CL.user&&CL.user.email)||''))||'{}')||{}; }catch(e){ return {}; } }
+function ptDelHas(x){ try{ return !!ptDelGet()[ptAckKey(x)]; }catch(e){ return false; } }
+function ptDel(ns){ try{ const S=ptDelGet(); (ns||[]).forEach(n=>{ const x=(CL.perte||[])[n]; if(x){ S[ptAckKey(x)]=Date.now(); if(x.k==='av'&&x.cur&&!x.ro) try{ ptAvRead(x.av); }catch(e){} } }); const ks=Object.keys(S); if(ks.length>600) ks.sort((a,b)=>S[a]-S[b]).slice(0,ks.length-600).forEach(k=>delete S[k]); localStorage.setItem('bussola_pt_del_'+((CL.user&&CL.user.email)||''), JSON.stringify(S)); }catch(e){}
+  clSetStatus(CL.status); const pt=$cl('cl-perte'); if(pt) pt.innerHTML=clPerTeHTML(); try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){} }
 function ptGroup(it){
   const out = [], G = {};
-  it.forEach((x, n) => {
+  it.forEach((x, n) => { if(ptDelHas(x)) return;
     if(x.k === 'usc'){ const key = x.id + '|' + x.u; let g = G[key];
       if(!g){ g = G[key] = {k:'uscg', id:x.id, u:x.u, ut:x.ut, cur:x.cur, anno:x.anno, titolo:x.titolo, owner:x.owner, g:x.g, righe:[], ns:[], hot:false, ack:true, ruolo:x.ruolo}; out.push({x:g, n:-1}); }
       g.righe.push({t:String(x.t || '').trim(), gt:x.gt, ora:x.ora}); g.ns.push(n); if(x.hot !== false) g.hot = true; if(!x.ack) g.ack = false; }
@@ -15308,7 +15334,21 @@ function clPerTeHTML(){
     return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
   };
   const hot=ptHotN(it);
-  return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${ptGroup(it).map(o=>o.x.k==='uscg'?row(o.x):ptAckWrap(row(o.x),o.x,o.n)).join('')}${it.some(x=>x.k==='av'&&(x.letto||x.ack))?`<p class="cl-note" style="margin:6px 0 0">Gli avvisi su cui hai premuto «Ho capito» restano qui per ${PT_KEEP_DAYS} giorni, poi si archiviano.</p>`:''}${it.some(x=>x.hot===false&&!x.ack&&!x.letto)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
+  // 9/11: tre sezioni — affidati a te, suggerimenti, novità (le modifiche degli altri raggruppate per attività)
+  const del=ns=>`<button type="button" class="cl-btn ghost sm pt-del" title="Togli questo avviso (solo per te)" onclick="ptDel([${ns.join(',')}])">Elimina</button>`;
+  const addDel=(h,ns)=>{ const i=h.lastIndexOf('</div></div>'); return i>0&&h.endsWith('</div></div>')?h.slice(0,i)+del(ns)+'</div></div>':h; };
+  const G=ptGroup(it); const sec={aff:[],sug:[],nov:[]};
+  G.forEach(o=>{ const x=o.x; const k=x.k; if(k==='sg'||(k==='av'&&x.tipo!=='mod'&&x.tipo!=='mv')) sec.sug.push(o); else if(k==='email'||(k==='av'&&(x.tipo==='mod'||x.tipo==='mv'))) sec.nov.push(o); else sec.aff.push(o); });
+  const one=o=>{ const x=o.x; const ns=x.k==='uscg'?x.ns:[o.n]; let h=x.k==='uscg'?row(x):ptAckWrap(row(x),x,o.n); return addDel(h,ns); };
+  // novità: le modifiche alla stessa attività diventano una riga sola
+  const NG={}, novRows=[]; sec.nov.forEach(o=>{ const x=o.x; if(x.k==='av'&&x.tipo==='mod'){ const key=x.id+'|'+(x.dove||''); let g=NG[key]; if(!g){ g=NG[key]={o, chi:[], ns:[], hot:false, at:0}; novRows.push(g); } if(x.da&&!g.chi.includes(x.da)) g.chi.push(x.da); g.ns.push(o.n); if(x.hot!==false&&!x.ack&&!x.letto) g.hot=true; } else novRows.push({o, single:true}); });
+  const novH=novRows.map(g=>{ if(g.single) return one(g.o); const x=g.o.x; const chi=g.chi.length?g.chi.join(' e '):'Chi ha il progetto'; const pr=`${clEsc(x.anno)} · ${clEsc(x.titolo)}`;
+    return `<div class="cl-row pt-nov"${g.hot?'':' style="opacity:.72"'}><div style="min-width:0"><div class="t">${clEsc(chi)} ${g.chi.length>1?'hanno':'ha'} modificato ${clEsc(x.dove||'una parte affidata a te')}${g.ns.length>1?' · '+g.ns.length+' volte':''}</div><div class="s">${pr}</div></div><div class="cl-act"><button class="cl-btn ghost sm" onclick="ptAvGo('${x.id}','${x.av}',${x.cur?'true':'false'},${x.idx==null?'null':x.idx},${x.j==null?'null':x.j})">Apri</button>${g.hot?`<button type="button" class="cl-btn ghost sm" onclick="ptAckMany([${g.ns.join(',')}])">Ho capito</button>`:''}${del(g.ns)}</div></div>`; }).join('');
+  const nsOf=L=>L.reduce((a,o)=>a.concat(o.x.k==='uscg'?o.x.ns:[o.n]),[]);
+  const hotOf=L=>L.filter(o=>o.x.hot!==false&&!o.x.ack&&!o.x.letto).length;
+  const S=(id,t,L,body,open)=>L.length?`<details class="pt-sec" data-s="${id}"${open?' open':''} ontoggle="(window._ptSecOpen=window._ptSecOpen||{})['${id}']=this.open"><summary>${t} <span class="pt-cnt${hotOf(L)?'':' g'}">${L.length}</span>${hotOf(L)?`<button type="button" class="pt-all" onclick="event.preventDefault();event.stopPropagation();ptAckMany([${nsOf(L).join(',')}])">Ho capito tutto</button>`:''}</summary>${body}</details>`:'';
+  const ST=window._ptSecOpen||{};
+  return `<div class="cl-perte"><h4>Per te${hot ? ' · ' + (hot === 1 ? '1 novità' : hot + ' novità') : ''}</h4>${S('aff','Affidati a te',sec.aff,sec.aff.map(one).join(''),ST.aff!==undefined?ST.aff:true)}${S('sug','Suggerimenti',sec.sug,sec.sug.map(one).join(''),ST.sug!==undefined?ST.sug:true)}${S('nov','Novità sul progetto',sec.nov,novH,ST.nov!==undefined?ST.nov:false)}${it.some(x=>x.k==='av'&&(x.letto||x.ack))?`<p class="cl-note" style="margin:6px 0 0">Gli avvisi su cui hai premuto «Ho capito» restano qui per ${PT_KEEP_DAYS} giorni, poi si archiviano.</p>`:''}${it.some(x=>x.hot===false&&!x.ack&&!x.letto)?'<p class="cl-note" style="margin:6px 0 0">Gli incarichi già aperti restano qui, senza pallino; il pallino si riaccende quando l’attività è vicina (7 giorni).</p>':''}</div>`;
 }
 // apre un progetto condiviso e poi porta alla cosa affidata (anche se la pagina si ricarica)
 function ptGoOpen(id, act){ try{ sessionStorage.setItem('bussola_pt_go', JSON.stringify(Object.assign({id}, act))); }catch(e){} try{ clOpenShared(id); }catch(e){} setTimeout(ptGoRun, 800); }
@@ -16109,13 +16149,7 @@ async function clPush(force){
     try{ CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d), raw); }
     catch(e){ if(e.message === 'stale'){ CL.busy = false; CL.pending = true; clSetStatus('sync'); clWhenIdle(() => clPush()); return; } throw e; }
     CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
-    // una versione automatica ogni 30 minuti di lavoro (ne teniamo le ultime 10)
-    try{
-      if(!CL.ctx.lastSnap || Date.now() - CL.ctx.lastSnap > 30*60*1000){
-        await dbSnap(CL.ctx.id, d, 'Automatica'); CL.ctx.lastSnap = Date.now(); clSaveCtx();
-        await dbVersionPrune(CL.ctx.id);
-      }
-    }catch(e){}
+    clAutoSnap(CL.ctx.id, d);
   }catch(e){ clSetStatus('off'); CL.pending = true; if(CL.ctx && CL.ctx.ruolo) clRoleCheck(); }
   CL.busy = false;
 }
@@ -16311,7 +16345,7 @@ async function clRestoreAll(){
     const rows = await dbList();
     for(const p of P.progetti){
       if(rows.some(r => r.anno === p.anno && r.titolo === p.titolo)){ skip++; continue; }
-      try{ const r = await dbInsert(p.anno, p.titolo, p.data||{}, p.meta||clMeta(p.data||{})); rows.push({anno:r.anno, titolo:r.titolo}); add++; }
+      try{ const r = await dbInsert(p.anno, p.titolo, p.data||{}, p.meta||clMeta(p.data||{})); rows.push({anno:r.anno, titolo:r.titolo}); add++; CL._needHome = true; }
       catch(e){ err++; }
     }
     clMsg(`Fatto: ${add} ${add===1?'progetto aggiunto':'progetti aggiunti'}${skip?`, ${skip} ${skip===1?"già presente, lasciato com'era":"già presenti, lasciati com'erano"}`:''}${err?`, ${err} non riusciti`:''}.`, err?'err':'ok');
@@ -16322,7 +16356,7 @@ async function clRestoreOne(i){
   const p = CL.bundle && CL.bundle.progetti[i]; if(!p || !CL.user) return;
   try{
     const titolo = await clUniqueTitle(await dbList(), p.anno, p.titolo);
-    await dbInsert(p.anno, titolo, p.data||{}, p.meta||clMeta(p.data||{}));
+    await dbInsert(p.anno, titolo, p.data||{}, p.meta||clMeta(p.data||{})); CL._needHome = true;
     clMsg(`Aggiunto in archivio: ${p.anno} · ${titolo}`, 'ok');
   }catch(e){ clMsg('Errore: '+clErr(e), 'err'); }
 }
@@ -16863,7 +16897,15 @@ window.shPerTeRe = function(){
   b.innerHTML = `<details class="sh-pt"${open ? ' open' : ''}><summary>Per te${hot ? ' · <b>' + (hot === 1 ? '1 novità' : hot + ' novità') + '</b>' : ''}</summary>${inner}</details>`;
 };
 // scarica tutti i tuoi progetti (non quelli nel cestino) in un file JSON
-function shExportBtn(){ const b = $('sh-export'); if(!b) return; b.innerHTML = `<div class="sh-exp"><button class="sh-btn sm" type="button" onclick="shExportJson()">Scarica i miei progetti (JSON)</button><span class="sh-hint">Una copia di tutti i tuoi progetti, quelli nel cestino esclusi.</span></div>`; }
+function shExportBtn(){ const b = $('sh-export'); if(!b) return; b.innerHTML = `<div class="sh-exp"><button class="sh-btn sm" type="button" onclick="shExportJson()">Scarica i miei progetti (JSON)</button><label class="sh-btn sm gh" style="cursor:pointer">Carica un progetto (JSON)<input type="file" accept=".json,application/json" style="display:none" onchange="shImportJson(this)"></label><span class="sh-hint">Scarica: una copia di tutti i tuoi progetti, quelli nel cestino esclusi. Carica: rimette nell’elenco i progetti di un file scaricato prima; non cancella e non sostituisce nulla.</span></div>`; }
+window.shImportJson = function(inp){ const f = inp.files && inp.files[0]; if(!f) return; const r = new FileReader();
+  r.onload = () => { try{ const j = JSON.parse(r.result); let P = null;
+      if(j && Array.isArray(j.progetti)) P = j;
+      else { const d = j && (j.data || j); if(!d || typeof d !== 'object' || !('obs' in d || 'STAFF_MEMBERS' in d || 'scheda' in d)) throw new Error('non è un progetto di PEE CNGEI');
+        const y = Number(j.anno) || Number((CL.ctx || {}).anno) || new Date().getFullYear(); P = {app:'PEE CNGEI', esportato:j.esportato || null, progetti:[{anno:y, titolo:j.titolo || ((d.scheda || {}).tipoProgetto === 'PP' ? 'Progetto Personale' : 'Progetto') + ' (caricato)', meta:j.meta || clMeta(d), data:d}]}; }
+      if(!P.progetti.length) throw new Error('il file non contiene progetti'); CL.bundle = P; inp.value = ''; clShowBundle(); SH.rows = null;
+    }catch(e){ clToast('File non valido: ' + e.message); inp.value = ''; } };
+  r.readAsText(f); };
 window.shExportJson = async function(){
   try{
     const rows = (SH.rows || []).filter(r => (r.meta || {}).mode !== 'anno'); if(!rows.length){ clToast('Non ci sono progetti da scaricare'); return; }
@@ -17018,9 +17060,36 @@ window.shNew = function(tipo){
     <div id="sh-nunw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nun">Nome Unità</label><input class="sh-in" id="sh-nun" maxlength="60" placeholder="${BR_UNIT[p.branca] || 'Es. Reparto Kontiki'}"></div>
     <div class="sh-hint" id="sh-nhint">Sezione e Gruppo si compilano dal tuo profilo${sezgr ? ': ' + esc(sezgr) : ''}. La veste vale solo per questo progetto: il profilo non cambia.${nb ? ' Come ' + esc(RUOLO_TXT[p.ruolo]) + ' non scegli Branca né Nome Unità.' : ''}</div>
     <div class="sh-msg" id="sh-nmsg" role="alert"></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="sh-ncre" onclick="shCreate()">Crea il progetto</button></div>`);
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="sh-ncre" onclick="shCreateAsk()">Crea il progetto</button></div><div id="sh-nprev" hidden></div>`);
   try{ shVeste(); }catch(e){}
 };
+// 9/11: alla creazione si chiede sempre se riprendere qualcosa da un progetto che hai già (come in «Duplica»)
+const NEW_PREV = [['ctx','Unità, contesto e staff','dati dell’Unità, contesto, tabella dello staff'],['obs','Osservazione','griglia, livelli osservati, sintesi per Ambito'],['prior','Obiettivi, indicatori e priorità','senza le date di periodo'],['perc','Percorsi educativi e attività','le attività scritte nei percorsi'],['usc','Calendario','riunioni, uscite, bivacchi e campi (con un anno diverso le date si azzerano)'],['note','Appunti dalla verifica','le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno: li ritrovi in 1.1 come «Appunti dalla programmazione precedente»']];
+window.shCreateAsk = async function(){
+  const msg = $('sh-nmsg'); const ruolo = ($('sh-nru') || {}).value; const nb = noBranca(ruolo); const tipo = SH.tipo;
+  let rows = []; try{ rows = await dbList(); }catch(e){ return shCreate(); }
+  const cand = rows.filter(r => !/^Esempio/i.test(r.titolo || '') && ((r.meta || {}).mode === (nb ? 'staff' : 'giovani')) && !(tipo === 'AN' && !nb && ((r.meta || {}).tipo === 'PP')));
+  if(!cand.length) return shCreate();
+  const box = $('sh-nprev'); const dlg = $('sh-dlg'); [...dlg.children].forEach(c => { if(c !== box) c.hidden = true; }); box.hidden = false;
+  const row = ([k, t, d]) => `<label class="dup-r"><input type="checkbox" class="np-c" data-k="${k}"${k === 'ctx' || k === 'note' ? ' checked' : ''}> <span><b>${esc(t)}</b><small>${esc(d)}</small></span></label>`;
+  box.innerHTML = `<h2 style="margin:0 0 6px">Riprendi da un progetto che hai già?</h2><p class="sh-hint" style="margin:0 0 10px">Scegli il progetto e le parti da riprendere: si copiano nel progetto nuovo, l’originale non cambia. Puoi anche partire da zero.${tipo === 'AN' && !nb ? ' Dal Progetto Personale l’app ti chiede cosa portare quando apri la programmazione.' : ''}</p>
+    <label class="sh-lb" for="np-src">Da quale progetto</label><select id="np-src" class="sh-in">${cand.map(r => `<option value="${esc(r.id)}">${esc(annoScoutTxt(Number(r.anno)))} · ${esc(r.titolo)}</option>`).join('')}</select>
+    <div class="dup-l" style="margin-top:10px">${NEW_PREV.map(row).join('')}</div>
+    <div class="sh-msg" id="np-msg" role="alert"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px"><button class="sh-btn gh" type="button" onclick="SH._prevPick=null;shCreate()">Parto da zero</button><button class="sh-btn" type="button" onclick="shCreatePrev()">Crea e riprendi</button></div>`;
+};
+window.shCreatePrev = function(){ const keys = [...document.querySelectorAll('.np-c')].filter(c => c.checked).map(c => c.dataset.k); SH._prevPick = keys.length ? {id:($('np-src') || {}).value, keys} : null; shCreate(); };
+async function prevMergeInto(d, y, P){
+  const g = await dbGet(P.id); if(!g || !g.data) return; const src = JSON.parse(JSON.stringify(g.data)); src.anno = Number(g.anno);
+  const keys = P.keys.filter(k => k !== 'note'); const B = dupBuild(src, y, keys.length ? keys : ['ctx']); const sc = d.scheda = d.scheda || {}, bs = B.scheda || {}; const has = k => P.keys.includes(k);
+  if(has('ctx')){ const keep = {sezione:(sc.pp || {}).sezione, gruppo:(sc.pp || {}).gruppo}; sc.pp = Object.assign({}, bs.pp || {}); ['sezione','gruppo'].forEach(k => { if(keep[k]) sc.pp[k] = keep[k]; }); delete sc.pp._selfRow; if(!d.UNIT_NAME && B.UNIT_NAME) d.UNIT_NAME = B.UNIT_NAME; if(d.MODE === 'staff'){ d.STAFF_MEMBERS = B.STAFF_MEMBERS || []; d.staffProfiles = B.staffProfiles || {}; } }
+  if(has('obs')){ d.obs = B.obs || {}; sc.osservazione = bs.osservazione; sc.griglia = bs.griglia; if(d.MODE === 'staff'){ d.staffObs = B.staffObs || {}; d.autoObs = B.autoObs || {}; } }
+  if(has('prior')){ sc.priorita = bs.priorita; d.pris = B.pris || {}; }
+  if(has('perc')) sc.percorsiExtra = bs.percorsiExtra || [];
+  if(has('usc')) sc.uscite = bs.uscite || {};
+  if(has('note')) sc.prevSrc = [P.id];
+  sc.daProgetto = {id:P.id, titolo:g.titolo, parti:P.keys};
+}
 window.shVeste = function(){
   const r = ($('sh-nru') || {}).value, nb = noBranca(r), b = $('sh-nbr');
   ['sh-nbrw', 'sh-nunw'].forEach(i => { const e = $(i); if(e) e.hidden = nb; });
@@ -17057,6 +17126,8 @@ window.shCreate = async function(){
       d = {v:1, MODE:'giovani', FASCIA:br, UNIT_NAME:unit, scheda:{tipoProgetto:tipo, annoScout:as, pp, veste:{ruolo, branca:br}}};
     }
     d.ts = Date.now();
+    if(SH._prevPick && SH._prevPick.id){ msg.textContent = 'Riprendo le parti scelte…'; try{ await prevMergeInto(d, y, SH._prevPick); }catch(e){ console.error(e); } }
+    SH._prevPick = null;
     const meta = clMeta(d);
     const r = await dbInsert(y, titolo, d, meta);
     SH.rows = null; shDlgClose();
@@ -17425,7 +17496,7 @@ const NAV_AN = [
   {id:'p-3C', k:'3:C', t:'Percorso Comunitario', ic:'list', go:"shPerc('C')"},
   {id:'p-3S', k:'3:S', t:'Percorso Spirituale', ic:'list', go:"shPerc('S')"},
   {id:'p-vis', t:'Visione d’insieme', ic:'cal', go:'shVis()'},
-  {id:'p-pf', t:'Palestra dello staff', ic:'users', go:'shPF()', cond:'owner'},
+  {id:'p-pf', t:'Percorso formativo', ic:'users', go:'shPF()', cond:'owner'},
   {g:'Realizzare'},
   {id:'r-cal', t:'Calendario e attività', ic:'cal', go:'shCal()'},
   {id:'r-ele', t:'Elenco dell’anno', ic:'list', go:'shEle()'},
@@ -17477,7 +17548,7 @@ const NAV_CG = [
   {g:'Progettare'},
   {id:'st1', t:'I miei Capi Unità', ic:'eye', go:'goPhase(1)'},
   {id:'st2', t:'Lettura dei Capi Unità', ic:'list', go:'goPhase(2)'},
-  {id:'p-pf', t:'Palestra dei Capi Unità', ic:'users', go:'shPF()'},
+  {id:'p-pf', t:'Percorso formativo', ic:'users', go:'shPF()'},
   {g:'Realizzare'},
   {id:'usc', t:'Eventi per gli adulti', ic:'tent', go:"shSec('usc')"},
   {id:'r-chk', t:'Check degli adulti', ic:'users', go:'shChk()'},
@@ -17733,7 +17804,30 @@ function nextStep(o){
   return ['Prosegui con le attività', 'Tutto è in ordine: continua a vivere e verificare le attività, poi passa alla Valutazione Finale.', "shSec('5')"];
 }
 function pct(a, b){ return b ? Math.round(100 * a / b) : 0; }
+// ── 9/11: «Prossime scadenze» (anche ciò che ti sei assegnato da solo), fine del ciclo e pit stop ──
+function scadIso(d){ return String(d||'').slice(0,10); }
+function scadItems(){ const out=[]; const it=(CL.scad||[]); const seen=new Set();
+  it.forEach(x=>{ const key=[x.k,x.id,x.idx,x.j,x.u,x.t].join('|'); if(seen.has(key)) return; seen.add(key);
+    const pr=x.cur?'':(' · '+(x.titolo||''));
+    if(x.k==='att') out.push({d:scadIso(x.d), t:x.t||'Attività', tag:x.parti?['Parte affidata','mod']:['Referente','ref'], sub:(x.parti?x.parti.join(', '):'Attività dei percorsi')+pr, go:x.cur?`clPtGoAtt(${x.idx},${x.j},null)`:`ptGoOpen('${x.id}',{t:'att',idx:${x.idx},j:${x.j},grp:null})`});
+    else if(x.k==='mat') out.push({d:scadIso(x.d), t:'Materiali da procurare: '+(x.cose||[]).slice(0,3).join(', '), tag:['Materiali','mod'], sub:'per «'+(x.t||'attività')+'»'+pr, go:x.cur?`clPtGoAtt(${x.idx},${x.j},['mat'])`:`ptGoOpen('${x.id}',{t:'att',idx:${x.idx},j:${x.j},grp:['mat']})`});
+    else if(x.k==='usc') out.push({d:scadIso(x.d), t:String(x.t||'').replace(/^referente: /,'Referente: '), tag:x.cond?['Conduci','con']:['Affidato','ref'], sub:'«'+(x.ut||'evento')+'»'+(x.gt?' · '+x.gt:'')+pr, go:x.cur?`shSrUsc('${x.u}')`:`clOpenShared('${x.id}')`});
+    else if(x.k==='ver') out.push({d:'', late:true, t:'Da verificare: «'+(x.t||'attività')+'»', tag:['Verifica','mod'], sub:'L’attività è stata vissuta'+pr, go:`verGo(${x.idx},${x.j})`});
+  });
+  try{ if(typeof scheda!=='undefined'&&scheda&&MODE==='giovani'&&scheda.tipoProgetto!=='PP'){ const c=scheda.ciclo||{}; if(/^\d{4}-\d{2}$/.test(c.al||'')){ const [y,m]=c.al.split('-').map(Number); const last=new Date(y,m,0); out.push({d:last.getFullYear()+'-'+String(last.getMonth()+1).padStart(2,'0')+'-'+String(last.getDate()).padStart(2,'0'), t:'Fine del ciclo'+(c.nome?' «'+c.nome+'»':''), tag:null, sub:'Verifica del ciclo con lo staff', go:"shSec('4')"}); }
+    (typeof pitList==='function'?pitList():[]).forEach(P=>{ if(!P.fixed) out.push({d:P.entro, t:P.nome, tag:['Pit stop','pit'], sub:'Da fissare '+P.quando, go:`pitFix(${P.n})`, soft:true}); }); } }catch(e){}
+  return out; }
+function scadHTML(){ if(typeof CL==='undefined'||!CL.user) return ''; const L=scadItems(); if(!L.length) return `<div class="sub" style="font-size:13px;color:#3D3D38">${CL.scad?'Niente in scadenza: quando ti affidano un’attività o un modulo, o ne sei referente, lo trovi qui.':'Carico…'}</div>`;
+  const oggi=td(); const dd=d=>{ if(!d) return 0; return Math.round((new Date(d+'T12:00:00')-new Date(oggi+'T12:00:00'))/864e5); };
+  const G=[['late','Scadute',x=>x.late||(x.d&&x.d<oggi&&!x.soft)],['w','Questa settimana',x=>x.d&&dd(x.d)>=0&&dd(x.d)<=7],['m','Prossime 4 settimane',x=>x.d&&dd(x.d)>7&&dd(x.d)<=28],['far','Più avanti',x=>!x.d||dd(x.d)>28||(x.soft&&x.d<oggi)]];
+  const used=new Set(); const S=(window._scadAll?1e9:8); let shown=0;
+  const fmt=d=>{ if(!d) return '—'; const [y,m,g]=d.split('-'); return Number(g)+'/'+Number(m)+'/'+y; };
+  const h=G.map(([k,t,f])=>{ const R=L.filter(x=>!used.has(x)&&f(x)).sort((a,b)=>String(a.d||'9').localeCompare(String(b.d||'9'))); R.forEach(x=>used.add(x)); if(!R.length) return '';
+    return `<div class="scad-g${k==='late'?' late':''}">${t}${k==='late'?' · '+R.length:''}</div>`+R.map(x=>{ if(shown++>=S) return ''; return `<div class="scad-it${k==='late'?' late':''}"><div class="scad-d">${x.soft&&x.d?'entro '+fmt(x.d):fmt(x.d)}</div><div class="scad-t"><b>${esc(x.t)}</b>${x.tag?`<span class="scad-p ${x.tag[1]}">${esc(x.tag[0])}</span>`:''}<span>${esc(x.sub||'')}</span></div><button type="button" class="sh-btn sm gh" onclick="${x.go}">${x.soft?'Fissa la data':'Apri'}</button></div>`; }).join(''); }).join('');
+  return h+(L.length>S&&!window._scadAll?`<div style="text-align:right"><button type="button" class="sh-lk" onclick="window._scadAll=1;shScadRe()">Mostra tutto (${L.length})</button></div>`:''); }
+window.shScadRe = function(){ const b=document.getElementById('sh-scad'); if(b) b.innerHTML=scadHTML(); };
 const CARDS = [
+  {id:'scad', t:'Prossime scadenze', wide:1, av:() => !window.BRO, html:o => `<h3>Prossime scadenze</h3><div class="sub" style="font-size:12.5px;margin:-2px 0 6px">Le cose che ti sono state affidate o di cui sei referente, dalla più vicina.</div><div id="sh-scad">${scadHTML()}</div>`},
   {id:'passo', t:'Prossimo passo suggerito', wide:1, av:() => true, html:o => { const n = nextStep(o); return `<h3>${esc('Prossimo passo suggerito')}</h3><div style="font-size:15px;font-weight:700">${esc(n[0])}</div><div class="sub" style="font-size:13px">${esc(n[1])}</div><div><button type="button" class="sh-lk" onclick="${n[2]}">Vai</button></div>`; }},
   {id:'anno', t:'Il mio ciclo in un colpo d’occhio', wide:1, av:() => true, html:o => `<h3>Il mio ciclo in un colpo d’occhio</h3>` + annoTL([annoCur()], 'percorso', 'ambito', true) + `<div class="sub">I blocchi sono i percorsi, i pallini le attività con la data, i quadratini le riunioni e le uscite (con il bordo tratteggiato quelle dello staff). La bandierina è la verifica del ciclo; gli eventi più tenui cadono fuori dal periodo del ciclo. Per spostare i blocchi: <button type="button" class="sh-lk" onclick="shVis()">Visione d’insieme</button>.</div>`},
   {id:'chk', t:'Check dello staff', av:() => true, html:o => { const n = chkSoon(); return `<h3>Check dello staff</h3>` + (n ? `<div style="font-size:15px;font-weight:700">${esc(n.c.nome)}</div><div class="sub" style="font-size:13px">${n.n.now ? 'È il momento: ' : 'Prossimo: '}${esc(chkWhen(n.c))}${n.c.att ? ' · ' + esc(n.c.att) : ''}</div>` : `<div class="sub" style="font-size:13px;color:#3D3D38">Nessun check in programma.</div>`) + `<div><button type="button" class="sh-lk" onclick="shChk()">Vedi e personalizza</button></div>`; }},
@@ -17766,7 +17860,7 @@ function layout(){
 }
 function ordered(o){
   const L = layout(); const av = CARDS.filter(c => c.av(o)); const byId = Object.fromEntries(av.map(c => [c.id, c]));
-  const out = []; L.order.forEach(id => { if(byId[id]){ out.push(byId[id]); delete byId[id]; } }); av.forEach(c => { if(byId[c.id]) out.push(c); });
+  const out = []; if(byId.scad && !L.order.includes('scad')){ out.push(byId.scad); delete byId.scad; } L.order.forEach(id => { if(byId[id]){ out.push(byId[id]); delete byId[id]; } }); av.forEach(c => { if(byId[c.id]) out.push(c); });
   return {shown:out.filter(c => !L.hide.includes(c.id)), hidden:out.filter(c => L.hide.includes(c.id))};
 }
 let saveT = null;
@@ -18516,7 +18610,7 @@ function tipHTMLOld(){
   const tabs = ['G', 'L', 'E', 'R'].map(k => `<button type="button" class="pfx-m${b === k ? ' on' : ''}" aria-pressed="${b === k}" onclick="tipSet('${k}')">${BR[k]}</button>`).join('');
   let main = '', src = '', note = '';
   if(b === 'E'){ main = tipMacroHTML(['ragazzi','staff','gruppo','famiglie']); src = 'Calendario generale di Reparto, ridotto ai momenti principali di ogni mese: i dettagli (sopralluoghi, circolari, logistica) sono nel calendario originale. Il Consiglio di Reparto va dove lo indica il calendario; il Gruppo e le Famiglie sono ripresi dalle righe «Consiglio di Gruppo», «Famiglie» e «Link Badge».'; }
-  else if(b === 'G'){ main = tipMacroHTML(['gruppo','famiglie','staff']); src = 'Righe «Consiglio di Gruppo», «Famiglie», «Link Badge» e «Uscite» del Calendario generale di Reparto, per vedere cosa chiede il Gruppo mese per mese. Non è esaustivo; il manuale del Capo Gruppo descrive in modo più discorsivo autunno e inverno (li trovi anche nella Palestra dei Capi Unità).'; note = 'Il calendario nasce dal Reparto: per Branco e Compagnia guarda le loro schede.'; }
+  else if(b === 'G'){ main = tipMacroHTML(['gruppo','famiglie','staff']); src = 'Righe «Consiglio di Gruppo», «Famiglie», «Link Badge» e «Uscite» del Calendario generale di Reparto, per vedere cosa chiede il Gruppo mese per mese. Non è esaustivo; il manuale del Capo Gruppo descrive in modo più discorsivo autunno e inverno (li trovi anche nel Percorso formativo).'; note = 'Il calendario nasce dal Reparto: per Branco e Compagnia guarda le loro schede.'; }
   else if(b === 'L'){ main = tipSeasonCards(TIP_L); src = 'Manuale di Branca L «Attorno alla Rupe», calendario «Un anno nella Giungla» (pp. 286-287). Il manuale propone i momenti dell’anno in una tabella per mese; qui sono raggruppati per stagione e l’ordine dentro la stagione segue quello del manuale. Per il mese preciso guarda la tabella originale.'; }
   else { main = tipMacroHTML(['ragazzi','staff','gruppo','famiglie'], TIP_RM); src = 'Manuale di Branca R «Guiderà la sua Canoa», «Calendario del CC» (p. 198): programmazione, attività di Compagnia, Percorso Partenza, PV, PO e attività di Gruppo, Sezione, Regionali e Nazionali. Le tabelle del manuale distinguono inizio, metà e fine mese: qui i momenti sono riportati nel mese, senza la distinzione. PO e PV sono indicate come nel calendario.'; }
   return `<div class="sh-dh"><div><h1>Anno tipo</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Come di solito si organizza l’anno scout. Serve a non dimenticare le scadenze e a vedere cosa viene dopo; non è uno schema da seguire: ogni Unità ha il suo anno. Il mese in corso è evidenziato.</p></div></div>
@@ -18800,10 +18894,10 @@ const CAP_POP = {
   ]},
   'Progettare': {t:'Progettare', src:'Manuale del Progetto Educativo Esperienziale (versione in sperimentazione)', pts:[
     ['Dalle necessità agli Obiettivi', 'Le necessità educative si ordinano senza farsi guidare dall’emergenza o dall’emotività, guardando anche agli aspetti positivi: meglio necessità risolvibili che problemi impossibili. Poi si associa ogni necessità all’Obiettivo più adatto, senza riscriverlo.'],
-    ['Una priorità per ogni Ambito', 'Si sceglie almeno una priorità per Ambito (Personale, Comunitario, Spirituale), in ordine di urgenza: tre Obiettivi prioritari, più altri secondari.'],
+    ['Una priorità per ogni Ambito', 'Si sceglie almeno una priorità per Ambito (Personale, Comunitario, Spirituale), in ordine di urgenza: tre Obiettivi prioritari, più eventualmente altri secondari.'],
     ['Indicatori di Risultato', 'Per ogni Obiettivo almeno un indicatore, scritto come comportamento osservabile («propongono», «collaborano»; non «sanno» o «conoscono»), generale ma concreto, non legato a una sola attività. Si possono adattare e scriverne di nuovi.'],
     ['Il percorso: almeno 3 o 4 attività', 'Un Percorso Educativo Esperienziale ha almeno 3 o 4 attività coerenti tra loro, scelte con gli Strumenti del Metodo della propria Branca. Non serve il dettaglio di ogni attività: basta avere chiare le tipologie di esperienze intermedie.'],
-    ['Durata e soste', 'Alcuni percorsi durano circa tre mesi, altri tutto l’anno. Per i più lunghi conviene una sosta per vedere se il gruppo è cambiato (per esempio nuovi ingressi) e se vanno aggiornate le priorità.'],
+    ['Durata e soste', 'Alcuni percorsi durano circa tre mesi, altri tutto l’anno. Per questo l’app divide l’anno in cicli di programmazione (di solito 3–4 mesi): ogni ciclo segue il ritmo pensare, fare, ripensare, e si chiude con una sosta. Le soste dello staff, i pit stop, sono due: a gennaio–febbraio (entro il Thinking Day) e ad aprile–maggio (dopo San Giorgio). Servono a vedere se il gruppo è cambiato (per esempio nuovi ingressi), se vanno aggiornate le priorità e come impostare il ciclo successivo. Li trovi già segnati nel Calendario, da fissare.'],
     ['Rielaborazione cognitiva ed emotiva', 'Almeno una attività, di solito l’ultima, rielabora: cognitiva (che cosa ho imparato, che cosa so fare) ed emotiva (agisce sul saper essere, e può richiedere molto tempo).'],
     ['Le sette caratteristiche di un’esperienza', 'Nuova, stimolante, progressiva, co-costruita (si ascoltano le proposte dei ragazzi e delle ragazze: «ask the boy»), rielaborativa, esperienziale… ed educativa.']
   ]},
@@ -18815,9 +18909,9 @@ const CAP_POP = {
   ]},
   'Misurare': {t:'Misurare', src:'Manuale del Progetto Educativo Esperienziale (versione in sperimentazione)', pts:[
     ['Sono comportamenti, non voti', 'Per ogni Indicatore di Risultato ci si chiede: i ragazzi e le ragazze mostrano quel comportamento da soli, solo se stimolati, o non ancora? Si traduce in Ottimo (2 punti), Bene (1), Da migliorare (0).'],
-    ['Soste durante l’anno', 'Con lo staff, verso gennaio-febbraio e aprile-maggio: si guarda sia l’andamento del gruppo sia dei singoli. Alcuni effetti sono immediati, altri a medio o lungo termine. Si decide se continuare sugli stessi Obiettivi o cambiare, e si programmano i percorsi degli Obiettivi non ancora affrontati.'],
+    ['Soste durante l’anno: i pit stop', 'Con lo staff, a gennaio–febbraio (entro il Thinking Day) e ad aprile–maggio (dopo San Giorgio): si guarda sia l’andamento del gruppo sia dei singoli. Alcuni effetti sono immediati, altri a medio o lungo termine. Si decide se continuare sugli stessi Obiettivi o cambiare, e si programmano i percorsi degli Obiettivi non ancora affrontati. Ogni pit stop chiude un ciclo e apre il successivo: pensare, fare, ripensare. Nel Calendario sono già segnati, tratteggiati, finché non li fissi come riunione di staff.'],
     ['Valutazione finale', 'Al termine del campo estivo, delle vacanze di Branco o dell’estate Rover. Si rispondono gli Indicatori scelti e si ha una nuova fotografia dell’Unità.'],
-    ['Chi si coinvolge', 'I ragazzi e le ragazze (secondo l’età è più o meno chiaro su quali competenze si è lavorato: possono dire se sentono di averle sviluppate) e il Capo Gruppo, che dà un punto di vista più alto.']
+    ['Chi si coinvolge', 'Tutto lo Staff, il Capo Gruppo, che dà un punto di vista più alto e, con le adeguate accortezze, anche i ragazzi (a seconda dell’età si potranno proporre momenti di ascolto e osservazione più o meno approfonditi e diretti, utili a capire se le competenze siano state acquisite e in che misura).']
   ]}
 };
 window.capPop = function(g){ const d = CAP_POP[g]; if(!d) return;
@@ -18829,7 +18923,6 @@ const GRP_EXTRA = {
     ['Inclusione: costruire insieme, non chiedere di adattarsi', 'L’ideale è non chiedere alla persona con disabilità di adattarsi, ma costruire insieme la possibilità di partecipare. Inserire un ragazzo o una ragazza con disabilità è un’opportunità di miglioramento per tutta l’Unità nel leggere i bisogni e nelle risposte che si offrono.'],
     ['Quali Strumenti del Metodo richiedono più attenzione', 'Simbolismo, Legge e Promessa, imparare facendo e servizio sono poco problematici se costruiti sulla persona. Più complessi: vita all’aria aperta (soprattutto in Reparto: hike, pionierismo, tecniche) e programmi progressivi e stimolanti, da tarare sulle potenzialità individuali.'],
     ['Il piccolo gruppo', 'Nel Branco è il Branco stesso; in Compagnia aiutano le ronde di interesse. In Reparto è centrale la Pattuglia: conviene analizzare gli incarichi interni e attività come impresa, missione e riunione di Pattuglia. Senza un Capo Unità presente è molto complesso lasciare una attività alla sola Pattuglia: serve una presenza di garanzia, non invasiva.'],
-    ['Chi decide e chi può aiutare', 'La scelta di un percorso di inserimento spetta al Consiglio di Gruppo, che tiene insieme le tre Branche e può progettare continuità. Possono aiutare un Senior in più in servizio, una persona competente anche esterna, talvolta una figura genitoriale con un ruolo in Unità.'],
     ['Dentro la scheda dell’attività', 'Nella scheda di ogni attività trovi «Come costruirla», «Protagonismo» e «Attività tecniche»: sono pensati per far decidere e fare ai ragazzi e alle ragazze, con l’adulto come facilitatore.']
   ], src2:'Gruppo di Lavoro Inclusione (lavoro di Sezione, anni scout 21-22 e 22-23)'},
   'Realizzare': {pts:[
@@ -18841,7 +18934,7 @@ const GRP_EXTRA = {
     ['Pensare, fare, pensare', 'La programmazione è un processo che si ripete: si pensa (osservazione, necessità, obiettivi, percorso), si fa (le attività), si pensa di nuovo (verifica e valutazione). La valutazione di quest’anno è l’osservazione del prossimo.'],
     ['Gli adulti programmano, i ragazzi fanno progetti', 'La cornice è consapevolezza degli adulti. I ragazzi e le ragazze programmano per progetti (la missione, il gioco, quel particolare hike): decidono cosa fare e come, lo fanno e lo valutano. Ideazione, organizzazione, realizzazione e valutazione sono a carico loro; l’adulto è facilitatore e stimolo. Non serve chiedere loro di ragionare sulle ricadute pedagogiche.'],
     ['Verifica: rispondere agli indicatori', 'Alla fine di ogni periodo si risponde agli Indicatori di Risultato scelti, per aggiustare il tiro. Conviene verificare il comportamento in contesti diversi, per vedere se è consolidato e non solo acquisito nelle attività scout.'],
-    ['Valutazione: riflessione critica', 'Dopo la verifica ci si chiede come sono stati raggiunti gli Obiettivi e quali cambiamenti ha prodotto l’azione educativa. Dà il via all’osservazione dell’anno dopo.'],
+    ['Valutazione: riflessione critica', 'Dopo la verifica ci si chiede come sono stati raggiunti gli Obiettivi e quali cambiamenti ha prodotto l’azione educativa. È il punto di partenza per la programmazione successiva.'],
     ['Autovalutazione dello staff', 'Non si valuta solo il gruppo dei ragazzi e delle ragazze: lo staff guarda anche il proprio modo di lavorare (clima, ruoli, tempi). Nell’app trovi i Check dello staff nella parte Staff.'],
     ['I livelli di programmazione', 'La Programmazione di Unità (annuale) alimenta il Piano di Gruppo (di norma triennale, elaborato dal Consiglio di Gruppo a partire dalle analisi delle Unità), che a sua volta segue il Progetto di Sezione (pluriennale). Verificare bene serve anche a loro.']
   ], src2:'Manuale PEG 2.0, pp. 42-47, tradotto nel linguaggio del Progetto Educativo Esperienziale; da rivedere insieme per ciò che nel PEG riguardava obiettivi specifici e tracce PFS'},
@@ -18941,7 +19034,7 @@ function numCalc(items, staffItems){
     R.cont++; const f = (CAL_T[uscModK(u)] || ['Uscita'])[0]; R.fmt[f] = (R.fmt[f] || 0) + 1;
     const d = /^\d{4}-\d{2}-\d{2}/.test(x.data || '') ? x.data.slice(0, 10) : ''; if(!d) R.senzaData++; else { if((x.dataFine || d) < oggi) R.fatte++; else R.daFare++; const m = d.slice(0, 7); R.mese[m] = (R.mese[m] || 0) + 1; }
     const ng = uscNG(u); R.giorni += ng; R.notti += Math.max(0, ng - 1); if((x.luogo || {}).tipo !== 'sede') R.fuori++; if(f === 'Bivacco' || f === 'Campo') R.resid++;
-    try{ const N = axN(x); if(N.tot){ R.pres += N.tot; R.presN++; } }catch(e){} R.km += Number((x.luogo || {}).km) || 0;
+    try{ const N = axN(x); if(N.tot && u.dest !== 'staff'){ R.pres += N.tot; R.presN++; R.presR = (R.presR || 0) + (Number(N.rag) || 0); R.presA = (R.presA || 0) + (Number(N.ad) || 0); } }catch(e){} R.km += Number((x.luogo || {}).km) || 0;
     const t = uscTipoLab(u) || f; R.tipo[t] = (R.tipo[t] || 0) + 1;
     try{ Object.values(u.prog || {}).forEach(m => { if(m && !m.del && m.k !== 'att' && Array.isArray(m.strum)) m.strum.forEach(sn => { R.strum[sn] = (R.strum[sn] || 0) + 1; }); if(m && !m.del && m.k !== 'att' && Array.isArray(m.tpi)) m.tpi.forEach(tn => { const l = (tn === 'Altro' && m.tpiAltro) ? m.tpiAltro : tn; R.tpa[l] = (R.tpa[l] || 0) + 1; }); }); }catch(e){}
     try{ axCosti(x).filter(i => !i.contrib && i.c > 0).forEach(i => { const c = i.cat || 'altro'; R.spese[c] = (R.spese[c] || 0) + i.c; R.spTot += i.c; }); }catch(e){} };
@@ -18972,7 +19065,7 @@ function numHTML(){
   const q = (arr, t) => arr.length ? `<details class="num-d"><summary>${esc(t)} (${arr.length})</summary><ul>${arr.slice(0, 12).map(x => `<li>${esc(x.length > 220 ? x.slice(0, 219) + '…' : x)}</li>`).join('')}</ul></details>` : '';
   const idrT = R.idr.spontaneo + R.idr.stimolato + R.idr.no;
   return `<div class="sh-dh"><div><h1>Numeri dell’anno</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Anno scout ${esc(String(scheda.annoScout || ''))}, ${R.cicli} ${R.cicli === 1 ? 'ciclo' : 'cicli'}. Qui sommo ciò che hai già scritto nell’app: non devi inserire nulla di nuovo. I numeri vengono dal preventivo e dalle date che hai messo; dove un dato manca lo segnalo.</p></div></div>
-  <section class="sh-card2 wide"><h3>Le attività dell’Unità</h3><div class="num-g">${tile(R.cont, 'attività nel calendario', R.fatte + ' già passate · ' + R.daFare + ' da fare' + (R.senzaData ? ' · ' + R.senzaData + ' senza data' : ''))}${tile(R.giorni, 'giornate di attività', R.notti + (R.notti === 1 ? ' notte' : ' notti') + ' fuori casa')}${tile(R.fuori, 'attività fuori sede', R.cont ? Math.round(R.fuori / R.cont * 100) + '% del totale' : '')}${tile(R.resid, 'bivacchi e campi')}${tile(R.staffN, 'attività di staff', R.staffN ? '' : 'nessun progetto staff dell’anno')}${tile(R.presN ? Math.round(R.pres / R.presN) : '—', 'presenti in media', R.presN ? 'su ' + R.presN + ' attività con i presenti indicati' : 'indica i presenti nelle uscite')}${tile(R.km ? Math.round(R.km) + ' km' : '—', 'chilometri indicati', R.km ? 'andata e ritorno, solo dove inseriti' : 'indicali nei luoghi delle uscite')}${tile(R.spTot ? axEur(R.spTot) : '—', 'spesa prevista', 'preventivo, non speso davvero')}</div>
+  <section class="sh-card2 wide"><h3>Le attività dell’Unità</h3><div class="num-g">${tile(R.cont, 'attività nel calendario', R.fatte + ' già passate · ' + R.daFare + ' da fare' + (R.senzaData ? ' · ' + R.senzaData + ' senza data' : ''))}${tile(R.giorni, 'giornate di attività', R.notti + (R.notti === 1 ? ' notte' : ' notti') + ' fuori casa')}${tile(R.fuori, 'attività fuori sede', R.cont ? Math.round(R.fuori / R.cont * 100) + '% del totale' : '')}${tile(R.resid, 'bivacchi e campi')}${tile(R.staffN, 'attività di staff', R.staffN ? '' : 'nessun progetto staff dell’anno')}${tile(R.presN ? Math.round((R.presR || 0) / R.presN) : '—', 'ragazzi presenti in media', R.presN ? 'su ' + R.presN + ' attività con i presenti indicati' : 'indica i presenti nelle uscite')}${tile(R.presN ? Math.round((R.presA || 0) / R.presN) : '—', 'adulti dello staff presenti in media', R.presN ? 'su ' + R.presN + ' attività con i presenti indicati' : 'indica i presenti nelle uscite')}${tile(R.km ? Math.round(R.km) + ' km' : '—', 'chilometri indicati', R.km ? 'andata e ritorno, solo dove inseriti' : 'indicali nei luoghi delle uscite')}${tile(R.spTot ? axEur(R.spTot) : '—', 'spesa prevista', 'preventivo, non speso davvero')}</div>
   ${(() => { const T = sort(R.tipo).filter(x => !/^(senza|non indicat)/i.test(x[0])); return T.length ? `<div class="num-g">${tile(T[0][0], 'tipo di attività più utilizzato', T[0][1] + (T[0][1] === 1 ? ' volta' : ' volte'))}</div>` : ''; })()}
   ${R.cont ? `<h4 class="num-h">Per formato</h4>${numBar(Object.keys(R.fmt).map(k => [k, R.fmt[k]]).filter(r => r[1] > 0))}<h4 class="num-h">Per tipo di evento</h4>${numBar(sort(R.tipo))}` : '<p class="sh-hint">Ancora nessuna attività nel calendario.</p>'}
   ${sp.length ? `<h4 class="num-h">Spesa prevista per categoria</h4>${numBar(sp, axEur)}` : ''}</section>
@@ -19226,7 +19319,8 @@ function calHTML(){
       <div class="cal-ra"><button type="button" class="cal-bt2" onclick="${opn}">Apri</button>${can ? `<button type="button" class="cal-bt2" onclick="${cy ? `calDupX('${esc(cy)}','${u.id}')` : `calDup('${u.id}')`}" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button><button type="button" class="cal-bt2 cal-del" onclick="${cy ? `calDelX('${esc(cy)}','${u.id}')` : `calDel('${u.id}')`}" aria-label="Elimina ${esc(uscTit(u))}">Elimina</button>` : ''}</div></section>`;
   };
   let contH = ''; let curM = null;
-  srt.forEach(z => { const u = z.u; const m = dk(u); if(m !== curM){ if(curM !== null) contH += '</div>'; curM = m; contH += `<div class="cal-mese"><h3>${m ? esc(MN[+m.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4)) : 'Senza data'}</h3>`; } contH += row(z); });
+  const srtP = srt.slice(); try{ pitList().filter(P => !P.fixed).forEach(P => { let at = srtP.findIndex(z => !z._pit && (!dk(z.u) || dk(z.u) > P.mese)); if(at < 0) at = srtP.length; srtP.splice(at, 0, {_pit:P}); }); }catch(e){}
+  srtP.forEach(z => { const m = z._pit ? z._pit.mese : dk(z.u); if(m !== curM){ if(curM !== null) contH += '</div>'; curM = m; contH += `<div class="cal-mese"><h3>${m ? esc(MN[+m.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4)) : 'Senza data'}</h3>`; } contH += z._pit ? pitRowHTML(z._pit) : row(z); });
   if(curM !== null) contH += '</div>';
   const leg = `<div class="cal-leg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}<span><em class="cal-fo uni">Unità</em></span><span><em class="cal-fo stf">Staff</em></span></div>`;
   return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui trovi tutti gli eventi dell’anno, mese per mese: riunioni, uscite, bivacchi e campi, dell’Unità e dello staff. Aprine uno per organizzarlo. Le attività dei percorsi ancora senza un posto stanno nel riquadro «Da collocare»: trascinale su un evento dell’Unità, o usa «Sposta in…». La data dell’evento diventa la data dell’attività.</p></div></div>
@@ -19599,6 +19693,7 @@ async function prevProbe(){
   if(!CL.ctx || !CL.user) return null;
   const rows = await dbList(); const sc = scheda || {};
   if(sc.cicloDa){ const r = rows.find(x => x.id === sc.cicloDa); if(r) return {kind:'ciclo', ids:[r.id], titolo:r.titolo, da:'da «' + r.titolo + '»', anno:r.anno}; }
+  if(Array.isArray(sc.prevSrc) && sc.prevSrc.length){ const L = rows.filter(x => sc.prevSrc.includes(x.id)); if(L.length){ let annoId = null; try{ const ar = await annoRow(Number(L[0].anno)); if(ar) annoId = ar.id; }catch(e){} return {kind:Number(L[0].anno) === Number(CL.ctx.anno) ? 'ciclo' : 'anno', ids:L.map(x => x.id), titolo:L[0].titolo, da:'da «' + L[0].titolo + '»', anno:Number(L[0].anno), annoId}; } }
   const y = Number(CL.ctx.anno) - 1; const mine = sc.tipoProgetto || 'AN';
   const all = rows.filter(x => Number(x.anno) === y && (x.meta || {}).mode === 'giovani' && !/^Esempio/i.test(x.titolo || ''));
   let c = all.filter(x => ((x.meta || {}).tipo || 'AN') === 'AN'); if(!c.length) c = all.slice(0, 1);
@@ -19939,7 +20034,7 @@ function pfHTML(){
       return (EA.list.some(z => z.cy) ? `<optgroup label="Ciclo aperto">${own.map(opt).join('')}</optgroup>` : own.map(opt).join('')) + Object.keys(gr).map(n => `<optgroup label="Ciclo «${esc(n)}»">${gr[n].sort((a, b) => String((a.u.ax || {}).data || '').localeCompare(String((b.u.ax || {}).data || ''))).map(opt).join('')}</optgroup>`).join('') + (EA.ready ? '' : '<option disabled>carico gli altri cicli…</option>'); })()}</select>${can ? `<button type="button" class="btn-ghost" onclick="pfEvForm('${x.id}',${SH._pfEvF === x.id ? 'false' : 'true'})">${SH._pfEvF === x.id ? 'Annulla' : '+ Nuovo evento'}</button>` : ''}${x.ev && e ? `<button type="button" class="btn-ghost" onclick="pfOpenEv('${x.id}')">Apri nell’evento →</button>` : ''}${when ? `<span class="sh-hint">${esc(when)}</span>` : ''}</div>${(can && SH._pfEvF === x.id) ? `<div class="pf-ne" role="group" aria-label="Nuovo evento dello staff"><label>Nome <input id="pf-ne-t" class="sh-in" maxlength="80" placeholder="es. Riunione di staff"></label><label>Data <input id="pf-ne-d" type="date" class="sh-in"></label><label>Che tipo <select id="pf-ne-m" class="sh-in"><option value="sede">Riunione</option><option value="giorno">Uscita in giornata</option><option value="bivacco">Bivacco</option></select></label><button type="button" class="sh-btn" onclick="pfEvMake('${x.id}')">Crea e metti qui l’attività</button></div>` : ''}
       ${ta(x.id, 'verifica', x.verifica, 'Dopo averla fatta: cosa è andato bene, cosa cambieresti', '')}</section>`; };
   const pan = pfExplorer(L, can, cg, rec, used);
-  return `<div class="sh-dh"><div><h1>${cg ? 'La palestra dei Capi Unità' : 'La palestra dello staff'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${cg ? 'Come formare gli adulti del Gruppo nel corso dell’anno: scegli le attività dal paniere o scrivine di tue, mettile in ordine di priorità e collocale negli eventi per gli adulti.' : 'Come far crescere lo staff nel corso dell’anno: scegli le attività dal paniere (quelle «consigliate» partono dai percorsi meno presenti nello staff) o scrivine di tue, mettile in ordine di priorità e collocale negli eventi dello staff.'} Le attività più in alto sono le più importanti.</p></div></div>
+  return `<div class="sh-dh"><div><h1>Percorso formativo</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${cg ? 'Come formare gli adulti del Gruppo nel corso dell’anno: scegli le attività dal paniere o scrivine di tue, mettile in ordine di priorità e collocale negli eventi per gli adulti.' : 'Come far crescere lo staff nel corso dell’anno: scegli le attività dal paniere (quelle «consigliate» partono dai percorsi meno presenti nello staff) o scrivine di tue, mettile in ordine di priorità e collocale negli eventi dello staff.'} Le attività più in alto sono le più importanti.</p></div></div>
     <div class="anv-act">${can ? `<button type="button" class="sh-btn" onclick="pfOwn()">+ Una mia attività nuova</button>` : ''}<button type="button" class="btn-ghost" onclick="stfHelpOpen()">Aiuti per chi conduce</button><button type="button" class="btn-ghost" onclick="pfDocx()">Scarica il Word del percorso formativo</button></div>
     <a class="pf-jump" href="#pf-mine" onclick="document.getElementById('pf-mine').scrollIntoView({behavior:'smooth',block:'start'});return false">Il tuo percorso: <b>${L.length}</b> ${L.length === 1 ? 'attività' : 'attività'} ↓</a>
     <div class="pf-cols"><div class="pf-left">${pan}</div>
@@ -19993,7 +20088,7 @@ window.pfEvMake = function(id){
   const ev0 = uscMap()[eid]; let tg = ''; let tgNome = ''; try{ const inf = {}; tg = calTarget(d1, inf) || ''; tgNome = inf.none ? '' : (inf.nome || ''); }catch(e){}
   x.ev = eid; x.evCy = tg; SH._pfEvF = null;
   if(tg){ delete uscMap()[eid];
-    ccEdit(tg, sc => { sc.uscite = (sc.uscite && typeof sc.uscite === 'object' && !Array.isArray(sc.uscite)) ? sc.uscite : {}; sc.uscite[eid] = ev0; }, 'Prima di creare un evento dalla Palestra').then(() => { pfPlace(id); pfRe(); showToast('Evento creato nel ciclo «' + (tgNome || 'scelto') + '» e attività messa dentro'); }).catch(e => { console.error(e); x.ev = ''; x.evCy = ''; showToast('Non sono riuscito a crearlo nell’altro ciclo: ' + ((e && e.message) || 'riprova')); pfRe(); }); return; }
+    ccEdit(tg, sc => { sc.uscite = (sc.uscite && typeof sc.uscite === 'object' && !Array.isArray(sc.uscite)) ? sc.uscite : {}; sc.uscite[eid] = ev0; }, 'Prima di creare un evento dal Percorso formativo').then(() => { pfPlace(id); pfRe(); showToast('Evento creato nel ciclo «' + (tgNome || 'scelto') + '» e attività messa dentro'); }).catch(e => { console.error(e); x.ev = ''; x.evCy = ''; showToast('Non sono riuscito a crearlo nell’altro ciclo: ' + ((e && e.message) || 'riprova')); pfRe(); }); return; }
   pfPlace(id); try{ uscNavSync(); }catch(e){} pfRe(); showToast('Evento creato e attività messa dentro: «' + uscTit(uscMap()[eid]) + '»'); };
 window.pfAdd = function(sid, nome){ if(window.BRO) return; const sx = SITUAZIONI_STAFF.find(z => z.id === sid); const y = sx && sx.attivita.find(z => z.nome === nome); if(!y) return; pfList().push({id:'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nome:y.nome, cat:y.cat, sit:sx.label, desc:y.desc || '', obiettivo:'', lancio:'', sviluppo:'', conclusione:'', ev:'', verifica:''}); saveData(true); pfRe(); showToast('Aggiunta in fondo al percorso: spostala dove serve'); };
 window.pfOwn = function(){ if(window.BRO) return; const id = 'f' + Date.now().toString(36); pfList().push({id, nome:'', cat:'', sit:'', desc:'', obiettivo:'', lancio:'', sviluppo:'', conclusione:'', ev:'', verifica:''}); saveData(true); pfRe(); setTimeout(() => { const e = document.querySelector('.pf-c[data-id="' + id + '"] .pf-t'); if(e) e.focus(); }, 60); };
