@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PEE CNGEI · mock-up giro 9/11</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1B5E42;--green-mid:#2E7D5A;--green-pale:#E8F5EE;--amber:#B06A00;--amber-pale:#FFF3E0;--red:#8B2216;--red-pale:#FDECEA;--coral:#C0432A;--ink:#1A1A18;--ink-mid:#3D3D38;--ink-light:#6B6B64;--ink-faint:#9B9B92;--border:#D8D8D0;--border-light:#EBEBE4;--bg:#F7F7F2;--blue:#2C3E7A;--blue-pale:#EEF0FB}
+*{box-sizing:border-box}body{margin:0;font-family:Montserrat,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+.wrap{max-width:980px;margin:0 auto;padding:24px 18px 60px}
+h1{font-size:22px;margin:0 0 4px}.lead{color:var(--ink-light);margin:0 0 22px}
+.sec{background:#fff;border:1px solid var(--border-light);border-radius:14px;padding:20px 22px;margin:0 0 26px;box-shadow:0 2px 16px rgba(26,26,24,.06)}
+.tag{display:inline-block;background:var(--green-pale);color:var(--green);font-weight:700;font-size:11px;letter-spacing:.06em;padding:3px 9px;border-radius:20px;text-transform:uppercase}
+.sec>h2{font-size:17px;margin:8px 0 2px}.why{color:var(--ink-light);font-size:13px;margin:0 0 16px}
+.note{font-size:12.5px;color:var(--ink-mid);background:var(--bg);border-left:3px solid var(--green-mid);padding:8px 12px;border-radius:0 8px 8px 0;margin-top:14px}
+.btn{border:1px solid var(--green);color:var(--green);background:#fff;border-radius:8px;padding:5px 11px;font:600 12.5px Montserrat;cursor:pointer}
+.btn.p{background:var(--green);color:#fff}.btn.s{border-color:var(--border);color:var(--ink-mid)}
+.lnk{color:var(--green);font-weight:600;font-size:12.5px;text-decoration:underline;cursor:pointer;background:none;border:0;font-family:inherit}
+/* scadenze */
+.mod{border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;background:#fff}
+.mod h3{margin:0 0 2px;font-size:15px}.mod .x{position:absolute;top:10px;right:12px;color:var(--ink-faint);font-size:18px;cursor:pointer}
+.grp{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin:14px 0 6px}
+.grp.late{color:var(--red)}
+.it{display:grid;grid-template-columns:86px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border-light)}
+.it .d{font-weight:700;font-size:12.5px}.it.late .d{color:var(--red)}
+.it .t b{font-weight:600}.it .t span{display:block;color:var(--ink-light);font-size:12px}
+.pill{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:1px}
+.pl-ref{background:var(--green-pale);color:var(--green)}.pl-con{background:var(--blue-pale);color:var(--blue)}.pl-pit{background:var(--amber-pale);color:var(--amber)}.pl-mod{background:#F1EEF8;color:#5B3E8F}
+/* per te */
+.pt{border:2px solid var(--coral);border-radius:14px;padding:6px 14px 10px;margin-top:18px;background:#FFFCFA}
+.pt>summary{list-style:none;cursor:pointer;color:var(--coral);font-weight:700;font-size:16px;padding:8px 0}
+details.ps{border-top:1px solid var(--border-light)}details.ps>summary{cursor:pointer;list-style:none;padding:10px 0;font-weight:700;display:flex;gap:8px;align-items:center}
+details.ps>summary::before{content:"▸";color:var(--ink-faint);font-size:12px}details.ps[open]>summary::before{content:"▾"}
+.cnt{background:var(--coral);color:#fff;border-radius:20px;font-size:11px;padding:1px 8px}.cnt.g{background:var(--ink-faint)}
+.ps .all{margin-left:auto;font-weight:500}
+.row{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border-light);border-radius:10px;margin:0 0 6px;background:#fff}
+.row .t{flex:1}.row .t b{font-weight:600}.row .t span{display:block;color:var(--ink-light);font-size:12px}
+.row.n{padding:6px 10px}.row.n .t{font-size:13px}
+/* staff nav */
+.snav{display:flex;flex-wrap:wrap;gap:18px;border:1px solid var(--border);border-radius:12px;padding:10px 14px;background:#fff;position:sticky;top:0}
+.sg{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.sg .gl{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin-right:4px}
+.chip{border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-weight:600;font-size:12.5px;background:#fff;color:var(--ink-mid);cursor:pointer}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.sep{width:1px;background:var(--border-light)}
+.ppl{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.ppl .chip{border-style:dashed}.ppl .chip.on{border-style:solid;background:var(--green-pale);color:var(--green);border-color:var(--green-mid)}
+.ghost{margin-top:12px;border:1px dashed var(--border);border-radius:10px;height:70px;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:12.5px}
+/* calendario */
+.cal{display:grid;grid-template-columns:repeat(10,1fr);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:11.5px}
+.cal .m{background:var(--green);color:#fff;font-weight:700;text-align:center;padding:6px 0;border-right:1px solid rgba(255,255,255,.2)}
+.cal .c{min-height:118px;border-right:1px solid var(--border-light);padding:5px;display:flex;flex-direction:column;gap:4px}
+.ev{background:var(--green-pale);border-left:3px solid var(--green-mid);border-radius:5px;padding:3px 5px;font-weight:600}
+.ev.v{background:#F3F0E6;border-left-color:#8A7A3C}
+.pit{border:1.5px dashed var(--amber);background:repeating-linear-gradient(135deg,#fff,#fff 6px,var(--amber-pale) 6px,var(--amber-pale) 12px);color:var(--amber);border-radius:6px;padding:4px 5px;font-weight:700;cursor:pointer}
+.pit small{display:block;font-weight:500;color:var(--ink-mid)}
+.pop{margin-top:12px;border:1px solid var(--amber);border-radius:10px;padding:12px 14px;background:#FFFDF8;max-width:520px}
+.pop h4{margin:0 0 4px;color:var(--amber)}
+.cyc{display:flex;align-items:center;gap:0;margin:14px 0 4px;flex-wrap:wrap}
+.cy{background:var(--green-pale);color:var(--green);border-radius:8px;padding:8px 12px;font-weight:700;font-size:12.5px}
+.cy small{display:block;font-weight:500;color:var(--ink-mid)}
+.arr{color:var(--ink-faint);padding:0 6px}.pst{background:var(--amber-pale);color:var(--amber);border:1.5px dashed var(--amber);border-radius:20px;padding:5px 10px;font-weight:700;font-size:12px}
+.intro{border-left:3px solid var(--border);padding:2px 0 2px 12px;color:var(--ink-mid);margin:6px 0}
+/* giornate */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.box{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:#fff}
+.box h4{margin:0 0 8px;font-size:13.5px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tb{position:relative;border:1px solid var(--border);border-radius:8px;padding:6px 26px 6px 22px;font-weight:600;font-size:12px;background:#fff;cursor:grab}
+.tb.camp{padding:6px 12px;cursor:default;background:var(--green);color:#fff;border-color:var(--green)}
+.tb .h{position:absolute;left:6px;top:6px;color:var(--ink-faint);letter-spacing:-2px}
+.tb .dx{position:absolute;right:6px;top:3px;color:var(--ink-faint);font-size:15px}
+.tb.drag{opacity:.45;border-style:dashed}.tb small{display:block;font-weight:500;color:var(--ink-light);font-size:10.5px}
+.drop{width:3px;background:var(--green-mid);border-radius:3px}
+.lst div{padding:6px 8px;border:1px solid var(--border-light);border-radius:8px;margin-bottom:5px;font-size:12.5px}
+.lst b{font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg span{padding:5px 10px;font-size:12px;font-weight:600;color:var(--ink-light)}.seg span.on{background:var(--green-pale);color:var(--green)}
+.cf{margin-top:10px;border:1px solid var(--red);background:var(--red-pale);border-radius:10px;padding:10px 12px;font-size:12.5px}
+/* suggerimenti */
+.act{border:1px solid var(--border);border-radius:12px;background:#fff;padding:12px 16px}
+.act .ttl{font-weight:700;font-size:15px;margin-bottom:10px}
+.sgp{border:1px solid #E7C98A;background:#FFFBEF;border-radius:10px;margin-bottom:12px}
+.sgp>summary{list-style:none;cursor:pointer;padding:9px 12px;font-weight:700;color:var(--amber);display:flex;gap:8px;align-items:center}
+.sgp>summary::before{content:"▾"}.sgp:not([open])>summary::before{content:"▸"}
+.sgi{border-top:1px solid #F0E2BC;padding:9px 12px;display:flex;gap:10px}
+.sgi .av{width:28px;height:28px;border-radius:50%;background:var(--green-pale);color:var(--green);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+.sgi .b{flex:1}.sgi .meta{font-size:11.5px;color:var(--ink-light)}.sgi .q{font-size:11.5px;color:var(--ink-light);border-left:2px solid #E7C98A;padding-left:6px;margin:3px 0}
+.res{font-size:12px;color:var(--ink-light);padding:7px 12px;border-top:1px solid #F0E2BC}
+.fld{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ink-light);text-transform:uppercase;margin:10px 0 4px}
+.fake{border:1px solid var(--border-light);border-radius:8px;padding:8px 10px;color:var(--ink-faint);font-size:12.5px}
+</style></head><body><div class="wrap">
+<h1>Mock-up · giro di modifiche del 9/11</h1>
+<p class="lead">Cinque proposte da approvare prima di costruirle. Tutto il resto del giro non ha bisogno di mock-up. I dati sono finti.</p>
+
+<!-- 1 -->
+<div class="sec"><span class="tag">Punti 16 · 15 · 40 · 6</span>
+<h2>1. Dashboard: «Prossime scadenze» e «Per te» in sezioni</h2>
+<p class="why">Scadenze: tutto ciò di cui sei referente o che conduci, anche auto-assegnato. Per te: solo quello che ti arriva da altre persone.</p>
+<div class="mod"><span class="x" title="Togli il modulo">×</span><h3>Prossime scadenze</h3>
+<div style="color:var(--ink-light);font-size:12.5px">Le cose che ti sono state affidate o di cui sei referente, dalla più vicina.</div>
+<div class="grp late">Scadute · 1</div>
+<div class="it late"><div class="d">7/11/2026</div><div class="t"><b>Circolare del Bivacco di Reparto</b><span class="pill pl-mod">Modulo affidato</span><span>Bivacco di Reparto · 21–22/11/2026</span></div><button class="btn">Apri</button></div>
+<div class="grp">Questa settimana</div>
+<div class="it"><div class="d">14/11/2026</div><div class="t"><b>Il Museo delle Emozioni</b><span class="pill pl-ref">Referente</span><span class="pill pl-con">Conduci</span><span>Riunione di Reparto · Percorso Gestione delle emozioni</span></div><button class="btn">Apri</button></div>
+<div class="grp">Prossime 4 settimane</div>
+<div class="it"><div class="d">21/11/2026</div><div class="t"><b>Le orme nel bosco</b><span class="pill pl-ref">Referente</span><span>Bivacco di Reparto · giornata 1</span></div><button class="btn">Apri</button></div>
+<div class="it"><div class="d">5/12/2026</div><div class="t"><b>Fine del ciclo «Autunno»</b><span>Verifica del ciclo · con lo staff</span></div><button class="btn">Apri</button></div>
+<div class="grp">Più avanti</div>
+<div class="it"><div class="d">gen–feb 2027</div><div class="t"><b>Primo pit stop</b><span class="pill pl-pit">Pit stop</span><span>Da fissare entro il Thinking Day (22/2/2027)</span></div><button class="btn">Fissa la data</button></div>
+<div style="text-align:right;margin-top:6px"><button class="lnk">Mostra tutto (12)</button></div>
+</div>
+
+<details class="pt" open><summary>▾ Per te</summary>
+<details class="ps" open><summary>Affidati a te <span class="cnt">2</span><button class="lnk all">Ho capito tutto</button></summary>
+<div class="row"><div class="t"><b>Cotitolare ti ha affidato «Attività 1»</b><span>Referente · Programmazione Annuale 2026-27 · Ktakatikkio</span></div><button class="btn p">Apri</button><button class="btn s">Ho capito</button><button class="btn s" title="Elimina">Elimina</button></div>
+<div class="row"><div class="t"><b>Titolare ti ha affidato il modulo «Pasti»</b><span>Bivacco di Reparto · 21–22/11/2026</span></div><button class="btn p">Apri</button><button class="btn s">Ho capito</button><button class="btn s">Elimina</button></div>
+</details>
+<details class="ps" open><summary>Suggerimenti <span class="cnt">2</span><button class="lnk all">Ho capito tutto</button></summary>
+<div class="row"><div class="t"><b>Cotitolare su «Attività 1»</b><span>«Aggiungerei un momento di verifica in cerchio alla fine»</span></div><button class="btn p">Apri</button><button class="btn s">Ho capito</button><button class="btn s">Elimina</button></div>
+<div class="row"><div class="t"><b>Titolare su «Attività 1»</b><span>«Attenzione ai tempi: 40 minuti sono pochi»</span></div><button class="btn p">Apri</button><button class="btn s">Ho capito</button><button class="btn s">Elimina</button></div>
+</details>
+<details class="ps"><summary>Novità sul progetto <span class="cnt g">5</span><button class="lnk all">Ho capito tutto</button></summary>
+<div class="row n"><div class="t">Titolare e Cotitolare hanno modificato «Attività 1» · 4 volte, ultima oggi 11:40</div><button class="btn s">Apri</button><button class="btn s">Ho capito</button></div>
+<div class="row n"><div class="t">Cotitolare ha aggiunto la riunione «Uscita al lago» · 7/11/2026</div><button class="btn s">Apri</button><button class="btn s">Ho capito</button></div>
+</details>
+<div style="font-size:12px;color:var(--ink-light);padding-top:8px">Gli avvisi su cui hai premuto «Ho capito» restano qui per 15 giorni, poi si archiviano.</div>
+</details>
+<div class="note">Le «Novità» sono chiuse di partenza e raggruppate per attività: oggi ogni modifica è una riga e riempiono la vista. Il pulsante «Elimina» cancella l'avviso solo per te.</div>
+</div>
+
+<!-- 2 -->
+<div class="sec"><span class="tag">Punto 59</span>
+<h2>2. Il mio staff: navigazione in alto</h2>
+<p class="why">Come in «Calendario e attività»: una barra ferma in alto, con le viste raggruppate. Sotto, chi stai guardando.</p>
+<div class="snav">
+<div class="sg"><span class="gl">Osservazione</span><span class="chip on">Scheda di osservazione</span><span class="chip">Lettura individuale</span><span class="chip">Evoluzione</span><span class="chip">Confronto</span></div>
+<div class="sep"></div>
+<div class="sg"><span class="gl">Percorso formativo</span><span class="chip">Riepilogo</span><span class="chip">Attività formative</span></div>
+</div>
+<div class="ppl"><span class="chip">Auto osservazione privata</span><span class="chip on">Cotitolare · VCU</span><span class="chip">Collaboratore · VCU</span><span class="chip">+ Aggiungi persona</span></div>
+<div class="ghost">contenuto della vista scelta</div>
+<div class="note">Le voci della barra sono quelle che oggi stanno in fondo alla pagina: non cambia nessuna funzione, cambia solo dove si trovano. Su telefono la barra scorre di lato.</div>
+</div>
+
+<!-- 3 -->
+<div class="sec"><span class="tag">Punti 47 · 48</span>
+<h2>3. Pit stop nel calendario e nei cicli</h2>
+<p class="why">Fonte: PEE rev25, cap. 6: «primo pit-stop valutativo a gennaio/febbraio (entro il Thinking Day), secondo ad aprile/maggio (dopo il San Giorgio)». Solo nella Programmazione, non nel Progetto Personale.</p>
+<div class="cal">
+<div class="m">Set</div><div class="m">Ott</div><div class="m">Nov</div><div class="m">Dic</div><div class="m">Gen</div><div class="m">Feb</div><div class="m">Mar</div><div class="m">Apr</div><div class="m">Mag</div><div class="m">Giu</div>
+<div class="c"><div class="ev">Apertura</div></div><div class="c"><div class="ev">Riunione</div><div class="ev">Riunione</div></div><div class="c"><div class="ev">Bivacco</div><div class="ev v">Verifica ciclo 1</div></div><div class="c"><div class="ev">Riunione</div></div>
+<div class="c"><div class="ev">Riunione</div><div class="pit">⏱ Pit stop 1<small>da fissare</small></div></div><div class="c"><div class="ev">Thinking Day</div></div><div class="c"><div class="ev">Uscita</div></div>
+<div class="c"><div class="ev">San Giorgio</div></div><div class="c"><div class="pit">⏱ Pit stop 2<small>da fissare</small></div></div><div class="c"><div class="ev">Campo</div></div>
+</div>
+<div class="pop"><h4>⏱ Pit stop 1 · gennaio–febbraio</h4>
+<div style="font-size:12.5px;color:var(--ink-mid)">Con lo staff ci si ferma a guardare l'andamento del gruppo e dei singoli. Si decide se continuare sugli stessi Obiettivi o cambiare, e si programmano i percorsi degli Obiettivi non ancora affrontati. Da fare entro il Thinking Day.</div>
+<div style="margin-top:8px;display:flex;gap:8px"><button class="btn p">Fissalo come riunione di staff</button><button class="btn s">Nascondi</button></div></div>
+<p class="fld" style="margin-top:20px">In Dashboard · «Il mio anno» (frase introduttiva)</p>
+<div class="intro">La programmazione segue un ritmo che si ripete: <b>pensare, fare, ripensare</b>. L'anno si divide in cicli di 3–4 mesi; ogni ciclo si chiude con una sosta (pit stop) in cui lo staff verifica e decide come proseguire. A fine anno la valutazione finale dà il via alla programmazione successiva.</div>
+<div class="cyc"><span class="cy">Ciclo 1<small>set–dic</small></span><span class="arr">→</span><span class="pst">⏱ Pit stop 1</span><span class="arr">→</span><span class="cy">Ciclo 2<small>gen–apr</small></span><span class="arr">→</span><span class="pst">⏱ Pit stop 2</span><span class="arr">→</span><span class="cy">Ciclo 3<small>mag–ago</small></span><span class="arr">→</span><span class="cy" style="background:#F3F0E6;color:#6E6130">Valutazione finale</span></div>
+<div class="note">Il segnaposto tratteggiato non è un evento: non conta nei numeri e non va nel Word finché non lo fissi. Una volta fissato diventa una riunione di staff con l'etichetta «Pit stop» e i suoi spunti già pronti. Stessa frase, adattata, in «Il mio ciclo» e nei paragrafi «Durate e soste» (Progettare) e «Soste durante l'anno» (Misurare).</div>
+</div>
+
+<!-- 4 -->
+<div class="sec"><span class="tag">Punti 22 · 28 · 23</span>
+<h2>4. Giornate dell'evento</h2>
+<p class="why">Un evento di un giorno non mostra più la doppia vista. Con più giornate: ×&nbsp;per togliere una giornata, trascinamento per spostarla; le date si ricalcolano da sole.</p>
+<div class="cols">
+<div class="box"><h4>Riunione (un giorno) · modulo Sicurezza</h4>
+<div class="fld">Per tutto l'evento</div><div class="fake">Note generali sulla sicurezza…</div>
+<div class="fld">Nelle attività</div>
+<div class="lst"><div><b>15:00 · Il Museo delle Emozioni</b> — «spazio libero da ostacoli, niente corsa al chiuso»</div><div><b>16:30 · Gioco di movimento</b> — «controllare il prato prima»</div></div>
+<div class="note" style="margin-top:8px">Niente «Giornata per giornata»: c'è una giornata sola. Se aggiungi una giornata, la doppia vista torna.</div>
+</div>
+<div class="box"><h4>Bivacco (tre giornate) · barra in alto</h4>
+<div class="tabs" style="align-items:stretch"><span class="tb camp">Evento</span>
+<span class="tb"><span class="h">⋮⋮</span>Sab 21/11<small>Giornata 1</small><span class="dx" title="Togli la giornata">×</span></span>
+<span class="drop"></span>
+<span class="tb"><span class="h">⋮⋮</span>Dom 22/11<small>Giornata 2</small><span class="dx">×</span></span>
+<span class="tb drag"><span class="h">⋮⋮</span>Lun 23/11<small>Giornata 3</small><span class="dx">×</span></span>
+<span class="tb" style="border-style:dashed;padding:6px 12px;cursor:pointer">+ Giornata</span></div>
+<div style="font-size:12px;color:var(--ink-light)">Trascini «Giornata 3» prima della 2: il suo programma, i pasti e le note diventano la domenica 22/11; quelli della vecchia domenica slittano a lunedì 23/11.</div>
+<div class="cf"><b>Togliere «Lun 23/11»?</b><br>Contiene 4 attività, 3 pasti e 2 note di sicurezza. Le attività tornano in «Da collocare»; pasti e note si cancellano (restano nelle versioni precedenti).<div style="margin-top:8px;display:flex;gap:8px"><button class="btn" style="border-color:var(--red);color:var(--red)">Togli la giornata</button><button class="btn s">Annulla</button></div></div>
+</div></div>
+<div class="note">Il pulsante «Campo» diventa «Evento» in tutta l'app e nei materiali scaricabili («Time table dell'evento», «Per tutto l'evento»). La prima giornata non si può togliere se è l'unica.</div>
+</div>
+
+<!-- 5 -->
+<div class="sec"><span class="tag">Punto 36</span>
+<h2>5. Suggerimenti ricevuti, in cima all'attività</h2>
+<p class="why">Stile commenti di Google Docs: li vedono tutti, li risolve solo chi li ha scritti. Chiuso di partenza se sono già stati letti.</p>
+<div class="act"><div class="ttl">▾ Attività 1 — LA MIA PRIMA LUNA</div>
+<details class="sgp" open><summary>Suggerimenti ricevuti · 2 aperti</summary>
+<div class="sgi"><div class="av">CT</div><div class="b"><div class="meta"><b>Cotitolare</b> · 9/11/2026, 11:20 · su «Scaletta»</div><div class="q">«Lancio – 10 minuti, Sviluppo – 30 minuti…»</div>Aggiungerei un momento di verifica in cerchio alla fine.</div><div><button class="btn s">Risolvi</button></div></div>
+<div class="sgi"><div class="av">TI</div><div class="b"><div class="meta"><b>Titolare</b> · 9/11/2026, 10:05</div>Attenzione ai tempi: 40 minuti per lo sviluppo sono pochi.</div><div style="font-size:11.5px;color:var(--ink-faint);align-self:center">solo Titolare<br>può risolverlo</div></div>
+<div class="res">▸ 1 suggerimento risolto · <button class="lnk">mostra</button></div>
+</details>
+<div class="fld">Obiettivi e indicatori della programmazione</div><div class="fake">…</div>
+<div class="fld">Strumenti del metodo</div><div class="fake">…</div>
+</div>
+<div class="note">Funziona nei Percorsi e nel Calendario. Il pulsante «Risolvi» c'è solo per chi ha scritto il suggerimento; per gli altri c'è la scritta grigia. Quelli risolti restano consultabili («mostra»). L'avviso continua ad arrivare anche in «Per te · Suggerimenti».</div>
+</div>
+
+</div></body></html>

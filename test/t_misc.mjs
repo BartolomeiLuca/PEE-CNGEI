@@ -47,11 +47,15 @@ const opts = await ev(pa.page, () => [...document.querySelectorAll('#occ-tab sel
 ok(opts.length && JSON.stringify(opts[opts.length-1]) === JSON.stringify(['— scegli —','Anna Rossi','Paolo Riva','Tutto lo staff','Altro…']), '10. «Chi ha osservato»: nomi dello staff, Tutto lo staff, Altro: ' + JSON.stringify(opts[opts.length-1]));
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('Tutto lo staff'); await sleep(200);
 ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Tutto lo staff', '10. scelta salvata');
+await ev(pa.page, () => occChiDel('m', 0, 0)); await sleep(200);
+await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('Anna Rossi'); await sleep(200);
+await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('Paolo Riva'); await sleep(200);
+ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Anna Rossi|Paolo Riva', '9. «Chi ha osservato»: più persone');
+pa.page.once('dialog', d => d.accept('Il Capo Gruppo'));
 await pa.page.locator('#occ-tab select.occ-chi').last().selectOption('__a'); await sleep(300);
-await pa.page.locator('#occ-tab :is(input,textarea).occ-chi').last().fill('Il Capo Gruppo'); await sleep(200);
-ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Il Capo Gruppo', '10. «Altro»: testo libero');
+ok(await ev(pa.page, () => scheda.pp.occMan[0].chi) === 'Anna Rossi|Paolo Riva|Il Capo Gruppo', '10. «Altro»: testo libero, insieme agli altri');
 await ev(pa.page, () => occRefresh()); await sleep(200);
-ok(await ev(pa.page, () => [...document.querySelectorAll('#occ-tab :is(input,textarea).occ-chi')].some(i => i.value === 'Il Capo Gruppo')), '10. il testo libero resta dopo il ridisegno');
+ok(await ev(pa.page, () => /Il Capo Gruppo/.test(document.getElementById('occ-tab').textContent)), '10. il testo libero resta dopo il ridisegno');
 
 // ── 22-23. materiali di pattuglia e maglia termica ──
 await ev(pa.page, () => { gGo('3'); }); await sleep(800);

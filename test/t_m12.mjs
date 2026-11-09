@@ -29,7 +29,7 @@ const rows = await ec(() => [...document.querySelectorAll('#sh-perte .cl-row .t'
 ok(rows.some(t => /da ideare e preparare/.test(t) && /Gioco da ideare/.test(t)) || rows.some(t => /Gioco da ideare/.test(t)), 'Carla riceve in «Per te» l’incarico di ideare e preparare: ' + JSON.stringify(rows.map(t => t.slice(0, 100))));
 await ec(() => { try{ shOpen('c1', true); }catch(e){} }); await sleep(3500);
 await ec(() => shCal()); await sleep(800); await ec(() => shSrUsc('r0')); await sleep(2000);
-const U = await ec(() => ({pasti: uscPastiHTML(uscCur(), 0).match(/data-uref="[^"]*"/), blk: (document.getElementById('usc-b-u1') || {getAttribute: () => ''}).getAttribute('data-uaff'), prepLabel: /Chi la pensa e prepara/.test(document.getElementById('usc-b-u1') ? document.getElementById('usc-b-u1').textContent : '')}));
+const U = await ec(() => ({pasti: uscPastiHTML(uscCur(), 0).match(/data-uref="[^"]*"/), blk: (document.getElementById('usc-b-u1') || {getAttribute: () => ''}).getAttribute('data-uaff'), prepLabel: /Chi la conduce/.test(document.getElementById('usc-b-u1') ? document.getElementById('usc-b-u1').textContent : '')}));
 console.log(JSON.stringify(U));
 ok(U.pasti && /carla@x.it/.test(U.pasti[0]), 'chi ha la merenda può intervenire nei Pasti (referenti: ' + (U.pasti && U.pasti[0]) + ')');
 ok(/carla@x.it/.test(U.blk || ''), 'chi ha l’ideazione del momento lo può modificare (data-uaff: ' + U.blk + ')');
@@ -38,6 +38,6 @@ await loginAs(A, base, ua); await sleep(1500); A.evaluate(() => shOpen('c1', 0))
 await ea(() => { document.querySelectorAll('#g-modal .ppb-c').forEach(c => { c.checked = true; }); if(document.querySelector('#g-modal.show .ppb-ask')) _ppbGo(); }); await sleep(1200);
 await ea(() => shCal()); await sleep(600); await ea(() => shSrUsc('r0')); await sleep(2000);
 await ea(() => { USC_OPEN['u1'] = true; uscRe(); }); await sleep(500);
-ok(await ea(() => /Chi la pensa e prepara/.test(document.getElementById('usc-b-u1').textContent)), 'il titolare può affidare l’ideazione di un momento a una persona');
+ok(await ea(() => /Chi la conduce/.test(document.getElementById('usc-b-u1').textContent)), 'il titolare può affidare l’ideazione di un momento a una persona');
 const errs = pa.errors.concat(pc.errors); ok(!errs.length, 'nessun errore JS' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

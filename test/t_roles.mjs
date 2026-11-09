@@ -131,7 +131,7 @@ const b3 = await ev(pb.page, () => {
   const nav = [...document.querySelectorAll('#panel4 button')].filter(b => /gGo|axDocx|icsOne|fdgOpen/.test(b.getAttribute('onclick')||''));
   const add = [...document.querySelectorAll('#panel4 button')].filter(b => /attAdd|addPercorsoExtra/.test(b.getAttribute('onclick')||''));
   return {mine: st('att-0-0'), other: st('att-0-1'), log: [...g.querySelectorAll('input,select,textarea')].filter(e => !e.disabled && !e.classList.contains('ref-sel')).length, sic: [...gs.querySelectorAll('input,select,textarea')].filter(e => !e.disabled).length,
-    navOn: nav.length && nav.every(b => !b.disabled), addOff: add.length && add.every(b => b.disabled), aff: document.querySelector('#att-0-0 .aff-sel') && document.querySelector('#att-0-0 .aff-sel').disabled }; });
+    navOn: nav.length && nav.every(b => !b.disabled), addOff: add.length && add.every(b => b.disabled), aff: (() => { const L = [...document.querySelectorAll('#att-0-0 .att-share select, #att-0-0 .att-share button')]; return L.length > 0 && L.every(e => e.disabled); })() }; });
 ok(b3.mine.en > 10, '21. referente dell’attività: modifica l’attività intera (' + b3.mine.en + ' campi)');
 ok(b3.other.en === 0, '16. attività di un altro: nessun campo modificabile');
 ok(b3.log > 0 && b3.sic === 0, '24. referente della logistica: modifica solo la logistica');

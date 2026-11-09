@@ -262,7 +262,7 @@ const dtxt = async (f, a) => { const [d] = await Promise.all([P.waitForEvent('do
 const pr = await dtxt(() => uscExport('giorno', 2));
 ok(/\.docx$/.test(pr.n) && /Sveglia e ginnastica/.test(pr.t) && /LANCIO DALL’USCITA/.test(pr.t) && /Cartine/.test(pr.t) && /Pattuglia Volpi/.test(pr.t), 'Esporta la giornata in Word: time table e blocchi con i dettagli (' + pr.n + ')');
 const pt = await dtxt(() => uscExport('tuttotutto'));
-ok(/Time table del campo/.test(pt.t) && /Lista della spesa/.test(pt.t) && /Quota/.test(pt.t) && /Circolare/.test(pt.t), '«Tutto di tutto» in Word: time table, giornate, menù e spesa, quota, circolare');
+ok(/Time table dell’evento/.test(pt.t) && /Lista della spesa/.test(pt.t) && /Quota/.test(pt.t) && /Circolare/.test(pt.t), '«Tutto di tutto» in Word: time table, giornate, menù e spesa, quota, circolare');
 // scheda Campo: time table generale e moduli
 await P.locator('#usc-tab-campo').click(); await sleep(300);
 ok(await P.locator('.usc-slot').count() >= 14 && /spesa totale/.test(await P.locator('.usc-sint').textContent()) && await P.locator('.usc-camp .usc-ctab tr').count() === 6, 'scheda Campo: time table di tutto il campo, sintesi e riepilogo per giornata');
