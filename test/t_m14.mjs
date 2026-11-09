@@ -16,7 +16,7 @@ await ev(() => { const m = uscMap(); if(!m.r0){ m.r0 = {id:'r0', cr:1, testo:'Ri
 await ev(() => shSrUsc('r0')); await sleep(1500);
 const k = await ev(() => { uscTab(1); const pi = USC_PALS.findIndex(z => z[0] === 'nuova'); uscBlkAdd(pi); const u = uscCur(); return Object.keys(u.prog).find(k => u.prog[k].k === 'nuova'); }); await sleep(500);
 const f = await ev(k => uscCur().prog[k].f.slice(0, 3), k);
-ok(f[0] === 'tipo' && f[1] === 'met', 'in una nuova attività i primi campi sono Tipo di attività e Strumenti del Metodo (' + f.join(',') + ')');
+ok(f[0] === 'obj' && f[1] === 'met' && f[2] === 'tipo', 'in una nuova attività i primi campi sono Obiettivi, Strumenti del Metodo e Tipo di attività (' + f.join(',') + ')');
 await ev(k => { USC_OPEN[k] = true; USC_FOPEN[k + '|tipo'] = true; USC_FOPEN[k + '|met'] = true; uscRe(); }, k); await sleep(400);
 const nSel = await ev(k => document.querySelectorAll('#usc-b-' + k + ' .ax-pm-s[aria-label="Aggiungi"]').length, k);
 ok(nSel >= 2, 'ci sono i due menu di scelta (' + nSel + ')');

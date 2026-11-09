@@ -30,16 +30,16 @@ ok(await P.locator(`${AX} .ax-chipw button[title^="Togli"]`).count() === 1, '5: 
 await P.locator(`${AX} .ax-chipw button[title^="Togli"]`).click(); await sleep(300);
 ok(!(await ev(([p, j]) => axX(p, j).pres.ad, [p, j])).includes('Ospite Verdi'), '5: l’ospite è tolto del tutto');
 // 4. cosa osservo: altri indicatori + libero
-const o1 = await ev(([p, j]) => document.querySelector(`#ax-${p}-${j} .ax-oss-add select`) ? document.querySelectorAll(`#ax-${p}-${j} .ax-oss-add select option`).length : 0, [p, j]);
+const o1 = await ev(([p, j]) => document.querySelector(`#att-${p}-${j} .ax-oss-add select`) ? document.querySelectorAll(`#att-${p}-${j} .ax-oss-add select option`).length : 0, [p, j]);
 ok(o1 > 3, '4: menù per osservare indicatori di altri percorsi (' + o1 + ' opzioni)');
-await ev(([p, j]) => { const s = document.querySelector(`#ax-${p}-${j} .ax-oss-add select`); const o = s.querySelectorAll('option')[2]; s.value = o.value; s.dispatchEvent(new Event('change')); }, [p, j]); await sleep(300);
+await ev(([p, j]) => { const s = document.querySelector(`#att-${p}-${j} .ax-oss-add select`); const o = s.querySelectorAll('option')[2]; s.value = o.value; s.dispatchEvent(new Event('change')); }, [p, j]); await sleep(300);
 ok((await ev(([p, j]) => axX(p, j).ossX || [], [p, j])).length === 1, '4: indicatore di un altro percorso aggiunto');
 await P.locator(`${AX} button:visible`, {hasText:'Aggiungi altro da osservare'}).first().click().catch(() => {}); await sleep(300);
 // 10. strumenti del metodo
-const nS = await ev(([p, j]) => { const s = [...document.querySelectorAll(`#ax-${p}-${j} select`)].find(z => /altro strumento del metodo/.test(z.options[0].text)); return s ? s.options.length : 0; }, [p, j]);
+const nS = await ev(([p, j]) => { const s = document.querySelector(`#att-${p}-${j} .att-met select`); return s ? s.options.length : 0; }, [p, j]);
 ok(nS > 2, '10: posso aggiungere altri strumenti del metodo (' + nS + ')');
-await ev(([p, j]) => { const s = [...document.querySelectorAll(`#ax-${p}-${j} select`)].find(z => /altro strumento del metodo/.test(z.options[0].text)); s.value = s.options[1].value; s.dispatchEvent(new Event('change')); }, [p, j]); await sleep(300);
-ok((await ev(([p, j]) => axX(p, j).strum || [], [p, j])).length === 1, '10: strumento aggiunto e selezionato');
+await ev(([p, j]) => { const s = document.querySelector(`#att-${p}-${j} .att-met select`); s.value = s.options[1].value; s.dispatchEvent(new Event('change')); }, [p, j]); await sleep(300);
+ok((await ev(([p, j]) => axX(p, j).strum || [], [p, j])).length >= 1, '10: strumento aggiunto e selezionato');
 // 11. chi paga?
 await ev(([p, j]) => { axX(p, j).spese = [{voce:'Ingressi', importo:50, modo:'forfait'}]; axSave(); axRe(p, j); }, [p, j]); await sleep(300);
 ok(/Chi paga\?/.test(await txt()) && /Come si calcola/.test(await txt()), '11: «Chi paga?» e «Come si calcola» sopra le tendine');

@@ -49,7 +49,7 @@ await loginAs(C, base, uc); await sleep(3500);
 const rows = await ec(() => [...document.querySelectorAll('#sh-perte .cl-row .t')].map(e => e.textContent));
 ok(rows.some(t => /sicurezza|benessere|piano B/i.test(t)), 'Carla vede in «Per te» i referenti assegnati: ' + JSON.stringify(rows.map(t => t.slice(0, 90))));
 // osservazione dell'attività: un solo «Chi osserva», niente menu per indicatore
-const oss = await ea(() => { const p = getAllPercorsi(); const i = p.findIndex(q => axIdr(q).length); if(i < 0) return null; const a = p[i].attivita[0]; a.ax = a.ax || {}; const k = axIdr(p[i])[0].k; a.ax.oss = {[k]: {on: true, comp: ''}}; const h = axBody(i, 0); return {who: (h.match(/ax-oss-who/g) || []).length, perInd: /ax-row2"><input class="ax-in" placeholder="Da quale comportamento lo vedrai\?"[^>]*><select/.test(h)}; });
+const oss = await ea(() => { const p = getAllPercorsi(); const i = p.findIndex(q => axIdr(q).length); if(i < 0) return null; const a = p[i].attivita[0]; a.ax = a.ax || {}; const k = axIdr(p[i])[0].k; a.ax.oss = {[k]: {on: true, comp: ''}}; const h = axBody(i, 0) + attObjHTML(i, 0, a); return {who: (h.match(/ax-oss-who/g) || []).length, perInd: /ax-row2"><input class="ax-in" placeholder="Da quale comportamento lo vedrai\?"[^>]*><select/.test(h)}; });
 ok(oss && oss.who === 1 && !oss.perInd, 'indicatori: un solo «Chi osserva» e nessun menu per indicatore ' + JSON.stringify(oss));
 const errs = pa.errors.concat(pc.errors); ok(!errs.length, 'nessun errore JS' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);
