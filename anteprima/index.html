@@ -745,7 +745,8 @@ body.g-nav .mobile-nav .mnav-lbl{font-size:12px}
 .sc-n.on,.sc-no.on{background:var(--green,#25734e);border-color:var(--green);color:#fff}body[data-theme="L"] .sc-n.on,body[data-theme="L"] .sc-no.on{color:#1A1A18}
 .gr-box{margin:0 0 12px}.gr-row{border:1px solid var(--border-light);border-radius:10px;padding:10px 12px;margin:6px 0;background:#fff}.gr-row.gr-hl{border-left:4px solid var(--green)}.gr-h{font-size:12px;margin-bottom:6px}.gr-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .gr-f span{display:block;font-size:12px;font-weight:700;margin-bottom:3px}.gr-f textarea{width:100%;min-height:56px;border:1px solid #8a8a82;border-radius:8px;padding:6px 8px;font:500 12.5px 'Montserrat',sans-serif;resize:vertical;box-sizing:border-box}
-.gr-warn{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:#a1260f}.gr-old{font-size:12px;color:var(--ink-mid);margin-top:3px}.gr-empty,.gr-hint{font-size:12px;color:var(--ink-mid);line-height:1.5;margin:4px 0}.gr-more summary{font-size:12px;font-weight:700;color:var(--green,#1b5e42);cursor:pointer;min-height:32px;display:flex;align-items:center}
+.gr-warn{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:#a1260f}.gr-old{font-size:12px;color:var(--ink-mid);margin-top:3px}
+.gr-focro{border:1px solid var(--border-light);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.45;white-space:normal}.gr-empty,.gr-hint{font-size:12px;color:var(--ink-mid);line-height:1.5;margin:4px 0}.gr-more summary{font-size:12px;font-weight:700;color:var(--green,#1b5e42);cursor:pointer;min-height:32px;display:flex;align-items:center}
 .gr-sub{font-size:12px;line-height:1.5;color:var(--ink-mid);margin:0 0 8px}.gr-sub b{color:var(--ink)}
 .gr-foc textarea{width:100%;min-height:56px;border:1px solid #8a8a82;border-radius:8px;padding:6px 8px;font:500 12.5px 'Montserrat',sans-serif;resize:vertical;box-sizing:border-box}.gr-fl{font-size:12px;font-weight:700;margin-bottom:3px}
 .gr-pick{margin-top:6px}.gr-pick summary{font-size:12px;font-weight:700;color:var(--green,#1b5e42);cursor:pointer;min-height:32px;display:flex;align-items:center}.gr-pl{display:grid;gap:4px;margin:4px 0 6px;padding:8px 10px;border:1px solid var(--border-light);border-radius:8px;background:#fafaf7}
@@ -3157,22 +3158,27 @@ function staffTab(){ if(MODE==='staff') return stTabSynth(); const pp=scheda.pp|
   if(!Array.isArray(pp.staffTab)) pp.staffTab=(FASCIA==='R'?['CC','VCC','CG']:['CU','VCU','VCU','SiS','CG']).map(r=>({ruolo:r})); staffSelfRow(pp.staffTab); return pp.staffTab; }
 // chi compila compare già nella tabella, con il ruolo del profilo e la propria email (così non è tra le persone da spuntare per la condivisione); una sola volta per progetto
 function staffSelfRow(t){ try{
-  const pp=scheda.pp||{}; if(pp._selfRow||window.BRO||MODE==='staff'||typeof CL==='undefined'||!CL.user) return;
+  const pp=scheda.pp||{}; if(window.BRO||MODE==='staff'||typeof CL==='undefined'||!CL.user||(CL.ctx&&CL.ctx.ruolo)) return;
   const me=String(CL.user.email||'').trim().toLowerCase(); if(!me) return;
+  const myName=String((typeof clMyName==='function'&&clMyName())||(window.SH&&SH.prof&&SH.prof.nome)||pp.nome||'').trim();
+  const mine=t.find(r=>String(r.mail||'').trim().toLowerCase().split(/[\s,;]+/)[0]===me);
+  // riparazione: riga con la mia email ma senza nome (programmazioni create prima del 9/11)
+  if(mine){ if(!String(mine.nome||'').trim()&&myName){ mine.nome=myName; saveDataDebounced(); } pp._selfRow=true; return; }
+  if(pp._selfRow) return;
+  let k=String(((scheda.veste||{}).ruolo)||(window.SH&&SH.prof&&SH.prof.ruolo)||'').toUpperCase(); k=({CB:'CU',VCB:'VCU',CR:'CU',CREP:'CU',VCR:'VCU'})[k]||k; if(typeof FASCIA!=='undefined'&&FASCIA==='R') k=({CU:'CC',VCU:'VCC'})[k]||k;
+  if(!k||!myName) return; // profilo non ancora caricato: si riprova alla prossima apertura
   pp._selfRow=true;
-  if(t.some(r=>String(r.mail||'').trim().toLowerCase()===me)) return;
-  let k=String((window.SH&&SH.prof&&SH.prof.ruolo)||'').toUpperCase(); k=({CB:'CU',VCB:'VCU'})[k]||k;
-  const free=r=>!String(r.nome||'').trim();
-  const row=t.find(r=>r.ruolo===k&&free(r))||((k==='CU'||k==='CC')?t.find(r=>(r.ruolo==='CU'||r.ruolo==='CC')&&free(r)):null);
-  if(!row) return;
-  row.nome=String(pp.nome||(window.SH&&SH.prof&&SH.prof.nome)||'').trim(); row.mail=me; saveDataDebounced();
+  const free=r=>!String(r.nome||'').trim()&&!String(r.mail||'').trim();
+  let row=t.find(r=>r.ruolo===k&&free(r))||((k==='CU'||k==='CC')?t.find(r=>(r.ruolo==='CU'||r.ruolo==='CC')&&free(r)):null);
+  if(!row){ row={ruolo:k}; t.unshift(row); }
+  row.nome=myName; row.mail=me; saveDataDebounced();
 }catch(e){} }
 function staffTabSet(i,k,v){ const t=staffTab(); if(t[i]){ t[i][k]=v; if(k==='mail'&&(window._stBad||{})[i]&&clEmailOk(String(v||'').trim().toLowerCase().split(/[\s,;]+/)[0])){ delete window._stBad[i]; const c=document.querySelector('#staff-tab .st-bad'); if(c){ c.parentElement.style.outline=''; c.parentElement.style.background=''; c.remove(); } } saveDataDebounced(); if(k==='nome'){ clearTimeout(window._occNT); window._occNT=setTimeout(()=>{ try{ const o=document.getElementById('occ-tab'); if(o&&!o.contains(document.activeElement)) o.innerHTML=occTableHTML(); }catch(e){} },600); } } }
 function staffTabAdd(){ staffTab().push({ruolo:''}); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 function staffTabMove(i,d){ const j=i+d; if(MODE==='staff'){ const a=STAFF_MEMBERS; if(j<0||j>=a.length||!a[i]||!a[j]) return; const x=a[i]; a[i]=a[j]; a[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); try{ if(typeof renderStaffPhase1==='function') renderStaffPhase1(); }catch(e){} return; } const t=staffTab(); if(j<0||j>=t.length||!t[i]||!t[j]) return; const x=t[i]; t[i]=t[j]; t[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 function staffTabDel(i){ staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 // ruolo ed età a tendina (nel Branco il ruolo decide i personaggi della Giungla tra cui scegliere)
-const staffRuoli=()=>(FASCIA==='R'?['CC','VCC','CG','Aiuto','Volontario']:['CU','VCU','SiS','CG','Aiuto','Senior in servizio','Volontario']);
+const staffRuoli=()=>(FASCIA==='R'?['CC','VCC','CG']:['CU','VCU','SiS','CG']);
 function stSelRuolo(i,v){ const cur=String(v||'').trim(); const O=staffRuoli(); if(cur&&!O.some(o=>o.toLowerCase()===cur.toLowerCase())) O.push(cur); const sel=O.find(o=>o.toLowerCase()===cur.toLowerCase())||'';
   return `<select aria-label="Ruolo" style="width:100%;min-width:56px;border:none;font:inherit;font-size:12px;font-weight:700;padding:4px;background:transparent" onchange="stPickRuolo(${i},this)"><option value="">—</option>${O.map(o=>`<option${o===sel?' selected':''}>${sEsc(o)}</option>`).join('')}<option value="__altro">Altro…</option></select>`; }
 function stSelEta(i,v){ const cur=String(v||'').trim(); const O=[]; for(let n=16;n<=75;n++) O.push(String(n)); if(cur&&!O.includes(cur)) O.unshift(cur);
@@ -3263,7 +3269,7 @@ function grRows(pid){
 }
 // testi per persona: chi ha il progetto scrive nel testo principale; cotitolari e collaboratori in uno spazio proprio (g[k].by[email])
 function grMineKey(){ try{ if(window.BRO||typeof CL==='undefined'||!CL.user||!CL.ctx||!CL.ctx.ruolo) return ''; return String(CL.user.email||'').trim().toLowerCase(); }catch(e){ return ''; } }
-function grOwnerName(){ try{ let o = String((CL.ctx && CL.ctx.owner) || '').trim(); if(!o) return 'Chi ha il progetto'; let n = (typeof affName1 === 'function' ? affName1(o) : o) || o; if(/@/.test(n)) n = n.split('@')[0].replace(/[._]+/g,' ').replace(/\b\w/g, c => c.toUpperCase()); return n; }catch(e){ return 'Chi ha il progetto'; } }
+function grOwnerName(){ try{ let o = String((CL.ctx && CL.ctx.owner) || (window.BRO && window.BRO.owner) || '').trim(); if(!o) return 'Chi ha il progetto'; let n = (typeof affName1 === 'function' ? affName1(o) : o) || o; if(/@/.test(n)) n = n.split('@')[0].replace(/[._]+/g,' ').replace(/\b\w/g, c => c.toUpperCase()); return n; }catch(e){ return 'Chi ha il progetto'; } }
 function grMine(d, create){ const em=grMineKey(); if(!em) return d; if(create){ if(!d.by) d.by={}; if(!d.by[em]) d.by[em]={nome:(typeof clMyName==='function'?clMyName():'')||em}; return d.by[em]; } return (d.by&&d.by[em])||{}; }
 function grOthers(d, f){ const em=grMineKey(); const out=[]; if(em && String(d[f]||'').trim()) out.push({nome:grOwnerName(), t:String(d[f]).trim()});
   Object.keys(d.by||{}).forEach(e=>{ if(e===em) return; const t=String((d.by[e]||{})[f]||'').trim(); if(t) out.push({nome:(d.by[e].nome||e), t}); }); return out; }
@@ -3309,6 +3315,10 @@ function grInner(pid){
     return `<div class="gr-f"><span>${lab}</span><div class="gr-fi"><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(mine || '')}</textarea></div></div>`
       + (oth.length ? `<div class="gr-oth"><b>Cosa hanno scritto gli altri · ${sEsc(lab)}</b>${oth.map(o=>`<div><i>${sEsc(o.nome)}:</i> ${sEsc(o.t)}</div>`).join('')}</div>` : ''); };
   const focBlock = (r, g, free) => {
+    // il focus lo decidono titolare e co-titolare: chi collabora (o legge) lo riceve già pronto
+    const focRO = !!window.BRO || !!(typeof CL !== 'undefined' && CL.ctx && CL.ctx.ruolo === 'collaboratore');
+    if(focRO){ const kos0 = free ? '' : grKosFoc(pid, r); const cur0 = g.foc !== undefined ? g.foc : kos0;
+      return `<div class="gr-foc"><div class="gr-fl">Focus osservativo</div><div class="gr-focro">${cur0 ? sEsc(cur0).replace(/\n/g,'<br>') : '<i>Non ancora scritto</i>'}</div><div class="gr-old">Il focus lo scelgono titolare e co-titolare: tu osservi con questo.</div></div>`; }
     if(free) return ta(r.k, 'foc', g.foc, 'Focus osservativo');
     const kos = grKosFoc(pid, r); grFocMigra(pid, r.k, g, kos); const els = grElems(pid);
     const cur = g.foc !== undefined ? g.foc : kos; const lines = grFocLines(cur); const nSel = els.filter(x => lines.indexOf(x) >= 0).length;
@@ -5390,7 +5400,7 @@ function stCardsHTML(auto){
         const kd = (typeof KOS_OBS !== 'undefined') ? KOS_OBS[p.id] : null;
         if(kd && (kd.staff || kd.protagonismo)) body += `<details class="kos-details"><summary>Cosa osservare nello staff</summary><div class="kos-details-body">${kd.staff ? `<div class="kos-sub"><div class="kos-sub-lbl">Dinamiche del team</div><div class="kos-sub-txt kos-sub-txt-staff">${kd.staff}</div></div>` : ''}${kd.protagonismo ? `<div class="kos-sub" style="margin-top:10px"><div class="kos-sub-lbl">Protagonismo e distributed leadership</div><div class="kos-sub-txt kos-sub-txt-prot">${kd.protagonismo}</div></div>` : ''}</div></details>`;
       }
-      h += `<div class="pc" id="card-${p.id}"><div class="pc-hdr" onclick="toggleCard('${p.id}')"><span class="pc-num">${k + 1}</span><span class="pc-name">${p.name}</span><div class="pc-states" onclick="event.stopPropagation()"><div class="obs-scale-wrap"><select class="obs-select" id="sel-${p.id}" style="border-color:${num ? thresholdColor(t) : 'var(--border)'}" onchange="${on}"><option value="n"${!num ? ' selected' : ''}>— Non osservato</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}"${num === n ? ' selected' : ''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select><span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(t)}">${num ? num + ' · ' + thresholdLabel(t) : '—'}</span></div></div><span class="pc-chev">▼</span></div><div class="pc-body"><div class="pc-body-inner">${body}</div></div></div>`;
+      h += `<div class="pc" id="card-${p.id}" data-stcard="${auto ? 'auto' : sEsc(String(name||''))}" data-stpid="${p.id}"><div class="pc-hdr" onclick="toggleCard('${p.id}')"><span class="pc-num">${k + 1}</span><span class="pc-name">${p.name}</span><div class="pc-states" onclick="event.stopPropagation()"><div class="obs-scale-wrap"><select class="obs-select" id="sel-${p.id}" style="border-color:${num ? thresholdColor(t) : 'var(--border)'}" onchange="${on}"><option value="n"${!num ? ' selected' : ''}>— Non osservato</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}"${num === n ? ' selected' : ''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select><span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(t)}">${num ? num + ' · ' + thresholdLabel(t) : '—'}</span></div></div><span class="pc-chev">▼</span></div><div class="pc-body"><div class="pc-body-inner">${body}</div></div></div>`;
     });
     h += `</div>`;
   });
@@ -7971,11 +7981,14 @@ function affRowHTML(idx,j,att){ const P=affPeople(); if(!P.length&&!att.aff) ret
   return `<div class="aff-row"><label>Referente dell’attività</label><select class="aff-sel" onchange="affSet(${idx},${j},this.value)"><option value="">— nessuno —</option>${P.map(r=>`<option value="${sEsc(affKey(r))}" ${affNorm(affKey(r))===affNorm(cur)?'selected':''}>${sEsc(r.nome)}</option>`).join('')}${cur&&!has?`<option value="${sEsc(cur)}" selected>${sEsc(cur)}</option>`:''}</select><span class="aff-note">la segue tutta: chi, quando, durante, materiali e piano B (persone dalla tabella 1.1)</span></div>`; }
 function attShareHTML(idx,j,att){ if((scheda.tipoProgetto||'')==='PP') return ''; if(!affPeople().length && !att.aff && !att.prep) return '';
   return `<div class="att-share"><div class="aff-row"><label>Chi la pensa e prepara</label>${axPersonMulti(att.prep||'',`attPrepSet(${idx},${j},@V)`)}</div><div class="aff-row"><label>Referente dell’attività</label>${axPersonMulti(att.aff||'',`affSet(${idx},${j},@V)`)}</div></div>`; }
-function attPrepSet(idx,j,v){ updateAttivita(idx,j,'prep',v); if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); }
+function attPrepSet(idx,j,v){ updateAttivita(idx,j,'prep',v); try{ affStamp(getAllPercorsi()[idx].attivita[j],'prep',v); }catch(e){} if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); }
 function attShareSet(idx,j,on){ updateAttivita(idx,j,'condivisa',!!on); saveDataDebounced(); const v=clViewSaveSafe(); try{ renderValuation(); }catch(e){} clViewRestoreSafe(v); }
 function clViewSaveSafe(){ try{ return clViewSave(); }catch(e){ return null; } }
 function clViewRestoreSafe(v){ try{ if(v) clViewRestore(v); }catch(e){} }
-function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); const bt=s.querySelector(':scope > button'); if(bt) s.insertBefore(c, bt); else s.appendChild(c); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
+// chi ha affidato (per non mostrare in «Per te» ciò che una persona si è assegnata da sola)
+function affMe(){ try{ return String((CL&&CL.user&&CL.user.email)||'').trim().toLowerCase(); }catch(e){ return ''; } }
+function affStamp(o,f,v){ try{ if(!o) return; if(!o.by||typeof o.by!=='object') o.by={}; if(v) o.by[f]=affMe(); else delete o.by[f]; }catch(e){} }
+function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); try{ affStamp(getAllPercorsi()[idx].attivita[j],'aff',v); }catch(e){} if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); const bt=s.querySelector(':scope > button'); if(bt) s.insertBefore(c, bt); else s.appendChild(c); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
 // verifica delle parti affidate: un campo per ogni referente di settore, già etichettato
 function verParti(a){ if(!axShared(a)) return []; const x=a.ax||{}; return AX_REF.map(([k,l])=>({k,l,chi:axRef(x,k)})).filter(o=>o.chi); }
 function verPartiHTML(idx,j,a){ const P=verParti(a); if(!P.length) return ''; const V=a.vRef||{};
@@ -8733,7 +8746,7 @@ function axMin(t){ const m=/^(\d{1,2}):(\d{2})$/.exec(t||''); return m?(+m[1])*6
 function axEur(v){ return '€ '+(Number(v)||0).toFixed(2).replace('.',','); }
 function axIsUrl(u){ return /^https?:/i.test(linkNorm(u||'')); }
 // persone: staff della 1.1 + persone aggiunte a mano
-function axPeople(){ const out=[]; if(axSt()){ stRows().forEach(r=>out.push(r.nome)); ((scheda.pp||{}).axExtra||[]).forEach(n=>{ if(n&&!out.includes(n)) out.push(n); }); return out; } try{ staffTab().forEach(r=>{ const n=(r.nome||'').trim(); if(n) out.push(n+(r.ruolo?' ('+r.ruolo+')':'')); }); }catch(e){}
+function axPeople(){ const out=[]; if(axSt()){ const seen=new Set(); stRows().forEach(r=>{ out.push(r.nome); seen.add(affNorm(r.nome)); }); if(MODE!=='staff'){ try{ staffTab().forEach(r=>{ const n=(r.nome||'').trim(); if(n&&!seen.has(affNorm(n))){ seen.add(affNorm(n)); out.push(n+(r.ruolo?' ('+r.ruolo+')':'')); } }); }catch(e){} } ((scheda.pp||{}).axExtra||[]).forEach(n=>{ if(n&&!out.includes(n)) out.push(n); }); return out; } try{ staffTab().forEach(r=>{ const n=(r.nome||'').trim(); if(n) out.push(n+(r.ruolo?' ('+r.ruolo+')':'')); }); }catch(e){}
   ((scheda.pp||{}).axExtra||[]).forEach(n=>{ if(n&&!out.includes(n)) out.push(n); }); return out; }
 function axNewPerson(){ const n=(prompt('Nome della persona')||'').trim(); if(!n) return ''; if(!scheda.pp) scheda.pp={}; if(!scheda.pp.axExtra) scheda.pp.axExtra=[]; if(!scheda.pp.axExtra.includes(n)) scheda.pp.axExtra.push(n); return n; }
 function axPersonSel(cur,onch){ const ppl=axPeople(); const known=!cur||ppl.includes(cur);
@@ -8748,7 +8761,7 @@ function axGroup(p,j,k,title,body){ const o=axOpen[p+'-'+j+'-'+k]; const rk=AX_R
   try{ const a=axA(p,j); if(rk && axShared(a)){ const x=a.ax||{}; who=axRef(x,rk);
     pre=`<div class="ax-refrow"><span class="ax-sub" style="margin:0">Referente di questa parte</span>${axPersonMulti(who,`axRefSet(${p},${j},'${rk}',@V)`)}<span class="ax-opt">la segue e, se è nel progetto come collaboratore, può modificarla</span></div>`; } }catch(e){}
   return `<details class="ax-g" data-k="${k}" data-ref="${axE(who)}" ${o?'open':''}><summary>${title}${who?` <span class="aff-chip${affIsMe(who)?' me':''}">${affIsMe(who)?'affidata a te':axE(String(who).replace(/\s*\([^)]*\)\s*$/,''))}</span>`:''}</summary><div class="ax-gb">${pre}${body}</div></details>`; }
-function axRefSet(p,j,k,v){ axSet(p,j,'ref.'+k,v,true); const lbl=(Object.fromEntries(AX_REF)[k]||'').toLowerCase(); const a=axA(p,j); if(v) refInviteCheck(v, lbl+' di «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }
+function axRefSet(p,j,k,v){ try{ const a0=axA(p,j); if(a0&&a0.ax) affStamp(a0.ax,'ref.'+k,v); }catch(e){} axSet(p,j,'ref.'+k,v,true); const lbl=(Object.fromEntries(AX_REF)[k]||'').toLowerCase(); const a=axA(p,j); if(v) refInviteCheck(v, lbl+' di «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }
 const AX_REF=[['log','Ritrovo e spostamenti'],['sic','Sicurezza e primo soccorso'],['ben','Benessere e inclusione'],['pb','Piano B'],['trasp','Trasporti'],['loc','Locazioni'],['camb','Pasti e spesa'],['cassa','Cassa e costi'],['fam','Rapporti con le famiglie']];
 const AX_REFG={log:'log',pasti:'camb',costi:'cassa',sic:'sic',ben:'ben',pb:'pb',trasp:'trasp',loc:'loc',circ:'fam'};  // settore della scheda → referente
 // gestione condivisa: se non è indicata, vale "sì" quando c'è già qualcuno a cui è affidata una parte
@@ -9411,8 +9424,8 @@ function uscBlkKind(k,nk){ const m=uscBlk(k); if(!m||!uscCan()||!USC_KINDSW.incl
   const had=m.f.slice(); const add=USC_BT[nk][2].filter(f=>!had.includes(f)); m.k=nk; m.f=had.concat(add);
   if(nk==='mio'&&!m.col) m.col=USC_COLS[0];
   uscSave(); uscRe(); showToast('Ora è «'+USC_BT[nk][0]+'»: i campi che avevi compilato restano'); }
-function uscBlkRef(k,f,v){ const m=uscBlk(k); if(!m) return; if(!m.ref||typeof m.ref!=='object') m.ref={}; m.ref[f]=v; uscSave(); uscRe(); try{ if(v) refInviteCheck(v,'«'+uscBlkTitle(m)+'» ('+f+')'); }catch(e){} }
-function uscBlkSet(k,f,v,re){ const m=uscBlk(k); if(!m) return; m[f]=v; if(m.k==='att'&&(f==='aff'||f==='prep')){ try{ const fa=uscAttFind(m); if(fa){ fa.a[f]=v; if(v) try{ refInviteCheck(v,'l’attività «'+((fa.a.testo||'').trim()||'attività')+'»'); }catch(e){} } }catch(e){} } if(f==='t'&&m.k!=='att') m.t=String(v).slice(0,80); uscSave(); if(re) uscRe(); else uscLive(k); }
+function uscBlkRef(k,f,v){ const m=uscBlk(k); if(!m) return; if(!m.ref||typeof m.ref!=='object') m.ref={}; m.ref[f]=v; affStamp(m,'ref.'+f,v); uscSave(); uscRe(); try{ if(v) refInviteCheck(v,'«'+uscBlkTitle(m)+'» ('+f+')'); }catch(e){} }
+function uscBlkSet(k,f,v,re){ const m=uscBlk(k); if(!m) return; m[f]=v; if(f==='aff'||f==='prep'||f==='cond') affStamp(m,f,v); if(m.k==='att'&&(f==='aff'||f==='prep')){ try{ const fa=uscAttFind(m); if(fa){ fa.a[f]=v; affStamp(fa.a,f,v); if(v) try{ refInviteCheck(v,'l’attività «'+((fa.a.testo||'').trim()||'attività')+'»'); }catch(e){} } }catch(e){} } if(f==='t'&&m.k!=='att') m.t=String(v).slice(0,80); uscSave(); if(re) uscRe(); else uscLive(k); }
 function uscBlkDur(k,d){ const m=uscBlk(k); if(!m) return; m.dur=Math.max(5,(Number(m.dur)||30)+d); uscSave(); uscRe(); }
 function uscBlkFix(k,on){ const m=uscBlk(k); if(!m) return; m.fix=!!on; if(on&&!m.ora){ const u=uscCur(); const T=uscTimes(u,Number(m.g)||1)[k]; m.ora=axHM(Math.round((T?T.s:600)/5)*5); } uscSave(); uscRe(); }
 function uscBlkDel(k){ const m=uscBlk(k); if(!m) return; if(!confirm('Togliere «'+uscBlkTitle(m)+'» dal programma?'+(m.k==='att'?' L’attività resta nei percorsi.':''))) return; m.del=true; uscSave(); uscRe(); }
@@ -10242,13 +10255,13 @@ function uscArcOpen(pid,uid,md){ md=md||'giovani'; try{ if(CL.ctx&&CL.ctx.id===p
 function uscPtMine(d,people){ const out=[]; try{ const U=(d&&d.scheda&&d.scheda.uscite)||{}; const PL=(d&&d.scheda&&d.scheda.percorsiExtra)||[];
   Object.keys(U).forEach(id=>{ const u=U[id]; if(!u||typeof u!=='object'||u.del) return; const P=u.prog||{}; const x=u.ax||{};
     Object.keys(P).forEach(k=>{ const m=P[k];
-      if(m&&typeof m==='object'&&!m.del) Object.keys(m.ref||{}).forEach(f=>{ if(m.ref[f]&&affIsMe(m.ref[f],people)) out.push({u:id, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:'referente: '+({sic:'sicurezza',ben:'benessere e inclusione',pb:'piano B'}[f]||f)+' di «'+(m.t||'momento')+'»', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))}); });
-      if(m&&typeof m==='object'&&!m.del&&m.prep&&affIsMe(m.prep,people)&&!(m.aff&&affIsMe(m.aff,people))) out.push({u:id, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:((m.k==='att'?'un’attività dei percorsi':(m.t||'momento')))+' (da ideare e preparare)', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))});
+      if(m&&typeof m==='object'&&!m.del) Object.keys(m.ref||{}).forEach(f=>{ if(m.ref[f]&&affIsMe(m.ref[f],people)) out.push({u:id, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:'referente: '+({sic:'sicurezza',ben:'benessere e inclusione',pb:'piano B'}[f]||f)+' di «'+(m.t||'momento')+'»', by:(m.by||{})['ref.'+f]||'', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))}); });
+      if(m&&typeof m==='object'&&!m.del&&m.prep&&affIsMe(m.prep,people)&&!(m.aff&&affIsMe(m.aff,people))) out.push({u:id, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:((m.k==='att'?'un’attività dei percorsi':(m.t||'momento')))+' (da ideare e preparare)', by:(m.by||{}).prep||'', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))});
       if(!m||typeof m!=='object'||m.del||!m.aff||!affIsMe(m.aff,people)) return;
       let t=(m.t||'').trim(); if((m.k||m.tipo)==='att'){ const per=PL.find(p=>p&&p.percorsoId===m.pid); const a=per&&(per.attivita||[]).find(x=>x&&x.aid===m.aid); t=a?((a.testo||'').trim()||'un’attività'):'un’attività'; }
-      const g=Math.max(1,Number(m.g)||1); out.push({u:id, ut:uscTit(u), g, t:t||'un momento', ora:m.fix?m.ora||'':(m.k?'':m.ora||''), d:uscDayIso(u,g), gt:uscDayShort(u,g)}); });
+      const g=Math.max(1,Number(m.g)||1); out.push({u:id, ut:uscTit(u), g, t:t||'un momento', by:(m.by||{}).aff||'', ora:m.fix?m.ora||'':(m.k?'':m.ora||''), d:uscDayIso(u,g), gt:uscDayShort(u,g)}); });
     // parti affidate (referenti dei moduli) e materiali da procurare
-    AX_REF.forEach(([rk,l])=>{ const w=axRef(x,rk); if(w&&affIsMe(w,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+l.toLowerCase(), ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
+    AX_REF.forEach(([rk,l])=>{ const w=axRef(x,rk); if(w&&affIsMe(w,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+l.toLowerCase(), by:(x.by||{})['ref.'+rk]||'', ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
     Object.keys(u.own||{}).forEach(ok=>{ const o=u.own[ok]; if(o&&typeof o==='object'&&!o.del&&o.ref&&affIsMe(o.ref,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+String(o.t||'modulo').toLowerCase(), ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
     Object.values(u.casaAz||{}).forEach(z=>{ if(z&&!z.del&&!z.done&&(z.t||'').trim()&&z.aff&&affIsMe(z.aff,people)) out.push({u:id, ut:uscTit(u), g:0, t:'azione: '+String(z.t).trim(), ora:'', d:z.entro||x.data||'', gt:'Cosa portiamo a casa'}); });
     const mats=[].concat(x.mat||[],...Object.keys(x.bm||{}).filter(k=>P[k]&&!P[k].del).map(k=>x.bm[k]||[])).filter(r=>r&&(r.cosa||'').trim()&&r.chi&&!r.pronto&&affIsMe(r.chi,people));
@@ -11349,7 +11362,7 @@ function progCan(){ try{ return !CL.ctx || !CL.ctx.ruolo || CL.ctx.ruolo==='coti
 // «Come programmi?» la sceglie solo chi ha creato il progetto (tornare a individuale toglie l'accesso a tutti)
 function progOwner(){ try{ return !CL.ctx || !CL.ctx.ruolo; }catch(e){ return true; } }
 // email di chi ha creato il progetto, vista da chi è stato invitato («Nome (email)» oppure solo l'email)
-function progOwnerMail(){ try{ const o = String((CL.ctx && CL.ctx.owner) || ''); const m = /\(([^)]+@[^)]+)\)\s*$/.exec(o); return clLc(m ? m[1] : (/@/.test(o) ? o : '')); }catch(e){ return ''; } }
+function progOwnerMail(){ try{ const o = String((CL.ctx && CL.ctx.owner) || (window.BRO && window.BRO.owner) || ''); const m = /\(([^)]+@[^)]+)\)\s*$/.exec(o); return clLc(m ? m[1] : (/@/.test(o) ? o : '')); }catch(e){ return ''; } }
 function progHTML(){ const c=progMode()==='cond', can=progOwner()&&!window.BRO;
   let h=`<div class="mv-mode prog-mode" id="prog-mode"><div class="mv-mode-t">Come programmi?</div><div class="mv-opts">
     <button class="mv-opt${c?'':' on'}" ${can?'':'disabled'} onclick="progSet('ind')"><b>Programmazione individuale</b><span>lavori per conto tuo; puoi sempre condividere più avanti</span></button>
@@ -14318,7 +14331,7 @@ function clContinue(noPos){ clClose(); try{ const main=document.getElementById('
 function clMsg(t, kind){ const m = $cl('cl-msg'); if(!m) return; m.className = 'cl-msg ' + (kind||'err'); m.textContent = t; }
 // «Condividi con lo staff»: il corpo è lo stesso per la pagina e per la vecchia finestra
 function clShareBody(inPage){
-  if(CL.ctx.ruolo && CL.ctx.ruolo !== 'cotitolare') return `<p class="cl-note" style="margin:0 0 12px">Questo progetto è di <strong>${clEsc(CL.ctx.owner||'un’altra persona')}</strong>: solo chi lo ha creato può invitare altre persone.</p>`;
+  if(window.BRO || (CL.ctx.ruolo && CL.ctx.ruolo !== 'cotitolare')) return `<p class="cl-note" style="margin:0 0 12px">Il titolare di questo progetto è <strong>${clEsc(clOwnerLabel())}</strong>${clOwnerMail() && clOwnerLabel() !== clOwnerMail() ? ' ('+clEsc(clOwnerMail())+')' : ''}: possono invitare altre persone solo il titolare e chi ne è co-titolare.</p>`;
   return `<div id="cl-shintro"><p class="cl-note" style="margin:0 0 10px">Scrivi l'email della persona da invitare: vedrà <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> in sola lettura e potrà lasciare suggerimenti sui percorsi, con il suo nome. Non potrà modificare i tuoi punteggi.</p></div>
       <div class="cl-grid2"><input class="cl-in" id="cl-inv" type="email" autocomplete="off" placeholder="email della persona" onkeydown="if(event.key==='Enter')clInvite()"><button class="cl-btn" onclick="clInvite()">Invita</button></div>
       <div id="cl-staffpick" style="margin-top:8px">${clStaffPickHTML([])}</div>
@@ -14740,12 +14753,12 @@ async function clRolesOk(){
 }
 async function dbMembri(id){
   const roles = await clRolesOk();
-  const {data, error} = await CL.sb.from('pee_membri').select('id,email,created_at' + (roles ? ',ruolo,visto_il' : '')).eq('archivio_id', id).order('created_at');
+  const {data, error} = await CL.sb.from('pee_membri').select('id,email,created_at,owner_email' + (roles ? ',ruolo,visto_il' : '')).eq('archivio_id', id).order('created_at');
   if(error) throw error; return data||[];
 }
 async function dbInvite(id, email, ruolo){
   const me = (CL.user&&CL.user.email)||'';
-  const row = {archivio_id:id, email, owner_email: clMyName() ? clMyName() + ' (' + me + ')' : me};
+  const row = {archivio_id:id, email, owner_email: (CL.ctx && CL.ctx.ruolo === 'cotitolare' && clOwnerMail()) ? CL.ctx.owner : (clMyName() ? clMyName() + ' (' + me + ')' : me)};
   if(ruolo && await clRolesOk()) row.ruolo = ruolo;
   const {error} = await CL.sb.from('pee_membri').insert(row);
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
@@ -15144,16 +15157,24 @@ function ptAckPt(n){ const x=(CL.perte||[])[n]; if(!x) return; try{ const S=ptAc
   x.ack=true; x.hot=false; if(x.k==='av'&&x.cur&&!x.ro) ptAvRead(x.av); clSetStatus(CL.status); const pt=$cl('cl-perte'); if(pt) pt.innerHTML=clPerTeHTML(); try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){} }
 function ptAckWrap(h,x,n){ if(x.ack||x.letto) h=h.replace('class="cl-row"','class="cl-row" style="opacity:.72"'); if(x.hot===false) return h; const b=`<button type="button" class="cl-btn ghost sm" onclick="ptAckPt(${n})">Ho capito</button>`;
   let st=h.lastIndexOf('<div style="display:flex;gap:6px;flex-shrink:0">'); if(st<0) st=h.lastIndexOf('<button class="cl-btn'); if(st<0||!h.endsWith('</div>')) return h; return h.slice(0,st)+'<div class="cl-act">'+h.slice(st,h.length-6)+b+'</div></div>'; }
-function ptCollect(items, info, list, people, d, canVer){
+function ptSelfBy(o,f,info){ const me=affMe(); const b=o&&o.by&&o.by[f]; if(b) return b===me; const r=info&&('ruolo' in info)?info.ruolo:(typeof CL!=='undefined'&&CL.ctx?CL.ctx.ruolo:null); return !window.BRO&&(!r||r==='cotitolare'); }
+function ptCollect(items, info, list, people, d, canVer){ const n0=items.length; ptCollect0(items, info, list, people, d, canVer);
+  for(let i=n0;i<items.length;i++){ const x=items[i]; try{
+    if(x.k==='att'){ const a=list[x.idx].attivita[x.j]; x.self = x.parti ? AX_REF.filter(([k])=>affIsMe(axRef(a.ax||{},k),people)).every(([k])=>ptSelfBy(a.ax,'ref.'+k,info)) : ptSelfBy(a,'aff',info); }
+    else if(x.k==='mat'||x.k==='ver'){ const a=list[x.idx].attivita[x.j]; x.self = ptSelfBy(a,'aff',info); }
+    else if(x.k==='usc'){ x.self = x.by ? x.by===affMe() : ptSelfBy(null,'',info); }
+  }catch(e){} } }
+function ptCollect0(items, info, list, people, d, canVer){
   affMine(list, people).forEach(a => items.push(Object.assign({k:'att', idx:a.idx, j:a.j, d:a.d, t:a.t, parti:a.parti, gk:a.gk}, info)));
   ptMatMine(list, people).forEach(a => items.push(Object.assign({k:'mat', idx:a.idx, j:a.j, d:a.d, t:a.t, cose:a.cose}, info)));
   ptAvMine(d, people).forEach(a => items.push(Object.assign({k:'av', av:a.id, tipo:a.tipo, da:a.da, dove:a.dove, testo:a.testo, idx:a.idx, j:a.j, letto:!!a.letto, lettoAt:a.lettoAt||0}, info)));
-  try{ uscPtMine(d, people).forEach(a => items.push(Object.assign({k:'usc', u:a.u, ut:a.ut, g:a.g, t:a.t, ora:a.ora, d:a.d, gt:a.gt}, info))); }catch(e){}
+  try{ uscPtMine(d, people).forEach(a => items.push(Object.assign({k:'usc', u:a.u, ut:a.ut, g:a.g, t:a.t, ora:a.ora, d:a.d, gt:a.gt, by:a.by||''}, info))); }catch(e){}
   if(canVer) try{ verDaFare(list, people, canVer === 'owner').forEach(a => items.push(Object.assign({k:'ver', idx:a.idx, j:a.j, t:a.t}, info))); }catch(e){}
 }
 async function clPerTe(){
   if(!CL.sb || !CL.user || _ptBusy) return CL.perte || [];
   try{ anProbe(); }catch(e){}
+  try{ if(CL.ctx && CL.ctx.id && CL._ownFix !== CL.ctx.id && !window.BRO && (!CL.ctx.ruolo || CL.ctx.ruolo === 'cotitolare')){ CL._ownFix = CL.ctx.id; dbMembri(CL.ctx.id).then(clFixOwners).catch(()=>{}); } }catch(e){}
   _ptBusy = true;
   const items = [];
   try{
@@ -15178,7 +15199,7 @@ async function clPerTe(){
         if(x.k === 'av' && (x.letto || at) && now - Math.max(at, x.lettoAt || 0) > PT_KEEP_DAYS * 864e5) { items.splice(i, 1); continue; } } }
     items.forEach(x => { x.hot = !x.ack && !x.letto && ((x.k !== 'att' && x.k !== 'mat') || !ptSeen(x) || ptSoon(x.d)); });
     { const sk = new Set(); for(let i = items.length - 1; i >= 0; i--){ const x = items[i]; const k = [x.k, x.id, x.mid, x.idx, x.j, x.av, x.u, x.g, x.k === 'usc' ? x.t : '', x.prima, x.email, (x.parti||x.cose||[]).join(',')].join('|'); if(sk.has(k)) items.splice(i, 1); else sk.add(k); } }
-    CL.perte = items; clSetStatus(CL.status);
+    CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status);
     try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
       if(prev !== undefined && n > prev){ const d = n - prev; clToast(d === 1 ? 'Hai una novità in «Per te»: ti hanno affidato qualcosa o ti hanno scritto. La trovi in Progetti.' : 'Hai ' + d + ' novità in «Per te». Le trovi in Progetti.'); } }catch(e){}
@@ -15518,9 +15539,9 @@ function sgRender(){
   panel.querySelectorAll('.pc').forEach(pc => {
     const hd = pc.querySelector('.pc-hdr'); if(!hd) return;
     let pid = null;
-    const m = /toggleCard\('([A-Z]\d+)'\)/.exec(hd.getAttribute('onclick')||'');
-    if(m) pid = m[1];
-    else { const sw = pc.querySelector('[data-staffobs-member][data-staffobs-id]'); if(sw) pid = 'S:' + sw.getAttribute('data-staffobs-member') + '|' + sw.getAttribute('data-staffobs-id'); }
+    // prima l'osservazione dello staff (le schede delle persone hanno gli stessi percorsi P1…: i suggerimenti dell'Unità non vanno lì)
+    if(pc.hasAttribute('data-stcard')){ const who = pc.getAttribute('data-stcard'); if(who === 'auto'){ const w0 = pc.querySelector(':scope > .sg-wrap'); if(w0) w0.remove(); return; } pid = 'S:' + who + '|' + pc.getAttribute('data-stpid'); }
+    else { const m = /toggleCard\('([A-Z]\d+)'\)/.exec(hd.getAttribute('onclick')||''); if(m) pid = m[1]; }
     if(!pid) return;
     const tk = sgEnc(pid);
     const items = SG.list.filter(x => x.percorso === pid);
@@ -15622,6 +15643,7 @@ async function clLoadMem(){
   const box = $cl('cl-mem'); if(!box || !CL.ctx) return;
   try{
     const rows = await dbMembri(CL.ctx.id);
+    clFixOwners(rows);
     const roles = !!CL.roles;
     const sp = $cl('cl-staffpick'); if(sp) sp.innerHTML = clStaffPickHTML(rows.map(r => clLc(r.email)));
     if(roles){
@@ -15630,13 +15652,16 @@ async function clLoadMem(){
         <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>: ${CL_RUOLI_TXT[k]}.</li>`).join('')}</ul>`;
     }
     if(!rows.length){ box.innerHTML = '<p class="cl-note" style="margin:8px 0 0">Non hai ancora invitato nessuno.</p>'; return; }
-    box.innerHTML = '<div class="cl-year">Hanno accesso</div>' + rows.map(r => {
+    const me0 = clLc(CL.user && CL.user.email), om0 = CL.ctx.ruolo ? clOwnerMail() : '';
+    const ownRow = om0 ? `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(clOwnerLabel())}${clOwnerLabel() !== om0 ? ' <span style="font-weight:500;color:#666">· ' + clEsc(om0) + '</span>' : ''}</div><div class="s">Ha creato il progetto</div></div><div style="display:flex;gap:6px;align-items:center"><span class="cl-badge">Titolare</span></div></div>` : '';
+    box.innerHTML = '<div class="cl-year">Hanno accesso</div>' + ownRow + rows.map(r => {
       const ru = r.ruolo || 'lettore';
       const lock = CL.ctx.ruolo === 'cotitolare' && ru === 'cotitolare';
       const sel = roles && !lock ? `<select class="cl-role" aria-label="Ruolo di ${clEsc(r.email)}" onchange="clSetRole('${r.id}',this.value)">${clRoleOpts(ru)}</select>` : (lock ? '<span class="cl-badge">Co-titolare</span>' : '');
       const stato = roles ? (r.visto_il ? 'ha già visto l\'invito' : 'non ha ancora aperto l\'invito') : 'sola lettura + suggerimenti';
-      const nm = clStaffName(r.email);
-      return `<div class="cl-row"><div style="min-width:0"><div class="t">${nm ? clEsc(nm) + ' <span style="font-weight:500;color:#666">· ' + clEsc(r.email) + '</span>' : clEsc(r.email)}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div></div>
+      const nm = clStaffName(r.email), isMe = clLc(r.email) === me0;
+      const refL = roles && ru === 'lettore' && !lock && clIsReferente(nm, r.email);
+      return `<div class="cl-row"><div style="min-width:0"><div class="t">${nm ? clEsc(nm) + ' <span style="font-weight:500;color:#666">· ' + clEsc(r.email) + '</span>' : clEsc(r.email)}${isMe ? ' <span style="font-weight:500;color:#666">(tu)</span>' : ''}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div>${refL ? `<div class="s" style="color:#B06A00;font-weight:600">Ha attività o moduli affidati ma è lettore: non può modificarli. <button class="cl-btn sm" style="margin-left:4px" onclick="clSetRole('${r.id}','collaboratore')">Fai collaboratore</button></div>` : ''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}${clMailBtn(r.email, ru)}${lock?'':`<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button>`}</div></div>`;
     }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> e <strong>Avvisa via email</strong> aprono un messaggio già scritto: se nella tabella dello staff (1.1) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
   }catch(e){ box.innerHTML = `<p class="cl-note">${clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : 'Elenco non disponibile: '+clEsc(clErr(e))}</p>`; }
@@ -15727,7 +15752,24 @@ function clStaffRows(){
   return t.map(r => ({nome:String(r.nome||'').trim(), ruolo:String(r.ruolo||'').trim(), mail:clLc(String(r.mail||'').split(/[\s,;]+/)[0])}))
           .filter(r => (r.nome || r.mail) && r.mail !== me);
 }
-function clStaffName(email){ const r = clStaffRows().find(x => x.mail === clLc(email)); return r ? r.nome : ''; }
+function clStaffName(email){ let t = []; try{ t = (scheda && scheda.pp && Array.isArray(scheda.pp.staffTab)) ? scheda.pp.staffTab : []; }catch(e){}
+  const m = clLc(email); const r = t.find(x => clLc(String(x.mail||'').split(/[\s,;]+/)[0]) === m); return r ? String(r.nome||'').trim() : ''; }
+// una persona è referente/conduce/ha un modulo affidato da qualche parte nel progetto?
+function clIsReferente(nome, mail){ try{ const js = JSON.stringify(typeof scheda !== 'undefined' ? scheda : {}); const keys = [nome, mail].filter(x => x && String(x).trim().length > 1).map(x => String(x).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return keys.some(k => new RegExp('"(aff|prep|cond|chi|refe|refs)":"[^"]*' + k, 'i').test(js) || new RegExp('"ref":\\{[^}]*' + k, 'i').test(js)); }catch(e){ return false; } }
+// il titolare vero del progetto (per chi non lo è): «Nome (email)» salvato nell'invito
+function clOwnerMail(){ const o = String((CL.ctx && CL.ctx.owner) || (window.BRO && window.BRO.owner) || ''); const m = o.match(/[^\s()<>]+@[^\s()<>]+/); return m ? clLc(m[0]) : ''; }
+function clOwnerLabel(){ const o = String((CL.ctx && CL.ctx.owner) || (window.BRO && window.BRO.owner) || ''); const mail = clOwnerMail(); const nm = clStaffName(mail) || o.replace(/\s*\(.*\)\s*$/, '').trim(); return nm && nm !== mail ? nm : (mail || 'un’altra persona'); }
+// gli inviti fatti da un co-titolare devono indicare comunque il titolare vero (riparazione anche dei vecchi inviti)
+async function clFixOwners(rows){
+  try{ if(!CL.sb || !CL.ctx || window.BRO) return; const me = clLc(CL.user && CL.user.email);
+    let want = '', ok = r => true;
+    if(!CL.ctx.ruolo){ want = clMyName() ? clMyName() + ' (' + me + ')' : me; }
+    else if(CL.ctx.ruolo === 'cotitolare' && clOwnerMail()){ want = CL.ctx.owner; ok = r => (r.ruolo||'lettore') !== 'cotitolare'; }
+    else return;
+    const wm = (want.match(/[^\s()<>]+@[^\s()<>]+/)||[''])[0].toLowerCase(); if(!wm) return;
+    for(const r of rows){ if(ok(r) && !clLc(r.owner_email||'').includes(wm)){ try{ await CL.sb.from('pee_membri').update({owner_email:want}).eq('id', r.id); }catch(e){} } }
+  }catch(e){} }
 function clStaffPick(i){
   const r = clStaffRows()[i]; if(!r) return;
   const inp = $cl('cl-inv'); if(!inp) return;
@@ -15736,9 +15778,9 @@ function clStaffPick(i){
   inp.value = r.mail; clMsg(`Pronto: premi Invita per condividere con ${r.nome || r.mail}.`, 'ok'); inp.focus();
 }
 function clStaffPickHTML(invited){
-  const rows = clStaffRows(); if(!rows.length) return '';
+  const om = CL.ctx && CL.ctx.ruolo ? clOwnerMail() : ''; const rows = clStaffRows().map((r, i) => Object.assign({i}, r)).filter(r => !om || r.mail !== om); if(!rows.length) return '';
   return `<div style="margin:0 0 10px"><div class="cl-lb" style="margin-top:0">Dallo staff (tabella 1.1)</div><div style="display:flex;flex-wrap:wrap;gap:6px">` +
-    rows.map((r, i) => { const done = r.mail && invited.includes(r.mail);
+    rows.map(r => { const i = r.i; const done = r.mail && invited.includes(r.mail);
       return `<button class="cl-btn ghost sm" ${done?'disabled style="opacity:.55"':''} onclick="clStaffPick(${i})" title="${r.mail?clEsc(r.mail):'Email mancante nella tabella 1.1'}">${clEsc(r.nome || r.mail)}${r.ruolo?` <span style="font-weight:500">· ${clEsc(r.ruolo)}</span>`:''}${done?' ✓':(r.mail?'':' <span style="font-weight:500">· senza email</span>')}</button>`; }).join('') +
     `</div><div class="cl-note" style="margin:6px 0 0">Oppure scrivi l'email di un'altra persona qui sopra.</div></div>`;
 }
@@ -15821,6 +15863,7 @@ async function clInvite(){
   const inp = $cl('cl-inv'); const email = clLc(inp && inp.value);
   if(!clEmailOk(email)){ clMsg('Scrivi un indirizzo email valido', 'err'); return; }
   if(email === clLc(CL.user.email)){ clMsg('Questo è il tuo indirizzo: il progetto è già tuo', 'err'); return; }
+  if(CL.ctx && CL.ctx.ruolo && email === clOwnerMail()){ clMsg('È il titolare del progetto: ha già accesso e il suo ruolo non si cambia.', 'err'); return; }
   const ruolo = (($cl('cl-invr')||{}).value) || 'lettore';
   try{
     await dbInvite(CL.ctx.id, email, ruolo); CL._nMem = undefined;
@@ -17897,7 +17940,8 @@ async function annoLoad(){
   if(!CL.ctx || !CL.user) return [];
   try{ if(!window.BRO) saveData(true); }catch(e){}
   const rows = await dbList(); const y = Number(CL.ctx.anno); const cur0 = rows.find(x => x.id === CL.ctx.id); const vk0 = cur0 ? vesteKey(cur0.meta) : null;
-  const mine = rows.filter(x => Number(x.anno) === y && isCiclo(x.meta) && (vk0 === null || vesteKey(x.meta) === vk0) && !/^Esempio/i.test(x.titolo || ''));
+  // un progetto condiviso da altri non si mescola con i cicli personali (e viceversa): l'anno è fatto solo dei cicli dello stesso proprietario
+  const mine = (!cur0 || window.BRO || (CL.ctx && CL.ctx.ruolo)) ? [] : rows.filter(x => Number(x.anno) === y && isCiclo(x.meta) && vesteKey(x.meta) === vk0 && !/^Esempio/i.test(x.titolo || ''));
   const items = [];
   for(const r of mine){
     if(CL.ctx.id === r.id){ items.push(annoCur()); continue; }
