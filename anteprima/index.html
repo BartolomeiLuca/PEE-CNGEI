@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101400'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101500'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13308,7 +13308,7 @@ function dCell(children, o={}){
     width: {size:o.w, type:D.WidthType.DXA},
     shading: o.fill ? {type:D.ShadingType.CLEAR, fill:o.fill, color:'auto'} : undefined,
     borders: bd, verticalAlign: o.vAlign || D.VerticalAlign.CENTER, columnSpan:o.span, verticalMerge:o.vm,
-    margins: {top:70, bottom:70, left:110, right:110}
+    margins: {top:o.mt!==undefined?o.mt:70, bottom:o.mb!==undefined?o.mb:70, left:110, right:110}
   });
 }
 // tabella generica con intestazione verde
@@ -13327,12 +13327,24 @@ function dTable(rows, widths, split, repeatHead){
 }
 const CW = 9638; // larghezza utile A4 con margini 20mm
 // tabella label/valore
+// 10/11: in Pages una riga di tabella non si spezza tra due pagine: un testo lungo in una sola riga lascia mezza pagina vuota. Per questo ogni paragrafo del testo diventa una sua riga;
+// l'etichetta compare nella prima e i bordi interni sono dello stesso colore dello sfondo, così il blocco sembra una cella sola.
+function dSplitRows(labelContent, vals, w, o={}){
+  const TOP = dxLib().VerticalAlign.TOP; const vs = (Array.isArray(vals) ? vals : [vals]).filter(v => v!=null && v!=='');
+  const n = Math.max(1, vs.length); const fill = o.fill || PALE; const out = [];
+  for(let k=0;k<n;k++){
+    const mid = n>1, first = k===0, last = k===n-1;
+    const mt = mid && !first ? 0 : 70, mb = mid && !last ? 0 : 70;
+    const lab = dCell(first ? labelContent : dPara('',{size:4,after:0}), {w:w[0], fill, bold:true, color:o.color||'444444', size:18, border:o.border, vAlign:TOP, bt:mid&&!first?fill:undefined, bb:mid&&!last?fill:undefined, mt, mb});
+    const val = dCell(n===0||!vs.length ? dPara('',{size:8,after:0}) : vs[k], {w:w[1], vAlign:TOP, bt:mid&&!first?'FFFFFF':undefined, bb:mid&&!last?'FFFFFF':undefined, mt, mb});
+    out.push([lab, val]);
+  }
+  return out;
+}
 function dKV(rows){
-  const w = [2400, CW-2400];
-  return dTable(rows.map(([l, v]) => [
-    dCell(l, {w:w[0], fill:PALE, bold:true, color:'444444', size:18, vAlign:dxLib().VerticalAlign.TOP}),
-    dCell(v, {w:w[1], vAlign:dxLib().VerticalAlign.TOP})
-  ]), w, true);
+  const w = [2400, CW-2400]; const out = [];
+  rows.forEach(([l, v]) => dSplitRows(l, v, w).forEach(r => out.push(r)));
+  return dTable(out, w, true);
 }
 // riga percorso con barra a 10 segmenti
 function dBarRows(items){
@@ -13579,6 +13591,8 @@ async function dFixBreaks(blob){
       sx = sx.replace(/<w:spacing((?:(?!lineRule)[^>])*?w:line="\d+"(?:(?!lineRule)[^>])*?)\/>/g, '<w:spacing$1 w:lineRule="auto"/>');
       if(sx !== sx0){ z.file('word/styles.xml', sx); stChanged = true; } }
     // 10/11: Pages e Google Documenti leggono la sola presenza di <w:b w:val="false"/>, <w:tblHeader w:val="false"/> ecc. come "attivo" (tutto grassetto/corsivo disordinato, ogni riga come intestazione ripetuta): gli attributi spenti si tolgono del tutto
+    // un titolo «da tenere con la tabella che segue» in Pages sposta l'intera tabella alla pagina dopo e lascia la pagina vuota: davanti alle tabelle il vincolo si toglie
+    x = x.replace(/<w:p>((?:(?!<\/w:p>)[\s\S])*?)<\/w:p>(?=<w:tbl>)/g, (m, inner) => m.replace(/<w:keepNext\/>|<w:keepLines\/>/g, ''));
     x = x.replace(/<w:spacing((?:(?!lineRule)[^>])*?w:line="\d+"(?:(?!lineRule)[^>])*?)\/>/g, '<w:spacing$1 w:lineRule="auto"/>');
     x = x.replace(/<w:(?:b|bCs|i|iCs|keepNext|keepLines|tblHeader|cantSplit|pageBreakBefore|strike|caps|smallCaps|vanish)\s+w:val="(?:false|0)"\s*\/>/g, '');
     // l'ordine corretto delle proprietà del testo vuole rFonts per primo (Pages lo rispetta alla lettera)
@@ -13715,9 +13729,9 @@ async function exportPPDocx(mode){
   if(longTxt){
     const w2 = [2400, CW-2400]; const rows2 = [];
     ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
-      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:19,bold:true,color:AMB_HEX[a],after:0}),{w:CW,span:2,fill:'F4F4EE',border:'D0D0D0'})]);
+      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,color:ONG,after:0}),{w:CW,span:2,fill:GREEN,border:GREEN})]);
       [['Aspetti positivi emersi',o.positivi],['Necessità educative',o.necessita],['Necessità educative specifiche del singolo/gruppetto',o.singoli]].forEach(([l,v]) => {
-        rows2.push([dCell(dPara(l,{size:17,bold:true,color:ONG,after:0}),{w:w2[0],fill:GREEN,border:GREEN,vAlign:dxLib().VerticalAlign.TOP}), dCell(dMulti(v,{size:18}),{w:w2[1],vAlign:dxLib().VerticalAlign.TOP})]); }); });
+        dSplitRows(l, dMulti(v,{size:18}), w2).forEach(r => rows2.push(r)); }); });
     ch.push(dTable(rows2, w2));
   } else ch.push(dTable(rows1, w1));
   ch.push(dH3('Priorizzazione delle necessità educative'));
