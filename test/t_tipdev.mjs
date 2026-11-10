@@ -1,7 +1,7 @@
 // «L'anno di solito» su 12 profili di dispositivo: niente scorrimento laterale della pagina, griglia o schede visibili, popup apribile
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 import { devices } from 'playwright';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const P = [['iPhone 13','webkit'],['iPhone SE','webkit'],['iPad (gen 7)','webkit'],['iPad (gen 7) landscape','webkit'],['Desktop Safari','webkit'],['Desktop Firefox','firefox'],['Pixel 5','chromium'],['Galaxy S9+','chromium'],['Galaxy Tab S4','chromium'],['Desktop Chrome','chromium'],['Desktop Edge','chromium'],['Galaxy S8','chromium']];
 const only = process.argv[2];

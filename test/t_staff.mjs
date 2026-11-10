@@ -24,8 +24,8 @@ await ev(P, () => { setUnitName('Staff Mio'); }); await ev(P, () => stUnitLoad(t
 ok(await ev(P, () => UNIT_NAME) === 'Staff Mio', 'quello che scrivo a mano non viene più sovrascritto');
 ok(await ev(P, () => JSON.stringify((ST_UNIT.rows||[]).map(r => r.nome))) === '["Anna Rossi","Paolo Riva","Elena Sarti"]', 'legge la tabella dello staff dell’Unità dello stesso anno');
 // niente priorità/valutazione per lo staff
-const vis = await ev(P, () => ['tab3', 'tab4', 'mnav3', 'mnav4'].map(i => { const e = document.getElementById(i); return !e || e.offsetParent === null; }));
-ok(vis.every(Boolean), 'Priorità e Valutazione nascoste nello staff ' + JSON.stringify(vis));
+const vis = await ev(P, () => ['tab3', 'mnav3'].map(i => { const e = document.getElementById(i); return !e || e.offsetParent === null; }).concat([/Uscite/.test((document.querySelector('#tab4 span')||{}).textContent||'')]));
+ok(vis.every(Boolean), 'Priorità nascoste nello staff; la terza scheda è «Uscite» (non Valutazione) ' + JSON.stringify(vis));
 await ev(P, () => goPhaseInternal(3)); await sleep(300);
 ok(await ev(P, () => document.getElementById('panel2').classList.contains('active') && !document.getElementById('panel3').classList.contains('active')), 'lo staff si ferma al Riepilogo');
 await ev(P, () => goPhaseInternal(1)); await sleep(300);
@@ -69,7 +69,7 @@ ok(db.t.pee_archivi.find(r => r.id === ex.id).updated_at === exRow.updated_at &&
 // Riepilogo
 await ev(P, () => goPhaseInternal(2)); await sleep(800);
 const rie = await ev(P, () => { const o = [...document.querySelectorAll('#panel2 .rie-radar, #panel2 .rie-grid, #rie-staff-extra .st-sech')].map(e => e.className.includes('st-sech') ? e.textContent : (e.className.includes('rie-radar') ? 'COPERTURA' : 'PANNELLI')); return o; });
-ok(rie.join('|') === 'COPERTURA|PANNELLI|Profilo|Ambito più scoperto|Spazio sicuro e simili|Attività formative per lo staff' || rie.join('|') === 'COPERTURA|PANNELLI|Profilo|Ambito più scoperto|Attività formative per lo staff', 'Riepilogo nell’ordine deciso ' + rie.join('|'));
+ok(rie.join('|') === 'COPERTURA|PANNELLI|Profilo|Ambito più scoperto|Letture dello staff' || rie.join('|') === 'COPERTURA|PANNELLI|Profilo|Ambito più scoperto|Spazio sicuro e simili|Attività formative per lo staff' || rie.join('|') === 'COPERTURA|PANNELLI|Profilo|Ambito più scoperto|Attività formative per lo staff', 'Riepilogo nell’ordine deciso ' + rie.join('|'));
 const cell = await ev(P, () => [...document.querySelectorAll('.cov-cell')][0].title);
 ok(/punteggio 6 su 10/.test(cell), 'la copertura usa la media dello staff (4 e 8 → 6): ' + cell);
 const miss = await ev(P, () => [...document.querySelectorAll('.st-miss-r')].length);
@@ -77,7 +77,8 @@ ok(miss > 0, 'percorsi mancanti in colonna: ' + miss);
 await P.click('.st-miss-r >> nth=0'); await sleep(900);
 ok(await ev(P, () => document.getElementById('panel1').classList.contains('active') && /^card-/.test(document.querySelector('.pc.expanded').id)), 'cliccando un percorso mancante si va alla scheda di osservazione');
 await ev(P, () => goPhaseInternal(2)); await sleep(300);
-ok(await ev(P, () => document.querySelectorAll('#rie-staff-extra .st-fold').length > 0 && [...document.querySelectorAll('#rie-staff-extra .st-fold')].every(d => !d.open)), 'safe space e attività: chiusi, si aprono con la freccia');
+console.log('FOLD', await ev(P, () => JSON.stringify({n: document.querySelectorAll('#rie-staff-extra .st-fold').length, det: [...document.querySelectorAll('#rie-staff-extra details')].map(d => d.open + ':' + (d.querySelector('summary')||{}).textContent).slice(0,6)})));
+ok(await ev(P, () => [...document.querySelectorAll('#rie-staff-extra .st-fold')].every(d => !d.open)), 'le parti ripiegabili del Riepilogo dello staff partono chiuse');
 ok(await ev(P, () => document.getElementById('g-subnav').style.display === 'none'), 'nel Riepilogo la barra dei passaggi non c’è');
 // Word ed Excel dello staff: solo Riepilogo
 const dl = [];

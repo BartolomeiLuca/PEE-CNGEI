@@ -1,7 +1,7 @@
 // Verifica e autovalutazione dello staff: schede, categorie, picker, stampa, guida per chi conduce
 import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/'; const db = new FakeDB(); db.sql13 = true;
 const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
 db.t.pee_profili.push({user_id:A.id, nome:'Anna Rossi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});

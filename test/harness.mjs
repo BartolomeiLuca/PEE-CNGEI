@@ -180,6 +180,8 @@ export async function person(browser, db, opts = {}){
   // le domande di feedback non devono comparire nei test (SV=1 per provarle)
   if(!process.env.RT) await ctx.addInitScript(() => { window.__RT_OFF = true; });
   if(!process.env.NAC) await ctx.addInitScript(() => { try{ localStorage.setItem('bussola_nac_off', '1'); }catch(e){} });
+  // niente animazioni nei test (su Firefox gli elementi «in movimento» fanno scadere i clic); ANIM=1 per lasciarle
+  if(!process.env.ANIM) await ctx.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = '*,*::before,*::after{transition:none!important;animation-duration:0s!important;animation-delay:0s!important;scroll-behavior:auto!important}'; document.head.appendChild(s); }); });
   if(!process.env.SV) await ctx.addInitScript(() => { try{ localStorage.setItem('bussola_sv_off', '1'); }catch(e){} });
   await ctx.exposeBinding('__sb', async (src, req) => { if(db.delay) await new Promise(r => setTimeout(r, db.delay)); return db.handle(req, src.page); });
   const errors = [];
@@ -189,6 +191,8 @@ export async function person(browser, db, opts = {}){
     p.__uid = () => p.__uidv; p.on('pageerror', e => errors.push(String(e && e.stack || e)));
     p.on('dialog', d => { (p.__dialogs = p.__dialogs || []).push(d.message()); const a = p.__answer; d[a === false ? 'dismiss' : 'accept']().catch(() => {}); });
   };
+  // data fissa per i test scritti per un certo giorno (opts.today o TODAY=2026-10-30)
+  const today = opts.today || process.env.TODAY; if(today) await ctx.clock.setFixedTime(new Date(today.length <= 10 ? today + 'T12:00:00' : today));
   const page = await ctx.newPage(); wire(page);
   // tengo aggiornato chi è collegato in quella pagina (serve per il "tempo reale" filtrato come le policy)
   setInterval(async () => { try{ page.__uidv = await page.evaluate(() => { try{ const s = JSON.parse(localStorage.getItem('fake_sb_session')||'null'); return s && s.user && s.user.id; }catch(e){ return null; } }); }catch(e){} }, 300).unref();

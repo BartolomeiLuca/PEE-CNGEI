@@ -43,7 +43,8 @@ await loginAs(pc.page, base, C); await sleep(1000);
 await ev(pc.page, () => clOpenProject('misto1')); await sleep(7000);
 const cRows = db.t.pee_archivi.filter(r => r.user_id === C.id);
 const sR = cRows.find(r => r.meta && r.meta.mode === 'staff'), uR = cRows.find(r => r.id === 'misto1');
-ok(sR && (sR.data.STAFF_MEMBERS||[]).length === 1 && uR && !(uR.data.STAFF_MEMBERS||[]).length && Object.values(uR.data.obs||{}).some(v => v && v !== 'n'), 'progetto misto separato: ' + cRows.map(r => r.titolo + '/' + (r.meta||{}).mode));
+// dal 29/10 l'osservazione dello staff vive dentro la programmazione: il progetto «misto» resta uno solo, con i dati intatti
+ok(!sR && uR && (uR.data.STAFF_MEMBERS||[]).length === 1 && Object.values(uR.data.obs||{}).some(v => v && v !== 'n'), 'progetto misto: resta uno solo, con osservazione dell’Unità e staff intatti: ' + cRows.map(r => r.titolo + '/' + (r.meta||{}).mode));
 // 5. collaboratore: avvia lo staff nel proprio archivio
 const pb = await person(br, db); await loginAs(pb.page, base, B); await sleep(800);
 db.t.pee_membri.push({id:'mm1', archivio_id:ex.id, email:'bruno@x.it', owner_email:'Anna Rossi (anna@x.it)', ruolo:'collaboratore', created_at:new Date().toISOString(), visto_il:new Date().toISOString()});

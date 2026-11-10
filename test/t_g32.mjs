@@ -2,7 +2,7 @@ import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './ha
 // barra di formattazione: lo strumento attivo si vede (serve RT=1: il banco di prova di solito spegne il testo formattato)
 process.env.RT = '1';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);

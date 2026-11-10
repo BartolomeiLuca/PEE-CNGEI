@@ -39,7 +39,7 @@ for (const fa of ['E','R']) { const JSZip = (await import('/home/claude/work/lib
   await ev(f => { FASCIA = f; const SC = staffCols(false); const r = {}; SC.forEach(c => { r[c[0]] = c[0]==='ruolo' ? 'Capo' : 'Zz' + c[0]; }); scheda.pp.ctxTerr = 'TERR'; scheda.pp.ctxSez = 'SEZ'; scheda.pp.staffTab = [r]; }, fa);
   const [d] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev(() => exportSchedaDocx())]);
   const z = await JSZip.loadAsync(fs.readFileSync(await d.path())); const x = await z.file('word/document.xml').async('string'); const t = x.replace(/<[^>]+>/g, '');
-  const lab = fa === 'R' ? 'Adulti in Compagnia' : 'Adulti in staff';
+  const lab = 'Adulti in staff';
   ok(t.indexOf('Contesto Sezione e Gruppo') < t.indexOf(lab) && t.indexOf(lab) < t.indexOf('Osservazione con il KOS: occasioni'), 'Word ' + fa + ': «' + lab + '» è un capitolo dopo Contesto Sezione e Gruppo');
   const hx = x.slice(x.lastIndexOf('<w:p>', x.indexOf(lab)), x.indexOf(lab)), hc = x.slice(x.lastIndexOf('<w:p>', x.indexOf('Contesto territoriale')), x.indexOf('Contesto territoriale'));
   ok(hx.replace(/w:val="[^"]*"/g,'') === hc.replace(/w:val="[^"]*"/g,'') || (hx.match(/w:pStyle w:val="[^"]*"/)||[])[0] === (hc.match(/w:pStyle w:val="[^"]*"/)||[])[0], 'Word ' + fa + ': stesso stile di titolo di «Contesto territoriale»'); }

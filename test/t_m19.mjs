@@ -1,7 +1,7 @@
 // «Capire»: capitolo introduttivo
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); db.sql13 = true;
@@ -22,7 +22,7 @@ const memb = () => db.t.pee_membri.find(m => m.id === 'm1');
 const pa = await person(br, db, {ctx:{viewport:{width:1400, height:900}}}); const A = pa.page, ea = (f, x) => A.evaluate(f, x);
 A.on('pageerror', e => console.log('PAGEERR', String(e).slice(0, 250)));
 await loginAs(A, base, ua); await sleep(1200); A.evaluate(() => shOpen('c1', 0)).catch(() => {}); await sleep(3000);
-const want = {Capire:/È la prima volta/, Osservare:/KOS|Annotare comportamenti/, Progettare:/Inclusione/, Realizzare:/L’anno di solito/, Misurare:/Pensare, fare, pensare/, Conservare:/archivio nazionale/, Condividere:/Con lo staff/};
+const want = {Capire:/È la prima volta/, Osservare:/KOS|Annotare comportamenti/, Progettare:/Inclusione/, Realizzare:/Anno tipo/, Misurare:/Pensare, fare, pensare/, Conservare:/archivio nazionale/, Condividere:/Con lo staff/};
 for (const g of Object.keys(want)) {
   await ea(g => { const b=[...document.querySelectorAll('.sh-gh')].find(x=>x.textContent.trim()===g); b.click(); }, g); await sleep(500);
   const t = await ea(() => document.getElementById('panel-pp').innerText);

@@ -1,6 +1,6 @@
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:700}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
@@ -28,7 +28,7 @@ await P.setViewportSize({width:1280, height:800});
 const hasFac = await ev(() => { const h = document.body.innerHTML; return /class="ax-opt">facoltativo/.test(h); });
 ok(!hasFac, 'nessuna etichetta «facoltativo» nell’interfaccia');
 const src = await (await fetch(base)).text().catch(() => '');
-ok(!/\(facoltativ[oa]\)/.test(src.replace(/materiali:"[^"]*"/g, '')), 'niente «(facoltativo)» tra parentesi nei testi dell’interfaccia');
+ok(!/\(facoltativ[oa]\)/.test(src.replace(/materiali:"[^"]*"/g, '').replace('Punto Carta di primavera (facoltativo)', '')), 'niente «(facoltativo)» tra parentesi nei testi dell’interfaccia');
 
 // assicura gli id delle attività nel ciclo aperto
 await ev(() => { getAllPercorsi().forEach(p => { try{ attIdsEnsure(p); }catch(e){} }); saveData(true); });

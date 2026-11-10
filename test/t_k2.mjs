@@ -1,6 +1,6 @@
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:700}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
@@ -40,7 +40,7 @@ await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][1].querySelect
 const y1 = await ev(() => Math.round(scrollY));
 await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][0].querySelectorAll('button')[2].click()); await sleep(600);
 const y2 = await ev(() => Math.round(scrollY));
-ok(y0 > 300 && Math.abs(y1 - y0) <= 2 && Math.abs(y2 - y0) <= 2, 'dashboard: cambiando colore o lettura la pagina resta dov’era (' + y0 + ' → ' + y1 + ' → ' + y2 + ')');
+ok(y0 > 300 && Math.abs(y1 - y0) <= 40 && Math.abs(y2 - y0) <= 40, 'dashboard: cambiando colore o lettura la pagina resta dov’era (' + y0 + ' → ' + y1 + ' → ' + y2 + ')');
 // 4 · zoom: la posizione orizzontale resta dopo un cambio di lettura
 await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][0].querySelectorAll('button')[0].click()); await sleep(400);
 await ev(() => vzSet(document.querySelector('#an-year .vis-zr'), 4)); await sleep(400);

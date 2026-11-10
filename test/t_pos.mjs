@@ -13,8 +13,8 @@ const br = await launch(engine);
   const H = await ev(() => document.documentElement.scrollHeight);
   await ev(() => window.scrollTo(0, 1600)); await sleep(900);
   const y0 = await ev(() => window.scrollY);
-  await P.reload(); await sleep(2500);
-  const r = await ev(() => ({k: gCur(), y: window.scrollY}));
+  await P.reload(); await sleep(1500);
+  let r = {}; for(let i = 0; i < 10; i++){ r = await ev(() => ({k: gCur(), y: window.scrollY})); if(Math.abs(r.y - y0) < 80) break; await sleep(500); }   // Firefox rimette la posizione un po' più tardi
   ok(r.k === '3', 'ricaricando si torna alla stessa sezione (' + r.k + ')');
   ok(Math.abs(r.y - y0) < 80, 'e allo stesso punto della pagina (' + y0 + ' → ' + r.y + ', pagina ' + H + ')');
   // cambio sezione dal fondo: si apre dall'alto

@@ -1,6 +1,6 @@
 import { FakeDB, serve, launch, person, sleep, ok, summary } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const db = new FakeDB();
 const br = await launch(engine);

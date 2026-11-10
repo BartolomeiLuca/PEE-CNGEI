@@ -84,6 +84,6 @@ const nb = await ev(() => Object.keys(uscCur().prog).length);
 await P.locator('.an-card button', {hasText:'Aggiungi all’uscita aperta'}).click(); await sleep(800);
 ok(await ev(() => Object.keys(uscCur().prog).length) === nb + 1, '…aggiunge un momento all’uscita');
 // guida / FAQ
-ok(await ev(() => FAQ.some(f => /cerco un’attività/i.test(f[1])) && TOUR.length === 6 && /Trenta video|trenta video/.test(NOVITA[0].i.join(' '))), 'FAQ, giro guidato e Novità aggiornati');
+ok(await ev(() => FAQ.some(f => /cerco un’attività/i.test(f[1])) && TOUR.length === 6 && NOVITA.length > 0 && NOVITA.some(n => /[Tt]renta video/.test(n.i.join(' ')))), 'FAQ, giro guidato e Novità aggiornati');
 ok(errs.length === 0, 'nessun errore di pagina '+errs.slice(0,2).join(' | '));
-await br.close(); summary();
+const _f = summary(); await br.close().catch(() => {}); process.exit(_f ? 1 : 0);

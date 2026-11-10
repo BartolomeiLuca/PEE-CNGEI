@@ -1,7 +1,7 @@
 // griglia collaboratore
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); db.sql13 = true;
@@ -30,5 +30,5 @@ console.log('A', await click(A, 6), 'C', await click(C, 4)); await sleep(15000);
 console.log('A val', await ea(() => JSON.stringify({obs: obs && obs.P1, mv: scheda.mv && scheda.mv.on})), 'C val', await ec(() => JSON.stringify({obs: obs && obs.P1, mv: scheda.mv && scheda.mv.on})));
 console.log('SERVER', JSON.stringify({o: db.t.pee_archivi.find(z => z.id === 'c1').data.obs, mv: (db.t.pee_archivi.find(z => z.id === 'c1').data.scheda.mv||{}).v}).slice(0,400));
 await A.reload(); await C.reload(); await sleep(8000);
-console.log('A after', await ea(() => JSON.stringify({obs: obs && obs.P1, mv: scheda.mv && scheda.mv.v && Object.keys(scheda.mv.v), val: scheda.mv && JSON.stringify(scheda.mv.v).slice(0,200)}))); console.log('C after', await ec(() => JSON.stringify({obs: obs && obs.P1, mv: scheda.mv && scheda.mv.v && Object.keys(scheda.mv.v), val: scheda.mv && JSON.stringify(scheda.mv.v).slice(0,200)})));
+console.log('A after', await ea(() => JSON.stringify({obs: obs && obs.P1, mv: scheda.mv && scheda.mv.v && Object.keys(scheda.mv.v), val: scheda.mv && JSON.stringify(scheda.mv.v||{}).slice(0,200)}))); console.log('C after', await ec(() => JSON.stringify({obs: obs && obs.P1, mv: scheda.mv && scheda.mv.v && Object.keys(scheda.mv.v), val: scheda.mv && JSON.stringify(scheda.mv.v||{}).slice(0,200)})));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

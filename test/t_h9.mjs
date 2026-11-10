@@ -1,7 +1,7 @@
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 import { execSync } from 'child_process';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
@@ -22,9 +22,9 @@ ok(await ev(() => /Programmazione formativa annuale/.test(document.getElementByI
 // Capo Unità
 await ev(() => shOpen('c1', 0)); await sleep(3500);
 await ev(() => shGrp('Progettare')); await sleep(200);
-ok(await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].some(b => b.textContent.trim() === 'Percorso formativo dello staff')), 'menu Progettare: «Percorso formativo dello staff»');
+ok(await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].some(b => b.textContent.trim() === 'Percorso formativo')), 'menu Progettare: «Percorso formativo dello staff»');
 await ev(() => shPF()); await sleep(800);
-ok(await ev(() => /Percorso formativo dello staff/.test(document.getElementById('panel-pp').textContent) && [...document.querySelectorAll('#sh-side .sh-si.on')].some(b => /Percorso formativo/.test(b.textContent))), 'pagina del percorso formativo');
+ok(await ev(() => /Percorso formativo/.test((document.querySelector('#panel-pp h1')||{}).textContent||'') && [...document.querySelectorAll('#sh-side .sh-si.on')].some(b => /Percorso formativo/.test(b.textContent))), 'pagina del percorso formativo');
 const sit = await ev(() => SITUAZIONI_STAFF.find(x => x.attivita.some(y => y.cat === 'vf' || y.cat === 'av')));
 ok(!!sit, 'nel paniere ci sono attività di verifica e autovalutazione');
 const va = await ev(() => { const x = SITUAZIONI_STAFF.find(x => x.attivita.some(y => y.cat === 'vf' || y.cat === 'av')); const y = x.attivita.find(y => y.cat === 'vf' || y.cat === 'av'); return [x.id, y.nome]; });
@@ -56,5 +56,5 @@ s = await ev(() => { const t = [...document.querySelectorAll('#sh-side .sh-si, #
 ok(['I miei Capi Unità', 'Lettura dei Capi Unità', 'Percorso formativo'].every(x => s.t.includes(x)), 'menu del Capo Gruppo con i termini per adulti (' + s.t.join(' | ') + ')');
 ok(/Programmazione formativa annuale|Programmazione formativa/.test(s.h || ''), 'intestazione: ' + s.h);
 await ev(() => shPF()); await sleep(700);
-ok(await ev(() => /Percorso formativo dei Capi Unità/.test(document.getElementById('panel-pp').textContent)), 'percorso formativo dei Capi Unità');
+ok(await ev(() => /Percorso formativo/.test((document.querySelector('#panel-pp h1')||{}).textContent||'') && /adulti del Gruppo/.test(document.getElementById('panel-pp').textContent)), 'percorso formativo dei Capi Unità');
 process.exit(summary() ? 1 : 0);

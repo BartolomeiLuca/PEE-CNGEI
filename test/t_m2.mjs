@@ -1,7 +1,7 @@
 // Blocco 1 (2 nov): «Per te» raggruppato nella pagina «I tuoi progetti», scarico JSON, svuota cestino
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); db.sql13 = true;

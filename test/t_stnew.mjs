@@ -14,6 +14,7 @@ await ev(() => clOpen()); await sleep(1500); await ev(() => clClose && clClose()
 await toStaff(); await P.waitForFunction(() => MODE === 'staff' && document.getElementById('main-app') && document.getElementById('main-app').style.display === 'block', null, {timeout: 15000}); await sleep(1200);
 const scr = await ev(() => { const m = document.getElementById('st-main') || document.body; const ins = [...document.querySelectorAll('input')].filter(i => i.offsetParent).map(i => i.value); return {ins, sel: [...document.querySelectorAll('select option')].map(o => o.textContent).join('|')}; });
 ok(scr.ins.includes('Staff Reparto Kontiki') && scr.ins.includes('Pesaro'), 'appena creato: nome dello staff e Sezione già a schermo ' + JSON.stringify(scr.ins.slice(0, 6)));
+console.log('SEL', JSON.stringify(scr).slice(0,600));
 ok(/Paolo Riva/.test(scr.sel), 'appena creato: la tendina offre le persone della tabella dell’Unità');
 await ev(() => clOpen()); await sleep(800);
 const arc1 = await ev(() => document.getElementById('cl-body').textContent);
@@ -25,7 +26,7 @@ const stRow = db.t.pee_archivi.find(r => r.user_id === A.id && (r.meta||{}).mode
 ok(stRow && (stRow.data.STAFF_MEMBERS || []).includes('Vecchio Membro'), 'il lavoro dello staff è salvato nel cloud');
 // elimino il progetto staff aperto
 await ev(id => clDelete(id), stRow.id); await sleep(2500);
-ok(!db.t.pee_archivi.some(r => r.id === stRow.id), 'progetto staff eliminato');
+ok(!db.t.pee_archivi.some(r => r.id === stRow.id && !(r.meta||{}).cest), 'progetto staff eliminato (nel cestino)');
 // ricomincio uno staff nuovo
 await sleep(1000);
 await toStaff(); await P.waitForFunction(() => MODE === 'staff' && document.getElementById('main-app') && document.getElementById('main-app').style.display === 'block', null, {timeout: 15000}); await sleep(4500);
@@ -33,7 +34,7 @@ const ins2 = await ev(() => [...document.querySelectorAll('input')].filter(i => 
 ok(ins2.includes('Staff Reparto Kontiki') && ins2.includes('Pesaro'), 'nuovo staff dopo l’eliminazione: nome e Sezione a schermo senza ricaricare ' + JSON.stringify(ins2.slice(0, 4)));
 const now = await ev(() => ({m: STAFF_MEMBERS.join(','), mode: MODE}));
 ok(now.mode === 'staff' && !/Vecchio Membro/.test(now.m), 'nuovo progetto staff: niente dati del progetto eliminato (' + now.m + ')');
-const rows = db.t.pee_archivi.filter(r => r.user_id === A.id && (r.meta||{}).mode === 'staff');
+const rows = db.t.pee_archivi.filter(r => r.user_id === A.id && (r.meta||{}).mode === 'staff' && !(r.meta||{}).cest);
 ok(rows.length === 1 && !JSON.stringify(rows[0].data).includes('Vecchio Membro'), 'nel cloud un solo staff, pulito (' + rows.length + ')');
 await ev(() => clOpen()); await sleep(800);
 ok((await ev(() => (document.getElementById('cl-body').textContent.match(/Staff/g) || []).length)) >= 1, 'in archivio c’è il nuovo staff');

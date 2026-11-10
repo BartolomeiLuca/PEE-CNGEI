@@ -7,6 +7,7 @@ const br = await launch(engine); const pa = await person(br, db), P = pa.page, e
 const dialogs = []; P.on('dialog', d => { dialogs.push(d.message()); d.dismiss().catch(() => {}); });
 await loginAs(P, base, A); await ev(() => exStart()); await sleep(3000);
 await ev(() => { scheda.pp.numTot = '24'; scheda.pp.sezione = 'Pesaro'; scheda.pp.occasioni = 'x'.repeat(4000); saveData(true); }); await sleep(2500);
+for(let i = 0; i < 30 && !db.t.pee_archivi.some(r => /Esempio/.test(r.titolo)); i++) await sleep(500);   // con il carico il primo salvataggio può tardare
 const ex = db.t.pee_archivi.find(r => /Esempio/.test(r.titolo)); const yr = ex.anno; const n0 = db.t.pee_archivi.length;
 { const t = await ev(() => (document.getElementById('pj-bar') || {}).textContent || ''); ok(t.includes(ex.titolo) && t.includes(String(yr)), 'titolo del progetto sempre in alto: ' + t); }
 // nuovo progetto nello stesso anno

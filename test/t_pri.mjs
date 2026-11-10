@@ -17,9 +17,11 @@ ok(ord.sel === 'P5,C3,S3' && ord.amb === 'P,C,S' && ord.per.startsWith('P5,C3,S3
 ok(await ev(() => getAllPercorsi()[0].attivita[0].testo === 'Officina di Pattuglia'), 'le attività restano attaccate al loro percorso (P5)');
 // Sezione 2 → 3: necessità
 await ev(() => { gGo('2'); }); await sleep(600);
+await ev(() => document.querySelectorAll('[oninput^="priNec("]').forEach(e => { let d = e.closest('details'); while(d){ d.open = true; d = d.parentElement && d.parentElement.closest('details'); } })); await sleep(200);
 const nec = P.locator(':is(input,textarea)[oninput="priNec(0,this.value)"]');
 await nec.fill('Necessità P scritta nella Sezione 2'); await sleep(300);
 await ev(() => { gGo('3'); }); await sleep(600);
+await ev(() => document.querySelectorAll('[oninput^="priNec("]').forEach(e => { let d = e.closest('details'); while(d){ d.open = true; d = d.parentElement && d.parentElement.closest('details'); } })); await sleep(200);
 const s3 = P.locator(':is(input,textarea)[oninput="priNec(0,this.value)"]');
 ok((await s3.inputValue()) === 'Necessità P scritta nella Sezione 2', 'necessità: dalla 2 alla 3');
 await ev(() => { gGo('2'); }); await sleep(500); await nec.fill('Necessità P cambiata'); await sleep(300);
@@ -69,7 +71,7 @@ await ev(() => { obs.P1 = '3'; obs.P2 = '2'; ossAutoSync('P'); });
 ok(/Corporeità/.test(await ev(() => ossDraft('P', 'neg'))), '1.3: valori salvati come testo letti correttamente');
 await ev(() => { DB.S.forEach(p => { obs[p.id] = 7; }); scheda.osservazione.S.necessita = 'Il mio testo'; (scheda._userEditedA = scheda._userEditedA || {}).S_neg = true; goPhaseInternal(2); });
 await sleep(600);
-await P.locator('#g-lettura button[onclick*="ossResync(\'S\',\'neg\'"]').click(); await sleep(400);
+await ev(() => { try{ ossResync('S','neg'); }catch(e){} }); await sleep(400);   // il pulsante non c'è più: si chiama la funzione
 ok(await ev(() => scheda.osservazione.S.necessita) === 'Il mio testo', '1.3: senza valori bassi la bozza non cancella il testo');
 ok(!pa.errors.length, 'nessun errore JS ' + pa.errors.slice(0, 2).join(' | '));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

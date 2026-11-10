@@ -1,6 +1,6 @@
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 // Il colore dell'interfaccia e della barra in alto viene dal PROFILO: E verde, L giallo, R rosso; Capo Gruppo, Commissario e chi non indica la Branca: blu.

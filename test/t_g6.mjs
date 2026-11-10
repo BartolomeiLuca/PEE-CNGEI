@@ -2,7 +2,7 @@ import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './ha
 import fs from 'fs';
 import { execSync } from 'child_process';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const html = fs.readFileSync('/tmp/site_sh/anteprima/index.html', 'utf8');
 const KOS2 = JSON.parse(html.match(/const KOS2 = (\{.*?\});\n/s)[1]);

@@ -1,7 +1,7 @@
 // «L'anno di solito»: griglia uniforme, intestazioni bloccate, popup, mobile
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); db.sql13 = true;
@@ -34,4 +34,4 @@ for (const [w, h] of [[1400, 900], [390, 800]]) {
   ok(errs.length === 0, tag + 'nessun errore JS ' + errs.join('|'));
   await p.ctx?.close?.();
 }
-summary(); await br.close();
+const _f = summary(); await br.close().catch(() => {}); process.exit(_f ? 1 : 0);

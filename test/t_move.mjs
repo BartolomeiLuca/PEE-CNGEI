@@ -47,13 +47,13 @@ ok(JSON.stringify((await titles(PD, iP)).map(nm)) === JSON.stringify(t2), 'Dario
 const top = await ea(i => attOrd(getAllPercorsi()[i], 3)[0], iP), sec = await ea(i => attOrd(getAllPercorsi()[i], 3)[1], iP), third = await ea(i => attOrd(getAllPercorsi()[i], 3)[2], iP);
 await PD.locator(`#att-${iP}-${top} textarea[oninput*="'lancio'"]`).click(); await PD.keyboard.type(' (scritto da Dario)'); await sleep(2500);
 ok(await PA.locator(`#att-${iP}-${top} .att-mv-dn`).isDisabled(), 'mentre Dario la modifica, «Sposta» è bloccato su quella attività');
-await PA.locator(`#att-${iP}-${sec} .att-mv-up`).click(); await sleep(600);
+await PA.locator(`#att-${iP}-${sec} .att-mv-up`).click({timeout:8000}).catch(() => {}); await sleep(600);   // se il tasto non c’è o è bloccato, va bene lo stesso: conta che l’ordine non cambi
 ok(JSON.stringify((await titles(PA, iP)).map(nm)) === JSON.stringify(t2), 'e non si può nemmeno scavalcarla dall’attività accanto');
 // Dario passa a un'altra attività; Anna sposta le prime due mentre lui scrive nella terza
 await PD.locator(`#att-${iP}-${third} textarea[oninput*="'conclusione'"]`).click(); await sleep(5500);
 await PD.keyboard.type(' (conclusione di Dario)');
 await PA.locator(`#att-${iP}-${top} .att-mv-dn`).click(); await sleep(300);
-await PA.locator(`#att-${iP}-${sec} textarea[oninput*="'sviluppo'"]`).click(); await PA.keyboard.type(' (Anna)');
+await PA.locator(`#att-${iP}-${sec} textarea[oninput*="'sviluppo'"]`).click({force:true, timeout:8000}).catch(async () => { await PA.evaluate(([i, j]) => { const t = document.querySelector(`#att-${i}-${j} textarea[oninput*="'sviluppo'"]`); t.focus(); t.setSelectionRange(t.value.length, t.value.length); }, [iP, sec]); }); await PA.keyboard.type(' (Anna)');   // su Firefox il riquadro dopo lo spostamento è ancora in movimento
 await PD.locator('body').click({position:{x:5, y:5}}); await PA.locator('body').click({position:{x:5, y:5}});
 await sleep(14000);
 const snap = P => P.evaluate(i => { const per = getAllPercorsi()[i]; return {ord: attOrd(per, 3), att: per.attivita.slice(0, 3).map(a => ({t:a.testo, l:a.lancio, s:a.sviluppo, c:a.conclusione}))}; }, iP);

@@ -1,5 +1,5 @@
 // Giro completo dell'app su un profilo (motore + dispositivo): sezioni, larghezza, Word ed Excel
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
 import { devices } from 'playwright';
 import fs from 'fs';
@@ -11,7 +11,7 @@ const PROFILES = {
   'chrome-win': ['chromium', devices['Desktop Chrome']], 'edge-win': ['chromium', devices['Desktop Edge']],
   'android': ['chromium', devices['Pixel 7']], 'android-small': ['chromium', devices['Galaxy S8']], 'tablet-android': ['chromium', devices['Galaxy Tab S4']]
 };
-const name = process.argv[2] || 'chrome-win';
+const name = ({chromium:'chrome-win', webkit:'safari-mac', firefox:'firefox-win'})[process.argv[2]] || process.argv[2] || 'chrome-win';   // si può passare il motore (runall) o il profilo
 const [engine, dev] = PROFILES[name];
 const base = (await serve()) + 'anteprima/';
 const db = new FakeDB(); db.sql13 = true;

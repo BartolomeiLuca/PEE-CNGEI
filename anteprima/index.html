@@ -1539,7 +1539,12 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
   </div>
 </div>
 <script>function bootLd(on, t){ try{ var e = document.getElementById('boot-ld'); if(!e) return; if(t){ var q = document.getElementById('boot-ld-t'); if(q) q.textContent = t; } if(on){ e.style.display = 'flex'; e.classList.remove('off'); } else { e.classList.add('off'); setTimeout(function(){ if(e.classList.contains('off')) e.style.display = 'none'; }, 260); } }catch(x){} }
-setTimeout(function(){ bootLd(false); }, 12000);</script>
+setTimeout(function(){ bootLd(false); }, 12000);
+// si toglie appena l'app è a schermo, da qualunque strada ci si arrivi (progetto riaperto dopo il ricaricamento, invito, senza account…)
+(function(){ var n = 0; var iv = setInterval(function(){ n++; try{ var e = document.getElementById('boot-ld'); if(!e){ clearInterval(iv); return; } if(e.classList.contains('off')) return;
+  var r = document.getElementById('sh-root'), m = document.getElementById('main-app'), w = document.getElementById('welcome-screen');
+  var ready = (r && r.classList.contains('show')) || (m && m.style.display === 'block' && !document.body.classList.contains('sh-pend')) || (document.body.classList.contains('sh-in') && !document.body.classList.contains('sh-pend')) || (w && w.style.display !== 'none' && document.body.classList.contains('sh-on') && !document.body.classList.contains('sh-pend'));
+  if(ready){ clearInterval(iv); setTimeout(function(){ bootLd(false); }, 150); } }catch(x){} if(n > 600) clearInterval(iv); }, 200); })();</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-tent" viewBox="0 0 24 24"><path d="M3 20 12 4l9 16M12 4v16M8 20l4-7 4 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/></symbol>
@@ -8206,7 +8211,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101800'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101900'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13595,7 +13600,11 @@ function rtEnter(ed){ const sh=rtShim(ed); let v=sh.value, a=sh.selectionStart, 
   const ins='\n'+(m[2]?(+m[2]+1)+'. ':'• '); sh.value=v.slice(0,a)+ins+v.slice(a); sh.setSelectionRange(a+ins.length,a+ins.length); sh.commit(); }
 // grassetto fatto a mano: in certi campi (la griglia) il comando del browser non fa nulla
 function rtBoldEd(ed){ const sl=getSelection(); if(!sl.rangeCount||!ed.contains(sl.anchorNode)) return;
-  if(sl.isCollapsed&&sl.modify){ try{ sl.modify('move','backward','word'); sl.modify('extend','forward','word'); }catch(e){} }
+  // 10/11: cursore dentro una parola → grassetto sulla parola; cursore a fine parola o dopo uno spazio → si scrive in grassetto da qui (come in Google Documenti)
+  if(sl.isCollapsed){ const n0=sl.anchorNode, o0=sl.anchorOffset; const tx=n0&&n0.nodeType===3?n0.nodeValue:''; const W=/[0-9A-Za-zÀ-ÖØ-öø-ÿ'’]/;
+    const inWord=!!tx&&o0>0&&o0<tx.length&&W.test(tx[o0-1])&&W.test(tx[o0]);
+    if(!inWord){ try{ document.execCommand('styleWithCSS',false,false); }catch(e){} document.execCommand('bold',false,null); rtSync(ed); return; }
+    if(sl.modify){ try{ sl.modify('move','backward','word'); sl.modify('extend','forward','word'); }catch(e){} } }
   if(sl.isCollapsed) return; const r=sl.getRangeAt(0);
   let n=r.commonAncestorContainer; if(n.nodeType===3) n=n.parentNode; while(n&&n!==ed&&n.nodeName!=='B'&&n.nodeName!=='STRONG') n=n.parentNode;
   if(n&&n!==ed){ const p=n.parentNode, first=n.firstChild, last=n.lastChild; while(n.firstChild) p.insertBefore(n.firstChild,n); p.removeChild(n); p.normalize(); try{ const r2=document.createRange(); r2.setStartBefore(first); r2.setEndAfter(last); sl.removeAllRanges(); sl.addRange(r2); }catch(e){} }

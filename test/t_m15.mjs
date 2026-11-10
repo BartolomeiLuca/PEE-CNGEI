@@ -3,7 +3,7 @@
 //  A6 «ha già visto l'invito» dopo che il collaboratore ha aperto il progetto (anche da «Continua qui»)
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
-process.env.SITE = '/tmp/site_sh';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
 const base = (await serve()) + 'anteprima/';
 const br = await launch(engine);
 const db = new FakeDB(); db.sql13 = true;
@@ -27,14 +27,14 @@ A.on('pageerror', e => console.log('PAGEERR', String(e).slice(0, 250)));
 await loginAs(A, base, ua); await sleep(1200); A.evaluate(() => shOpen('c1', 0)).catch(() => {}); await sleep(3000);
 await ea(() => { document.querySelectorAll('#g-modal .ppb-c').forEach(c => { c.checked = true; }); if(document.querySelector('#g-modal.show .ppb-ask')) _ppbGo(); }); await sleep(1500);
 await ea(() => shTip()); await sleep(800);
-const ini = await ea(() => ({h: (document.querySelector('#panel-pp h1') || {}).textContent, tab: document.querySelector('.pfx-ms2 .on') && document.querySelector('.pfx-ms2 .on').textContent, side: /L’anno di solito/.test(document.getElementById('sh-side').textContent), now: document.querySelectorAll('.tg-t thead th.now').length}));
-ok(ini.h === 'L’anno di solito' && ini.side, 'la pagina «L’anno di solito» c’è nel menu Realizzare');
+const ini = await ea(() => ({h: (document.querySelector('#panel-pp h1') || {}).textContent, tab: document.querySelector('.pfx-ms2 .on') && document.querySelector('.pfx-ms2 .on').textContent, side: /Anno tipo/.test(document.getElementById('sh-side').textContent), now: document.querySelectorAll('.tg-t thead th.now').length}));
+ok(ini.h === 'Anno tipo' && ini.side, 'la pagina «Anno tipo» (l’anno di solito) c’è nel menu Realizzare');
 ok(ini.tab === 'Reparto' && ini.now === 1, 'per un’Unità di Reparto si apre il calendario del Reparto, con il mese in corso evidenziato (' + ini.tab + ')');
-const cel = await ea(() => ({n: document.querySelectorAll('.tip-mc').length, ott: document.querySelectorAll('.tip-mc')[1].textContent}));
+const cel = await ea(() => ({n: document.querySelectorAll('.tg-t thead th').length - 1, ott: document.getElementById('panel-pp').textContent}));
 ok(cel.n === 12 && /Passaggi di Branca/.test(cel.ott) && /Bivacco di staff/.test(cel.ott), 'dodici mesi con i momenti principali di Reparto (ottobre: ' + cel.ott.slice(0, 60) + '…)');
 for (const k of ['L', 'R', 'G']) { await ea(k => tipSet(k), k); await sleep(200);
-  const r = await ea(() => ({righe: document.querySelectorAll('.tip-mc').length, fonte: /Fonte: Documentazione formativa CNGEI/.test(document.getElementById('panel-pp').textContent), nomi: /[A-Z][a-z]+ [A-Z][a-z]+, formator/.test(document.getElementById('panel-pp').textContent)}));
-  ok(r.righe >= 4 && r.fonte && !r.nomi, 'calendario ' + k + ': ' + r.righe + ' riquadri, con la fonte generica'); }
+  const r = await ea(() => ({righe: document.querySelectorAll('.tg-t .tgi').length, fonte: /Fonte: Documentazione formativa CNGEI/.test(document.getElementById('panel-pp').textContent), nomi: /[A-Z][a-z]+ [A-Z][a-z]+, formator/.test(document.getElementById('panel-pp').textContent)}));
+  ok(r.righe >= 4 && r.fonte && !r.nomi, 'calendario ' + k + ': ' + r.righe + ' momenti, con la fonte generica'); }
 await ea(() => tipPop('pass')); await sleep(300);
 ok(await ea(() => /Passaggi di Branca/.test(document.getElementById('g-modal').textContent) && /Documentazione formativa CNGEI/.test(document.getElementById('g-modal').textContent)), 'popup sui passaggi di Branca con la fonte generica');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
