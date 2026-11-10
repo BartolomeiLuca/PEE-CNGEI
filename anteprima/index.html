@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611100830'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611100915'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13415,12 +13415,9 @@ function docFooterText(){
 function dDocument(children, headerText){
   const D = dxLib();
   // indice automatico di Word (collegato ai titoli): compare se il documento ha almeno tre capitoli
-  const h2=children.filter(c=>c&&c._hd===2).length, h3=children.filter(c=>c&&c._hd===3).length; let toc=false;
-  if((h2>=3||(h2===0&&h3>=4))&&D.TableOfContents){ const first=children.findIndex(c=>c&&c._hd===(h2>=3?2:3)); const rng=h2>=3?(h3<=14?'2-3':'2-2'):'3-3';
-    if(first>=0){ children=children.slice(); children.splice(first,0,dPara('Indice',{size:26,bold:true,color:GRTXT,before:200,after:80,keepNext:true}), new D.TableOfContents('Indice',{hyperlink:true,headingStyleRange:rng}), dPara('',{after:120})); toc=true; } }
+  // 10/11: niente indice iniziale (in Word e Pages si vedeva male e il Word ha già il pannello dei capitoli)
   return new D.Document({
     creator:'PEE CNGEI', title:(UNIT_NAME?UNIT_NAME+' — ':'')+headerText,
-    features: toc?{updateFields:true}:undefined,
     styles:{default:{document:{run:{font:MF, size:20}}, heading1:{run:{font:MF}}, heading2:{run:{font:MF}}, heading3:{run:{font:MF}}}, paragraphStyles:[{id:'TOC1',name:'toc 1',basedOn:'Normal',next:'Normal',run:{font:MF,size:19,bold:true},paragraph:{spacing:{before:60,after:40}}},{id:'TOC2',name:'toc 2',basedOn:'Normal',next:'Normal',run:{font:MF,size:18},paragraph:{spacing:{after:20},indent:{left:240}}}]},
     numbering:{config:[{reference:'bul', levels:[{level:0, format:D.LevelFormat.BULLET, text:'•', alignment:D.AlignmentType.LEFT, style:{paragraph:{indent:{left:420, hanging:260}}, run:{font:MF}}}]}]},
     sections:[{
@@ -13439,7 +13436,10 @@ function dDocument(children, headerText){
 // Nel testo salvato i segni sono leggeri: **grassetto**  _corsivo_  ++sottolineato++  ^^più grande^^  ,,più piccolo,,  e righe che iniziano con «• » o «1. ».
 // La barra compare sui campi lunghi; il Word (e l'anteprima sotto il campo) li mostrano formattati.
 const RT_TOK=[['b','**','**'],['M','~~','~~'],['u','++','++'],['L','^^','^^'],['S',',,',',,'],['i','_','_']];   // M = semigrassetto (peso 600)
-function rtSegs(str){ str=String(str==null?'':str);
+// segni di formattazione senza testo in mezzo (es. «^^**^^**» lasciati da un grassetto/apice acceso e spento senza scrivere):
+// si annullano a coppie, così non compaiono mai come simboli nel testo né nel Word
+function rtNormTok(str){ return String(str==null?'':str).replace(/(?:\*\*|~~|\+\+|\^\^|,,){2,}/g, run => { const cnt = {}; const order = []; (run.match(/\*\*|~~|\+\+|\^\^|,,/g) || []).forEach(k => { if(!cnt[k]){ cnt[k] = 0; order.push(k); } cnt[k]++; }); return order.filter(k => cnt[k] % 2 === 1).join(''); }); }
+function rtSegs(str){ str=rtNormTok(str);
   const re=/(\*\*|\+\+|\^\^|~~|,,|(?<![\w\/])_(?=\S)|(?<=\S)_(?![\w]))/g; const parts=[]; let last=0, m; const cnt={};
   while((m=re.exec(str))){ parts.push({t:str.slice(last,m.index)}); parts.push({tok:m[1]==='_'?'_':m[1]}); last=m.index+m[1].length; cnt[m[1]]=(cnt[m[1]]||0)+1; }
   parts.push({t:str.slice(last)});
@@ -13610,7 +13610,7 @@ function dMulti(text, o={}){
   return rtLines(t).filter(l => l.trim()).map(l => dPara(l,{size:o.size||19,after:40}));
 }
 // un grassetto (o corsivo, sottolineato…) che va a capo: ogni riga si chiude e la successiva si riapre, così nel Word non restano asterischi
-function rtLines(t){ const L = String(t==null?'':t).split(/\n/); const TOK = ['**','~~','++','^^',',,']; let open = [];
+function rtLines(t){ const L = rtNormTok(t).split(/\n/); const TOK = ['**','~~','++','^^',',,']; let open = [];
   return L.map(line => { let l = open.join('') + line; const cnt = {}; const re = /(\*\*|~~|\+\+|\^\^|,,)/g; let m; while((m = re.exec(l))) cnt[m[1]] = (cnt[m[1]]||0) + 1;
     open = TOK.filter(k => (cnt[k]||0) % 2 === 1); return l + open.slice().reverse().join(''); }); }
 async function exportSchedaDocx(mode){
@@ -13751,7 +13751,7 @@ async function exportPPDocx(mode){
     const cl = per.checklist || {};
     const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
-      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40,keepNext:true}),
+      dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40}),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,q,arr) => [dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(plain(x[k]),{size:18})],{after:30,indent:240}), ...(q<arr.length-1?[dPara('',{size:12,after:60})]:[])]),
       ...(acts[acts.length-1].j===j?[]:[dPara('',{size:12,after:240})]),
       ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
