@@ -1987,7 +1987,7 @@ window.LSK = window.BRO ? 'bussola_pee_ro_v1' : 'bussola_pee_v6';
   function device(){ const ua=navigator.userAgent; const os=/iPhone|iPad/.test(ua)?'iOS':/Android/.test(ua)?'Android':/Mac/.test(ua)?'Mac':/Win/.test(ua)?'Windows':/Linux/.test(ua)?'Linux':'?';
     const br=/Edg\//.test(ua)?'Edge':/Firefox\//.test(ua)?'Firefox':/Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'?'; return os+' · '+br+' · '+innerWidth+'×'+innerHeight; }
   function flush(){ timer=null; if(!queue.length) return; const items=queue.splice(0); let key=''; try{ key=FB_KEY; }catch(e){ return; }
-    const ver=(function(){ try{ return APP_VERSION; }catch(e){ return '?'; } })();
+    const ver=(function(){ try{ return APP_VERSION+' (build '+APP_BUILD+')'; }catch(e){ return '?'; } })();
     const body=items.map(x=>`${x.msg}\n${x.at}\n${x.stack}`).join('\n\n---\n\n')+`\n\nVersione: ${ver}\n${where()}\nDispositivo: ${device()}\nPagina: ${location.pathname}\nOra: ${new Date().toLocaleString('it-IT')}`;
     try{ const fd=new FormData(); fd.append('access_key',key); fd.append('subject','[PEE CNGEI] Errore automatico: '+items[0].msg.slice(0,80)); fd.append('from_name','Segnalazione automatica PEE CNGEI'); fd.append('message',body);
       fetch('https://api.web3forms.com/submit',{method:'POST',body:fd,keepalive:true}).catch(()=>{}); }catch(e){} }
@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611100915'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611100945'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -8455,7 +8455,7 @@ function novOpen(){
 }
 function novDot(){ let seen=''; try{ seen=localStorage.getItem('bussola_nov_vista')||''; }catch(e){}
   const d=document.getElementById('nov-dot'); if(d) d.style.display = seen===NOVITA[0].d ? 'none' : 'inline-block';
-  const v=document.getElementById('app-ver'); if(v) v.textContent='Versione '+APP_VERSION; }
+  const v=document.getElementById('app-ver'); if(v) v.textContent='Versione '+APP_VERSION+' · build '+APP_BUILD; }
 document.addEventListener('DOMContentLoaded', () => { novDot(); faqLinks(); vidHome(); faqHome(); });
 const STRUM_GRUPPI = ['Legge e Promessa','Programmi Progressivi e Stimolanti','Gruppo di Pari','Simbolismo e Tradizioni','Imparare Facendo',"Vita all'Aria Aperta",'Servizio'];
 // Fonte: "Strumenti del Metodo declinati per fasce d'età" (CNGEI)
@@ -11705,7 +11705,7 @@ function fbCompose(){
   const ua=navigator.userAgent; const disp=/iPad|Tablet/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'telefono':'computer';
   const os=/iPhone|iPod/.test(ua)?'iOS '+((ua.match(/OS (\d+[_\d]*)/)||[])[1]||'').replace(/_/g,'.'):(/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1))?'iPadOS'+((ua.match(/OS (\d+[_\d]*)/)||[])[1]?' '+(ua.match(/OS (\d+[_\d]*)/)||[])[1].replace(/_/g,'.'):''):/Android/.test(ua)?'Android '+((ua.match(/Android ([\d.]+)/)||[])[1]||''):/Windows NT/.test(ua)?'Windows':/Mac OS X/.test(ua)?'macOS':/CrOS/.test(ua)?'ChromeOS':/Linux/.test(ua)?'Linux':'altro';
   const br=/Edg\//.test(ua)?'Edge':/Chrome\//.test(ua)?'Chrome':/Firefox\//.test(ua)?'Firefox':/Safari\//.test(ua)?'Safari':'altro';
-  const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti e Lupette',E:'Esploratori ed Esploratrici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—')), 'Dispositivo: '+disp+' · '+os.trim()+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION, 'Data: '+new Date().toLocaleString('it-IT') ];
+  const ctx=[ 'Tipo: '+tipo, 'Dove: '+dove, 'Modalità: '+(MODE==='giovani'?'Unità '+({L:'Lupetti e Lupette',E:'Esploratori ed Esploratrici',R:'Rover'}[FASCIA]||''):MODE==='staff'?'Staff':(MODE||'—')), 'Dispositivo: '+disp+' · '+os.trim()+' · '+br+' · '+window.innerWidth+'×'+window.innerHeight, 'Versione app: '+APP_VERSION+' (build '+APP_BUILD+')', 'Data: '+new Date().toLocaleString('it-IT') ];
   const sub='[PEE CNGEI · Suggerimenti] '+tipo.split(' /')[0]+(nome?' — '+nome:'');
   const body=(txt||'(scrivi qui la tua segnalazione)')+'\n\n— — —\n'+ctx.join('\n')+(nome?'\nDa: '+nome:'')+(mailx?' <'+mailx+'>':'');
   return {sub, body};
@@ -13417,7 +13417,7 @@ function dDocument(children, headerText){
   // indice automatico di Word (collegato ai titoli): compare se il documento ha almeno tre capitoli
   // 10/11: niente indice iniziale (in Word e Pages si vedeva male e il Word ha già il pannello dei capitoli)
   return new D.Document({
-    creator:'PEE CNGEI', title:(UNIT_NAME?UNIT_NAME+' — ':'')+headerText,
+    creator:'PEE CNGEI', description:'PEE CNGEI build '+APP_BUILD, title:(UNIT_NAME?UNIT_NAME+' — ':'')+headerText,
     styles:{default:{document:{run:{font:MF, size:20}}, heading1:{run:{font:MF}}, heading2:{run:{font:MF}}, heading3:{run:{font:MF}}}, paragraphStyles:[{id:'TOC1',name:'toc 1',basedOn:'Normal',next:'Normal',run:{font:MF,size:19,bold:true},paragraph:{spacing:{before:60,after:40}}},{id:'TOC2',name:'toc 2',basedOn:'Normal',next:'Normal',run:{font:MF,size:18},paragraph:{spacing:{after:20},indent:{left:240}}}]},
     numbering:{config:[{reference:'bul', levels:[{level:0, format:D.LevelFormat.BULLET, text:'•', alignment:D.AlignmentType.LEFT, style:{paragraph:{indent:{left:420, hanging:260}}, run:{font:MF}}}]}]},
     sections:[{
