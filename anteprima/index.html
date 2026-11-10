@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101030'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101130'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13571,6 +13571,10 @@ async function dFixBreaks(blob){
     await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const z = await JSZip.loadAsync(blob); const f = z.file('word/document.xml'); if(!f) return blob;
     let x = await f.async('string'); const x0 = x;
+    // 10/11: Pages e Google Documenti leggono la sola presenza di <w:b w:val="false"/>, <w:tblHeader w:val="false"/> ecc. come "attivo" (tutto grassetto/corsivo disordinato, ogni riga come intestazione ripetuta): gli attributi spenti si tolgono del tutto
+    x = x.replace(/<w:(?:b|bCs|i|iCs|keepNext|keepLines|tblHeader|cantSplit|pageBreakBefore|strike|caps|smallCaps|vanish)\s+w:val="(?:false|0)"\s*\/>/g, '');
+    // l'ordine corretto delle proprietà del testo vuole rFonts per primo (Pages lo rispetta alla lettera)
+    x = x.replace(/<w:rPr>((?:(?!<\/w:rPr>)[\s\S])*?)(<w:rFonts[^>]*\/>)((?:(?!<\/w:rPr>)[\s\S])*)<\/w:rPr>/g, (m, pre, rf, post) => pre ? '<w:rPr>' + rf + pre + post + '</w:rPr>' : m);
     // testo formattato (**grassetto** _corsivo_ ++sottolineato++ ^^grande^^ ,,piccolo,,): ogni tratto diventa una sua riga di testo con le sue proprietà
     // 10/11: il pezzo di <w:rPr> non può oltrepassare il proprio </w:rPr> (prima, con una riga vuota davanti, il tratto catturava anche celle intere e rompeva la griglia in Word/Pages)
     x = x.replace(/<w:r>(<w:rPr>(?:(?!<\/w:rPr>)[\s\S])*<\/w:rPr>)?<w:t((?:\s[^>]*)?)>([^<]*)<\/w:t><\/w:r>/g, (m, rpr, a, t) => {
