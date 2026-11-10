@@ -36,9 +36,9 @@ await ev(([p, j]) => { const s = document.querySelector(`#att-${p}-${j} .ax-oss-
 ok((await ev(([p, j]) => axX(p, j).ossX || [], [p, j])).length === 1, '4: indicatore di un altro percorso aggiunto');
 await P.locator(`${AX} button:visible`, {hasText:'Aggiungi altro da osservare'}).first().click().catch(() => {}); await sleep(300);
 // 10. strumenti del metodo
-const nS = await ev(([p, j]) => { const s = document.querySelector(`#att-${p}-${j} .att-met select`); return s ? s.options.length : 0; }, [p, j]);
+const nS = await ev(([p, j]) => { const s = document.querySelectorAll(`#att-${p}-${j} .att-metw input[type=checkbox]`); return s.length; }, [p, j]);
 ok(nS > 2, '10: posso aggiungere altri strumenti del metodo (' + nS + ')');
-await ev(([p, j]) => { const s = document.querySelector(`#att-${p}-${j} .att-met select`); s.value = s.options[1].value; s.dispatchEvent(new Event('change')); }, [p, j]); await sleep(300);
+await ev(([p, j]) => { const c = [...document.querySelectorAll(`#att-${p}-${j} .att-metw input[type=checkbox]`)].find(x => !x.checked); c.checked = true; c.dispatchEvent(new Event('change')); }, [p, j]); await sleep(300);
 ok((await ev(([p, j]) => axX(p, j).strum || [], [p, j])).length >= 1, '10: strumento aggiunto e selezionato');
 // 11. chi paga?
 await ev(([p, j]) => { axX(p, j).spese = [{voce:'Ingressi', importo:50, modo:'forfait'}]; axSave(); axRe(p, j); }, [p, j]); await sleep(300);
