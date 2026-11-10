@@ -424,7 +424,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 @media(max-width:600px){.mv-dots{display:none}.mv-sc-l{display:none}.mv-val{min-width:0;padding:3px 8px}.mv-val .l small{display:none}.mv-tg{padding:0 8px}}
 @media(max-width:420px){.mv-val{gap:6px}.mv-val .l{font-size:12px;max-width:74px}.mv-val .n{font-size:19px}.mv-tg .t{display:none}.mv-dots{display:none}}
 .mv-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}.ver-rip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 2px;font-size:12px;color:var(--ink-mid)}.ver-rip button{font:inherit;font-size:12px;font-weight:700;color:var(--green);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 10px;min-height:30px;cursor:pointer}.ver-rip-n{font-size:12px;color:var(--ink-faint);margin-top:6px}.idr-tag{font-size:12px;font-weight:700;color:var(--green);border:1px solid var(--green);border-radius:8px;padding:0 6px;white-space:nowrap}.cf-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0 12px;font-size:12px}.cf-lg i{display:inline-block;width:14px;height:14px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-2px}.cf-cnt{font-weight:700;color:var(--green)}
-.cf-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}@media(max-width:899px){.cf-grid{grid-template-columns:1fr}}
+.cf-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}@media(max-width:1279px){.cf-grid{grid-template-columns:1fr}}
 .cf-amb h3{font-size:13px;margin:14px 0 6px}.cf-sc{overflow-x:auto}.cf-t{width:100%;border-collapse:collapse;font-size:12px;min-width:420px}.cf-t th,.cf-t td{border:1px solid var(--border-light);padding:6px 8px;text-align:left;vertical-align:middle}.cf-t thead th{background:var(--bg);font-size:12px}.cf-t tbody tr{cursor:pointer}.cf-t tbody tr:hover{background:#f4f6f2}.cf-t tr.cf-sel{outline:2px solid var(--green);outline-offset:-2px}.cf-t tr.cf-conf{background:#fff6dc}
 .cf-c{text-align:center!important;font-weight:700;min-width:38px}.cf-nd,.cf-hid{color:var(--ink-faint);font-weight:400}.cf-m,.cf-r,.cf-v{text-align:center!important;white-space:nowrap}.cf-v small{font-size:12px;color:var(--ink-mid)}.cf-warn{font-size:12px;font-weight:600;color:#8a5a00;margin-top:2px}
 .l1{background:#f6d5d5}.l2{background:#fbe0cc}.l3{background:#fdf0c8}.l4{background:#d7ead8}.l5{background:#c7e0d1}
@@ -1524,6 +1524,18 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 </style>
 </head>
 <body>
+<!-- 10/11: schermata di caricamento (mentre l'app si avvia o cambia progetto non si vede più la vecchia pagina iniziale) -->
+<div id="boot-ld" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:2147483000;background:#F5F5EF;display:flex;align-items:center;justify-content:center;font-family:Montserrat,system-ui,sans-serif;transition:opacity .25s">
+  <style>#boot-ld .bl-bar{width:180px;height:4px;border-radius:2px;background:#e2e2d8;overflow:hidden;margin:22px auto 0}#boot-ld .bl-bar i{display:block;height:100%;width:40%;border-radius:2px;background:#25734e;animation:blMove 1.1s ease-in-out infinite}@keyframes blMove{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}@media (prefers-reduced-motion:reduce){#boot-ld .bl-bar i{animation:none;width:100%}}#boot-ld.off{opacity:0;pointer-events:none}</style>
+  <div style="text-align:center;padding:24px">
+    <img src="icon-192.png" alt="" width="88" height="88" style="display:block;margin:0 auto 18px;border-radius:50%;box-shadow:0 6px 24px rgba(26,24,0,.12)">
+    <div style="font-weight:800;font-size:22px;letter-spacing:.02em;color:#1a1800">PEE CNGEI</div>
+    <div id="boot-ld-t" style="font-size:14px;color:#5f5f58;margin-top:6px">Un momento, preparo il tuo lavoro…</div>
+    <div class="bl-bar"><i></i></div>
+  </div>
+</div>
+<script>function bootLd(on, t){ try{ var e = document.getElementById('boot-ld'); if(!e) return; if(t){ var q = document.getElementById('boot-ld-t'); if(q) q.textContent = t; } if(on){ e.style.display = 'flex'; e.classList.remove('off'); } else { e.classList.add('off'); setTimeout(function(){ if(e.classList.contains('off')) e.style.display = 'none'; }, 260); } }catch(x){} }
+setTimeout(function(){ bootLd(false); }, 12000);</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-tent" viewBox="0 0 24 24"><path d="M3 20 12 4l9 16M12 4v16M8 20l4-7 4 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/></symbol>
@@ -5386,7 +5398,7 @@ function stProfHTML(auto){
   let h = `<div class="st-card"><div class="st-ct">${auto ? 'Il mio profilo' : 'Profilo · ' + sEsc(name)}</div>`;
   if(auto) h += `<div class="st-note priv">L’auto osservazione è privata: non compare nel Riepilogo dello staff né nei calcoli di insieme.</div>`;
   if(linked){
-    h += `<div class="st-note link">${link.gone ? 'Questa persona non c’è più nella tabella dello staff dell’Unità: restano i dati dell’ultima copia.' : 'Questi dati arrivano dalla tabella <b>Adulti in staff</b> dell’Unità (Sezione 1.1) e si modificano <b>lì</b>: si aggiornano da soli quando apri il progetto.'} <button class="st-lnk" onclick="stUnitRefresh()">↻ Aggiorna ora</button></div>`;
+    h += `<div class="st-note link">${link.gone ? 'Questa persona non c’è più nella tabella dello staff dell’Unità: restano i dati dell’ultima copia.' : 'Questi dati arrivano dalla tabella <b>Adulti in staff</b> dell’Unità (in «Il mio staff») e si modificano <b>lì</b>: si aggiornano da soli quando apri il progetto.'} <button class="st-lnk" onclick="stUnitRefresh()">↻ Aggiorna ora</button></div>`;
     h += `<div class="st-grid">${stField('Nome', stRO(src.nome || name))}${stField('Ruolo', stRO(src.ruolo || stRuoloTxt(P.ruolo)))}${stField('Età', stRO(src.eta))}${stField('Formazione', stRO(src.form))}</div>`;
     const more = [['Caratteristiche personali','car'],['Professioni, competenze esterne','prof'],['Ruoli passati','ruoli'],['Disponibilità','disp'],['Varie (dinamiche di staff, contratto)','varie'],['Email','mail'],['Telefono','tel']].filter(([, k]) => src[k]);
     if(more.length) h += `<div class="st-grid">${more.map(([lb, k]) => stField(lb, stRO(src[k]), ['car','prof','ruoli','disp','varie'].includes(k))).join('')}</div>`;
@@ -5452,7 +5464,7 @@ function stLetHTML(auto){
   return `<div class="st-card st-intro"><div class="st-ct">Lettura individuale · ${sEsc(n)}</div><div class="st-note">È una lettura di partenza per il dialogo con la persona: non un giudizio. Si aggiorna da sola con la scheda di osservazione.</div></div><div id="indicazione-wrap-${n.replace(/\s/g, '_')}">${generateIndicazioneHTML(n)}</div>${nav}`;
 }
 function stEvoHTML(){
-  return renderTimelineHTML() + `<div class="st-actions"><button class="btn-ghost" onclick="stGo('let')">← Lettura individuale</button><button class="btn-primary" onclick="goPhase(2)">Vedi il Riepilogo →</button></div>`;
+  return renderTimelineHTML() + `<div class="st-actions"><button class="btn-ghost" onclick="stGo('let')">← Lettura individuale</button></div>`;   // 10/11: «Vedi il Riepilogo» qui portava al riepilogo dell'Unità: resta quello in alto
 }
 
 // ── barra dei passaggi in alto (stessa grafica della Sezione 1 dell'Unità) ──
@@ -6481,7 +6493,7 @@ function cfTable(a, cols){
 function cfDetail(){
   const pid=cfPercSel(); const p=Object.values(DB).flat().find(x=>x.id===pid); const M=mvM(); const me=mvMe(); const vis=cfVisible(pid);
   const names=occChiNames(); const rows=grRows(pid);
-  const att = rows.length ? rows.map(r=>`<li><b>${sEsc(r.nome)}</b>${r.data?` <span class="cf-dt">${sEsc(grDateTxt(r.data))}</span>`:''}${names.length?`<div class="cf-pr">${names.filter((n,i)=>names.findIndex(m=>occNameSame(m,n))===i).map(n=>{ const ab=occAbsent(r.k,n); return `<span class="cf-pc${ab?'':' on'}">${sEsc(n.split(/\s+/)[0])} · ${ab?'assente':'c’era'}</span>`; }).join('')}</div>`:''}</li>`).join('') : `<li class="cf-none">Nessuna attività collegata a questo percorso in 1.1.</li>`;
+  const att = rows.length ? rows.map(r=>`<li><b>${sEsc(r.nome)}</b>${r.data?` <span class="cf-dt">${sEsc(grDateTxt(r.data))}</span>`:''}${names.length?`<div class="cf-pr">${names.filter((n,i)=>names.findIndex(m=>occNameSame(m,n))===i).map(n=>{ const ab=occAbsent(r.k,n); return `<span class="cf-pc${ab?'':' on'}">${sEsc(n.split(/\s+/)[0])} · ${ab?'assente':'c’era'}</span>`; }).join('')}</div>`:''}</li>`).join('') : `<li class="cf-none">Nessuna attività collegata a questo percorso in ${typeof nmOcc==='function'?nmOcc():'«Come osservo»'}.</li>`;
   const all=mvAll(pid); const soloNote = vis ? mvObs().filter(o => String((o.note||{})[pid]||'').trim() && !all.some(x => x.em===o.em)) : [];
   const liv = !vis ? `<div class="mv-lock">${MV_LOCK}<span>I livelli e le note degli altri si vedono dopo che hai dato il tuo valore su questo percorso (anche «Non osservato»).</span></div>` : (all.length ? all.map(x=>`<div class="cf-lv"><span class="cf-c ${cfLvl(x.v)}">${x.v==='n'?'n.o.':x.v}</span><div><b>${sEsc(x.em===me?'Tu':x.nome)}</b> · ${sEsc(mvLbl(x.v))}${x.note?`<div class="cf-note">«${sEsc(x.note)}»</div>`:''}</div></div>`).join('') + soloNote.map(o => `<div class="cf-lv"><span class="cf-c">·</span><div><b>${sEsc(o.em===me?'Tu':o.nome)}</b> · solo nota, senza livello<div class="cf-note">«${sEsc(o.note[pid])}»</div></div></div>`).join('') : `<div class="cf-none">Nessuno ha ancora risposto.</div>`);
   const S=(M.sint||{})[pid]||{};
@@ -7988,6 +8000,8 @@ const affKey=r=>r.mail||r.nome;
 const affNorm=v=>String(v||'').trim().replace(/\s*\([^)]*\)\s*$/,'').toLowerCase().replace(/\s+/g,' ');
 // un campo «chi» può contenere più persone, separate da «|» (conduzione e referenti): affIsMe vale se ci sei tu fra loro
 const affParts=v=>String(v==null?'':v).split('|').map(x=>x.trim()).filter(Boolean);
+// persone aggiunte rispetto a prima (per chiedere «diventa collaboratore?» solo a loro)
+const refNew=(o,n)=>{ const O=new Set(affParts(o).map(x=>affNorm(x))); return affParts(n).filter(x=>!O.has(affNorm(x))).join('|'); };
 function affName(v){ const P=affParts(v); if(P.length>1) return P.map(affName1).join(', '); return affName1(P[0]||''); }
 function affName1(v){ const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)||affNorm(x.nome)===affNorm(v)); return r?r.nome:String(v||'').replace(/\s*\([^)]*\)\s*$/,''); }
 function affMail(v){ v=affParts(v)[0]||''; const r=affPeople().find(x=>affNorm(affKey(x))===affNorm(v)||affNorm(x.nome)===affNorm(v)); return r?r.mail:(/@/.test(String(v||''))?String(v).trim().toLowerCase():''); }
@@ -8011,15 +8025,15 @@ function affRowHTML(idx,j,att){ const P=affPeople(); if(!P.length&&!att.aff) ret
 // 9/11: «Chi la pensa e prepara» confluisce nel Referente (più persone possibili); in calendario restano Referente e Chi la conduce
 function prepMerge(o){ try{ if(!o||!o.prep) return false; const A=affParts(o.aff), seen=new Set(A.map(affNorm)); affParts(o.prep).forEach(n=>{ if(!seen.has(affNorm(n))){ seen.add(affNorm(n)); A.push(n); } }); o.aff=A.join('|'); if(o.by&&o.by.prep&&!o.by.aff) o.by.aff=o.by.prep; if(o.by) delete o.by.prep; delete o.prep; if(!window.BRO) saveDataDebounced(); return true; }catch(e){ return false; } }
 function attShareHTML(idx,j,att){ if((scheda.tipoProgetto||'')==='PP') return ''; prepMerge(att); if(!affPeople().length && !att.aff) return '';
-  return `<div class="att-share"><div class="aff-row"><label>Referente dell’attività <span class="ax-opt">anche più persone: la pensano, la preparano e la possono modificare</span></label>${axPersonMulti(att.aff||'',`affSet(${idx},${j},@V)`)}</div></div>`; }
-function attPrepSet(idx,j,v){ updateAttivita(idx,j,'prep',v); try{ affStamp(getAllPercorsi()[idx].attivita[j],'prep',v); }catch(e){} if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); }
+  return `<div class="att-share" data-attshare="${idx}-${j}"><div class="aff-row"><label>Referente dell’attività <span class="ax-opt">anche più persone: la pensano, la preparano e la possono modificare</span></label>${axPersonMulti(att.aff||'',`affSet(${idx},${j},@V)`)}</div></div>`; }
+function attPrepSet(idx,j,v){ let _old=''; try{ _old=getAllPercorsi()[idx].attivita[j].prep||''; }catch(e){} updateAttivita(idx,j,'prep',v); try{ affStamp(getAllPercorsi()[idx].attivita[j],'prep',v); }catch(e){} if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(refNew(_old,v),'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); }
 function attShareSet(idx,j,on){ updateAttivita(idx,j,'condivisa',!!on); saveDataDebounced(); const v=clViewSaveSafe(); try{ renderValuation(); }catch(e){} clViewRestoreSafe(v); }
 function clViewSaveSafe(){ try{ return clViewSave(); }catch(e){ return null; } }
 function clViewRestoreSafe(v){ try{ if(v) clViewRestore(v); }catch(e){} }
 // chi ha affidato (per non mostrare in «Per te» ciò che una persona si è assegnata da sola)
 function affMe(){ try{ return String((CL&&CL.user&&CL.user.email)||'').trim().toLowerCase(); }catch(e){ return ''; } }
 function affStamp(o,f,v){ try{ if(!o) return; if(!o.by||typeof o.by!=='object') o.by={}; if(v) o.by[f]=affMe(); else delete o.by[f]; }catch(e){} }
-function affSet(idx,j,v){ updateAttivita(idx,j,'aff',v); try{ affStamp(getAllPercorsi()[idx].attivita[j],'aff',v); }catch(e){} if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(v,'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); const bt=s.querySelector(':scope > button'); if(bt) s.insertBefore(c, bt); else s.appendChild(c); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
+function affSet(idx,j,v){ v=affParts(v).join('|'); let _old=''; try{ _old=getAllPercorsi()[idx].attivita[j].aff||''; }catch(e){} updateAttivita(idx,j,'aff',v); try{ const per0=getAllPercorsi()[idx], a0=per0&&per0.attivita[j]; if(a0&&a0.aid) uscList().forEach(u=>Object.values(u.prog||{}).forEach(m=>{ if(m&&typeof m==='object'&&m.k==='att'&&m.pid===per0.percorsoId&&m.aid===a0.aid){ m.aff=v; affStamp(m,'aff',v); delete m.prep; } })); }catch(e){}   /* 10/11: il referente scelto nei percorsi vale anche nei programmi delle uscite (prima restava quello vecchio) */ try{ document.querySelectorAll('[data-attshare="'+idx+'-'+j+'"]').forEach(el=>{ const a=getAllPercorsi()[idx].attivita[j]; const h=attShareHTML(idx,j,a); if(h) el.outerHTML=h; }); }catch(e){} try{ affStamp(getAllPercorsi()[idx].attivita[j],'aff',v); }catch(e){} if(v){ const a=getAllPercorsi()[idx].attivita[j]; try{ refInviteCheck(refNew(_old,v),'l’attività «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }catch(e){} } saveDataDebounced(); const d=document.getElementById('att-'+idx+'-'+j); if(d){ d.dataset.aff=v; const s=d.querySelector('summary'); if(s){ let c=s.querySelector('.aff-chip'); if(!v){ if(c) c.remove(); } else { if(!c){ c=document.createElement('span'); const bt=s.querySelector(':scope > button'); if(bt) s.insertBefore(c, bt); else s.appendChild(c); } c.className='aff-chip'+(affIsMe(v)?' me':''); c.textContent=affIsMe(v)?'affidata a te':affName(v); } } } try{ window.edLock&&edLock(); }catch(e){} }
 // verifica delle parti affidate: un campo per ogni referente di settore, già etichettato
 function verParti(a){ if(!axShared(a)) return []; const x=a.ax||{}; return AX_REF.map(([k,l])=>({k,l,chi:axRef(x,k)})).filter(o=>o.chi); }
 function verPartiHTML(idx,j,a){ const P=verParti(a); if(!P.length) return ''; const V=a.vRef||{};
@@ -8182,7 +8196,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101500'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101600'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -8206,7 +8220,7 @@ const NOVITA = [
     '<b>Uscite e campi</b>: Riunione, Uscita, Bivacco, Campo. Ogni giornata si costruisce a <b>blocchi colorati</b> presi da una tavolozza (sveglia, pasti, quadrato, attività della Sezione 3 o nuove, hike, gioco, tempo libero, serata…), che si aprono, si spostano con le frecce o trascinandoli e hanno un time table in cima; si può fissare l’ora di un blocco.',
     'In alto <b>Evento</b> (time table di tutto l’evento, sintesi dei costi e riepilogo per giornata) e un pulsante per ogni modulo: Persone e date, Ritrovo e spostamenti, Pasti, Trasporti, Locazioni, Quota, Sicurezza, Benessere, Piano B, Materiali, Circolare, più quelli che create voi. Ogni modulo si apre a tutta pagina con la parte generale e il dettaglio giornata per giornata; sotto, le giornate. Pasti con colonne uguali per tutte le giornate e piatti «per pochi» (es. la Pattuglia in hike); materiali dei blocchi con quantità, prezzo e chi li procura; tutto si <b>esporta in Word</b> (il menù anche in Excel).',
     'Nelle attività della Sezione 3 messe in un’uscita scaletta, materiali, sicurezza, benessere, piano B e link sono gli stessi della Sezione 3 (si scrive di qua o di là). I campi dei blocchi si aprono e si chiudono. Gli <b>spostamenti</b> hanno partenza, arrivo, ora, mezzo, km e ritorno (anche in giornata). <b>Quota e cassa</b> mostra quanto costano i capi e come cambia la quota se pagano; nei pasti sono segnati gli ingredienti senza prezzo.',
-    'Nella Sezione 3, dentro «Quando arriva il momento di organizzarla», c’è «Hai un’uscita o un campo?»: se l’attività è fuori sede o con il pernotto, l’app invita a organizzarla come uscita. Un’attività nuova nata in un’uscita, con gli obiettivi e gli Indicatori presi dalla programmazione, si porta nella Sezione 3 con «Porta nella programmazione»: l’app propone il percorso giusto. Il nome dell’Unità ora è nella 1.1, prima dei Numeri dell’Unità.']},
+    'Nella Sezione 3, dentro «Quando arriva il momento di organizzarla», c’è «Hai un’uscita o un campo?»: se l’attività è fuori sede o con il pernotto, l’app invita a organizzarla come uscita. Un’attività nuova nata in un’uscita, con gli obiettivi e gli Indicatori presi dalla programmazione, si porta nella Sezione 3 con «Porta nella programmazione»: l’app propone il percorso giusto. Il nome dell’Unità ora è in «La mia unità», prima dei Numeri dell’Unità.']},
   {d:'20 ottobre 2026', t:'Circolare di nuovo sulla carta intestata nazionale', i:[
     'Il <b>Word della circolare</b> torna alla carta intestata nazionale: colonna con i loghi della Sezione, della Branca e degli organismi internazionali, contatti a lato, Montserrat e margini del modello.',
     'Il <b>PDF</b> ha la stessa impaginazione del Word e si vede uguale ovunque (telefono, tablet, Google Drive, WhatsApp): è il formato più sicuro da mandare alle famiglie.',
@@ -8214,11 +8228,11 @@ const NOVITA = [
     'Quota: si sceglie se pagarla con <b>bonifico alla Sezione</b>, <b>in contanti ai capi</b> o alla partenza, entro quando; <b>IBAN e intestatario</b> si scrivono una volta e finiscono nella circolare.',
     'Tornando al progetto dalla Home («Continua qui») si riparte dal punto in cui eri rimasto.']},
   {d:'19 ottobre 2026', t:'Diciassette miglioramenti chiesti dai capi', i:[
-    '<b>Riprendi da dove eri</b>: riaprendo l’app torni alla sezione e al punto della pagina in cui eri (su questo dispositivo); un progetto aperto per la prima volta dall’archivio parte dalla 1.1; cambiando sezione la pagina si apre dall’alto.',
+    '<b>Riprendi da dove eri</b>: riaprendo l’app torni alla sezione e al punto della pagina in cui eri (su questo dispositivo); un progetto aperto per la prima volta dall’archivio parte dalla prima pagina; cambiando sezione la pagina si apre dall’alto.',
     '<b>Attività</b>: si riordinano con «Sposta su / Sposta giù» (la numerazione segue); nuova sezione <b>Allegati e link</b> (Drive, Canva, video, foto, PDF) che nel Word diventano link cliccabili; titoli e conteggi si aggiornano mentre scrivi; i campi di testo si allungano da soli, anche le note dei 7 punti.',
     '<b>Organizzazione</b>: pulsante «Calcola distanza» e km ricalcolati quando cambiano partenza o luogo; spunta «Rientro nello stesso luogo della partenza»; nella quota la parte dei capi delle spese «a persona» compare a parte, da attribuire, con il conto in chiaro.',
-    '<b>Circolare</b>: firmata da tutto lo staff della 1.1, con il telefono del Capo Unità sempre; intestazione semplice e nuovo <b>↓ Scarica in PDF</b>, che si legge bene anche da Google Drive su iPad.',
-    '<b>Altro</b>: «Duplica» in archivio; controllo ortografico del browser in italiano; nel Word della Scheda il capitolo «Composizione dell’Unità»; i Numeri dell’Unità ora si compilano come gli altri campi della 1.1; tolte le frecce accanto ai percorsi.'
+    '<b>Circolare</b>: firmata da tutto lo staff della tabella «Il mio staff», con il telefono del Capo Unità sempre; intestazione semplice e nuovo <b>↓ Scarica in PDF</b>, che si legge bene anche da Google Drive su iPad.',
+    '<b>Altro</b>: «Duplica» in archivio; controllo ortografico del browser in italiano; nel Word della Scheda il capitolo «Composizione dell’Unità»; i Numeri dell’Unità ora si compilano come gli altri campi di «La mia unità»; tolte le frecce accanto ai percorsi.'
   ]},
   {d:'16 ottobre 2026', t:'Video per lo staff e correzioni', i:[
     '<b>Nuovo video «La modalità staff»</b> e video 2 rifatto (accesso e archivio): li trovi nella schermata iniziale e nei riquadri «Come funziona»; nelle pagine dello staff si apre quello sullo staff.',
@@ -8229,7 +8243,7 @@ const NOVITA = [
     '<b>Più calma</b>: percorsi e attività si aprono con un clic (il triangolo), così vedi subito l’indice della pagina senza tutto il testo aperto. Quello che hai scritto non si perde.',
     '<b>Staff</b>: nome dell’Unità, Sezione e Gruppo arrivano dalla tabella dello staff e restano modificabili; l’evoluzione nel tempo è più chiara, con i valori a colori; il Word dello staff ha l’opzione «Scarica tutto» (singoli e riepilogo in un solo file).',
     '<b>Ci dici com’è andata?</b> In due o tre momenti (dopo le prime attività, dopo aver scaricato la Scheda o le schede dello staff) ti chiediamo con una domanda veloce quanto ti è utile l’app e cosa ti manca. Si può saltare, una volta sola per momento.',
-    '<b>Numeri dell’Unità</b> (in 1.1, da compilare): totale, maschi e femmine, e quanti per ogni anno di Branca. Nel Word della Scheda hanno un capitolo, «Composizione dell’Unità».',
+    '<b>Numeri dell’Unità</b> (in «La mia unità», da compilare): totale, maschi e femmine, e quanti per ogni anno di Branca. Nel Word della Scheda hanno un capitolo, «Composizione dell’Unità».',
     '<b>Spiegazioni più semplici</b>: la restituzione usa parole di tutti i giorni e dice cosa fare; la sezione «Fonti» è più completa; ogni attività formativa dello staff ha «Come si fa →» con la spiegazione passo passo.'
   ]},
   {d:'15 ottobre 2026', t:'Staff rifatto, accesso più chiaro', i:[
@@ -8252,7 +8266,7 @@ const NOVITA = [
     'L’<b>archivio</b> si apre subito: mostra l’ultimo elenco noto e lo aggiorna appena arriva quello del cloud.',
     'Nuova iconcina del sito (giglio e trifoglio) nelle schede del browser; il sito ha il suo indirizzo: <b>pee-app.it</b>.']},
   {d:'12 ottobre 2026', t:'Programmare insieme allo staff', i:[
-    'In testa alla 1.1, <b>Come programmi?</b>: <b>individuale</b> o <b>condivisa</b>. Con la condivisa spunti le persone nella tabella dello staff e scegli il loro ruolo; si accende anche l’osservazione condivisa della 1.2.',
+    'In testa a «La mia unità», <b>Come programmi?</b>: <b>individuale</b> o <b>condivisa</b>. Con la condivisa spunti le persone nella tabella dello staff e scegli il loro ruolo; si accende anche l’osservazione condivisa della 1.2.',
     'I ruoli <b>co-titolare</b> e <b>collaboratore</b> sono attivi per tutti. Il collaboratore modifica solo le parti di cui è referente (se è referente dell’attività, l’attività intera).',
     'Le parti affidate a un’altra persona si aprono in sola lettura, con <b>Suggerisci</b> e <b>Modifica comunque</b>: in entrambi i casi la persona riceve un avviso in «Per te».',
     '<b>Per te</b> avvisa anche chi è lettore o collaboratore: parti affidate, materiali da procurare («tocca a te»), suggerimenti ricevuti.',
@@ -8272,7 +8286,7 @@ const NOVITA = [
   ]},
   {d:'7 ottobre 2026', t:'Lavorare insieme sullo stesso progetto', i:[
     'Condividi un progetto come <b>lettore</b>, <b>co-titolare</b> o <b>collaboratore</b> (i ruoli di modifica sono in prova).',
-    'Nella finestra Condividi puoi invitare con un clic le persone della tabella dello staff (1.1) e avvisarle su <b>WhatsApp</b> con un messaggio già scritto.',
+    'Nella finestra Condividi puoi invitare con un clic le persone della tabella dello staff («Il mio staff») e avvisarle su <b>WhatsApp</b> con un messaggio già scritto.',
     'Le modifiche delle altre persone dello staff compaiono da sole in pochi secondi, senza ricaricare la pagina e senza perdere il punto in cui sei.',
     '<b>Per te</b>: un numerino sul pulsante dell’archivio ti dice cosa ti aspetta (inviti, suggerimenti da leggere, attività o parti affidate a te).',
     '<b>Gestione condivisa delle attività</b>: referente dell’attività e referenti di logistica, sicurezza e primo soccorso, benessere e inclusione, pasti, cassa e circolare.',
@@ -8298,8 +8312,8 @@ const VIDEOS = [
   {n:4, g:'i', t:'Telefono, tablet, aiuto', d:'0:49'},
   {n:5, g:'s', t:'Programmare con lo staff', d:'1:13'},
   {n:6, g:'s', t:'Lavorare insieme e «Per te»', d:'1:19'},
-  {n:7, g:'a', t:'1.1 Contesto dell’Unità', d:'1:01'},
-  {n:8, g:'a', t:'1.1 KOS 2.0 e altre occasioni osservative', d:'1:06'},
+  {n:7, g:'a', t:'Il contesto dell’Unità', d:'1:01'},
+  {n:8, g:'a', t:'KOS 2.0 e altre occasioni osservative', d:'1:06'},
   {n:9, g:'a', t:'1.2 La scheda di osservazione', d:'1:07'},
   {n:10, g:'a', t:'1.2 Osservazione condivisa', d:'1:06'},
   {n:11, g:'a', t:'1.3 Lettura del gruppo', d:'0:54'},
@@ -8398,7 +8412,7 @@ const FAQ = [
   ['La programmazione','Che cos’è un ciclo e quando mi serve?','Un anno scout può avere più programmazioni, per esempio una in autunno, una in primavera, una per l’estate. Ognuna è un <b>ciclo</b>: ha le sue priorità, i suoi percorsi e la sua verifica. Quando serve ne crei un altro da «Il mio anno» in dashboard; il nome lo scegli e lo puoi cambiare. Il ciclo nuovo riprende staff e contesto dal precedente.'],
   ['La programmazione','Cos’è «Il mio anno» e cosa cambia da «Il mio ciclo»?','«Il mio ciclo» guarda la programmazione che stai usando; «Il mio anno» mette insieme tutti i cicli dello stesso anno scout, con la linea del tempo e la verifica dell’anno. Cambi vista con l’interruttore in dashboard.'],
   ['La programmazione','Come si fa la verifica di un ciclo e dell’anno?','La verifica e l’autovalutazione si fanno <b>di persona</b>, con lo staff: l’app non le raccoglie al posto vostro. Nel menu Misurare trovi la verifica delle attività, la valutazione finale e la <b>Verifica dell’anno</b> (una riflessione per tutti i cicli, con il Word). Quello che scrivi arriva all’inizio dell’anno dopo negli «Appunti dalla programmazione precedente».','shAnnoV()'],
-  ['La programmazione','Cosa sono gli «Appunti dalla programmazione precedente»?','All’inizio di un nuovo anno (o ciclo) l’app ti propone le verifiche già scritte: le attività, le valutazioni dei percorsi, la riflessione dell’anno. Scegli cosa riprendere; non si copia nulla senza che tu lo dica.'],
+  ['La programmazione','Cosa sono gli «Appunti dalla programmazione precedente»?','All’inizio di un nuovo anno (o ciclo) l’app ti propone le verifiche già scritte: le attività, le valutazioni dei percorsi, la riflessione dell’anno. Scegli cosa riprendere; non si copia nulla senza che tu lo dica. Li rileggi quando vuoi nel menu, sotto «Capire», alla voce «Appunti dalla programmazione precedente».'],
   ['La programmazione','Cosa passa dal Progetto Personale alla Programmazione?','La prima volta che apri la Programmazione l’app ti chiede cosa portare dal Progetto Personale dello stesso anno scout (di norma non le osservazioni personali). Ciò che porti è tuo: lo modifichi o lo svuoti e l’app non lo rimette; le attività arrivano come bozze marcate.'],
   ['La programmazione','Come duplico un progetto, o una riunione?','Dai tuoi progetti: «Duplica» ti fa scegliere voce per voce cosa copiare (Unità e staff, osservazione, priorità, percorsi, calendario, verifiche), con «Seleziona tutto» e «Deseleziona tutto». Se copi nell’anno dopo, le date si azzerano e i numeri ripartono da 1. Nel Calendario, «Duplica» su una riunione o un’uscita ne crea una copia una settimana dopo.'],
   ['La programmazione','Perché il numero di un’attività cambia?','L’<b>Elenco dell’anno</b> numera le attività per data: se ne aggiungi o sposti una, i numeri successivi scalano. Nelle circolari e nei documenti citale sempre anche con data e titolo.','shEle()'],
@@ -8495,8 +8509,9 @@ function percHasContent(pr){
     || Object.values(pr.checklist||{}).some(c=>c&&(c.checked||T(c.note)));
 }
 // 9/11: nel Progetto Personale si sviluppa un solo percorso (Linee Guida): gli altri sono facoltativi in Verifica e Valutazione
-function ppOptPid(pid){ try{ if(!szPP()) return false; const P=scheda.priorita||[]; const ch=sez3Chosen(P.length||3); const chPid=(P[ch]&&(P[ch].pid||P[ch].percorso))||((scheda.percorsiExtra||[]).find(x=>x.prioritaIdx===ch)||{}).percorsoId; if(pid===chPid) return false;
-  const per=(scheda.percorsiExtra||[]).filter(x=>x.percorsoId===pid); const hasAct=per.some(x=>(x.attivita||[]).some(a=>a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim()))); return !hasAct; }catch(e){ return false; } }
+function ppChosenPid(){ try{ const P=scheda.priorita||[]; const ch=sez3Chosen(P.length||3); return (P[ch]&&(P[ch].pid||P[ch].percorso))||((scheda.percorsiExtra||[]).find(x=>x.prioritaIdx===ch)||{}).percorsoId||((typeof priSel==='function'?priSel():[])[ch])||''; }catch(e){ return ''; } }
+// 10/11: nel Progetto Personale le Linee Guida chiedono di realizzare UN percorso: tutti gli altri sono facoltativi in Verifica e Valutazione (anche se hanno attività accennate)
+function ppOptPid(pid){ try{ if(!szPP()) return false; const c=ppChosenPid(); return !!c && pid!==c; }catch(e){ return false; } }
 function ppOptHide(pid,on){ scheda.ppOptHid=Object.assign({},scheda.ppOptHid||{}); if(on) scheda.ppOptHid[pid]=1; else delete scheda.ppOptHid[pid]; saveData(true); renderValuation(); }
 function sez3Chosen(n){ const c=scheda.sez3Pri; return (typeof c==='number' && c>=0 && c<n) ? c : 0; }
 
@@ -8800,7 +8815,7 @@ function axGroup(p,j,k,title,body){ const o=axOpen[p+'-'+j+'-'+k]; const rk=AX_R
   try{ const a=axA(p,j); if(rk && axShared(a)){ const x=a.ax||{}; who=axRef(x,rk);
     pre=`<div class="ax-refrow"><span class="ax-sub" style="margin:0">Referente di questa parte</span>${axPersonMulti(who,`axRefSet(${p},${j},'${rk}',@V)`)}<span class="ax-opt">la segue e, se è nel progetto come collaboratore, può modificarla</span></div>`; } }catch(e){}
   return `<details class="ax-g" data-k="${k}" data-ref="${axE(who)}" ${o?'open':''}><summary>${title}${who?` <span class="aff-chip${affIsMe(who)?' me':''}">${affIsMe(who)?'affidata a te':axE(String(who).replace(/\s*\([^)]*\)\s*$/,''))}</span>`:''}</summary><div class="ax-gb">${pre}${body}</div></details>`; }
-function axRefSet(p,j,k,v){ try{ const a0=axA(p,j); if(a0&&a0.ax) affStamp(a0.ax,'ref.'+k,v); }catch(e){} axSet(p,j,'ref.'+k,v,true); const lbl=(Object.fromEntries(AX_REF)[k]||'').toLowerCase(); const a=axA(p,j); if(v) refInviteCheck(v, lbl+' di «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }
+function axRefSet(p,j,k,v){ let _old=''; try{ _old=axRef((axA(p,j)||{}).ax||{},k)||''; }catch(e){} try{ const a0=axA(p,j); if(a0&&a0.ax) affStamp(a0.ax,'ref.'+k,v); }catch(e){} axSet(p,j,'ref.'+k,v,true); const lbl=(Object.fromEntries(AX_REF)[k]||'').toLowerCase(); const a=axA(p,j); if(v) refInviteCheck(refNew(_old,v), lbl+' di «'+((a.testo||'').trim()||'attività '+(j+1))+'»'); }
 const AX_REF=[['log','Ritrovo e spostamenti'],['sic','Sicurezza e primo soccorso'],['ben','Benessere e inclusione'],['pb','Piano B'],['trasp','Trasporti'],['loc','Locazioni'],['camb','Pasti e spesa'],['cassa','Cassa e costi'],['fam','Rapporti con le famiglie']];
 const AX_REFG={log:'log',pasti:'camb',costi:'cassa',sic:'sic',ben:'ben',pb:'pb',trasp:'trasp',loc:'loc',circ:'fam'};  // settore della scheda → referente
 // gestione condivisa: se non è indicata, vale "sì" quando c'è già qualcuno a cui è affidata una parte
@@ -8826,7 +8841,7 @@ function axPersDel(p,j,enc){ const n=decodeURIComponent(enc); const r=axArrP(p,j
 function axChi(p,j,a,x){ const L=x.luogo||{}, P=x.pres||{}; const per=getAllPercorsi()[p]; const N=axN(x);
   const ppl=[...new Set([...axPeople(),...(P.ad||[])])];
   let h=axLbl('Presenti','da qui si aggiornano viaggio, quote, quantità e sicurezza');
-  h+=`<div class="ax-sub">${uscSt()?'Chi partecipa':'Adulti'}</div>`+(ppl.length?axChipsAd(p,j,ppl,P.ad||[]):'<div class="ax-hint">'+(uscSt()?'Aggiungi i membri dello staff nella Fase 1, oppure una persona qui.':'Inserisci i nomi dello staff nella 1.1, oppure aggiungi una persona qui.')+'</div>')+`<button type="button" class="btn-ghost ax-add" onclick="(function(){const n=axNewPerson(); if(n){ const r=axArrP(${p},${j},'pres.ad'); if(!r.includes(n)) r.push(n); axSave(); axRe(${p},${j}); }})()">+ Altra persona</button>`;
+  h+=`<div class="ax-sub">${uscSt()?'Chi partecipa':'Adulti'}</div>`+(ppl.length?axChipsAd(p,j,ppl,P.ad||[]):'<div class="ax-hint">'+(uscSt()?'Aggiungi i membri dello staff nella Fase 1, oppure una persona qui.':'Inserisci i nomi dello staff in '+(typeof nmStaff==='function'?nmStaff():'«Il mio staff»')+', oppure aggiungi una persona qui.')+'</div>')+`<button type="button" class="btn-ghost ax-add" onclick="(function(){const n=axNewPerson(); if(n){ const r=axArrP(${p},${j},'pres.ad'); if(!r.includes(n)) r.push(n); axSave(); axRe(${p},${j}); }})()">+ Altra persona</button>`;
   if(!uscSt()) h+=`<div class="ax-row3"><div><div class="ax-sub">Ragazzi in tutto</div><select class="ax-in" onchange="axSet(${p},${j},'pres.rag',this.value,true)">${axNumOpts(P.rag,60)}</select></div><div><div class="ax-sub">di cui ragazze</div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragF',this.value)">${axNumOpts(P.ragF,60)}</select></div><div><div class="ax-sub">di cui ragazzi</div><select class="ax-in" onchange="axSet(${p},${j},'pres.ragM',this.value)">${axNumOpts(P.ragM,60)}</select></div></div>`
     +(axRag11()?`<div class="ax-sedeuse"><button type="button" class="btn-ghost ax-btn" onclick="axRagDa11(${p},${j})">👥 Prendi i ragazzi dell’Unità dalla tabella «La mia unità»: ${axRag11().tot}${axRag11().f?' (di cui '+axRag11().f+' ragazze)':''}</button></div>`:'');
   if(uscSt()){ if(N.tot) h+=`<div class="ax-hint"><b>${N.tot} person${N.tot===1?'a':'e'}</b>: la quota si divide tra chi partecipa</div>`; }
@@ -9492,8 +9507,8 @@ function uscBlkKind(k,nk){ const m=uscBlk(k); if(!m||!uscCan()||!USC_KINDSW.incl
   const had=m.f.slice(); const add=USC_BT[nk][2].filter(f=>!had.includes(f)); m.k=nk; m.f=had.concat(add);
   if(nk==='mio'&&!m.col) m.col=USC_COLS[0];
   uscSave(); uscRe(); showToast('Ora è «'+USC_BT[nk][0]+'»: i campi che avevi compilato restano'); }
-function uscBlkRef(k,f,v){ const m=uscBlk(k); if(!m) return; if(!m.ref||typeof m.ref!=='object') m.ref={}; m.ref[f]=v; affStamp(m,'ref.'+f,v); uscSave(); uscRe(); try{ if(v) refInviteCheck(v,'«'+uscBlkTitle(m)+'» ('+f+')'); }catch(e){} }
-function uscBlkSet(k,f,v,re){ const m=uscBlk(k); if(!m) return; m[f]=v; if(f==='aff'||f==='prep'||f==='cond') affStamp(m,f,v); if(f==='cond'&&v){ try{ refInviteCheck(v,'«'+uscBlkTitle(m)+'» (conduzione)'); }catch(e){} } if(m.k==='att'&&(f==='aff'||f==='prep')){ try{ const fa=uscAttFind(m); if(fa){ fa.a[f]=v; affStamp(fa.a,f,v); if(v) try{ refInviteCheck(v,'l’attività «'+((fa.a.testo||'').trim()||'attività')+'»'); }catch(e){} } }catch(e){} } if(f==='t'&&m.k!=='att') m.t=String(v).slice(0,80); uscSave(); if(re) uscRe(); else uscLive(k); }
+function uscBlkRef(k,f,v){ const m=uscBlk(k); if(!m) return; if(!m.ref||typeof m.ref!=='object') m.ref={}; const _old=m.ref[f]||''; m.ref[f]=v; affStamp(m,'ref.'+f,v); uscSave(); uscRe(); try{ if(v) refInviteCheck(refNew(_old,v),'«'+uscBlkTitle(m)+'» ('+f+')'); }catch(e){} }
+function uscBlkSet(k,f,v,re){ const m=uscBlk(k); if(!m) return; const _old=m[f]||''; m[f]=v; if(f==='aff'||f==='prep'||f==='cond') affStamp(m,f,v); if(f==='cond'&&v){ try{ refInviteCheck(refNew(_old,v),'«'+uscBlkTitle(m)+'» (conduzione)'); }catch(e){} } if(m.k==='att'&&(f==='aff'||f==='prep')){ try{ const fa=uscAttFind(m); if(fa){ fa.a[f]=v; affStamp(fa.a,f,v); if(v) try{ refInviteCheck(refNew(_old,v),'l’attività «'+((fa.a.testo||'').trim()||'attività')+'»'); }catch(e){} } }catch(e){} } if(f==='t'&&m.k!=='att') m.t=String(v).slice(0,80); uscSave(); if(re) uscRe(); else uscLive(k); }
 function uscBlkDur(k,d){ const m=uscBlk(k); if(!m) return; m.dur=Math.max(5,(Number(m.dur)||30)+d); uscSave(); uscRe(); }
 function uscBlkFix(k,on){ const m=uscBlk(k); if(!m) return; m.fix=!!on; if(on&&!m.ora){ const u=uscCur(); const T=uscTimes(u,Number(m.g)||1)[k]; m.ora=axHM(Math.round((T?T.s:600)/5)*5); } uscSave(); uscRe(); }
 function uscBlkDel(k){ const m=uscBlk(k); if(!m) return; if(!confirm('Togliere «'+uscBlkTitle(m)+'» dal programma?'+(m.k==='att'?' L’attività resta nei percorsi.':''))) return; m.del=true; uscSave(); uscRe(); }
@@ -9587,12 +9602,16 @@ function attObjHTML(p,j,a,cal){
       +ea.map((o,i)=>`<div class="ax-oss"><div class="ax-check" style="display:flex;gap:6px;align-items:flex-start"><input class="ax-in" style="flex:1" placeholder="Che cosa vuoi osservare? (anche fuori dai percorsi)" value="${axE(o.t)}"${dis} oninput="axOssSet(${p},${j},'ossA',${i},'t',this.value)">${can?`<button type="button" class="ax-x" title="Non osservarlo" aria-label="Non osservarlo" onclick="axOssDel(${p},${j},'ossA',${i});attOssRe(${p},${j})">×</button>`:''}</div><div class="ax-row2"><input class="ax-in" placeholder="Da quale comportamento lo vedrai?" value="${axE(o.comp)}"${dis} oninput="axOssSet(${p},${j},'ossA',${i},'comp',this.value)"></div></div>`).join('')
       +(can?`<div class="ax-oss-add" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px">`+(ch.length?`<select class="ax-in" style="max-width:100%" onchange="if(this.value){axOssAddX(${p},${j},this.value);attOssRe(${p},${j});}"><option value="">+ Osserva anche un indicatore di un altro percorso…</option>`+ch.map(g=>`<optgroup label="${axE(g.name)}">`+g.opts.map(o=>`<option value="${axE(g.pid)}|${o.k}">${axE(String(o.t).slice(0,140))}</option>`).join('')+`</optgroup>`).join('')+`</select>`:'')+`<button type="button" class="btn-ghost ax-add" onclick="axOssAddA(${p},${j});attOssRe(${p},${j})">+ Osserva anche altro (lo scrivo io)</button></div>`:''):'';
     const nA=ex.length+ea.filter(o=>(o.t||'').trim()).length;
-    const _met=cal?'':`<div class="usc-mv2 usc-full att-met" style="margin:8px 0"><span class="ax-sub" style="margin:0">Strumenti del Metodo di questa attività <span class="ax-opt">partono da quelli del percorso; aggiungine o togline se serve</span></span>${uscAttMultiHTML(p,j,a,'met',can)}</div>`;
+    const _met='';   // 10/11: gli Strumenti del Metodo dell'attività stanno sopra il Tipo di attività e Lancio/Sviluppo/Conclusione (attMetHTML)
     return `<div class="att-objw" data-attobj="${p}-${j}" data-cal="${cal?1:0}">${pobj}${_met}${_who}<details class="att-obj" ${_op?'open':''} ontoggle="(window._attObjOpen=window._attObjOpen||{})['${_ok}']=this.open"><summary>Indicatori specifici di questa attività<b style="font-weight:700;color:var(--green)">${(n+nA)?' · '+(n+nA)+((n+nA)===1?' scelta':' scelte'):''}</b></summary>
       <div class="ax-hint" style="margin:4px 0">Spunta gli Indicatori di Risultato del percorso «${sEsc(P.name)}» su cui questa attività insiste di più. Se ne spunti uno che il percorso non aveva ancora scelto, viene aggiunto in «Obiettivi e indicatori» e alla scheda del percorso. Se poi lo togli da tutte le attività, esce di nuovo; quelli che hai scelto tu in «Obiettivi e indicatori» restano sempre.</div>
       ${id.length?(idOn.length?`<div class="ax-sub att-ind-h">Scelti per il percorso</div>${idOn.map(o=>row('i',o,si,inI)).join('')}`:'')+(idOff.length?`<div class="ax-sub">${idOn.length?'Altri indicatori del percorso':'Indicatori del percorso (nessuno ancora scelto)'}</div>${idOff.map(o=>row('i',o,si,inI)).join('')}`:''):`<div class="ax-hint">Questo percorso non ha Indicatori di Risultato.</div>`}${_also}</details>${mv}</div>`;
   }catch(e){ return ''; } }
 // ridisegna solo il riquadro «obiettivi e indicatori» dell'attività (così i riquadri aperti restano aperti)
+// Strumenti del Metodo di un'attività dei percorsi: primo campo dopo il titolo (poi Tipo di attività, poi Lancio · Sviluppo · Conclusione)
+function attMetHTML(p,j,a){ try{ const per=getAllPercorsi()[p]; if(!per||!a) return ''; const can=!window.BRO;
+  return `<div class="att-metw" data-attmet="${p}-${j}"><div class="usc-mv2 usc-full att-met" style="margin:8px 0 4px"><span class="ax-sub" style="margin:0">Strumenti del Metodo di questa attività <span class="ax-opt">partono da quelli del percorso; aggiungine o togline se serve</span></span>${uscAttMultiHTML(p,j,a,'met',can)}</div></div>`; }catch(e){ return ''; } }
+function attMetRe(p,j){ document.querySelectorAll('[data-attmet="'+p+'-'+j+'"]').forEach(el=>{ try{ const h=attMetHTML(p,j,attGet(p,j)); if(h) el.outerHTML=h; }catch(e){} }); }
 function attObjRe(p,j){ (window._attObjOpen=window._attObjOpen||{})[p+'-'+j]=true; let any=false;
   document.querySelectorAll('[data-attobj="'+p+'-'+j+'"]').forEach(el=>{ try{ const a=attGet(p,j); if(!a) return; const h=attObjHTML(p,j,a,el.dataset.cal==='1'); if(h){ el.outerHTML=h; any=true; } }catch(e){} });
   return any; }
@@ -9939,7 +9958,7 @@ function uscOneHTML(u){ const j=uscJ(u.id), x=u.ax, N=axN(x), can=uscCan(); cons
   h+=`<div class="usc-hero"><div class="usc-hrow"><div style="min-width:0;flex:1"><div class="usc-eye">${uscE(md[1])} · ${uscE(md[2])}</div>
     <input class="usc-title" value="${uscE(u.testo)}" placeholder="Titolo dell’uscita" maxlength="90" ${can?'':'readonly'} oninput="uscSetTitle(this.value)" aria-label="Titolo dell’uscita">
     <div class="usc-sub" id="usc-sub">${uscE([d||'Date da scegliere in «Persone e date»',dove,n>1?n+' giornate, '+(n-1)+(n-1===1?' notte':' notti'):''].filter(Boolean).join(' · '))}</div></div>
-    <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Formato" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}${can||uscTipoLab(u)?uscTipoSel(u,can):''}${can?`<button type="button" class="btn-ghost usc-btn" onclick="uscCicloAsk('${u.id}')" title="Sposta questo evento in un altro ciclo">Ciclo: ${uscE(((scheda.ciclo||{}).nome||'questo ciclo'))} ▾</button>`:''}</div></div>
+    <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Formato" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}${can||uscTipoLab(u)?uscTipoSel(u,can):''}${(can&&!uscSt()&&u.dest!=='staff')?`<button type="button" class="btn-ghost usc-btn" onclick="uscCicloAsk('${u.id}')" title="Sposta questo evento in un altro ciclo">Ciclo: ${uscE(((scheda.ciclo||{}).nome||'questo ciclo'))} ▾</button>`:''}</div></div>
     <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
   const tb=(id,t,s,cls)=>`<button type="button" role="tab"${typeof id==='string'&&uscMCol(id.replace(/^m:/,''))&&/^(m:|pasti)/.test(id)?` style="--mc:${uscMCol(id.replace(/^m:/,''))}"`:''} class="usc-tab ${cls||''}${USC_TAB===id?' on':''}" aria-selected="${USC_TAB===id}" id="usc-tab-${typeof id==='string'?id.replace(':','-'):id}" onclick="uscTab(${typeof id==='string'?`'${id}'`:id})">${uscE(t)}${s?`<small>${uscE(s)}</small>`:''}</button>`;
   const mods=uscModList(u).map(([k,l])=>tb(k==='pasti'?'pasti':'m:'+k,l,'',' mod'+(k!=='pasti'&&uscModFilled(u,k)?' done':''))).join('')+uscOwn(u).map(({k,o})=>tb('o:'+k,o.t||'Modulo','',' mod own')).join('');
@@ -10009,7 +10028,7 @@ function uscPastiHTML(u,j){ const x=u.ax, N=axN(x), C=x.cibo||{}, n=uscNG(u), ca
   const cell=(g,m)=>{ const sac=axSacco(x,g,m); const D=uscMeals(x,g,m); const on=USC_MEAL===g+'|'+m;
     return `<td class="${on?'on':''}" style="--mc:${uscPCol(m)}"><button type="button" class="usc-mc${sac?' sac':''}" aria-expanded="${on}" onclick="uscMealSet(${g},'${m}')">${sac?'al sacco':D.length?D.map(uscE).join('<br>'):'<span class="usc-mplus">+ menù</span>'}</button></td>`; };
   const ref=`<label class="usc-mref"><span>Referente</span>${axPersonMulti(axRef(x,'camb'),`axRefSet(${p},${j},'camb',@V)`)}</label>`;
-  const uref=[axRef(x,'camb')].concat(Object.values(u.prog||{}).filter(m=>m&&!m.del&&m.k==='pasto').map(m=>[m.aff,m.prep].filter(Boolean).join('|'))).filter(Boolean).join('|'); let h=`<div class="usc-card2 usc-modpage" style="--mc:${uscMCol('pasti')}"${uref?` data-uref="${uscE(uref)}" data-uk="pasti"`:''}><div class="usc-mph"><div><h3>Pasti</h3><span class="usc-hint" style="margin:0">Tocca un pasto per scrivere piatti e ingredienti: compare nel blocco del pasto di quella giornata. ${N.tot?N.tot+' persone a tavola.':'Indica i presenti in «Persone e date».'}</span></div>${ref}<span class="usc-dact"><button type="button" class="btn-ghost usc-btn" onclick="uscExcel()">⤓ Excel</button><button type="button" class="btn-ghost usc-btn" onclick="uscExport('menu')">⤓ Word</button></span>${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo Pasti" onclick="uscModHide('pasti')">×</button>`:''}</div>
+  const uref=[axRef(x,'camb')].concat(Object.values(u.prog||{}).filter(m=>m&&!m.del&&m.k==='pasto').map(m=>[m.aff,m.prep].filter(Boolean).join('|'))).filter(Boolean).join('|'); let h=`<div class="usc-card2 usc-modpage" style="--mc:${uscMCol('pasti')}"${uref?` data-uref="${uscE(uref)}" data-uk="pasti"`:''}><div class="usc-mph"><div><h3>Pasti</h3><span class="usc-hint" style="margin:0">Tocca un pasto per scrivere piatti e ingredienti: compare nel blocco del pasto di quella giornata. ${N.tot?N.tot+' persone a tavola.':'Indica i presenti in «Persone e date».'}</span></div>${ref}<span class="usc-dact"><button type="button" class="btn-ghost usc-btn" onclick="uscExcel()">⤓ Excel</button><button type="button" class="btn-ghost usc-btn" onclick="uscExport('menu')">⤓ Word</button>${can?`<button type="button" class="usc-mx" title="Togli il modulo" aria-label="Togli il modulo Pasti" onclick="uscModHide('pasti')">×</button>`:''}</span></div>
     <div class="usc-modo" style="margin:8px 0 12px;padding:10px;border:1px solid var(--border-light,#ddd);border-radius:10px">${axCiboModoHTML(p,j,x,can,false)}</div>
     <div class="usc-tw" id="usc-menu-box"><table class="usc-menu"><tr><th>Giornata</th>${cols.map(m=>`<th style="--mc:${uscPCol(m)}"><span class="usc-mch">${can&&/^x_/.test(m)&&cols.indexOf(m)>0?`<button type="button" class="usc-mcx" title="Sposta prima" aria-label="Sposta ${uscE(axPastoLab(x,m))} prima" onclick="uscPColMove('${m}',-1)">‹</button>`:''}${uscE(axPastoLab(x,m))}${can&&/^x_/.test(m)&&cols.indexOf(m)<cols.length-1?`<button type="button" class="usc-mcx" title="Sposta dopo" aria-label="Sposta ${uscE(axPastoLab(x,m))} dopo" onclick="uscPColMove('${m}',1)">›</button>`:''}${can?`<button type="button" class="usc-mcx" title="Togli la colonna" aria-label="Togli ${uscE(axPastoLab(x,m))} da tutte le giornate" onclick="uscPColDel('${m}')">×</button>`:''}</span></th>`).join('')}</tr>${Array.from({length:n},(_,i)=>i+1).map(g=>`<tr><th>${uscE(uscDayShort(u,g))}</th>${cols.map(m=>cell(g,m)).join('')}</tr>`).join('')}</table></div>`;
   if(can){ const free=AX_PORD.filter(m=>!cols.includes(m)); h+=`<div class="ax-chips" style="margin-top:6px"><span class="ax-sub">Aggiungi a tutte le giornate:</span>${free.map(m=>`<button type="button" class="ax-chip" onclick="uscPColAdd('${m}')">+ ${uscE(axPastoLab(x,m))}</button>`).join('')}<button type="button" class="ax-chip ax-chip-alt${USC_PALT?' on':''}" onclick="USC_PALT=!USC_PALT;uscRe();if(USC_PALT)setTimeout(()=>{const e=document.getElementById('usc-pnew');if(e)e.focus();},60)">+ Altro…</button></div>${USC_PALT?`<div class="ax-altro"><input class="ax-in" id="usc-pnew" maxlength="40" placeholder="Come lo chiami? es. Spuntino di mezzanotte, Cena al sacco" onkeydown="if(event.key==='Enter'){event.preventDefault();uscPColNew();}"><button type="button" class="btn-ghost" onclick="uscPColNew()">Aggiungi a tutte le giornate</button></div>`:''}`; }
@@ -10340,12 +10359,12 @@ function uscArcOpen(pid,uid,md){ md=md||'giovani'; try{ if(CL.ctx&&CL.ctx.id===p
 function uscPtMine(d,people){ const out=[]; try{ const U=(d&&d.scheda&&d.scheda.uscite)||{}; const PL=(d&&d.scheda&&d.scheda.percorsiExtra)||[];
   Object.keys(U).forEach(id=>{ const u=U[id]; if(!u||typeof u!=='object'||u.del) return; const P=u.prog||{}; const x=u.ax||{};
     Object.keys(P).forEach(k=>{ const m=P[k];
-      if(m&&typeof m==='object'&&!m.del) Object.keys(m.ref||{}).forEach(f=>{ if(m.ref[f]&&affIsMe(m.ref[f],people)) out.push({u:id, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:'referente: '+({sic:'sicurezza',ben:'benessere e inclusione',pb:'piano B'}[f]||f)+' di «'+(m.t||'momento')+'»', by:(m.by||{})['ref.'+f]||'', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))}); });
-      if(m&&typeof m==='object'&&!m.del&&m.prep&&affIsMe(m.prep,people)&&!(m.aff&&affIsMe(m.aff,people))) out.push({u:id, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:((m.k==='att'?'un’attività dei percorsi':(m.t||'momento')))+' (da ideare e preparare)', by:(m.by||{}).prep||'', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))});
-      if(m&&typeof m==='object'&&!m.del&&m.cond&&affIsMe(m.cond,people)&&!(m.aff&&affIsMe(m.aff,people))){ let t0=(m.t||'').trim(); if((m.k||m.tipo)==='att'){ const per=PL.find(p=>p&&p.percorsoId===m.pid); const a=per&&(per.attivita||[]).find(x=>x&&x.aid===m.aid); t0=a?((a.testo||'').trim()||'un’attività'):'un’attività'; } const g0=Math.max(1,Number(m.g)||1); out.push({u:id, ut:uscTit(u), g:g0, t:(t0||'un momento')+' (la conduci)', by:(m.by||{}).cond||'', ora:m.fix?m.ora||'':'', d:uscDayIso(u,g0), gt:uscDayShort(u,g0), cond:1}); }
+      if(m&&typeof m==='object'&&!m.del) Object.keys(m.ref||{}).forEach(f=>{ if(m.ref[f]&&affIsMe(m.ref[f],people)) out.push({u:id, bk:k, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:'referente: '+({sic:'sicurezza',ben:'benessere e inclusione',pb:'piano B'}[f]||f)+' di «'+(m.t||'momento')+'»', by:(m.by||{})['ref.'+f]||'', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))}); });
+      if(m&&typeof m==='object'&&!m.del&&m.prep&&affIsMe(m.prep,people)&&!(m.aff&&affIsMe(m.aff,people))) out.push({u:id, bk:k, ut:uscTit(u), g:Math.max(1,Number(m.g)||1), t:((m.k==='att'?'un’attività dei percorsi':(m.t||'momento')))+' (da ideare e preparare)', by:(m.by||{}).prep||'', ora:'', d:uscDayIso(u,Math.max(1,Number(m.g)||1)), gt:uscDayShort(u,Math.max(1,Number(m.g)||1))});
+      if(m&&typeof m==='object'&&!m.del&&m.cond&&affIsMe(m.cond,people)&&!(m.aff&&affIsMe(m.aff,people))){ let t0=(m.t||'').trim(); if((m.k||m.tipo)==='att'){ const per=PL.find(p=>p&&p.percorsoId===m.pid); const a=per&&(per.attivita||[]).find(x=>x&&x.aid===m.aid); t0=a?((a.testo||'').trim()||'un’attività'):'un’attività'; } const g0=Math.max(1,Number(m.g)||1); out.push({u:id, bk:k, ut:uscTit(u), g:g0, t:(t0||'un momento')+' (la conduci)', by:(m.by||{}).cond||'', ora:m.fix?m.ora||'':'', d:uscDayIso(u,g0), gt:uscDayShort(u,g0), cond:1}); }
       if(!m||typeof m!=='object'||m.del||!m.aff||!affIsMe(m.aff,people)) return;
       let t=(m.t||'').trim(); if((m.k||m.tipo)==='att'){ const per=PL.find(p=>p&&p.percorsoId===m.pid); const a=per&&(per.attivita||[]).find(x=>x&&x.aid===m.aid); t=a?((a.testo||'').trim()||'un’attività'):'un’attività'; }
-      const g=Math.max(1,Number(m.g)||1); out.push({u:id, ut:uscTit(u), g, t:t||'un momento', by:(m.by||{}).aff||'', ora:m.fix?m.ora||'':(m.k?'':m.ora||''), d:uscDayIso(u,g), gt:uscDayShort(u,g)}); });
+      const g=Math.max(1,Number(m.g)||1); out.push({u:id, bk:k, ut:uscTit(u), g, t:t||'un momento', by:(m.by||{}).aff||'', ora:m.fix?m.ora||'':(m.k?'':m.ora||''), d:uscDayIso(u,g), gt:uscDayShort(u,g)}); });
     // parti affidate (referenti dei moduli) e materiali da procurare
     AX_REF.forEach(([rk,l])=>{ const w=axRef(x,rk); if(w&&affIsMe(w,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+l.toLowerCase(), by:(x.by||{})['ref.'+rk]||'', ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
     Object.keys(u.own||{}).forEach(ok=>{ const o=u.own[ok]; if(o&&typeof o==='object'&&!o.del&&o.ref&&affIsMe(o.ref,people)) out.push({u:id, ut:uscTit(u), g:0, t:'referente: '+String(o.t||'modulo').toLowerCase(), ora:'', d:x.data||'', gt:'tutta l’uscita'}); });
@@ -10353,7 +10372,7 @@ function uscPtMine(d,people){ const out=[]; try{ const U=(d&&d.scheda&&d.scheda.
     const mats=[].concat(x.mat||[],...Object.keys(x.bm||{}).filter(k=>P[k]&&!P[k].del).map(k=>x.bm[k]||[])).filter(r=>r&&(r.cosa||'').trim()&&r.chi&&!r.pronto&&affIsMe(r.chi,people));
     if(mats.length) out.push({u:id, ut:uscTit(u), g:0, t:'materiali da procurare: '+mats.slice(0,4).map(r=>r.cosa).join(', ')+(mats.length>4?'…':''), ora:'', d:x.data||'', gt:'tutta l’uscita'}); }); }catch(e){}
   return out; }
-function uscPtRow(x,pr){ return `<div class="cl-row"><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» è affidato a te: «${clEsc(String(x.t).slice(0,60))}»</div><div class="s">${clEsc(x.gt)}${x.ora?' · '+clEsc(x.ora):''} · ${pr}</div></div><button class="cl-btn sm" onclick="${x.cur?`clClose();shSrUsc('${clEsc(x.u)}')`:`clOpenShared('${clEsc(x.id)}')`}">Apri</button></div>`; }
+function uscPtRow(x,pr){ return `<div class="cl-row"><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» è affidato a te: «${clEsc(String(x.t).slice(0,60))}»</div><div class="s">${clEsc(x.gt)}${x.ora?' · '+clEsc(x.ora):''} · ${pr}</div></div><button class="cl-btn sm" onclick="${x.cur?`clClose();shSrUsc('${clEsc(x.u)}',${Number(x.g)||0},'${clEsc(x.bk||'')}')`:`ptGoOpen('${clEsc(x.id)}',{t:'usc',u:'${clEsc(x.u)}',g:${Number(x.g)||0},bk:'${clEsc(x.bk||'')}'})`}">Apri</button></div>`; }
 // materiali dei blocchi: stanno in ax.bm[codice blocco] (stesso formato del materiale comune: quantità, provenienza, prezzo, chi lo procura…)
 function uscMatMig(u,k,m){ if(!u||!u.ax||!Array.isArray(m.mat)||!m.mat.length) return; if(!u.ax.bm||typeof u.ax.bm!=='object') u.ax.bm={}; if(!Array.isArray(u.ax.bm[k])||!u.ax.bm[k].length) u.ax.bm[k]=m.mat.map(r=>Object.assign({qm:'fissa',carico:'ragazzi'},r)); m.mat=[]; }
 function uscBM(u,k){ const B=(u&&u.ax&&u.ax.bm)||{}; return Array.isArray(B[k])?B[k]:[]; }
@@ -10575,7 +10594,7 @@ function uscAttMultiHTML(p,j,a,fk,can){ const per=getAllPercorsi()[p]; const x=a
   const alt=(fk==='tipo'&&sel.includes('Altro')&&can)?`<input class="ax-in" style="flex:1 1 220px" maxlength="80" placeholder="Di che tipo di attività si tratta?" value="${uscE(a.tipoAltro||'')}" oninput="attTipoAltro(${p},${j},this.value)">`:'';
   return `<div class="ax-pm" style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">${chips}${add}${alt}</div>`; }
 function uscAttTipoTog(p,j,v){ const a=attGet(p,j); if(!a||window.BRO) return; if(!Array.isArray(a.tipi)) a.tipi=[]; const i=a.tipi.indexOf(v); if(i>=0) a.tipi.splice(i,1); else a.tipi.push(v); saveDataDebounced(); uscRe(); }
-function uscAttStrumTog(p,j,v){ const per=getAllPercorsi()[p]; const a=attGet(p,j); if(!a||!per||window.BRO) return; const x=a.ax=a.ax||{}; if(!Array.isArray(x.strum)) x.strum=uscAttStrumEff(per,x).slice(); const i=x.strum.indexOf(v); if(i>=0) x.strum.splice(i,1); else { x.strum.push(v); try{ axStrumSync(p,v); }catch(e){} } saveDataDebounced(); if(document.getElementById('usc-root')){ try{ uscRe(); }catch(e){} } try{ attObjRe(p,j); }catch(e){} }
+function uscAttStrumTog(p,j,v){ const per=getAllPercorsi()[p]; const a=attGet(p,j); if(!a||!per||window.BRO) return; const x=a.ax=a.ax||{}; if(!Array.isArray(x.strum)) x.strum=uscAttStrumEff(per,x).slice(); const i=x.strum.indexOf(v); if(i>=0) x.strum.splice(i,1); else { x.strum.push(v); try{ axStrumSync(p,v); }catch(e){} } saveDataDebounced(); if(document.getElementById('usc-root')){ try{ uscRe(); }catch(e){} } try{ attMetRe(p,j); attObjRe(p,j); }catch(e){} }
 function uscAttSetTitle(k,v){ const m=uscBlk(k); const fa=m&&uscAttFind(m); if(!fa) return; fa.a.testo=v; uscSave(); uscLive(k); }
 function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=f.idx, j=f.j; const W=h=>`<div class="usc-axw" id="ax-${p}-${j}" data-usc="1">${h}</div>`; const N=axN(x);
   const T={tipo:'a:tipo',met:'a:met',scal:'a:scal',mat:'a:mat',sic:'a:sic',ben:'a:ben',pb:'a:pb',link:'a:link',obj:'a:obj'}[fk]; let sum='', inner='';
@@ -11214,7 +11233,7 @@ function strumSelHTML(idx,per){ const l=strumList(per);
 function strumRowHTML(idx,per){
   const L=STRUM_BRANCA[FASCIA]||[]; const sel=per.strumSel||{};
   const cat=L.map((items,g)=>`<div style="margin:8px 0 2px;font-size:12px;font-weight:800;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.03em">${STRUM_GRUPPI[g]}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px 14px">${items.map((it,i)=>`<label style="display:flex;gap:6px;align-items:flex-start;font-size:12px;cursor:pointer;min-width:200px;flex:1 1 200px"><input type="checkbox" style="margin-top:2px;accent-color:var(--green)" ${it in sel?'checked':''} onchange="strumToggle(${idx},${g},${i},this.checked)"><span>${sEsc(it)}</span></label>`).join('')}</div>`).join('');
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 16px">${items.map((it,i)=>`<label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.35;cursor:pointer;min-width:0"><input type="checkbox" style="margin-top:1px;flex:0 0 auto;accent-color:var(--green)" ${it in sel?'checked':''} onchange="strumToggle(${idx},${g},${i},this.checked)"><span>${sEsc(it)}</span></label>`).join('')}</div>`).join('');
   return `<tr><td style="padding:8px 10px;border:1px solid var(--border-light);font-weight:700;font-size:12px;vertical-align:top;width:22%">Strumenti del metodo<br><small style="font-weight:400;color:var(--ink-faint)">declinati per ${BRANCA_NOME[FASCIA]||'la tua Branca'}</small></td>
     <td style="padding:8px 10px;border:1px solid var(--border-light)">
       <div id="strum-sel-${idx}">${strumSelHTML(idx,per)}</div>
@@ -11230,6 +11249,9 @@ const G_STEPS = [['1a','1.1','Contesto e KOS'],['1b','1.2','Scheda di osservazio
 function gSteps(){ try{ if(MODE==='giovani' && !(scheda && scheda.tipoProgetto==='PP') && mvOn() && !window.BRO){ const a=G_STEPS.slice(); a.splice(2,0,['1s','','Confronto e sintesi']); return a; } }catch(e){} return G_STEPS; }
 const G_TABS_SHORT = {'1':'1 Osserv.','2':'2 Obiettivi','3':'3 Percorso','4':'4 Verifica','5':'5 Valuta','chk':'Invio'};
 // ── Nomi delle parti. Nel Progetto Personale valgono le Sezioni 1–5 delle Linee Guida; nella Programmazione, gli stessi nomi delle voci del menu ──
+// nomi delle pagine come compaiono nel menu (al posto di «1.1»)
+function nmStaff(){ return szPP() ? '«Contesto»' : '«Il mio staff»'; }
+function nmOcc(){ return szPP() ? '«KOS e Occasioni osservative»' : '«Come osservo»'; }
 function szPP(){ try{ return !!(scheda && scheda.tipoProgetto==='PP'); }catch(e){ return false; } }
 function SZT(t){ if(szPP()) return t;
   const P1={nella:'in',della:'di',dalla:'da',alla:'a',sulla:'su'}, P3={nella:'nei',della:'dei',dalla:'dai',alla:'ai',sulla:'sui'}, N={'1':'Osservare','2':'Obiettivi e indicatori','4':'Verifica delle attività','5':'Valutazione finale'};
@@ -12061,7 +12083,7 @@ function renderSchedaC(root,selected){
             <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--ink)"><span class="att-mv">${pos>0&&attCanMove()?`<button type="button" class="btn-ghost att-mv-up" title="Sposta su" aria-label="Sposta su l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},-1)">↑</button>`:''}${pos<attv.length-1&&attCanMove()?`<button type="button" class="btn-ghost att-mv-dn" title="Sposta giù" aria-label="Sposta giù l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attMove(${idx},${j},1)">↓</button>`:''}</span><span class="att-sumt" id="att-sumt-${idx}-${j}">Attività ${pos+1}${(att.testo||'').trim()?' — '+sEsc(att.testo.slice(0,50)):''}</span>${(att.aff||att.prep)&&axShared(att)?` <span class="aff-chip${(affIsMe(att.aff)||affIsMe(att.prep))?' me':''}">${(affIsMe(att.aff)||affIsMe(att.prep))?'affidata a te':sEsc(affName(att.aff||att.prep))}</span>`:''}${attCanMove()&&j<(per.attivita||[]).length?`<span class="att-tabr">${has?`<button type="button" class="btn-ghost att-tb" title="Sposta in un altro percorso" aria-label="Sposta l’attività ${pos+1} in un altro percorso" onclick="event.preventDefault();event.stopPropagation();attMoveAsk(${idx},${j})">⇄ Sposta</button>`:''}<button type="button" class="btn-ghost att-tb" title="Elimina questa attività" aria-label="Elimina l’attività ${pos+1}" onclick="event.preventDefault();event.stopPropagation();attDel(${idx},${j})">×</button></span>`:''}</summary>
             ${attSgPanelHTML(idx,j)}${att.dalPP?'<div class="ered-n" style="margin:4px 0 0">Bozza dal Progetto Personale: controllala e adattala all’Unità</div>':''}<div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
             <label class="ax-sub" style="display:block;margin:8px 0 2px;font-weight:700">Titolo dell’attività</label><input type="text" style="${SC_IN};margin:0 0 4px" placeholder="Scrivi qui il titolo, o una breve sintesi" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
-            ${attTipiHTML(idx,j,att)}
+            ${scheda.tipoProgetto!=='PP'?attMetHTML(idx,j,att):''}${attTipiHTML(idx,j,att)}
             <label style="${SC_LBL}">Lancio</label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come presenti l'attività, che cosa motiva i ragazzi a partire…" oninput="updateAttivita(${idx},${j},'lancio',this.value);saveDataDebounced()">${sEsc(att.lancio)}</textarea>
             <label style="${SC_LBL}">Sviluppo</label>
@@ -12556,7 +12578,9 @@ function renderSchedaVer(root,selected){
     const p=per.percorsoId?allP.find(x=>x.id===per.percorsoId):null; if(!p) return;
     const acts=attSorted(per,(per.attivita||[]).map((a,j)=>({a,j})).filter(x=>['testo','lancio','sviluppo','conclusione'].some(k=>(x.a[k]||'').trim())));
     if(!acts.length) return;
-    h+=`<div style="margin:16px 0 6px;font-size:12px;font-weight:800;color:var(--ink)">Percorso ${idx+1} — ${per.percorsoId[0]}${DB[per.percorsoId[0]].findIndex(x=>x.id===per.percorsoId)+1} ${sEsc(p.name)}</div>`;
+    const opt=ppOptPid(per.percorsoId);
+    if(opt&&(scheda.ppOptHid||{})[per.percorsoId]){ h+=`<div class="pp-opt-h">${sEsc(p.name)}: facoltativo, nascosto. <button type="button" class="btn-ghost" style="font-size:12px;padding:2px 9px" onclick="ppOptHide('${per.percorsoId}',false)">Mostra</button></div>`; return; }
+    h+=`<div style="margin:16px 0 6px;font-size:12px;font-weight:800;color:var(--ink);display:flex;gap:8px;align-items:center;flex-wrap:wrap">Percorso ${idx+1} — ${per.percorsoId[0]}${DB[per.percorsoId[0]].findIndex(x=>x.id===per.percorsoId)+1} ${sEsc(p.name)}${opt?`<span class="pp-opt-t">Facoltativo · non è il percorso che sviluppi</span><button type="button" class="btn-ghost" style="font-size:12px;padding:2px 9px;margin-left:auto" onclick="ppOptHide('${per.percorsoId}',true)">Nascondi</button>`:''}</div>`;
     acts.forEach(({a,j})=>{
       n++;
       const shV=axShared(a);
@@ -12585,7 +12609,7 @@ function ppChecks(){
   const T = t => (t||'').trim().length>0;
   const pp = scheda.pp||{};
   const sel = priSel().slice(0,3);
-  const percs = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x));
+  const percs = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x) && !ppOptPid(x.percorsoId));
   const c1=[], c2=[];
   const add=(arr,l,ok,det)=>arr.push({l,ok:!!ok,det:det||''});
   add(c1,'Dati: nome, Sezione, Gruppo e Unità', T(pp.nome)&&T(pp.sezione)&&T(pp.gruppo)&&T(UNIT_NAME));
@@ -13779,8 +13803,17 @@ async function exportPPDocx(mode){
 
   // ── Sezione 3 ──
   ch.push(dH2('Sezione 3 — Percorso Educativo Esperienziale'));
-  const perc = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x));
+  let perc = getAllPercorsi().filter(x=>x.percorsoId && percHasContent(x));
   if(!perc.length) ch.push(dNote('Nessun percorso progettato.'));
+  // 10/11: nel Progetto Personale il percorso scelto (quello sviluppato) viene per primo ed è dichiarato in apertura; gli altri seguono come «accennati»
+  const chPid = PPm ? ppChosenPid() : ''; let altriDa = -1;
+  if(PPm && chPid){
+    const mainP = perc.filter(x=>x.percorsoId===chPid), rest = perc.filter(x=>x.percorsoId!==chPid).sort((x,y)=>'PCS'.indexOf(x.percorsoId[0])-'PCS'.indexOf(y.percorsoId[0]));
+    perc = mainP.concat(rest); if(mainP.length && rest.length) altriDa = mainP.length;
+    const pC = allP.find(x=>x.id===chPid); const ciP = sez3Chosen(priSel().slice(0,3).length);
+    if(pC) ch.push(dTable([[dCell(dPara([dTxt('Percorso sviluppato: ',{size:19,bold:true,color:GRTXT}), dTxt(`Priorità ${ciP+1} · ${AMB_LABEL[chPid[0]]} · ${chPid[0]}${DB[chPid[0]].findIndex(x=>x.id===chPid)+1} ${pC.name}`,{size:19,bold:true})],{after:0}),{w:CW,fill:PALE,border:GREEN})]],[CW],true));
+    ch.push(dPara('',{size:4,after:60}));
+  }
   const clKeys = ['nuova','stimolante','progressiva','costruita','rielaborativa','esperienziale','educativa'];
   const clLab = {nuova:'Nuova',stimolante:'Stimolante',progressiva:'Progressiva',costruita:'Co-costruita',rielaborativa:'Rielaborativa (emotiva e cognitiva)',esperienziale:'Esperienziale',educativa:'Educativa'};
   perc.forEach((per,i) => {
@@ -13794,7 +13827,8 @@ async function exportPPDocx(mode){
       ...(acts[acts.length-1].j===j?[]:[dPara('',{size:12,after:240})]),
       ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
     ]) : '—';
-    ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}`));
+    if(i===altriDa){ ch.push(dH3('Altri percorsi (accennati)')); ch.push(dPara('Le Linee Guida chiedono di sviluppare un solo percorso: questi sono gli altri, solo accennati.',{size:17,italics:true,color:'777777',after:80})); }
+    ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${PPm&&chPid&&pid===chPid?' (percorso sviluppato)':''}`, i>=altriDa&&altriDa>=0?{size:20}:{}));
     ch.push(dKV([
       ['Obiettivo/i', ob.length ? ob.map(o=>dPara(plain(o),{size:19,after:40})) : '—'],
       ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
@@ -13817,7 +13851,7 @@ async function exportPPDocx(mode){
     ch.push(dH2('Sezione 4 — Verifica delle Attività'));
     let any4 = false;
     perc.forEach((per,i) => {
-      const p = allP.find(x=>x.id===per.percorsoId); if(!p) return;
+      const p = allP.find(x=>x.id===per.percorsoId); if(!p) return; if(PPm && ppOptPid(per.percorsoId) && (scheda.ppOptHid||{})[per.percorsoId]) return;
       const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>T_(o.x.vBene)||T_(o.x.vMigl)||T_(o.x.vAgg)||verParti(o.x).some(q=>T_((o.x.vRef||{})[q.k]))));
       if(!acts.length) return; any4 = true;
       ch.push(dH3(`Percorso ${i+1} — ${p.name}`));
@@ -13833,7 +13867,7 @@ async function exportPPDocx(mode){
     const LBL = {spontaneo:'Spontaneo', stimolato:'Stimolato', no:'Non adottato'}; const FILL = {spontaneo:'2E7D32', stimolato:'E0A100', no:'B3261E'};
     const seen = new Set(); let any5 = false;
     // Sezione 5: tutte le priorità (come nell'app), non solo il percorso sviluppato in Sezione 3
-    const perc5 = getAllPercorsi().filter(x=>x.percorsoId && (typeof x.prioritaIdx==='number' || percHasContent(x)));
+    const perc5 = getAllPercorsi().filter(x=>x.percorsoId && (typeof x.prioritaIdx==='number' || percHasContent(x))).filter(x=>{ if(!PPm||!ppOptPid(x.percorsoId)) return true; if((scheda.ppOptHid||{})[x.percorsoId]) return false; const ic=(scheda.idrComp||{})[x.percorsoId]||{}; return Object.values(ic).some(v=>v&&(v.c||T_(v.note)))||T_((scheda.valCompl||{})[x.percorsoId]); }).sort((x,y)=>PPm?((y.percorsoId===ppChosenPid())-(x.percorsoId===ppChosenPid())):0);
     perc5.forEach((per,i) => {
       const pid = per.percorsoId; if(seen.has(pid)) return; seen.add(pid);
       const p = allP.find(x=>x.id===pid); if(!p) return;
@@ -13860,7 +13894,7 @@ async function exportPPDocx(mode){
     });
     if(!any5) ch.push(dNote('Valutazione finale non ancora compilata.'));
   } else {
-    if(PPm) ch.push(dPara('Le Sezioni 4 (Verifica delle Attività) e 5 (Valutazione Finale) si aggiungono dopo la realizzazione del percorso e l\'approvazione del Progetto Educativo Esperienziale da parte dell\'ICdF.',{size:18,italics:true,color:'777777',before:200}));
+    // 10/11: tolta la nota «Le Sezioni 4 e 5 si aggiungono dopo…» (richiesta di Luca)
   }
 
   if(SOLOGR) ch.length = headLen;
@@ -14411,7 +14445,7 @@ async function dbDelete(id){
 }
 
 // stato visibile nel pulsante d'intestazione
-function appReload(){ window._appReload = true; location.reload(); }
+function appReload(){ window._appReload = true; try{ bootLd(true); }catch(e){} location.reload(); }
 function clShortName(){
   try{ const n = clMyName().split(/\s+/)[0]; if(n) return n; const m = String((CL.user && CL.user.email) || '').split('@')[0]; return m ? m.charAt(0).toUpperCase() + m.slice(1) : 'Archivio'; }catch(e){ return 'Archivio'; }
 }
@@ -14573,7 +14607,7 @@ function clShow(view){
       <div style="display:flex;flex-direction:column;gap:8px">
       <button class="cl-btn" onclick="clRefInvDo(true)">${R.mid?'Sì, e avviso su WhatsApp':'Invita e avvisa su WhatsApp'}</button>
       <button class="cl-btn ghost" onclick="clRefInvDo(false)">${R.mid?'Sì, senza avvisare':'Invita senza avvisare'}</button>
-      <button class="cl-btn ghost" onclick="clClose()">No, grazie</button></div><div class="cl-msg" id="cl-msg"></div>`;
+      <button class="cl-btn ghost" onclick="refInvDone()">No, grazie</button></div><div class="cl-msg" id="cl-msg"></div>`;
   } else if(view === 'invito'){
     const rows = CL._inv || []; const r = rows[0];
     if(!r){ clClose(); return; }
@@ -15343,7 +15377,7 @@ function ptCollect0(items, info, list, people, d, canVer){
   affMine(list, people).forEach(a => items.push(Object.assign({k:'att', idx:a.idx, j:a.j, d:a.d, t:a.t, parti:a.parti, gk:a.gk}, info)));
   ptMatMine(list, people).forEach(a => items.push(Object.assign({k:'mat', idx:a.idx, j:a.j, d:a.d, t:a.t, cose:a.cose}, info)));
   ptAvMine(d, people).forEach(a => items.push(Object.assign({k:'av', av:a.id, tipo:a.tipo, da:a.da, dove:a.dove, testo:a.testo, idx:a.idx, j:a.j, letto:!!a.letto, lettoAt:a.lettoAt||0}, info)));
-  try{ uscPtMine(d, people).forEach(a => items.push(Object.assign({k:'usc', u:a.u, ut:a.ut, g:a.g, t:a.t, ora:a.ora, d:a.d, gt:a.gt, by:a.by||''}, info))); }catch(e){}
+  try{ uscPtMine(d, people).forEach(a => items.push(Object.assign({k:'usc', u:a.u, bk:a.bk||'', ut:a.ut, g:a.g, t:a.t, ora:a.ora, d:a.d, gt:a.gt, by:a.by||''}, info))); }catch(e){}
   if(canVer) try{ verDaFare(list, people, canVer === 'owner').forEach(a => items.push(Object.assign({k:'ver', idx:a.idx, j:a.j, t:a.t}, info))); }catch(e){}
 }
 async function clPerTe(){
@@ -15404,7 +15438,7 @@ function ptGroup(it){
   const out = [], G = {};
   it.forEach((x, n) => { if(ptDelHas(x)) return;
     if(x.k === 'usc'){ const key = x.id + '|' + x.u; let g = G[key];
-      if(!g){ g = G[key] = {k:'uscg', id:x.id, u:x.u, ut:x.ut, cur:x.cur, anno:x.anno, titolo:x.titolo, owner:x.owner, g:x.g, righe:[], ns:[], hot:false, ack:true, ruolo:x.ruolo}; out.push({x:g, n:-1}); }
+      if(!g){ g = G[key] = {k:'uscg', id:x.id, u:x.u, bk:x.bk||'', ut:x.ut, cur:x.cur, anno:x.anno, titolo:x.titolo, owner:x.owner, g:x.g, righe:[], ns:[], hot:false, ack:true, ruolo:x.ruolo}; out.push({x:g, n:-1}); }
       g.righe.push({t:String(x.t || '').trim(), gt:x.gt, ora:x.ora}); g.ns.push(n); if(x.hot !== false) g.hot = true; if(!x.ack) g.ack = false; }
     else out.push({x, n}); });
   return out.filter(o => { const x = o.x; if(x.k !== 'att' || x.parti) return true;
@@ -15426,7 +15460,7 @@ function clPerTeHTML(){
     const tt = x.t ? '«'+clEsc(x.t.slice(0,60))+'»' : 'attività '+((x.j||0)+1);
     if(x.k === 'usc') return uscPtRow(x, pr);
     if(x.k === 'uscg'){ const lst = x.righe.map(r => '«' + clEsc(r.t.slice(0, 50)) + '»').join(', ');
-      const ap = x.cur ? `clClose();shSrUsc('${clEsc(x.u)}')` : `ptGoOpen('${clEsc(x.id)}',{t:'usc',u:'${clEsc(x.u)}',g:${Number(x.g)||1}})`;
+      const ap = x.cur ? `clClose();shSrUsc('${clEsc(x.u)}',${Number(x.g)||0},'${clEsc(x.bk||'')}')` : `ptGoOpen('${clEsc(x.id)}',{t:'usc',u:'${clEsc(x.u)}',g:${Number(x.g)||0},bk:'${clEsc(x.bk||'')}'})`;
       const ak = x.hot ? `<button type="button" class="cl-btn ghost sm" onclick="ptAckMany([${x.ns.join(',')}])">Ho capito</button>` : '';
       return `<div class="cl-row"${x.hot ? '' : ' style="opacity:.72"'}><div style="min-width:0"><div class="t">Nell’uscita «${clEsc(x.ut)}» ${x.righe.length === 1 ? 'è affidato a te' : 'sono affidati a te'}: ${lst}</div><div class="s">${pr}</div></div><div class="cl-act"><button class="cl-btn sm" onclick="${ap}">Apri</button>${ak}</div></div>`; }
     if(x.k === 'mat') return `<div class="cl-row"><div style="min-width:0"><div class="t">Materiali da procurare, tocca a te: ${clEsc(x.cose.slice(0,4).join(', '))}${x.cose.length>4?'…':''}</div><div class="s">per ${tt} · ${pr}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${go}">Apri</button></div>`;
@@ -15459,7 +15493,7 @@ function ptGoRun(n){ let a = null; try{ a = JSON.parse(sessionStorage.getItem('b
   n = n || 0; if(n > 30){ try{ sessionStorage.removeItem('bussola_pt_go'); }catch(e){} return; }
   if(!(CL.ctx && CL.ctx.id === a.id && typeof scheda !== 'undefined' && scheda && typeof getAllPercorsi === 'function' && document.getElementById('sh-root') && document.querySelector('#sh-side .sh-gh'))){ setTimeout(() => ptGoRun(n + 1), 500); return; }
   try{ sessionStorage.removeItem('bussola_pt_go'); }catch(e){}
-  const go = () => { try{ if(a.t === 'usc') shSrUsc(a.u); else clPtGoAtt(a.idx, a.j, a.grp); }catch(e){} };
+  const go = () => { try{ if(a.t === 'usc') shSrUsc(a.u, a.g, a.bk); else clPtGoAtt(a.idx, a.j, a.grp); }catch(e){} };
   setTimeout(go, 1800); setTimeout(() => { if(a.t !== 'usc' && !document.getElementById('att-' + a.idx + '-' + a.j)) go(); }, 5200); }
 // «Per te» → Apri: se sono nella pagina «I tuoi progetti» (anche col progetto già aperto in memoria) prima entro nel progetto, poi vado alla cosa affidata
 function ptHome(){ try{ return !!(window.SH && SH.on && SH.view && CL.ctx && typeof shOpen === 'function'); }catch(e){ return false; } }
@@ -15868,7 +15902,7 @@ async function clLoadMem(){
       const refL = roles && ru === 'lettore' && !lock && clIsReferente(nm, r.email);
       return `<div class="cl-row"><div style="min-width:0"><div class="t">${nm ? clEsc(nm) + ' <span style="font-weight:500;color:#666">· ' + clEsc(r.email) + '</span>' : clEsc(r.email)}${isMe ? ' <span style="font-weight:500;color:#666">(tu)</span>' : ''}</div><div class="s">Invito del ${sgFmt(r.created_at)} · ${stato}</div>${refL ? `<div class="s" style="color:#B06A00;font-weight:600">Ha attività o moduli affidati ma è lettore: non può modificarli. <button class="cl-btn sm" style="margin-left:4px" onclick="clSetRole('${r.id}','collaboratore')">Fai collaboratore</button></div>` : ''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">${sel}${clWaBtn(r.email, ru)}${clMailBtn(r.email, ru)}${lock?'':`<button class="cl-btn warn sm" onclick="clRevoke('${r.id}')">Togli accesso</button>`}</div></div>`;
-    }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> e <strong>Avvisa via email</strong> aprono un messaggio già scritto: se nella tabella dello staff (1.1) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
+    }).join('') + `<p class="cl-note" style="margin:8px 0 0"><strong>Avvisa su WhatsApp</strong> e <strong>Avvisa via email</strong> aprono un messaggio già scritto: se nella tabella dello staff (${typeof nmStaff==='function'?nmStaff():'«Il mio staff»'}) c'è il suo numero, va dritto alla sua chat; altrimenti scegli tu il contatto. Il numero resta sul tuo dispositivo.</p>`;
   }catch(e){ box.innerHTML = `<p class="cl-note">${clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : 'Elenco non disponibile: '+clEsc(clErr(e))}</p>`; }
 }
 // ── cambio dell'email dell'account: gli inviti passano alla nuova email, chi ha il progetto lo vede in «Per te» ──
@@ -15979,41 +16013,49 @@ function clStaffPick(i){
   const r = clStaffRows()[i]; if(!r) return;
   const inp = $cl('cl-inv'); if(!inp) return;
   const w = $cl('cl-wanow'); if(w) w.innerHTML = '';
-  if(!r.mail){ clMsg(`Nella tabella dello staff (1.1) manca l'email di ${r.nome}: scrivila qui sopra e premi Invita.`, 'err'); inp.value = ''; inp.focus(); return; }
+  if(!r.mail){ clMsg(`Nella tabella dello staff (${typeof nmStaff==='function'?nmStaff():'«Il mio staff»'}) manca l'email di ${r.nome}: scrivila qui sopra e premi Invita.`, 'err'); inp.value = ''; inp.focus(); return; }
   inp.value = r.mail; clMsg(`Pronto: premi Invita per condividere con ${r.nome || r.mail}.`, 'ok'); inp.focus();
 }
 function clStaffPickHTML(invited){
   const om = CL.ctx && CL.ctx.ruolo ? clOwnerMail() : ''; const rows = clStaffRows().map((r, i) => Object.assign({i}, r)).filter(r => !om || r.mail !== om); if(!rows.length) return '';
-  return `<div style="margin:0 0 10px"><div class="cl-lb" style="margin-top:0">Dallo staff (tabella 1.1)</div><div style="display:flex;flex-wrap:wrap;gap:6px">` +
+  return `<div style="margin:0 0 10px"><div class="cl-lb" style="margin-top:0">Dallo staff (${typeof nmStaff==='function'?nmStaff():'«Il mio staff»'})</div><div style="display:flex;flex-wrap:wrap;gap:6px">` +
     rows.map(r => { const i = r.i; const done = r.mail && invited.includes(r.mail);
-      return `<button class="cl-btn ghost sm" ${done?'disabled style="opacity:.55"':''} onclick="clStaffPick(${i})" title="${r.mail?clEsc(r.mail):'Email mancante nella tabella 1.1'}">${clEsc(r.nome || r.mail)}${r.ruolo?` <span style="font-weight:500">· ${clEsc(r.ruolo)}</span>`:''}${done?' ✓':(r.mail?'':' <span style="font-weight:500">· senza email</span>')}</button>`; }).join('') +
+      return `<button class="cl-btn ghost sm" ${done?'disabled style="opacity:.55"':''} onclick="clStaffPick(${i})" title="${r.mail?clEsc(r.mail):'Email mancante nella tabella dello staff'}">${clEsc(r.nome || r.mail)}${r.ruolo?` <span style="font-weight:500">· ${clEsc(r.ruolo)}</span>`:''}${done?' ✓':(r.mail?'':' <span style="font-weight:500">· senza email</span>')}</button>`; }).join('') +
     `</div><div class="cl-note" style="margin:6px 0 0">Oppure scrivi l'email di un'altra persona qui sopra.</div></div>`;
 }
 
 // ── referente scelto → proposta di invito come collaboratore (sempre con conferma) ──
+// 10/11: chi viene affidato e non è collaboratore riceve sempre la domanda «diventa collaboratore?», una persona alla volta (prima, con più persone, una finestra copriva l'altra e a volte non compariva)
 async function refInviteCheck(person, cosa){
-  try{ const PP = affParts(person); if(PP.length > 1){ for(const one of PP) await refInviteCheck(one, cosa); return; }
+  try{
     if(!CL.sb || !CL.user || !CL.ctx || window.BRO) return;
+    const PP = affParts(person); if(!PP.length) return;
     if(!clEditOn() || !(await clRolesOk())) return;
     const owner = !CL.ctx.ruolo, cot = CL.ctx.ruolo === 'cotitolare';
     if(!owner && !cot) return;
-    const nome = affName(person), mail = affMail(person);
-    if(mail && mail === clLc(CL.user.email)) return;
-    if(!mail){ clToast('Per far lavorare ' + nome + ' nell’app serve la sua email nella tabella dello staff (1.1)'); return; }
     let rows = []; try{ rows = await dbMembri(CL.ctx.id); }catch(e){}
-    const m = rows.find(r => clLc(r.email) === mail);
-    if(m && (m.ruolo === 'collaboratore' || m.ruolo === 'cotitolare')){ clToast(nome + ' è già nel progetto: troverà la sua parte in «Per te»'); return; }
-    CL._refInv = {nome, mail, cosa, mid: m ? m.id : null};
-    clShow('refinv');
+    const me = clLc(CL.user.email); const ask = []; const senza = [];
+    PP.forEach(p => { const nome = affName(p), mail = affMail(p);
+      if(mail && mail === me) return;
+      if(!mail){ senza.push(nome); return; }
+      const m = rows.find(r => clLc(r.email) === mail);
+      if(m && (m.ruolo === 'collaboratore' || m.ruolo === 'cotitolare')) return;
+      ask.push({nome, mail, cosa, mid: m ? m.id : null}); });
+    if(senza.length) clToast('Per far lavorare ' + senza.join(', ') + ' nell’app serve l’email nella tabella dello staff (' + (typeof nmStaff==='function'?nmStaff():'«Il mio staff»') + ')');
+    const Q = CL._refQ = (CL._refQ || []);
+    ask.forEach(r => { if(!Q.some(q => q.mail === r.mail) && !(CL._refInv && CL._refOpen && CL._refInv.mail === r.mail)) Q.push(r); });
+    refInvNext();
   }catch(e){}
 }
+function refInvNext(){ try{ if(CL._refOpen && $cl('cl-ov').classList.contains('show')) return; CL._refOpen = false; const Q = CL._refQ || []; const r = Q.shift(); if(!r) return; CL._refInv = r; CL._refOpen = true; clShow('refinv'); }catch(e){} }
+function refInvDone(){ CL._refOpen = false; clClose(); setTimeout(refInvNext, 350); }
 async function clRefInvDo(wa){
   const R = CL._refInv; if(!R) return clClose();
   // WhatsApp si apre subito (dentro il clic, altrimenti il browser lo blocca); l'invito parte intanto
   if(wa){ try{ window.open('https://wa.me/' + clStaffTel(R.mail) + '?text=' + encodeURIComponent(clWaText(R.mail, 'collaboratore', R.cosa)), '_blank', 'noopener'); }catch(e){} }
   try{
     if(R.mid) await dbSetRole(R.mid, 'collaboratore'); else await dbInvite(CL.ctx.id, R.mail, 'collaboratore'); CL._nMem = undefined;
-    clClose(); clToast(R.mid ? 'Fatto: ' + R.nome + ' ora può collaborare alle parti affidate' : 'Invito a collaborare inviato a ' + R.nome);
+    refInvDone(); clToast(R.mid ? 'Fatto: ' + R.nome + ' ora può collaborare alle parti affidate' : 'Invito a collaborare inviato a ' + R.nome);
   }catch(e){
     const deny = /row-level security|permission|42501/i.test(String(e && (e.message||e.code)));
     clMsg(deny ? 'Il tuo account non può ancora invitare: chiedi a chi ha creato il progetto di lanciare l’aggiornamento del database per i co-titolari.' : (e.message === 'duplicate' ? 'Questa persona è già stata invitata' : clErr(e)), 'err');
@@ -16153,6 +16195,7 @@ async function clOpenProject(id, extra){
     try{ if((r.data||{}).MODE === 'giovani' && !extra && !/^Esempio/i.test(r.titolo || '')) localStorage.setItem('bussola_last_unit', r.id); }catch(e){}
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
+    try{ bootLd(true, 'Apro «' + r.titolo + '»…'); }catch(e){}
     appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
@@ -16604,7 +16647,7 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 .pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
 .pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
 .pf-pa{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid #e4e8e2}
-.ax-oss-who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 8px}.ax-pm{display:inline-flex;flex-wrap:wrap;gap:5px;align-items:center}.ax-pm-c{display:inline-flex;gap:3px;align-items:center;background:#e8f3ec;border:1px solid #b9d6c4;border-radius:999px;padding:2px 4px 2px 9px;font-size:12.5px;font-weight:600}.ax-pm-c button{border:0;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}.ax-pm-c button:hover,.ax-pm-c button:focus-visible{background:#cfe5d7}.ax-pm-s{max-width:210px}.sh-pt{margin:10px 0 14px}.sh-pt>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b3360f;padding:6px 0}.sh-pt .cl-perte{margin-top:6px}.sh-exp{margin:22px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
+.ax-oss-who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 8px}.ax-pm{display:inline-flex;flex-wrap:wrap;gap:5px;align-items:center}.ax-pm-c{display:inline-flex;gap:3px;align-items:center;background:#e8f3ec;border:1px solid #b9d6c4;border-radius:999px;padding:2px 4px 2px 9px;font-size:12.5px;font-weight:600}.ax-pm-c button{border:0;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}.ax-pm-c button:hover,.ax-pm-c button:focus-visible{background:#cfe5d7}.ax-pm-s{max-width:210px}.sh-pt{margin:10px 0 14px}.sh-pt>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b3360f;padding:6px 0}.sh-pt .cl-perte{margin-top:6px}.usc-blk.pt-hl{box-shadow:0 0 0 3px #f0e603,0 0 0 5px #1a1800;transition:box-shadow .3s}.sh-exp{margin:22px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}label.sh-btn,a.sh-btn{display:inline-flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;line-height:1.2}.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
 .sh-tag{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
 .sh-tag.L{background:#f7f19a}.sh-tag.E{background:#d7ecdf}.sh-tag.R{background:#f8c9c7}.sh-tag.X{background:#e3e8f2}
 .sh-role{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;border:1px solid #8a8a82;color:#3D3D38;background:#fff;white-space:nowrap}
@@ -16711,8 +16754,8 @@ function show(view, arg){
   SH.view = view; const r = $('sh-root'); if(view) try{ window.stEmbExit && window.stEmbExit(); }catch(e){}
   // il colore dipende dal profilo (Branca), uguale dentro e fuori dai progetti
   try{ brandApply(); }catch(e){}
-  if(!view){ r.classList.remove('show'); r.innerHTML = ''; document.body.classList.remove('sh-pend'); document.body.style.overflow = ''; return; }
-  document.body.classList.remove('sh-pend'); r.classList.add('show'); r.scrollTop = 0;
+  if(!view){ r.classList.remove('show'); r.innerHTML = ''; document.body.classList.remove('sh-pend'); document.body.style.overflow = ''; setTimeout(() => bootLd(false), 300); return; }
+  document.body.classList.remove('sh-pend'); r.classList.add('show'); r.scrollTop = 0; if(view !== 'wait') setTimeout(() => bootLd(false), 50);
   if(view === 'wait') r.innerHTML = top(false) + '<div class="sh-wrap narrow"><p class="sh-sub" role="status">Un attimo…</p></div>';
   else if(view === 'gate') gateHTML(arg);
   else if(view === 'profile') profileHTML(arg);
@@ -17179,7 +17222,7 @@ window.shNew = function(tipo){
   try{ shVeste(); }catch(e){}
 };
 // 9/11: alla creazione si chiede sempre se riprendere qualcosa da un progetto che hai già (come in «Duplica»)
-const NEW_PREV = [['ctx','Unità, contesto e staff','dati dell’Unità, contesto, tabella dello staff'],['obs','Osservazione','griglia, livelli osservati, sintesi per Ambito'],['prior','Obiettivi, indicatori e priorità','senza le date di periodo'],['perc','Percorsi educativi e attività','le attività scritte nei percorsi'],['usc','Calendario','riunioni, uscite, bivacchi e campi (con un anno diverso le date si azzerano)'],['note','Appunti dalla verifica','le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno: li ritrovi in 1.1 come «Appunti dalla programmazione precedente»']];
+const NEW_PREV = [['ctx','Unità, contesto e staff','dati dell’Unità, contesto, tabella dello staff'],['obs','Osservazione','griglia, livelli osservati, sintesi per Ambito'],['prior','Obiettivi, indicatori e priorità','senza le date di periodo'],['perc','Percorsi educativi e attività','le attività scritte nei percorsi'],['usc','Calendario','riunioni, uscite, bivacchi e campi (con un anno diverso le date si azzerano)'],['note','Appunti dalla verifica','le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno: li ritrovi nel menu, sotto «Capire», alla voce «Appunti dalla programmazione precedente»']];
 window.shCreateAsk = async function(){
   const msg = $('sh-nmsg'); const ruolo = ($('sh-nru') || {}).value; const nb = noBranca(ruolo); const tipo = SH.tipo;
   let rows = []; try{ rows = await dbList(); }catch(e){ return shCreate(); }
@@ -17524,6 +17567,8 @@ body.sh-in[data-mode="giovani"][data-amb="C"] #percorsi-root .ambito-sec:not([da
 body.sh-in[data-mode="giovani"][data-amb="S"] #percorsi-root .ambito-sec:not([data-a="S"]){display:none}
 body.sh-in[data-amb="P"] #amb-foot0,body.sh-in[data-amb="C"] #amb-foot0,body.sh-in[data-amb="S"] #amb-foot0{display:none}
 #amb-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+/* 10/11: nello staff i pulsanti in fondo portavano alle pagine dell'Unità: restano solo quelli di navigazione in alto */
+body.sh-on[data-mode="staff"] .foot-nav{display:none!important}
 @media(min-width:1100px){body.sh-in .gsn-steps,body.sh-in .gsn-title{display:none}}
 /* istruzioni di compilazione (PP) */
 .lg-in .lg-h{font:800 12px/1.3 'Montserrat',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);margin:12px 0 4px}
@@ -17596,6 +17641,7 @@ const NAV_AN = [
   {id:'a-unit', k:'1a:unit', t:'La mia unità', ic:'users', go:"shSub('1a','','unit')"},
   {id:'a-ctx', k:'1a:ctx', t:'Il mio contesto', ic:'proj', go:"shSub('1a','','ctx')"},
   {id:'a-staff', k:'1a:staff', t:'Il mio staff', ic:'user', go:"shSub('1a','','staff')"},
+  {id:'a-prev', t:'Appunti dalla programmazione precedente', ic:'doc', go:"shPrev('note')", cond:'prev'},
   {g:'Osservare'},
   {id:'o-occ', k:'1a:occ', t:'Come osservo', ic:'eye', go:"shSub('1a','','occ')"},
   {id:'o-P', k:'1b:P', t:'Sviluppo Personale', ic:'eye', go:"shSub('1b','P')"},
@@ -17680,7 +17726,7 @@ function subHTML(inSheet){
   const sc = subCur();
   return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
-function navCond(i){ if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navCond(i){ if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
 function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
 function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
 SH._gt = SH._gt || {};
@@ -17752,7 +17798,7 @@ function active(){
 // pagina del guscio in cui si sta lavorando: si salva prima di aggiornare il progetto con le modifiche altrui e si rimette dopo
 window.shViewSave = function(){ try{ const id = active(); const it = navItems().find(i => i.id === id); return (it && it.go) ? {id:id, go:it.go} : null; }catch(e){ return null; } };
 window.shViewGo = function(v){ try{ if(!v || !v.go) return false; (new Function(v.go))(); return true; }catch(e){ return false; } };
-window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
+window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevEnsure(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
 function gFootFix(){
   try{
     if(MODE !== 'giovani') return;
@@ -17924,7 +17970,7 @@ function scadItems(){ const out=[]; const it=(CL.scad||[]); const seen=new Set()
     const pr=x.cur?'':(' · '+(x.titolo||''));
     if(x.k==='att') out.push({d:scadIso(x.d), t:x.t||'Attività', tag:x.parti?['Parte affidata','mod']:['Referente','ref'], sub:(x.parti?x.parti.join(', '):'Attività dei percorsi')+pr, go:x.cur?`clPtGoAtt(${x.idx},${x.j},null)`:`ptGoOpen('${x.id}',{t:'att',idx:${x.idx},j:${x.j},grp:null})`});
     else if(x.k==='mat') out.push({d:scadIso(x.d), t:'Materiali da procurare: '+(x.cose||[]).slice(0,3).join(', '), tag:['Materiali','mod'], sub:'per «'+(x.t||'attività')+'»'+pr, go:x.cur?`clPtGoAtt(${x.idx},${x.j},['mat'])`:`ptGoOpen('${x.id}',{t:'att',idx:${x.idx},j:${x.j},grp:['mat']})`});
-    else if(x.k==='usc') out.push({d:scadIso(x.d), t:String(x.t||'').replace(/^referente: /,'Referente: '), tag:x.cond?['Conduci','con']:['Affidato','ref'], sub:'«'+(x.ut||'evento')+'»'+(x.gt?' · '+x.gt:'')+pr, go:x.cur?`shSrUsc('${x.u}')`:`clOpenShared('${x.id}')`});
+    else if(x.k==='usc') out.push({d:scadIso(x.d), t:String(x.t||'').replace(/^referente: /,'Referente: '), tag:x.cond?['Conduci','con']:['Affidato','ref'], sub:'«'+(x.ut||'evento')+'»'+(x.gt?' · '+x.gt:'')+pr, go:x.cur?`shSrUsc('${x.u}',${Number(x.g)||0},'${x.bk||''}')`:`ptGoOpen('${x.id}',{t:'usc',u:'${x.u}',g:${Number(x.g)||0},bk:'${x.bk||''}'})`});
     else if(x.k==='ver') out.push({d:'', late:true, t:'Da verificare: «'+(x.t||'attività')+'»', tag:['Verifica','mod'], sub:'L’attività è stata vissuta'+pr, go:`verGo(${x.idx},${x.j})`});
   });
   try{ if(typeof scheda!=='undefined'&&scheda&&MODE==='giovani'&&scheda.tipoProgetto!=='PP'){ const c=scheda.ciclo||{}; if(/^\d{4}-\d{2}$/.test(c.al||'')){ const [y,m]=c.al.split('-').map(Number); const last=new Date(y,m,0); out.push({d:last.getFullYear()+'-'+String(last.getMonth()+1).padStart(2,'0')+'-'+String(last.getDate()).padStart(2,'0'), t:'Fine del ciclo'+(c.nome?' «'+c.nome+'»':''), tag:null, sub:'Verifica del ciclo con lo staff', go:"shSec('4')"}); }
@@ -18058,8 +18104,13 @@ function ppStato(n){
       return full >= 3 ? 'Completata' : any ? 'In corso' : 'Da iniziare'; }
     if(n === 4){ const done = acts.filter(a => T(a.vBene) || T(a.vMigl) || T(a.vAgg)); const withTxt = acts.filter(a => T(a.testo) || T(a.lancio));
       return done.length && done.length >= withTxt.length ? 'Completata' : done.length ? 'In corso' : 'Da iniziare'; }
-    if(n === 5){ const ic = scheda.idrComp || {}; const n5 = Object.values(ic).reduce((t, o) => t + Object.values(o || {}).filter(v => v && v.c).length, 0); const need = pr.slice(0, sel.length).reduce((t, x) => t + ((x && x.idr) || []).length, 0);
-      return n5 && n5 >= need ? 'Completata' : n5 || T((scheda.valCompl || {}).P) ? 'In corso' : 'Da iniziare'; }
+    if(n === 5){ const ic = scheda.idrComp || {};
+      // 10/11: nel Progetto Personale conta solo il percorso scelto (gli altri sono facoltativi)
+      const cp = (typeof ppChosenPid === 'function') ? ppChosenPid() : ''; const ci = sez3Chosen(sel.length);
+      const n5 = cp ? Object.values(ic[cp] || {}).filter(v => v && v.c).length : Object.values(ic).reduce((t, o) => t + Object.values(o || {}).filter(v => v && v.c).length, 0);
+      const need = cp ? ((pr[ci] && pr[ci].idr) || []).length : pr.slice(0, sel.length).reduce((t, x) => t + ((x && x.idr) || []).length, 0);
+      const vc = cp ? T((scheda.valCompl || {})[cp]) : Object.values(scheda.valCompl || {}).some(T);
+      return n5 && n5 >= need && vc ? 'Completata' : (n5 || vc) ? 'In corso' : 'Da iniziare'; }
   }catch(e){}
   return 'Da iniziare';
 }
@@ -19831,6 +19882,14 @@ function ppProfDefaults(){
     pp._profDone = true; if(ch){ saveDataDebounced(); try{ if($('val-root')) renderValuation(); }catch(e){} }
   }catch(e){}
 }
+// 10/11: la ricerca del progetto precedente si fa all'apertura del progetto (non solo nelle pagine del contesto): così la voce di menu «Appunti dalla programmazione precedente» c'è sempre
+function prevEnsure(){
+  try{ if(window.BRO || !CL.ctx || isST() || isPP()) return;
+    if(SH._prevFor !== CL.ctx.id){ SH._prevFor = CL.ctx.id; SH._prev = undefined; SH._prevBusy = false; }
+    if(SH._prev === undefined && !SH._prevBusy){ SH._prevBusy = true; const id = CL.ctx.id;
+      prevProbe().then(r => { if(SH._prevFor === id) SH._prev = r || null; SH._prevBusy = false; try{ paint(); prevBar(); }catch(e){} }).catch(() => { SH._prev = null; SH._prevBusy = false; }); }
+  }catch(e){}
+}
 function prevBar(){
   const on = document.body.getAttribute('data-ctx') || '';
   const card = document.querySelector('#val-root .profile-card'); const old = $('sh-prev');
@@ -19857,8 +19916,8 @@ function prevNotes(d){
   return out;
 }
 const VER_Q = [['bene', 'Che cosa è andato bene nell’anno'], ['migl', 'Che cosa cambieremmo'], ['porta', 'Che cosa portiamo nell’anno che viene'], ['ambiti', 'Come si sono equilibrati i tre Ambiti'], ['staff', 'Lo staff: come siamo stati e come stiamo']];
-window.shPrev = async function(){
-  const PV = SH._prev; if(!PV) return; const tt = PV.kind === 'ciclo' ? 'Dal ciclo precedente' : 'Dall’anno scorso';
+window.shPrev = async function(mode){
+  const PV = SH._prev; if(!PV){ showToast('Non trovo una programmazione precedente da rileggere'); return; } const onlyN = mode === 'note'; const tt = onlyN ? 'Appunti dalla programmazione precedente' : PV.kind === 'ciclo' ? 'Dal ciclo precedente' : 'Dall’anno scorso';
   modalShow('<h3 style="margin:0 0 8px;font-size:17px">' + tt + '</h3><p class="sh-hint">Carico…</p>');
   const L = []; for(const id of PV.ids){ try{ const r = await dbGet(id); if(r && r.data) L.push({id, titolo:r.titolo, data:r.data}); }catch(e){} }
   let ar = null; if(PV.annoId){ try{ const g = await dbGet(PV.annoId); ar = g && g.data; }catch(e){} }
@@ -19876,7 +19935,8 @@ window.shPrev = async function(){
   const blocks = L.map(x => ({x, n:prevNotes(x.data)})).filter(z => z.n.length);
   const nBody = z => z.n.map(n => `<div class="sh-pnb"><b>${esc(n.nm)}</b>${n.vc ? `<p><i>Valutazione complessiva</i><br>${esc(n.vc).replace(/\n/g, '<br>')}</p>` : ''}${n.att.map(a => `<p><i>${esc(a.testo || 'Attività')}</i>${a.vBene ? `<br><u>Andato bene</u> ${esc(a.vBene)}` : ''}${a.vMigl ? `<br><u>Da migliorare</u> ${esc(a.vMigl)}` : ''}${a.vAgg ? `<br><u>Aggiustamenti</u> ${esc(a.vAgg)}` : ''}</p>`).join('')}</div>`).join('');
   const ver = ar && ar.ver && VER_Q.some(q => String(ar.ver[q[0]] || '').trim()) ? `<details class="u-fold sh-pn" open><summary>Verifica dell’anno<span class="u-sub">la riflessione dell’anno intero</span></summary><div class="u-fold-in">${VER_Q.filter(q => String(ar.ver[q[0]] || '').trim()).map(q => `<div class="sh-pnb"><b>${esc(q[1])}</b><p>${esc(ar.ver[q[0]]).replace(/\n/g, '<br>')}</p></div>`).join('')}</div></details>` : '';
-  const nH = (ver + blocks.map(z => `<details class="u-fold sh-pn"><summary>${PV.kind === 'ciclo' || L.length === 1 ? 'Appunti dalla programmazione precedente' : esc(z.x.ci.nome || z.x.titolo)}<span class="u-sub">${z.n.length} percorso${z.n.length === 1 ? '' : 'i'} con verifica o valutazione</span></summary><div class="u-fold-in">${nBody(z)}</div></details>`).join('')) || '<p class="sh-hint">Non ci sono ancora verifiche o valutazioni da rileggere.</p>';
+  const nH = (ver + blocks.map((z, zi) => `<details class="u-fold sh-pn"${onlyN && !ver && zi === 0 ? ' open' : ''}><summary>${PV.kind === 'ciclo' || L.length === 1 ? 'Appunti dalla programmazione precedente' : esc(z.x.ci.nome || z.x.titolo)}<span class="u-sub">${z.n.length} percorso${z.n.length === 1 ? '' : 'i'} con verifica o valutazione</span></summary><div class="u-fold-in">${nBody(z)}</div></details>`).join('')) || '<p class="sh-hint">Non ci sono ancora verifiche o valutazioni da rileggere.</p>';
+  if(onlyN){ modalShow(`<h3 style="margin:0 0 4px;font-size:17px">${tt}</h3><p class="sh-hint" style="margin:0 0 10px">${esc(PV.da.charAt(0).toUpperCase() + PV.da.slice(1))}: le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno, da rileggere prima di osservare e progettare.</p>${nH}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">${rowsH ? '<button type="button" class="sh-btn gh" onclick="shPrev()">Riprendi anche contesto, staff e numeri</button>' : ''}<button type="button" class="sh-btn" onclick="modalClose()">Chiudi</button></div>`); return; }
   modalShow(`<h3 style="margin:0 0 4px;font-size:17px">${tt}</h3><p class="sh-hint" style="margin:0 0 10px">${esc(PV.da.charAt(0).toUpperCase() + PV.da.slice(1))}. Scegli le voci da riprendere: potrai modificarle. Contesto, sede, numeri e staff li prendo dall’ultimo ciclo.</p>${rowsH ? `<div class="sh-pvl">${rowsH}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" class="sh-btn" onclick="shPrevApply()">Riprendi le voci scelte</button><button type="button" class="sh-btn gh" onclick="modalClose()">Chiudi</button></div>` : '<p class="sh-hint">Non ci sono voci da riprendere (contesto, sede, numeri, staff).</p>'}<h4 class="gd-h" style="margin:8px 0 4px">Appunti dalla programmazione precedente</h4>${nH}`);
 };
 window.shPrevApply = function(){
@@ -19903,7 +19963,9 @@ window.shSearch = function(){
   try{ anLoadMine().then(L => { SH._srAct = L || []; SH._srBusy = false; const i = $('sh-sq'); if($('sh-srch') && $('sh-srch').classList.contains('show')) shSearchRun(i ? i.value : ''); }).catch(() => { SH._srAct = []; SH._srBusy = false; shSearchRun(($('sh-sq') || {}).value || ''); }); }catch(e){ SH._srAct = []; SH._srBusy = false; }
 };
 window.shSrAct = function(i){ const r = (SH._srList || [])[i]; if(!r) return; shSearchClose(); try{ const k = anIdx(r); anGoMine(k); }catch(e){ console.error(e); } };
-window.shSrUsc = function(id){ if(ptHome()) return ptHere(() => shSrUsc(id)); shSearchClose(); try{ const u = uscGet(id); if(!u){ showToast('Questa uscita non c’è più'); return; } USC_CUR = id; USC_TAB = uscNG(u) === 1 ? 1 : 'campo'; gGo('usc'); }catch(e){ console.error(e); } };
+window.shSrUsc = function(id, g, bk){ if(ptHome()) return ptHere(() => shSrUsc(id, g, bk)); shSearchClose(); try{ const u = uscGet(id); if(!u){ showToast('Questa uscita non c’è più'); return; } USC_CUR = id; USC_TAB = uscNG(u) === 1 ? 1 : (g ? Number(g) : 'campo'); gGo('usc');
+  // 10/11: da «Per te» si arriva proprio al momento affidato (aperto ed evidenziato), non solo all'uscita
+  if(bk) setTimeout(() => { try{ if(uscBlk(bk)){ uscJump(bk, uscNG(u) === 1 ? 1 : (g ? Number(g) : USC_TAB)); setTimeout(() => { const e = document.getElementById('usc-b-' + bk); if(e){ e.classList.add('pt-hl'); setTimeout(() => e.classList.remove('pt-hl'), 2600); } }, 400); } }catch(e){} }, 600); }catch(e){ console.error(e); } };
 window.shSearchRun = function(v){
   const box = $('sh-sres'); if(!box) return;
   const q = srN(v).trim(); const inProj = document.body.classList.contains('sh-in'); const out = []; SH._srList = [];
@@ -20579,7 +20641,7 @@ body.sh-in.sh-ready #g-subnav:not(:has(.gsn-act)){display:none!important}
 /* Confronto e sintesi: su schermi stretti la tabella scorre dentro il suo riquadro, non allarga la pagina */
 .cf-left,.cf-grid>*{min-width:0}
 .cf-t thead th{white-space:nowrap}
-.cf-t th:first-child,.cf-t td:first-child{min-width:150px;word-break:normal;overflow-wrap:normal;hyphens:none}.cf-t{table-layout:fixed}.sh-sp{font-style:italic;opacity:.9}.hd-lnk[data-n]::after{content:attr(data-n);display:inline-block;min-width:18px;margin-left:6px;padding:1px 6px;border-radius:10px;background:#d4380d;color:#fff;font-size:12px;font-weight:800;text-align:center}.pf-tg{border:1px solid var(--border-light);background:#fff;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px;flex:none}.pf-c.shut .pf-tg{transform:rotate(-90deg)}.pf-c.shut>*:not(.pf-h){display:none}.tip-leg{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 6px;font-size:12px}.tip-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.tip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}.tip-g4{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}.tip-mc{border:1px solid var(--border-light);border-radius:10px;background:#fff;padding:8px 10px}.tip-mc.now{border-color:var(--green);box-shadow:0 0 0 2px var(--green-pale)}.tip-mh{font-weight:800;font-size:14px;margin-bottom:6px}.tip-mh span{font-weight:600;font-size:12px;color:var(--green)}.tip-ch{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:4px 8px;margin:0 0 4px;border-top:0;border-right:0;border-bottom:0;border-radius:4px;color:#222}.tip-lg{display:inline-block;padding:3px 10px;border-radius:4px;font-size:12px}button.tip-ch{cursor:pointer}.tip-no{color:#999;font-size:12px}.tip-sb{margin:0 0 6px}.tip-sb b{font-size:12px;color:var(--ink-mid)}.tip-sb ul{margin:2px 0 0;padding-left:18px;font-size:12.5px;line-height:1.45}.cap-dets{display:grid;gap:10px;margin:10px 0 14px;max-width:80ch}.cap-det{border:1px solid var(--border-light);border-radius:10px;background:#fff;padding:8px 14px}.cap-det summary{font-weight:800;font-size:14px;cursor:pointer}.cap-det p{margin:6px 0 4px;font-size:13px;line-height:1.55}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:84px}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
+.cf-t th:first-child,.cf-t td:first-child{min-width:150px;word-break:normal;overflow-wrap:normal;hyphens:none}.cf-t{table-layout:fixed}.sh-sp{font-style:italic;opacity:.9}.hd-lnk[data-n]::after{content:attr(data-n);display:inline-block;min-width:18px;margin-left:6px;padding:1px 6px;border-radius:10px;background:#d4380d;color:#fff;font-size:12px;font-weight:800;text-align:center}.pf-tg{border:1px solid var(--border-light);background:#fff;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px;flex:none}.pf-c.shut .pf-tg{transform:rotate(-90deg)}.pf-c.shut>*:not(.pf-h){display:none}.tip-leg{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 6px;font-size:12px}.tip-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.tip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}.tip-g4{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}.tip-mc{border:1px solid var(--border-light);border-radius:10px;background:#fff;padding:8px 10px}.tip-mc.now{border-color:var(--green);box-shadow:0 0 0 2px var(--green-pale)}.tip-mh{font-weight:800;font-size:14px;margin-bottom:6px}.tip-mh span{font-weight:600;font-size:12px;color:var(--green)}.tip-ch{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:4px 8px;margin:0 0 4px;border-top:0;border-right:0;border-bottom:0;border-radius:4px;color:#222}.tip-lg{display:inline-block;padding:3px 10px;border-radius:4px;font-size:12px}button.tip-ch{cursor:pointer}.tip-no{color:#999;font-size:12px}.tip-sb{margin:0 0 6px}.tip-sb b{font-size:12px;color:var(--ink-mid)}.tip-sb ul{margin:2px 0 0;padding-left:18px;font-size:12.5px;line-height:1.45}.cap-dets{display:grid;gap:10px;margin:10px 0 14px;max-width:80ch}.cap-det{border:1px solid var(--border-light);border-radius:10px;background:#fff;padding:8px 14px}.cap-det summary{font-weight:800;font-size:14px;cursor:pointer}.cap-det p{margin:6px 0 4px;font-size:13px;line-height:1.55}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:62px;white-space:normal;overflow-wrap:anywhere;font-size:11.5px;line-height:1.2}.cf-t td:not(:first-child){text-align:center}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
 @media(max-width:899px){.cf-grid{grid-template-columns:minmax(0,1fr)}}
 /* Guida: i video sono la prima voce */
 .gd-vid{border:1.5px solid var(--brand-ink,#1B5E42);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:#fff}
