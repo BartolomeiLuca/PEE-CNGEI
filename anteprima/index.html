@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101300'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101400'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13710,7 +13710,16 @@ async function exportPPDocx(mode){
       dCell(dMulti(o.singoli,{size:18}),{w:w1[3],vAlign:dxLib().VerticalAlign.TOP})
     ]);
   });
-  ch.push(dTable(rows1, w1));
+  // 10/11: con testi lunghi le tre colonne strette diventano torri di righe corte (in Pages e Google Documenti si spezzano male): ogni ambito diventa un blocco a tutta larghezza (etichetta + testo)
+  const longTxt = ['P','C','S'].some(a => { const o = scheda.osservazione[a] || {}; return [o.positivi, o.necessita, o.singoli].some(v => plain(v||'').length > 350); });
+  if(longTxt){
+    const w2 = [2400, CW-2400]; const rows2 = [];
+    ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
+      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:19,bold:true,color:AMB_HEX[a],after:0}),{w:CW,span:2,fill:'F4F4EE',border:'D0D0D0'})]);
+      [['Aspetti positivi emersi',o.positivi],['Necessità educative',o.necessita],['Necessità educative specifiche del singolo/gruppetto',o.singoli]].forEach(([l,v]) => {
+        rows2.push([dCell(dPara(l,{size:17,bold:true,color:ONG,after:0}),{w:w2[0],fill:GREEN,border:GREEN,vAlign:dxLib().VerticalAlign.TOP}), dCell(dMulti(v,{size:18}),{w:w2[1],vAlign:dxLib().VerticalAlign.TOP})]); }); });
+    ch.push(dTable(rows2, w2));
+  } else ch.push(dTable(rows1, w1));
   ch.push(dH3('Priorizzazione delle necessità educative'));
   { const selP = priSel().slice(0,3);
     if(!selP.length) ch.push(dNote('Nessuna priorità selezionata.'));
