@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611100150'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611100830'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13317,11 +13317,11 @@ function dGridTable(heads, rows, widths, sz){
   const hr=heads.map((h,i)=>dCell(dPara(h,{size:sz,bold:true,color:ONG,after:0}),{w:widths[i],fill:GREEN,border:GREEN}));
   return dTable([hr, ...rows.map(r=>r.map((v,i)=>dCell(dMulti(v,{size:sz}),{w:widths[i],vAlign:D.VerticalAlign.TOP})))], widths, true);
 }
-function dTable(rows, widths, split){
+function dTable(rows, widths, split, repeatHead){
   const D = dxLib();
   return new D.Table({
     width:{size:widths.reduce((a,b)=>a+b,0), type:D.WidthType.DXA}, columnWidths:widths, layout:D.TableLayoutType.FIXED,
-    rows: rows.map(r => new D.TableRow({children:r, cantSplit:!split}))
+    rows: rows.map((r,i) => new D.TableRow({children:r, cantSplit:!split, tableHeader:!!(repeatHead && i===0)}))
   });
 }
 const CW = 9638; // larghezza utile A4 con margini 20mm
@@ -13865,7 +13865,8 @@ async function exportPPDocx(mode){
           });
         });
         ch.push(dPara('',{size:10,after:60}));
-        ch.push(dTable(rows, wc, true));
+        // 10/11: le righe non si spezzano a metà pagina e l'intestazione si ripete su ogni pagina (in Word la griglia si leggeva a pezzi)
+        ch.push(dTable(rows, wc, false, true));
       });
     }
   }

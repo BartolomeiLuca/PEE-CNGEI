@@ -1,0 +1,13 @@
+import { FakeDB, serve, launch, person, sleep, loginAs } from './harness.mjs';
+import { execSync } from 'child_process';
+process.env.SITE = '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch('chromium');
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:800}, acceptDownloads:true}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('giulia@x.it', 'password123', 'Giulia Cocon');
+db.t.pee_profili.push({user_id:u.id, nome:'Giulia Cocon', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', dashboard:{}});
+db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Prova', meta:{mode:'giovani', fascia:'E', tipo:'AN'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'Squadriglia X', obs:{P1:6, C1:5, S1:4}, scheda:{tipoProgetto:'AN', annoScout:'2026-27'}}});
+await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
+await ev(() => { const L = ['P1','P2','C1','S1']; scheda.griglia = scheda.griglia || {}; try{ const rows = (typeof grRows==='function') ? grRows('P1') : []; scheda.griglia.P1 = scheda.griglia.P1 || {}; (rows.length?rows:[{k:'x'}]).slice(0,3).forEach((r,i)=>{ scheda.griglia.P1[r.k] = {pos:'Anna: ha guidato il gioco con molta cura e ha coinvolto tutti.\nMarco: più in difficoltà, da accompagnare.', foc:'Rafforzare la collaborazione fra Anna e Marco\ned estendere il ruolo ad altri.', note:'Osservato durante la riunione di '+(i+1)}; }); }catch(e){} });
+const [dl] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev(() => exportSchedaDocx('completo'))]);
+await dl.saveAs('/tmp/grid.docx'); console.log('ok', pa.errors.slice(0,2)); await br.close(); process.exit(0);
