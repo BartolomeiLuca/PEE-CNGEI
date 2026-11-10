@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101130'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101215'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13321,7 +13321,8 @@ function dTable(rows, widths, split, repeatHead){
   const D = dxLib();
   return new D.Table({
     width:{size:widths.reduce((a,b)=>a+b,0), type:D.WidthType.DXA}, columnWidths:widths, layout:D.TableLayoutType.FIXED,
-    rows: rows.map((r,i) => new D.TableRow({children:r, cantSplit:!split, tableHeader:!!(repeatHead && i===0)}))
+    // 10/11: le righe possono spezzarsi tra una pagina e l'altra (con 'non spezzare' Pages lasciava pagine vuote davanti alle righe alte); l'intestazione si ripete
+    rows: rows.map((r,i) => new D.TableRow({children:r, cantSplit:false, tableHeader:!!(repeatHead && i===0)}))
   });
 }
 const CW = 9638; // larghezza utile A4 con margini 20mm
