@@ -1,0 +1,12 @@
+import { FakeDB, serve, launch, person, sleep, loginAs } from './harness.mjs';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch('chromium');
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:800}, acceptDownloads:true}}); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const u = db.addUser('giulia@x.it', 'password123', 'Giulia Cocon');
+db.t.pee_profili.push({user_id:u.id, nome:'Giulia Cocon', ruolo:'cu', branca:'L', sezione:'Pesaro', gruppo:'1', dashboard:{}});
+db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Prova', meta:{mode:'giovani', fascia:'L', tipo:'AN'}, data:{v:1, MODE:'giovani', FASCIA:'L', UNIT_NAME:'Branco X', obs:{P1:6,P2:5,S1:4,S4:3}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', pp:{}}}});
+await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
+const out = await ev(async () => { await needDocx(); const d = dDocument([dPara('prima'), dPara('Fine progetto.^^**^^**'), dPara('Lancio: x ****'), dPara('nome _corsivo_ e snake_case ok'), dTable([[dCell(dPara('a'),{w:4000}),dCell(dPara('b_c_ d'),{w:5638})]],[4000,5638],false,false)], 't'); let b = await dxLib().Packer.toBlob(d); b = await dFixBreaks(b); const z = await JSZip.loadAsync(b); return await z.file('word/document.xml').async('string'); });
+const t = out.match(/<w:t[^>]*>[^<]*<\/w:t>/g).map(s=>s.replace(/<[^>]+>/g,'')); console.log(JSON.stringify(t.slice(0,12)), (out.match(/<w:tc>/g)||[]).length);
+await br.close(); process.exit(0);

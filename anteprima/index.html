@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611100945'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101030'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13572,8 +13572,11 @@ async function dFixBreaks(blob){
     const z = await JSZip.loadAsync(blob); const f = z.file('word/document.xml'); if(!f) return blob;
     let x = await f.async('string'); const x0 = x;
     // testo formattato (**grassetto** _corsivo_ ++sottolineato++ ^^grande^^ ,,piccolo,,): ogni tratto diventa una sua riga di testo con le sue proprietà
-    x = x.replace(/<w:r>(<w:rPr>[\s\S]*?<\/w:rPr>)?<w:t((?:\s[^>]*)?)>([^<]*)<\/w:t><\/w:r>/g, (m, rpr, a, t) => {
-      if(!/\*\*|~~|\+\+|\^\^|,,|_/.test(t)) return m; const S = rtSegs(t); if(!S.some(sg => sg.b || sg.i || sg.u || sg.L || sg.S || sg.M)) return m;
+    // 10/11: il pezzo di <w:rPr> non può oltrepassare il proprio </w:rPr> (prima, con una riga vuota davanti, il tratto catturava anche celle intere e rompeva la griglia in Word/Pages)
+    x = x.replace(/<w:r>(<w:rPr>(?:(?!<\/w:rPr>)[\s\S])*<\/w:rPr>)?<w:t((?:\s[^>]*)?)>([^<]*)<\/w:t><\/w:r>/g, (m, rpr, a, t) => {
+      if(!/\*\*|~~|\+\+|\^\^|,,|_/.test(t)) return m; const S = rtSegs(t);
+      if(!S.length) return '';   // solo simboli di formattazione senza testo (es. ^^**^^**): la riga sparisce
+      if(!S.some(sg => sg.b || sg.i || sg.u || sg.L || sg.S || sg.M)){ const tt = S.map(sg => sg.t).join(''); return tt === t ? m : '<w:r>' + (rpr || '') + '<w:t xml:space="preserve">' + tt + '</w:t></w:r>'; }
       return S.map(sg => { let r = rpr || '<w:rPr></w:rPr>'; let ins = ''; if((sg.b||sg.M) && !/<w:b\/>/.test(r)) ins += '<w:b/>'; if(sg.i && !/<w:i\/>/.test(r)) ins += '<w:i/>';
         if(ins) r = /<w:rFonts[^>]*\/>/.test(r) ? r.replace(/(<w:rFonts[^>]*\/>)/, '$1' + ins) : r.replace('<w:rPr>', '<w:rPr>' + ins);
         if(sg.L || sg.S) r = r.replace(/<w:(sz|szCs) w:val="(\d+)"\/>/g, (mm, k, v) => '<w:' + k + ' w:val="' + Math.max(14, Number(v) + (sg.L ? 4 : -3)) + '"/>');
