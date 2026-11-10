@@ -8182,7 +8182,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611101215'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611101300'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13572,7 +13572,14 @@ async function dFixBreaks(blob){
     await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const z = await JSZip.loadAsync(blob); const f = z.file('word/document.xml'); if(!f) return blob;
     let x = await f.async('string'); const x0 = x;
+    // 10/11: stile «Normale» e stili di base (senza, Pages non sa da dove partire) e interlinea con regola esplicita (senza, Pages può leggerla come altezza fissa)
+    let stChanged = false; const sf = z.file('word/styles.xml');
+    if(sf){ let sx = await sf.async('string'); const sx0 = sx;
+      if(!/w:styleId="Normal"/.test(sx)) sx = sx.replace(/(<w:docDefaults>[\s\S]*?<\/w:docDefaults>)/, '$1<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont"><w:name w:val="Default Paragraph Font"/><w:uiPriority w:val="1"/><w:semiHidden/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:uiPriority w:val="99"/><w:semiHidden/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style>');
+      sx = sx.replace(/<w:spacing((?:(?!lineRule)[^>])*?w:line="\d+"(?:(?!lineRule)[^>])*?)\/>/g, '<w:spacing$1 w:lineRule="auto"/>');
+      if(sx !== sx0){ z.file('word/styles.xml', sx); stChanged = true; } }
     // 10/11: Pages e Google Documenti leggono la sola presenza di <w:b w:val="false"/>, <w:tblHeader w:val="false"/> ecc. come "attivo" (tutto grassetto/corsivo disordinato, ogni riga come intestazione ripetuta): gli attributi spenti si tolgono del tutto
+    x = x.replace(/<w:spacing((?:(?!lineRule)[^>])*?w:line="\d+"(?:(?!lineRule)[^>])*?)\/>/g, '<w:spacing$1 w:lineRule="auto"/>');
     x = x.replace(/<w:(?:b|bCs|i|iCs|keepNext|keepLines|tblHeader|cantSplit|pageBreakBefore|strike|caps|smallCaps|vanish)\s+w:val="(?:false|0)"\s*\/>/g, '');
     // l'ordine corretto delle proprietà del testo vuole rFonts per primo (Pages lo rispetta alla lettera)
     x = x.replace(/<w:rPr>((?:(?!<\/w:rPr>)[\s\S])*?)(<w:rFonts[^>]*\/>)((?:(?!<\/w:rPr>)[\s\S])*)<\/w:rPr>/g, (m, pre, rf, post) => pre ? '<w:rPr>' + rf + pre + post + '</w:rPr>' : m);
@@ -13588,7 +13595,7 @@ async function dFixBreaks(blob){
         if(sg.u && !/<w:u /.test(r)) r = r.replace('</w:rPr>', '<w:u w:val="single"/></w:rPr>');
         if(r === '<w:rPr></w:rPr>') r = '';
         return '<w:r>' + r + '<w:t xml:space="preserve">' + sg.t + '</w:t></w:r>'; }).join(''); });
-    if(!/<w:t[^>]*>[^<]*[\r\n]/.test(x)){ if(x === x0) return blob; z.file('word/document.xml', x); return await z.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}); }
+    if(!/<w:t[^>]*>[^<]*[\r\n]/.test(x)){ if(x === x0 && !stChanged) return blob; z.file('word/document.xml', x); return await z.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}); }
     x = x.replace(/<w:t((?:\s[^>]*)?)>([^<]*[\r\n][^<]*)<\/w:t>/g, (m, a, t) => t.replace(/^[\r\n]+|[\r\n]+$/g, '').split(/\r?\n/).map(l => '<w:t xml:space="preserve">' + l + '</w:t>').join('<w:br/>'));
     z.file('word/document.xml', x);
     return await z.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
