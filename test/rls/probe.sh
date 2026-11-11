@@ -46,7 +46,7 @@ for w in estr nonconf anon; do t $w no "legge il progetto" "select id from pee_a
 for w in owner cot collab; do t $w si "modifica data" "update pee_archivi set data='{\"x\":2}' where id='$A' returning id"; done
 for w in lett estr nonconf anon; do t $w no "modifica data" "update pee_archivi set data='{\"x\":2}' where id='$A' returning id"; done
 for w in cot collab; do t $w no "cambia titolo" "update pee_archivi set titolo='hack' where id='$A' returning id"; t $w no "cambia proprietario" "update pee_archivi set user_id=auth.uid() where id='$A' returning id"; t $w no "elimina progetto" "delete from pee_archivi where id='$A' returning id"; done
-for w in cot collab; do t $w no "mette nel cestino via meta (porta alla cancellazione definitiva)" "update pee_archivi set meta=meta||'{\"cest\":{\"at\":1,\"titolo\":\"x\"}}' where id='$A' returning id"; done
+for w in cot collab; do t $w no "mette nel cestino via meta (porta alla cancellazione definitiva)" "update pee_archivi set meta=meta||'{\"cest\":{\"at\":1,\"titolo\":\"x\"}}' where id='$A' returning (meta->'cest')"; done
 t owner si "elimina progetto" "delete from pee_archivi where id='$A' returning id"
 t estr no "crea progetto a nome di altri" "insert into pee_archivi(user_id,anno,titolo) values ('00000000-0000-0000-0000-00000000000a',2026,'falso') returning id"
 echo "--- pee_membri"
@@ -63,7 +63,7 @@ t cot no "crea un altro co-titolare" "insert into pee_membri(archivio_id,email,r
 t cot no "promuove a co-titolare" "update pee_membri set ruolo='cotitolare' where email='collab@x.it' returning id"
 t cot si "cambia ruolo lettore->collab" "update pee_membri set ruolo='collaboratore' where email='lett@x.it' returning id"
 t cot no "cambia l'EMAIL di un invito (passa l'accesso a un altro indirizzo)" "update pee_membri set email='estr@x.it' where email='lett@x.it' returning id"
-t cot no "riscrive owner_email mostrato agli invitati" "update pee_membri set owner_email='Falso (falso@x.it)' where email='lett@x.it' returning id"
+t cot si "corregge owner_email mostrato agli invitati (riparazione degli inviti, clFixOwners)" "update pee_membri set owner_email='Falso (falso@x.it)' where email='lett@x.it' returning id"
 t cot no "sposta un invito su un altro progetto" "update pee_membri set archivio_id='$B' where email='lett@x.it' returning id"
 t cot no "toglie se stesso/altro co-titolare via regola co-titolari" "delete from pee_membri where email='cot@x.it' and false returning id"
 t cot si "toglie un collaboratore" "delete from pee_membri where email='collab@x.it' returning id"
@@ -71,6 +71,18 @@ t collab si "esce dal progetto" "delete from pee_membri where email='collab@x.it
 t collab no "toglie un altro" "delete from pee_membri where email='lett@x.it' returning id"
 t owner no "invita con owner_id altrui" "insert into pee_membri(archivio_id,owner_id,email) values ('$A','00000000-0000-0000-0000-00000000000e','z@x.it') returning id"
 t estr no "invita sul progetto altrui" "insert into pee_membri(archivio_id,email) values ('$A','z@x.it') returning id"
+t cot no "cambia l'email dell'invito di un altro co-titolare" "update pee_membri set email='estr@x.it' where email='cot@x.it' returning id"
+t collab si "segna visto il proprio invito (funzione)" "select pee_segna_visto(id) from pee_membri where email='collab@x.it'; select 1"
+t owner si "cambia l'email di un invito (titolare)" "update pee_membri set email='nuovo@x.it' where email='lett@x.it' returning id"
+echo "--- cambio email dell'account: l'invito segue la persona"
+t collab si "prepara e completa il cambio (funzioni)" "select pee_prepara_cambio_email('collab-nuova@x.it'); select public.test_setmail('collab-nuova@x.it'); select count(*) from pee_membri where email='collab-nuova@x.it' and email_prima='collab@x.it' and pee_completa_cambio_email() >= 0 having count(*) >= 0; select 'invito passato' from pee_membri where email='collab-nuova@x.it'"
+echo "--- cestino: resta com'era se a scrivere non è il titolare"
+t collab si "salvataggio normale (data+meta senza cest) riesce" "update pee_archivi set data='{\"x\":3}', meta='{\"mode\":\"giovani\"}' where id='$A' returning id"
+t collab no "il segno del cestino compare" "update pee_archivi set meta=meta||'{\"cest\":{\"at\":1}}' where id='$A' returning (meta->'cest')"
+t owner si "il titolare mette nel cestino" "update pee_archivi set meta=meta||'{\"cest\":{\"at\":1}}' where id='$A' returning (meta->'cest')"
+$P -c "set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000a'" -c "update pee_archivi set meta=meta||'{\"cest\":{\"at\":5}}' where id='$A'" >/dev/null
+t collab si "progetto nel cestino: il salvataggio di un collaboratore non lo toglie dal cestino" "update pee_archivi set data='{\"x\":4}', meta='{\"mode\":\"giovani\"}' where id='$A' returning (meta->'cest')"
+$P -c "set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000a'" -c "update pee_archivi set meta=meta-'cest' where id='$A'" >/dev/null
 echo "--- pee_versioni"
 t owner si "vede le proprie versioni" "select id from pee_versioni where label='Del titolare'"
 t owner si "vede le versioni salvate dal collaboratore" "select id from pee_versioni where label='Del collaboratore'"
@@ -114,7 +126,9 @@ t estr si "ritira la propria in attesa" "delete from pee_archivio_nazionale wher
 t estr no "toglie la propria approvata" "delete from pee_archivio_nazionale where titolo='Approvata' returning id"
 t admin si "approva" "update pee_archivio_nazionale set stato='approvata' where titolo='In attesa' returning id"
 echo "--- altre"
-t anon si "legge pee_gruppi senza account" "insert into pee_gruppi values ('s','g') on conflict do nothing; select 1" 
+$P -c "insert into pee_gruppi values ('s','g') on conflict do nothing" >/dev/null
+t anon si "legge pee_gruppi senza account" "select 1 from pee_gruppi limit 1"
+t anon no "scrive in pee_gruppi senza account" "insert into pee_gruppi values ('s2','g2') returning 1"
 t estr no "legge pee_cambi_email" "select 1 from pee_cambi_email"
 t anon no "chiama pee_prepara_cambio_email" "select pee_prepara_cambio_email('a@b.it'); select 1"
 t estr no "legge i segreti del vault" "select decrypted_secret from vault.decrypted_secrets"

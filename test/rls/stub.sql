@@ -12,3 +12,5 @@ grant usage on schema public, auth to anon, authenticated, service_role;
 grant execute on all functions in schema auth to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
+-- solo per le prove: conferma del cambio di email (in Supabase lo fa il servizio di accesso)
+create or replace function public.test_setmail(m text) returns void language sql security definer as $$ update auth.users set email = m where id = auth.uid() $$;

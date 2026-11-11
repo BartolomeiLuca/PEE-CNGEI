@@ -5949,7 +5949,7 @@ function generateIndicazioneHTML(member) {
         ? `Quando non si vedono punti deboli può nascondersi la «trappola della comodità»: va tutto bene e nessuno si mette in gioco. Per dare coraggio a un profilo solido servono domande che facciano riflettere: «Cosa non sai ancora di te come capo?». Non basta un ambiente sicuro: serve un ambiente che chieda un po' di coraggio. Mostrare i propri dubbi non è una debolezza: è un segno di fiducia nel gruppo.`
         : deboli.length <= 3
           ? `Ci sono poche aree da far crescere, quindi si può lavorare in modo mirato. Scegli una di queste (${deboli.slice(0,2).map(d=>d.nome).join(', ')}) e proponi una situazione appena più difficile di ciò che ${nomeBreve} sa già fare: abbastanza vicina da riuscirci con un po' d'aiuto, abbastanza lontana da richiedere un rischio vero. La sfida la sceglie la persona, sapendo cosa la frena (è il principio «Challenge by Choice» del Vademecum CNGEI). Lo spazio sicuro garantisce che nessuno venga umiliato; lo spazio del coraggio chiede di esporsi comunque.`
-          : `Le aree da far crescere sono molte, quindi serve un ordine: prima fiducia, ascolto e nessun giudizio; solo dopo una sfida a piccoli passi. Non si possono saltare le tappe. Per ${prof.nome||'questa persona'}, parti da un punto di forza (${forti.length>0?forti[0].nome:'…'}) e usalo come appoggio per avvicinarti a una zona in ombra. Chi ha più esperienza è il primo a mettersi in gioco: non si chiede coraggio a chi è già in difficoltà.`
+          : `Le aree da far crescere sono molte, quindi serve un ordine: prima fiducia, ascolto e nessun giudizio; solo dopo una sfida a piccoli passi. Non si possono saltare le tappe. Per ${sEsc(prof.nome||'questa persona')}, parti da un punto di forza (${forti.length>0?forti[0].nome:'…'}) e usalo come appoggio per avvicinarti a una zona in ombra. Chi ha più esperienza è il primo a mettersi in gioco: non si chiede coraggio a chi è già in difficoltà.`
     }</div>
   </div>`;
 
@@ -10517,13 +10517,13 @@ function uscJsonConv(m,A,nk){ const n=JSON.parse(JSON.stringify(m)); delete n.de
   if(n.k==='att'){ const a=A||{}; Object.assign(n,{k:'nuova', tipo:'mom', t:(a.testo||'Attività').slice(0,80), lan:a.lancio||'', svi:a.sviluppo||'', con:a.conclusione||'', tpi:a.tipi||[], strum:((a.ax||{}).strum)||[], f:USC_BT.nuova[2].slice()}); delete n.pid; delete n.aid;
     const pb=[a.pianoB||''].concat(Object.values((a.ax||{}).pb||{})).filter(v=>String(v||'').trim()); if(pb.length) n.pb=pb.join('\n'); const ben=[a.incRischi,a.incAzioni].filter(v=>String(v||'').trim()); if(ben.length) n.ben=ben.join('\n'); if(((a.ax||{}).sic||{}).rischi) n.sic=a.ax.sic.rischi; }
   return n; }
-window.calJsonIn = function(){ if(!calCan()) return; uscJsonPick(o=>{
+window.calJsonIn = function(){ if(!(typeof calCan === 'function' && calCan())) return; uscJsonPick(o=>{   // 11/11: calCan e calRe ora sono visibili da qui (prima il caricamento dal file si fermava con un errore)
   if(o.pee==='momento'){ const u=uscCur(); const g=typeof USC_TAB==='number'?USC_TAB:0; if(!u||!g||!uscCan()){ showToast('Per caricare un momento apri un evento e una giornata, poi usa «Carica un momento»'); return; }
     const id=uscNewId('m'); const R=uscBlocks(u,g); const m=uscJsonConv(o.m||{},o.att,id); m.g=g; m.ord=R.length?(Number(R[R.length-1].m.ord)||0)+1:1; u.prog[id]=m; if(Array.isArray(o.bm)&&o.bm.length){ u.ax=u.ax||{}; u.ax.bm=u.ax.bm||{}; u.ax.bm[id]=o.bm; }
     saveData(true); USC_OPEN[id]=true; uscRe(); showToast('Caricato il momento «'+uscBlkTitle(m)+'» (copia)'); return; }
   const src=o.u||{}; const id=uscNewId('u'); const c=JSON.parse(JSON.stringify(src)); c.id=id; c.cr=Date.now(); delete c.del; c.testo=(c.testo||'Evento')+' (copia)';
   const P={}, BM={}; Object.keys(src.prog||{}).forEach(k=>{ const nk=uscNewId('m'); P[nk]=uscJsonConv(src.prog[k],(o.att||{})[k],nk); if(((src.ax||{}).bm||{})[k]) BM[nk]=src.ax.bm[k]; });
-  c.prog=P; c.ax=c.ax||{}; c.ax.bm=BM; uscMap()[id]=c; saveData(true); try{ uscNavSync(); }catch(e){} calRe(); showToast('Caricato «'+c.testo+'»: lo trovi in calendario alla sua data'); }); };
+  c.prog=P; c.ax=c.ax||{}; c.ax.bm=BM; uscMap()[id]=c; saveData(true); try{ uscNavSync(); }catch(e){} try{ calRe(); }catch(e){} showToast('Caricato «'+c.testo+'»: lo trovi in calendario alla sua data'); }); };
 async function uscExport(kind,arg){ const u=uscCur(); if(!u) return; try{ document.querySelectorAll('.usc-pm[open]').forEach(d=>d.open=false); }catch(e){}
   try{ showToast('Preparo il documento…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: '+e.message); return; }
   const x=u.ax, N=axN(x); const L=x.luogo||{}; const D=dxLib(); const ch=[]; const n=uscNG(u);
@@ -14897,9 +14897,9 @@ async function pjDedupe(){
       const full = []; for(const r of g){ const x = await dbGet(r.id); if(x) full.push({r, c: core(x.data||{})}); }
       const seen = {};
       full.sort((a, b) => (CL.ctx && a.r.id === CL.ctx.id ? -1 : CL.ctx && b.r.id === CL.ctx.id ? 1 : a.r.ts - b.r.ts));
-      for(const f of full){ if(seen[f.c]){ if(!(CL.ctx && f.r.id === CL.ctx.id)){ await dbDelete(f.r.id); n++; } } else seen[f.c] = true; }
+      for(const f of full){ if(seen[f.c]){ if(!(CL.ctx && f.r.id === CL.ctx.id)){ await dbTrash(f.r.id); n++; } } else seen[f.c] = true; }   // 11/11: nel cestino (recuperabile 30 giorni), non cancellata per sempre
     }
-    if(n){ CL._arc = null; clToast('Ho tolto ' + n + (n === 1 ? ' copia identica' : ' copie identiche') + ' dello stesso progetto dall’archivio.'); }
+    if(n){ CL._arc = null; clToast('Ho messo nel cestino ' + n + (n === 1 ? ' copia identica' : ' copie identiche') + ' dello stesso progetto.'); }
   }catch(e){ console.warn('pjDedupe', e); }
 }
 // colore e nome secondo la branca del progetto (Lupetti giallo, Esploratori verde, Rover rosso, staff blu)
@@ -15010,7 +15010,9 @@ const clEditRole = r => clEditOn() && (r === 'cotitolare' || r === 'collaborator
 const clRoleOpts = sel => Object.keys(CL_RUOLI).filter(k => !(CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare' && sel !== 'cotitolare')).map(k => { const off = CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare'; return `<option value="${k}" ${k===sel?'selected':''} ${off?'disabled':''}>${CL_RUOLI[k]}</option>`; }).join('');
 async function clRolesOk(){
   if(CL.roles !== undefined) return CL.roles;
-  try{ const {error} = await CL.sb.from('pee_membri').select('ruolo,visto_il').limit(1); CL.roles = !error; }catch(e){ CL.roles = false; }
+  // 11/11: «i ruoli non ci sono» si ricorda solo se lo dice il database (colonna mancante); un errore di rete non deve far passare tutti per lettori fino alla ricarica della pagina
+  try{ const {error} = await CL.sb.from('pee_membri').select('ruolo,visto_il').limit(1);
+    if(!error) CL.roles = true; else if(error.code === '42703' || error.code === 'PGRST204' || /column|colonna|does not exist|schema cache/i.test(error.message || '')) CL.roles = false; else return false; }catch(e){ return false; }
   return CL.roles;
 }
 async function dbMembri(id){
@@ -19588,6 +19590,7 @@ function calHTML(){
     </div>`;
 }
 function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ shKeep(p, () => { const h = calHTML(); p._ph = h; p.innerHTML = h; }); } }
+window.calRe = calRe; window.calCan = calCan;   // 11/11: usate anche dal primo script (pit stop, caricamento da file, attività dei percorsi)
 window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); { const h = calHTML(); $('panel-pp')._ph = h; $('panel-pp').innerHTML = h; } own('panel-pp'); };
 window.calOrg = function(i, j){ const k = i + '-' + j; window._calOpen[k] = !window._calOpen[k]; calRe(); };
 // duplica un contenitore (persone, luogo, spese, programma) una settimana dopo; le attività dei percorsi non si copiano: restano dove sono
@@ -19795,6 +19798,7 @@ function visHTML(){
 }
 window.shVis = function(){ ensurePanels(); SH.ppv = 'vis'; ownOff(); $('panel-pp').innerHTML = visHTML(); own('panel-pp'); };
 function visRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'vis' && p.classList.contains('active')) shKeep(p, () => { p.innerHTML = visHTML(); }); }
+window.visRe = visRe;
 function visSet(idx, dal, al){ const per = getAllPercorsi()[idx]; if(!per) return; per.tDal = dal; per.tAl = al; tmLinkPri(per); saveData(true); visRe(); }
 window.visEnd = function(idx, v){ if(v === '') return; const per = getAllPercorsi()[idx]; if(!per || window.BRO) return; const y0 = visY0(); const t = percTempo(per); const a = visIdx(t.dal, y0); const e = +v; visSet(idx, (a !== null && a <= e) ? visYM(a, y0) : visYM(e, y0), visYM(e, y0)); };
 window.visShift = function(idx, d){
