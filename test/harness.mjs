@@ -204,7 +204,8 @@ export async function loginAs(page, base, u){
   await page.goto(base, {waitUntil:'domcontentloaded'});
   await page.evaluate(u => { localStorage.setItem('bussola_tour_v3', '1'); localStorage.setItem('fake_sb_session', JSON.stringify({user:{id:u.id, email:u.email, user_metadata:u.meta||{}}, access_token:'t'})); }, u);
   page.__uidv = u.id;
-  await page.reload({waitUntil:'domcontentloaded'});
+  // su Firefox, se l'app sta ricaricando la pagina per conto suo (dopo l'uscita dall'account) la ricarica del test viene annullata: si riprova
+  for(let i = 0; i < 4; i++){ try{ await page.reload({waitUntil:'domcontentloaded'}); break; }catch(e){ if(i === 3 || !/NS_BINDING_ABORTED|interrupted|detached/i.test(String(e))) throw e; await page.waitForTimeout(700); } }
   await page.waitForTimeout(800);
 }
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
