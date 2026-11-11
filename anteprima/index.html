@@ -5199,7 +5199,7 @@ function getCdGAgenda() {
   if(STAFF_MEMBERS.length > 0) {
     punti.push({
       titolo: 'Colloqui individuali',
-      contenuto: `Programmare entro il prossimo mese un colloquio individuale con: ${STAFF_MEMBERS.join(', ')}. Focus: dove vogliono andare come educatori nel prossimo ciclo.`
+      contenuto: `Programmare entro il prossimo mese un colloquio individuale con: ${STAFF_MEMBERS.map(sEsc).join(', ')}. Focus: dove vogliono andare come educatori nel prossimo ciclo.`
     });
   }
 
@@ -5787,7 +5787,7 @@ function generateIndicazioneHTML(member) {
   });
 
   if(forti.length === 0 && deboli.length === 0) {
-    return `<div class="indicazione-box"><h4>Indicazione di Percorso — ${member}</h4>
+    return `<div class="indicazione-box"><h4>Indicazione di Percorso — ${sEsc(member)}</h4>
       <p style="font-size:12px;color:var(--ink-faint)">Completa l'osservazione per generare l'indicazione.</p></div>`;
   }
 
@@ -5803,7 +5803,7 @@ function generateIndicazioneHTML(member) {
   const ruoloLabel = {CU:'Capo Unità', VCU:'Vice Capo Unità', SiS:'Senior in Servizio'}[prof.ruolo] || 'educatore';
   const formazioneLabel = {nessuna:'senza formazione pregressa', base:'con corso Base completato', tdm:'con Testa di Moro', wb:'con Wood Badge'}[prof.formazione] || '';
   const isAlta_formazione = prof.formazione === 'wb' || prof.formazione === 'tdm';
-  const nomeBreve = member.split(' ')[0];
+  const nomeBreve = sEsc(member.split(' ')[0]);   // 11/11: finisce nell'HTML della pagina
   const pF=clusterForti.P.length, cF=clusterForti.C.length, sF=clusterForti.S.length;
   const pD=clusterDeboli.P.length, cD=clusterDeboli.C.length, sD=clusterDeboli.S.length;
   const totF=forti.length, totD=deboli.length;
@@ -5953,7 +5953,7 @@ function generateIndicazioneHTML(member) {
     }</div>
   </div>`;
 
-  return `<div class="indicazione-box"><h4>Indicazione di Percorso — ${member}</h4>${testo}${bsAdulto}</div>`;
+  return `<div class="indicazione-box"><h4>Indicazione di Percorso — ${sEsc(member)}</h4>${testo}${bsAdulto}</div>`;
 }
 
 // ── Evoluzione nel tempo (staff): scatti, cambi colorati, panoramica ──
@@ -5998,9 +5998,9 @@ function tlChangesHTML(entry){
 function renderTimelineHTML() {
   if(!CURRENT_MEMBER) return `<div class="staff-panel active"><p style="padding:16px;font-size:13px;color:var(--ink-mid)">Scegli una persona dell’elenco per vedere come cambia nel tempo.</p></div>`;
   const timeline = staffTimeline[CURRENT_MEMBER] || [];
-  const mem = CURRENT_MEMBER.replace(/'/g, "\\'");
+  const mem = sEsc(JSON.stringify(CURRENT_MEMBER));   // 11/11: stringa JavaScript già protetta, da usare dentro onclick="..." (prima solo gli apici venivano protetti)
   let h = `<div class="staff-panel active">`;
-  h += `<div class="staff-section-header">Evoluzione nel tempo — ${CURRENT_MEMBER}</div>
+  h += `<div class="staff-section-header">Evoluzione nel tempo — ${sEsc(CURRENT_MEMBER)}</div>
     <p class="tl-intro">Ogni volta che osservi qualcosa di nuovo, aggiungi uno <b>scatto</b>: una data, una nota e i percorsi che sono cambiati. Qui sotto vedi cosa è cambiato e come sta andando.</p>`;
   h += `<details class="tl-new" id="tl-new" ${timeline.length ? '' : 'open'}><summary>+ Nuovo scatto</summary>
     <div class="tl-new-b">
@@ -6009,7 +6009,7 @@ function renderTimelineHTML() {
       <textarea id="tl-note-input" placeholder="Es: Alla riunione ha proposto lui come dividere i compiti e ha ascoltato le idee degli altri."></textarea>
       <label class="tl-lb">Aggiorna i percorsi che sono cambiati <span class="tl-opt">(lascia «invariato» sugli altri)</span></label>
       ${tlNewFormHTML()}
-      <button class="btn-primary" onclick="addTimelineEntry('${mem}')" style="margin-top:12px">Salva lo scatto →</button>
+      <button class="btn-primary" onclick="addTimelineEntry(${mem})" style="margin-top:12px">Salva lo scatto →</button>
     </div></details>`;
   if(!timeline.length){
     h += `<div class="empty-state"><div class="empty-txt">Nessuno scatto ancora.<br>Aggiungi il primo momento osservato.</div></div>`;
@@ -6017,7 +6017,7 @@ function renderTimelineHTML() {
     h += `<div class="staff-section-header" style="margin-top:18px">Scatti</div>`;
     [...timeline].sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(entry => {
       h += `<div class="tl-card"><div class="tl-card-h"><span class="tl-date">${tlDateLbl(entry.data)}</span>
-        <button class="tl-x" title="Elimina questo scatto" aria-label="Elimina questo scatto" onclick="removeTimelineEntry('${mem}',${timeline.indexOf(entry)})">✕ Elimina</button></div>
+        <button class="tl-x" title="Elimina questo scatto" aria-label="Elimina questo scatto" onclick="removeTimelineEntry(${mem},${timeline.indexOf(entry)})">✕ Elimina</button></div>
         ${tlChangesHTML(entry)}
         ${entry.note ? `<div class="tl-note">${entry.note}</div>` : ''}</div>`;
     });
@@ -17827,7 +17827,8 @@ function navHTML(){
       const open = SH._gt[G.g] !== undefined ? SH._gt[G.g] : G.g === cg;
       return `<button type="button" class="sh-sg sh-gh${open ? ' open' : ''}" aria-expanded="${open}" onclick="shGrp('${G.g}')"><span class="sh-tri" aria-hidden="true"></span>${esc(G.g)}</button>` + (open ? `<div class="sh-gi">${vis.map(i => itemBtn(i)).join('')}</div>` : ''); }).join('');
   }
-  return navItems().map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
+  // 11/11: anche nei menu staff e Progetto Personale si rispetta la condizione di visibilità (prima «← Programmazione di Unità» compariva sempre e dava un errore)
+  return navItems().filter(i => i.g || navCond(i)).map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
 }
 function bbHTML(){
   const pp = isPP();
