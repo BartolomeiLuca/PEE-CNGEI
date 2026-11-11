@@ -1093,6 +1093,8 @@ body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .vid-list{padding:6px 12px 10px}
 .faq-home{padding:4px 20px 16px}
 @media(max-width:420px){.hdr .save-mini{display:none}.hdr-actions{gap:4px}.hdr-actions .hdr-btn{padding:6px 7px;min-width:36px}.hdr .cl-hdrbtn .cl-word,.hdr .fb-lbl{font-size:12px}}
+/* 11/11 (audit): sugli schermi più stretti (320px) la barra in alto di chi vede anche «Suggerimenti?» usciva di 3px e faceva scorrere la pagina */
+@media(max-width:340px){.hdr-actions{gap:2px}.hdr-actions .hdr-btn{min-width:34px;padding-left:5px;padding-right:5px}}
 .vid-row{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--border-light);padding:10px 8px;cursor:pointer;text-align:left;font:inherit;color:var(--ink);border-radius:8px}
 .vid-row:last-of-type{border-bottom:0}.vid-row:hover,.vid-row:focus-visible{background:var(--green-pale)}
 .vid-ic{flex:0 0 28px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;padding-left:2px;transition:background .15s,color .15s}
@@ -8211,7 +8213,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611111432'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611111953'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -14344,7 +14346,7 @@ if('serviceWorker' in navigator){
   <p class="cl-note" style="margin:0 0 14px">Scegli cosa fare: se accedi, quello che hai già fatto qui viene portato nel tuo archivio.</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="cl-btn" id="nac-login" onclick="nacClose();clOpen()">Accedi</button><button class="cl-btn ghost" id="nac-stay" onclick="nacClose()">Continuo senza accesso</button></div></div></div>
 </div>
-<div class="cl-ov" id="cl-ov" onclick="if(event.target===this)clClose()">
+<div class="cl-ov" id="cl-ov" role="dialog" aria-modal="true" aria-labelledby="cl-title" onclick="if(event.target===this)clClose()">
   <div class="cl-box"><div class="cl-hd"><h3 id="cl-title">Account</h3><button class="cl-x" onclick="clClose()" aria-label="Chiudi">×</button></div>
   <div class="cl-bd" id="cl-body"></div></div>
 </div>
@@ -16499,6 +16501,8 @@ function nacLater(){ window._nacLater = true; document.querySelectorAll('.nac-st
 // ad ogni rientro sulla pagina (apertura, finestra ripristinata dal browser, ritorno dopo una pausa) chi non è collegato/a deve scegliere: accedere o restare senza accesso
 function nacOff(){ try{ return !!localStorage.getItem('bussola_nac_off'); }catch(e){ return false; } }
 function nacAtRisk(){ try{ return !CL.user && !window.BRO && !window._exNoAcc && !CL.recovery && !CL.linkErr && typeof clOn==='function' && clOn() && !!CL.sb && (clHasLocal() || !!localStorage.getItem('bussola_had_account')); }catch(e){ return false; } }
+// 11/11 (audit): Esc chiude le finestre del cloud come il clic sullo sfondo (prima si chiudevano solo con il mouse)
+document.addEventListener('keydown', e => { try{ if(e.key !== 'Escape' || e.defaultPrevented) return; const n = document.getElementById('nac-ov'); if(n && n.classList.contains('show')){ nacClose(); return; } const o = document.getElementById('cl-ov'); if(o && o.classList.contains('show')) clClose(); }catch(x){} });
 function nacClose(){ const o = document.getElementById('nac-ov'); if(o) o.classList.remove('show'); }
 function nacReturn(){
   try{
