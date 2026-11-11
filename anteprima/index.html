@@ -11358,6 +11358,26 @@ function gGo(k){
     const de = document.documentElement, y = window.scrollY, mh = de.style.minHeight; de.style.minHeight = de.scrollHeight + 'px';
     const h0 = el.style.height; el.style.height = 'auto'; let n = el.scrollHeight + bord; const mx2 = parseFloat(el.getAttribute('data-maxh')) || 0; if(mx2 && n > mx2) n = mx2; el.style.height = (n > 0 ? n : h0) + 'px'; el.style.overflowY = (mx2 && el.scrollHeight + bord > mx2) ? 'auto' : 'hidden';
     de.style.minHeight = mh; if(window.scrollY !== y) window.scrollTo(0, y); }
+  // 11/11 · più campi insieme: prima tutte le misure, poi tutte le scritture. Stesso risultato di fit() campo per campo, ma la pagina
+  // si ridisegna poche volte invece che una per campo (con molte attività aperte Firefox restava fermo per molti secondi dopo ogni ridisegno).
+  function fitMany(list){ try{
+    const M = []; const seen = new Set();
+    list.forEach(el => { if(seen.has(el) || !ok(el) || !el.isConnected || el.offsetParent === null) return; seen.add(el); const cs = getComputedStyle(el);
+      M.push({el, bord: (parseFloat(cs.borderTopWidth)||0) + (parseFloat(cs.borderBottomWidth)||0), sh: el.scrollHeight, oh: el.offsetHeight, mxh: parseFloat(el.getAttribute('data-maxh')) || 0}); });
+    if(M.length < 2){ M.forEach(m => fit(m.el)); return; }
+    const rest = [];
+    M.forEach(m => { const el = m.el, need = m.sh + m.bord;
+      if(m.mxh && need > m.mxh){ el.style.height = m.mxh + 'px'; el.style.overflowY = 'auto'; }
+      else if(need > m.oh + 1){ el.style.height = need + 'px'; el.style.overflowY = 'hidden'; }
+      else if(el.value || el.style.height) rest.push(m); });
+    if(!rest.length) return;
+    // quelli che possono accorciarsi: si misurano tutti insieme tenendo ferma l'altezza della pagina
+    const de = document.documentElement, y = window.scrollY, mh = de.style.minHeight; de.style.minHeight = de.scrollHeight + 'px';
+    const h0 = rest.map(m => m.el.style.height); rest.forEach(m => { m.el.style.height = 'auto'; });
+    const ns = rest.map(m => m.el.scrollHeight + m.bord);
+    rest.forEach((m, i) => { const el = m.el; let n = ns[i]; const over = !!(m.mxh && n > m.mxh); if(over) n = m.mxh; if(n > 0) el.style.height = n + 'px'; else el.style.height = h0[i]; el.style.overflowY = over ? 'auto' : 'hidden'; });
+    de.style.minHeight = mh; if(window.scrollY !== y) window.scrollTo(0, y);
+  }catch(e){ try{ list.forEach(fit); }catch(x){} } }
   // ── i campi a riga singola diventano campi che si allungano da soli (stessa grafica, vanno a capo quando serve) ──
   const NOCONV = /mail|\btel\b|telefono|link|\burl\b|sito|social|iban|\bcf\b|sedeCF|codice|password|\b(lat|lon|km)\b|importo|prezzo|\bcap\b|\bpec\b/i;
   const CP = ['display','width','min-width','max-width','flex-grow','flex-shrink','flex-basis','grid-column-start','grid-column-end','align-self','justify-self','margin-top','margin-right','margin-bottom','margin-left','padding-top','padding-right','padding-bottom','padding-left',
@@ -11373,7 +11393,7 @@ function gGo(k){
     const ml = parseInt(el.getAttribute('maxlength')||'0', 10); if(ml && ml <= 12) return false;
     if(el.closest('#welcome-screen,#auth-box,.auth-box,#cl-auth')) return false;
     return true; }catch(e){ return false; } }
-  function convList(list){ try{
+  function convList(list){ try{ const made = [];
     const snaps = list.filter(el => convOk(el) && el.offsetParent !== null).map(el => { const cs = getComputedStyle(el), par = el.parentElement; let pw = 0; if(par){ const pc = getComputedStyle(par); pw = par.clientWidth - (parseFloat(pc.paddingLeft)||0) - (parseFloat(pc.paddingRight)||0); }
       const o = {}; CP.forEach(p => { o[p] = cs.getPropertyValue(p); }); return {el, o, w: el.offsetWidth, h: el.offsetHeight, pw, act: document.activeElement === el, ss: el.selectionStart, se: el.selectionEnd}; });
     snaps.forEach(s => { const el = s.el; if(!el.isConnected) return; const t = document.createElement('textarea');
@@ -11386,15 +11406,15 @@ function gGo(k){
       t.style.setProperty('min-height', s.h + 'px'); t.style.setProperty('height', s.h + 'px'); t.style.setProperty('resize', 'none'); t.style.setProperty('overflow', 'hidden'); t.style.setProperty('vertical-align', 'top'); t.style.setProperty('overflow-wrap', 'anywhere');
       el.replaceWith(t);
       if(s.act){ try{ t.focus(); t.setSelectionRange(s.ss, s.se); }catch(e){} }
-      fit(t); }); }catch(e){} }
+      made.push(t); }); fitMany(made); }catch(e){} }
   function convIn(root){ try{ const r = root && root.querySelectorAll ? root : document; const L = [...r.querySelectorAll('input')]; if(r.tagName === 'INPUT') L.push(r); if(L.length) convList(L); }catch(e){} }
   document.addEventListener('focusin', e => { const t = e.target; if(t && t.tagName === 'INPUT' && convOk(t)) convList([t]); }, true);
   document.addEventListener('keydown', e => { const t = e.target; if(t && t.tagName === 'TEXTAREA' && t.dataset.conv === '1' && e.key === 'Enter' && !e.isComposing){ e.preventDefault(); t.dispatchEvent(new Event('change', {bubbles:true})); } }, true);
   document.addEventListener('input', e => { const t = e.target; if(t && t.tagName === 'TEXTAREA' && t.dataset.conv === '1' && /[\r\n]/.test(t.value)){ const p = t.selectionStart; t.value = t.value.replace(/\s*[\r\n]+\s*/g, ' '); try{ t.setSelectionRange(p, p); }catch(er){} } }, true);
   // rete di sicurezza: un campo nascosto (scheda chiusa, pagina appena riaperta) non si può misurare; appena torna visibile lo si allunga
-  const io = ('IntersectionObserver' in window) ? new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting) fit(en.target); }), {rootMargin:'300px'}) : null;
+  const io = ('IntersectionObserver' in window) ? new IntersectionObserver(es => fitMany(es.filter(en => en.isIntersecting).map(en => en.target)), {rootMargin:'300px'}) : null;
   function watch(el){ try{ if(io && ok(el) && !el._iow){ el._iow = 1; io.observe(el); } }catch(e){} }
-  function fitIn(root){ try{ convIn(root); }catch(e){} try{ (root && root.querySelectorAll ? root : document).querySelectorAll('textarea').forEach(el => { watch(el); fit(el); }); }catch(e){} try{ window.spIn && spIn(root && root.querySelectorAll ? root : document); }catch(e){} }
+  function fitIn(root){ try{ convIn(root); }catch(e){} try{ const L = [...(root && root.querySelectorAll ? root : document).querySelectorAll('textarea')]; L.forEach(watch); fitMany(L); }catch(e){} try{ window.spIn && spIn(root && root.querySelectorAll ? root : document); }catch(e){} }
   window.taFit = fit; window.taFitAll = () => fitIn(document); window.taFitIn = el => { try{ if(el) requestAnimationFrame(() => fitIn(el)); }catch(e){} };
   // controllo ortografico del browser, in italiano, sui testi liberi (non su mail, telefoni, numeri, indirizzi web e codici)
   const NOSP = /mail|\btel\b|telefono|link|\burl\b|sito|social|iban|\bcf\b|sedeCF|codice|password|\b(lat|lon|km)\b|importo|prezzo/i;
@@ -11413,7 +11433,9 @@ function gGo(k){
   document.addEventListener('toggle', e => { if(e.target && e.target.open) requestAnimationFrame(() => fitIn(e.target)); }, true);
   let raf = 0, pend = new Set();
   const mo = new MutationObserver(ms => { ms.forEach(m => m.addedNodes && m.addedNodes.forEach(n => { if(n.nodeType === 1){ pend.add(n); if(n.tagName === 'INPUT' || n.querySelector('input')) convIn(n); try{ spIn(n); }catch(e){} } }));
-    if(!raf) raf = requestAnimationFrame(() => { raf = 0; const L = [...pend]; pend.clear(); L.forEach(n => { if(n.tagName === 'TEXTAREA'){ watch(n); fit(n); try{ spIn(n); }catch(e){} } else { if(n.tagName === 'INPUT') convIn(n); else fitIn(n); } }); }); });
+    if(!raf) raf = requestAnimationFrame(() => { raf = 0; const L = [...pend]; pend.clear(); const T = [];   // 11/11: tutti i campi arrivati in questo giro si allungano insieme
+      L.forEach(n => { if(!n.isConnected) return; if(n.tagName === 'TEXTAREA'){ watch(n); T.push(n); try{ spIn(n); }catch(e){} } else if(n.tagName === 'INPUT') convIn(n); else { try{ convIn(n); }catch(e){} try{ n.querySelectorAll('textarea').forEach(el => { watch(el); T.push(el); }); }catch(e){} try{ spIn(n); }catch(e){} } });
+      fitMany(T); }); });
   const start = () => { try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){} fitIn(document); };
   if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { document.querySelectorAll('textarea').forEach(el => { if(ok(el)){ el.style.height = ''; } }); fitIn(document); }, 150); });
@@ -15089,7 +15111,7 @@ async function clConflict(choice){
       await clOpenProject(id);
     } else {
       try{ const r = await dbGet(id); if(r) await dbSnap(id, r.data||{}, 'Versione sostituita'); }catch(e){}
-      clClose(); await clPush(true); clToast('Fatto: la versione sostituita è in Versioni precedenti');
+      clClose(); await clPush('mine'); clToast('Fatto: la versione sostituita è in Versioni precedenti');
     }
   }catch(e){ clToast('Errore: '+clErr(e)); }
 }
@@ -15311,14 +15333,18 @@ async function clMergeNow(){
   }
   localStorage.setItem(CL_LS, JSON.stringify(merged));
   CL.ctx.ts = ts; CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(merged);
-  if(clSameData(merged, local)){ CL.pending = false; clSetStatus('ok'); return; }
+  if(clSameData(merged, local)){ CL.pending = false; clSetStatus('ok'); return 'same'; }
   // se cambiano solo testi che l'app ricalcola da sola, li aggiorno senza ricaricare la pagina
   const dp = clDiffPaths(local, merged);
-  if(dp.length && dp.every(x => CL_QUIET.test(x)) && clApplyQuiet(merged, dp)){ CL.pending = false; clSetStatus('ok'); return; }
+  if(dp.length && dp.every(x => CL_QUIET.test(x)) && clApplyQuiet(merged, dp)){ CL.pending = false; clSetStatus('ok'); return 'same'; }
   clSoftReload(out.conf.length
     ? 'Ho unito le modifiche. In ' + (out.conf.length === 1 ? '1 punto' : out.conf.length + ' punti') + ' avevate cambiato la stessa cosa: ho tenuto la tua, l\'altra è in Versioni precedenti.'
     : 'Aggiornato con le modifiche arrivate ora');
+  return 'applied';
 }
+// prima di un'operazione che scrive anche in un altro progetto (cicli): salva subito; true = la pagina è stata appena aggiornata con il lavoro di un'altra persona e l'operazione va ripetuta
+async function clPushSync(){ let r = null; try{ r = await clPush(true); }catch(e){} if(r === 'merged'){ try{ showToast('Il progetto è stato appena aggiornato con le modifiche di un’altra persona: controlla e ripeti l’operazione.'); }catch(e){} return true; } return false; }
+window.clPushSync = clPushSync;
 // prende la versione del cloud così com'è (nessuna modifica di una persona da unire)
 async function clAdoptRemote(){
   if(!CL.ctx || window.BRO) return;
@@ -16216,7 +16242,13 @@ async function clNew(){
 async function clOpenProject(id, extra){
   if(!CL.ctx && clHasLocal() && !confirm('Il lavoro su questo dispositivo non è salvato nel cloud e verrà sostituito dal progetto scelto. Continuare?')) return;
   try{
-    if(CL.ctx && CL.ctx.id !== id && CL.pending){ clToast('Salvo il lavoro attuale…'); await clPush(); }
+    if(CL.ctx && CL.ctx.id !== id && !window.BRO){
+      // 11/11: prima si scrive ciò che è ancora in memoria e lo si manda al cloud subito (prima, con un salvataggio in corso o una modifica altrui in arrivo, si passava oltre e il lavoro non salvato andava perso)
+      // (solo se il progetto è sullo schermo: nella pagina dei progetti la memoria può essere più vecchia di ciò che è arrivato dal cloud)
+      try{ const ma = document.getElementById('main-app'); if(ma && ma.style.display !== 'none' && typeof saveData === 'function' && typeof MODE !== 'undefined' && MODE){ clearTimeout(_saveTimer); saveData(true); } }catch(e){}
+      if(CL.pending || CL.ctx.dirty){ clToast('Salvo il lavoro attuale…'); try{ await clPush(true); }catch(e){} }
+      if(CL.ctx && CL.pending && !confirm('Non sono riuscito a salvare nel cloud le ultime modifiche di «' + (CL.ctx.titolo || 'questo progetto') + '» (controlla la connessione).\n\nOK = apro comunque l’altro progetto (le ultime modifiche non salvate si perdono).\nAnnulla = resto qui.')) return;
+    }
     const r = await dbGet(id);
     if(!r){ clToast('Progetto non trovato'); return; }
     let ppMsg = ''; try{ if(window.shPpBridge && !extra){ const b = await shPpBridge(r); if(b){ r.data = b.data; ppMsg = b.msg ? ' ' + b.msg : ''; } } }catch(e){ console.error(e); }
@@ -16279,7 +16311,8 @@ window.cloudDetach = clDetach;
 // risalva da sola alcune cose (che possono venire diverse da un dispositivo all'altro): se le mandassimo,
 // due dispositivi aperti sullo stesso progetto si rincorrerebbero all'infinito.
 let _clTouched = false, _clUserAt = 0, _clLast = null;
-['input','change','click'].forEach(ev => document.addEventListener(ev, e => { if(e.isTrusted){ _clTouched = true; _clUserAt = Date.now(); } }, true));
+// 11/11: contano anche i trascinamenti (drop, dragend, pointerup) e la tastiera: un trascinamento fatto dopo una pausa non lasciava traccia e non arrivava al cloud
+['input','change','click','drop','dragend','pointerup','keydown'].forEach(ev => document.addEventListener(ev, e => { if(e.isTrusted){ _clTouched = true; _clUserAt = Date.now(); } }, true));
 // annoto quali campi ha cambiato davvero la persona: servono a decidere chi vince quando due versioni toccano lo stesso campo
 function clNoteUserPaths(){
   try{
@@ -16287,7 +16320,10 @@ function clNoteUserPaths(){
     if(_clLast && CL.ctx && Date.now() - _clUserAt < 10000){
       const up = new Set(CL.ctx.upaths || []);
       clDiffPaths(_clLast, now).forEach(x => up.add(x));
-      CL.ctx.upaths = [...up].slice(-400);
+      let ul = [...up];
+      // 11/11: prima oltre i 400 campi si perdevano i più vecchi (e nell'unione con il lavoro altrui tornavano indietro): ora si raggruppano per ramo
+      for(let dep = 4; ul.length > 400 && dep >= 1; dep--) ul = [...new Set(ul.map(x => x.split('/').slice(0, dep + 1).join('/')))];
+      CL.ctx.upaths = ul;
     }
     _clLast = now;
   }catch(e){}
@@ -16306,10 +16342,21 @@ window.cloudQueuePush = clQueuePush;
 function clShrinks(d, base){ try{ const a = JSON.stringify(d||{}).length, b = JSON.stringify(base||{}).length; return b > 3000 && a < b * 0.35; }catch(e){ return false; } }
 async function clPush(force){
   if(window._pjBusy) return;
-  if(window.BRO || !CL.sb || !CL.user || !CL.ctx || CL.busy) return;
+  if(window.BRO || !CL.sb || !CL.user || !CL.ctx) return;
+  // 11/11: il salvataggio «subito» aspetta quello già in corso (prima tornava senza aver salvato)
+  if(CL.busy){ if(!force) return; for(let i = 0; i < 50 && CL.busy; i++) await new Promise(r => setTimeout(r, 200)); if(CL.busy || !CL.ctx) return; }
   CL.busy = true; clearTimeout(CL.timer);
   let raw = null;
   try{
+    if(force && force !== 'mine'){
+      // 11/11: anche il salvataggio «subito» non cancella ciò che un'altra persona ha salvato nel frattempo: lo unisce.
+      // Ritorna 'merged' se la pagina è stata aggiornata con le novità (chi chiama deve far ripetere l'operazione).
+      let t0 = null; try{ t0 = await dbTsRaw(CL.ctx.id); }catch(e){}
+      if(t0){ raw = t0.raw;
+        if(t0.ts > CL.ctx.ts && clBaseGet()){
+          let mr = null; try{ mr = await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; }
+          CL.busy = false; return mr === 'applied' ? 'merged' : undefined; } }
+    }
     if(!force){
       const t0 = await dbTsRaw(CL.ctx.id); const cur = t0 && t0.ts; raw = t0 && t0.raw;
       const mine = (CL.ctx.upaths||[]).length > 0 || (CL.ctx.udirty && !Array.isArray(CL.ctx.upaths));
@@ -16568,6 +16615,11 @@ function clRestore(inp){
       }
       const d = j.data || j;
       if(typeof d !== 'object' || !('obs' in d || 'STAFF_MEMBERS' in d || 'scheda' in d)) throw new Error('formato non riconosciuto');
+      if(CL.user){
+        // 11/11: con l'account il file non prende più il posto del progetto aperto (al primo salvataggio lo avrebbe riscritto anche nel cloud): si aggiunge all'archivio come copia
+        const y = Number(j.anno) || Number((CL.ctx || {}).anno) || new Date().getFullYear();
+        CL.bundle = {app:'PEE CNGEI', esportato:j.esportato || null, progetti:[{anno:y, titolo:String(j.titolo || 'Progetto') + ' (caricato)', meta:j.meta || clMeta(d), data:d}]}; inp.value = ''; clShowBundle(); return;
+      }
       if(!confirm('Il file sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
       localStorage.setItem(CL_LS, JSON.stringify(d));
       try{ if(d.MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
@@ -18480,7 +18532,7 @@ window.ncMake = async function(){
   const nome = String(($('nc-n') || {}).value || '').trim() || 'Nuovo ciclo', dal = ($('nc-d') || {}).value || '', al = ($('nc-a') || {}).value || '';
   if(dal && al && al < dal){ showToast('La fine viene prima dell’inizio'); if(btn) btn.disabled = false; return; }
   try{
-    saveData(true); try{ await clPush(true); }catch(e){}
+    saveData(true); if(await clPushSync()){ if(btn) btn.disabled = false; return; }
     const B = await ncBuild(nome, dal, al); const y = B.y, titolo = B.titolo, d = B.d;
     const r = await dbInsert(y, titolo, d, clMeta(d));
     SH.rows = null; SH._ay = null; CL.ctx = null; try{ localStorage.removeItem(CL_LS); }catch(e){}
@@ -18511,7 +18563,7 @@ window.uscCicloGo = async function(id, tid){
   modalClose();
   const ev = JSON.parse(JSON.stringify(u)); Object.keys(ev.prog || {}).forEach(k => { const m = ev.prog[k]; if(m && m.k === 'att' && m.pid && m.aid) delete ev.prog[k]; });
   try{
-    saveData(true); try{ await clPush(true); }catch(e){}
+    saveData(true); if(await clPushSync()) return;
     let dest = '';
     if(tid === '__new'){ const B = await ncBuild(nome, dal, al); const d = B.d; d.scheda.bozzaCiclo = true; d.pris = {}; delete d.scheda.ered; d.scheda.uscite = {}; d.scheda.uscite[ev.id] = ev; await dbInsert(B.y, B.titolo, d, clMeta(d)); dest = nome; }
     else { await ccEdit(tid, sc => { sc.uscite = (sc.uscite && typeof sc.uscite === 'object' && !Array.isArray(sc.uscite)) ? sc.uscite : {}; sc.uscite[ev.id] = ev; dest = (sc.ciclo || {}).nome || ''; }, 'Prima di spostare un evento da un altro ciclo'); }
@@ -18538,7 +18590,7 @@ async function cicloPortaIn(k, idx, tid){
     const iso = uscDayIso(u, Number(m.g) || 1); const O = m.obj || {}; const per0 = idx >= 0 ? getAllPercorsi()[idx] : null;
     const pid = (per0 && per0.percorsoId) || O.pid; if(!pid){ showToast('Scegli prima il percorso dell’attività'); return; }
     if(m.portata && m.portata.id === tid && !confirm('Questa attività è già stata portata in «' + (m.portata.nome || 'quel ciclo') + '». Vuoi aggiungerla di nuovo?')) return;
-    saveData(true); try{ await clPush(true); }catch(e){}
+    saveData(true); if(await clPushSync()) return;
     const g = await dbGet(tid); if(!g || !g.data){ showToast('Non trovo quel ciclo'); return; }
     const nd = JSON.parse(JSON.stringify(g.data)); const sc = nd.scheda = nd.scheda || {}; const cic = sc.ciclo || {};
     sc.percorsiExtra = Array.isArray(sc.percorsiExtra) ? sc.percorsiExtra : [];
@@ -18598,7 +18650,7 @@ async function attMoveRun(p, j, tid, pid, nw){
       if(to < 0){ const cic = scheda.ciclo || {}; scheda.percorsiExtra = Array.isArray(scheda.percorsiExtra) ? scheda.percorsiExtra : []; const np = newPercorso(null); np.percorsoId = pid; np.ambito = pid[0]; np.attivo = true; np.tDal = cic.dal || src.tDal || ''; np.tAl = cic.al || src.tAl || ''; np.attivita = []; scheda.percorsiExtra.push(np); to = getAllPercorsi().findIndex(q => q && q.percorsoId === pid); }
       if(to < 0 || to === p) return; attMoveTo(p, j, to, true); showToast('Attività spostata nel percorso ' + pid); return;
     }
-    saveData(true); try{ await clPush(true); }catch(e){}
+    saveData(true); if(await clPushSync()) return;
     let g, nd, sc, cic;
     if(tid === '__new'){ const B = await ncBuild(nw.nome, nw.dal, nw.al); nd = B.d; nd.scheda.bozzaCiclo = true; nd.pris = {}; delete nd.scheda.ered; g = {titolo:B.titolo, data:nd, raw:null, y:B.y}; sc = nd.scheda; cic = sc.ciclo || {}; }
     else { g = await dbGet(tid); if(!g || !g.data){ showToast('Non trovo quel ciclo'); return; }
@@ -18633,7 +18685,7 @@ window.cicloAskGo = async function(k, idx, how, tid){
     if(!P && idx < 0){ showToast('Scegli prima il percorso dell’attività'); return; }
     const per0 = idx >= 0 ? getAllPercorsi()[idx] : null; const pid = (per0 && per0.percorsoId) || (P && P.id); if(!pid){ showToast('Scegli prima il percorso dell’attività'); return; }
     const y0 = visY0(); const ix = visIdx(iso.slice(0, 7), y0); const dal = iso.slice(0, 7); const al = ix !== null ? visYM(Math.min(11, ix + 2), y0) : dal;
-    saveData(true); try{ await clPush(true); }catch(e){}
+    saveData(true); if(await clPushSync()) return;
     const B = await ncBuild('Ciclo da progettare', dal, al); const d = B.d;
     const per = newPercorso(null); per.percorsoId = pid; per.ambito = pid[0]; per.attivo = true; per.tDal = dal; per.tAl = al;
     per.attivita = [{testo:uscBlkTitle(m), link:'', lancio:'', sviluppo:(m.desc || ''), conclusione:'', vBene:'', vMigl:'', vAgg:'', ax:{data:iso}}];
@@ -19606,7 +19658,7 @@ async function actCross(srcCy, pid, aid, dstCy, uid){
   try{
     const src0 = await ccPeek(srcCy, pid, aid); if(!src0){ showToast('Non trovo più questa attività'); return false; }
     const a2 = JSON.parse(JSON.stringify(src0.a)); delete a2.aid; a2.spostataDa = {ciclo:src0.cn, pid};
-    saveData(true); try{ await clPush(true); }catch(e){}
+    saveData(true); if(await clPushSync()) return false;
     let nid = '';
     await ccEdit(dstCy, (sc) => {
       sc.percorsiExtra = Array.isArray(sc.percorsiExtra) ? sc.percorsiExtra : []; const cic = sc.ciclo || {};
