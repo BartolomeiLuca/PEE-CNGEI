@@ -3232,7 +3232,7 @@ window.stPickRuolo=function(i,el){ let v=el.value; if(v==='__altro'){ v=(prompt(
 function staffTabHTML(){
   const t=staffTab(); const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
   const sh=MODE==='giovani'&&typeof progMode==='function'&&progMode()==='cond'&&progCan()&&!window.BRO; const bad=window._stBad||{};
-  const inp=(i,k,v,w)=>`<textarea rows="2" data-maxh="190" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:12px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)"${k==='ruolo'&&FASCIA==='L'?` onchange="document.getElementById('staff-tab').innerHTML=staffTabHTML()"`:''}>${sEsc(v)}</textarea>`;
+  const inp=(i,k,v,w)=>`<textarea rows="2" data-maxh="190" aria-label="${({nome:'Nome',mail:'Email',tel:'Telefono',form:'Formazione',car:'Caratteristiche',prof:'Professione',ruoli:'Ruoli',disp:'Disponibilità',varie:'Varie',ruolo:'Ruolo'})[k]||k} (persona ${i+1})" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:12px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)"${k==='ruolo'&&FASCIA==='L'?` onchange="document.getElementById('staff-tab').innerHTML=staffTabHTML()"`:''}>${sEsc(v)}</textarea>`;
   const w={ruolo:56,nome:110,giungla:90,mail:150,tel:100,eta:44,form:150,car:240,prof:200,ruoli:160,disp:150,varie:220};
   const MV=34, OR=62;
   return `<div style="overflow-x:auto"><table style="border-collapse:collapse;table-layout:fixed;width:100%;min-width:${Math.round(staffCols().reduce((a,c)=>a+(w[c[0]]||100)+8,0)+(sh?74:0)+OR+MV)}px"><colgroup><col style="width:${OR}px">${sh?'<col style="width:74px">':''}${staffCols().map(c=>`<col style="width:${(w[c[0]]||100)+8}px">`).join('')}<col style="width:${MV}px"></colgroup><thead><tr><th style="padding:6px 4px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:center;width:${OR}px">Ordine</th>${sh?`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left;width:74px">Condividi</th>`:''}${staffCols().map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left">${c[0]==='chi'&&mvOn()?'Chi c’era':c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg)"></th></tr></thead><tbody>`+
@@ -3362,7 +3362,7 @@ function grInner(pid){
   const L = ['Comportamenti positivi emersi', 'Comportamenti da migliorare', 'Note specifiche del singolo o del gruppetto'];
   const GR_PH = {pos:'Che cosa hai visto fare al gruppo? Descrivi in modo oggettivo, senza giudicare.', mig:'Quali comportamenti vorresti veder crescere? Racconta che cosa succede, non chi sbaglia.', note:'Solo se rilevante per il gruppo: singoli o gruppetti che meritano attenzione.'};
   const ta = (k, f, v, lab, ro) => { const d=G[k]||{}; const pf=['pos','mig','note'].includes(f); const mine=pf?grMine(d,false)[f]:v; const oth=pf?grOthers(d,f):[];
-    return `<div class="gr-f"><span>${lab}</span><div class="gr-fi"><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(mine || '')}</textarea></div></div>`
+    return `<div class="gr-f"><span>${lab}</span><div class="gr-fi"><textarea rows="2"${ro ? ' readonly' : ''}${GR_PH[f] ? ' placeholder="' + GR_PH[f] + '"' : ''} aria-label="${sEsc(String(lab || '').replace(/<[^>]*>/g, ''))}" oninput="grSet('${pid}','${k}','${f}',this.value)">${sEsc(mine || '')}</textarea></div></div>`
       + (oth.length ? `<div class="gr-oth"><b>Cosa hanno scritto gli altri · ${sEsc(lab)}</b>${oth.map(o=>`<div><i>${sEsc(o.nome)}:</i> ${rtHTML(o.t)}</div>`).join('')}</div>` : ''); };
   const focBlock = (r, g, free) => {
     // il focus lo decidono titolare e co-titolare: chi collabora (o legge) lo riceve già pronto
@@ -5456,7 +5456,7 @@ function stCardsHTML(auto){
         const kd = (typeof KOS_OBS !== 'undefined') ? KOS_OBS[p.id] : null;
         if(kd && (kd.staff || kd.protagonismo)) body += `<details class="kos-details"><summary>Cosa osservare nello staff</summary><div class="kos-details-body">${kd.staff ? `<div class="kos-sub"><div class="kos-sub-lbl">Dinamiche del team</div><div class="kos-sub-txt kos-sub-txt-staff">${kd.staff}</div></div>` : ''}${kd.protagonismo ? `<div class="kos-sub" style="margin-top:10px"><div class="kos-sub-lbl">Protagonismo e distributed leadership</div><div class="kos-sub-txt kos-sub-txt-prot">${kd.protagonismo}</div></div>` : ''}</div></details>`;
       }
-      h += `<div class="pc" id="card-${p.id}" data-stcard="${auto ? 'auto' : sEsc(String(name||''))}" data-stpid="${p.id}"><div class="pc-hdr" onclick="toggleCard('${p.id}')"><span class="pc-num">${k + 1}</span><span class="pc-name">${p.name}</span><div class="pc-states" onclick="event.stopPropagation()"><div class="obs-scale-wrap"><select class="obs-select" id="sel-${p.id}" style="border-color:${num ? thresholdColor(t) : 'var(--border)'}" onchange="${on}"><option value="n"${!num ? ' selected' : ''}>— Non osservato</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}"${num === n ? ' selected' : ''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select><span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(t)}">${num ? num + ' · ' + thresholdLabel(t) : '—'}</span></div></div><span class="pc-chev">▼</span></div><div class="pc-body"><div class="pc-body-inner">${body}</div></div></div>`;
+      h += `<div class="pc" id="card-${p.id}" data-stcard="${auto ? 'auto' : sEsc(String(name||''))}" data-stpid="${p.id}"><div class="pc-hdr" tabindex="0" onclick="toggleCard('${p.id}')"><span class="pc-num">${k + 1}</span><span class="pc-name">${p.name}</span><div class="pc-states" onclick="event.stopPropagation()"><div class="obs-scale-wrap"><select class="obs-select" id="sel-${p.id}" style="border-color:${num ? thresholdColor(t) : 'var(--border)'}" onchange="${on}"><option value="n"${!num ? ' selected' : ''}>— Non osservato</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}"${num === n ? ' selected' : ''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select><span class="obs-badge" id="badge-${p.id}" style="color:${thresholdColor(t)}">${num ? num + ' · ' + thresholdLabel(t) : '—'}</span></div></div><span class="pc-chev">▼</span></div><div class="pc-body"><div class="pc-body-inner">${body}</div></div></div>`;
     });
     h += `</div>`;
   });
@@ -6303,7 +6303,7 @@ function renderPhase1(){
       }
 
       card.innerHTML=`
-        <div class="pc-hdr" onclick="toggleCard('${p.id}')">
+        <div class="pc-hdr" tabindex="0" onclick="toggleCard('${p.id}')">
           <span class="pc-num">${i+1}</span>
           <span class="pc-name">${p.name}${MODE==='giovani'?`<span class="kos-tag" id="kostag-${p.id}" style="display:none" title="">osservato</span>`:''}</span>
           <div class="pc-states" onclick="event.stopPropagation()">${stateButtons}</div>
@@ -8213,7 +8213,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611111953'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611112116'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9617,7 +9617,7 @@ function attObjHTML(p,j,a,cal){
     const _also=(ex.length||ea.length||can)?`<div class="ax-sub" style="margin-top:10px">Osservi anche</div>`
       +ex.map((o,i)=>`<div class="ax-oss"><div class="ax-check" style="display:flex;gap:6px;align-items:flex-start"><span style="flex:1"><b>${axE(nmP(o.pid))}</b> · ${axE(idrT(o.pid,o.k))}</span>${can?`<button type="button" class="ax-x" title="Non osservarlo" aria-label="Non osservarlo" onclick="axOssDel(${p},${j},'ossX',${i});attOssRe(${p},${j})">×</button>`:''}</div><div class="ax-row2"><input class="ax-in" placeholder="Da quale comportamento lo vedrai?" value="${axE(o.comp)}"${dis} oninput="axOssSet(${p},${j},'ossX',${i},'comp',this.value)"></div></div>`).join('')
       +ea.map((o,i)=>`<div class="ax-oss"><div class="ax-check" style="display:flex;gap:6px;align-items:flex-start"><input class="ax-in" style="flex:1" placeholder="Che cosa vuoi osservare? (anche fuori dai percorsi)" value="${axE(o.t)}"${dis} oninput="axOssSet(${p},${j},'ossA',${i},'t',this.value)">${can?`<button type="button" class="ax-x" title="Non osservarlo" aria-label="Non osservarlo" onclick="axOssDel(${p},${j},'ossA',${i});attOssRe(${p},${j})">×</button>`:''}</div><div class="ax-row2"><input class="ax-in" placeholder="Da quale comportamento lo vedrai?" value="${axE(o.comp)}"${dis} oninput="axOssSet(${p},${j},'ossA',${i},'comp',this.value)"></div></div>`).join('')
-      +(can?`<div class="ax-oss-add" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px">`+(ch.length?`<select class="ax-in" style="max-width:100%" onchange="if(this.value){axOssAddX(${p},${j},this.value);attOssRe(${p},${j});}"><option value="">+ Osserva anche un indicatore di un altro percorso…</option>`+ch.map(g=>`<optgroup label="${axE(g.name)}">`+g.opts.map(o=>`<option value="${axE(g.pid)}|${o.k}">${axE(String(o.t).slice(0,140))}</option>`).join('')+`</optgroup>`).join('')+`</select>`:'')+`<button type="button" class="btn-ghost ax-add" onclick="axOssAddA(${p},${j});attOssRe(${p},${j})">+ Osserva anche altro (lo scrivo io)</button></div>`:''):'';
+      +(can?`<div class="ax-oss-add" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px">`+(ch.length?`<select class="ax-in" aria-label="Osserva anche un indicatore di un altro percorso" style="max-width:100%" onchange="if(this.value){axOssAddX(${p},${j},this.value);attOssRe(${p},${j});}"><option value="">+ Osserva anche un indicatore di un altro percorso…</option>`+ch.map(g=>`<optgroup label="${axE(g.name)}">`+g.opts.map(o=>`<option value="${axE(g.pid)}|${o.k}">${axE(String(o.t).slice(0,140))}</option>`).join('')+`</optgroup>`).join('')+`</select>`:'')+`<button type="button" class="btn-ghost ax-add" onclick="axOssAddA(${p},${j});attOssRe(${p},${j})">+ Osserva anche altro (lo scrivo io)</button></div>`:''):'';
     const nA=ex.length+ea.filter(o=>(o.t||'').trim()).length;
     const _met='';   // 10/11: gli Strumenti del Metodo dell'attività stanno sopra il Tipo di attività e Lancio/Sviluppo/Conclusione (attMetHTML)
     return `<div class="att-objw" data-attobj="${p}-${j}" data-cal="${cal?1:0}">${pobj}${_met}${_who}<details class="att-obj" ${_op?'open':''} ontoggle="(window._attObjOpen=window._attObjOpen||{})['${_ok}']=this.open"><summary>Indicatori specifici di questa attività<b style="font-weight:700;color:var(--green)">${(n+nA)?' · '+(n+nA)+((n+nA)===1?' scelta':' scelte'):''}</b></summary>
@@ -11144,8 +11144,8 @@ function tmWarn0(dal,al,min){ const d=tmMonths(dal,al); if(d===null) return ''; 
 function tmSelHTML(val,onch,from){ const now=new Date(); const fy=Number(String(from||'').split('-')[0])||0; const y0=fy?fy:now.getFullYear()-1; const [vy,vm]=(val||'').split('-').map(Number);
   // ordine dell'anno scout: da settembre ad agosto
   const order=[8,9,10,11,0,1,2,3,4,5,6,7];
-  const sm=`<select style="padding:5px 6px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px" onchange="${onch}('m',this.value)"><option value="">mese</option>${order.map(i=>`<option value="${i+1}" ${vm===i+1?'selected':''}>${MESI[i]}</option>`).join('')}</select>`;
-  const sy=`<select style="padding:5px 6px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px" onchange="${onch}('y',this.value)"><option value="">anno</option>${[0,1,2,3].map(k=>y0+k).concat(vy&&(vy<y0||vy>y0+3)?[vy]:[]).sort((a,b)=>a-b).map(y=>`<option ${vy===y?'selected':''}>${y}</option>`).join('')}</select>`;
+  const sm=`<select aria-label="Mese" style="padding:5px 6px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px" onchange="${onch}('m',this.value)"><option value="">mese</option>${order.map(i=>`<option value="${i+1}" ${vm===i+1?'selected':''}>${MESI[i]}</option>`).join('')}</select>`;
+  const sy=`<select aria-label="Anno" style="padding:5px 6px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px" onchange="${onch}('y',this.value)"><option value="">anno</option>${[0,1,2,3].map(k=>y0+k).concat(vy&&(vy<y0||vy>y0+3)?[vy]:[]).sort((a,b)=>a-b).map(y=>`<option ${vy===y?'selected':''}>${y}</option>`).join('')}</select>`;
   return sm+' '+sy; }
 function tmFixAl(dal,al,part,which){ if(which!=='al'||part!=='m'||!dal||!al) return al; const [y1,m1]=dal.split('-').map(Number), [,m2]=al.split('-').map(Number); return `${m2<m1?y1+1:y1}-${String(m2).padStart(2,'0')}`; }
 function tmMerge(old,part,v){ const now=new Date(); let [y,m]=(old||'').split('-').map(Number); if(part==='m'){ m=Number(v)||0; if(m&&!y){ const sy=now.getMonth()>=7?now.getFullYear():now.getFullYear()-1; y=m>=9?sy:sy+1; } } else y=Number(v)||0;
@@ -12014,7 +12014,7 @@ function renderSchedaC(root,selected){
     const pcN = (per.attivita||[]).filter(x => ['testo','lancio','sviluppo','conclusione'].some(k => (x[k]||'').trim())).length;
     const pcOpen = !!(window._pcOpen && window._pcOpen[idx]);
     html+=`<div id="pc-card-${idx}" data-a="${a||''}" class="pcx${pcOpen?'':' closed'}" style="border:1px solid var(--border-light);border-radius:var(--radius);margin-bottom:16px;overflow:hidden">
-      <div class="pcx-hd" onclick="pcxToggle(${idx})" style="background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;cursor:pointer">
+      <div class="pcx-hd" tabindex="0" onclick="pcxToggle(${idx})" style="background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;cursor:pointer">
         <span class="pcx-chev" aria-hidden="true">▼</span>
         <span style="font-weight:800;font-size:14px;flex:1">${percorsoLabel}<small class="pcx-sum">${pcN ? pcN + (pcN===1?' attività scritta':' attività scritte') : 'da iniziare'}</small></span>
         <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
@@ -12634,7 +12634,7 @@ function renderSchedaVer(root,selected){
       n++;
       const shV=axShared(a);
       h+=`<div class="ver-c${window._verOpen&&window._verOpen[idx+'-'+j]?'':' closed'}" id="ver-c-${idx}-${j}" data-verat="${idx}-${j}" data-aff="${sEsc(shV?(a.aff||''):'')}" style="border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;margin:8px 0;background:var(--bg-card)">
-        <div class="ver-hd" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${attNum(per,j)}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+attNum(per,j))+'»')}</div>`:''}<div class="ver-b">
+        <div class="ver-hd" tabindex="0" onclick="verToggle(${idx},${j})"><span class="ver-chev" aria-hidden="true">▼</span><span class="ver-tt">Attività ${attNum(per,j)}${(a.testo||'').trim()?' — '+sEsc(a.testo):''}${shV&&a.aff?` <span class="aff-chip${affIsMe(a.aff)?' me':''}">${affIsMe(a.aff)?'affidata a te':sEsc(affName(a.aff))}</span>`:''}</span><span class="ver-st">${(a.vBene||a.vMigl||a.vAgg)?'compilata':'da compilare'}</span></div>${shV&&a.aff&&!affIsMe(a.aff)&&!['vBene','vMigl'].some(k=>(a[k]||'').trim())&&verDue(a)?`<div class="ver-miss">Manca ancora la verifica di ${sEsc(affName(a.aff))}. ${verWA(a.aff, '«'+((a.testo||'').trim()||'Attività '+attNum(per,j))+'»')}</div>`:''}<div class="ver-b">
         <label style="${SC_LBL}">Cosa è andato bene <span style="font-weight:400;color:var(--ink-faint)">— aspetti positivi, coinvolgimento dei ragazzi, efficacia rispetto all'obiettivo</span></label>
         <textarea style="${SC_TA}" placeholder="Aspetti positivi, coinvolgimento dei ragazzi, efficacia rispetto all’obiettivo." oninput="updateAttivita(${idx},${j},'vBene',this.value);saveDataDebounced();ppRefreshReady()">${sEsc(a.vBene)}</textarea>
         <label style="${SC_LBL}">Cosa è da migliorare <span style="font-weight:400;color:var(--ink-faint)">— criticità, elementi da modificare, imprevisti</span></label>
@@ -12844,7 +12844,7 @@ function ppIdrOfficialHTML(pid,j){
   const cur=(scheda.idrComp&&scheda.idrComp[pid]&&scheda.idrComp[pid][j])||{c:'',note:''};
   const col={spontaneo:'#2E7D32',stimolato:'#E0A100',no:'#B3261E'}[cur.c]||'var(--border)';
   return `<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-top:8px">
-    <select class="obs-select" style="min-width:150px;font-size:12px;border-color:${col}" onchange="ppIdrSet('${pid}',${j},'c',this.value);this.style.borderColor=({spontaneo:'#2E7D32',stimolato:'#E0A100',no:'#B3261E'})[this.value]||'var(--border)'">
+    <select class="obs-select" aria-label="Come si manifesta questa competenza" style="min-width:150px;font-size:12px;border-color:${col}" onchange="ppIdrSet('${pid}',${j},'c',this.value);this.style.borderColor=({spontaneo:'#2E7D32',stimolato:'#E0A100',no:'#B3261E'})[this.value]||'var(--border)'">
       <option value="" ${!cur.c?'selected':''}>— Comportamento —</option>
       <option value="spontaneo" ${cur.c==='spontaneo'?'selected':''}>Spontaneo</option>
       <option value="stimolato" ${cur.c==='stimolato'?'selected':''}>Stimolato</option>
@@ -12882,7 +12882,7 @@ function riobsHTML(pid){
   const v0=obs[pid], a=(v0&&v0!=='n')?Number(v0)||0:0, b=Number(((scheda.riobs||{})[pid])||0);
   return `<div class="riobs"><div class="pp5sp-tag">${OPT}Dal punto di partenza a oggi</div>
     <div class="riobs-row"><span class="riobs-l">Partenza</span><span>${a?`${thresholdLabel(obsToThreshold(a))} (${a}) <span style="color:var(--ink-faint)">· dalla scheda di osservazione</span>`:'<span style="color:var(--ink-faint)">non osservato</span>'}</span></div>
-    <div class="riobs-row"><span class="riobs-l">Oggi</span><select class="obs-select" style="font-size:12px;min-width:170px" onchange="riobsSet('${pid}',this.value)"><option value="">— Riosserva (1–10) —</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${b===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select></div>
+    <div class="riobs-row"><span class="riobs-l">Oggi</span><select class="obs-select" aria-label="Riosservazione da 1 a 10" style="font-size:12px;min-width:170px" onchange="riobsSet('${pid}',this.value)"><option value="">— Riosserva (1–10) —</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${b===n?'selected':''}>${n} — ${thresholdLabel(obsToThreshold(n))}</option>`).join('')}</select></div>
     <div class="riobs-row"><span class="riobs-l">Il cammino</span><span id="riobs-d-${pid}">${riobsDelta(pid)}</span></div>
     <div class="pp5sp-extra">Non serve per il Progetto Personale: ti aiuta a restare sul pezzo e a guardare oltre questo percorso. Il confronto ha senso se a riosservare sono le stesse persone, in situazioni simili a quelle di partenza.</div></div>`;
 }
@@ -16501,6 +16501,8 @@ function nacLater(){ window._nacLater = true; document.querySelectorAll('.nac-st
 // ad ogni rientro sulla pagina (apertura, finestra ripristinata dal browser, ritorno dopo una pausa) chi non è collegato/a deve scegliere: accedere o restare senza accesso
 function nacOff(){ try{ return !!localStorage.getItem('bussola_nac_off'); }catch(e){ return false; } }
 function nacAtRisk(){ try{ return !CL.user && !window.BRO && !window._exNoAcc && !CL.recovery && !CL.linkErr && typeof clOn==='function' && clOn() && !!CL.sb && (clHasLocal() || !!localStorage.getItem('bussola_had_account')); }catch(e){ return false; } }
+// 11/11 (audit): le intestazioni che si aprono con un clic (schede, Percorsi extra, verifiche) si aprono anche con Invio o Spazio quando hanno il fuoco
+document.addEventListener('keydown', e => { try{ if((e.key !== 'Enter' && e.key !== ' ') || e.defaultPrevented) return; const t = e.target; if(t && t.matches && t.matches('.pc-hdr[tabindex], .pcx-hd[tabindex], .ver-hd[tabindex]')){ e.preventDefault(); t.click(); } }catch(x){} });
 // 11/11 (audit): Esc chiude le finestre del cloud come il clic sullo sfondo (prima si chiudevano solo con il mouse)
 document.addEventListener('keydown', e => { try{ if(e.key !== 'Escape' || e.defaultPrevented) return; const n = document.getElementById('nac-ov'); if(n && n.classList.contains('show')){ nacClose(); return; } const o = document.getElementById('cl-ov'); if(o && o.classList.contains('show')) clClose(); }catch(x){} });
 function nacClose(){ const o = document.getElementById('nac-ov'); if(o) o.classList.remove('show'); }

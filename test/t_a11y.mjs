@@ -70,7 +70,7 @@ console.log(`\nBIG=${BIG}  apertura progetto: ${dOpen} ms  nodi DOM max: ${F.max
 console.log(`navigazione: mediana ${[...times].map(x => x[0]).sort((a, b) => a - b)[Math.floor(times.length / 2)]} ms, peggiori: ` + times.sort((a, b) => b[0] - a[0]).slice(0, 4).map(x => x[0] + 'ms ' + x[1]).join(' | '));
 console.log('compiti lunghi (>50ms): ' + lt.length + ' · il peggiore ' + Math.max(0, ...lt) + ' ms');
 console.log('lingua=' + g.lang + ' viewport=' + g.vp + ' finestre=' + g.dlg.join(','));
-const show = (t, s) => { console.log(`${t}: ${s.size}`); [...s].slice(0, 8).forEach(x => console.log('    · ' + x)); };
+const show = (t, s) => { console.log(`${t}: ${s.size}`); [...s].slice(0, +(process.env.SHOW||8)).forEach(x => console.log('    · ' + x)); };
 show('pulsanti/link senza nome', F.noname); show('campi senza etichetta', F.nolabel); show('immagini senza alt', F.noalt); show('elementi cliccabili non raggiungibili da tastiera', F.clickNoKey); show('id doppi', F.dupid); show('bersagli < 24px', F.tooSmall);
 console.log(`tastiera: ${focused} elementi raggiunti con Tab su 60, senza contorno visibile: ${noRing.length} (${[...new Set(noRing)].slice(0, 5).join(', ')}), bloccato: ${stuck}`);
 console.log(`Escape: finestra aperta prima=${openB} dopo=${openA}`);
