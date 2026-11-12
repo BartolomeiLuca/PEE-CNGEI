@@ -47,6 +47,8 @@ t estr no "revisore_abilitato risponde no per un altro" "select 1 where revisore
 echo "--- giri: creazione e immutabilità"
 t owner si "congela un giro (numero assegnato)" "insert into pee_giri(archivio_id,sezioni,data) values ('$A','{1,2}','{}') returning n"
 t owner si "congela un secondo e un terzo giro: nessun tetto" "insert into pee_giri(archivio_id,data) values ('$A','{}'),('$A','{}'),('$A','{}'),('$A','{}'),('$A','{}') returning n"
+t owner si "chiede un numero più alto (giri storici già segnati a mano)" "insert into pee_giri(archivio_id,n,data) values ('$A',7,'{}') returning n"
+t owner si "il database non scende sotto l'ultimo numero" "insert into pee_giri(archivio_id,n,data) values ('$A',1,'{}') returning n"
 t lett no "un lettore congela" "insert into pee_giri(archivio_id,data) values ('$A','{}') returning n"
 t estr no "un'estranea congela sul progetto altrui" "insert into pee_giri(archivio_id,data) values ('$A','{}') returning n"
 t estr no "congela a nome del titolare" "insert into pee_giri(archivio_id,owner_id,data) values ('$A','00000000-0000-0000-0000-00000000000a','{}') returning n"

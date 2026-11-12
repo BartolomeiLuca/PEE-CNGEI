@@ -26,11 +26,13 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[]}; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[]}; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
   user(id){ return this.users.find(u => u.id === id); }
   pubUser(u){ return u ? {id:u.id, email:u.email, user_metadata:Object.assign({}, u.meta), new_email:u.pending||undefined} : null; }
   addUser(email, password = 'password123', nome = ''){ const u = {id:uuid(), email:email.toLowerCase(), password, meta: nome ? {nome} : {}}; this.users.push(u); return u; }
   myEmail(uid){ const u = this.user(uid); return u ? u.email : null; }
+  revAbil(em){ return this.revAperto || this.ammessi.includes(String(em||'').toLowerCase()); }
+  giroRuolo(uid, g){ const em = this.myEmail(uid); const d = this.t.pee_giri_dest.find(x => x.giro_id === g && x.email === em && (x.ruolo === 'copia' || this.revAbil(x.email))); return d ? d.ruolo : null; }
   isOwner(uid, a){ return this.t.pee_archivi.some(r => r.id === a && r.user_id === uid); }
   mem(uid, a){ const em = this.myEmail(uid); return this.t.pee_membri.find(m => m.archivio_id === a && m.email === em); }
   canEdit(uid, a){ const m = this.mem(uid, a); return !!(m && (m.ruolo === 'cotitolare' || m.ruolo === 'collaboratore')); }
@@ -42,6 +44,9 @@ export class FakeDB {
       case 'pee_membri': return this.isOwner(uid, r.archivio_id) || r.email === em || this.isCot(uid, r.archivio_id);
       case 'pee_versioni': return r.user_id === uid || this.canEdit(uid, r.archivio_id);
       case 'pee_suggerimenti': return this.isOwner(uid, r.archivio_id) || (r.user_id === uid && !!this.mem(uid, r.archivio_id)) || (this.sql13 && (this.isCot(uid, r.archivio_id) || (r.dest && r.dest === em)));
+      case 'pee_giri': return r.owner_id === uid || !!this.giroRuolo(uid, r.id);
+      case 'pee_giri_dest': return r.email === em || this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid);
+      case 'pee_giri_rev': return this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid) || (r.user_id === uid && !!this.giroRuolo(uid, r.giro_id));
       case 'pee_gruppi': return true;
       case 'pee_profili': return r.user_id === uid;
       case 'pee_archivio_nazionale': return r.stato === 'approvata' || r.autore_id === uid || em === 'luca.bartolomei@cngei.it';
@@ -69,6 +74,7 @@ export class FakeDB {
       for(const p of this.pages) p.evaluate(m => window.__sbEmit && window.__sbEmit(m), {kind:'presence', channel:req.channel, state:ch}).catch(() => {}); return 'ok'; }
     if(req.kind === 'rpc'){
       if(!u) return this.err('42501', 'not logged');
+      if(req.name === 'revisore_abilitato') return {data:this.revAbil(req.args.em), error:null};
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -112,6 +118,11 @@ export class FakeDB {
           const ok = this.isOwner(uid, r.archivio_id) || (this.isCot(uid, r.archivio_id) && ['lettore','collaboratore'].includes(r.ruolo));
           if(!ok) return this.err('42501', 'new row violates row-level security policy');
           if(T.some(x => x.archivio_id === r.archivio_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
+        if(q.table === 'pee_giri'){ r.owner_id = uid; if(!this.isOwner(uid, r.archivio_id)) return this.err('42501', 'new row violates row-level security policy');
+          r.n = Math.max(T.filter(x => x.archivio_id === r.archivio_id).reduce((m, x) => Math.max(m, x.n), 0) + 1, r.n || 0); }
+        if(q.table === 'pee_giri_dest'){ if(!this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid)) return this.err('42501', 'new row violates row-level security policy');
+          if(r.ruolo === 'revisore' && !this.revAbil(r.email)) return this.err('42501', 'new row violates row-level security policy');
+          if(T.some(x => x.giro_id === r.giro_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
         if(q.table === 'pee_versioni'){ r.user_id = uid; if(!(this.isOwner(uid, r.archivio_id) || this.canEdit(uid, r.archivio_id))) return this.err('42501', 'new row violates row-level security policy'); }
         if(q.table === 'pee_suggerimenti'){ r.user_id = uid; r.stato = r.stato || 'nuovo';
           const ok = (this.mem(uid, r.archivio_id) || (this.sql13 && this.isOwner(uid, r.archivio_id))) && r.stato === 'nuovo';

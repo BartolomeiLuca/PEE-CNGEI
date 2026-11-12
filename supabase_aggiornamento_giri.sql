@@ -41,7 +41,7 @@ create table if not exists public.pee_giri (
   id            uuid primary key default gen_random_uuid(),
   archivio_id   uuid not null references public.pee_archivi(id) on delete cascade,
   owner_id      uuid not null default auth.uid() references auth.users(id) on delete cascade,
-  n             int  not null,
+  n             int  not null default 0,   -- il database assegna il successivo; l'app può chiedere un numero più alto (giri storici già segnati a mano)
   sezioni       int[] not null default '{}',
   nomi_inclusi  boolean not null default true,
   nota          text not null default '' check (char_length(nota) <= 2000),
@@ -58,7 +58,7 @@ language plpgsql as $$
 begin
   if tg_op = 'INSERT' then
     perform pg_advisory_xact_lock(hashtext('pee_giri:' || new.archivio_id::text));
-    select coalesce(max(n), 0) + 1 into new.n from public.pee_giri where archivio_id = new.archivio_id;
+    select greatest(coalesce(max(n), 0) + 1, coalesce(new.n, 0)) into new.n from public.pee_giri where archivio_id = new.archivio_id;
     return new;
   end if;
   raise exception 'Un giro congelato non si modifica: per cambiare qualcosa crea un nuovo giro';
