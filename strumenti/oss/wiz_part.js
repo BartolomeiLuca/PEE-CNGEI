@@ -1,6 +1,6 @@
 // ══ Percorso guidato (wizard) ══
 let S;
-function nuovoS(){ return {step:0,porta:'',mom:'',momTxt:'',momMese:'',dom:'',contro:'',fr:null,useFr:true,amb:'',area:'',main:'',also:[],scart:[],ctx:'',dur:0,foc:[],nR:'',oss:['Giulia','Marco','Anna'].map((n,i)=>({n,on:i<2,staff:true,cond:i===0})),strum:[],tipi:[],tipoLib:'',ag:'',nome:'',lan:'',svi:'',con:'',temi:[],
+function nuovoS(){ return {step:0,porta:'',mom:'',momTxt:'',momMese:'',dom:'',contro:'',fr:null,useFr:true,amb:'',area:'',main:'',also:[],scart:[],ctx:'',dur:0,foc:[],nR:'',oss:['Giulia','Marco','Anna'].map((n,i)=>({n,on:i<2,staff:true,cond:i===0})),strum:[],strumDet:{},strumAltro:{},tipi:[],tipoLib:'',ag:'',nome:'',lan:'',svi:'',con:'',temi:[],
  lab:{pid:'',chi:'',verbo:'',ogg:'',cond:'',cls:'',man:false,showChi:false,showCond:false,fromFr:false}, disamb:null, letta:null}; }
 const STEPS=[{k:'porta',f:0},{k:'mom',f:0},{k:'dom',f:0},{k:'amb',f:0},{k:'perc',f:0},{k:'ctx',f:1},{k:'dur',f:1},{k:'foc',f:2},{k:'oss',f:2},{k:'str',f:3},{k:'tipo',f:3},{k:'ag',f:3},{k:'fog',f:4}];
 const FASI=['Quando e cosa','Dove e quanto','Il focus','Come','Scrivi tu'];
@@ -25,12 +25,13 @@ function punteggi(){ const r=motore(testoDom()); const M=Object.fromEntries(r.ma
   const area=S.area&&S.amb?(AREE[S.amb].find(a=>a[0]===S.area)||[])[1]||[]:[];
   return PERC.map(p=>{ const m=M[p.id]; let v=m?m.score:0; if(S.amb&&p.id[0]===S.amb) v+=1.5; if(area.includes(p.id)) v+=3; if(!nOcc(p.id)) v+=0.8; if((momObj()?.p||[]).includes(p.id)) v+=0.5; return {id:p.id,v,m}; }).sort((a,b)=>b.v-a.v); }
 
-function wizOpen(pid){ S=nuovoS(); if(pid){ S.porta='scop'; S.main=pid; S.amb=pid[0]; S.step=1; } $('wiz').classList.add('on'); document.body.style.overflow='hidden'; wr(); }
+function wizOpen(pid){ wr._k=null; S=nuovoS(); if(pid){ S.porta='scop'; S.main=pid; S.amb=pid[0]; S.step=1; } $('wiz').classList.add('on'); document.body.style.overflow='hidden'; wr(); }
 function wizClose(){ $('wiz').classList.remove('on'); document.body.style.overflow=''; }
 function wr(){ const vs=visSteps(); if(S.step>=vs.length) S.step=vs.length-1; const st=vs[S.step];
+  const keep=(wr._k===st.k&&$('wbody').firstChild)?{a:$('wscroll').scrollTop,b:$('wbody').scrollTop,o:[...$('wbody').querySelectorAll('details')].map(d=>d.open)}:null; wr._k=st.k;
   $('wfasi').innerHTML=FASI.map((f,i)=>{ const first=vs.findIndex(s=>s.f===i); return `<button type="button" class="stab${st.f===i?' active':''}${st.f>i?' done':''}" onclick="go(${first})"><span>${i+1}</span>${f}</button>`; }).join('');
   lente(); domBar(st.k); $('wstep').textContent=`Passo ${S.step+1} di ${vs.length}`; $('wbody').innerHTML=VIEW[st.k]();
-  $('wprev').style.visibility=S.step?'visible':'hidden'; $('wnext').style.display=st.k==='fog'?'none':''; $('wbody').scrollTop=0; $('wscroll').scrollTop=0; }
+  $('wprev').style.visibility=S.step?'visible':'hidden'; $('wnext').style.display=st.k==='fog'?'none':''; if(keep){ const ds=$('wbody').querySelectorAll('details'); if(ds.length===keep.o.length) ds.forEach((d,i)=>{ d.open=keep.o[i]; }); $('wbody').scrollTop=keep.b; $('wscroll').scrollTop=keep.a; } else { $('wbody').scrollTop=0; $('wscroll').scrollTop=0; } }
 function go(i){ S.step=Math.max(0,i); wr(); }
 function nav(d){ go(S.step+d); }
 function lente(){ const P=percs(); const nP=P.length||(S.amb?8:24); const nI=P.length?P.reduce((s,p)=>s+PID[p].i.length,0):(S.amb?PERC.filter(p=>p.id[0]===S.amb).reduce((s,p)=>s+p.i.length,0):145); const c=capacita(); const nF=S.foc.length; const w=(x,m)=>Math.max(6,Math.round(100*x/m));
@@ -38,6 +39,10 @@ function lente(){ const P=percs(); const nP=P.length||(S.amb?8:24); const nI=P.l
 function domBar(k){ const e=$('wdom'); const show=S.dom.trim()&&!['porta','mom','dom'].includes(k); e.style.display=show?'':'none'; if(show) e.innerHTML=`<span class="lbl">${S.porta==='att'?'La tua attività':'La tua domanda'}</span><span class="dq">«${esc(S.dom)}»</span><button class="lnk" onclick="go(2)">modifica</button>`; }
 function H(t,s){ return `<h2>${t}</h2>${s?`<p class="sub">${s}</p>`:''}`; }
 function setq(k,v){ S[k]=v; lente(); }
+function strumMacro(k){ const i=S.strum.indexOf(k); if(i>=0){ S.strum.splice(i,1); delete S.strumDet[k]; } else S.strum.push(k); wr(); }
+function strumTutto(k){ delete S.strumDet[k]; wr(); }
+function strumTool(k,i){ const t=(STR.find(x=>x.k===k).d[B]||'').split(', ').filter(Boolean)[i]; if(!S.strum.includes(k)) S.strum.push(k); let d=S.strumDet[k]; if(!d||!d.length) d=S.strumDet[k]=[t]; else { const j=d.indexOf(t); if(j>=0) d.splice(j,1); else d.push(t); if(!d.length) delete S.strumDet[k]; } wr(); }
+function strumAltro(k,v){ S.strumAltro[k]=v; if(v.trim()&&!S.strum.includes(k)){ S.strum.push(k); lente(); } }
 function tog(arr,v){ const i=arr.indexOf(v); if(i>=0) arr.splice(i,1); else arr.push(v); wr(); }
 const pchip=(p,x='')=>`<span class="pchip a${p[0]}">${esc(PID[p].n)}${x}</span>`;
 
@@ -65,9 +70,12 @@ const VIEW={
   (S.dur?`<div class="box tip">Con ${DUR.find(d=>d[0]===S.dur)[1]} potete seguire bene <b>${c.max===1?'un solo focus':'fino a '+c.max+' focus'}</b>. Lo ricalcolo quando mi dici quante persone e quanti osservatori ci sono.${S.dur<=15?' Un momento così breve funziona bene come momento di soglia o come domanda in chiusura.':''}${S.dur>=240?' In una giornata lunga alterna focus diversi in momenti diversi, come fa il terzo incontro del KOS.':''}</div>`:''); },
  foc(){ return focView(); }, oss(){ return ossView(); },
  str(){ const P=percs(); const cons=STR.filter(s=>s.f.some(f=>P.includes(f)));
-  return H('Quali Strumenti del Metodo ti aiutano a vederlo?',`Declinati per il ${BR[B].u}. Quelli segnati illuminano meglio i tuoi percorsi: è una bozza di collegamento, da validare.`)+
-  `<div class="list">${[...cons,...STR.filter(s=>!cons.includes(s))].map(s=>{ const on=S.strum.includes(s.k), rec=cons.includes(s); const inc=(INCL[s.k]||{})[B];
-   return `<label class="row${on?' on':''}"><input type="checkbox" ${on?'checked':''} onchange="tog(S.strum,'${s.k}')"><span><b>${s.t}</b>${rec?' <span class="tagok">per i tuoi percorsi</span>':''}<small class="decl">${s.d[B]}</small><small>Fa vedere bene: ${s.v}.</small>${on&&inc?`<small class="incl">Attenzione all’inclusione: ${inc}</small>`:''}</span></label>`; }).join('')}</div>`; },
+  return H('Quali Strumenti del Metodo ti aiutano a vederlo?',`Declinati per il ${BR[B].u}. Quelli segnati illuminano meglio i tuoi percorsi: è una bozza di collegamento, da validare. Dentro ogni macro tema puoi scegliere tutto il macro tema oppure solo gli strumenti che ti interessano, e aggiungerne altri tuoi.`)+
+  `<div class="list">${[...cons,...STR.filter(s=>!cons.includes(s))].map(s=>{ const on=S.strum.includes(s.k), rec=cons.includes(s); const inc=(INCL[s.k]||{})[B]; const det=S.strumDet[s.k]; const tools=(s.d[B]||'').split(', ').filter(Boolean);
+   return `<div class="strm${on?' on':''}"><label class="row${on?' on':''}"><input type="checkbox" ${on?'checked':''} onchange="strumMacro('${s.k}')"><span><b>${s.t}</b>${rec?' <span class="tagok">per i tuoi percorsi</span>':''}<small>Fa vedere bene: ${s.v}.</small>${on&&inc?`<small class="incl">Attenzione all’inclusione: ${inc}</small>`:''}</span></label>
+   <div class="stools"><div class="sthead">${on?(det&&det.length?`<b>Scelti ${det.length} su ${tools.length}</b> <button type="button" class="lnk" onclick="strumTutto('${s.k}')">Scegli tutto il macro tema</button>`:'<b>Tutto il macro tema</b>'):'Scegli gli strumenti che ti interessano, oppure tutto il macro tema con la casella sopra'}</div>
+   <div class="stchips">${tools.map((t,i)=>`<label class="stc${on&&(!det||!det.length||det.includes(t))?' on':''}${on&&det&&det.length&&det.includes(t)?' sel':''}"><input type="checkbox" ${on&&det&&det.length&&det.includes(t)?'checked':''} onchange="strumTool('${s.k}',${i})"><span>${esc(t)}</span></label>`).join('')}</div>
+   <label class="fl w1 stalt">Altro (scrivi tu)<input type="text" value="${esc(S.strumAltro[s.k]||'')}" oninput="strumAltro('${s.k}',this.value)" placeholder="Un altro strumento o momento di questo macro tema"></label></div></div>`; }).join('')}</div>`; },
  tipo(){ return tipoView(); },
  ag(){ return H('Vuoi agganciarla al Percorso Promessa?','Siamo nel periodo giusto. «Nessuno» è una scelta legittima: il KOS lo dice chiaramente, a volte un aggancio forzato inquina l’osservazione.')+
   `<div class="opts three">${[['nessuno','Nessuno','l’attività resta pura'],['leggero','Leggero','una domanda in più in chiusura'],['profondo','Profondo','una cornice tematica esplicita']].map(([k,t,d])=>`<button type="button" class="opt${S.ag===k?' on':''}" onclick="S.ag='${k}';wr()"><b>${t}</b><small>${d}</small></button>`).join('')}</div>`+
@@ -229,7 +237,7 @@ function fogView(){ const m=momObj(); const c=capacita(); const nv=nonVedra();
    <div class="sc"><small>Contesto e durata</small>${S.ctx?CTX.find(x=>x.k===S.ctx).t:'—'} · ${S.dur?DUR.find(d=>d[0]===S.dur)[1]:'—'}</div>
    <div class="sc w"><small>Cosa guarderai</small>${S.foc.length?'<ol>'+S.foc.map(f=>`<li>${esc(f.txt)} ${visTag(f.cls,true)}</li>`).join('')+'</ol>':'—'}${S.contro?`<em>Prova contraria: ${esc(S.contro)}</em>`:''}</div>
    <div class="sc"><small>Chi osserva</small>${S.oss.filter(o=>o.on).map(o=>esc(o.n)+(o.cond?' (conduce)':'')).join(', ')||'—'} · ${S.nR||'?'} persone · osservazione ${esc(c.cop)}</div>
-   <div class="sc"><small>Strumenti e tipo</small>${S.strum.map(k=>STR.find(s=>s.k===k).t).join(', ')||'—'} · ${esc(tipo)}</div>${autunno()?`<div class="sc"><small>Percorso Promessa</small>${S.ag||'—'}</div>`:''}</div>
+   <div class="sc"><small>Strumenti e tipo</small>${S.strum.map(k=>{ const m=STR.find(s=>s.k===k); const d=S.strumDet[k]; const x=(S.strumAltro[k]||'').trim(); return m.t+(d&&d.length?' ('+d.join(', ')+(x?', '+esc(x):'')+')':(x?' (tutto, più: '+esc(x)+')':'')); }).join(', ')||'—'} · ${esc(tipo)}</div>${autunno()?`<div class="sc"><small>Percorso Promessa</small>${S.ag||'—'}</div>`:''}</div>
   <div class="ese"><div class="eh"><b>Spunti per cominciare</b><button type="button" class="btn-ghost sm" onclick="wr()">Altri spunti ↻</button></div>${eSe().map(x=>`<div class="ei">${esc(x)}</div>`).join('')}</div>
   ${sB?`<div class="box q"><b>Domande di chiusura pronte per il ${BR[B].u}</b> (${BR[B].cerchio}):<ul>${DOM_CHIUSURA[B].map(x=>`<li>«${esc(x)}»</li>`).join('')}</ul></div>`:''}
   ${nv.length?`<div class="box">Questa attività <b>non potrà mostrarti</b>: ${nv.join('; ')}.</div>`:''}

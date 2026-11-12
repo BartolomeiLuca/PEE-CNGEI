@@ -41,7 +41,7 @@ ok(pt.length === 1 && pt[0][0] === 'prop' && pt[0][1] === 'Bruno Verdi', '«Per 
 ok(await ev(pa, () => /ha proposto un’attività osservativa/.test(clPerTeHTML())), 'il testo dell’avviso è comprensibile');
 // Anna: pulsanti
 s = await ev(pa, () => [...document.querySelectorAll('.oss-card .oss-aa button')].map(b => b.textContent.trim()));
-ok(s.includes('Accetta la proposta') && s.includes('Suggerisci') && !s.includes('Segna come svolta'), 'titolare: «Accetta la proposta», «Suggerisci»: ' + s);
+ok(s.includes('Accetta la proposta') && s.includes('Suggerisci') && !s.includes('Aggiungi alle occasioni osservative'), 'titolare: «Accetta la proposta», «Suggerisci»: ' + s);
 s = await ev(pb, () => [...document.querySelectorAll('.oss-card .oss-aa button')].map(b => b.textContent.trim()));
 ok(!s.includes('Accetta la proposta') && !s.includes('Suggerisci') && s.includes('Elimina'), 'collaboratore (autore): niente «Accetta», niente «Suggerisci»: ' + s);
 s = await ev(pc, () => ({b: [...document.querySelectorAll('#oss-panel .oss-card button')].map(b => b.textContent.trim()), role: ossRole(), card: document.querySelectorAll('.oss-card').length}));
@@ -70,7 +70,7 @@ ok(await wait(pa, () => (scheda.pp.occMan || []).some(r => /Notte di stelle/.tes
 ok(await wait(pa, () => ossList().find(x => x.nome === 'Notte di stelle').stato === 'svolta'), 'e l’attività risulta svolta anche per Anna');
 // collaboratore non può segnare come svolta le sue
 s = await ev(pb, () => [...document.querySelectorAll('.oss-card .oss-aa button')].map(b => b.textContent.trim()).filter(t => /svolta|Rimetti/.test(t)));
-ok(s.length === 0, 'il collaboratore non vede «Segna come svolta»');
+ok(s.length === 0, 'il collaboratore non vede «Aggiungi alle occasioni osservative»');
 // dati dell'altra persona intatti
 ok(await ev(pa, () => !!document.querySelector('#occ-tab') && /Notte di stelle/.test(document.getElementById('occ-tab').textContent)), 'la riga si vede nella tabella di Anna');
 for(const p of [pa, pb, pc, pd]) ok(!p.errors.length, p.label + ': nessun errore JS' + (p.errors.length ? ': ' + p.errors.slice(0, 3).join(' | ') : ''));

@@ -48,7 +48,7 @@ ok(await ev(() => ossList().length === 2 && !document.getElementById('oss-ov')),
 await ev(() => { const a = ossList().find(x => x.nome === 'La scelta difficile'); ossSvolta(a.id); }); await sleep(300);
 await P.screenshot({path:'/tmp/oss_' + name + '_svolta.png'});
 const mo = await ev(() => { const m = document.querySelector('#g-modal.show > div'); if(!m) return null; const r = m.getBoundingClientRect(); return {l: Math.round(r.left), r: Math.round(r.right), w: innerWidth, h: Math.round(r.height), vh: innerHeight}; });
-ok(mo && mo.l >= 0 && mo.r <= mo.w + 1, 'finestra «Segna come svolta» dentro lo schermo ' + JSON.stringify(mo));
+ok(mo && mo.l >= 0 && mo.r <= mo.w + 1, 'finestra «Aggiungi alle occasioni osservative» dentro lo schermo ' + JSON.stringify(mo));
 await ev(() => ossSvoltaOk(ossList().find(x => x.nome === 'La scelta difficile').id)); await sleep(600);
 ok(await ev(() => (scheda.pp.occMan || []).some(r => /La scelta difficile/.test(r.att))), 'la riga è nelle occasioni osservative');
 // riquadro KOS, ricerca, proposta all'archivio: dentro lo schermo e toccabili

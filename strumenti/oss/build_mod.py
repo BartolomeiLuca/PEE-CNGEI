@@ -65,7 +65,8 @@ function wizPrefill(x){ try{ const ok=p=>/^[PCS][1-8]$/.test(String(p))&&PID[p];
 '''
 js='\n'.join(['/*DATA*/'.replace('/*DATA*/',rd('data.js')),rd('cooc.js'),rd('stem_it.js'),rd('indice.js'),rd('motore.js')])
 scripts=[rd('data.js'),rd('cooc.js'),rd('stem_it.js'),rd('indice.js'),rd('motore.js'),rd('app3_const.js'),rd('orienta.js'),shim+wizjs+"\nparent.postMessage({oss:1,t:'ready'},'*');"]
-extra_css='''
+extra_css='''.strm{border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;padding:6px;margin-bottom:8px}.strm.on{border-color:var(--green)}.strm>.row{border:0;padding:4px 6px}.stools{padding:2px 6px 6px 34px}.sthead{font-size:12px;color:var(--ink-light);margin:4px 0 6px}.sthead b{color:var(--ink)}.stchips{display:flex;flex-wrap:wrap;gap:6px}.stc{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer;background:#fff}.stc input{accent-color:var(--green);margin:0}.stc.on{background:var(--green-pale);border-color:var(--green)}.stc.sel{font-weight:700}.stalt{margin-top:8px}
+
 body,button,input,select,textarea{font-family:'Montserrat',system-ui,-apple-system,'Segoe UI',Arial,sans-serif!important}
 #wiz{display:flex}.wclose{white-space:nowrap;min-height:36px;padding:6px 14px}
 .rad{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:var(--ink-mid);background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;margin:12px 0 4px;cursor:pointer}.rad input{margin-top:3px;accent-color:var(--green);flex:none}

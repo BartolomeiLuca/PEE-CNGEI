@@ -79,6 +79,6 @@ if 'anFlatOss(sc,fascia,proj)' not in h:
 if 'anRowFix(Object.assign' not in h:
     h=rep(h,"AN.rows=(data||[]).map(r=>Object.assign({src:'an'},r));","AN.rows=(data||[]).map(r=>anRowFix(Object.assign({src:'an'},r)));")
 # 7 build
-h=re.sub(r"const APP_BUILD='\d+';","const APP_BUILD='202611121930';",h,1)
+h=re.sub(r"const APP_BUILD='\d+';","const APP_BUILD='202611121700';",h,1)
 open(A,'w').write(h)
 print('ok',len(h))

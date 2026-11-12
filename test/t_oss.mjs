@@ -1,4 +1,4 @@
-// Attività osservative proprie: pannello in «Contesto e osservazione», percorso guidato isolato, «Segna come svolta», ruoli, proposte e suggerimenti
+// Attività osservative proprie: pannello in «Contesto e osservazione», percorso guidato isolato, «Aggiungi alle occasioni osservative», ruoli, proposte e suggerimenti
 import { FakeDB, serve, launch, person, sleep, ok, summary, loginAs } from './harness.mjs';
 const engine = process.argv[2] || 'chromium';
 process.env.SITE = process.env.SITE || '/tmp/site_pre';
@@ -39,7 +39,7 @@ ok(s.a.stato === 'pronta' && s.a.main === 'S6' && s.a.aut === 'Anna Verdi' && s.
 ok(!db.t.pee_radici || true, 'nessuna raccolta senza consenso');
 // segna come svolta
 await ev(() => ossSvolta(ossList()[0].id)); await sleep(300);
-ok(await ev(() => !!document.querySelector('#g-modal.show .oss-sv-p')), 'finestra «Segna come svolta» con i percorsi previsti spuntati');
+ok(await ev(() => !!document.querySelector('#g-modal.show .oss-sv-p')), 'finestra «Aggiungi alle occasioni osservative» con i percorsi previsti spuntati');
 await ev(() => { document.getElementById('oss-sv-d').value = '2026-11-08'; ossSvoltaOk(ossList()[0].id); }); await sleep(600);
 s = await ev(() => ({occ: (scheda.pp.occMan || []).map(r => [r.att, r.data, r.perc.join(), r.chi]), st: ossList()[0].stato, cov: Object.keys(obsSources()).length, tag: (document.getElementById('kostag-S6') || {}).textContent}));
 ok(s.occ.length === 2 && /Attività osservativa · La scelta difficile/.test(s.occ[1][0]) && s.occ[1][1] === '2026-11-08' && s.occ[1][2] === 'S6', 'la riga è nelle occasioni osservative: ' + JSON.stringify(s.occ[1]));
@@ -51,7 +51,7 @@ ok(g.length === 1 && /La scelta difficile/.test(g[0].nome), 'la griglia di S6 ha
 // non svolta: torna pronta
 await ev(() => ossNonSvoltaOk(ossList()[0].id)); await sleep(300);
 s = await ev(() => ({st: ossList()[0].stato, occ: scheda.pp.occMan.length}));
-ok(s.st === 'pronta' && s.occ === 1, '«Non è stata svolta»: torna pronta e la riga sparisce');
+ok(s.st === 'pronta' && s.occ === 1, '«Togli dalle occasioni osservative»: torna pronta e la riga sparisce');
 await ev(() => ossDelOk(ossList()[0].id)); await sleep(200);
 ok(await ev(() => ossList().length === 0), 'elimina');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));

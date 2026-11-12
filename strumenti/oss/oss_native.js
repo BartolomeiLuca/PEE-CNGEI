@@ -1,7 +1,7 @@
 /*OSS-BEGIN*/
 // ═══ Attività osservative proprie («Crea le tue attività osservative») ═══
 // Le attività stanno in scheda.pp.attOss (oggetto con una chiave per attività: così la sincronizzazione unisce le modifiche di più persone).
-// «Segna come svolta» aggiunge una riga alle occasioni osservative (scheda.pp.occMan), e da lì tutto il resto (griglia, copertura, Word) funziona come per le altre occasioni.
+// «Aggiungi alle occasioni osservative» aggiunge una riga alle occasioni osservative (scheda.pp.occMan), e da lì tutto il resto (griglia, copertura, Word) funziona come per le altre occasioni.
 // Il percorso guidato gira in un riquadro isolato (documento in base64 qui sotto) e dialoga con la pagina con postMessage.
 const OSS_STATI = {bozza:['Bozza','b'], proposta:['Proposta','p'], pronta:['Pronta','r'], svolta:['Svolta','s']};
 function ossList(){ const o = (scheda && scheda.pp && scheda.pp.attOss) || {}; return Object.keys(o).map(k => o[k]).filter(a => a && a.id).sort((a, b) => (b.at || 0) - (a.at || 0)); }
@@ -49,11 +49,11 @@ function ossCardHTML(a){
   const acts = ['<button type="button" class="btn-ghost sm" onclick="ossApri(\'' + a.id + '\')">Apri</button>'];
   if(!window.BRO){
     if(a.stato === 'proposta' && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossAccetta(\'' + a.id + '\')">Accetta la proposta</button>');
-    if(a.stato === 'pronta' && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossSvolta(\'' + a.id + '\')">Segna come svolta</button>');
-    if(orphan && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossSvolta(\'' + a.id + '\')">Rimetti nelle occasioni</button>');
+    if(a.stato === 'pronta' && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossSvolta(\'' + a.id + '\')">Aggiungi alle occasioni osservative</button>');
+    if(orphan && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossSvolta(\'' + a.id + '\')">Aggiungi di nuovo alle occasioni osservative</button>');
     if(ossCanPropose(a)) acts.push('<span class="an-prop" style="' + (AN.st !== 'no' ? '' : 'display:none') + '"><button type="button" class="btn-ghost sm" onclick="ossPropose(\'' + a.id + '\')">📚 ' + (a.anAt ? 'Proponi di nuovo' : 'Proponi all’archivio nazionale') + '</button></span>');
     if(!ossMine(a) && !szPP()) acts.push('<button type="button" class="btn-ghost sm" onclick="ossSugg(\'' + a.id + '\')">Suggerisci</button>');
-    if(a.stato === 'svolta' && !orphan && ossCanDirect()) acts.push('<button type="button" class="lnk" onclick="ossNonSvolta(\'' + a.id + '\')">Non è stata svolta</button>');
+    if(a.stato === 'svolta' && !orphan && ossCanDirect()) acts.push('<button type="button" class="lnk" onclick="ossNonSvolta(\'' + a.id + '\')">Togli dalle occasioni osservative</button>');
     if(ossMine(a) || ossRole() === 'tit' || ossRole() === 'aut') acts.push('<button type="button" class="lnk" onclick="ossDel(\'' + a.id + '\')">Elimina</button>');
   }
   const sg = Object.keys(a.sugg || {}).map(k => Object.assign({k}, a.sugg[k])).sort((x, y) => (x.at || 0) - (y.at || 0));
@@ -110,7 +110,7 @@ function ossSaveFrom(m){
   try{ localStorage.setItem('pee_radici_ok', m.optin ? '1' : '0'); }catch(e){}
   if(m.rad) ossSendRad(m.rad);
   ossWizClose(); ossRefresh();
-  showToast(role === 'col' ? 'Proposta inviata: chi ha il progetto la trova qui e in «Per te».' : 'Attività salvata. Quando l’avrete fatta, «Segna come svolta» la porta nelle occasioni osservative.');
+  showToast(role === 'col' ? 'Proposta inviata: chi ha il progetto la trova qui e in «Per te».' : 'Attività salvata. Quando l’avrete fatta, «Aggiungi alle occasioni osservative» la porta nelle occasioni osservative.');
   setTimeout(() => { const e = document.getElementById('oss-panel'); if(e && e.scrollIntoView) e.scrollIntoView({behavior:'smooth', block:'start'}); }, 80);
 }
 // raccolta anonima, solo con il consenso: radici delle parole e percorso scelto, nient'altro
@@ -153,7 +153,7 @@ function ossSvolta(id){ const a = ossGet(id); if(!a) return; const P = [a.main].
   const chiOld = old ? String(old.chi || '').split('|').map(x => x.trim()).filter(Boolean) : [];
   const dIso = old && grIso(old.data) ? old.data : (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
   const rest = ossAllIds().filter(p => P.indexOf(p) < 0);
-  modalShow(`<div class="sch-t">Segna come svolta</div><div class="sch-m">«${sEsc(a.nome)}» entra nelle occasioni osservative e da lì nella griglia, come le attività del KOS.</div>
+  modalShow(`<div class="sch-t">Aggiungi alle occasioni osservative</div><div class="sch-m">«${sEsc(a.nome)}» entra nelle occasioni osservative e da lì nella griglia, come le attività del KOS.</div>
     <label class="oss-fl">Data<input type="date" id="oss-sv-d" value="${dIso}"></label>
     ${staff.length ? `<div class="oss-lbl">Chi ha osservato</div><div class="oss-cg">${staff.map(n => `<label><input type="checkbox" class="oss-sv-c" value="${sEsc(n)}" ${(!chiOld.length || chiOld.indexOf(n) >= 0) ? 'checked' : ''}> ${sEsc(n)}</label>`).join('')}</div>` : `<label class="oss-fl">Chi ha osservato<input type="text" id="oss-sv-t" maxlength="120" value="${sEsc(chiOld.join(', '))}" placeholder="Scrivi lo staff nella tabella «Il mio staff» per sceglierli da un elenco"></label>`}
     <div class="oss-lbl">Quali percorsi avete osservato davvero <span>(arrivano spuntati quelli previsti: cambiali se è andata diversamente)</span></div>
