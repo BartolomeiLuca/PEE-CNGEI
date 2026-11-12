@@ -51,5 +51,20 @@ const mo = await ev(() => { const m = document.querySelector('#g-modal.show > di
 ok(mo && mo.l >= 0 && mo.r <= mo.w + 1, 'finestra «Segna come svolta» dentro lo schermo ' + JSON.stringify(mo));
 await ev(() => ossSvoltaOk(ossList().find(x => x.nome === 'La scelta difficile').id)); await sleep(600);
 ok(await ev(() => (scheda.pp.occMan || []).some(r => /La scelta difficile/.test(r.att))), 'la riga è nelle occasioni osservative');
+// riquadro KOS, ricerca, proposta all'archivio: dentro lo schermo e toccabili
+await ev(() => { gGo('1a'); window._ctxF = 'occ'; if(window.shSync) shSync(); }); await sleep(700);
+const kb = await ev(() => { const e = document.getElementById('kos-box'); if(!e) return null; const r = e.getBoundingClientRect(); const bars = [...e.querySelectorAll('.kos-bar')].map(b => b.scrollWidth <= b.clientWidth + 1); return {l: Math.round(r.left), r: Math.round(r.right), w: innerWidth, sw: document.documentElement.scrollWidth, bars: bars.every(Boolean), n: bars.length}; });
+ok(kb && kb.l >= 0 && kb.r <= kb.w + 1 && kb.sw <= kb.w + 1 && kb.bars && kb.n === 3, 'riquadro KOS e barre dentro lo schermo ' + JSON.stringify(kb));
+await P.screenshot({path:'/tmp/oss_' + name + '_kos.png'});
+await ev(() => document.querySelector('#oss-panel .oss-btns .btn-ghost').click()); await sleep(2500);
+const cs = await ev(() => { const o = document.querySelector('#an-ov .an-box'); if(!o) return null; const r = o.getBoundingClientRect(); const gb = [...o.querySelectorAll('.an-gb')].map(b => Math.round(b.getBoundingClientRect().height)); const sels = [...o.querySelectorAll('.an-f select, .an-f input')].filter(e => e.offsetParent).every(e => e.getBoundingClientRect().right <= innerWidth + 1); return {l: Math.round(r.left), r: Math.round(r.right), w: innerWidth, gb, sels, x: o.scrollWidth <= o.clientWidth + 1}; });
+ok(cs && cs.l >= 0 && cs.r <= cs.w + 1 && cs.x && cs.sels && cs.gb.length === 2 && cs.gb.every(h => h >= 34), 'finestra «Cerca» dentro lo schermo, scelte toccabili ' + JSON.stringify(cs));
+await P.screenshot({path:'/tmp/oss_' + name + '_cerca.png'});
+await ev(() => anClose());
+await ev(() => { ossPropose(ossList().find(x => x.nome === 'La scelta difficile').id); }); await sleep(2500);
+const pr = await ev(() => { const o = document.querySelector('#an-ov .an-box'); if(!o) return null; const r = o.getBoundingClientRect(); return {l: Math.round(r.left), r: Math.round(r.right), w: innerWidth, x: o.scrollWidth <= o.clientWidth + 1, btn: Math.round(document.getElementById('anp-go').getBoundingClientRect().height)}; });
+ok(pr && pr.l >= 0 && pr.r <= pr.w + 1 && pr.x && pr.btn >= 30, 'modulo «Proponi all’archivio nazionale» dentro lo schermo ' + JSON.stringify(pr));
+await P.screenshot({path:'/tmp/oss_' + name + '_proponi.png'});
+await ev(() => anClose());
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 process.exit(summary() ? 1 : 0);

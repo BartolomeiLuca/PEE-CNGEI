@@ -51,10 +51,18 @@ const nOcc=p=>(COV[p]||[]).length;
 const scoperti=()=>PERC.filter(p=>!nOcc(p.id)).map(p=>p.id);
 let S;
 window.addEventListener('message',e=>{ const m=e.data; if(!m||!m.oss||m.t!=='init'||e.source!==parent) return;
-  INIT=m; B=m.B; TIPO=m.tipo; ROLE=m.role; ME=m.me||''; COV=m.cov||{}; document.body.dataset.theme=B; wizOpen(m.pid||''); });
+  INIT=m; B=m.B; TIPO=m.tipo; ROLE=m.role; ME=m.me||''; COV=m.cov||{}; document.body.dataset.theme=B; wizOpen(m.pid||''); if(m.prefill) wizPrefill(m.prefill); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('modal').classList.contains('on')) modalClose(); else wizClose(); } });
 '''
 wizjs=wizjs.replace('let S;\n','',1)
+wizjs+='''
+// Riuso di un'attività già scritta (altro progetto o archivio): si apre direttamente «Il tuo foglio», già compilato, da adattare al proprio gruppo
+function wizPrefill(x){ try{ const ok=p=>/^[PCS][1-8]$/.test(String(p))&&PID[p];
+  if(!ok(x.main)) return; S.porta='att'; S.main=x.main; S.amb=x.main[0]; S.also=(x.also||[]).filter(p=>ok(p)&&p!==x.main).slice(0,8); S.dom=String(x.dom||''); S.nome=String(x.nome||'').slice(0,120);
+  S.dur=Math.max(0,Math.min(600,+x.dur||0)); S.lan=String(x.lan||''); S.svi=String(x.svi||''); S.con=String(x.con||'');
+  S.foc=(x.foc||[]).slice(0,8).map(t=>({txt:String(t),cls:'',pid:x.main,extra:[],tocca:[],sp:'Lo fanno da sé, senza che nessuno lo chieda.',st:'Lo fanno dopo una domanda, un invito o un cambio di regola.',na:'Non lo fanno nemmeno quando lo stimolo c’è.'}));
+  const vs=visSteps(); S.step=vs.findIndex(s=>s.k==='fog'); if(S.step<0) S.step=vs.length-1; wr(); toast('Attività riusata: adattala al tuo gruppo'); }catch(e){ console.error(e); } }
+'''
 js='\n'.join(['/*DATA*/'.replace('/*DATA*/',rd('data.js')),rd('cooc.js'),rd('stem_it.js'),rd('indice.js'),rd('motore.js')])
 scripts=[rd('data.js'),rd('cooc.js'),rd('stem_it.js'),rd('indice.js'),rd('motore.js'),rd('app3_const.js'),rd('orienta.js'),shim+wizjs+"\nparent.postMessage({oss:1,t:'ready'},'*');"]
 extra_css='''

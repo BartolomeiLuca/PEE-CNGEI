@@ -44,7 +44,7 @@ s = await ev(pa, () => [...document.querySelectorAll('.oss-card .oss-aa button')
 ok(s.includes('Accetta la proposta') && s.includes('Suggerisci') && !s.includes('Segna come svolta'), 'titolare: «Accetta la proposta», «Suggerisci»: ' + s);
 s = await ev(pb, () => [...document.querySelectorAll('.oss-card .oss-aa button')].map(b => b.textContent.trim()));
 ok(!s.includes('Accetta la proposta') && !s.includes('Suggerisci') && s.includes('Elimina'), 'collaboratore (autore): niente «Accetta», niente «Suggerisci»: ' + s);
-s = await ev(pc, () => ({b: [...document.querySelectorAll('#oss-panel button')].map(b => b.textContent.trim()), role: ossRole(), card: document.querySelectorAll('.oss-card').length}));
+s = await ev(pc, () => ({b: [...document.querySelectorAll('#oss-panel .oss-card button')].map(b => b.textContent.trim()), role: ossRole(), card: document.querySelectorAll('.oss-card').length}));
 ok(s.role === 'let' && s.card === 1 && s.b.every(t => t === 'Apri'), 'lettrice: vede l’attività, solo «Apri»: ' + JSON.stringify(s.b));
 // Dario (cot) suggerisce a Bruno
 await ev(pd, () => { ossSugg(ossList()[0].id); }); await sleep(300);
