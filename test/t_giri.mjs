@@ -9,17 +9,17 @@ await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500);
 // vecchi invii segnati a mano, come li avrebbe un progetto già in uso
 await ev(() => { scheda.pp.iter = {prima:{date:'2026-10-01'}, finale:{date:'2026-11-01'}, riscontri:[{date:'2026-10-10', note:'ok'}]}; scheda.pp.nome = 'Anna Rossi'; scheda.pp.mail = {area:'altoadriatico', tutorMail:'tutor@x.it', cgMail:'cg@x.it', cdsMail:'', tono:'sobrio', l1:'', l2:'', body:'', edited:false}; saveData(true); }); await sleep(800);
 await ev(() => shPP('i')); await sleep(600);
-let s = await ev(() => ({L: ppGiriList().map(g => [g.n, g.hist, g.sez.join('')]), html: document.body.innerText.includes('I giri di revisione'), isc: scheda.pp.iter.riscontri.length}));
+let s = await ev(() => ({L: ppGiriList().map(g => [g.n, g.hist, g.sez.join('')]), html: document.body.innerText.includes('Prima consegna · Sezioni 1–3'), isc: scheda.pp.iter.riscontri.length}));
 ok(JSON.stringify(s.L) === '[[1,true,"123"],[2,true,"12345"]]', 'i due invii già segnati diventano Giro 1 e Giro 2 (storici): ' + JSON.stringify(s.L));
-ok(s.html && s.isc === 1, 'la pagina mostra «I giri di revisione» e i riscontri restano');
-await P.setViewportSize({width:320, height:568}); await ev(() => ppGiroForm()); await sleep(900);
+ok(s.html && s.isc === 1, 'la pagina mostra «Prima consegna · Sezioni 1–3» e i riscontri restano');
+await P.setViewportSize({width:320, height:568}); await ev(() => ppGiroForm(1)); await sleep(900);
 s = await ev(() => { const b = document.getElementById('pp-giro-ov').firstElementChild; return {sw: b.scrollWidth, cw: b.clientWidth, bw: document.documentElement.scrollWidth, vw: innerWidth}; });
 ok(s.sw <= s.cw + 1 && s.bw <= s.vw + 1, 'su schermo stretto (320 px) il modulo non esce dai bordi: ' + JSON.stringify(s));
 await ev(() => ppGiroFormClose()); await P.setViewportSize({width:1280, height:900});
 // apro il modulo: proposta di default e blocco per i tester
-await ev(() => ppGiroForm()); await sleep(1200);
+await ev(() => ppGiroForm(1)); await sleep(1200);
 s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); const t = ov.innerText; return {t, tutor: ov.querySelectorAll('input[type=email]')[0].value, icdf: ov.querySelectorAll('input[type=email]')[1].value, dis: [...ov.querySelectorAll('input[type=email]')].map(e => e.parentElement.querySelector('input[type=checkbox]').disabled).join(), title: /Giro 3/.test(t)}; });
-ok(s.title, 'il nuovo giro è il Giro 3'); ok(s.tutor === 'tutor@x.it' && s.icdf === 'rcdf.altoadriatico@cngei.it', 'Tutor e ICdF precompilati');
+ok(s.title && /Prima consegna/.test(s.t) && !/Che cosa copre il giro/.test(s.t), 'il nuovo giro è il Giro 3, nel blocco Prima consegna, senza scelta delle sezioni'); ok(s.tutor === 'tutor@x.it' && s.icdf === 'rcdf.altoadriatico@cngei.it', 'Tutor e ICdF precompilati');
 ok(/Funzione in preparazione: la condivisione in app con Tutor e ICdF non è ancora attiva/.test(s.t), 'disclaimer per i tester accanto a Tutor/ICdF');
 ok(s.dis === 'true,true,false,true', '«Condividi in app» disabilitato per Tutor e ICdF (e abilitato per Capo Gruppo)');
 // indirizzo ammesso: il pulsante si abilita e il disclaimer sparisce per quella riga
@@ -37,7 +37,7 @@ ok(db.t.pee_giri_dest.length === 2 && db.t.pee_giri_dest.some(d => d.email === '
 s = await ev(() => ({L: ppGiriList().map(g => g.n + ':' + !!g.hist), ov: document.getElementById('pp-giro-ov').classList.contains('show'), mail: !!document.querySelector('#pp-mail-ov.show')}));
 ok(s.L.join() === '1:true,2:true,3:false', 'il Giro 3 è registrato in locale'); ok(!s.ov && !s.mail, 'modulo chiuso e nessuna mail aperta (mail non richiesta)');
 // secondo giro con mail richiesta, senza nomi: numero 4, nessun tetto
-await ev(() => ppGiroForm()); await sleep(600);
+await ev(() => ppGiroForm(1)); await sleep(600);
 await ev(() => { ppGiroFormSet('nomi', false); }); await ev(() => ppGiroCongela()); await sleep(2500);
 c = cloud(); s = await ev(() => ({mail: !!document.querySelector('#pp-mail-ov.show'), n: ppGiriList().length}));
 ok(c.length === 2 && c[1].n === 4 && c[1].nomi_inclusi === false && !c[1].data.scheda.griglia, 'Giro 4 senza griglia osservativa'); ok(s.mail, 'mail richiesta: si apre il compositore');
@@ -53,4 +53,25 @@ ok(noarch === 0, 'il revisore non vede il progetto vivo');
 // riaprendo la pagina la migrazione non si ripete
 await ev(() => { delete scheda.pp.giri['h1']; saveData(true); shPP('i'); }); await sleep(500);
 ok(await ev(() => !ppGiri()['h1']), 'la migrazione dei vecchi invii avviene una volta sola');
+
+// blocchi: la consegna finale si apre solo con la prima parte approvata; riscontri dentro il giro; apri la copia
+await ev(() => { scheda.pp.giri = {}; scheda.pp.giriMig = 1; scheda.pp.iter = {}; shPP('i'); }); await sleep(500);
+s = await ev(() => ({b2: ppBloccoHTML(2), b1: ppBloccoHTML(1)}));
+ok(/si apre quando la prima parte è approvata/.test(s.b2) && !/ppGiroForm\(2\)/.test(s.b2), 'senza approvazione la consegna finale resta chiusa');
+ok(/ppGiroForm\(1\)/.test(s.b1) && /Primo giro/.test(s.b1), 'la prima consegna offre «Primo giro»');
+await ev(() => ppGiroForm(1)); await sleep(500); await ev(() => ppGiroCongela()); await sleep(2000);
+const gid = await ev(() => ppGiriList()[0].id), gn = await ev(() => ppGiriList()[0].n);
+ok(gn === 1 || gn >= 5, 'in un progetto senza storici il primo giro prende il primo numero libero: ' + gn);
+await ev(id => ppGRiscAdd(id), gid); await sleep(300);
+const rid = await ev(id => Object.keys(ppGiri()[id].risc)[0], gid);
+await ev(([id, r]) => { ppGRiscSet(id, r, 'da', 'Tutor Marco'); ppGRiscSet(id, r, 'esito', 'approva'); }, [gid, rid]); await sleep(500);
+s = await ev(() => ({ap: ppIter().apprB1, b2: ppBloccoHTML(2)}));
+ok(s.ap && s.ap.chi === 'Tutor Marco' && /ppGiroForm\(2\)/.test(s.b2), 'il riscontro «Approva» registra l’approvazione e sblocca la consegna finale');
+ok(await ev(() => /Apri la copia/.test(ppBloccoHTML(1))), 'il giro ha il pulsante «Apri la copia»');
+await ev(id => ppGiroApri(id), gid); await sleep(3500);
+s = await ev(() => ({ro: window.BRO && window.BRO.giro, bar: (document.getElementById('ro-bar') || {}).textContent || '', pp: !!(scheda && scheda.pp), nome: (scheda.pp || {}).nome}));
+ok(s.ro && /Copia del Giro/.test(s.bar), 'la copia si apre in sola lettura: ' + s.bar.slice(0, 60));
+ok(s.nome === 'Anna Rossi', 'la copia contiene il progetto com’era');
+await ev(() => roExit()); await sleep(3000);
+ok(await ev(() => !window.BRO && ppGiriList().length >= 1), 'si torna al proprio progetto con i giri intatti');
 summary(); process.exit(0);
