@@ -32,6 +32,6 @@ ok(db.t.pee_archivi.find(r => r.id === 'c1').data.scheda.pp.attOss.a3.nome === '
 const dw = await dl(() => exportSchedaDocx('completo')); const f = '/tmp/oss6.docx'; await dw.saveAs(f);
 const xml = execSync('unzip -p ' + f + ' word/document.xml').toString();
 ok(/Notte di stelle/.test(xml) && /Occasioni osservative/i.test(xml), 'il Word contiene l’occasione osservativa «Notte di stelle»');
-ok(!/Che cosa li stupisce/.test(xml) && !/Guardo lo stupore/.test(xml), 'nel Word non finiscono la domanda sul gruppo né i focus (restano nell’app)');
+ok(/Che cosa li stupisce/.test(xml) && /Guardo lo stupore/.test(xml), 'nel Word della Programmazione Educativa ci sono ora la domanda sul gruppo e i focus');
 ok(pa.errors.length === 0, 'nessun errore JS: ' + JSON.stringify(pa.errors.slice(0, 2)));
 summary(); process.exit(0);

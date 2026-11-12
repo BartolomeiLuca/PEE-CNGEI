@@ -22,8 +22,13 @@ nuovo_salva='''function radiciAnon(){ if(S.porta==='att'||!S.dom.trim()) return 
   const known=w=>!!(INDICE.IDX[w]||INDICE.RW[w]);
   const all=[...motoreTok(t).map(w=>stem(w)),...cand.filter(known)];
   return [...new Set(all)].filter(w=>w.length>=2&&w.length<=24&&/^[a-zàèéìòù']+$/.test(w)).sort().slice(0,30); }
+function snapshotW(){ return {porta:S.porta,mom:S.mom,momTxt:S.momTxt,momMese:S.momMese,dom:S.dom,contro:S.contro,amb:S.amb,area:S.area,main:S.main,also:S.also.slice(),scart:S.scart.slice(),ctx:S.ctx,dur:S.dur,
+    foc:S.foc.map(f=>({txt:f.txt,cls:f.cls||'',pid:f.pid||S.main,extra:(f.extra||[]).slice(),tocca:(f.tocca||[]).slice(),sp:f.sp||'',st:f.st||'',na:f.na||''})),nR:String(S.nR||''),oss:S.oss.map(o=>({n:o.n,on:!!o.on,staff:!!o.staff,cond:!!o.cond})),
+    strum:S.strum.slice(),strumDet:S.strumDet,strumAltro:S.strumAltro,tipi:S.tipi.slice(),tipoLib:S.tipoLib,ag:S.ag,nome:S.nome,lan:S.lan,svi:S.svi,con:S.con,temi:S.temi.slice(),useFr:!!S.useFr}; }
 function salva(){ if(!S.main){ toast('Manca il percorso principale'); return; } if(!S.nome.trim()){ toast('Dai un nome all’attività'); return; }
-  const att={nome:S.nome.trim().slice(0,120),main:S.main,also:S.also.slice(),dom:S.porta==='att'?'':S.dom.trim(),foc:S.foc.map(f=>f.txt),dur:S.dur,lan:S.lan,svi:S.svi,con:S.con,temi:S.temi.slice()};
+  const att={nome:S.nome.trim().slice(0,120),main:S.main,also:S.also.slice(),dom:S.porta==='att'?(S.domKeep||''):S.dom.trim(),foc:S.foc.map(f=>f.txt),focD:S.foc.map(f=>({txt:f.txt,pid:f.pid||S.main,extra:(f.extra||[]).slice()})),dur:S.dur,lan:S.lan,svi:S.svi,con:S.con,temi:S.temi.slice(),
+    mom:(momObj()?(S.mom==='altro'?(S.momTxt.trim()||'Altro momento'):momObj().t):''),momK:S.mom,ctx:(CTX.find(c=>c.k===S.ctx)||{}).t||'',ctxK:S.ctx,tipi:[...S.tipi,S.tipoLib.trim()].filter(Boolean).slice(0,12),
+    strum:S.strum.map(k=>STR.find(x=>x.k===k).t),strD:S.strum.map(k=>({t:STR.find(x=>x.k===k).t,det:(S.strumDet[k]||[]).slice(),altro:(S.strumAltro[k]||'').trim()})),w:snapshotW()};
   const ck=$('radici-ok'); let rad=null; if(ck&&ck.checked){ const r=radiciAnon(); if(r.length>=2) rad={branca:B,radici:r,percorso:S.main,altri:S.also.slice(0,4)}; }
   parent.postMessage({oss:1,t:'save',att,rad,optin:!!(ck&&ck.checked)},'*'); }
 '''
@@ -31,8 +36,9 @@ wizjs=wizjs[:i]+nuovo_salva+wizjs[j:]
 # riga di consenso prima dei pulsanti finali
 old='''<div class="aa"><button type="button" class="btn-primary" onclick="salva()">'''
 assert old in wizjs
-wizjs=wizjs.replace(old,'''${INIT.radiciAsk?`<label class="rad"><input type="checkbox" id="radici-ok" ${INIT.optin?'checked':''}><span><b>Aiuta a migliorare lo strumento</b> (facoltativo). Se spunti, condivido in modo anonimo solo le <i>radici</i> delle parole della tua domanda (per esempio «litig», «guid») e il percorso che hai scelto. Non vengono salvati il testo, i nomi, il tuo account né il progetto.</span></label>`:''}
+wizjs=wizjs.replace(old,'''${INIT.radiciAsk&&!INIT.edit?`<label class="rad"><input type="checkbox" id="radici-ok" ${INIT.optin?'checked':''}><span><b>Aiuta a migliorare lo strumento</b> (facoltativo). Se spunti, condivido in modo anonimo solo le <i>radici</i> delle parole della tua domanda (per esempio «litig», «guid») e il percorso che hai scelto. Non vengono salvati il testo, i nomi, il tuo account né il progetto.</span></label>`:''}
   <div class="aa"><button type="button" class="btn-primary" onclick="salva()">''',1)
+wizjs=wizjs.replace("${ROLE==='col'?'Salva e proponi':'Salva l’attività'}","${INIT.edit?'Salva le modifiche':ROLE==='col'?'Salva e proponi':'Salva l’attività'}")
 wizjs=wizjs.replace('DB_.kosDone.has(a.n)',"(INIT.kosDone||[]).includes(a.n)")
 assert 'DB_' not in wizjs
 wizjs=wizjs.replace("document.addEventListener('DOMContentLoaded',()=>{ kosInit(); initAtt(); renderPage(); });","")
@@ -51,7 +57,7 @@ const nOcc=p=>(COV[p]||[]).length;
 const scoperti=()=>PERC.filter(p=>!nOcc(p.id)).map(p=>p.id);
 let S;
 window.addEventListener('message',e=>{ const m=e.data; if(!m||!m.oss||m.t!=='init'||e.source!==parent) return;
-  INIT=m; B=m.B; TIPO=m.tipo; ROLE=m.role; ME=m.me||''; COV=m.cov||{}; document.body.dataset.theme=B; wizOpen(m.pid||''); if(m.prefill) wizPrefill(m.prefill); });
+  INIT=m; B=m.B; TIPO=m.tipo; ROLE=m.role; ME=m.me||''; COV=m.cov||{}; document.body.dataset.theme=B; wizOpen(m.pid||''); if(m.edit) wizEdit(m.edit); else if(m.prefill) wizPrefill(m.prefill); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('modal').classList.contains('on')) modalClose(); else wizClose(); } });
 '''
 wizjs=wizjs.replace('let S;\n','',1)
@@ -62,6 +68,18 @@ function wizPrefill(x){ try{ const ok=p=>/^[PCS][1-8]$/.test(String(p))&&PID[p];
   S.dur=Math.max(0,Math.min(600,+x.dur||0)); S.lan=String(x.lan||''); S.svi=String(x.svi||''); S.con=String(x.con||'');
   S.foc=(x.foc||[]).slice(0,8).map(t=>({txt:String(t),cls:'',pid:x.main,extra:[],tocca:[],sp:'Lo fanno da sé, senza che nessuno lo chieda.',st:'Lo fanno dopo una domanda, un invito o un cambio di regola.',na:'Non lo fanno nemmeno quando lo stimolo c’è.'}));
   const vs=visSteps(); S.step=vs.findIndex(s=>s.k==='fog'); if(S.step<0) S.step=vs.length-1; wr(); toast('Attività riusata: adattala al tuo gruppo'); }catch(e){ console.error(e); } }
+'''
+wizjs+='''
+// Modifica di un'attività già salvata: si riapre «Il tuo foglio» con tutto com'era (istantanea «w»); per le attività vecchie, senza istantanea, si riparte dai testi
+function wizEdit(x){ try{ const ok=p=>/^[PCS][1-8]$/.test(String(p))&&PID[p]; const w=x.w; S.domKeep=String(x.dom||'');
+  if(w&&typeof w==='object'){ const d={}; ['porta','mom','momTxt','momMese','dom','contro','amb','area','main','ctx','ag','nome','lan','svi','con','tipoLib','nR'].forEach(k=>{ if(typeof w[k]==='string'||typeof w[k]==='number') d[k]=String(w[k]); });
+    d.also=(w.also||[]).filter(ok); d.scart=(w.scart||[]).filter(ok); d.temi=(w.temi||[]).filter(ok); d.dur=Math.max(0,Math.min(600,+w.dur||0)); d.useFr=w.useFr!==false;
+    d.foc=(w.foc||[]).slice(0,8).filter(f=>f&&String(f.txt||'').trim()).map(f=>({txt:String(f.txt),cls:String(f.cls||''),pid:ok(f.pid)?f.pid:w.main,extra:Array.isArray(f.extra)?f.extra:[],tocca:Array.isArray(f.tocca)?f.tocca:[],sp:String(f.sp||''),st:String(f.st||''),na:String(f.na||'')}));
+    if(Array.isArray(w.oss)&&w.oss.length) d.oss=w.oss.map(o=>({n:String(o.n||''),on:!!o.on,staff:!!o.staff,cond:!!o.cond}));
+    d.strum=(w.strum||[]).filter(k=>STR.some(z=>z.k===k)); d.strumDet=(w.strumDet&&typeof w.strumDet==='object')?w.strumDet:{}; d.strumAltro=(w.strumAltro&&typeof w.strumAltro==='object')?w.strumAltro:{}; d.tipi=(w.tipi||[]).map(String);
+    Object.assign(S,d); if(!ok(S.main)){ S.main=x.main; S.amb=String(x.main)[0]; } }
+  else { wizPrefill(x); S.nome=String(x.nome||'').slice(0,120); }
+  const vs=visSteps(); S.step=vs.findIndex(s=>s.k==='fog'); if(S.step<0) S.step=vs.length-1; wr(); toast('Modifica quello che ti serve, poi salva'); }catch(e){ console.error(e); } }
 '''
 js='\n'.join(['/*DATA*/'.replace('/*DATA*/',rd('data.js')),rd('cooc.js'),rd('stem_it.js'),rd('indice.js'),rd('motore.js')])
 scripts=[rd('data.js'),rd('cooc.js'),rd('stem_it.js'),rd('indice.js'),rd('motore.js'),rd('app3_const.js'),rd('orienta.js'),shim+wizjs+"\nparent.postMessage({oss:1,t:'ready'},'*');"]

@@ -78,7 +78,36 @@ if 'anFlatOss(sc,fascia,proj)' not in h:
 
 if 'anRowFix(Object.assign' not in h:
     h=rep(h,"AN.rows=(data||[]).map(r=>Object.assign({src:'an'},r));","AN.rows=(data||[]).map(r=>anRowFix(Object.assign({src:'an'},r)));")
+
+# 9 giro 2: Word della PE con le attività osservative, filtri momento/contesto/tipo/strumenti, lente con occasioni e attività osservative
+if "typeof ossWordSec==='function'" not in h:
+    h=rep(h,"else if(tot) ch.push(dPara('Percorsi con almeno un’occasione di osservazione: '+tot+' su 24.',{size:18,italics:true,after:80})); }","else if(tot) ch.push(dPara('Percorsi con almeno un’occasione di osservazione: '+tot+' su 24.',{size:18,italics:true,after:80})); }\n  try{ if(typeof ossWordSec==='function') ch.push(...ossWordSec()); }catch(e){ console.error(e); }")
+if "mom:'',ctx:''" not in h:
+    h=rep(h,"ga:true,go:true,st:''}","ga:true,go:true,st:'',mom:'',ctx:''}")
+    h=rep(h,"if(f.tipo&&!(r.tipi||[]).includes(f.tipo)) return false;","if(f.mom&&r.mom!==f.mom) return false; if(f.ctx&&r.ctx!==f.ctx) return false; if(f.tipo&&!(r.tipi||[]).includes(f.tipo)) return false;")
+    h=rep(h,"<select class=\"ax-in\" ${AN.f.ga?'':'style=\"display:none\" '}onchange=\"AN.f.tipo=","<select class=\"ax-in\" ${(AN.f.ga||AN.f.go)?'':'style=\"display:none\" '}onchange=\"AN.f.tipo=")
+    h=rep(h,"<select class=\"ax-in\" ${AN.f.ga?'':'style=\"display:none\" '}onchange=\"AN.f.str=","<select class=\"ax-in\" ${(AN.f.ga||AN.f.go)?'':'style=\"display:none\" '}onchange=\"AN.f.str=")
+    h=rep(h,"<select class=\"ax-in\" onchange=\"AN.f.dur=this.value;anRender()\">","<select class=\"ax-in\" ${(AN.f.go&&!AN.f.ga)?'':'style=\"display:none\" '}onchange=\"AN.f.mom=this.value;anRender()\">${opt(anUniq(base.filter(r=>r.gen==='oss'&&r.ok==='att'),'mom'),f.mom,'Ogni momento dell’anno')}</select>\n      <select class=\"ax-in\" ${(AN.f.go&&!AN.f.ga)?'':'style=\"display:none\" '}onchange=\"AN.f.ctx=this.value;anRender()\">${opt(anUniq(base.filter(r=>r.gen==='oss'&&r.ok==='att'),'ctx'),f.ctx,'Ogni contesto')}</select>\n      <select class=\"ax-in\" onchange=\"AN.f.dur=this.value;anRender()\">")
+if 'const hit = r =>' not in h:
+    a=h.index("const A = (SH._srAct || []).filter(r => {"); b=h.index("A.length - 8);",a)+len("A.length - 8);")
+    h=h[:a]+"""const hit = r => { const c = r.contenuto || {}; return srHit(q, [r.titolo, r.perc_nome, c.lancio, c.sviluppo, c.conclusione, r.ptit, r.dom, (r.foc || []).join(' '), r.ctx, r.mom, (r.tipi || []).join(' '), (r.strumenti || []).join(' '), r.note, (r.chi || []).join(' ')].join(' ')); };
+    const AA = (SH._srAct || []).filter(r => r.gen !== 'oss' && hit(r)), OO = (SH._srAct || []).filter(r => r.gen === 'oss' && hit(r));
+    const itA = r => { SH._srList.push(r); return item(r.titolo, [r.perc_nome, r.ptit ? (r.anno + ' · ' + r.ptit) : ''].filter(Boolean).join(' · '), `shSrAct(${SH._srList.length - 1})`); };
+    sec('Attività', AA.slice(0, 8).map(itA), AA.length - 8);
+    sec('Occasioni e attività osservative', OO.slice(0, 8).map(r => { SH._srList.push(r); return item(r.titolo, [r.ok === 'att' ? 'Attività osservativa' : r.ok === 'kos' ? 'Attività del KOS' : 'Occasione osservativa', r.perc_nome, r.ptit ? (r.anno + ' · ' + r.ptit) : ''].filter(Boolean).join(' · '), `shSrAct(${SH._srList.length - 1})`); }), OO.length - 8);"""+h[b:]
+    h=rep(h,"const A = (SH._srAct","const A = (SH._srAct") if False else h
+
+# 10 giro 3: focus dell'attività nella griglia, focus del KOS raggiungibili, riepilogo in fondo alla pagina
+if "String(((r.foc||{})[pid])||'')" not in h:
+    h=rep(h,"out.push({k:'m:' + r.id, nome:(r.att || '').trim() || 'Altra attività', data:r.data || ''}); } });","out.push({k:'m:' + r.id, nome:(r.att || '').trim() || 'Altra attività', data:r.data || '', foc:String(((r.foc||{})[pid])||'')}); } });")
+    h=rep(h,"function grKosFoc(pid, r){ if(!r || !/^k:/.test(r.k || '')) return '';","function grKosFoc(pid, r){ if(r && /^m:/.test(r.k || '')) return String(r.foc || ''); if(!r || !/^k:/.test(r.k || '')) return '';")
+    h=rep(h,"'<div class=\"gr-old\">Proposto dal KOS 2.0: puoi modificarlo o cancellarlo.</div>'","'<div class=\"gr-old\">'+(/^m:/.test(r.k||'')?'Preso dall’attività osservativa':'Proposto dal KOS 2.0')+': puoi modificarlo o cancellarlo.</div>'")
+    h=rep(h,"<i>${sEsc(e)}</i></label>`).join('')}</div></details></div>`; };","<i>${sEsc(e)}</i></label>`).join('')}</div></details>${(typeof grKosPickHTML==='function')?grKosPickHTML(pid, r, lines):''}</div>`; };")
+if 'id="oss-sum"' not in h:
+    h=rep(h,"""    <div style="margin-top:12px;text-align:right"><button class="btn-primary" onclick="${szPP()?"gGo('1b')":"shSub('1b','P')"}">""","""    <div id="oss-sum">${(typeof ossSumHTML==='function')?ossSumHTML():''}</div>
+    <div style="margin-top:12px;text-align:right"><button class="btn-primary" onclick="${szPP()?"gGo('1b')":"shSub('1b','P')"}">""")
+    h=rep(h,"function kosObsRefresh(){\n  try{ kosBoxRefresh(); }catch(e){}","function kosObsRefresh(){\n  try{ kosBoxRefresh(); }catch(e){}\n  try{ if(typeof ossSumRefresh==='function') ossSumRefresh(); }catch(e){}")
 # 7 build
-h=re.sub(r"const APP_BUILD='\d+';","const APP_BUILD='202611121700';",h,1)
+h=re.sub(r"const APP_BUILD='\d+';","const APP_BUILD='202611121945';",h,1)
 open(A,'w').write(h)
 print('ok',len(h))

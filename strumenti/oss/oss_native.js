@@ -38,7 +38,7 @@ function ossPanelHTML(){
   const nProp = L.filter(a => a.stato === 'proposta').length;
   const scop = (sc.length && ossCanCreate()) ? `<details class="oss-sc"><summary>Non hai ancora osservato ${sc.length} ${sc.length === 1 ? 'percorso' : 'percorsi'} <span>(tocca un percorso per partire da lì)</span></summary>${['P','C','S'].map(am => { const X = sc.filter(id => id[0] === am); return X.length ? `<div class="oss-sca"><b class="oss-t${am}">Sviluppo ${({P:'Personale',C:'Comunitario',S:'Spirituale'})[am]}</b>${X.map(id => `<button type="button" class="oss-chip a${am}" onclick="ossWizOpen('${id}')">${sEsc(ossPN(id))}</button>`).join('')}</div>` : ''; }).join('')}</details>` : '';
   return `<div class="oss-box" id="oss-panel-in">
-    <div class="oss-h"><div><div class="oss-ey">Oltre il KOS</div><h4>Crea le tue attività osservative</h4><p>${intro}</p></div><div class="oss-btns"><button type="button" class="btn-ghost" onclick="anOpen('mine','oss')">🔎 Cerca</button>${ossCanCreate() ? '<button type="button" class="btn-primary" onclick="ossWizOpen()">+ Nuova attività osservativa</button>' : ''}</div></div>
+    <div class="oss-h"><div><div class="oss-ey">Oltre il KOS</div><h4>Crea le tue attività osservative</h4><p>${intro}</p></div><div class="oss-btns"><button type="button" class="btn-ghost" onclick="anOpen('mine','oss')">🔎 Cerca</button>${ossCanCreate() && !window.BRO ? '<button type="button" class="btn-ghost" onclick="ossImportOpen()" title="Carica un’attività esportata in JSON">Importa JSON</button>' : ''}${ossCanCreate() ? '<button type="button" class="btn-primary" onclick="ossWizOpen()">+ Nuova attività osservativa</button>' : ''}</div></div>
     ${nProp && ossCanDirect() ? `<div class="oss-note">${nProp === 1 ? 'C’è una proposta' : 'Ci sono ' + nProp + ' proposte'} da valutare: accettala per renderla pronta, oppure rispondi con un suggerimento.</div>` : ''}
     ${scop}
     <div class="oss-list">${L.length ? L.map(ossCardHTML).join('') : '<div class="oss-empty">Ancora nessuna attività. Quelle che crei compaiono qui, con chi le ha scritte e a che punto sono.</div>'}</div></div>`;
@@ -47,6 +47,9 @@ function ossCardHTML(a){
   const st = OSS_STATI[a.stato] || OSS_STATI.pronta, P = [a.main].concat(a.also || []).filter(Boolean);
   const pp = scheda.pp || {}; const orphan = a.stato === 'svolta' && !(pp.occMan || []).some(r => r && r.id === a.occId);
   const acts = ['<button type="button" class="btn-ghost sm" onclick="ossApri(\'' + a.id + '\')">Apri</button>'];
+  if(ossCanEdit(a)) acts.push('<button type="button" class="btn-ghost sm" onclick="ossModifica(\'' + a.id + '\')">Modifica</button>');
+  acts.push('<button type="button" class="btn-ghost sm" onclick="ossExportJson(\'' + a.id + '\')" title="Scarica l’attività in un file .json, da reimportare altrove">JSON</button>');
+  if(!szPP()) acts.push('<button type="button" class="btn-ghost sm" onclick="ossExportWord(\'' + a.id + '\')" title="Scarica la scheda dell’attività in Word">Word</button>');
   if(!window.BRO){
     if(a.stato === 'proposta' && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossAccetta(\'' + a.id + '\')">Accetta la proposta</button>');
     if(a.stato === 'pronta' && ossCanDirect()) acts.push('<button type="button" class="btn-primary sm" onclick="ossSvolta(\'' + a.id + '\')">Aggiungi alle occasioni osservative</button>');
@@ -75,19 +78,19 @@ function ossInitPayload(pid){
   const done = (scheda.pp && scheda.pp.kosDone) || {};
   const staff = ossStaff();
   return {oss:1, t:'init', B:FASCIA || 'E', tipo:szPP() ? 'PP' : 'PE', role:ossRole(), me:ossMe(), staff, cov:obsSources(), kosDone:kosActs().filter(a => done[a.key]).map(a => a.n), pid:pid || '',
-    radiciAsk:!!(typeof CL !== 'undefined' && CL.sb && CL.user && !window.BRO), optin:ossRadiciOk(), prefill:window._ossPrefill || null};
+    radiciAsk:!!(typeof CL !== 'undefined' && CL.sb && CL.user && !window.BRO), optin:ossRadiciOk(), prefill:window._ossPrefill || null, edit:window._ossEditRec || null};
 }
-function ossWizOpen(pid, prefill){
+function ossWizOpen(pid, prefill, edit){
   if(!ossCanCreate()) return;
   const txt = ossDocText(); if(!txt){ showToast('Non riesco ad aprire il percorso guidato: ricarica la pagina e riprova.'); return; }
   ossWizClose(true);
   const ov = document.createElement('div'); ov.id = 'oss-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Nuova attività osservativa');
   const fr = document.createElement('iframe'); fr.title = 'Nuova attività osservativa'; fr.setAttribute('allow', 'clipboard-write'); ov.appendChild(fr);
-  window._ossPid = pid || ''; window._ossPrefill = prefill || null; window._ossFocus = document.activeElement;
+  window._ossPid = pid || ''; window._ossPrefill = prefill || null; window._ossEditRec = edit || null; window._ossEditId = edit ? edit.id : ''; window._ossFocus = document.activeElement;
   document.body.appendChild(ov); document.body.classList.add('oss-open'); fr.srcdoc = txt;
   fr.addEventListener('load', () => { try{ fr.contentWindow.focus(); }catch(e){} });
 }
-function ossWizClose(quiet){ const ov = document.getElementById('oss-ov'); if(ov) ov.remove(); document.body.classList.remove('oss-open'); if(!quiet){ try{ const f = window._ossFocus; if(f && f.focus && document.contains(f)) f.focus(); }catch(e){} } }
+function ossWizClose(quiet){ window._ossEditRec = null; window._ossEditId = ''; const ov = document.getElementById('oss-ov'); if(ov) ov.remove(); document.body.classList.remove('oss-open'); if(!quiet){ try{ const f = window._ossFocus; if(f && f.focus && document.contains(f)) f.focus(); }catch(e){} } }
 window.addEventListener('message', e => {
   const m = e.data; if(!m || !m.oss) return; const fr = document.querySelector('#oss-ov iframe'); if(!fr || e.source !== fr.contentWindow) return;
   if(m.t === 'ready') fr.contentWindow.postMessage(ossInitPayload(window._ossPid), '*');
@@ -96,14 +99,35 @@ window.addEventListener('message', e => {
 });
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.getElementById('oss-ov') && !e.defaultPrevented) ossWizClose(); });
 const _ossS = (v, n) => String(v == null ? '' : v).slice(0, n);
+function ossFields(x, ids){
+  const arr = (v, n, f) => (Array.isArray(v) ? v : []).map(f || String).slice(0, n);
+  const o = {nome:_ossS(x.nome, 120).trim(), main:String(x.main),
+    also:arr(x.also, 8).filter(p => ids.indexOf(p) >= 0 && p !== x.main),
+    dom:_ossS(x.dom, 600), foc:arr(x.foc, 8, f => _ossS(f, 300)), dur:Math.max(0, Math.min(600, +x.dur || 0)),
+    lan:_ossS(x.lan, 4000), svi:_ossS(x.svi, 6000), con:_ossS(x.con, 4000), temi:arr(x.temi, 8).filter(p => ids.indexOf(p) >= 0),
+    mom:_ossS(x.mom, 80), momK:_ossS(x.momK, 20), ctx:_ossS(x.ctx, 60), ctxK:_ossS(x.ctxK, 20), tipi:arr(x.tipi, 12, t => _ossS(t, 80)).filter(Boolean), strum:arr(x.strum, 7, t => _ossS(t, 60)),
+    strD:arr(x.strD, 7, t => ({t:_ossS(t && t.t, 60), det:arr(t && t.det, 20, d => _ossS(d, 80)), altro:_ossS(t && t.altro, 120)})),
+    focD:arr(x.focD, 8, f => ({txt:_ossS(f && f.txt, 300), pid:ids.indexOf(f && f.pid) >= 0 ? f.pid : x.main, extra:arr(f && f.extra, 6).filter(p => ids.indexOf(p) >= 0)}))};
+  try{ const w = x.w; if(w && typeof w === 'object'){ const j = JSON.stringify(w); if(j.length <= 24000) o.w = JSON.parse(j); } }catch(e){}
+  return o;
+}
 function ossSaveFrom(m){
   const x = m.att; if(!x || typeof x !== 'object' || !_ossS(x.nome, 5).trim() || !/^[PCS][1-8]$/.test(String(x.main))) return;
   if(!ossCanCreate()) return;
-  const ids = ossAllIds(); const role = ossRole(), id = ossNewId();
-  const a = {id, nome:_ossS(x.nome, 120).trim(), aut:ossMe(), autMail:affMe(), ruolo:role, stato:role === 'col' ? 'proposta' : 'pronta', main:String(x.main),
-    also:(Array.isArray(x.also) ? x.also : []).map(String).filter(p => ids.indexOf(p) >= 0 && p !== x.main).slice(0, 8),
-    dom:_ossS(x.dom, 600), foc:(Array.isArray(x.foc) ? x.foc : []).map(f => _ossS(f, 300)).slice(0, 8), dur:Math.max(0, Math.min(600, +x.dur || 0)),
-    lan:_ossS(x.lan, 4000), svi:_ossS(x.svi, 6000), con:_ossS(x.con, 4000), temi:(Array.isArray(x.temi) ? x.temi : []).map(String).filter(p => ids.indexOf(p) >= 0).slice(0, 8), at:Date.now(), sugg:{}};
+  const ids = ossAllIds(); const role = ossRole(); const F = ossFields(x, ids);
+  const eid = window._ossEditId; const old = eid ? ossGet(eid) : null;
+  if(eid && !old){ ossWizClose(); showToast('Questa attività non c’è più: non ho salvato le modifiche.'); return; }
+  if(old){
+    if(!ossCanEdit(old)) return;
+    Object.assign(old, F); old.upd = Date.now(); old.updBy = ossMe();
+    const pp = scheda.pp || {}; const r = old.stato === 'svolta' ? (pp.occMan || []).find(q => q && q.id === old.occId) : null;
+    if(r){ r.att = 'Attività osservativa · ' + old.nome; r.foc = ossRowFoc(old, r.perc || []); }
+    ossTouch(); ossWizClose(); ossRefresh(); try{ occRefresh(); }catch(e){}
+    showToast(r ? 'Modifiche salvate. Nelle occasioni osservative restano i percorsi che avevi confermato.' : 'Modifiche salvate.');
+    return;
+  }
+  const id = ossNewId();
+  const a = Object.assign({id, aut:ossMe(), autMail:affMe(), ruolo:role, stato:role === 'col' ? 'proposta' : 'pronta', at:Date.now(), sugg:{}}, F);
   ossStore()[id] = a;
   if(role === 'col') ossAv('dir', 'prop', a, 'Percorso principale: ' + ossPN(a.main));
   ossTouch();
@@ -113,6 +137,9 @@ function ossSaveFrom(m){
   showToast(role === 'col' ? 'Proposta inviata: chi ha il progetto la trova qui e in «Per te».' : 'Attività salvata. Quando l’avrete fatta, «Aggiungi alle occasioni osservative» la porta nelle occasioni osservative.');
   setTimeout(() => { const e = document.getElementById('oss-panel'); if(e && e.scrollIntoView) e.scrollIntoView({behavior:'smooth', block:'start'}); }, 80);
 }
+function ossCanEdit(a){ return !window.BRO && ossCanCreate() && (ossCanDirect() || (ossMine(a) && a.stato === 'proposta')); }
+function ossModifica(id){ const a = ossGet(id); if(!a || !ossCanEdit(a)) return;
+  ossWizOpen('', null, {id:a.id, nome:a.nome, main:a.main, also:(a.also || []).slice(), dom:a.dom || '', foc:(a.foc || []).slice(), dur:a.dur || 0, lan:a.lan || '', svi:a.svi || '', con:a.con || '', w:a.w || null}); }
 // raccolta anonima, solo con il consenso: radici delle parole e percorso scelto, nient'altro
 function ossSendRad(r){
   try{ if(window.BRO || typeof CL === 'undefined' || !CL.sb || !CL.user) return;
@@ -171,6 +198,7 @@ function ossSvoltaOk(id){ const a = ossGet(id); if(!a) return;
   r.att = 'Attività osservativa · ' + a.nome; r.data = grIso(d) || ''; r.perc = perc; r.chi = chi.join('|');
   if(typeof mvOn === 'function' && mvOn() && staff.length) r.ass = staff.filter(n => chi.indexOf(n) < 0);
   if(!r.ctx) r.ctx = ''; if(!r.note) r.note = '';
+  r.foc = ossRowFoc(a, perc);
   a.occId = r.id; a.stato = 'svolta'; a.data = r.data; a.svoltaAt = Date.now();
   ossTouch(); modalClose(); try{ occRefresh(); }catch(e){} ossRefresh(); showToast('Svolta: ora è nelle occasioni osservative.'); }
 function ossNonSvolta(id){ const a = ossGet(id); if(!a) return; const pp = scheda.pp || {}; const r = (pp.occMan || []).find(x => x && x.id === a.occId);
@@ -182,6 +210,66 @@ function ossGo(){ try{ clClose(); }catch(e){} try{ gGo('1a'); window._ctxF = 'oc
   setTimeout(() => { const e = document.getElementById('oss-panel'); if(e && e.scrollIntoView) e.scrollIntoView({behavior:'smooth', block:'start'}); }, 450); }
 // ═══ Ricerca: attività osservative e occasioni osservative dentro «Cerca un’attività» ═══
 // Le righe osservative hanno gen:'oss' (le educative sono gen 'att' o niente). Tipi: 'att' = attività osservativa creata col tool; 'occ' = occasione registrata a mano; 'kos' = attività del KOS svolta.
+// I focus dell'attività seguono l'attività quando entra nelle occasioni: per ogni percorso osservato, i focus pensati per quel percorso (o collegati ad esso)
+function ossRowFoc(a, perc){ const F = (a.focD && a.focD.length) ? a.focD : (a.foc || []).map(t => ({txt:t, pid:a.main})); const o = {};
+  F.forEach(f => { const t = String(f.txt || '').trim(); if(!t) return; [f.pid].concat(f.extra || []).forEach(p => { if(p && perc.indexOf(p) >= 0){ (o[p] = o[p] || []); if(o[p].indexOf(t) < 0) o[p].push(t); } }); });
+  const r = {}; Object.keys(o).forEach(p => { r[p] = o[p].join('\n'); }); return r; }
+// Griglia: i focus del KOS 2.0 su un percorso, raggiungibili anche dalle righe delle attività osservative
+function grKosAll(pid){ const T = ((typeof KOS2_FOC !== 'undefined' && KOS2_FOC) || {})[FASCIA || 'E'] || {}; const out = [];
+  Object.keys(T).forEach(k => { const t = String((T[k] || {})[pid] || '').trim(); if(t && out.indexOf(t) < 0) out.push(t); }); return out; }
+function grKosPickHTML(pid, r, lines){ if(!/^m:/.test((r && r.k) || '')) return ''; const L = grKosAll(pid).filter(x => lines.indexOf(x) < 0); if(!L.length) return '';
+  return `<details class="gr-pick"><summary>Focus del KOS 2.0 su questo percorso (${L.length}): tocca per aggiungerli</summary><div class="gr-pl">${L.map(e => `<button type="button" class="gr-kadd" data-t="${sEsc(e)}" onclick="grKosAdd('${pid}','${r.k}',this)">+ <i>${sEsc(e)}</i></button>`).join('')}</div></details>`; }
+function grKosAdd(pid, k, btn){ const t = btn.getAttribute('data-t') || ''; if(!t) return; const g = grG(pid, k); const row = grRows(pid).find(x => x.k === k) || {k:k};
+  const lines = grFocLines(g.foc !== undefined ? g.foc : grKosFoc(pid, row)); if(lines.indexOf(t) < 0) lines.push(t); g.foc = lines.join('\n'); saveDataDebounced();
+  const box = btn.closest('.gr-foc'); if(box){ const ta = box.querySelector('textarea.gr-focta'); if(ta) ta.value = g.foc; } btn.remove(); showToast('Aggiunto al focus'); }
+// Riepilogo in fondo alla pagina: stessi dati della griglia, in sola lettura
+function ossSumHTML(){ try{ if(MODE !== 'giovani' || window._stEmb) return ''; const f = FASCIA; if(!f || !KOS2[f]) return ''; const src = obsSources(); const AM = {P:'Personale', C:'Comunitario', S:'Spirituale'};
+  const col = am => `<div class="oss-sm-c"><div class="oss-sm-t oss-t${am}">Sviluppo ${AM[am]}</div>${(DB[am] || []).map(p => { const n = (src[p.id] || []).length;
+    return `<div class="oss-sm-r${n ? ' on' : ''}"><div class="oss-sm-n">${sEsc(ossPN(p.id))}</div>${n ? `<b class="ok">osservato · ${n} ${n === 1 ? 'occasione' : 'occasioni'}</b>${n === 1 ? '<small class="w">un solo contesto: cercane un secondo</small>' : ''}` : '<b class="no">non osservato</b>'}</div>`; }).join('')}</div>`;
+  return `<section class="oss-sm" aria-label="Riepilogo dei percorsi osservati"><h4>Riepilogo: che cosa hai osservato</h4><p>«Osservato» compare già dopo una sola occasione. Accanto c’è il numero di occasioni; con una sola, ti invito a cercare un secondo contesto.</p><div class="oss-sm-g">${['P', 'C', 'S'].map(col).join('')}</div></section>`; }catch(e){ return ''; } }
+function ossSumRefresh(){ const e = document.getElementById('oss-sum'); if(e) e.innerHTML = ossSumHTML(); }
+// ═══ Esportare e importare: JSON completo dell'attività, scheda Word ═══
+function ossDl(name, text, type){ const b = new Blob([text], {type}); const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = name; document.body.appendChild(l); l.click(); setTimeout(() => { l.remove(); URL.revokeObjectURL(u); }, 600); }
+function ossSlug(t){ return String(t || 'attivita').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'attivita'; }
+function ossExpRec(a){ const o = {}; ['nome','aut','main','also','dom','foc','focD','dur','lan','svi','con','temi','mom','momK','ctx','ctxK','tipi','strum','strD'].forEach(k => { if(a[k] !== undefined) o[k] = JSON.parse(JSON.stringify(a[k])); });
+  if(a.w && typeof a.w === 'object'){ const w = JSON.parse(JSON.stringify(a.w)); delete w.oss; delete w.nR; o.w = w; } return o; }
+function ossExportJson(id){ const a = ossGet(id); if(!a) return;
+  ossDl('Attivita_osservativa_' + ossSlug(a.nome) + '.json', JSON.stringify({formato:'pee-attivita-osservativa', versione:1, esportata:new Date().toISOString(), branca:FASCIA || '', attivita:ossExpRec(a)}, null, 2), 'application/json');
+  showToast('File scaricato. Chi lo riceve lo carica con «Importa JSON». Dentro non ci sono i nomi dello staff.'); }
+function ossImportOpen(){ if(!ossCanCreate() || window.BRO) return; let i = document.getElementById('oss-imp'); if(i) i.remove();
+  i = document.createElement('input'); i.type = 'file'; i.id = 'oss-imp'; i.accept = '.json,application/json'; i.style.display = 'none'; i.onchange = () => ossImportRead(i.files); document.body.appendChild(i); i.click(); }
+function ossImportRead(files){ const f = files && files[0]; if(!f) return; if(f.size > 400000){ showToast('Il file è troppo grande per essere un’attività.'); return; }
+  const rd = new FileReader(); rd.onload = () => { let j = null; try{ j = JSON.parse(String(rd.result)); }catch(e){} if(!j){ showToast('Il file non è un JSON leggibile.'); return; } ossImportDo(j); }; rd.readAsText(f); }
+function ossImportDo(j){ if(!ossCanCreate() || window.BRO) return;
+  const L = j && j.formato === 'pee-attivita-osservativa' ? (Array.isArray(j.attivita) ? j.attivita : [j.attivita]) : null;
+  if(!L || !L.length){ showToast('Questo file non è un’attività osservativa dell’app.'); return; }
+  const ids = ossAllIds(), role = ossRole(); let n = 0;
+  L.slice(0, 20).forEach(x => { if(!x || typeof x !== 'object' || _ossS(x.nome, 2).trim().length < 2 || !/^[PCS][1-8]$/.test(String(x.main))) return;
+    const F = ossFields(x, ids); if(F.w){ delete F.w.oss; delete F.w.nR; }
+    const id = ossNewId() + n; const a = Object.assign({id, aut:ossMe(), autMail:affMe(), ruolo:role, stato:role === 'col' ? 'proposta' : 'pronta', at:Date.now(), sugg:{}, imp:{da:_ossS(x.aut, 80), il:Date.now()}}, F);
+    ossStore()[id] = a; n++; if(role === 'col') ossAv('dir', 'prop', a, 'Percorso principale: ' + ossPN(a.main)); });
+  if(!n){ showToast('Nel file non ho trovato nessuna attività valida.'); return; }
+  ossTouch(); ossRefresh();
+  showToast(n === 1 ? 'Attività importata: controlla i percorsi e adattala al tuo gruppo.' : n + ' attività importate: controlla i percorsi e adattale al tuo gruppo.'); }
+function ossStrumTxt(a){ if(Array.isArray(a.strD) && a.strD.length) return a.strD.map(z => z.t + (z.det && z.det.length ? ' (' + z.det.join(', ') + ')' : '') + (z.altro ? ' + ' + z.altro : '')).join('; ');
+  return (a.strum || []).join('; '); }
+function ossWordCard(a){ const T_ = v => String(v == null ? '' : v).trim().length > 0; const rows = []; const add = (l, v) => { if(T_(v)) rows.push([l, String(v)]); };
+  const P = [a.main].concat(a.also || []).filter(Boolean);
+  add('Percorsi', P.map((p, i) => ossPN(p) + (i === 0 && P.length > 1 ? ' (principale)' : '')).join('; '));
+  add('Domanda di partenza', a.dom); add('Momento dell’anno', a.mom); add('Contesto', a.ctx); add('Durata', a.dur ? axDurTxt(a.dur) : ''); add('Strumenti del Metodo', ossStrumTxt(a)); add('Tipo di attività', (a.tipi || []).join(', '));
+  add('Stato', (OSS_STATI[a.stato] || OSS_STATI.pronta)[0] + (a.stato === 'svolta' && a.data ? ' il ' + grDateTxt(a.data) : '')); add('Ideata da', a.aut);
+  const out = [dPara(a.nome, {size:24, bold:true, color:'1F5F3F', after:80, keepNext:true}), dKV(rows)];
+  if((a.foc || []).length){ out.push(dH3('Focus: che cosa guardo')); (a.focD && a.focD.length ? a.focD : a.foc.map(t => ({txt:t, pid:a.main}))).forEach((f, i) => out.push(dPara((i + 1) + '. ' + f.txt + (f.pid ? ' [' + ossPN(f.pid) + ']' : ''), {size:19, after:40}))); }
+  [['Lancio', a.lan], ['Sviluppo', a.svi], ['Conclusione', a.con]].forEach(([l, v]) => { if(T_(v)){ out.push(dH3(l)); out.push(...dMulti(v)); } });
+  return out; }
+// Programmazione Educativa: nel Word, dopo la tabella delle occasioni, una scheda per ogni attività osservativa pronta o svolta (nel Progetto Personale il Word resta com'è)
+function ossWordSec(){ if(szPP()) return []; const L = ossList().filter(a => a.stato === 'pronta' || a.stato === 'svolta'); if(!L.length) return [];
+  const out = [dH3('Attività osservative create con lo strumento'), dPara('Le attività che lo staff ha costruito per osservare: che cosa si guarda (i focus), come si lancia, si sviluppa e si chiude.', {size:18, italics:true, color:'777777', after:80})];
+  L.forEach(a => { out.push(...ossWordCard(a)); out.push(dPara('', {after:120})); }); return out; }
+async function ossExportWord(id){ const a = ossGet(id); if(!a) return;
+  try{ showToast('Preparo la scheda…'); await needDocx(); }catch(e){ showToast('Impossibile generare il .docx: ' + e.message); return; }
+  const fl = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'}[FASCIA] || '';
+  try{ await dSave(dDocument([...dTitleBlock('Attività osservativa', (fl ? fl + ' · ' : '') + 'scheda dell’attività'), ...ossWordCard(a)], 'Attività osservativa'), 'Attivita_osservativa_' + ossSlug(a.nome) + '.docx'); }catch(e){ showToast('Non sono riuscito a creare il Word.'); } }
 function anFlatOss(sc, fascia, proj){ const out = [];
   try{
     const pp = (sc && sc.pp) || {}; const DBx = Object.values(DB).flat(); const nm = id => { const P = DBx.find(q => q.id === id); return P ? P.name : id; };
@@ -190,7 +278,7 @@ function anFlatOss(sc, fascia, proj){ const out = [];
     Object.keys(store).map(k => store[k]).filter(a => a && a.id && String(a.nome || '').trim()).forEach(a => {
       if(a.occId) occIds.add(a.occId);
       out.push({src:'mine', gen:'oss', ok:'att', proj:proj || null, ossId:a.id, titolo:String(a.nome).trim(), branca:fascia || '', ambito:String(a.main || '')[0] || '', perc_id:a.main || '', perc_nome:nm(a.main), also:(a.also || []).slice(),
-        stato:a.stato || 'pronta', data:a.data || '', dom:a.dom || '', foc:(a.foc || []).slice(), obiettivi:[], idr:[], tipi:[], strumenti:[], durata_min:a.dur || null, sede:'', funzionato:'', pi:-1, j:-1,
+        stato:a.stato || 'pronta', data:a.data || '', dom:a.dom || '', foc:(a.foc || []).slice(), obiettivi:[], idr:[], tipi:(a.tipi || []).slice(), strumenti:(a.strum || []).slice(), durata_min:a.dur || null, sede:'', funzionato:'', pi:-1, j:-1, mom:a.mom || '', ctx:a.ctx || '',
         contenuto:{lancio:a.lan || '', sviluppo:a.svi || '', conclusione:a.con || '', scaletta:[], materiali:[], bene:'', migl:''}}); });
     (Array.isArray(pp.occMan) ? pp.occMan : []).forEach(r => { if(!r || occIds.has(r.id)) return; const P = (Array.isArray(r.perc) ? r.perc : []).filter(Boolean); const t = String(r.att || '').trim(); if(!t && !P.length) return;
       out.push({src:'mine', gen:'oss', ok:'occ', proj:proj || null, occId:r.id, titolo:t || 'Occasione osservativa', branca:fascia || '', ambito:(P[0] || '')[0] || '', perc_id:P[0] || '', perc_nome:P[0] ? nm(P[0]) : '', also:P.slice(1),
@@ -211,7 +299,7 @@ function anStSel(T){ const f = AN.f; if(T !== 'mine' || f.ga || !f.go) return ''
 function anOssDet(r){ if(r.gen !== 'oss') return ''; const P = [r.perc_id].concat(r.also || []).filter(Boolean); const sec = (t, v) => String(v || '').trim() ? `<p><b>${t}</b><br>${sEsc(v).replace(/\n/g, '<br>')}</p>` : '';
   const pc = P.length ? `<p><b>Percorsi</b></p><div class="oss-cp">${P.map((p, i) => `<span class="oss-pc a${p[0]}">${sEsc(ossPN(p))}${i === 0 && P.length > 1 ? ' · principale' : ''}</span>`).join(' ')}</div>` : '';
   const foc = (r.foc || []).length ? `<p><b>Focus</b></p><ol class="oss-ol">${r.foc.map(f => `<li>${sEsc(f)}</li>`).join('')}</ol>` : '';
-  const occ = r.ok !== 'att' ? (sec('Quando', r.data ? grDateTxt(r.data) : '') + sec('Contesto', r.ctx) + sec('Chi ha osservato', (r.chi || []).join(', ')) + sec('Note', r.note)) : '';
+  const occ = r.ok === 'att' ? (sec('Momento dell’anno', r.mom) + sec('Contesto', r.ctx)) : r.ok !== 'att' ? (sec('Quando', r.data ? grDateTxt(r.data) : '') + sec('Contesto', r.ctx) + sec('Chi ha osservato', (r.chi || []).join(', ')) + sec('Note', r.note)) : '';
   return sec('La domanda di partenza', r.dom) + pc + foc + occ; }
 function anActsOss(r){ const i = anIdx(r); const bits = [];
   if(!window.BRO && r.ok === 'att' && ossOk()) bits.push(`<button type="button" class="btn-primary usc-btn" onclick="ossRiusa(${i})">Riusa come punto di partenza</button>`);
@@ -232,7 +320,7 @@ function ossRiusa(i){ const r = AN_CUR[i]; if(!r || !ossOk()) return; const c = 
 // Nell'archivio va la stessa tabella delle attività educative, con la colonna «genere» = 'oss'. Si manda solo ciò che non identifica il gruppo: titolo, percorsi, focus, durata, lancio/sviluppo/conclusione.
 // Non partono mai la domanda di partenza, le persone, gli osservatori né i nomi dello staff.
 function anRowFix(r){ r.perc_id = r.perc_id || r.percorso_id || ''; r.perc_nome = r.perc_nome || r.percorso_nome || '';
-  if(r.genere === 'oss'){ const c = r.contenuto || {}; r.gen = 'oss'; r.ok = 'att'; r.also = Array.isArray(c.also) ? c.also : []; r.foc = Array.isArray(c.foc) ? c.foc : []; }
+  if(r.genere === 'oss'){ const c = r.contenuto || {}; r.gen = 'oss'; r.ok = 'att'; r.also = Array.isArray(c.also) ? c.also : []; r.foc = Array.isArray(c.foc) ? c.foc : []; r.mom = c.mom || ''; r.ctx = c.ctx || ''; }
   return r; }
 function ossCanPropose(a){ return !window.BRO && !szPP() && (a.stato === 'pronta' || a.stato === 'svolta') && ossCanDirect() && typeof CL !== 'undefined' && !!CL.user; }
 async function ossPropose(id){ if(window.BRO || szPP()) return; const a = ossGet(id); if(!a || !ossCanPropose(a)) return;
@@ -241,7 +329,7 @@ async function ossPropose(id){ if(window.BRO || szPP()) return; const a = ossGet
   try{ const pr = await CL.sb.from(AN_T).select('genere').limit(1); if(pr.error) throw pr.error; }
   catch(e){ anNote('L’archivio non è ancora pronto per le attività osservative', 'Manca l’aggiornamento della tabella (script SQL «archivio osservative» del 12 novembre). Eseguilo una volta su Supabase e riprova.'); return; }
   const DBx = Object.values(DB).flat(); const P = DBx.find(q => q.id === a.main);
-  const d = {gen:'oss', ok:'att', titolo:anScrub(a.nome), perc_id:a.main, perc_nome:P ? P.name : '', also:(a.also || []).slice(), ambito:String(a.main)[0], branca:FASCIA || '', durata_min:a.dur || null, foc:(a.foc || []).map(anScrub), contenuto:{lancio:anScrub(a.lan), sviluppo:anScrub(a.svi), conclusione:anScrub(a.con)}};
+  const d = {gen:'oss', ok:'att', titolo:anScrub(a.nome), perc_id:a.main, perc_nome:P ? P.name : '', also:(a.also || []).slice(), ambito:String(a.main)[0], branca:FASCIA || '', durata_min:a.dur || null, foc:(a.foc || []).map(anScrub), tipi:(a.tipi || []).map(anScrub).filter(Boolean), strumenti:(a.strum || []).slice(), mom:a.mom || '', ctx:a.ctx || '', contenuto:{lancio:anScrub(a.lan), sviluppo:anScrub(a.svi), conclusione:anScrub(a.con)}};
   AN.draftO = {id:a.id, d}; const cc = d.contenuto; const ta = (i, l, v, h) => `<label class="ax-sub" for="${i}">${l}</label><textarea id="${i}" class="ax-ta" style="min-height:${h || 60}px">${sEsc(v || '')}</textarea>`;
   const ov = anOv(); ov.classList.add('show');
   ov.innerHTML = `<div class="an-box"><button class="modal-x" aria-label="Chiudi" onclick="anClose()">✕</button><h3 class="an-h">Proponi all’archivio nazionale</h3>
@@ -257,8 +345,8 @@ async function ossSend(){ const o = AN.draftO; if(!o || AN.busy) return; const g
   const titolo = g('anp-t').value.trim(); if(titolo.length < 3){ g('anp-r').innerHTML = '<div class="ax-warn">Il titolo è troppo corto.</div>'; return; }
   const foc = g('anp-fc').value.split('\n').map(x => x.trim().slice(0, 300)).filter(Boolean).slice(0, 8); const lan = g('anp-l').value, svi = g('anp-s').value, con = g('anp-c').value;
   if(!foc.length || !(lan.trim() || svi.trim() || con.trim())){ g('anp-r').innerHTML = '<div class="ax-warn">Servono almeno un focus e uno tra Lancio, Sviluppo e Conclusione.</div>'; return; }
-  const d = o.d; const row = {genere:'oss', titolo, branca:d.branca || null, ambito:d.ambito || null, percorso_id:d.perc_id || null, percorso_nome:d.perc_nome || null, obiettivi:[], idr:[], tipi:[], strumenti:[], durata_min:d.durata_min || null, sede:null, funzionato:g('anp-f').value,
-    contenuto:{lancio:lan, sviluppo:svi, conclusione:con, foc, also:d.also}};
+  const d = o.d; const row = {genere:'oss', titolo, branca:d.branca || null, ambito:d.ambito || null, percorso_id:d.perc_id || null, percorso_nome:d.perc_nome || null, obiettivi:[], idr:[], tipi:(d.tipi || []), strumenti:(d.strumenti || []), durata_min:d.durata_min || null, sede:null, funzionato:g('anp-f').value,
+    contenuto:{lancio:lan, sviluppo:svi, conclusione:con, foc, also:d.also, mom:d.mom || '', ctx:d.ctx || ''}};
   AN.busy = true; g('anp-go').disabled = true;
   try{ const {error} = await CL.sb.from(AN_T).insert(row); if(error) throw error; const a = ossGet(o.id); if(a){ a.anAt = Date.now(); ossTouch(); ossRefresh(); } anClose(); try{ await anLoadRows(); }catch(e){} showToast('Proposta inviata. Lo stato lo trovi in «Cerca un’attività › Le mie proposte»; arriva a tutti dopo la revisione.'); }
   catch(e){ g('anp-r').innerHTML = '<div class="ax-warn">Non sono riuscito a inviarla (' + sEsc((e && e.message) || 'errore') + '). Riprova più tardi.</div>'; g('anp-go').disabled = false; }

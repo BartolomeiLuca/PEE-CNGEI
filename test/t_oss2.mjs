@@ -45,7 +45,7 @@ ok(s.includes('Accetta la proposta') && s.includes('Suggerisci') && !s.includes(
 s = await ev(pb, () => [...document.querySelectorAll('.oss-card .oss-aa button')].map(b => b.textContent.trim()));
 ok(!s.includes('Accetta la proposta') && !s.includes('Suggerisci') && s.includes('Elimina'), 'collaboratore (autore): niente «Accetta», niente «Suggerisci»: ' + s);
 s = await ev(pc, () => ({b: [...document.querySelectorAll('#oss-panel .oss-card button')].map(b => b.textContent.trim()), role: ossRole(), card: document.querySelectorAll('.oss-card').length}));
-ok(s.role === 'let' && s.card === 1 && s.b.every(t => t === 'Apri'), 'lettrice: vede l’attività, solo «Apri»: ' + JSON.stringify(s.b));
+ok(s.role === 'let' && s.card === 1 && s.b.every(t => ['Apri','JSON','Word'].includes(t)), 'lettrice: vede l’attività, può solo aprire ed esportare (nessuna modifica): ' + JSON.stringify(s.b));
 // Dario (cot) suggerisce a Bruno
 await ev(pd, () => { ossSugg(ossList()[0].id); }); await sleep(300);
 await ev(pd, () => { document.getElementById('oss-sgt').value = 'Aggiungi un momento finale.'; ossSuggSend(ossList()[0].id); }); await sleep(800);
