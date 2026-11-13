@@ -26,7 +26,7 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[]}; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[]}; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
   user(id){ return this.users.find(u => u.id === id); }
   pubUser(u){ return u ? {id:u.id, email:u.email, user_metadata:Object.assign({}, u.meta), new_email:u.pending||undefined} : null; }
   addUser(email, password = 'password123', nome = ''){ const u = {id:uuid(), email:email.toLowerCase(), password, meta: nome ? {nome} : {}}; this.users.push(u); return u; }
@@ -47,13 +47,14 @@ export class FakeDB {
       case 'pee_giri': return r.owner_id === uid || !!this.giroRuolo(uid, r.id);
       case 'pee_giri_dest': return r.email === em || this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid);
       case 'pee_giri_rev': return this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid) || (r.user_id === uid && !!this.giroRuolo(uid, r.giro_id));
+      case 'pee_giri_msg': return this.isOwner(uid, r.archivio_id) || r.rev_id === uid;
       case 'pee_gruppi': return true;
       case 'pee_profili': return r.user_id === uid;
       case 'pee_archivio_nazionale': return r.stato === 'approvata' || r.autore_id === uid || em === 'luca.bartolomei@cngei.it';
       default: return false;
     }
   }
-  match(r, f){ return f.every(([op, c, v]) => op === 'eq' ? String(r[c]) === String(v) : op === 'neq' ? String(r[c]) !== String(v) : op === 'in' ? v.map(String).includes(String(r[c])) : op === 'is' ? (r[c] ?? null) === v : op === 'not' ? !(v[0] === 'is' ? (r[c] ?? null) === v[1] : String(r[c]) === String(v[1])) : true); }
+  match(r, f){ return f.every(([op, c, v]) => op === 'eq' ? String(r[c]) === String(v) : op === 'neq' ? String(r[c]) !== String(v) : op === 'gt' ? String(r[c]) > String(v) : op === 'lt' ? (typeof r[c] === 'number' ? r[c] < Number(v) : String(r[c]) < String(v)) : op === 'in' ? v.map(String).includes(String(r[c])) : op === 'is' ? (r[c] ?? null) === v : op === 'not' ? !(v[0] === 'is' ? (r[c] ?? null) === v[1] : String(r[c]) === String(v[1])) : true); }
   pick(r, cols){ if(!cols || cols === '*') return Object.assign({}, r); const o = {}; cols.split(',').map(s => s.trim()).forEach(c => { if(c in r) o[c] = r[c]; else o[c] = null; }); return o; }
   err(code, message){ return {data:null, error:{code, message}}; }
   emit(table, event, row, old){ for(const p of this.pages){ try{ const uid = p.__uid && p.__uid(); if(!uid || !this.canSee(uid, table, row)) continue; p.evaluate(m => window.__sbEmit && window.__sbEmit(m), {kind:'pg', table, event, row, old}).catch(() => {}); }catch(e){} } }
@@ -123,6 +124,8 @@ export class FakeDB {
         if(q.table === 'pee_giri_dest'){ if(!this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid)) return this.err('42501', 'new row violates row-level security policy');
           if(r.ruolo === 'revisore' && !this.revAbil(r.email)) return this.err('42501', 'new row violates row-level security policy');
           if(T.some(x => x.giro_id === r.giro_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
+        if(q.table === 'pee_giri_msg'){ r.user_id = uid; r.id = r.id || ('m' + Math.random().toString(36).slice(2)); r.created_at = now(); const ow = this.isOwner(uid, r.archivio_id), rv = r.rev_id === uid && this.t.pee_giri.some(g => g.archivio_id === r.archivio_id && this.giroRuolo(uid, g.id) === 'revisore');
+          if(!((r.autore_ruolo === 'titolare' && ow) || (r.autore_ruolo === 'revisore' && rv))) return this.err('42501', 'new row violates row-level security policy'); }
         if(q.table === 'pee_giri_rev'){ r.user_id = uid; r.id = r.id || ('r' + Math.random().toString(36).slice(2)); r.recepita = false; r.updated_at = now(); const ro = this.giroRuolo(uid, r.giro_id), ow = this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid);
           if(!ro && !ow) return this.err('42501', 'new row violates row-level security policy'); if(ro === 'copia' && r.tipo !== 'nota') return this.err('42501', 'new row violates row-level security policy');
           if(r.tipo === 'check' && !['si','parz','no',''].includes(r.valore)) return this.err('23514', 'check constraint'); }

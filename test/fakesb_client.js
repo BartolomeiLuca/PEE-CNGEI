@@ -33,6 +33,8 @@
       eq(c,v){ q.filters.push(['eq',c,v]); return api; },
       neq(c,v){ q.filters.push(['neq',c,v]); return api; },
       in(c,v){ q.filters.push(['in',c,v]); return api; },
+      gt(c,v){ q.filters.push(['gt',c,v]); return api; },
+      lt(c,v){ q.filters.push(['lt',c,v]); return api; },
       is(c,v){ q.filters.push(['is',c,v]); return api; },
       not(c,o,v){ q.filters.push(['not',c,[o,v]]); return api; },
       order(c,o){ q.order = [c, !(o && o.ascending === false)]; return api; },

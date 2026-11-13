@@ -161,5 +161,22 @@ SQL
 echo "$out" | grep -q "dopo_recepita=true" && echo "ok   titolare segna «recepita»" || echo "✗✗✗  titolare segna «recepita»: $out"
 echo "$out" | grep -q "dopo_modifica=false" && echo "ok   il revisore riscrive la nota: «recepita» si azzera" || echo "✗✗✗  reset di recepita: $out"
 echo "$out" | grep -q "visto=true" && echo "ok   il giro risulta visto" || echo "✗✗✗  visto: $out"
+echo "--- dialogo per punto"
+ME=70000000-0000-0000-0000-000000000001
+t owner si "il titolare scrive nel filo" "insert into pee_giri_msg(archivio_id,rev_id,chiave,autore_nome,autore_ruolo,testo) values ('$A','00000000-0000-0000-0000-0000000000aa','c:1|x|y','Olga','titolare','Fatto') returning id"
+t admin si "il revisore scrive nel proprio filo" "insert into pee_giri_msg(archivio_id,rev_id,chiave,autore_nome,autore_ruolo,testo) values ('$A','00000000-0000-0000-0000-0000000000aa','c:1|x|y','Luca','revisore','Grazie') returning id"
+t admin no "il revisore non scrive nel filo di un altro" "insert into pee_giri_msg(archivio_id,rev_id,chiave,autore_nome,autore_ruolo,testo) values ('$A','00000000-0000-0000-0000-00000000000f','c:1|x|y','Luca','revisore','Intruso') returning id"
+t estr no "un estraneo non scrive" "insert into pee_giri_msg(archivio_id,rev_id,chiave,autore_nome,autore_ruolo,testo) values ('$A','00000000-0000-0000-0000-0000000000aa','c:1|x|y','Estr','titolare','Ciao') returning id"
+t lett no "chi è solo in copia non scrive" "insert into pee_giri_msg(archivio_id,rev_id,chiave,autore_nome,autore_ruolo,testo) values ('$A','00000000-0000-0000-0000-00000000000d','c:1|x|y','Cg','revisore','Ciao') returning id"
+t owner no "messaggio vuoto rifiutato" "insert into pee_giri_msg(archivio_id,rev_id,chiave,autore_nome,autore_ruolo,testo) values ('$A','00000000-0000-0000-0000-0000000000aa','c:1|x|y','Olga','titolare','') returning id"
+$P >/dev/null <<SQL
+insert into pee_giri_msg(id,archivio_id,rev_id,chiave,user_id,autore_nome,autore_ruolo,testo) values ('$ME','$A','00000000-0000-0000-0000-0000000000aa','c:1|x|y','00000000-0000-0000-0000-00000000000a','Olga','titolare','Prima risposta');
+SQL
+t admin si "il revisore legge il suo filo" "select id from pee_giri_msg where id='$ME'"
+t tutor no "un altro revisore non legge il filo" "select id from pee_giri_msg where id='$ME'"
+t estr no "un estraneo non legge" "select id from pee_giri_msg where id='$ME'"
+t owner si "il titolare legge" "select id from pee_giri_msg where id='$ME'"
+t owner no "nessuno modifica un messaggio" "update pee_giri_msg set testo='x' where id='$ME' returning id"
+t owner si "il titolare elimina il proprio" "delete from pee_giri_msg where id='$ME' returning id"
 echo "--- eliminazione del progetto"
 t owner si "elimina il progetto: i giri vanno con lui" "delete from pee_archivi where id='$A' returning id"

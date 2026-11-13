@@ -274,3 +274,46 @@ end
 $fn$;
 drop trigger if exists pee_mail_giro on public.pee_giri_dest;
 create trigger pee_mail_giro after insert on public.pee_giri_dest for each row execute function public.pee_mail_giro();
+
+-- ══ 9. Dialogo per punto: risposte tra chi ha scritto il progetto e chi lo rivede ══
+-- Un filo per ogni punto commentato (chiave) e per ogni revisore; resta uguale da un giro all'altro. Un solo livello: messaggi brevi, nessuna modifica.
+create table if not exists public.pee_giri_msg (
+  id            uuid primary key default gen_random_uuid(),
+  archivio_id   uuid not null,
+  rev_id        uuid not null references auth.users(id) on delete cascade,   -- il revisore con cui è il filo
+  chiave        text not null check (char_length(chiave) <= 160),
+  user_id       uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  autore_nome   text not null default '' check (char_length(autore_nome) <= 120),
+  autore_ruolo  text not null check (autore_ruolo in ('revisore', 'titolare')),
+  testo         text not null check (char_length(testo) between 1 and 600),
+  created_at    timestamptz not null default now()
+);
+create index if not exists pee_giri_msg_arch on public.pee_giri_msg (archivio_id, created_at);
+alter table public.pee_giri_msg enable row level security;
+
+create or replace function public.pee_arch_revisore(a uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.pee_giri g where g.archivio_id = a and public.pee_giro_ruolo(g.id) = 'revisore');
+$$;
+revoke all on function public.pee_arch_revisore(uuid) from public, anon;
+grant execute on function public.pee_arch_revisore(uuid) to authenticated;
+
+drop policy if exists "pee_giri_msg: lettura" on public.pee_giri_msg;
+create policy "pee_giri_msg: lettura" on public.pee_giri_msg
+  for select to authenticated
+  using (public.pee_is_owner(archivio_id) or rev_id = auth.uid());
+
+drop policy if exists "pee_giri_msg: scrive" on public.pee_giri_msg;
+create policy "pee_giri_msg: scrive" on public.pee_giri_msg
+  for insert to authenticated
+  with check (
+    user_id = auth.uid() and (
+      (autore_ruolo = 'titolare' and public.pee_is_owner(archivio_id))
+      or (autore_ruolo = 'revisore' and rev_id = auth.uid() and public.pee_arch_revisore(archivio_id))
+    )
+  );
+
+drop policy if exists "pee_giri_msg: elimina" on public.pee_giri_msg;
+create policy "pee_giri_msg: elimina" on public.pee_giri_msg
+  for delete to authenticated
+  using (user_id = auth.uid());
