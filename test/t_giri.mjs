@@ -18,10 +18,10 @@ ok(s.sw <= s.cw + 1 && s.bw <= s.vw + 1, 'su schermo stretto (320 px) il modulo 
 await ev(() => ppGiroFormClose()); await P.setViewportSize({width:1280, height:900});
 // apro il modulo: proposta di default e blocco per i tester
 await ev(() => ppGiroForm(1)); await sleep(1200);
-s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); const t = ov.innerText; return {t, tutor: ov.querySelectorAll('input[type=email]')[0].value, icdf: ov.querySelectorAll('input[type=email]')[1].value, dis: [...ov.querySelectorAll('input[type=email]')].map(e => e.parentElement.querySelector('input[type=checkbox]').disabled).join(), title: /Giro 3/.test(t)}; });
-ok(s.title && /Prima consegna/.test(s.t) && !/Che cosa copre il giro/.test(s.t), 'il nuovo giro è il Giro 3, nel blocco Prima consegna, senza scelta delle sezioni'); ok(s.tutor === 'tutor@x.it' && s.icdf === 'rcdf.altoadriatico@cngei.it', 'Tutor e ICdF precompilati');
+s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); const t = ov.innerText; return {t, tutor: ov.querySelectorAll('input[type=email]')[0].value, icdf: window._giroForm.dest[1].email, dis: [...ov.querySelectorAll('input[type=email]')].map(e => e.parentElement.querySelector('input[type=checkbox]').disabled).join(), title: /Copia 3/.test(t)}; });
+ok(s.title && /Progettazione \(Sezioni 1–3\)/.test(s.t) && !/Che cosa copre il giro/.test(s.t), 'la nuova copia è la 3, ambito «Progettazione (Sezioni 1–3)»'); ok(s.tutor === 'tutor@x.it' && s.icdf === 'rcdf.altoadriatico@cngei.it', 'Tutor e ICdF precompilati');
 ok(/Funzione in preparazione: la condivisione in app con Tutor e ICdF non è ancora attiva/.test(s.t), 'disclaimer per i tester accanto a Tutor/ICdF');
-ok(s.dis === 'true,true,false,true', '«Condividi in app» disabilitato per Tutor e ICdF (e abilitato per Capo Gruppo)');
+ok(s.dis === 'true,false,true', '«Condividi in app» disabilitato per Tutor e ICdF (e abilitato per Capo Gruppo)');
 // indirizzo ammesso: il pulsante si abilita e il disclaimer sparisce per quella riga
 await ev(() => ppGiroDest(0, 'email', 'Luca.Bartolomei@cngei.it')); await sleep(900);
 s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); const row = ov.querySelectorAll('input[type=email]')[0].parentElement; return {dis: row.querySelector('input[type=checkbox]').disabled, msg: /in preparazione/.test(row.innerText)}; });
@@ -58,7 +58,7 @@ ok(await ev(() => !ppGiri()['h1']), 'la migrazione dei vecchi invii avviene una 
 await ev(() => { scheda.pp.giri = {}; scheda.pp.giriMig = 1; scheda.pp.iter = {}; shPP('i'); }); await sleep(500);
 s = await ev(() => ({b2: ppBloccoHTML(2), b1: ppBloccoHTML(1)}));
 ok(/si apre quando la prima parte è approvata/.test(s.b2) && !/ppGiroForm\(2\)/.test(s.b2), 'senza approvazione la consegna finale resta chiusa');
-ok(/ppGiroForm\(1\)/.test(s.b1) && /Primo giro/.test(s.b1), 'la prima consegna offre «Primo giro»');
+ok(/ppGiroForm\(1\)/.test(s.b1) && /Invia in revisione/.test(s.b1), 'la prima consegna offre «Invia in revisione»');
 await ev(() => ppGiroForm(1)); await sleep(500); await ev(() => ppGiroCongela()); await sleep(2000);
 const gid = await ev(() => ppGiriList()[0].id), gn = await ev(() => ppGiriList()[0].n);
 ok(gn === 1 || gn >= 5, 'in un progetto senza storici il primo giro prende il primo numero libero: ' + gn);
@@ -81,7 +81,7 @@ await ev(() => ppGiroForm(2)); await sleep(800);
 s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); return {n: ov.querySelectorAll('input[type=email]').length}; });
 await ev(() => { window._giroForm.tutorIcdf = true; ppGiroFormRender(); }); await sleep(300);
 let s2 = await ev(() => { const ov = document.getElementById('pp-giro-ov'); return {n: ov.querySelectorAll('input[type=email]').length, t: ov.innerText}; });
-ok(s2.n === s.n - 1 && /ICdF \(fa anche da Tutor\)/.test(s2.t), 'con «Tutor = ICdF» resta una sola riga, ICdF che fa anche da Tutor');
+ok(s2.n === s.n && /ICdF/.test(s2.t) && !/Tutor · revisore/.test(s2.t), 'il revisore è uno solo: scegliendo l’ICdF sparisce la riga del Tutor');
 await ev(() => { ppGiroFormClose(); });
 // elimina un giro
 const nBefore = cloud().length;

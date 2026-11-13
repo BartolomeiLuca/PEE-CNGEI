@@ -8724,7 +8724,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611131900'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611131945'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -18849,7 +18849,7 @@ function ppBloccoHTML(b){
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center"><input id="apb1-chi" type="text" class="sh-in" style="min-height:34px;font-size:12.5px;flex:1;min-width:140px" maxlength="120" placeholder="chi l’ha data (es. Tutor Marco)" aria-label="Chi ha approvato"><input id="apb1-d" type="date" class="sh-in" style="min-height:34px;font-size:12.5px;width:auto" value="${td()}" aria-label="Data dell’approvazione"><button type="button" class="btn-ghost" style="min-height:34px" onclick="ppApprB1Form()">Registra l’approvazione</button></div><div class="sh-hint" style="margin-top:3px">Registrata dal compilatore, con data.</div></div>`;
   } else if(ap){ appr = `<div style="margin-top:10px;font-size:12.5px"><span class="sh-pill sh-pill-ok">Approvato</span> il ${esc(fmtDL(ap.date || ''))}</div>`; }
   const leg5 = prima ? (ppRisc().length ? `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">Riscontri registrati prima dei giri (${ppRisc().length})</summary>${ppRiscHTML()}</details>` : '') : '';
-  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo giro' : 'Primo giro'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>`
+  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>`
     : `<div style="font-size:12.5px;color:#8a4b00;line-height:1.45">La consegna finale si apre quando la prima parte è approvata (dal Tutor; dall’ICdF se è lui il Tutor o se il Tutor non c’è). Puoi intanto scrivere le Sezioni 4 e 5.</div>`;
   if(prima) setTimeout(() => { try{ window.ppGiroFbAll && window.ppGiroFbAll(); }catch(e){} }, 60);
   return `<div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">${prima ? 4 : 5}</span>${titolo}</h3>
@@ -18902,6 +18902,7 @@ window._giroAbil = window._giroAbil || {};
 async function ppGiroAbilCheck(em){ em = ppGiroEmailOf(em); if(!em) return false; if(em in window._giroAbil) return window._giroAbil[em];
   let ok = false; try{ if(typeof CL !== 'undefined' && CL.sb && CL.user){ const r = await CL.sb.rpc('revisore_abilitato', {em}); ok = !r.error && r.data === true; } }catch(e){}
   window._giroAbil[em] = ok; return ok; }
+const ppGiroSkip = (f, d) => (f.tutorIcdf && d.k === 'tutor') || (!f.tutorIcdf && d.k === 'icdf');
 function ppGiroForm(blk){
   if(window.BRO) return; blk = blk === 2 ? 2 : 1;
   const m = ppMailState(), area = RCDF_AREE.find(x => x[0] === m.area), it = (scheda.pp || {}).iter || {};
@@ -18912,9 +18913,11 @@ function ppGiroForm(blk){
     {k:'cg', label:'Capo Gruppo', ruolo:'copia', email:ppGiroEmailOf(m.cgMail), app:false, mail:true},
     {k:'cds', label:'Commissario di Sezione', ruolo:'copia', email:ppGiroEmailOf(m.cdsMail), app:false, mail:true}]};
   window._giroForm.dest.forEach(d => { if(d.ruolo === 'revisore' && d.email) ppGiroAbilCheck(d.email).then(() => ppGiroFormRender()); });
+  try{ if(typeof CL !== 'undefined' && CL.sb && CL.ctx && CL.ctx.id){ CL.sb.from('pee_revisioni').select('id,revisore_email,fase').eq('archivio_id', CL.ctx.id).eq('stato', 'aperta').maybeSingle().then(q => { const f = window._giroForm, v = q && q.data; if(!f || !v || !v.revisore_email) return; f.revId = v.id; f.revLock = true; f.tutorIcdf = v.revisore_email === _ic; f.dest.forEach(d => { if(d.k === (f.tutorIcdf ? 'icdf' : 'tutor') && !d.email) d.email = v.revisore_email; }); ppGiroFormRender(); }, () => {}); } }catch(e){}
   ppGiroFormRender();
 }
 function ppGiroFormClose(){ const ov = document.getElementById('pp-giro-ov'); if(ov) ov.classList.remove('show'); }
+window.ppGiroBlkSet = function(v){ const f = window._giroForm; if(!f) return; f.blk = v; f.sez = v === 2 ? [1, 2, 3, 4, 5] : [1, 2, 3]; ppGiroFormRender(); };
 function ppGiroFormSet(k, v){ const f = window._giroForm; if(!f) return; f[k] = v; }
 function ppGiroSez(n, on){ const f = window._giroForm; if(!f) return; f.sez = f.sez.filter(x => x !== n); if(on) f.sez.push(n); f.sez.sort(); }
 function ppGiroDest(i, k, v){ const f = window._giroForm; if(!f || !f.dest[i]) return; const d = f.dest[i]; d[k] = v;
@@ -18928,10 +18931,10 @@ function ppGiroFormRender(){
   const inS = 'width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:13px Montserrat,sans-serif;background:var(--surface,#fff);color:var(--ink)';
   const SEZ = [1, 2, 3, 4, 5].map(n => `<label style="display:inline-flex;gap:5px;align-items:center;margin-right:12px;font-size:12.5px;min-height:32px"><input type="checkbox" ${f.sez.includes(n) ? 'checked' : ''} onchange="ppGiroSez(${n},this.checked)">${n} · ${esc(PP_SEZ[n - 1])}</label>`).join('<br>');
   const rows = f.dest.map((d, i) => {
-    if(f.tutorIcdf && d.k === 'tutor') return '';
+    if(ppGiroSkip(f, d)) return '';
     const rev = d.ruolo === 'revisore', ab = !rev || window._giroAbil[ppGiroEmailOf(d.email)] === true, can = cloud && d.email && ab;
     return `<div style="border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin-top:8px">
-      <div style="font-size:12.5px;font-weight:800">${esc(f.tutorIcdf && d.k === 'icdf' ? 'ICdF (fa anche da Tutor)' : d.label)} <span style="font-weight:600;color:var(--ink-faint)">· ${rev ? 'revisore' : 'in copia'}</span></div>
+      <div style="font-size:12.5px;font-weight:800">${esc(d.label)} <span style="font-weight:600;color:var(--ink-faint)">· ${rev ? 'revisore' : 'in copia'}</span></div>
       <input type="email" style="${inS};margin-top:5px" placeholder="email" value="${sEsc(d.email)}" aria-label="Email: ${sEsc(d.label)}" onchange="ppGiroDest(${i},'email',this.value)">
       <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">
         <label style="display:inline-flex;gap:5px;align-items:center;font-size:12.5px;min-height:32px${can ? '' : ';opacity:.55'}"><input type="checkbox" ${d.app && can ? 'checked' : ''} ${can ? '' : 'disabled'} onchange="ppGiroDest(${i},'app',this.checked)">Condividi in app</label>
@@ -18939,15 +18942,15 @@ function ppGiroFormRender(){
       ${rev && !ab ? '<div style="font-size:12px;color:#8a4b00;margin-top:4px;line-height:1.45">Funzione in preparazione: la condivisione in app con Tutor e ICdF non è ancora attiva. Intanto puoi congelare il giro e preparare la mail.</div>' : ''}
       ${!rev && !d.email ? '' : ''}</div>`; }).join('');
   ov.innerHTML = `<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:640px;width:calc(100% - 24px);max-height:92vh;overflow:auto;padding:18px 18px 16px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Invia questo giro · Giro ${ppGiroNextN()} · ${f.blk === 2 ? 'Consegna finale' : 'Prima consegna'}</div><button class="btn-ghost" onclick="ppGiroFormClose()" style="padding:4px 10px" aria-label="Chiudi">✕</button></div>
-    <p style="font-size:12px;color:var(--ink-mid);margin:6px 0 0;line-height:1.5">Congelare crea una copia ferma del progetto: non va a nessuno finché non scegli. Non è obbligatorio dare il giro a tutte le persone: se manca il Tutor, il destinatario è l’ICdF.</p>
-    <div style="font-size:12.5px;margin-top:10px"><b>${f.blk === 2 ? 'Consegna finale' : 'Prima consegna'}</b> · copre le Sezioni ${f.blk === 2 ? '1–5' : '1–3'}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Invia il progetto in revisione · Copia ${ppGiroNextN()}</div><button class="btn-ghost" onclick="ppGiroFormClose()" style="padding:4px 10px" aria-label="Chiudi">✕</button></div>
+    <p style="font-size:12px;color:var(--ink-mid);margin:6px 0 0;line-height:1.5">L’invio crea una copia ferma del progetto, quella che legge il revisore: tu intanto puoi continuare a lavorarci. Chi è in copia (Capo Gruppo, Commissario) può solo leggere e dare suggerimenti.</p>
+    <div role="radiogroup" aria-label="Cosa invii" style="margin-top:10px">${[[1, 'Progettazione (Sezioni 1–3)', 'si approva prima di partire'], [2, 'Progetto completo (Sezioni 1–5)', 'dopo la realizzazione e la verifica']].map(([v, t, h]) => `<label style="display:flex;gap:6px;align-items:flex-start;font-size:12.5px;min-height:34px"><input type="radio" name="pp-giro-blk" ${f.blk === v ? 'checked' : ''} onchange="ppGiroBlkSet(${v})"><span><b>${t}</b> · ${h}</span></label>`).join('')}</div>
     <label style="display:flex;gap:6px;align-items:flex-start;font-size:12.5px;margin-top:8px"><input type="checkbox" ${f.nomi ? 'checked' : ''} onchange="ppGiroFormSet('nomi',this.checked)"><span>Includi la griglia osservativa. Può contenere i nomi dei Lupetti, delle Esploratrici o dei Rover: chi condivide in app la vede. Se la togli, la copia non la contiene.</span></label>
     <label style="display:block;font-size:12px;font-weight:700;margin:10px 0 3px">Una nota per chi lo riceve ${OPT}</label><textarea style="${inS};min-height:56px" maxlength="2000" oninput="ppGiroFormSet('nota',this.value)">${sEsc(f.nota)}</textarea>
     <div style="font-size:12px;font-weight:700;margin:12px 0 0">A chi</div>
-    <label style="display:flex;gap:6px;align-items:flex-start;font-size:12.5px;margin-top:4px"><input type="checkbox" ${f.tutorIcdf ? 'checked' : ''} onchange="ppGiroFormSet('tutorIcdf',this.checked);ppGiroFormRender()"><span>Il Tutor è anche l’ICdF, oppure non ho un Tutor: il destinatario è solo l’ICdF.</span></label>${rows}
+    <div role="radiogroup" aria-label="Chi rivede il progetto" style="margin-top:4px">${[[false, 'Il mio Tutor'], [true, 'L’ICdF']].map(([v, t]) => `<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;min-height:34px${f.revLock ? ';opacity:.6' : ''}"><input type="radio" name="pp-giro-rev" ${f.tutorIcdf === v ? 'checked' : ''} ${f.revLock ? 'disabled' : ''} onchange="ppGiroFormSet('tutorIcdf',${v});ppGiroFormRender()">${t}</label>`).join('')}</div><div style="font-size:12px;color:var(--ink-mid);line-height:1.45;margin-top:2px">${f.revLock ? 'La revisione è già aperta con questo revisore: non si cambia finché non è chiusa.' : 'Il revisore è uno solo: lo scegli ora e resta lo stesso fino alla chiusura della revisione.'}</div>${rows}
     ${cloud ? '' : '<div style="font-size:12px;color:#8a4b00;margin-top:10px;line-height:1.45">Per congelare un giro serve l’accesso con il tuo account e un progetto salvato nel cloud, e solo chi ha creato il progetto può farlo. Intanto puoi preparare la mail dalla pagina degli invii.</div>'}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn-primary" id="pp-giro-go" ${cloud ? '' : 'disabled'} onclick="ppGiroCongela()">Congela il giro</button><button class="btn-ghost" onclick="ppGiroFormClose()">Annulla</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn-primary" id="pp-giro-go" ${cloud ? '' : 'disabled'} onclick="ppGiroCongela()">Invia in revisione</button><button class="btn-ghost" onclick="ppGiroFormClose()">Annulla</button></div>
   </div>`;
   ov.classList.add('show'); if(ov.firstElementChild) ov.firstElementChild.scrollTop = keep;
 }
@@ -18967,7 +18970,7 @@ async function ppGiroCongela(){
     const g = {id:r.data.id, n:r.data.n, at:td(), blk:f.blk || 1, risc:{}, sez:f.sez.slice().sort(), nomi:!!f.nomi, nota:(f.nota || '').trim(), dest:[]};
     let appKo = 0;
     for(const d of f.dest){
-      if(f.tutorIcdf && d.k === 'tutor') continue;
+      if(ppGiroSkip(f, d)) continue;
       if(!d.app && !d.mail) continue; const em = ppGiroEmailOf(d.email); if(!em && !d.mail) continue;
       let inApp = false;
       if(d.app && em){ const q = await CL.sb.from('pee_giri_dest').insert({giro_id:g.id, email:em, ruolo:d.ruolo, nome:d.label}); if(q.error) appKo++; else inApp = true; }
@@ -18976,10 +18979,10 @@ async function ppGiroCongela(){
     ppGiri()[g.id] = g; { const itx = ppIter(), kk = g.blk === 2 ? 'finale' : 'prima'; if(!(itx[kk] || {}).date) itx[kk] = Object.assign(itx[kk] || {}, {date:td()}); }
     try{ saveData(true); }catch(e){}
     ppGiroFormClose(); try{ shPP('i'); }catch(e){}
-    showToast('Giro ' + g.n + ' congelato' + (appKo ? ' · ' + appKo + ' condivisione in app non riuscita' : ''));
-    if(f.dest.some(d => d.mail && !(f.tutorIcdf && d.k === 'tutor'))) ppMailOpen(g.sez.some(x => x >= 4) ? 'completo' : 'parziale');
+    showToast('Progetto inviato in revisione · copia ' + g.n + (appKo ? ' · ' + appKo + ' condivisione in app non riuscita' : ''));
+    if(f.dest.some(d => d.mail && !ppGiroSkip(f, d))) ppMailOpen(g.sez.some(x => x >= 4) ? 'completo' : 'parziale');
   }catch(e){
-    if(go){ go.disabled = false; go.textContent = 'Congela il giro'; }
+    if(go){ go.disabled = false; go.textContent = 'Invia in revisione'; }
     showToast('Non sono riuscito a congelare il giro: ' + ((e && e.message) || 'riprova tra poco').slice(0, 90));
   }
 }
