@@ -37,6 +37,12 @@ ok(await ed.count() === 1 && await ed.isVisible(), 'il campo lungo è un editor 
 ok((await ta.evaluate(t => t.getBoundingClientRect().width)) <= 30, 'la casella con i segni è nascosta');
 await ed.click(); await sleep(200);
 ok(await ev(() => getComputedStyle(document.getElementById('rt-bar')).display) === 'flex', 'la barra compare sul campo');
+await P.locator('#rt-bar [data-rt=close]').click(); await sleep(100);
+ok(await ev(() => getComputedStyle(document.getElementById('rt-bar')).display) === 'none', '✕ chiude la barra');
+await ed.click(); await sleep(150);
+ok(await ev(() => getComputedStyle(document.getElementById('rt-bar')).display) === 'none', 'resta chiusa nello stesso campo');
+await P.mouse.click(5, 300); await sleep(300); await ed.click(); await sleep(200);
+ok(await ev(() => getComputedStyle(document.getElementById('rt-bar')).display) === 'flex', 'si riapre dopo essere usciti dal campo');
 const val = () => ta.evaluate(t => t.value), html = () => ed.evaluate(e => e.innerHTML);
 await P.keyboard.type('uno due tre'); await sleep(100);
 ok(await val() === 'uno due tre', 'scrivendo, il testo arriva nei dati: ' + await val());
@@ -84,7 +90,7 @@ console.log('H', await html()); ok(await val() === 'ciao **forte** ok', 'Ctrl+B 
 await ed.evaluate(e => e.dispatchEvent(Object.assign(new Event('paste', {bubbles:true, cancelable:true}), {clipboardData: {getData: () => '<b>x</b> incollato'}})));
 await sleep(100); ok(/&lt;b&gt;x&lt;\/b&gt; incollato|<b>x<\/b> incollato/.test(await val()) || /incollato/.test(await val()), 'incolla come testo semplice');
 // campo riempito da fuori (sincronizzazione)
-await ta.evaluate(t => { t.value = 'titolo e **grassetto** con _corsivo_ e ++sottolineato++ e ^^grande^^\n• primo\n• secondo'; t.dispatchEvent(new Event('input', {bubbles:true})); }); await sleep(400);
+await ta.evaluate(t => { t.value = 'titolo e **grassetto** con _corsivo_ e ++sottolineato++ e ^^grande^^\n• primo\n• secondo\n**multi\nriga**'; t.dispatchEvent(new Event('input', {bubbles:true})); }); await sleep(400);
 ok(/<b>grassetto<\/b>/.test(await html()) && /<i>corsivo<\/i>/.test(await html()) && /<u>sottolineato<\/u>/.test(await html()), 'un testo già formattato si vede formattato');
 await ed.click(); await P.keyboard.type('!'); await P.keyboard.press('Tab'); await sleep(300);
 const m = await ev(() => { const u = uscCur(); return u.prog[window._K].desc; });
@@ -92,7 +98,7 @@ ok(/\*\*grassetto\*\*/.test(m || ''), 'il testo con i segni arriva nei dati salv
 // Word
 const [d] = await Promise.all([P.waitForEvent('download', {timeout: 40000}), ev(() => uscExport('giorno', 1))]);
 const x = await (await JSZip.loadAsync(fs.readFileSync(await d.path()))).file('word/document.xml').async('string');
-ok(!/\*\*grassetto|_corsivo_|\+\+sotto/.test(x.replace(/<[^>]+>/g, '')), 'nel Word non restano i segni');
+ok(!/\*\*grassetto|_corsivo_|\+\+sotto|\*\*multi|riga\*\*/.test(x.replace(/<[^>]+>/g, '')), 'nel Word non restano i segni');
 ok(/<w:r><w:rPr>[^]*?<w:b\/>[^]*?<\/w:rPr><w:t xml:space="preserve">grassetto<\/w:t>/.test(x), 'Word: grassetto');
 ok(/<w:i\/>[^]*?<w:t xml:space="preserve">corsivo<\/w:t>/.test(x), 'Word: corsivo');
 ok(/<w:u w:val="single"\/><\/w:rPr><w:t xml:space="preserve">sottolineato<\/w:t>/.test(x), 'Word: sottolineato');

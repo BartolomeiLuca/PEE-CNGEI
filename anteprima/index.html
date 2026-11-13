@@ -1533,7 +1533,7 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 #rv-dock{position:fixed;z-index:9000;background:#fff;color:var(--ink,#1a1a1a);font:13px/1.45 Montserrat,sans-serif;display:flex;flex-direction:column;box-sizing:border-box}
 #rv-dock .rv-h{display:flex;gap:8px;align-items:center;border:0;background:#1b5e42;color:#fff;padding:11px 14px;font:700 13px Montserrat,sans-serif;text-align:left;cursor:default;min-height:44px}#rv-dock .rv-h span{font-weight:600;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#rv-dock .rv-tg{margin-left:auto;display:none}
 #rv-dock .rv-body{flex:1;overflow:auto;padding:10px 12px 16px;min-height:0}#rv-dock .rv-foot{border-top:1px solid #d8d8d0;padding:10px 12px;background:#F7F7F2;max-height:46vh;overflow:auto}
-.rv-note{font-size:12.5px;line-height:1.5;background:#F1F8F4;border:1px solid #cfe6d8;border-radius:8px;padding:8px 10px}.rv-nn{margin-top:6px}.rv-t{font-weight:800;font-size:13px;margin:12px 0 6px}.rv-t span{display:block;font-weight:500;font-size:11.5px;color:#666}
+.rv-note{font-size:12.5px;line-height:1.5;background:#F1F8F4;border:1px solid #cfe6d8;border-radius:8px;padding:8px 10px}.rv-nn{margin-top:6px}.rv-q [hidden],#rv-dock [hidden]{display:none!important}.rv-arr{border:0;background:none;cursor:pointer;font-size:13px;line-height:1;padding:2px 6px 2px 0;min-width:24px;min-height:24px;color:#1b5e42}.rv-t{font-weight:800;font-size:13px;margin:12px 0 6px}.rv-t span{display:block;font-weight:500;font-size:11.5px;color:#666}
 .rv-sec{border:1px solid #d8d8d0;border-radius:9px;margin-top:6px;background:#fff}.rv-sec.cur{border-color:#1b5e42;box-shadow:0 0 0 2px #cfe6d8}.rv-sh{display:flex;gap:8px;align-items:center;width:100%;border:0;background:transparent;padding:9px 10px;text-align:left;cursor:pointer;font:700 12.5px Montserrat,sans-serif;color:inherit;min-height:40px}.rv-sn{flex:1}.rv-sl{font-weight:600;font-size:11.5px;color:#666}
 .rv-dot{width:11px;height:11px;border-radius:50%;flex:none;background:#ccc}.rv-dot.ok{background:#2f9e5b}.rv-dot.rv{background:#e08a00}.rv-dot.dm{background:#2b6fd6}.rv-dot.nt{background:#8a8a80}
 .rv-ed{padding:2px 10px 10px}#rv-dock textarea{width:100%;box-sizing:border-box;min-height:56px;margin-top:6px;padding:8px 10px;border:1px solid #c9c9c0;border-radius:8px;font:13px Montserrat,sans-serif;background:#fff;color:inherit}
@@ -1541,7 +1541,7 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 .rv-rec{display:inline-block;margin-top:4px;font-size:11.5px;font-weight:700;color:#1b5e42}.rv-ck{margin-top:12px;border:1px solid #d8d8d0;border-radius:9px;padding:6px 10px;background:#fff}.rv-ck>summary{cursor:pointer;font-weight:800;font-size:12.5px;min-height:34px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rv-ck>summary span{font-weight:600;color:#666;font-size:11.5px}
 .rv-cg{font-weight:800;font-size:12px;margin-top:10px;color:#1b5e42}.rv-ci{margin-top:6px;font-size:12.5px;line-height:1.45}.rv-ci .rv-bs{margin-top:4px}
 @media(min-width:768px){#rv-dock{right:0;top:64px;bottom:0;width:340px;border-left:1px solid #c9c9c0;box-shadow:-4px 0 14px rgba(0,0,0,.07)}body.rv-has-dock #main-app{margin-right:340px!important}#rv-doc{right:340px!important}}
-@media(min-width:1100px){#rv-dock{width:384px}body.rv-has-dock #main-app{margin-right:384px!important}#rv-doc{right:384px!important}}
+@media(min-width:1100px){#rv-dock{width:420px}body.rv-has-dock #main-app{margin-right:420px!important}#rv-doc{right:420px!important}}
 @media(max-width:767px){#rv-dock{left:0;right:0;bottom:0;height:78vh;height:78dvh;padding-bottom:env(safe-area-inset-bottom,0);border-top:2px solid #1b5e42;box-shadow:0 -6px 18px rgba(0,0,0,.18);transform:translateY(calc(100% - 46px - env(safe-area-inset-bottom,0px)));transition:transform .22s}#rv-dock.open{transform:none}#rv-dock .rv-tg{display:inline}#rv-dock.open .rv-tg{transform:rotate(180deg)}#rv-dock .rv-h{cursor:pointer}body.rv-has-dock{padding-bottom:56px}body.rv-has-dock #rv-doc{bottom:calc(46px + env(safe-area-inset-bottom,0px))!important}}
 #rv-doc{position:fixed;left:0;top:0;right:0;bottom:0;z-index:8000;overflow:auto;background:#eceae2;-webkit-overflow-scrolling:touch}
 #rv-doc .rd-art{position:relative;max-width:820px;margin:14px auto 40px;background:#fff;padding:26px 22px 30px 46px;box-sizing:border-box;border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.12);font:14.5px/1.55 Montserrat,Arial,sans-serif;color:#1a1a1a}
@@ -1556,16 +1556,19 @@ html.rv-pre body>*:not(#giro-bar):not(#toast):not(#rv-doc):not(#rv-dock):not(#rv
 html.rv-pre body::before{content:"Preparo il progetto…";display:block;padding:70px 20px;text-align:center;font:700 16px Montserrat,Arial,sans-serif;color:#1b5e42}
 #rv-doc td,#rv-doc th{border:0!important;border-bottom:1px solid #ececE4!important;padding:7px 8px}#rv-doc table{border:0!important}#rv-doc td:first-child{width:24%}
 #rv-doc tr.rd-cmr td,#rv-doc tr.rd-cmr{border:0!important}
+#rv-doc tr.rd-nb td{border-bottom:0!important}
+#rv-doc{--rd-br:#1B5E42;--rd-brp:#EEF5F1}#rv-doc tr.rd-ga td{background:var(--rd-brp)}#rv-doc tr.rd-ga td:first-child{box-shadow:inset 3px 0 0 var(--rd-br)}
+#rv-doc td.rd-cmc{background:transparent!important}#rv-doc tr.rd-cmr td{background:transparent!important;box-shadow:none!important}
 .rd-cm{width:100%;box-sizing:border-box}.rd-cm textarea{display:block;width:100%!important}
 #rv-doc td.rd-cmc{width:auto!important;padding:2px 0 8px!important}
 tr.rd-mod td:first-child{box-shadow:inset 3px 0 0 #e08a00}tr.rd-new td:first-child{box-shadow:inset 3px 0 0 #2b6fd6}h3.rd-mod,h3.rd-new{border-left:3px solid #e08a00;padding-left:8px}h3.rd-new{border-left-color:#2b6fd6}
 .rd-onlymod .rd-b:not(.rd-ch),.rd-onlymod table:not(.rd-ch),.rd-onlymod tr:not(.rd-ch):not(.rd-cmr),.rd-onlymod h3:not(.rd-ch):not(.rd-chp),.rd-onlymod h2:not(.rd-chp){display:none}
 tr.rd-flash td,h3.rd-flash{background:#fff3c4!important;transition:background .4s}
 .rd-pv{font-size:12px;color:#5f5f58;border-left:3px solid #d8d8d0;padding-left:8px;margin-bottom:6px}.rd-n{margin-bottom:6px}
-#rv-nav{position:fixed;left:0;top:64px;bottom:0;width:210px;overflow:auto;background:#F7F7F2;border-right:1px solid #d8d8d0;padding:10px 8px;box-sizing:border-box;z-index:8500;font:12.5px/1.35 Montserrat,Arial,sans-serif;display:none}
+#rv-nav{position:fixed;left:0;top:64px;bottom:0;width:250px;overflow:auto;background:#F7F7F2;border-right:1px solid #d8d8d0;padding:10px 8px;box-sizing:border-box;z-index:8500;font:12.5px/1.35 Montserrat,Arial,sans-serif;display:none}
 #rv-nav .rn-t{font-weight:800;font-size:12px;margin:0 6px 6px;color:#1b5e42}#rv-nav a{display:block;color:#1a1a1a;text-decoration:none;padding:5px 8px;border-radius:7px;min-height:24px}#rv-nav a:hover{background:#e6efe9}
 #rv-nav a.rn-s{font-weight:700;margin-top:8px}#rv-nav a.rn-h{padding-left:20px;font-size:12px;color:#444}#rv-nav a.ch::after{content:" ●";color:#e08a00;font-size:10px}
-@media(min-width:1100px){body.rv-nav-on #rv-nav{display:block}body.rv-nav-on #rv-doc{left:210px!important}}
+@media(min-width:1100px){body.rv-nav-on #rv-nav{display:block}body.rv-nav-on #rv-doc{left:250px!important}}
 .rv-sb{padding:2px 10px 10px}.rv-hp{font-size:11.5px;color:#6b6b62;line-height:1.4;margin-top:4px}.rv-pn{font-size:11.5px;color:#6b6b62}.rv-pw{display:inline-block;font-size:11px;font-weight:700;background:#eef2ef;border-radius:6px;padding:1px 6px;margin-top:2px}
 .rv-q{margin-top:10px;padding:8px 10px;border:1px solid #cfe6d8;background:#F1F8F4;border-radius:9px}.rv-pl2{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-height:190px;overflow:auto}
 .rv-pp{display:block;text-align:left;border:0;background:#fff;border:1px solid #d8d8d0;border-radius:7px;padding:5px 8px;font:12px Montserrat,Arial,sans-serif;cursor:pointer;min-height:30px}.rv-pp.done{background:#e8f4ec;border-color:#b7dcc4}.rv-pp.mod{border-left:3px solid #e08a00}.rv-pp.new{border-left:3px solid #2b6fd6}.rv-pp[disabled]{opacity:.6;cursor:default}
@@ -8719,7 +8722,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611131730'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611131900'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -12828,7 +12831,7 @@ function togglePercorsoIdr(percorsoIdx, idrIdx, checked) {
 // ── CHECKLIST PP (revisione del Progetto Personale da parte del formatore / autoverifica) ──
 const CHK_PP = [
   {sec:'Analisi della situazione', items:[
-    {id:'a1', q:'È presente il riferimento al contesto su cui si opera (Città/Paese, Sezione, Quartiere, Sede)?', auto:'ctx'},
+    {id:'a1', q:'È presente il riferimento al contesto in cui si opera (Città/Paese, Sezione, Quartiere, Sede)?', auto:'ctx'},
     {id:'a2', q:'È presente il riferimento al contesto con cui si opera (Consiglio di Gruppo)?'}]},
   {sec:'Osservazione del gruppo di pari', items:[
     {id:'o1', q:'È presente il focus al Gruppo di Pari nel suo complesso?'},
@@ -13856,7 +13859,10 @@ function dLink(url, o={}){ const D=dxLib(); const u=linkNorm(url);
 function dLinkRuns(text, o={}){
   const s = String(text == null ? '' : text);
   // un a capo dentro un testo diventa un a capo vero nel Word (prima le righe restavano attaccate: «vicinanza.Attività 3»)
-  if(/\n/.test(s)){ const P = s.replace(/\r/g,'').split('\n'); return P.flatMap((part, i) => { const r = part ? dLinkRuns(part, o) : []; if(i > 0) r.unshift(dTxt('', Object.assign({}, o, {break:1}))); return r; }); }
+  if(/\n/.test(s)){ let P = s.replace(/\r/g,'').split('\n');
+    // grassetto/corsivo/… che attraversano più righe: si chiudono e si riaprono a ogni riga, così nel Word non restano gli asterischi
+    if(/\*\*|~~|\+\+|\^\^|,,|_/.test(s)){ const T = [['b','**'],['M','~~'],['u','++'],['L','^^'],['S',',,'],['i','_']], lines = ['']; rtSegs(s).forEach(sg => { sg.t.split('\n').forEach((pt, i) => { if(i > 0) lines.push(''); if(!pt) return; const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(pt), on = T.filter(x => sg[x[0]]); lines[lines.length - 1] += on.length && m[2] ? m[1] + on.map(x => x[1]).join('') + m[2] + on.slice().reverse().map(x => x[1]).join('') + m[3] : pt; }); }); P = lines; }
+    return P.flatMap((part, i) => { const r = part ? dLinkRuns(part, o) : []; if(i > 0) r.unshift(dTxt('', Object.assign({}, o, {break:1}))); return r; }); }
   const re = /((?:https?:\/\/|www\.)[^\s<>"]*[^\s<>"'.,;:!?)\]]|(?:drive\.google\.com|docs\.google\.com|canva\.com|youtu\.be|youtube\.com)\/[^\s<>"]*[^\s<>"'.,;:!?)\]])/gi;
   if(!re.test(s)) return [dTxt(s, o)];
   re.lastIndex = 0; const out = []; let last = 0, m;
@@ -14055,10 +14061,10 @@ function rtHTML(str){ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,
   return rtSegs(str).map(s=>{ let h=esc(s.t).replace(/\n/g,'<br>'); if(s.M) h='<span class="rt-M" style="font-weight:600">'+h+'</span>'; if(s.b) h='<b>'+h+'</b>'; if(s.i) h='<i>'+h+'</i>'; if(s.u) h='<u>'+h+'</u>'; if(s.L) h='<span class="rt-L" style="font-size:1.25em">'+h+'</span>'; if(s.S) h='<span class="rt-S" style="font-size:.8em">'+h+'</span>'; return h; }).join(''); }
 // campo adatto: lungo, scrivibile, non in tabella, non nella circolare né nelle finestre
 function rtOk(t){ if(window.__RT_OFF) return false; if(!t||t.tagName!=='TEXTAREA'||t.readOnly||t.disabled||t.hasAttribute('data-nort')||(t.maxLength>0&&t.maxLength<500)) return false; if(t.hasAttribute('data-conv')&&!(t.hasAttribute('data-rt')||/descriv|osservazion|necessit|descrizion|altri ruoli|note/i.test(t.placeholder||''))) return false; if(t.closest('.rt-ed,#cl-ov,#nac-ov,.modal,[role=dialog],[data-uk="circ"],.ax-circ,#ax-circ')) return false; const r=t.getBoundingClientRect(); return r.width>=180; }
-let RT_T=null, RT_BAR=null;
+let RT_T=null, RT_BAR=null, RT_CLOSED=null;   // RT_CLOSED: campo in cui la barra è stata chiusa con la ✕ (si riapre andando in un altro campo)
 function rtBar(){ if(RT_BAR) return RT_BAR; const b=document.createElement('div'); b.id='rt-bar'; b.setAttribute('role','toolbar'); b.setAttribute('aria-label','Formattazione del testo');
-  b.innerHTML=[['b','<b>G</b>','Grassetto'],['i','<i>C</i>','Corsivo'],['u','<u>S</u>','Sottolineato'],['L','A<sup>+</sup>','Più grande'],['S','A<sub>−</sub>','Più piccolo'],['ul','•≡','Elenco puntato'],['ol','1.≡','Elenco numerato'],['x','✕','Toglie la formattazione']].map(([k,h,t])=>`<button type="button" data-rt="${k}" title="${t}" aria-label="${t}">${h}</button>`).join('');
-  b.addEventListener('mousedown',e=>{ e.preventDefault(); }); b.addEventListener('click',e=>{ const bt=e.target.closest('button[data-rt]'); if(bt&&RT_T){ if(RT_T.classList&&RT_T.classList.contains('rt-ed')) rtApplyEd(RT_T,bt.dataset.rt); else rtApply(RT_T,bt.dataset.rt); setTimeout(rtActive,0); } });
+  b.innerHTML=[['b','<b>G</b>','Grassetto'],['i','<i>C</i>','Corsivo'],['u','<u>S</u>','Sottolineato'],['L','A<sup>+</sup>','Più grande'],['S','A<sub>−</sub>','Più piccolo'],['ul','•≡','Elenco puntato'],['ol','1.≡','Elenco numerato'],['x','T<sub>x</sub>','Toglie la formattazione'],['close','✕','Chiude la barra (si riapre in un altro campo)']].map(([k,h,t])=>`<button type="button" data-rt="${k}" title="${t}" aria-label="${t}">${h}</button>`).join('');
+  b.addEventListener('mousedown',e=>{ e.preventDefault(); }); b.addEventListener('click',e=>{ const bt=e.target.closest('button[data-rt]'); if(bt&&RT_T&&bt.dataset.rt==='close'){ RT_CLOSED=RT_T; b.style.display='none'; return; } if(bt&&RT_T){ if(RT_T.classList&&RT_T.classList.contains('rt-ed')) rtApplyEd(RT_T,bt.dataset.rt); else rtApply(RT_T,bt.dataset.rt); setTimeout(rtActive,0); } });
   document.body.appendChild(b); RT_BAR=b; return b; }
 // mostra quali strumenti sono attivi nel punto in cui si scrive
 // riga in cui si trova il cursore, letta SENZA toccare il testo (prima si inserivano segni provvisori a ogni spostamento del cursore: la selezione si rompeva e il cursore «saltellava»)
@@ -14078,7 +14084,7 @@ function rtActive(){
   }catch(e){}
 }
 document.addEventListener('selectionchange',()=>{ if(RT_T) rtActive(); });
-function rtPlace(){ const b=rtBar(); if(!RT_T||!document.body.contains(RT_T)){ b.style.display='none'; return; } const r=RT_T.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight){ b.style.display='none'; return; } b.style.display='flex'; b.querySelectorAll('[data-rt=ul],[data-rt=ol]').forEach(x=>{ x.style.display=RT_T._conv?'none':''; }); const bw=b.offsetWidth||300; const bh=Math.max(b.offsetHeight,Math.round(b.getBoundingClientRect().height))||40; let top=r.top-bh-6;
+function rtPlace(){ const b=rtBar(); if(!RT_T||!document.body.contains(RT_T)||RT_T===RT_CLOSED){ b.style.display='none'; return; } const r=RT_T.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight){ b.style.display='none'; return; } b.style.display='flex'; b.querySelectorAll('[data-rt=ul],[data-rt=ol]').forEach(x=>{ x.style.display=RT_T._conv?'none':''; }); const bw=b.offsetWidth||300; const bh=Math.max(b.offsetHeight,Math.round(b.getBoundingClientRect().height))||40; let top=r.top-bh-6;
   // la barra resta sempre visibile: sotto l'intestazione fissa se il campo comincia più in alto, sotto il campo solo se il campo è corto e finisce subito dopo
   let minTop=4; try{ const H=[...document.querySelectorAll('#hdr, .sh-top, #app-header, header.sticky')].find(e=>e.offsetHeight&&getComputedStyle(e).position!=='static'); if(H){ const hb=H.getBoundingClientRect(); if(hb.height&&hb.top<=0&&hb.bottom>0) minTop=Math.max(4,Math.round(hb.bottom)+4); } }catch(e){}
   if(top<minTop){ top=(r.bottom-bh-minTop>60)?minTop:Math.min(r.bottom+4,innerHeight-bh-4); } b.style.top=Math.round(top)+'px'; b.style.left=Math.round(Math.max(6,Math.min(r.left,innerWidth-bw-6)))+'px'; }
@@ -14158,8 +14164,8 @@ function rtApplyEd(ed,k){ ed.focus(); const native={b:'bold',i:'italic',u:'under
 document.addEventListener('focusin',e=>{ const t=e.target; if(!t||!t.tagName) return;
   if(t.tagName==='TEXTAREA'&&t._rtEd&&t._rtEd.isConnected){ t._rtEd.focus(); return; }
   if(t.tagName==='TEXTAREA'&&!t._rtEd&&rtOk(t)){ const ed=rtMake(t); ed.focus(); rtEnd(ed); return; }
-  if(t.classList&&t.classList.contains('rt-ed')){ RT_T=t; rtPlace(); } else if(!(t.closest&&t.closest('#rt-bar'))){ RT_T=null; if(RT_BAR) RT_BAR.style.display='none'; } });
-document.addEventListener('focusout',e=>{ if(e.target===RT_T) setTimeout(()=>{ if(document.activeElement!==RT_T&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#rt-bar'))){ RT_T=null; if(RT_BAR) RT_BAR.style.display='none'; } },120); });
+  if(t.classList&&t.classList.contains('rt-ed')){ if(t!==RT_CLOSED) RT_CLOSED=null; RT_T=t; rtPlace(); } else if(!(t.closest&&t.closest('#rt-bar'))){ RT_T=null; if(RT_BAR) RT_BAR.style.display='none'; } });
+document.addEventListener('focusout',e=>{ if(e.target===RT_CLOSED) setTimeout(()=>{ if(document.activeElement!==RT_CLOSED) RT_CLOSED=null; },0); if(e.target===RT_T) setTimeout(()=>{ if(document.activeElement!==RT_T&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#rt-bar'))){ RT_T=null; if(RT_BAR) RT_BAR.style.display='none'; } },120); });
 // se il testo cambia da fuori (campo riempito dall'app, sincronizzazione) l'editor si aggiorna
 document.addEventListener('input',e=>{ const t=e.target; if(t&&t.tagName==='TEXTAREA'&&t._rtEd&&!t._rtEd._int&&t.value!==t._rtEd._v){ rtRender(t._rtEd,t.value); if(document.activeElement===t._rtEd) rtEnd(t._rtEd); } },true);
 window.addEventListener('scroll',()=>{ if(RT_T) rtPlace(); },true); window.addEventListener('resize',()=>{ if(RT_T) rtPlace(); });
@@ -16001,10 +16007,10 @@ async function clPerTe(){
     let _rvN = 0, _fbN = 0;
     try{ if(!window.BRO && window.rvListLoad){ const _L = await window.rvListLoad(); window._rvL = _L; _rvN = window.rvPendingN(_L);
       rvGroup(_L).filter(p => p.pend > 0).forEach(p => { const gg = p.giri.filter(x => !x.done).sort((a, b) => b.g.n - a.g.n)[0]; items.push({k:'rvg', id:p.aid, gid:gg ? gg.g.id : '', nome:p.nome, titolo:p.titolo, n:p.pend, rev:p.rev, hot:true, ack:false}); }); } }catch(e){}
-    try{ if(!window.BRO && CL.user){ const sn = localStorage.getItem('bussola_gfb_seen_' + CL.user.id) || '1970-01-01T00:00:00Z'; const _q = await CL.sb.from('pee_giri_rev').select('giro_id,tipo,valore,testo').neq('user_id', CL.user.id).gt('updated_at', sn).limit(300);
+    try{ if(!window.BRO && CL.user){ const sn = localStorage.getItem('bussola_gfb_seen_' + CL.user.id) || '1970-01-01T00:00:00Z'; const _q = await CL.sb.from('pee_giri_rev').select('giro_id,tipo,valore,testo,recepita,updated_at').neq('user_id', CL.user.id).limit(500);
       if(!_q.error){ const ok = (_q.data || []).filter(x => (x.tipo === 'nota' && x.testo) || x.tipo === 'esito' || (x.tipo === 'stato' && x.valore !== 'ok') || (x.tipo === 'check' && (x.valore === 'parz' || x.valore === 'no')));
-        const by = {}; ok.forEach(x => { by[x.giro_id] = (by[x.giro_id] || 0) + 1; }); const ids = Object.keys(by);
-        if(ids.length){ const gr = await CL.sb.from('pee_giri').select('id,n,archivio_id,meta').in('id', ids); (gr.data || []).forEach(g => { _fbN++; items.push({k:'gfb', id:g.id, n:by[g.id], gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:true, ack:false}); }); } } } }catch(e){}
+        const by = {}, pend = {}; ok.forEach(x => { if(x.updated_at > sn) by[x.giro_id] = (by[x.giro_id] || 0) + 1; if(x.tipo === 'nota' && !x.recepita) pend[x.giro_id] = (pend[x.giro_id] || 0) + 1; }); const ids = Array.from(new Set(Object.keys(by).concat(Object.keys(pend))));
+        if(ids.length){ const gr = await CL.sb.from('pee_giri').select('id,n,archivio_id,meta').in('id', ids); (gr.data || []).forEach(g => { _fbN++; items.push({k:'gfb', id:g.id, n:by[g.id] || 0, pend:pend[g.id] || 0, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
     CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
     try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
@@ -16068,7 +16074,7 @@ function clPerTeHTML(){
     if(x.k === 'email') return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(x.nome||x.email)} ha cambiato email</div><div class="s">${clEsc(x.prima)} → ${clEsc(x.email)} · ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div></div><button class="cl-btn sm" onclick="clMailFix('${x.mid}')">Aggiorna nella tabella dello staff</button></div>`;
     if(x.k === 'att') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.parti?clEsc(x.parti.join(', '))+' di':'Attività affidata a te:'} ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}${x.parti?' · affidat'+(x.parti.length>1?'e':'a')+' a te':''}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${go}">Apri</button></div>`;
     if(x.k === 'rvg') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.rev ? 'Da rivedere' : 'Da leggere'}: Progetto Personale di ${clEsc(x.nome)}</div><div class="s">${x.n === 1 ? '1 giro' : x.n + ' giri'} in attesa${x.titolo ? ' · ' + clEsc(x.titolo) : ''}</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};rvOpen('${clEsc(x.gid)}')">Apri</button></div>`;
-    if(x.k === 'gfb') return `<div class="cl-row"><div style="min-width:0"><div class="t">Nuovi riscontri sul tuo Progetto Personale · Giro ${x.gn}</div><div class="s">${x.n === 1 ? '1 novità' : x.n + ' novità'}: commenti, esito o check-list</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};rvOpenAny('${clEsc(x.id)}')">Leggi le revisioni</button></div>`;
+    if(x.k === 'gfb') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n ? 'Nuovi riscontri' : 'Riscontri'} sul tuo Progetto Personale · Giro ${x.gn}</div><div class="s">${x.pend ? (x.pend === 1 ? '1 punto ancora da recepire' : x.pend + ' punti ancora da recepire') + (x.n ? ' · ' : '') : ''}${x.n ? (x.n === 1 ? '1 novità' : x.n + ' novità') + ': commenti, esito o check-list' : ''}</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};rvOpenAny('${clEsc(x.id)}')">Leggi le revisioni</button></div>`;
     const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;
     return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
   };
@@ -19190,6 +19196,9 @@ function rvAnchors(root){
     if(m && cur && (c1.textContent || '').trim().indexOf(m[1]) === 0){ const base = cur.base; const a = mk(el, base + ' ' + m[1], base + ' › ' + m[1].trim(), 'row'); a.base = base; a.sub = true; a.grp = cur.grp; cur = a; return; }
     if(cur){ cur.end = el; }
   });
+  // righe dello stesso blocco senza linee in mezzo (es. Lancio = un solo blocco); gruppi alternati con sfondo leggero
+  let gi = 0; out.forEach(a => { if(a.kind !== 'row') return; let r = a.el; const rows = [r]; while(r !== a.end && r.nextElementSibling){ r = r.nextElementSibling; rows.push(r); }
+    rows.forEach((x, i) => { if(i < rows.length - 1) x.classList.add('rd-nb'); }); if(!a.sub){ gi++; } rows.forEach(x => x.classList.add(gi % 2 ? 'rd-ga' : 'rd-gb')); });
   return out;
 }
 function rvBlockText(a){ let t = ''; if(a.kind === 'h3'){ t = a.el.textContent; let n = a.el.nextElementSibling; while(n && !/^(H2|H3|TABLE)$/.test(n.tagName)){ t += ' ' + n.textContent; n = n.nextElementSibling; } }
@@ -19242,15 +19251,17 @@ window.rvDocInit = async function(g, mine){
     if(mine){ try{ localStorage.setItem('bussola_gfb_seen_' + CL.user.id, new Date().toISOString()); }catch(e){} }
     rvRender(); rvDocPaint(); rvNavBuild();
     rvDocDiff();
-    if(!d.sync){ d.sync = setInterval(rvSync, 45000); window.addEventListener('focus', rvSync); }
+    if(!d.sync){ d.sync = setInterval(rvSync, 10000); window.addEventListener('focus', rvSync); document.addEventListener('visibilitychange', () => { if(!document.hidden) rvSync(); }); }
   }catch(e){ unhide(); try{ showToast('Non riesco a preparare la vista del progetto: ' + ((e && e.message) || '').slice(0, 60)); }catch(_){} }
 };
 function rvEnsureRd(g, mine){ if(!window._rd) window._rd = {g, mine:!!mine, anchors:[], open:{}, diff:null, only:false, prevG:null, pts:[], msgs:[]}; return window._rd; }
 async function rvSync(){
   const d = window._rd; if(!d || document.hidden) return;
+  const sig = () => { try{ return JSON.stringify([d.msgs, window._giroFb && window._giroFb[d.g.id], window._rv && window._rv.rows]); }catch(e){ return String(Math.random()); } };
+  const s0 = sig();
   try{ if(d.mine){ await ppGiroFbLoad(d.g.id); } else if(window._rv){ const r = await CL.sb.from('pee_giri_rev').select('id,tipo,chiave,valore,testo,recepita').eq('giro_id', d.g.id).eq('user_id', CL.user.id);
       if(!r.error){ const rows = {}; (r.data || []).forEach(x => { rows[x.tipo + '|' + x.chiave] = x; }); window._rv.rows = rows; } }
-    if(window.rvMsgLoad) await rvMsgLoad(); rvRender(); rvDocPaint(); }catch(e){}
+    if(window.rvMsgLoad) await rvMsgLoad(); if(d._sig === s0 && sig() === s0) return; d._sig = sig(); rvRender(); rvDocPaint(); }catch(e){}
 }
 // elenco dei punti scritti (note), per chi rivede (i propri) e per chi ha scritto il progetto (di tutti)
 function rvRows(){ const d = window._rd, v = window._rv; if(!d) return []; return d.mine ? (window._giroFb[d.g.id] || []) : (v ? Object.values(v.rows) : []); }
@@ -19370,7 +19381,15 @@ function rvRender(){
       ${ck ? `<div class="rv-ck${d.ckOpen ? ' open' : ''}"><button type="button" class="rv-sh" onclick="rvCkTog()" aria-expanded="${!!d.ckOpen}"><span class="rv-sn">Check-list del Progetto Personale</span><span class="rv-sl">${nSi} su ${nTot} con «Sì»</span></button>${d.ckOpen ? `<div class="rv-sb">${rev ? hp(RV_HELP.check) : ''}${ck}</div>` : ''}</div>` : ''}
     </div>
     <div class="rv-foot">${foot}</div>`;
-  if(hadOpen) dk.classList.add('open'); { const bd = dk.querySelector('.rv-body'); if(bd) bd.scrollTop = keep; } rvDockPos();
+  if(hadOpen) dk.classList.add('open');
+  // blocchi comprimibili con la freccia a sinistra (lo stato resta anche dopo i ridisegni)
+  { d.col = d.col || {}; const bd = dk.querySelector('.rv-body');
+    const mkT = (head, name, targets) => { const col = !!d.col[name]; const b = document.createElement('button'); b.type = 'button'; b.className = 'rv-arr'; b.textContent = col ? '▸' : '▾'; b.setAttribute('aria-expanded', String(!col)); b.setAttribute('aria-label', (col ? 'Apri: ' : 'Chiudi: ') + name);
+      const apply = c => { targets().forEach(n => { n.hidden = c; }); b.textContent = c ? '▸' : '▾'; b.setAttribute('aria-expanded', String(!c)); }; apply(col);
+      b.onclick = e => { e.stopPropagation(); d.col[name] = !d.col[name]; apply(d.col[name]); }; head.insertBefore(b, head.firstChild); };
+    if(bd){ bd.querySelectorAll('.rv-q').forEach(qq => { const h = qq.querySelector('b'); if(!h || h.textContent.indexOf('Cambiato') === 0 && false) return; mkT(qq, h.textContent.trim().replace(/^\d+ /, '').slice(0, 40), () => Array.from(qq.children).filter(c => c.matches('.rv-pl2,.rv-bs,.rv-hp,.rv-pn+div'))); });
+      const t = bd.querySelector('.rv-t'); if(t){ mkT(t, 'Sezione per sezione', () => { const o = []; let n = t.nextElementSibling; while(n && !n.classList.contains('rv-ck')){ o.push(n); n = n.nextElementSibling; } return o; }); } }
+    if(bd) bd.scrollTop = keep; } rvDockPos();
 }
 // dialogo per punto: un filo per ogni punto e per ogni revisore, uguale da un giro all'altro
 async function rvMsgLoad(){
@@ -19380,7 +19399,7 @@ async function rvMsgLoad(){
 function rvThr(key){ const d = window._rd; return d ? (d.msgs || []).filter(m => m.chiave === key) : []; }
 function rvThrHTML(key, uid){
   const d = window._rd; if(!d) return ''; const L = (d.msgs || []).filter(m => m.chiave === key && m.rev_id === uid);
-  return `<div class="rd-th" data-k="${esc(key)}" data-u="${esc(uid)}">${L.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Chi ha scritto' : 'Revisore')))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="${L.length ? 'Rispondi' : 'Rispondi a questo punto'}" aria-label="Rispondi a questo punto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rvMsgSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rvMsgSend(this.closest('.rd-th'))">Invia</button></div></div>`;
+  return `<div class="rd-th" data-k="${esc(key)}" data-u="${esc(uid)}">${L.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Chi ha scritto' : 'Revisore')))}</b> ${esc(m.testo)}</div>`).join('')}${(d.mine || L.some(m => m.user_id !== CL.user.id)) ? `<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="${L.length ? 'Rispondi' : 'Rispondi a questo punto'}" aria-label="Rispondi a questo punto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rvMsgSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rvMsgSend(this.closest('.rd-th'))">Invia</button></div>` : ''}</div>`;
 }
 window.rvMsgSend = async function(box){
   const d = window._rd; if(!d || !box) return; const inp = box.querySelector('textarea'), t = (inp.value || '').trim(); if(!t) return;
@@ -19438,6 +19457,19 @@ function rpPaint(keep){
     <div class="rv-foot"><div class="rv-bs"><button type="button" class="rv-b${pend.length ? '' : ' on'}" onclick="rpNuovoGiro()" title="Apre il modulo di invio, già con una nota su quanto hai recepito">Invia un nuovo giro</button></div><div class="rv-hp">${pend.length ? 'Consigliato quando tutti i punti sono fatti. Se ne mancano, ti chiediamo conferma.' : 'Il nuovo giro è la copia che il revisore rileggerà: vedrà cosa è cambiato.'}</div></div>`;
   const bd = dk.querySelector('.rv-body'); if(bd) bd.scrollTop = sc;
 }
+// i testi scritti ma non ancora inviati e la posizione di scorrimento sopravvivono a ogni ridisegno
+(function(){
+  const sk = t => { const th = t.closest && t.closest('.rd-th'); return th ? 'th:' + th.getAttribute('data-k') + '|' + th.getAttribute('data-u') : (t.getAttribute('data-bk') ? 'bk:' + t.getAttribute('data-bk') : 'al:' + (t.getAttribute('aria-label') || '')); };
+  const wrap = fn => function(){
+    const roots = Array.from(document.querySelectorAll('#rv-doc,#rv-dock')), sv = {}; let foc = null;
+    roots.forEach(r => r.querySelectorAll('textarea').forEach(t => { if(t.value !== t.defaultValue || t === document.activeElement){ const k = sk(t); sv[k] = {v:t.value, a:t.selectionStart, z:t.selectionEnd}; if(t === document.activeElement) foc = k; } }));
+    const sc = roots.map(r => [r.id, r.scrollTop]), wy = window.scrollY;
+    const res = fn.apply(this, arguments);
+    Array.from(document.querySelectorAll('#rv-doc,#rv-dock')).forEach(r => { const x = sc.find(q => q[0] === r.id); if(x && r.scrollTop !== x[1]) r.scrollTop = x[1]; r.querySelectorAll('textarea').forEach(t => { const k = sk(t), o = sv[k]; if(!o) return; if(t.value !== o.v) t.value = o.v; if(k === foc){ try{ t.focus({preventScroll:true}); t.setSelectionRange(o.a, o.z); }catch(e){} } }); });
+    if(window.scrollY !== wy) window.scrollTo(0, wy);
+    return res; };
+  rvRender = wrap(rvRender); rvDocPaint = wrap(rvDocPaint);
+})();
 Object.assign(window, {rvGroup, rvDocOpen, rvDocPaint, rvRender, rvThr, rvPoints, rvSync, rvAnchors, ppGiroBtnLabel, rvMsgLoad});
 setTimeout(() => { try{ if(!window.BRO){ window.rpLoad(); setInterval(() => { if(!document.hidden) window.rpLoad(); }, 60000); window.addEventListener('focus', () => window.rpLoad()); } }catch(e){} }, 4000);
 // lato compilatore: i riscontri arrivati in app, con «recepita»
