@@ -16,7 +16,7 @@ const pl = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}), PL =
 await loginAs(PL, base, L); await sleep(1500);
 await el(() => shGoHome()); await sleep(2500);
 let s = await el(() => { const b = document.getElementById('cl-rev'); return b ? b.innerText : 'nessun contenitore'; });
-ok(/giri da rivedere/i.test(s) && /Anna Rossi/.test(s) && /Giro 1/.test(s) && /Leggi e rivedi/.test(s) && /Scarica il Word/.test(s) && /Concludi la revisione/.test(s), 'home del revisore: pannello per compilatore con «Leggi e rivedi», Word e «Concludi»: ' + s.replace(/\n/g,' | ').slice(0,140));
+ok(/progetti personali che segui/i.test(s) && /Anna Rossi/.test(s) && /Giro 1/.test(s) && /Leggi e rivedi/.test(s) && /Scarica il Word/.test(s) && /Concludi la revisione/.test(s), 'home del revisore: pannello per compilatore con «Leggi e rivedi», Word e «Concludi»: ' + s.replace(/\n/g,' | ').slice(0,140));
 const badge = await el(() => { clPerTe(); return new Promise(r => setTimeout(() => r((Array.from(document.querySelectorAll('.hd-lnk')).find(b => /^Progetti/.test(b.textContent.trim())) || {getAttribute(){return null}}).getAttribute('data-n')), 2500)); });
 ok(badge === '1', 'il numero rosso su «Progetti» compare per il giro da rivedere: ' + badge);
 // il revisore apre la copia in una nuova scheda: pannello di revisione affiancato

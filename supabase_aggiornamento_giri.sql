@@ -257,7 +257,7 @@ begin
       || coalesce(' del progetto «' || pee_html(nullif(g.meta->>'titolo', '')) || '»', '') || '.</p>'
       || '<p>' || case when rev then 'Lo trovi nella pagina <b>Progetti</b>, sotto «Giri da rivedere»: puoi leggerlo e lasciare le tue osservazioni.'
                        else 'Lo trovi nella pagina <b>Progetti</b>, sotto «Giri da rivedere»: puoi leggerlo e lasciare dei suggerimenti.' end || '</p>'
-      || '<p style="margin:18px 0"><a href="https://pee-app.it/anteprima/" style="background:#1b5e42;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Apri PEE CNGEI</a></p>'
+      || '<p style="margin:18px 0"><a href="https://pee-app.it/anteprima/#progetti" style="background:#1b5e42;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Apri PEE CNGEI</a></p>'
       || '<p style="color:#555;font-size:13px">Se non hai ancora un account, creane uno con questo stesso indirizzo email (' || pee_html(new.email) || '): vedrai il giro appena entri.</p>'
       || '<p style="color:#777;font-size:12px;margin-top:20px">Questa mail non contiene il progetto, solo l’avviso.</p></div>';
     perform net.http_post(

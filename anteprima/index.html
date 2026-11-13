@@ -1540,8 +1540,19 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 .rv-bs{display:flex;gap:6px;flex-wrap:wrap}.rv-b{border:1px solid #bdbdb3;background:#fff;color:inherit;border-radius:8px;padding:6px 11px;font:600 12.5px Montserrat,sans-serif;cursor:pointer;min-height:34px}.rv-b.on{background:#1b5e42;border-color:#1b5e42;color:#fff}
 .rv-rec{display:inline-block;margin-top:4px;font-size:11.5px;font-weight:700;color:#1b5e42}.rv-ck{margin-top:12px;border:1px solid #d8d8d0;border-radius:9px;padding:6px 10px;background:#fff}.rv-ck>summary{cursor:pointer;font-weight:800;font-size:12.5px;min-height:34px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rv-ck>summary span{font-weight:600;color:#666;font-size:11.5px}
 .rv-cg{font-weight:800;font-size:12px;margin-top:10px;color:#1b5e42}.rv-ci{margin-top:6px;font-size:12.5px;line-height:1.45}.rv-ci .rv-bs{margin-top:4px}
-@media(min-width:1100px){#rv-dock{right:0;top:64px;bottom:0;width:384px;border-left:1px solid #c9c9c0;box-shadow:-4px 0 14px rgba(0,0,0,.07)}body.rv-has-dock #main-app{margin-right:384px!important}}
-@media(max-width:1099px){#rv-dock{left:0;right:0;bottom:0;height:78vh;border-top:2px solid #1b5e42;box-shadow:0 -6px 18px rgba(0,0,0,.18);transform:translateY(calc(100% - 46px));transition:transform .22s}#rv-dock.open{transform:none}#rv-dock .rv-tg{display:inline}#rv-dock.open .rv-tg{transform:rotate(180deg)}#rv-dock .rv-h{cursor:pointer}body.rv-has-dock{padding-bottom:56px}}
+@media(min-width:768px){#rv-dock{right:0;top:64px;bottom:0;width:340px;border-left:1px solid #c9c9c0;box-shadow:-4px 0 14px rgba(0,0,0,.07)}body.rv-has-dock #main-app{margin-right:340px!important}#rv-doc{right:340px!important}}
+@media(min-width:1100px){#rv-dock{width:384px}body.rv-has-dock #main-app{margin-right:384px!important}#rv-doc{right:384px!important}}
+@media(max-width:767px){#rv-dock{left:0;right:0;bottom:0;height:78vh;height:78dvh;padding-bottom:env(safe-area-inset-bottom,0);border-top:2px solid #1b5e42;box-shadow:0 -6px 18px rgba(0,0,0,.18);transform:translateY(calc(100% - 46px - env(safe-area-inset-bottom,0px)));transition:transform .22s}#rv-dock.open{transform:none}#rv-dock .rv-tg{display:inline}#rv-dock.open .rv-tg{transform:rotate(180deg)}#rv-dock .rv-h{cursor:pointer}body.rv-has-dock{padding-bottom:56px}body.rv-has-dock #rv-doc{bottom:calc(46px + env(safe-area-inset-bottom,0px))!important}}
+#rv-doc{position:fixed;left:0;top:0;right:0;bottom:0;z-index:8000;overflow:auto;background:#eceae2;-webkit-overflow-scrolling:touch}
+#rv-doc .rd-art{position:relative;max-width:820px;margin:14px auto 40px;background:#fff;padding:26px 22px 30px 46px;box-sizing:border-box;border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.12);font:14.5px/1.55 Montserrat,Arial,sans-serif;color:#1a1a1a}
+#rv-doc h1,#rv-doc h2,#rv-doc h3{line-height:1.3}#rv-doc h2{font-size:19px;margin:30px 0 8px;padding-bottom:5px;border-bottom:2px solid #1b5e42;color:#1b5e42}#rv-doc h3{font-size:15px;margin:20px 0 6px}
+#rv-doc table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13.5px}#rv-doc td,#rv-doc th{border:1px solid #d8d8d0;padding:6px 8px;vertical-align:top;position:relative}#rv-doc p{margin:6px 0}
+.rd-cb{position:absolute;left:-36px;top:3px;width:28px;height:28px;border:1px solid #c9c9c0;border-radius:50%;background:#fff;font-size:13px;line-height:1;padding:0;cursor:pointer;opacity:.55}.rd-cb:hover,.rd-cb:focus-visible,.rd-cb.on{opacity:1}.rd-cb.on{background:#fff3c4;border-color:#c9a400}
+h3 .rd-cb,h2 .rd-cb{left:-36px;top:-2px}#rv-doc h3,#rv-doc h2{position:relative}
+.rd-cm{background:#fff8d6;border:1px solid #e6d27a;border-radius:8px;padding:7px 10px;margin:4px 0 8px;font-size:13px}.rd-cm textarea{width:100%;box-sizing:border-box;min-height:54px;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:13px Montserrat,Arial,sans-serif}.rd-cm .rd-a{font-weight:700;font-size:12px}.rd-cm label{display:inline-flex;gap:5px;align-items:center;font-size:12px;margin-top:4px}
+#rv-doc td.rd-cmc{background:#fff8d6;padding:0 6px}
+@media(max-width:767px){#rv-doc .rd-art{margin:8px;padding:18px 12px 24px 40px}.rd-cb{left:-34px}}
+@media print{#rv-doc{position:static}}
 @media(prefers-reduced-motion:reduce){#rv-dock{transition:none!important}}
 @media(max-width:700px){#giro-bar{padding:8px 12px;gap:8px}#giro-bar .gb-t span{display:none}#giro-bar button{min-height:36px;padding:6px 12px;font-size:12.5px}#rv-dock .rv-foot{max-height:40vh;padding:8px 10px}#rv-dock textarea{min-height:44px}}
 
@@ -8679,7 +8690,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD='202611131230'; // sostituito a ogni pubblicazione
+const APP_BUILD='202611131500'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -13520,7 +13531,8 @@ const LIB_URLS = {
   exceljs: 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
   docx: 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
   jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-  jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  mammoth: 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js'
 };
 function loadLib(url, check){
   return new Promise((res, rej) => {
@@ -14170,6 +14182,7 @@ async function dFixBreaks(blob){
 async function dSave(doc, name){
   let blob = await dxLib().Packer.toBlob(doc);
   blob = await dFixBreaks(blob);
+  if(window._docxCapture){ const cb = window._docxCapture; window._docxCapture = null; cb(blob); return; }   // la vista di revisione usa il Word come fonte, senza scaricarlo
   saveBlob(blob, name);
   showToast('Documento Word scaricato (.docx)');
 }
@@ -15037,6 +15050,7 @@ async function clInit(){
     try{ const cr = sessionStorage.getItem('bussola_creato'); if(cr){ sessionStorage.removeItem('bussola_creato'); if(CL.user) setTimeout(() => clCreatoShow(cr), 900); } }catch(e){}
     clSetStatus(CL.user && CL.ctx ? 'ok' : '');
     { const gh = (String(location.hash).match(/^#giro=([\w-]{8,64})/) || [])[1]; if(gh && CL.user && !window.BRO && window.ppGiroApriQui){ if(/[&]word=1/.test(String(location.hash))){ try{ sessionStorage.setItem('bussola_giro_word', '1'); }catch(e){} } if(await window.ppGiroApriQui(gh)) return; } }
+    { if(CL.user && !window.BRO && /^#progetti\b/.test(String(location.hash))){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} let _t = 0; const _gh = setInterval(() => { if(typeof window.shGoHome === 'function' && document.getElementById('sh-side')){ clearInterval(_gh); try{ window.shGoHome(); }catch(e){} } else if(++_t > 30) clearInterval(_gh); }, 500); } }
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); if(!window.BRO.giro){ roRefresh(false); sgWatch(); sgLoad(true); } }
     else if(CL.user && CL.recovery){ clShow('recovery'); }
     else if(CL.user && CL.ctx){ if(!clBaseGet() && !CL.ctx.dirty) clBaseSet(clSnapshot()); clCheckRemoteNewer(); sgWatch(); sgLoad(); }
@@ -15956,7 +15970,10 @@ async function clPerTe(){
     { const sk = new Set(); for(let i = items.length - 1; i >= 0; i--){ const x = items[i]; const k = [x.k, x.id, x.mid, x.idx, x.j, x.av, x.u, x.g, x.k === 'usc' ? x.t : '', x.prima, x.email, (x.parti||x.cose||[]).join(',')].join('|'); if(sk.has(k)) items.splice(i, 1); else sk.add(k); } }
     CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
     let _rvN = 0; try{ if(!window.BRO && window.rvListLoad){ const _L = await window.rvListLoad(); window._rvL = _L; _rvN = window.rvPendingN(_L); } }catch(e){}
-    try{ const n = ptHotN(items) + _rvN; const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
+    let _fbN = 0; try{ if(!window.BRO && CL.user){ const sn = localStorage.getItem('bussola_gfb_seen_' + CL.user.id) || '1970-01-01T00:00:00Z'; const _q = await CL.sb.from('pee_giri_rev').select('giro_id,tipo,valore,testo').neq('user_id', CL.user.id).gt('updated_at', sn).limit(300);
+      if(!_q.error) _fbN = new Set((_q.data || []).filter(x => (x.tipo === 'nota' && x.testo) || x.tipo === 'esito' || (x.tipo === 'stato' && x.valore !== 'ok') || (x.tipo === 'check' && (x.valore === 'parz' || x.valore === 'no'))).map(x => x.giro_id)).size; } }catch(e){}
+    try{ const _pf = CL._fbN || 0; CL._fbN = _fbN; if(_pf !== undefined && _fbN > _pf && CL._ptN !== undefined) clToast('Ci sono nuovi riscontri sul tuo progetto: li trovi negli Invii del Progetto Personale.'); }catch(e){}
+    try{ const n = ptHotN(items) + _rvN + _fbN; const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
       if(prev !== undefined && _rvN > _pg){ clToast(_rvN - _pg === 1 ? 'Hai un giro da rivedere: lo trovi in Progetti.' : 'Hai ' + (_rvN - _pg) + ' giri da rivedere: li trovi in Progetti.'); }
       else if(prev !== undefined && n > prev){ const d = n - prev; clToast(d === 1 ? 'Hai una novità in «Per te»: ti hanno affidato qualcosa o ti hanno scritto. La trovi in Progetti.' : 'Hai ' + d + ' novità in «Per te». Le trovi in Progetti.'); } }catch(e){}
@@ -18737,7 +18754,7 @@ function ppIterHTML(){
 // scheda.pp.giri = oggetto con una chiave per giro (così la sincronizzazione unisce i giri senza sovrascriverli). Le copie vere stanno nel cloud (pee_giri).
 function ppGiri(){ const pp = (scheda.pp || (scheda.pp = {})); if(!pp.giri || typeof pp.giri !== 'object' || Array.isArray(pp.giri)) pp.giri = {}; return pp.giri; }
 function ppGiriList(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id && !x.del).sort((a, b) => (a.n || 0) - (b.n || 0)); }
-function ppGiroNextN(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id).reduce((m, x) => Math.max(m, x.n || 0), 0) + 1; }
+function ppGiroNextN(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id && !x.del).reduce((m, x) => Math.max(m, x.n || 0), 0) + 1; }
 // gli invii già segnati a mano (prima consegna, consegna finale) diventano giri «storici», una volta sola, senza perdere nulla
 function ppGiriMigra(){
   const pp = (scheda.pp || (scheda.pp = {})); if(pp.giriMig || window.BRO) return;
@@ -18818,8 +18835,9 @@ window.ppGiroApri = function(gid, word){
   const g = ppGiri()[gid]; if(!g || window.BRO) return;
   if(typeof CL === 'undefined' || !CL.sb || !CL.user){ showToast('Per aprire la copia serve l’accesso con il tuo account'); return; }
   try{ saveData(true); }catch(e){}
-  let w = null; try{ w = window.open(location.href.split('#')[0] + '#giro=' + gid + (word ? '&word=1' : ''), '_blank'); }catch(e){}
-  if(!w){ if(word){ try{ sessionStorage.setItem('bussola_giro_word', '1'); }catch(e){} } ppGiroApriQui(gid); }    // se il browser blocca la nuova scheda, si apre qui
+  if(word){ window.giroWordQuiet(gid); return; }
+  let w = null; try{ w = window.open(location.href.split('#')[0] + '#giro=' + gid, '_blank'); }catch(e){}
+  if(!w) ppGiroApriQui(gid);    // se il browser blocca la nuova scheda, si apre qui
 };
 async function ppGiroApriQui(gid){
   try{
@@ -18962,7 +18980,7 @@ window.rvListPaint = async function(){
   const gi = (p, x) => { const rev = x.ruolo === 'revisore', dt = esc(fmtDL(String(x.g.created_at || '').slice(0, 10)));
     return `<div class="rv-gi${x.done ? ' rv-done' : ''}"><div class="rv-gi-t"><b>Giro ${x.g.n}</b> · ${dt} · Sezioni ${esc((x.g.sezioni || []).slice().sort().join(', '))}<span class="rv-gi-s">${rev ? 'revisore' : 'in copia'}${x.esito ? ' · il tuo esito: <b>' + esc(GESITO[x.esito] || '') + '</b>' : x.done ? ' · letto' : ' · da ' + (rev ? 'rivedere' : 'leggere')}</span></div>
       <div class="rv-gi-b"><button type="button" class="cl-btn sm" onclick="rvOpen('${x.g.id}')">${rev ? (x.done ? 'Rileggi e rivedi' : 'Leggi e rivedi') : 'Leggi il progetto'}</button><button type="button" class="cl-btn ghost sm" onclick="rvWord('${x.g.id}')">Scarica il Word</button></div></div>`; };
-  box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Giri da rivedere</h4><p class="cl-note" style="margin:0 0 6px">Progetti Personali che ti sono stati inviati in app, uno spazio per ogni compilatore. Ogni giro è una copia ferma: le tue osservazioni arrivano a chi l’ha inviato.</p>` + G.map(p => {
+  box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Progetti Personali che segui</h4><p class="cl-note" style="margin:0 0 6px">Progetti Personali che ti sono stati inviati in app, uno spazio per ogni compilatore. Ogni giro è una copia ferma: le tue osservazioni arrivano a chi l’ha inviato.</p>` + G.map(p => {
     const stato = p.chiuso ? '<span class="rv-pill rv-pill-c">Concluso</span>' : p.pend ? `<span class="rv-pill rv-pill-a">${p.pend} da ${p.rev ? 'rivedere' : 'leggere'}</span>` : '<span class="rv-pill rv-pill-v">Tutto rivisto</span>';
     return `<details class="rv-pj${p.chiuso ? ' rv-closed' : ''}" ${p.chiuso ? '' : 'open'}><summary><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<span class="rv-sum">${p.giri.length === 1 ? '1 giro' : p.giri.length + ' giri'}</span>${stato}</summary>
       ${p.giri.map(x => gi(p, x)).join('')}
@@ -18973,10 +18991,13 @@ window.rvOpen = function(gid){
   let w = null; try{ w = window.open(location.href.split('#')[0] + '#giro=' + gid, '_blank'); }catch(e){}
   if(!w) window.ppGiroApriQui(gid);
 };
-window.rvWord = function(gid){
-  let w = null; try{ w = window.open(location.href.split('#')[0] + '#giro=' + gid + '&word=1', '_blank'); }catch(e){}
-  if(!w){ try{ sessionStorage.setItem('bussola_giro_word', '1'); }catch(e){} window.ppGiroApriQui(gid); }
+// il Word di un giro si scarica da solo, senza aprire schede: lo prepara una pagina nascosta che si richiude
+window.giroWordQuiet = function(gid){
+  try{ showToast('Preparo il Word…'); }catch(e){}
+  const f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'preparazione Word'; f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:800px;border:0;opacity:0;pointer-events:none';
+  f.src = location.href.split('#')[0] + '#giro=' + gid + '&word=1'; document.body.appendChild(f); setTimeout(() => { try{ f.remove(); }catch(e){} }, 60000);
 };
+window.rvWord = function(gid){ window.giroWordQuiet(gid); };
 window.rvConcludi = async function(aid, on){
   const p = rvGroup(window._rvL || []).find(x => x.aid === aid); if(!p || !rvOk()) return;
   try{
@@ -19027,6 +19048,7 @@ window.rvGiroInit = function(){
       let word = false; try{ word = sessionStorage.getItem('bussola_giro_word') === '1'; sessionStorage.removeItem('bussola_giro_word'); }catch(e){}
       window._giroSez = (g.data.sezioni || []).slice();
       if(word) setTimeout(() => { try{ exportSchedaDocx((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale'); }catch(e){} }, 1800);
+      if(!word) setTimeout(() => { try{ window.rvDocInit(g.data, mine); }catch(e){} }, 1500);
       if(mine) return;
       const d = await CL.sb.from('pee_giri_dest').select('ruolo').eq('giro_id', g.data.id).maybeSingle();
       const r = await CL.sb.from('pee_giri_rev').select('id,tipo,chiave,valore,testo,recepita').eq('giro_id', g.data.id).eq('user_id', CL.user.id);
@@ -19049,9 +19071,10 @@ window.rvGiroInit = function(){
   };
   go();
 };
-function rvDockPos(){ const dk = document.getElementById('rv-dock'); if(!dk) return; if(window.innerWidth < 1100){ dk.style.top = ''; return; }
+function rvDockPos(){ rvDocTop(); const dk = document.getElementById('rv-dock'); if(!dk) return; if(window.innerWidth < 768){ dk.style.top = ''; return; }
   let t = 0; document.querySelectorAll('#giro-bar, #hdr, .sh-top, header.hd, .hd').forEach(e => { const r = e.getBoundingClientRect(); if(r.height > 0 && r.top < 140 && r.bottom > t && r.bottom < 260 && getComputedStyle(e).display !== 'none') t = r.bottom; });
   dk.style.top = Math.max(0, Math.round(t)) + 'px'; }
+function rvDocTop(){ const e = document.getElementById('rv-doc'), b = document.getElementById('giro-bar'); if(e && b){ const r = b.getBoundingClientRect(); e.style.top = Math.max(0, Math.round(r.bottom)) + 'px'; } }
 window.rvDockToggle = function(){ const dk = document.getElementById('rv-dock'); if(dk) dk.classList.toggle('open'); };
 window.rvPut = async function(tipo, chiave, valore, testo, noRender){
   const v = window._rv; if(!v || !rvOk()) return;
@@ -19071,7 +19094,7 @@ window.rvNota = function(s, t){ window.rvPut('nota', 's' + s, '', String(t || ''
 window.rvCk = function(id, val){ const c = window._rv.rows['check|' + id] || {}; window.rvPut('check', id, c.valore === val ? '' : val, ''); };
 window.rvEs = function(val){ const c = window._rv.rows['esito|esito'] || {}; window.rvPut('esito', 'esito', c.valore === val ? '' : val, c.testo || ''); };
 window.rvEsNota = function(t){ const e = window._rv.rows['esito|esito']; if(!e){ showToast('Scegli prima l’esito'); return; } window.rvPut('esito', 'esito', e.valore, String(t || '').trim(), true); };
-window.rvVai = function(s){ const v = window._rv; if(!v) return; v.sec = s; try{ shPP(String(s)); }catch(e){} rvRender(); if(window.innerWidth < 1100){ const dk = document.getElementById('rv-dock'); if(dk) dk.classList.remove('open'); } };
+window.rvVai = function(s){ const v = window._rv; if(!v) return; v.sec = s; if(document.getElementById('rv-doc')) window.rvDocGo(s); else { try{ shPP(String(s)); }catch(e){} } rvRender(); if(window.innerWidth < 768){ const dk = document.getElementById('rv-dock'); if(dk) dk.classList.remove('open'); } };
 window.rvWordDock = function(){ try{ exportSchedaDocx(((window._rv.g.sezioni || []).some(x => x >= 4)) ? 'completo' : 'parziale'); }catch(e){} };
 window.rvConcludiDock = async function(on){
   const v = window._rv; if(!v) return;
@@ -19084,7 +19107,7 @@ window.rvConcludiDock = async function(on){
 function rvRender(){
   const v = window._rv; if(!v) return; const g = v.g, m = g.meta || {}, rev = v.ruolo === 'revisore';
   let dk = document.getElementById('rv-dock'); if(!dk){ dk = document.createElement('aside'); dk.id = 'rv-dock'; dk.setAttribute('aria-label', 'Revisione'); document.body.appendChild(dk); }
-  const bd0 = dk.querySelector('.rv-body'), keep = bd0 ? bd0.scrollTop : 0, hadOpen = dk.classList.contains('open');
+  const bd0 = dk.querySelector('.rv-body'), keep = bd0 ? bd0.scrollTop : 0, hadOpen = dk.classList.contains('open'); const ckOpen = !!dk.querySelector('details.rv-ck[open]');
   const btn = (on, lab, fn) => `<button type="button" class="rv-b${on ? ' on' : ''}" aria-pressed="${on}" onclick="${fn}">${lab}</button>`;
   const recp = x => x && x.recepita ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : '';
   const sorted = (g.sezioni || []).slice().sort();
@@ -19107,8 +19130,66 @@ function rvRender(){
       <textarea maxlength="2000" placeholder="Un commento per chi ha inviato il giro (facoltativo)" aria-label="Commento all’esito" onchange="rvEsNota(this.value)">${esc(es.testo || '')}</textarea>
       <div class="rv-bs" style="margin-top:6px">${v.closed ? `<button type="button" class="rv-b" onclick="rvConcludiDock(false)">✓ Revisione conclusa · Riapri</button>` : `<button type="button" class="rv-b" onclick="rvConcludiDock(true)">Concludi la revisione di questo progetto</button>`}</div>` : ''}
       <div class="rv-bs" style="margin-top:6px"><button type="button" class="rv-b" onclick="rvWordDock()">Scarica il Word di questo giro</button></div></div>`;
-  if(hadOpen) dk.classList.add('open'); { const bd = dk.querySelector('.rv-body'); if(bd) bd.scrollTop = keep; } rvDockPos();
+  if(hadOpen) dk.classList.add('open'); if(ckOpen){ const d2 = dk.querySelector('details.rv-ck'); if(d2) d2.open = true; } { const bd = dk.querySelector('.rv-body'); if(bd) bd.scrollTop = keep; } rvDockPos();
 }
+// ── vista di revisione essenziale: il Word del giro, in sola lettura, con i commenti puntuali ──
+const RD = {slug: t => String(t || '').toLowerCase().replace(/\s+/g, '-').replace(/[^\p{L}\p{N}\-]/gu, '').replace(/-+/g, '-').slice(0, 42)};
+async function rvDocHTML(mode){
+  await loadLib(LIB_URLS.mammoth, () => !!window.mammoth);
+  const blob = await new Promise((res, rej) => { const t = setTimeout(() => { window._docxCapture = null; rej(new Error('tempo scaduto')); }, 40000);
+    window._docxCapture = bb => { clearTimeout(t); res(bb); };
+    Promise.resolve(exportPPDocx(mode)).catch(e => { clearTimeout(t); window._docxCapture = null; rej(e); }); });
+  const r = await window.mammoth.convertToHtml({arrayBuffer: await blob.arrayBuffer()});
+  return r.value;
+}
+window.rvDocInit = async function(g, mine){
+  try{
+    const mode = (g.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale';
+    let html = ''; const ck = 'bussola_rvdoc_' + g.id;
+    try{ html = sessionStorage.getItem(ck) || ''; }catch(e){}
+    if(!html){ html = await rvDocHTML(mode); try{ sessionStorage.setItem(ck, html); }catch(e){} }
+    const ov = document.createElement('div'); ov.id = 'rv-doc'; ov.setAttribute('role', 'region'); ov.setAttribute('aria-label', 'Progetto inviato, in sola lettura');
+    ov.innerHTML = '<article class="rd-art">' + html + '</article>'; document.body.appendChild(ov);
+    const st = document.createElement('style'); st.textContent = 'body.rv-doc-on #main-app,body.rv-doc-on #sh-side{display:none!important}'; document.head.appendChild(st);
+    document.body.classList.add('rv-doc-on');
+    window._rd = {g, mine, anchors: []}; window.addEventListener('resize', rvDocTop);
+    rvDocAnchor(); window.rvDockPos && rvDockPos();
+    if(mine){ try{ await ppGiroFbLoad(g.id); }catch(e){} }
+    rvDocPaint();
+  }catch(e){ try{ showToast('Non riesco a preparare la vista del progetto: ' + ((e && e.message) || '').slice(0, 60)); }catch(_){} }
+};
+function rvDocAnchor(){
+  const art = document.querySelector('#rv-doc .rd-art'); if(!art) return; let sec = 0, h3 = '', seen = {}; const out = window._rd.anchors;
+  const add = (el, label, kind) => { const k = 'c:' + sec + '|' + RD.slug(h3) + '|' + RD.slug(label); seen[k] = (seen[k] || 0) + 1; const key = (k + (seen[k] > 1 ? '#' + seen[k] : '')).slice(0, 160); el.setAttribute('data-rvk', key); el.setAttribute('data-sec', String(sec)); out.push({el, key, kind, sec});
+    if(sec > 0){ const b = document.createElement('button'); b.type = 'button'; b.className = 'rd-cb'; b.textContent = '💬'; b.setAttribute('aria-label', 'Commenta: ' + label.slice(0, 60)); b.onclick = () => rvDocOpen(key); (kind === 'row' ? el.cells[0] : el).appendChild(b); } };
+  Array.from(art.querySelectorAll('h2,h3,tr')).forEach(el => {
+    const tx = (el.textContent || '').replace(/💬/g, '').trim();
+    if(el.tagName === 'H2'){ const m = /Sezione\s+(\d)/i.exec(tx); sec = m ? +m[1] : sec; h3 = ''; el.id = 'rd-s' + sec; return; }
+    if(el.tagName === 'H3'){ h3 = tx; add(el, tx, 'h3'); return; }
+    const c0 = el.cells && el.cells[0]; if(!c0) return; const lab = (c0.textContent || '').trim(); if(!lab || el.closest('table').querySelectorAll('tr').length < 1) return; add(el, lab, 'row');
+  });
+}
+function rvDocNotes(key){
+  const v = window._rv, d = window._rd; if(!d) return [];
+  if(d.mine) return (window._giroFb[d.g.id] || []).filter(x => x.tipo === 'nota' && x.chiave === key && x.testo).map(x => ({id:x.id, a:x.autore_nome || 'Revisore', t:x.testo, rec:!!x.recepita, own:false}));
+  const x = v && v.rows['nota|' + key]; return x ? [{id:x.id, a:'Tu', t:x.testo, rec:!!x.recepita, own:true}] : [];
+}
+function rvDocPaint(keepOpen){
+  const d = window._rd; if(!d) return; const open = keepOpen || {};
+  document.querySelectorAll('#rv-doc .rd-cm,#rv-doc .rd-cmr').forEach(n => n.remove());
+  d.anchors.forEach(a => { if(a.sec < 1) return; const L = rvDocNotes(a.key), btn = a.el.querySelector('.rd-cb'); if(btn){ btn.classList.toggle('on', !!L.length); btn.title = L.length ? 'Commento presente' : 'Aggiungi un commento'; btn.style.display = (d.mine && !L.length) ? 'none' : ''; }
+    if(!L.length && !open[a.key]) return;
+    const box = document.createElement('div'); box.className = 'rd-cm';
+    if(d.mine) box.innerHTML = L.map(n => `<div><span class="rd-a">${esc(n.a)}</span><br>${esc(n.t).replace(/\n/g, '<br>')}<br><label><input type="checkbox" ${n.rec ? 'checked' : ''} onchange="rvDocRec('${n.id}',this.checked)">recepita</label></div>`).join('');
+    else { const n = L[0] || {t:'', rec:false}; box.innerHTML = `<textarea maxlength="2000" aria-label="Commento" placeholder="${(window._rv && window._rv.ruolo === 'revisore') ? 'Cosa va rivisto, o la tua domanda' : 'Un suggerimento'}" onchange="rvDocSave('${esc(a.key)}',${a.sec},this.value)">${esc(n.t)}</textarea>${n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : ''}`; }
+    if(a.kind === 'row'){ const tr = document.createElement('tr'); tr.className = 'rd-cmr'; const td = document.createElement('td'); td.colSpan = a.el.cells.length || 1; td.className = 'rd-cmc'; td.appendChild(box); tr.appendChild(td); a.el.after(tr); }
+    else a.el.after(box);
+  });
+}
+function rvDocOpen(key){ const d = window._rd; if(!d || d.mine) return; const o = {}; o[key] = 1; rvDocPaint(o); const a = d.anchors.find(x => x.key === key), n = a && a.el.nextElementSibling, t = n && n.querySelector && n.querySelector('textarea'); if(t) t.focus(); }
+window.rvDocSave = async function(key, sec, val){ await window.rvPut('nota', key, 's' + sec, String(val || '').trim(), true); rvDocPaint(); };
+window.rvDocRec = async function(id, on){ const d = window._rd; await window.ppGiroFbRec(d.g.id, id, on); };
+window.rvDocGo = function(sec){ const e = document.getElementById('rd-s' + sec); if(e) e.scrollIntoView({behavior:'smooth', block:'start'}); };
 // lato compilatore: i riscontri arrivati in app, con «recepita»
 window._giroFb = window._giroFb || {};
 async function ppGiroFbLoad(gid){
@@ -19133,7 +19214,7 @@ function ppGiroFbHTML(g){
     return `<div class="pp-risc" style="margin-top:8px"><div style="font-size:12.5px"><b>${esc(a.autore_nome || 'Revisore')}</b> <span class="sh-hint">(${rev ? 'revisore' : 'in copia'}, in app)</span>${chiuso ? ' · <span class="sh-pill sh-pill-ok">Revisione conclusa</span>' : ''}${es ? ' · <span class="sh-pill ' + (es.valore === 'approva' ? 'sh-pill-ok' : '') + '">' + esc(GESITO[es.valore] || '') + '</span>' : ''}</div>
       ${es && es.testo ? '<div style="font-size:12.5px;margin-top:3px">' + esc(es.testo) + '</div>' : ''}
       ${ck.length ? `<div style="font-size:12.5px;margin-top:4px">Check-list: <b>${nSi}</b> su ${ck.length} con «Sì»</div>` : ''}
-      ${aperti.map(x => `<div style="font-size:12.5px;margin-top:3px">• ${esc(qOf(x.chiave))} — <b>${esc(RV_CK[x.valore] || '')}</b>${rec(x)}</div>`).join('')}${sez}</div>`; }).join('');
+      ${aperti.map(x => `<div style="font-size:12.5px;margin-top:3px">• ${esc(qOf(x.chiave))} — <b>${esc(RV_CK[x.valore] || '')}</b>${rec(x)}</div>`).join('')}${sez}${L.filter(x => x.tipo === 'nota' && /^c:/.test(x.chiave) && x.testo).map(x => { const pt = x.chiave.slice(2).split('|'); const lab = (pt.slice(1).filter(Boolean).map(z => z.replace(/#\d+$/, '').replace(/-/g, ' ')).join(' › ')); return `<div style="font-size:12.5px;margin-top:4px">💬 <b>Sez. ${esc(pt[0])}</b> · <i>${esc(lab)}</i><br>${esc(x.testo)}${rec(x)}</div>`; }).join('')}</div>`; }).join('');
 }
 window.ppGiroFbRec = async function(gid, rid, on){
   try{ const q = await CL.sb.from('pee_giri_rev').update({recepita:!!on, recepita_il:on ? new Date().toISOString() : null}).eq('id', rid); if(q.error) throw q.error;
@@ -19149,6 +19230,7 @@ window.ppGiroFbAll = async function(){
     const el = document.getElementById('gfb-' + g.id); if(el) el.innerHTML = ppGiroFbHTML(g);
   }
   if(!okAll) return;
+  try{ localStorage.setItem('bussola_gfb_seen_' + CL.user.id, new Date().toISOString()); if(CL._fbN){ CL._fbN = 0; if(window.clPerTe) clPerTe(); } }catch(e){}
   // l'approvazione della prima parte segue l'ultimo esito di ciascun revisore: se ci ripensa, si ritira da sola
   const last = {};
   L.filter(g => ppGiroBlk(g) === 1).forEach(g => (window._giroFb[g.id] || []).forEach(x => { if(x.tipo === 'esito' && x.autore_ruolo === 'revisore'){ const o = last[x.user_id]; if(!o || String(x.updated_at) > String(o.updated_at)) last[x.user_id] = x; } }));

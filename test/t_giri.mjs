@@ -91,5 +91,5 @@ s = await ev(id => ({list: ppGiriList().some(g => g.id === id), raw: !!ppGiri()[
 ok(!s.list && s.raw && !/Elimina il giro<\/button>[\s\S]*ppGiroApri\('${gid}'\)/.test(s.html), 'in locale resta solo una traccia vuota: il giro non compare più');
 await ev(() => ppGiroForm(1)); await sleep(400); await ev(() => ppGiroCongela()); await sleep(2000);
 const ng = await ev(() => ppGiriList().map(g => g.n).join());
-ok(!ng.split(',').includes(String(gn)) || gn === 1, 'un nuovo giro non riusa il numero di quello eliminato: ' + ng);
+{ const A = ng.split(',').map(Number); ok(new Set(A).size === A.length, 'nessun numero doppio dopo l’eliminazione: ' + ng); }
 summary(); process.exit(0);
