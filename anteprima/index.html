@@ -7118,12 +7118,13 @@ function mvDecorate(){
   }catch(e){ console.error(e); }
 }
 // ── Progetto di esempio: un Reparto immaginario già compilato, da esplorare e poi eliminare ──
-async function exStart(){
+async function exStart(kind){
+  window._exKind = (kind==='PP') ? 'PP' : 'AN';
   if(window.BRO){ showToast('Torna al tuo lavoro per aprire il progetto di esempio'); return; }
   try{
     if(typeof CL!=='undefined' && CL.sb && CL.user){
       if(CL.ctx && CL.pending){ await clPush(); if(CL.pending){ showToast('Sto ancora salvando il lavoro attuale: riprova tra qualche secondo'); return; } }
-      const rows=await dbList(); const yr=new Date().getFullYear(); const titolo=await clUniqueTitle(rows, yr, 'Esempio · Reparto Kontiki');
+      const rows=await dbList(); const yr=new Date().getFullYear(); const titolo=await clUniqueTitle(rows, yr, window._exKind==='PP' ? 'Esempio · Progetto Personale' : 'Esempio · Reparto Kontiki');
       const r=await dbInsert(yr, titolo, {}, {});
       localStorage.removeItem(LSK); CL.ctx={id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:true, udirty:true}; clSaveCtx(); clBaseSet({});
       try{ CL._mem=[]; CL._nMem=0; edInit(); clRealtime(); clPresence(); }catch(e){}
@@ -7131,7 +7132,9 @@ async function exStart(){
       if(typeof clHasLocal==='function' && clHasLocal() && !confirm('Su questo dispositivo c’è già un lavoro: l’esempio lo sostituirebbe. Accedi al tuo spazio per tenerli tutti e due.\n\nSostituire comunque?')) return;
       localStorage.removeItem(LSK); window._exNoAcc = true;
     }
-    exReset(); exBuild();
+    exReset(); if(window._exKind==='PP') exBuildPP(); else exBuild();
+    try{ if(CL && CL.ctx && CL.ctx.id && window.shOpen && document.getElementById('sh-root') && document.getElementById('sh-root').classList.contains('show')) window.shOpen(CL.ctx.id); }catch(e){}
+    try{ [300,1200].forEach(t=>setTimeout(()=>{ try{ grRefresh(); }catch(e){} }, t)); }catch(e){}
   }catch(e){ showToast('Non riesco a creare l’esempio: '+(e&&e.message||e)); }
 }
 // svuota lo stato in memoria (come una pagina appena aperta), così l'esempio parte pulito senza ricaricare
@@ -7189,6 +7192,145 @@ function exBuild(){
   try{ gGo('1b'); }catch(e){}
   exBar(); pageTop();
   showToast('Ecco il progetto di esempio (Reparto Kontiki, immaginario): esploralo, modificalo e poi eliminalo');
+}
+// ── Esempio del Progetto Personale: un PP completo (Sezioni 1–5) per un Reparto, da leggere come pietra di paragone ──
+function exBuildPP(){
+  try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){}
+  selectMode('giovani'); window._pjPick = false; selectFascia('E'); startTool();
+  UNIT_NAME='Reparto Kontiki'; scheda.esempio='PP'; scheda.tipoProgetto='PP'; scheda.annoScout='2026-27'; scheda.veste={ruolo:'CU', branca:'E'};
+  const pp=scheda.pp; Object.assign(pp,{nome:'Giulia Neri', sezione:'Pesaro', gruppo:'1',
+    mail:{area:'altoadriatico', tutorMail:'tutor.esempio@example.org', cgMail:'capogruppo.esempio@example.org', cdsMail:'commissario.esempio@example.org', destNome:'Marco'},
+    ctxTerr:'Quartiere residenziale a pochi minuti dal centro, con un grande parco pubblico e la collina raggiungibile a piedi in dieci minuti: per le attività all’aperto non servono mezzi. La sede è un ex magazzino comunale in uso condiviso con altre associazioni il sabato mattina, quindi lo spazio di deposito è poco. Nel quartiere c’è una casa di riposo e una scuola media con cui il Gruppo ha già collaborato.',
+    ctxSez:'Il Gruppo ha Branco, Reparto e Compagnia ed è in una Sezione di sette Gruppi. Il Reparto conta 22 Esploratori ed Esploratrici (12 ragazze e 10 ragazzi, tra gli 11 e i 15 anni) in 4 Pattuglie; lo staff è di 3 adulti, io (Capo Unità) da due anni, un Vice Capo Unità con sei anni di esperienza e una Vice arrivata a settembre. Il Capo Gruppo segue il Reparto con attenzione e mi fa da mentore. Buon rapporto con le famiglie; nell’ultimo anno poche uscite di più giorni a causa di un cambio di staff.',
+    condizioni:'Osservazione svolta da metà settembre a metà ottobre: due incontri in sede del KOS 2.0, il terzo incontro all’aperto sulla collina, un’uscita di Reparto e due Consigli di Reparto. In tutto, otto occasioni in cui almeno due adulti hanno osservato con la stessa scheda.',
+    scelta:'Ho scelto una necessità per Ambito partendo da ciò che si ripresentava in più occasioni e da cui dipendono anche altre cose. Nel Personale il materiale trascurato e i compiti sempre agli stessi: se non si impara a organizzarsi, nelle Imprese si resta dipendenti dagli adulti. Nel Comunitario ho scelto la leadership perché le decisioni sono sempre dei più grandi e perché è la necessità su cui posso agire con un percorso breve ma incisivo, e per questo sarà il percorso che svilupperò per primo. Nello Spirituale l’ambiente: è la strada più naturale che il Reparto ha per fermarsi e interrogarsi. Ho lasciato per dopo la gestione delle emozioni (emersa solo in due occasioni) e la cura della sede, perché meno urgenti e meno condivise dallo staff.',
+    limitiOss:'Due Esploratori sono entrati a ottobre e non erano presenti alle prime occasioni; li osserveremo meglio nel percorso. L’uscita di Reparto è stata sotto la pioggia: alcune attività all’aperto sono state ridotte.',
+    gruppoCoincide:'si',
+    numTot:'22', numM:'10', numF:'12', numAnn:['8','6','5','3'],
+    staffTab:[{ruolo:'CU', nome:'Giulia Neri', mail:'giulia.esempio@example.org'},{ruolo:'VCU', nome:'Paolo Riva', mail:'paolo.esempio@example.org'},{ruolo:'VCU', nome:'Elena Sarti', mail:'elena.esempio@example.org'}]});
+  scheda.osservazione={
+    P:{positivi:'Le Pattuglie costruiscono volentieri: con corde e pali lavorano con cura e con orgoglio, e quasi tutti usano in sicurezza coltello e fornelletto. In uscita il Reparto si mette in moto con entusiasmo e senza bisogno di essere sollecitato.',
+       necessita:'Il materiale di Pattuglia viene trascurato: a fine attività resta in giro e si perde mezz’ora a cercarlo. I compiti di cucina e di logistica ricadono quasi sempre sulle stesse tre persone, mentre gli altri aspettano di essere chiamati.',
+       singoli:'Due Esploratori del primo anno restano ai margini quando si lavora in Pattuglia: non hanno ancora un incarico preciso e aspettano che qualcuno glielo dia.'},
+    C:{positivi:'Dentro ogni Pattuglia c’è affiatamento: ci si prende in giro, ci si aiuta nei momenti difficili e ci si ritrova con piacere anche fuori dalle attività. Il Consiglio di Reparto è puntuale e partecipato.',
+       necessita:'Tra Pattuglie si collabora poco: nei giochi di Reparto ognuna corre per sé. Nelle decisioni parlano soprattutto i più grandi e i più piccoli annuiscono senza esporsi, anche quando non sono d’accordo.',
+       singoli:'Una Capo Pattuglia di 14 anni ha buone idee ma fatica a imporsi sui più grandi e tende a lasciar decidere altri.'},
+    S:{positivi:'In uscita molti si fermano spontaneamente a guardare: un tramonto, il cielo la sera, le tracce di un animale. Al fuoco di bivacco il Reparto sa fare silenzio e ascoltare.',
+       necessita:'Tra giochi e costruzioni resta poco spazio per fermarsi, e alla fine delle attività raramente si dice come ci si è sentiti: l’esperienza passa, ma non viene nominata.',
+       singoli:'Un Esploratore ha chiesto più volte dei perché sulla natura («perché le stelle cambiano posto?»): una curiosità da valorizzare, non da liquidare.'}};
+  // KOS 2.0: i primi due incontri e quasi tutto il terzo
+  kosIncToggle(0,true); kosIncToggle(1,true); kosIncToggle(2,true); delete pp.kosDone['E2_3']; delete pp.kosDone['E2_6'];
+  pp.occKos=pp.occKos||{}; ['E0_0','E0_1','E0_2','E0_3'].forEach(k=>{ pp.occKos[k]={data:'2026-09-19'}; }); ['E1_0','E1_1','E1_2','E1_3'].forEach(k=>{ pp.occKos[k]={data:'2026-09-26'}; }); ['E2_0','E2_1','E2_2','E2_4','E2_5'].forEach(k=>{ pp.occKos[k]={data:'2026-10-10'}; });
+  pp.occMan=[
+    {id:grNewId(), att:'Uscita di Reparto · costruzione del campo base', data:'2026-10-17', perc:['P5','P7','C2','C3'], chi:'Giulia Neri|Paolo Riva|Elena Sarti', ctx:'Uscita di giornata sulla collina, con pioggia nel pomeriggio', note:'Le Pattuglie si sono divise i compiti da sole; i più piccoli hanno aspettato indicazioni dai più grandi. Il materiale è finito in disordine sotto il telo.', foc:{P5:'Chi prende l’iniziativa nell’organizzare il materiale e chi aspetta di essere chiamato', C3:'Chi decide dentro la Pattuglia e come si raggiunge un accordo'}},
+    {id:grNewId(), att:'Consiglio di Reparto di ottobre', data:'2026-10-21', perc:['C3','C1','C5'], chi:'Giulia Neri|Elena Sarti', ctx:'In sede, un’ora e mezza', note:'Hanno parlato soprattutto i Capi Pattuglia più grandi; le proposte dei piccoli sono state raccolte solo quando le abbiamo sollecitate.', foc:{C3:'Distribuzione degli interventi tra Capi Pattuglia e vice', C1:'Capacità di esporre una proposta davanti a tutti'}}];
+  const val={P1:5,P2:5,P3:6,P4:4,P5:3,P6:5,P7:5,P8:5,C1:5,C2:6,C3:3,C4:5,C5:4,C6:5,C7:4,C8:'n',S1:5,S2:4,S3:3,S4:4,S5:5,S6:4,S7:'n',S8:4};
+  Object.entries(val).forEach(([k,v])=>setObs(k,v));
+  [['P5','P'],['C3','C'],['S3','S']].forEach(([id,a])=>togglePri(id,a));
+  const gr=(p,k,pos,mig,note)=>{ const g=grG(p,k); g.pos=pos; g.mig=mig; g.note=note; };
+  const kr=pid=>grRows(pid); 
+  [['P5','Il lavoro operativo c’è e funziona quando è chiaro chi fa cosa.','Poca iniziativa spontanea nel prendersi cura del materiale comune.','Nell’Orienteering e negli Architetti della Natura chi sapeva usare gli strumenti ha lavorato bene, gli altri sono rimasti a guardare.'],
+   ['C3','Quando i ruoli sono assegnati dagli adulti le Pattuglie coordinano bene i lavori.','Le decisioni restano ai più grandi; nelle altre occasioni non si vede una guida che coinvolga davvero tutti.','Il Consiglio di Reparto conferma lo schema: pochi parlano, molti seguono.'],
+   ['S3','In silenzio, sulla collina, il Reparto è attento e curioso.','Manca un momento per dire a voce che cosa si è provato.','Durante gli Architetti della Natura tre ragazzi hanno raccolto elementi naturali per il proprio stand: segno di sensibilità.']].forEach(([pid,a,b,c])=>{ kr(pid).forEach((r,i)=>{ if(i<3) gr(pid,r.k,i===0?a:'',i===1?b:'',i===2?c:''); }); });
+  // percorsi: un obiettivo e almeno due indicatori per Ambito
+  [[0,[1],[1,3]],[1,[1],[1,3,4]],[2,[3],[0,3]]].forEach(([i,o,idr])=>{ o.forEach(x=>toggleObiettivo(i,x,true)); idr.forEach(x=>toggleIdr(i,x,true)); });
+  const nec=['Le Pattuglie non riescono a organizzarsi da sole: il materiale è trascurato e i compiti ricadono sempre sulle stesse persone.','Le decisioni sono dei più grandi: i più piccoli non si espongono e le Pattuglie non collaborano tra loro.','Poche occasioni per fermarsi a guardare, stupirsi e dire come ci si sente.'];
+  nec.forEach((n,i)=>{ if(scheda.priorita[i]) scheda.priorita[i].necessita=n; });
+  const T=[['2026-11','2027-03'],['2026-11','2027-02'],['2026-12','2027-04']];
+  scheda.priorita.forEach((pr,i)=>{ if(!T[i]) return; pr.tDal=T[i][0]; pr.tAl=T[i][1]; pr.tempistica=tmRange(pr.tDal,pr.tAl); });
+  scheda.sez3Pri=1; const all=getAllPercorsi();
+  all.forEach(per=>{ const pr=scheda.priorita[per.prioritaIdx]; if(pr){ per.tDal=pr.tDal; per.tAl=pr.tAl; } });
+  const C=all.find(p=>p.percorsoId==='C3'), iC=all.indexOf(C);
+  ['Capo Pattuglia e Capo Equipaggio','Vice Capo Equipaggio e Vice Capo Pattuglia','Consiglio di Pattuglia','Plancia e Consiglio di Reparto','Posti d\'azione','Incarichi','Impresa','Uscita'].forEach(n=>{ C.strumSel=C.strumSel||{}; C.strumSel[n]=''; });
+  C.strumSel['Consiglio di Pattuglia']='Luogo dove i talenti diventano incarichi';
+  C.strumSel['Impresa']='Il pranzo per tutti: cuore del percorso, con le Pattuglie che si coordinano';
+  C.strumSel['Posti d\'azione']='Assegnati per talento e non per anzianità';
+  const A=[
+   ['Chi guida oggi?','Un messaggio dal «Servizio cartografico» annuncia che ogni Pattuglia dovrà attraversare un territorio sconosciuto, ma che stavolta il comando cambierà a ogni tappa: sul biglietto di ogni tappa c’è scritto chi guida.','Gioco a basi sulla collina: a ogni base la persona indicata sul biglietto guida la Pattuglia per quella prova (orientamento, nodi, enigma, staffetta). Il biglietto viene pescato in modo che tutti, anche i più piccoli, guidino almeno una volta. Gli adulti non intervengono sulle scelte.','Cerchio sul prato: «A chi è stato più facile farsi guidare? Cosa ha fatto di buono chi guidava?». Ognuno scrive su un post-it una frase sul sentirsi guida; i post-it restano nel quaderno del Consiglio di Pattuglia.'],
+   ['Il Consiglio dei talenti','Dopo il gioco, ogni Pattuglia riceve una «lettera» del Comune: serve una squadra per un pranzo di quartiere. Prima bisogna capire chi sa fare cosa.','Consiglio di Pattuglia guidato da un Capo Pattuglia diverso dal solito: ciascuno dichiara una cosa che sa fare bene e una che vuole imparare; la Pattuglia compila la «mappa dei talenti» e assegna i Posti d’azione per l’Impresa in base ai talenti e ai desideri, non all’anzianità. I due Esploratori entrati da poco sono invitati a scegliere per primi.','Ogni Pattuglia presenta la propria mappa al Reparto e spiega una scelta sorprendente. Si raccolgono in plancia i posti d’azione assegnati.'],
+   ['Impresa: il pranzo per tutti','Il Reparto ha una data e un indirizzo: il pranzo di quartiere nella sede, con le famiglie e gli ospiti della casa di riposo.','Le Pattuglie preparano insieme il pranzo, ognuna con un compito (primo, secondo, dolce, allestimento) e un referente di Pattuglia a rotazione. Un «tavolo di coordinamento» di un rappresentante per Pattuglia, che cambia a ogni fase, tiene insieme tempi, spazi e materiali; i più piccoli coordinano il dolce.','Pranzo con gli ospiti. A fine giornata il tavolo di coordinamento racconta al Reparto cosa ha deciso e come ha fatto a trovare un accordo.'],
+   ['Il Cerchio delle guide','Il Capo Reparto lascia sul tavolo un filo e un quaderno: «Oggi il Reparto riflette su come si è guidato».','Rielaborazione in due tempi nel Consiglio di Reparto: prima la parte cognitiva (cosa abbiamo imparato su come si guida, quali strumenti hanno funzionato), poi quella emotiva (come ci siamo sentiti guidando e facendoci guidare, con un filo che passa di mano in mano). Ogni Pattuglia aggiorna il proprio «tabellone dei talenti».','Il Reparto sceglie una regola nuova per le decisioni (ad esempio «parla prima chi ha meno anni») e la scrive nel quaderno del Consiglio di Reparto, da riprendere alla prossima Impresa.']];
+  A.forEach((r,j)=>{ updateAttivita(iC,j,'testo',r[0]); updateAttivita(iC,j,'lancio',r[1]); updateAttivita(iC,j,'sviluppo',r[2]); updateAttivita(iC,j,'conclusione',r[3]); });
+  const V=[['I più piccoli hanno guidato con serietà: una Esploratrice di 11 anni ha tenuto la Pattuglia sulla prova di orientamento. Nessuno ha contestato i biglietti.','Alcuni Capi Pattuglia hanno suggerito in continuazione a chi guidava; ci sono state basi troppo affollate e una troppo facile.','Per la volta successiva ho tolto l’enigma e ho inserito un «silenzio del Capo» di cinque minuti: chi guida decide da solo. Ha funzionato meglio.'],
+           ['La mappa dei talenti ha dato visibilità a competenze che non conoscevo: un ragazzo di 13 anni cucina molto bene, un’Esploratrice sa montare i cavi per la corrente.','Una Pattuglia ha riempito la mappa in fretta per finire prima; le scelte erano scontate.','Abbiamo dato più tempo alla fase di racconto e chiesto a ciascuno di spiegare «perché proprio tu». La seconda Pattuglia ha prodotto una mappa molto più ricca.'],
+           ['Al tavolo di coordinamento è emerso un piccolo conflitto sui tempi del forno e lo hanno risolto senza adulti. Le famiglie hanno notato quanto i ragazzi fossero autonomi.','Il passaggio del ruolo ogni fase è stato confuso per un’ora; il dolce è arrivato tardi.','Il Reparto ha scritto da solo un cartello con «chi coordina adesso». L’abbiamo usato nelle fasi successive e il pranzo è partito in orario.'],
+           ['La parte emotiva ha funzionato: il filo ha reso più facile parlare anche a chi di solito tace. Il Reparto ha scelto una regola concreta.','Alcuni ragazzi più grandi hanno risposto in modo sbrigativo nella parte cognitiva.','Ho ridotto il tempo di discussione libera e ho aggiunto una domanda guida a ogni Pattuglia.']];
+  V.forEach((r,j)=>{ updateAttivita(iC,j,'vBene',r[0]); updateAttivita(iC,j,'vMigl',r[1]); updateAttivita(iC,j,'vAgg',r[2]); });
+  const CK={nuova:['Il Reparto non ha mai cambiato guida a ogni tappa né mappato i talenti prima di un’Impresa: è il primo percorso in cui i ruoli dei più piccoli sono decisi dal Reparto e non dagli adulti.','si'],
+    stimolante:['Parte da un messaggio del Servizio cartografico e da una lettera del Comune, quindi da una sfida e da un compito reale e riconoscibile; il pranzo con gli ospiti è motivante in sé.','si'],
+    progressiva:['Si passa da guidare per una prova (Attività 1), a scegliere i ruoli (2), a coordinarsi tra Pattuglie (3), a riflettere su come si è guidato (4): ogni attività richiede più responsabilità della precedente.','si'],
+    costruita:['La co-costruzione è nell’Attività 2 (i ragazzi assegnano i posti d’azione), nel tavolo di coordinamento dell’Attività 3 (decidono tempi e spazi) e nella scelta della regola nell’Attività 4: gli adulti propongono la cornice, il Reparto decide i contenuti.','si'],
+    rielaborativa:['La rielaborazione non è solo alla fine: cerchio breve dopo la prima attività (cognitivo), mappa dei talenti spiegata al Reparto (cognitivo), racconto del tavolo di coordinamento (emotivo e cognitivo) e un cerchio con il filo nell’Attività 4 (emotivo, distinto dal momento cognitivo).','si'],
+    esperienziale:['Si impara guidando davvero: chi guida decide, chi coordina decide tempi e spazi; la conoscenza (come si decide) si trasforma in abilità (guidare) e in attitudine (fidarsi dei compagni).','si'],
+    educativa:['Risponde direttamente alla necessità emersa in Sezione 1 (decidono sempre i più grandi) e agli indicatori scelti per C3; ogni attività ha un momento in cui si rende visibile quanto è cambiato il modo di decidere.','si']};
+  C.checklist={}; Object.keys(CK).forEach(k=>{ C.checklist[k]={checked:true, val:CK[k][1], note:CK[k][0]}; });
+  C.coCostr=''; C.rielab='';
+  // Sezione 5: comportamento per ogni IdR e valutazione complessiva
+  scheda.idrComp={C3:{1:{c:'stimolato',note:'Riconoscono e valorizzano le capacità di un pari quando c’è una cornice che lo chiede (mappa dei talenti, Posti d’azione). Al di fuori delle attività del percorso lo fanno ancora di rado.'},
+                      3:{c:'stimolato',note:'Nel Consiglio di Pattuglia i più grandi hanno proposto agli altri di provare compiti nuovi, ma solo dopo il nostro invito; tre proposte sono arrivate spontaneamente alla fine.'},
+                      4:{c:'spontaneo',note:'Nell’ultimo Consiglio di Reparto chi era più grande ha chiesto ai più piccoli «e tu cosa ne pensi?» senza sollecitazioni degli adulti: lo hanno fatto in tre Pattuglie su quattro.'}}};
+  scheda.valCompl={C3:'L’Obiettivo è stato raggiunto in modo parziale ma solido: il Reparto ha imparato che decidere è un compito di tutti e ha scritto una regola propria per le decisioni. Gli indicatori mostrano comportamenti spontanei solo nella fase finale: dobbiamo ancora lavorare perché diventino abituali. Riproporrei la mappa dei talenti e il tavolo di coordinamento, che sono piaciuti più di ogni altra cosa; cambierei il gioco iniziale, troppo lungo, e darei più tempo alla rielaborazione cognitiva con i più grandi. Come educatrice ho capito che devo trattenermi di più dal suggerire quando chi guida sta pensando.'};
+  try{ cicloSync(); }catch(e){}
+  // ci sono attività osservative svolte nel PP: due, create con lo strumento
+  exOssAdd([
+   {nome:'La staffetta dei ruoli', main:'C3', also:['C1','P5'], dom:'Chi propone, chi decide e chi segue quando la guida cambia a ogni prova?', foc:['Chi prende la parola per primo','Come si accorda la Pattuglia quando i pareri sono diversi','Chi si offre per un ruolo che non ha mai fatto'], dur:50, lan:'Un messaggio dal Servizio cartografico: ogni Pattuglia attraversa il bosco in quattro prove e a ogni prova guida una persona diversa, estratta a sorte.', svi:'Quattro prove brevi (nodi, orientamento, enigma, passaggio del materiale). Gli adulti osservano senza intervenire e annotano, per Pattuglia: chi propone, chi decide, chi si defila. Tra una prova e l’altra un minuto per cambiare guida.', con:'Cerchio finale di cinque minuti in cui ogni persona dice una cosa che l’ha sorpresa del guidare o dell’essere guidata. Gli adulti non commentano e riportano le frasi sulla scheda.', mom:'Primo mese', ctx:'Aperto, sulla collina', tipi:['Gioco a basi'], data:'2026-10-24', chi:['Giulia Neri','Paolo Riva','Elena Sarti']},
+   {nome:'Il quaderno dei perché', main:'S3', also:['S4','P3'], dom:'Quando hanno uno spazio libero, chi si ferma a osservare la natura e che cosa ne fa: la nomina, la disegna, la racconta?', foc:['Chi si sofferma da solo a guardare','Come descrivono ciò che provano davanti all’ambiente','Chi coinvolge altri nella scoperta'], dur:45, lan:'Ogni Pattuglia riceve un quaderno vuoto e una «lente» di cartone: per trenta minuti si esplora un tratto di collina e si raccoglie ciò che fa venire una domanda.', svi:'Esplorazione libera a piccoli gruppi con la lente; si annotano o disegnano tre cose che colpiscono e un perché. Gli adulti osservano da lontano chi dedica più tempo, chi condivide, chi si annoia.', con:'Mostra dei quaderni in cerchio: ognuno racconta una pagina senza giudizi. Gli adulti raccolgono le frasi sull’emozione provata e le trascrivono sulla scheda.', mom:'Secondo mese', ctx:'Aperto, collina', tipi:['Uscita di Pattuglia'], data:'2026-11-07', chi:['Giulia Neri','Elena Sarti']}
+  ]);
+  scheda.pp.occasioni='Dal KOS 2.0: tutti e tre gli incontri (con le attività svolte); due occasioni registrate a mano e due attività osservative create con lo strumento «Crea le tue attività osservative».';
+  scheda.pp.iter={avvio:{date:'2026-10-02'}, presa:{date:'2026-10-05'}, cgVer:{v:'si', date:'2026-11-02'}, prima:{date:'2026-11-03'},
+    riscontri:[{date:'2026-11-10', note:'Il Tutor ha confermato il percorso (Sezione 3) e ha chiesto di esplicitare meglio dove avviene la rielaborazione emotiva: l’ho aggiunto nell’Attività 4 e nella checklist. Ha apprezzato la mappa dei talenti.'}]};
+  try{ ppRiscSync(); }catch(e){}
+  // Griglia osservativa: per ogni percorso e per ogni occasione, cosa ho visto (positivo, da migliorare, note)
+  (function(){
+    const G={
+      P1:['Durante il barometro si sono spostati con sicurezza e senza spingersi; due Esploratrici hanno usato il corpo per dire la loro posizione prima di parlare.','Dopo la camminata lunga alcuni del primo anno faticano a dire che sono stanchi e mollano in silenzio.','Marco (1° anno) si ferma a metà salita ma non lo dice: da seguire con il Capo Pattuglia.','In orienteering la resistenza fisica è buona nel 3°-4° anno, più incerta nel 1°.'],
+      P2:['Nei temi controversi quasi tutti riescono ad aspettare il proprio turno; tre persone hanno detto «non sono d’accordo» con calma.','Quando una posizione viene contestata, in due si irrigidiscono o ridono per coprire l’imbarazzo.','Sara e Luca reagiscono di getto alle prese in giro: ne parlo con loro a parte.','Ritrovo la stessa dinamica anche nel gioco a squadre, ma più marcata.'],
+      P3:['Le Pattuglie hanno inventato in venti minuti tre nomi e tre grida originali; idee diverse dal solito, non copiate.','Si propongono soluzioni creative solo se qualcuno parte per primo; il resto del gruppo segue.','',''],
+      P4:['Nel pranzo dell’Impresa una squadra ha scritto un piano con tempi e ruoli e lo ha rispettato.','I piani sono realistici solo a breve termine: sulle cose a più settimane si perdono.','Il Consiglio di Pattuglia ha rinviato due volte la decisione sul menù: capire se manca la fiducia o il metodo.',''],
+      P5:['Il gruppo sa montare e smontare la tenda in tempi buoni; i Vice insegnano ai nuovi senza farsi pregare.','Il materiale viene riposto con poca cura: nodi e corde spesso lasciati a terra a fine attività.','Dal 2° anno in su la manualità è buona, dal 1° anno servono più occasioni pratiche.',''],
+      P6:['Nel barometro sono state portate motivazioni diverse e qualcuno ha cambiato idea ascoltando gli altri.','Alcune opinioni sono ripetute senza essere argomentate («lo dice mio padre», «lo hanno detto sui social»).','',''],
+      P7:['A merenda e a cena si fanno scelte alimentari varie e nessuno prende in giro chi sceglie diversamente.','Poca attenzione a dormire abbastanza e a bere durante le attività lunghe: tre casi in uscita.','',''],
+      P8:['Alcuni sanno dire «questa cosa mi viene bene, questa no» senza vergogna, soprattutto nell’orienteering.','Nel gruppo prevale l’autocritica negativa («sono scarso»): è più facile dire i limiti che i punti di forza.','',''],
+      C1:['Nel Consiglio dei talenti hanno parlato anche i meno vivaci, e a turno senza interrompersi.','Si parla addosso quando si accende il tema: l’ascolto regge pochi minuti.','Il gruppo parla bene tra pari, meno quando deve spiegare a un Capo qualcosa che non va.','Tra le Pattuglie la comunicazione è buona; tra le due Pattuglie dei grandi e quelle dei piccoli quasi inesistente.'],
+      C2:['Le coppie e i gruppetti sono variabili: si sono formate amicizie nuove tra Pattuglie diverse.','Persistono due sottogruppi che non si mescolano a nessuna attività.','In due casi tra Pattuglie c’è tensione dopo un gioco: va seguita.',''],
+      C3:['Nella staffetta dei ruoli i Capi Pattuglia hanno delegato senza imporsi e hanno chiesto aiuto quando serviva.','Alcuni Vice restano in secondo piano anche quando il Capo Pattuglia è assente.','Il Capo Pattuglia di Falchi tende a fare tutto lui: gli proporrò di affidare un compito a ogni Vice.','Nella seconda occasione la delega è migliorata, anche se ancora a spinta.'],
+      C4:['Il gruppo accoglie con curiosità le differenze di origine e di abitudini; nessuno ha preso in giro chi era diverso.','Si fa fatica a includere chi è arrivato da poco o chi ha meno confidenza: restano ai bordi.','',''],
+      C5:['Nei giochi sanno applicare le regole e le fanno rispettare, anche tra pari.','Quando una regola sembra ingiusta scatta la protesta immediata, senza chiedere cosa ci stia dietro.','',''],
+      C6:['Dopo il pranzo i rifiuti sono stati separati da tutte le Pattuglie senza ricordarlo.','Fuori dall’attività nessuno porta idee o iniziative per ridurre i rifiuti o i consumi.','',''],
+      C7:['Due Esploratori hanno proposto di aiutare la casa di riposo del quartiere: conferma che il tema è sentito.','Pochissime idee concrete di impegno fuori dal Reparto.','',''],
+      C8:['Alcuni argomentano bene la propria posizione; una Esploratrice ha sostenuto un punto contro la maggioranza.','Argomentare è ancora raro: spesso si rimanda a un capo o a un adulto.','',''],
+      S1:['Nel quaderno dei perché emergono domande vere su chi sono e su cosa conta; alcune scritte per sé, non per mostrare.','Poca disponibilità a condividere ad alta voce: si scrive ma non si dice.','Una Esploratrice ha chiesto di non leggere il suo quaderno: l’ho rispettato.',''],
+      S2:['Hanno portato canti e tradizioni di famiglie e luoghi diversi e le hanno spiegate agli altri.','Poche occasioni in cui si pensa alla cultura come scelta propria e non solo ereditata.','',''],
+      S3:['Il quaderno dei perché ha fatto emergere stupore per il bosco: domande su come nasce e come sopravvive.','Fuori dalle uscite l’attenzione alla natura sparisce: serve una domanda che li accompagni.','Una Pattuglia ha portato dal bosco oggetti raccolti per chiedere «che cos’è?»: è la porta d’ingresso.','Nella seconda occasione le domande sono diventate più precise.'],
+      S4:['Quando un compagno era in difficoltà qualcuno ha chiesto «come stai?» prima di dare consigli.','Si ascoltano bene gli amici; più difficile con chi non si frequenta.','',''],
+      S5:['Si fa quello che si dice, per lo più: promesse e Legge Scout vengono richiamate spontaneamente.','Quando fa comodo, la coerenza cala: qualche scorciatoia davanti al lavoro ingrato.','',''],
+      S6:['Davanti a due opzioni alcuni hanno scelto e spiegato perché, senza aspettare gli altri.','Quasi sempre si segue la maggioranza della Pattuglia.','',''],
+      S7:['Alcuni parlano di cosa vogliono fare tra due-tre anni (Rover, studio, sport): c’è una visione.','Progetti vaghi e lontani; manca il passaggio «cosa faccio già adesso?».','',''],
+      S8:['In un momento di silenzio durante l’uscita alcuni hanno detto che «c’è qualcosa di più grande»: apertura.','Poco spazio per fermarsi e dare un nome a questi momenti; il ritmo dell’attività lo impedisce.','','']
+    };
+    Object.keys(G).forEach(pid=>{
+      const t=G[pid]; let i=0;
+      grRows(pid).forEach(r=>{
+        const g=grG(pid, r.k); const d=g;
+        if(i===0){ d.pos=t[0]; d.mig=t[1]; if(t[2]) d.note=t[2]; }
+        else { d.pos=(t[3]||'Ritrovo quanto visto nella prima occasione, in un contesto diverso: mi conferma che non era un caso.'); d.mig=''; }
+        i++;
+      });
+    });
+  })();
+  scheda.chkPP={partecipante:'Giulia Neri', formatore:'', rev:'01', items:{}};
+  saveData(true);
+  try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
+  try{ shPP('0'); }catch(e){}
+  exBar(); pageTop();
+  showToast('Ecco il Progetto Personale di esempio (Reparto Kontiki, immaginario): leggilo come pietra di paragone, modificalo e poi eliminalo');
+}
+// aggiunge attività osservative svolte (come se fossero state create con lo strumento e poi segnate «svolta»)
+function exOssAdd(L){
+  const ids=ossAllIds(), staff=[], store=ossStore(), pp=scheda.pp; if(!Array.isArray(pp.occMan)) pp.occMan=[];
+  L.forEach((x,k)=>{ const F=ossFields(x,ids); const id=ossNewId()+k; const a=Object.assign({id, aut:(pp.nome||'Capo di esempio'), autMail:'', ruolo:szPP()?'aut':'tit', stato:'svolta', at:Date.now()-(L.length-k)*86400000, sugg:{}}, F);
+    const perc=[a.main].concat(a.also||[]); const r={id:grNewId(), att:'Attività osservativa · '+a.nome, data:x.data||'', perc, chi:(x.chi||[]).join('|'), ctx:'', note:''}; r.foc=ossRowFoc(a, perc);
+    pp.occMan.push(r); a.occId=r.id; a.data=r.data; a.svoltaAt=Date.now(); store[id]=a; });
 }
 function exBar(){ const app=document.getElementById('main-app'); if(!app) return; let b=document.getElementById('ex-bar');
   if(!(scheda&&scheda.esempio)){ if(b) b.remove(); return; }
@@ -8725,7 +8867,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611132215'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611132340'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
