@@ -123,6 +123,9 @@ export class FakeDB {
         if(q.table === 'pee_giri_dest'){ if(!this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid)) return this.err('42501', 'new row violates row-level security policy');
           if(r.ruolo === 'revisore' && !this.revAbil(r.email)) return this.err('42501', 'new row violates row-level security policy');
           if(T.some(x => x.giro_id === r.giro_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
+        if(q.table === 'pee_giri_rev'){ r.user_id = uid; r.id = r.id || ('r' + Math.random().toString(36).slice(2)); r.recepita = false; r.updated_at = now(); const ro = this.giroRuolo(uid, r.giro_id), ow = this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid);
+          if(!ro && !ow) return this.err('42501', 'new row violates row-level security policy'); if(ro === 'copia' && r.tipo !== 'nota') return this.err('42501', 'new row violates row-level security policy');
+          if(r.tipo === 'check' && !['si','parz','no',''].includes(r.valore)) return this.err('23514', 'check constraint'); }
         if(q.table === 'pee_versioni'){ r.user_id = uid; if(!(this.isOwner(uid, r.archivio_id) || this.canEdit(uid, r.archivio_id))) return this.err('42501', 'new row violates row-level security policy'); }
         if(q.table === 'pee_suggerimenti'){ r.user_id = uid; r.stato = r.stato || 'nuovo';
           const ok = (this.mem(uid, r.archivio_id) || (this.sql13 && this.isOwner(uid, r.archivio_id))) && r.stato === 'nuovo';
@@ -141,6 +144,7 @@ export class FakeDB {
         if(q.table === 'pee_archivi'){ ok = r.user_id === uid || this.canEdit(uid, r.id);
           if(ok && r.user_id !== uid && (('anno' in q.vals && q.vals.anno !== r.anno) || ('titolo' in q.vals && q.vals.titolo !== r.titolo))) return this.err('P0001', 'Solo chi ha creato il progetto può cambiarne anno, titolo o proprietario'); }
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare' && (!q.vals.ruolo || ['lettore','collaboratore'].includes(q.vals.ruolo)));
+        if(q.table === 'pee_giri_rev'){ const ow = this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid); ok = (r.user_id === uid && !('recepita' in q.vals)) || (ow && Object.keys(q.vals).every(k => k === 'recepita' || k === 'recepita_il')); }
         if(q.table === 'pee_suggerimenti') ok = this.isOwner(uid, r.archivio_id) || (this.sql13 && r.dest && r.dest === u.email && Object.keys(q.vals).every(k => k === 'stato'));
         if(q.table === 'pee_archivio_nazionale') ok = u.email === 'luca.bartolomei@cngei.it';
         if(!ok) continue;
@@ -160,6 +164,7 @@ export class FakeDB {
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || r.email === u.email || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare');
         if(q.table === 'pee_versioni') ok = r.user_id === uid;
         if(q.table === 'pee_giri') ok = r.owner_id === uid;
+        if(q.table === 'pee_giri_rev') ok = r.user_id === uid;
         if(q.table === 'pee_suggerimenti') ok = r.user_id === uid || this.isOwner(uid, r.archivio_id);
         if(q.table === 'pee_archivio_nazionale') ok = (r.autore_id === uid && r.stato !== 'approvata') || u.email === 'luca.bartolomei@cngei.it';
         if(!ok) continue;
