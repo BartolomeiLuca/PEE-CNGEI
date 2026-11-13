@@ -24,6 +24,8 @@ await pop.waitForLoadState('domcontentloaded'); await sleep(9000);
 const pe = (f, a) => pop.evaluate(f, a);
 let s = await pe(() => ({doc:!!document.getElementById('rv-doc'), h2:document.querySelectorAll('#rv-doc h2').length, cb:document.querySelectorAll('#rv-doc .rd-cb').length, main:getComputedStyle(document.getElementById('main-app')).display, side:getComputedStyle(document.getElementById('sh-side')).display, t:(document.getElementById('rv-doc')||{textContent:''}).textContent.slice(0,200)}));
 ok(s.doc && s.h2 >= 3 && s.cb > 10, 'vista del Word: sezioni e pulsanti di commento: ' + JSON.stringify({h2:s.h2, cb:s.cb}));
+for (const [f, col] of [['L', 'rgb(184, 134, 11)'], ['E', 'rgb(27, 94, 66)'], ['R', 'rgb(179, 38, 30)']]) { const c = await pe(f => { _rd.g.meta = Object.assign({}, _rd.g.meta, {fascia:f}); rvDocPaint(); return getComputedStyle(document.getElementById('rv-doc')).getPropertyValue('--rd-br').trim(); }, f); ok(c.toLowerCase() === {L:'#b8860b', E:'#1b5e42', R:'#b3261e'}[f], 'colore di fondo per la branca ' + f + ': ' + c); }
+await pe(() => { _rd.g.meta = Object.assign({}, _rd.g.meta, {fascia:'E'}); rvDocPaint(); });
 ok(s.main === 'none' && s.side === 'none', 'la copia dell’app e il menu sono nascosti');
 // commento puntuale su una voce
 const key = await pe(() => { const a = _rd.anchors.find(x => x.kind === 'row' && x.sec > 0); a.el.cells[0].querySelector('.rd-cb').click(); return a.key; });

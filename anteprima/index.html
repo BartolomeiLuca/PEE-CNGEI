@@ -8725,7 +8725,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611132130'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611132215'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -19338,6 +19338,7 @@ function rvDocNotes(key){
 function rvDocPaint(keepOpen){
   const d = window._rd; if(!d) return; const open = Object.assign({}, d.boxOpen || {}, keepOpen || {}); d.boxOpen = open;
   const art = document.querySelector('#rv-doc .rd-art'); if(!art) return;
+  { const bm = d.g && d.g.meta || {}, bk = String(bm.fascia || bm.branca || '').toUpperCase().charAt(0), BC = {L:['#B8860B','#FFF6D6'], E:['#1B5E42','#EEF5F1'], R:['#B3261E','#FBEBEA']}[bk] || ['#1B5E42','#EEF5F1'], rd = document.getElementById('rv-doc'); if(rd){ rd.style.setProperty('--rd-br', BC[0]); rd.style.setProperty('--rd-brp', BC[1]); } }
   const act = document.activeElement, actKey = act && act.getAttribute && act.getAttribute('data-bk'), actVal = act && act.value;
   art.querySelectorAll('.rd-cm,.rd-cmr').forEach(n => n.remove());
   const prev = (!d.mine && window._rv && window._rv.prev) ? window._rv.prev.notes : {};
