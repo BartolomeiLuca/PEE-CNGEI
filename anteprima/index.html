@@ -1533,7 +1533,8 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 #rv-dock{position:fixed;z-index:9000;background:#fff;color:var(--ink,#1a1a1a);font:13px/1.45 Montserrat,sans-serif;display:flex;flex-direction:column;box-sizing:border-box}
 #rv-dock .rv-h{display:flex;gap:8px;align-items:center;border:0;background:#1b5e42;color:#fff;padding:11px 14px;font:700 13px Montserrat,sans-serif;text-align:left;cursor:default;min-height:44px}#rv-dock .rv-h span{font-weight:600;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#rv-dock .rv-tg{margin-left:auto;display:none}
 #rv-dock .rv-body{flex:1;overflow:auto;padding:10px 12px 16px;min-height:0}#rv-dock .rv-foot{border-top:1px solid #d8d8d0;padding:10px 12px;background:#F7F7F2;max-height:46vh;overflow:auto}
-.rv-note{font-size:12.5px;line-height:1.5;background:#F1F8F4;border:1px solid #cfe6d8;border-radius:8px;padding:8px 10px}.rv-nn{margin-top:6px}.rv-q [hidden],#rv-dock [hidden]{display:none!important}.rv-arr{border:0;background:none;cursor:pointer;font-size:13px;line-height:1;padding:2px 6px 2px 0;min-width:24px;min-height:24px;color:#1b5e42}.rv-t{font-weight:800;font-size:13px;margin:12px 0 6px}.rv-t span{display:block;font-weight:500;font-size:11.5px;color:#666}
+.rv-note{font-size:12.5px;line-height:1.5;background:#F1F8F4;border:1px solid #cfe6d8;border-radius:8px;padding:8px 10px}.rv-nn{margin-top:6px}.rv-q [hidden],#rv-dock [hidden]{display:none!important}.rv-st{margin-top:6px}.rv-ch{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;background:#eee;color:#444}.rv-ch-da_fare{background:#fff0d6;color:#8a4b00}.rv-ch-attesa{background:#e7ecfb;color:#2c3e7a}.rv-ch-fatto{background:#e3f1e3;color:#1f6b33}.rv-ch-confermato{background:#1b5e42;color:#fff}.rv-sn{display:block;font-size:12px;color:#444;margin-top:4px}.rv-st textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:6px 8px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif}.rv-b[disabled]{opacity:.5;cursor:not-allowed}
+.rv-arr{border:0;background:none;cursor:pointer;font-size:13px;line-height:1;padding:2px 6px 2px 0;min-width:24px;min-height:24px;color:#1b5e42}.rv-t{font-weight:800;font-size:13px;margin:12px 0 6px}.rv-t span{display:block;font-weight:500;font-size:11.5px;color:#666}
 .rv-sec{border:1px solid #d8d8d0;border-radius:9px;margin-top:6px;background:#fff}.rv-sec.cur{border-color:#1b5e42;box-shadow:0 0 0 2px #cfe6d8}.rv-sh{display:flex;gap:8px;align-items:center;width:100%;border:0;background:transparent;padding:9px 10px;text-align:left;cursor:pointer;font:700 12.5px Montserrat,sans-serif;color:inherit;min-height:40px}.rv-sn{flex:1}.rv-sl{font-weight:600;font-size:11.5px;color:#666}
 .rv-dot{width:11px;height:11px;border-radius:50%;flex:none;background:#ccc}.rv-dot.ok{background:#2f9e5b}.rv-dot.rv{background:#e08a00}.rv-dot.dm{background:#2b6fd6}.rv-dot.nt{background:#8a8a80}
 .rv-ed{padding:2px 10px 10px}#rv-dock textarea{width:100%;box-sizing:border-box;min-height:56px;margin-top:6px;padding:8px 10px;border:1px solid #c9c9c0;border-radius:8px;font:13px Montserrat,sans-serif;background:#fff;color:inherit}
@@ -8724,7 +8725,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611131945'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611132130'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -15086,7 +15087,7 @@ async function clInit(){
     if(CL.user && !window.BRO && await clCtxGuard()){ appReload(); return; }
     try{ const cr = sessionStorage.getItem('bussola_creato'); if(cr){ sessionStorage.removeItem('bussola_creato'); if(CL.user) setTimeout(() => clCreatoShow(cr), 900); } }catch(e){}
     clSetStatus(CL.user && CL.ctx ? 'ok' : '');
-    { const gh = (String(location.hash).match(/^#giro=([\w-]{8,64})/) || [])[1]; if(gh && CL.user && !window.BRO && window.ppGiroApriQui){ if(/[&]word=1/.test(String(location.hash))){ try{ sessionStorage.setItem('bussola_giro_word', '1'); }catch(e){} } if(/[&]doc=1/.test(String(location.hash))){ try{ sessionStorage.setItem('bussola_giro_docq', '1'); }catch(e){} } if(await window.ppGiroApriQui(gh)) return; } }
+    { const gh = (String(location.hash).match(/^#giro=([\w-]{8,64})/) || [])[1]; if(gh && CL.user && !window.BRO && window.ppGiroApriQui){ if(/[&]word=1/.test(String(location.hash))){ try{ sessionStorage.setItem('bussola_giro_word', '1'); }catch(e){} } if(/[&]doc=1/.test(String(location.hash))){ try{ sessionStorage.setItem('bussola_giro_docq', '1'); }catch(e){} } if(/[&]wcap=1/.test(String(location.hash))){ try{ sessionStorage.setItem('bussola_giro_wcap', '1'); }catch(e){} } if(await window.ppGiroApriQui(gh)) return; } }
     { if(CL.user && !window.BRO && /^#progetti\b/.test(String(location.hash))){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} let _t = 0; const _gh = setInterval(() => { if(typeof window.shGoHome === 'function' && document.getElementById('sh-side')){ clearInterval(_gh); try{ window.shGoHome(); }catch(e){} } else if(++_t > 30) clearInterval(_gh); }, 500); } }
     if(window.BRO){ if(!CL.user){ roExit(); return; } roInit(); if(!window.BRO.giro){ roRefresh(false); sgWatch(); sgLoad(true); } }
     else if(CL.user && CL.recovery){ clShow('recovery'); }
@@ -16012,7 +16013,8 @@ async function clPerTe(){
     try{ if(!window.BRO && CL.user){ const sn = localStorage.getItem('bussola_gfb_seen_' + CL.user.id) || '1970-01-01T00:00:00Z'; const _q = await CL.sb.from('pee_giri_rev').select('giro_id,tipo,valore,testo,recepita,updated_at').neq('user_id', CL.user.id).limit(500);
       if(!_q.error){ const ok = (_q.data || []).filter(x => (x.tipo === 'nota' && x.testo) || x.tipo === 'esito' || (x.tipo === 'stato' && x.valore !== 'ok') || (x.tipo === 'check' && (x.valore === 'parz' || x.valore === 'no')));
         const by = {}, pend = {}; ok.forEach(x => { if(x.updated_at > sn) by[x.giro_id] = (by[x.giro_id] || 0) + 1; if(x.tipo === 'nota' && !x.recepita) pend[x.giro_id] = (pend[x.giro_id] || 0) + 1; }); const ids = Array.from(new Set(Object.keys(by).concat(Object.keys(pend))));
-        if(ids.length){ const gr = await CL.sb.from('pee_giri').select('id,n,archivio_id,meta').in('id', ids); (gr.data || []).forEach(g => { _fbN++; items.push({k:'gfb', id:g.id, n:by[g.id] || 0, pend:pend[g.id] || 0, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
+        if(ids.length){ const gr = await CL.sb.from('pee_giri').select('id,n,archivio_id,meta').in('id', ids); let rvc = null; try{ const rr = await CL.sb.from('pee_revisioni').select('id,archivio_id').eq('stato', 'aperta').eq('owner_id', CL.user.id); if(!rr.error){ rvc = {}; const vi = (rr.data || []).map(x => x.id); const pp = vi.length ? await CL.sb.from('pee_revisioni_punto').select('revisione_id,stato').in('revisione_id', vi).in('stato', ['da_fare', 'attesa']) : {data:[]}; (rr.data || []).forEach(v => { rvc[v.archivio_id] = (pp.data || []).filter(x => x.revisione_id === v.id).length; }); } }catch(e){}
+          (gr.data || []).forEach(g => { const pq = rvc ? (rvc[g.archivio_id] || 0) : (pend[g.id] || 0); if(!pq && !by[g.id]) return; _fbN++; items.push({k:'gfb', id:g.id, n:by[g.id] || 0, pend:pq, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
     CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
     try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
@@ -18849,7 +18851,7 @@ function ppBloccoHTML(b){
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center"><input id="apb1-chi" type="text" class="sh-in" style="min-height:34px;font-size:12.5px;flex:1;min-width:140px" maxlength="120" placeholder="chi l’ha data (es. Tutor Marco)" aria-label="Chi ha approvato"><input id="apb1-d" type="date" class="sh-in" style="min-height:34px;font-size:12.5px;width:auto" value="${td()}" aria-label="Data dell’approvazione"><button type="button" class="btn-ghost" style="min-height:34px" onclick="ppApprB1Form()">Registra l’approvazione</button></div><div class="sh-hint" style="margin-top:3px">Registrata dal compilatore, con data.</div></div>`;
   } else if(ap){ appr = `<div style="margin-top:10px;font-size:12.5px"><span class="sh-pill sh-pill-ok">Approvato</span> il ${esc(fmtDL(ap.date || ''))}</div>`; }
   const leg5 = prima ? (ppRisc().length ? `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">Riscontri registrati prima dei giri (${ppRisc().length})</summary>${ppRiscHTML()}</details>` : '') : '';
-  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>`
+  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>${L.length ? `<button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine()" title="Un solo archivio: tutte le copie inviate, i commenti, le risposte e gli stati. Word per leggere e file dati per archiviare">Scarica tutto lo storico</button>` : ''}`
     : `<div style="font-size:12.5px;color:#8a4b00;line-height:1.45">La consegna finale si apre quando la prima parte è approvata (dal Tutor; dall’ICdF se è lui il Tutor o se il Tutor non c’è). Puoi intanto scrivere le Sezioni 4 e 5.</div>`;
   if(prima) setTimeout(() => { try{ window.ppGiroFbAll && window.ppGiroFbAll(); }catch(e){} }, 60);
   return `<div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">${prima ? 4 : 5}</span>${titolo}</h3>
@@ -18956,8 +18958,8 @@ function ppGiroFormRender(){
 }
 async function ppGiroCongela(){
   const f = window._giroForm; if(!f) return;
-  if(window.BRO || typeof CL === 'undefined' || !CL.sb || !CL.user || !CL.ctx || CL.ctx.ruolo){ showToast('Per congelare serve il tuo account e un progetto tuo salvato nel cloud'); return; }
-  if(!f.sez.length){ showToast('Scegli almeno una sezione'); return; }
+  if(window.BRO || typeof CL === 'undefined' || !CL.sb || !CL.user || !CL.ctx || CL.ctx.ruolo){ showToast('Per congelare serve il tuo account e un progetto tuo salvato nel cloud'); return false; }
+  if(!f.sez.length){ showToast('Scegli almeno una sezione'); return false; }
   const go = document.getElementById('pp-giro-go'); if(go){ go.disabled = true; go.textContent = 'Congelo…'; }
   try{
     try{ saveData(true); }catch(e){}
@@ -18981,9 +18983,10 @@ async function ppGiroCongela(){
     ppGiroFormClose(); try{ shPP('i'); }catch(e){}
     showToast('Progetto inviato in revisione · copia ' + g.n + (appKo ? ' · ' + appKo + ' condivisione in app non riuscita' : ''));
     if(f.dest.some(d => d.mail && !ppGiroSkip(f, d))) ppMailOpen(g.sez.some(x => x >= 4) ? 'completo' : 'parziale');
+    return true;
   }catch(e){
     if(go){ go.disabled = false; go.textContent = 'Invia in revisione'; }
-    showToast('Non sono riuscito a congelare il giro: ' + ((e && e.message) || 'riprova tra poco').slice(0, 90));
+    showToast('Non sono riuscito a congelare il giro: ' + ((e && e.message) || 'riprova tra poco').slice(0, 90)); return false;
   }
 }
 // ── Chi rivede un giro (Tutor, ICdF = revisori; Capo Gruppo, CdS = in copia) ──
@@ -19031,7 +19034,7 @@ window.rvListPaint = async function(){
     const stato = p.chiuso ? '<span class="rv-pill rv-pill-c">Concluso</span>' : p.pend ? `<span class="rv-pill rv-pill-a">${p.pend} da ${p.rev ? 'rivedere' : 'leggere'}</span>` : '<span class="rv-pill rv-pill-v">Tutto rivisto</span>';
     return `<details class="rv-pj${p.chiuso ? ' rv-closed' : ''}" ${p.chiuso ? '' : 'open'}><summary><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<span class="rv-sum">${p.giri.length === 1 ? '1 giro' : p.giri.length + ' giri'}</span>${stato}</summary>
       ${p.giri.map(x => gi(p, x)).join('')}
-      <div class="rv-pj-f"><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto del progetto</button>${p.rev ? (p.chiuso ? `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',false)">Riapri la revisione</button>` : `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',true)">Concludi la revisione</button>`) : ''}</div></details>`; }).join('') + '</div>';
+      <div class="rv-pj-f"><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto del progetto</button>${(p.rev && !(window._rvs && window._rvs[p.aid])) ? (p.chiuso ? `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',false)">Riapri la revisione</button>` : `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',true)">Concludi la revisione</button>`) : ''}</div></details>`; }).join('') + `<div style="margin-top:8px"><button type="button" class="cl-btn ghost sm" onclick="rvBackupAll()" title="Un solo archivio con tutti i progetti che segui: Word per leggere e file dati per archiviare">Scarica tutto lo storico (tutti i progetti)</button></div></div>`;
 };
 window.rvOpen = function(gid){
   if(!rvOk()) return;
@@ -19062,24 +19065,74 @@ function rvRestHTML(g, rows){
 <h1>Restituzione · ${esc(m.nome || '')}${m.titolo ? ' · ' + esc(m.titolo) : ''}</h1><p>Giro ${g.n} del ${esc(String(g.created_at || '').slice(0, 10))} · Sezioni ${esc((g.sezioni || []).join(', '))}</p>
 <p><b>Esito:</b> ${es ? esc(GESITO[es.valore] || '') : 'non indicato'}${es && es.testo ? '<br>' + esc(es.testo).replace(/\n/g, '<br>') : ''}</p><h2>Sezione per sezione</h2>${sez}<h2>Check-list</h2>${ck}</html>`;
 }
+
+// ── Backup in blocco dello storico (compilatore, revisore, tutor): Word per leggere + file dati per ripristinare/archiviare ──
+function giroWordBlob(gid){
+  return new Promise(res => {
+    let done = false; const f = document.createElement('iframe'), end = b => { if(done) return; done = true; window.removeEventListener('message', on); try{ f.remove(); }catch(e){} res(b); };
+    const on = ev => { if(ev.origin === location.origin && ev.data && ev.data.t === 'rvword' && ev.data.id === gid) end(ev.data.blob || null); };
+    window.addEventListener('message', on); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'preparazione Word'; f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:800px;border:0;opacity:0;pointer-events:none';
+    f.src = location.href.split('#')[0] + '#giro=' + gid + '&word=1&wcap=1'; document.body.appendChild(f); setTimeout(() => end(null), 75000);
+  });
+}
+async function rvStoricoDocx(D){
+  await needDocx(); const P = [dPara('Storico della revisione', {size:40, bold:true, after:60}), dPara((D.nome || '') + (D.titolo ? ' · ' + D.titolo : '') + ' · scaricato il ' + td(), {size:18, color:'666666', after:240})];
+  const nOf = {}; (D.copie || []).forEach(g => { nOf[g.id] = g.n; });
+  (D.revisioni || []).slice().sort((a, b) => String(a.aperta_il).localeCompare(String(b.aperta_il))).forEach((v, i) => {
+    P.push(dPara('Revisione ' + (i + 1) + ' · ' + (v.stato === 'chiusa' ? (v.esito === 'approvata' ? 'approvata' : 'chiusa (storica)') : 'aperta') + (v.revisore_email ? ' · revisore: ' + v.revisore_email : ''), {size:26, bold:true, before:200, after:80}));
+    P.push(dPara('Aperta il ' + String(v.aperta_il || '').slice(0, 10) + (v.chiusa_il ? ' · chiusa il ' + String(v.chiusa_il).slice(0, 10) : '') + (v.nota_chiusura ? ' · nota: ' + v.nota_chiusura : ''), {size:18, color:'666666'}));
+    (D.punti || []).filter(x => x.revisione_id === v.id).forEach(x => {
+      const lab = rpLabel(x.chiave), com = (D.commenti || []).filter(c => c.tipo === 'nota' && c.chiave === x.chiave && c.testo).sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at))).pop();
+      P.push(dPara((lab.sec ? 'Sezione ' + lab.sec + ' · ' : '') + lab.txt + ' — ' + (RV_PS[x.stato] || x.stato), {bold:true, before:140, after:40, keepNext:true}));
+      if(com) P.push(dPara((com.autore_nome || 'Revisore') + ': ' + com.testo, {after:40}));
+      if(x.nota) P.push(dPara('Nota del compilatore: ' + x.nota, {after:40}));
+      (D.dialogo || []).filter(m => m.chiave === x.chiave).forEach(m => P.push(dPara((m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Compilatore' : 'Revisore')) + ' (' + String(m.created_at || '').slice(0, 10) + '): ' + m.testo, {size:18, indent:300, after:20})));
+    });
+  });
+  const es = (D.commenti || []).filter(c => c.tipo === 'esito'); if(es.length){ P.push(dPara('Esiti registrati', {size:26, bold:true, before:240, after:80})); es.forEach(e => P.push(dPara('Copia ' + (nOf[e.giro_id] || '') + ' · ' + (e.autore_nome || 'Revisore') + ': ' + (GESITO[e.valore] || e.valore) + (e.testo ? ' — ' + e.testo : ''), {after:40}))); }
+  const doc = dDocument(P, 'Storico della revisione'); return await dxLib().Packer.toBlob(doc);
+}
+async function rvPackFill(root, aid, nome, titolo){
+  const gg = await CL.sb.from('pee_giri').select('id,n,archivio_id,owner_id,created_at,sezioni,nomi_inclusi,meta,nota,data').eq('archivio_id', aid).order('n'); if(gg.error) throw gg.error;
+  const ids = (gg.data || []).map(g => g.id), rr = ids.length ? await CL.sb.from('pee_giri_rev').select('id,giro_id,user_id,autore_nome,autore_ruolo,tipo,chiave,valore,testo,recepita,updated_at').in('giro_id', ids) : {data:[]};
+  const dd = ids.length ? await CL.sb.from('pee_giri_dest').select('giro_id,email,ruolo,nome').in('giro_id', ids) : {data:[]};
+  const ms = await CL.sb.from('pee_giri_msg').select('chiave,rev_id,autore_nome,autore_ruolo,testo,created_at').eq('archivio_id', aid).order('created_at');
+  const vs = await CL.sb.from('pee_revisioni').select('id,revisore_email,stato,fase,esito,nota_chiusura,aperta_il,chiusa_il').eq('archivio_id', aid);
+  const vi = (vs.data || []).map(v => v.id), pp = vi.length ? await CL.sb.from('pee_revisioni_punto').select('revisione_id,chiave,stato,nota,updated_at').in('revisione_id', vi) : {data:[]};
+  const D = {formato:'PEE-CNGEI-storico', versione:1, scaricato:new Date().toISOString(), nome, titolo, archivio:aid, copie:gg.data || [], destinatari:dd.data || [], commenti:rr.data || [], dialogo:ms.error ? [] : (ms.data || []), revisioni:vs.error ? [] : (vs.data || []), punti:pp.error ? [] : (pp.data || [])};
+  root.file('dati/storico_completo.json', JSON.stringify(D, null, 1));
+  let note = '';
+  try{ root.file('Storico della revisione.docx', await rvStoricoDocx(D)); }catch(e){ note += 'Il Word dello storico non è stato generato.\n'; }
+  for(const g of (gg.data || [])){ const nm = 'Copia ' + g.n + ' - ' + String(g.created_at || '').slice(0, 10); root.file('copie/' + nm + '/copia_congelata.json', JSON.stringify(g.data || {}));
+    { const mine = (rr.data || []).filter(x => x.giro_id === g.id && x.user_id === CL.user.id); if(mine.length) root.file('copie/' + nm + '/restituzione.html', rvRestHTML(g, mine)); }
+    const b = await giroWordBlob(g.id); if(b) root.file('copie/' + nm + '/' + nm + '.docx', b); else note += 'Word non disponibile per la copia ' + g.n + ' (si può riaprire dall’app).\n'; }
+  return {copie:(gg.data || []).length, note};
+}
+async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+const rvSan = s => String(s || '').replace(/[^\w\-. àèéìòùÀÈÉÌÒÙ]+/g, '_').trim().slice(0, 60) || 'progetto';
+const RV_LEGGIMI = 'Archivio dello storico di revisione · PEE CNGEI\n\nContenuto:\n- «Storico della revisione.docx»: i punti, i commenti, le risposte e gli stati, da leggere.\n- «copie/»: ogni copia inviata, in Word (leggibile) e in .json (il formato dell’app).\n- «dati/storico_completo.json»: tutto in un unico file, per archiviarlo o ripristinarlo altrove.\n\nTieni questo file dove preferisci: è una copia, non dipende dall’app.\n';
+// compilatore: tutto lo storico del progetto aperto
+window.rvBackupMine = async function(){
+  if(!rvOk() || !CL.ctx || window.BRO){ showToast('Apri il tuo progetto per scaricare lo storico'); return; }
+  try{ showToast('Preparo l’archivio dello storico… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+    const zip = new JSZip(), root = zip.folder('Storico - ' + rvSan(CL.ctx.titolo || 'progetto')), r = await rvPackFill(root, CL.ctx.id, clMyName(), CL.ctx.titolo || '');
+    root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Storico revisione - ' + rvSan(CL.ctx.titolo) + ' - ' + td() + '.zip'); showToast('Archivio scaricato (' + r.copie + ' copie)');
+  }catch(e){ showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
+};
+// revisore/tutor: tutti i progetti che segue, in un solo archivio
+window.rvBackupAll = async function(){
+  if(!rvOk()) return; const G = rvGroup(window._rvL || []); if(!G.length){ showToast('Non ci sono progetti da scaricare'); return; }
+  try{ showToast('Preparo l’archivio di tutti i progetti… può servire qualche minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+    const zip = new JSZip(), top = zip.folder('Storico di tutti i progetti'); let tot = 0, note = '';
+    for(const p of G){ const root = top.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')); const r = await rvPackFill(root, p.aid, p.nome, p.titolo); tot += r.copie; if(r.note) note += p.nome + ':\n' + r.note; }
+    top.file('LEGGIMI.txt', RV_LEGGIMI + (note ? '\nNote:\n' + note : '')); await rvZipOut(zip, 'Storico tutti i progetti - ' + td() + '.zip'); showToast('Archivio scaricato (' + G.length + ' progetti, ' + tot + ' copie)');
+  }catch(e){ showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
+};
 window.rvPackage = async function(aid){
   const p = rvGroup(window._rvL || []).find(x => x.aid === aid); if(!p || !rvOk()) return;
-  try{
-    showToast('Preparo il pacchetto…'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
-    const zip = new JSZip(), san = s => String(s || '').replace(/[^\w\-. àèéìòùÀÈÉÌÒÙ]+/g, '_').trim().slice(0, 60) || 'progetto';
-    const root = zip.folder(san(p.nome) + (p.titolo ? ' - ' + san(p.titolo) : ''));
-    root.file('LEGGIMI.txt', 'Pacchetto di revisione di PEE CNGEI\nCompilatore: ' + p.nome + '\nProgetto: ' + p.titolo + '\nGiri: ' + p.giri.length + '\nPer ogni giro: copia_congelata.json (il progetto com’era il giorno dell’invio, nel formato dell’app) e la tua restituzione leggibile (restituzione.html).\nPer il Word di un giro usa «Scarica il Word» nella pagina Progetti.\nGenerato il ' + td() + '.\n');
-    for(const x of p.giri.slice().sort((a, b) => a.g.n - b.g.n)){
-      const gg = await CL.sb.from('pee_giri').select('id,n,created_at,sezioni,meta,nota,data').eq('id', x.g.id).single(); if(gg.error) throw gg.error;
-      const rr = await CL.sb.from('pee_giri_rev').select('tipo,chiave,valore,testo,recepita').eq('giro_id', x.g.id).eq('user_id', CL.user.id);
-      const f = root.folder('Giro ' + gg.data.n + ' - ' + String(gg.data.created_at || '').slice(0, 10));
-      f.file('copia_congelata.json', JSON.stringify(gg.data.data || {}));
-      f.file('restituzione.html', rvRestHTML(gg.data, rr.data || []));
-      if(gg.data.nota) f.file('nota_di_chi_ha_inviato.txt', gg.data.nota);
-    }
-    const blob = await zip.generateAsync({type:'blob'}), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'Pacchetto revisione - ' + san(p.nome) + ' - ' + td() + '.zip'; document.body.appendChild(a); a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); showToast('Pacchetto scaricato');
+  try{ showToast('Preparo il pacchetto… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+    const zip = new JSZip(), root = zip.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')), r = await rvPackFill(root, aid, p.nome, p.titolo);
+    root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Pacchetto revisione - ' + rvSan(p.nome) + ' - ' + td() + '.zip'); showToast('Pacchetto scaricato');
   }catch(e){ showToast('Non sono riuscito a preparare il pacchetto: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 // ── spazio di revisione: nella copia aperta, a fianco, il pannello con stati, note, check-list ed esito ──
@@ -19092,10 +19145,10 @@ window.rvGiroInit = function(){
       const g = await CL.sb.from('pee_giri').select('id,n,archivio_id,created_at,sezioni,nomi_inclusi,nota,meta,owner_id').eq('id', window.BRO.giroId).maybeSingle();
       if(g.error || !g.data) return;
       const mine = g.data.owner_id === CL.user.id;
-      let word = false, docq = false; try{ word = sessionStorage.getItem('bussola_giro_word') === '1'; sessionStorage.removeItem('bussola_giro_word'); docq = sessionStorage.getItem('bussola_giro_docq') === '1'; sessionStorage.removeItem('bussola_giro_docq'); }catch(e){}
+      let word = false, docq = false, wcap = false; try{ wcap = sessionStorage.getItem('bussola_giro_wcap') === '1'; sessionStorage.removeItem('bussola_giro_wcap'); word = sessionStorage.getItem('bussola_giro_word') === '1'; sessionStorage.removeItem('bussola_giro_word'); docq = sessionStorage.getItem('bussola_giro_docq') === '1'; sessionStorage.removeItem('bussola_giro_docq'); }catch(e){}
       window._giroSez = (g.data.sezioni || []).slice();
       if(docq){ setTimeout(async () => { try{ const h = await rvDocHTML((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale'); parent.postMessage({t:'rvdoc', id:g.data.id, html:h}, location.origin); }catch(e){} }, 1500); return; }
-      if(word){ document.documentElement.classList.remove('rv-pre'); setTimeout(() => { try{ exportSchedaDocx((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale'); }catch(e){} }, 1800); }
+      if(word){ document.documentElement.classList.remove('rv-pre'); setTimeout(() => { try{ if(wcap) window._docxCapture = blob => { try{ parent.postMessage({t:'rvword', id:g.data.id, blob}, location.origin); }catch(e){} }; exportSchedaDocx((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale'); }catch(e){} }, 1800); }
       if(mine){ if(!word){ rvEnsureRd(g.data, true); setTimeout(() => { try{ window.rvDocInit(g.data, true); }catch(e){} }, 800); } return; }
       const d = await CL.sb.from('pee_giri_dest').select('ruolo').eq('giro_id', g.data.id).maybeSingle();
       const r = await CL.sb.from('pee_giri_rev').select('id,tipo,chiave,valore,testo,recepita').eq('giro_id', g.data.id).eq('user_id', CL.user.id);
@@ -19262,7 +19315,7 @@ window.rvDocInit = async function(g, mine){
 function rvEnsureRd(g, mine){ if(!window._rd) window._rd = {g, mine:!!mine, anchors:[], open:{}, diff:null, only:false, prevG:null, pts:[], msgs:[]}; return window._rd; }
 async function rvSync(){
   const d = window._rd; if(!d || document.hidden) return;
-  const sig = () => { try{ return JSON.stringify([d.msgs, window._giroFb && window._giroFb[d.g.id], window._rv && window._rv.rows]); }catch(e){ return String(Math.random()); } };
+  const sig = () => { try{ return JSON.stringify([d.msgs, window._giroFb && window._giroFb[d.g.id], window._rv && window._rv.rows, window._rvs[d.g.archivio_id]]); }catch(e){ return String(Math.random()); } };
   const s0 = sig();
   try{ if(d.mine){ await ppGiroFbLoad(d.g.id); } else if(window._rv){ const r = await CL.sb.from('pee_giri_rev').select('id,tipo,chiave,valore,testo,recepita').eq('giro_id', d.g.id).eq('user_id', CL.user.id);
       if(!r.error){ const rows = {}; (r.data || []).forEach(x => { rows[x.tipo + '|' + x.chiave] = x; }); window._rv.rows = rows; } }
@@ -19294,8 +19347,8 @@ function rvDocPaint(keepOpen){
     const box = document.createElement('div'); box.className = 'rd-cm';
     let h = '';
     if(P) h += `<div class="rd-pv">Giro ${esc(String(window._rv.prev.g.n))}: ${esc(P.testo)} <span class="rv-rec">${P.recepita ? '✓ recepita' : 'non ancora recepita'}</span></div>`;
-    if(d.mine) h += L.map(n => `<div class="rd-n"><span class="rd-a">${esc(n.a)}</span><br>${esc(n.t).replace(/\n/g, '<br>')}<br><label title="${esc(RV_HELP.rec)}"><input type="checkbox" ${n.rec ? 'checked' : ''} onchange="rvDocRec('${n.id}',this.checked)">recepita</label>${rvThrHTML(a.key, n.uid)}</div>`).join('');
-    else { const n = L[0] || {t:'', rec:false}; h += `<textarea maxlength="2000" data-bk="${esc(a.key)}" aria-label="Commento" placeholder="${(window._rv && window._rv.ruolo === 'revisore') ? 'Cosa va rivisto, o la tua domanda' : 'Un suggerimento'}" onchange="rvDocSave('${esc(a.key)}',${a.sec},this.value)">${esc(n.t)}</textarea>${n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : ''}${rvThrHTML(a.key, CL.user.id)}`; }
+    if(d.mine) h += L.map(n => `<div class="rd-n"><span class="rd-a">${esc(n.a)}</span><br>${esc(n.t).replace(/\n/g, '<br>')}<br>${rvHas(d.g.archivio_id, a.key) ? '' : `<label title="${esc(RV_HELP.rec)}"><input type="checkbox" ${n.rec ? 'checked' : ''} onchange="rvDocRec('${n.id}',this.checked)">recepita</label>`}${rvStHTML(d.g.archivio_id, a.key, true)}${rvThrHTML(a.key, n.uid)}</div>`).join('');
+    else { const n = L[0] || {t:'', rec:false}; h += `<textarea maxlength="2000" data-bk="${esc(a.key)}" aria-label="Commento" placeholder="${(window._rv && window._rv.ruolo === 'revisore') ? 'Cosa va rivisto, o la tua domanda' : 'Un suggerimento'}" onchange="rvDocSave('${esc(a.key)}',${a.sec},this.value)">${esc(n.t)}</textarea>${rvHas(d.g.archivio_id, a.key) ? '' : (n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : '')}${rvStHTML(d.g.archivio_id, a.key, false)}${rvThrHTML(a.key, CL.user.id)}`; }
     box.innerHTML = h;
     const wide = Math.max.apply(null, Array.from(a.el.closest('table') ? a.el.closest('table').rows : []).map(r => Array.from(r.cells).reduce((s, c) => s + (c.colSpan || 1), 0)).concat([1]));
     if(a.kind === 'row'){ const tr = document.createElement('tr'); tr.className = 'rd-cmr'; const td = document.createElement('td'); td.colSpan = wide; td.className = 'rd-cmc'; td.appendChild(box); tr.appendChild(td); a.end.after(tr); }
@@ -19338,14 +19391,14 @@ function rvRender(){
   const rows = rvRows(), P = rvPoints(), sorted = (g.sezioni || []).slice().sort();
   const stOf = (s, uid) => { const x = rows.find(r => r.tipo === 'stato' && r.chiave === 's' + s && (mine ? r.user_id === uid : true)); return x ? x.valore : ''; };
   const dot = s => { const st = mine ? '' : stOf(s), pc = P.filter(p => p.sec === s).length; return st === 'ok' ? 'ok' : st === 'rivedere' ? 'rv' : st === 'domanda' ? 'dm' : pc ? 'nt' : 'no'; };
-  const ptHTML = p => { const i = d.pts.indexOf(p); return `<div class="rv-pt${p.rec ? ' done' : ''}"><button type="button" class="rv-ptb" onclick="rvPtJump(${i})"><span class="rv-pl">${esc(p.label)}</span><span class="rv-px">${esc(p.t.length > 90 ? p.t.slice(0, 88) + '…' : p.t)}</span>${p.who ? `<span class="rv-pw">${esc(p.who)}</span>` : ''}</button>${mine ? `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.rec ? 'checked' : ''} onchange="rvDocRec('${p.id}',this.checked)">recepita</label>` : (p.rec ? '<span class="rv-rec">✓ recepita</span>' : '<span class="rv-pn">da recepire</span>')}</div>`.replace(/<\/div>$/, '') + (p.gen ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvThrHTML(p.key, p.uid || CL.user.id)}</div>` : '') + '</div>'; };
+  const ptHTML = p => { const i = d.pts.indexOf(p); return `<div class="rv-pt${p.rec ? ' done' : ''}"><button type="button" class="rv-ptb" onclick="rvPtJump(${i})"><span class="rv-pl">${esc(p.label)}</span><span class="rv-px">${esc(p.t.length > 90 ? p.t.slice(0, 88) + '…' : p.t)}</span>${p.who ? `<span class="rv-pw">${esc(p.who)}</span>` : ''}</button>${(window._rvs[g.archivio_id] && window._rvs[g.archivio_id].pun[p.key]) ? '' : (mine ? `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.rec ? 'checked' : ''} onchange="rvDocRec('${p.id}',this.checked)">recepita</label>` : (p.rec ? '<span class="rv-rec">✓ recepita</span>' : '<span class="rv-pn">da recepire</span>'))}</div>`.replace(/<\/div>$/, '') + `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(g.archivio_id, p.key, mine)}</div>` + (p.gen ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvThrHTML(p.key, p.uid || CL.user.id)}</div>` : '') + '</div>'; };
   // ── coda di lavoro ──
-  let q = '';
+  let q = rvStBar(g.archivio_id, mine);
   const pend = P.filter(p => !p.rec).length;
   if(mine && pend){ q += `<div class="rv-q"><b>${pend === 1 ? '1 punto da recepire' : pend + ' punti da recepire'}</b> <span class="rv-pn">su ${P.length}</span><div class="rv-pl2">${P.filter(p => !p.rec).slice(0, 30).map(p => `<button type="button" class="rv-pp" onclick="rvPtJump(${d.pts.indexOf(p)})">○ ${esc(p.label.slice(0, 50))}${p.who ? ' · ' + esc(p.who) : ''}</button>`).join('')}</div>${hp('Tocca un punto per vederlo nel progetto. Spunta «recepita» quando l’hai sistemato: chi ha rivisto lo vede.')}</div>`; }
   else if(mine) q += `<div class="rv-q"><b>${pend ? (pend === 1 ? '1 punto da recepire' : pend + ' punti da recepire') : 'Tutti i punti sono recepiti'}</b>${P.length ? ` <span class="rv-pn">su ${P.length}</span>` : ''}${hp('Tocca un punto per vederlo nel progetto. Spunta «recepita» quando l’hai sistemato: chi ha rivisto lo vede.')}</div>`;
   else { const pr = v.prev; let blocks = '';
-    { const mp = P.slice(); if(mp.length){ const rc = mp.filter(x => x.rec).length; blocks += `<div class="rv-q"><b>I tuoi commenti in questo giro</b> <span class="rv-pn">${rc} recepiti su ${mp.length}</span><div class="rv-pl2">${mp.map(x => `<button type="button" class="rv-pp${x.rec ? ' done' : ''}" onclick="rvDocJump('${esc(x.key)}',${x.sec})">${x.rec ? '✓ recepita' : '○ da recepire'} · ${esc(x.label.slice(0, 50))}</button>`).join('')}</div></div>`; } }
+    { const mp = P.slice(); if(mp.length){ const rc = mp.filter(x => x.rec).length; blocks += `<div class="rv-q"><b>I tuoi commenti in questo giro</b> <span class="rv-pn">${rc} recepiti su ${mp.length}</span><div class="rv-pl2">${mp.map(x => `<button type="button" class="rv-pp${(x.rec || (rvHas(g.archivio_id, x.key) && window._rvs[g.archivio_id].pun[x.key].stato === 'confermato')) ? ' done' : ''}" onclick="rvDocJump('${esc(x.key)}',${x.sec})">${rvHas(g.archivio_id, x.key) ? (({confermato:'✓ ', fatto:'◐ ', attesa:'? ', da_fare:'○ '})[window._rvs[g.archivio_id].pun[x.key].stato] + RV_PS[window._rvs[g.archivio_id].pun[x.key].stato]) : (x.rec ? '✓ recepita' : '○ da recepire')} · ${esc(x.label.slice(0, 50))}</button>`).join('')}</div></div>`; } }
     if(pr && pr.list.length){ const rc = pr.list.filter(x => x.recepita).length; blocks += `<div class="rv-q"><b>I tuoi punti del giro ${pr.g.n}</b> <span class="rv-pn">${rc} recepiti su ${pr.list.length}</span><div class="rv-pl2">${pr.list.map(x => { const a = d.anchors.find(z => z.key === x.chiave); const i = a ? 1 : 0; return `<button type="button" class="rv-pp${x.recepita ? ' done' : ''}" ${a ? `onclick="rvDocJump('${esc(x.chiave)}',${a.sec})"` : 'disabled'}>${x.recepita ? '✓' : '○'} ${esc(a ? a.label : 'Commento generale')}</button>`; }).join('')}</div></div>`; }
     if(d.diff){ const chg = d.anchors.filter(a => d.diff[a.key] && a.sec > 0); d.chg = chg;
       blocks += `<div class="rv-q"><b>Cambiato dopo il giro ${d.prevG.n}</b> <span class="rv-pn">${chg.length ? chg.length + ' punti' : 'nessuna modifica'}</span>${chg.length ? `<div class="rv-bs" style="margin-top:5px">${btn(d.only, d.only ? 'Mostra tutto il progetto' : 'Mostra solo le modifiche', `rvOnlyMod(${d.only ? 'false' : 'true'})`, RV_HELP.mod)}</div><div class="rv-pl2">${chg.slice(0, 40).map((a, i) => `<button type="button" class="rv-pp ${d.diff[a.key]}" onclick="rvChJump(${i})">${d.diff[a.key] === 'new' ? '＋' : '≈'} ${esc(a.label.slice(0, 60))}</button>`).join('')}${chg.length > 40 ? '<div class="rv-pn">…e altri</div>' : ''}</div><div class="rv-hp">≈ modificato · ＋ nuovo</div>` : ''}</div>`; }
@@ -19374,7 +19427,8 @@ function rvRender(){
       CHK_PP.forEach(gr => gr.items.forEach(it => { const x = L.find(y => y.chiave === it.id); if(x && (x.valore === 'parz' || x.valore === 'no')) ck += `<div class="rv-ci"><button type="button" class="rv-ptb" onclick="rvDocGo(${RV_CKSEC(it.id)})"><span class="rv-pl">${esc(it.q)}</span><span class="rv-pw">${esc(RV_CK[x.valore])}</span></button><label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${x.recepita ? 'checked' : ''} onchange="rvDocRec('${x.id}',this.checked)">recepita</label></div>`; })); }); }
   // ── esiti ──
   let foot = '';
-  if(rev){ const es = v.rows['esito|esito'] || {};
+  if(rev && window._rvs[g.archivio_id]){ /* con la revisione unica l'esito è «Approva» nel pannello dei turni */ }
+  else if(rev){ const es = v.rows['esito|esito'] || {};
     foot += `<div class="rv-t" style="margin:0 0 4px">Il tuo esito</div><div class="rv-bs">${Object.keys(GESITO).filter(k => k).map(k => btn(es.valore === k, GESITO[k], `rvEs('${k}')`, RV_HELP.esito)).join('')}</div>${hp(RV_HELP.esito)}
       <textarea maxlength="2000" placeholder="Un commento per chi ha inviato il giro (facoltativo)" aria-label="Commento all’esito" onchange="rvEsNota(this.value)">${esc(es.testo || '')}</textarea>
       <div class="rv-bs" style="margin-top:6px">${v.closed ? `<button type="button" class="rv-b" title="${esc(RV_HELP.concludi)}" onclick="rvConcludiDock(false)">✓ Revisione conclusa · Riapri</button>` : `<button type="button" class="rv-b" title="${esc(RV_HELP.concludi)}" onclick="rvConcludiDock(true)">Concludi la revisione di questo progetto</button>`}</div>${hp(RV_HELP.concludi)}`; }
@@ -19402,6 +19456,7 @@ function rvRender(){
 async function rvMsgLoad(){
   const d = window._rd; if(!d || !d.g) return;
   try{ const r = await CL.sb.from('pee_giri_msg').select('id,archivio_id,rev_id,chiave,user_id,autore_nome,autore_ruolo,testo,created_at').eq('archivio_id', d.g.archivio_id).order('created_at'); if(!r.error) d.msgs = r.data || []; }catch(e){}
+  await rvStLoad(d.g.archivio_id);
 }
 function rvThr(key){ const d = window._rd; return d ? (d.msgs || []).filter(m => m.chiave === key) : []; }
 function rvThrHTML(key, uid){
@@ -19427,7 +19482,7 @@ window.rpLoad = async function(){
     const nOf = {}; gr.data.forEach(g => { nOf[g.id] = g.n; });
     window._rp.giri = gr.data; window._rp.msgs = ms.error ? [] : (ms.data || []);
     window._rp.pts = (rv.data || []).filter(x => x.tipo === 'nota' && x.testo && x.autore_ruolo === 'revisore').map(x => Object.assign({n:nOf[x.giro_id]}, x, rpLabel(x.chiave)));
-    window._rp.last = gr.data[gr.data.length - 1]; rpPaint();
+    await rvStLoad(aid); window._rp.last = gr.data[gr.data.length - 1]; rpPaint();
   }catch(e){}
 };
 window.rpRec = async function(id, on){ try{ await window.ppGiroFbRec(null, id, on); const x = window._rp.pts.find(p => p.id === id); if(x) x.recepita = !!on; rpPaint(); }catch(e){} };
@@ -19446,7 +19501,7 @@ window.rpNuovoGiro = function(forza){ const P = window._rp, pend = P.pts.filter(
   const last = P.last, blk = last && (last.sezioni || []).some(x => x >= 4) ? 2 : 1; try{ rpTog(); ppGiroForm(blk); const rec = P.pts.filter(p => p.recepita).length; if(window._giroForm){ window._giroForm.nota = 'Ho lavorato sulle revisioni del giro ' + (last ? last.n : '') + ': ' + rec + ' punti recepiti su ' + P.pts.length + '.'; ppGiroFormRender(); } }catch(e){} };
 function rpPaint(keep){
   const P = window._rp; let pill = document.getElementById('rp-pill'), dk = document.getElementById('rp-dock');
-  const pend = P.pts.filter(p => !p.recepita);
+  const pend = P.pts.filter(p => { const S = window._rvs[CL.ctx.id], x = S && S.pun[p.chiave]; return x ? (x.stato === 'da_fare' || x.stato === 'attesa') : !p.recepita; });
   if(!P.pts.length || window.BRO){ if(pill) pill.remove(); if(dk) dk.remove(); return; }
   if(!pill){ pill = document.createElement('button'); pill.type = 'button'; pill.id = 'rp-pill'; pill.onclick = rpTog; document.body.appendChild(pill); }
   pill.innerHTML = '📝 Revisioni da recepire' + (pend.length ? ' <b>' + pend.length + '</b>' : ' ✓'); pill.title = 'Apri l’elenco dei punti segnalati da chi rivede il tuo Progetto Personale';
@@ -19455,15 +19510,73 @@ function rpPaint(keep){
   const bd0 = dk.querySelector('.rv-body'), sc = bd0 ? bd0.scrollTop : 0;
   const tot = P.pts.length, ok = tot - pend.length, bySec = {}; P.pts.forEach((p, i) => { p.i = i; (bySec[p.sec] = bySec[p.sec] || []).push(p); });
   const item = p => { const th = P.msgs.filter(m => m.chiave === p.chiave && m.rev_id === p.user_id);
-    return `<div class="rv-pt${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button><label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label></div>
+    return `<div class="rv-pt${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button>${rvHas(CL.ctx.id, p.chiave) ? '' : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`}</div>${rvHas(CL.ctx.id, p.chiave) ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(CL.ctx.id, p.chiave, true)}</div>` : ''}
       <div class="rd-th" data-k="${esc(p.chiave)}" data-u="${esc(p.user_id)}" style="width:100%;padding:0 8px 6px;box-sizing:border-box">${th.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || 'Revisore'))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="Rispondi o chiedi un chiarimento" aria-label="Rispondi" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rpSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rpSend(this.closest('.rd-th'))">Invia</button></div></div></div>`; };
   const secs = Object.keys(bySec).sort().map(s => `<div class="rv-t" style="margin:10px 0 2px">${+s ? s + ' · ' + esc(PP_SEZ[s - 1]) : 'Generale'}</div>` + bySec[s].map(item).join('')).join('');
   dk.innerHTML = `<div class="rv-h" style="cursor:default"><b>📝 Revisioni da recepire</b><span>${ok} su ${tot} fatte</span><button type="button" class="rp-x" onclick="rpTog()" aria-label="Chiudi">✕</button></div>
-    <div class="rv-body"><div class="rv-bar" aria-hidden="true"><span style="width:${tot ? Math.round(100 * ok / tot) : 0}%"></span></div><div class="rv-pn">${pend.length ? (pend.length === 1 ? 'Manca 1 punto' : 'Mancano ' + pend.length + ' punti') + (ok ? ' · bel lavoro, continua così' : '') : 'Tutti i punti sono a posto: puoi inviare un nuovo giro.'}</div>
+    <div class="rv-body">${rvStBar(CL.ctx.id, true)}<div class="rv-bar" aria-hidden="true"><span style="width:${tot ? Math.round(100 * ok / tot) : 0}%"></span></div><div class="rv-pn">${pend.length ? (pend.length === 1 ? 'Manca 1 punto' : 'Mancano ' + pend.length + ' punti') + (ok ? ' · bel lavoro, continua così' : '') : 'Tutti i punti sono a posto: puoi inviare un nuovo giro.'}</div>
       <div class="rv-hp">Tocca un punto per andare dove lavorarci. Quando l’hai sistemato spunta «fatto»: chi ha rivisto lo vede. Se hai un dubbio, scrivi una risposta sotto il punto.</div>${secs}</div>
-    <div class="rv-foot"><div class="rv-bs"><button type="button" class="rv-b${pend.length ? '' : ' on'}" onclick="rpNuovoGiro()" title="Apre il modulo di invio, già con una nota su quanto hai recepito">Invia un nuovo giro</button></div><div class="rv-hp">${pend.length ? 'Consigliato quando tutti i punti sono fatti. Se ne mancano, ti chiediamo conferma.' : 'Il nuovo giro è la copia che il revisore rileggerà: vedrà cosa è cambiato.'}</div></div>`;
+    ${(window._rvs[CL.ctx.id] && window._rvs[CL.ctx.id].rev.stato === 'aperta') ? '' : `<div class="rv-foot"><div class="rv-bs"><button type="button" class="rv-b${pend.length ? '' : ' on'}" onclick="rpNuovoGiro()" title="Apre il modulo di invio, già con una nota su quanto hai recepito">Invia un nuovo giro</button></div><div class="rv-hp">${pend.length ? 'Consigliato quando tutti i punti sono fatti. Se ne mancano, ti chiediamo conferma.' : 'Il nuovo giro è la copia che il revisore rileggerà: vedrà cosa è cambiato.'}</div></div>`}`;
   const bd = dk.querySelector('.rv-body'); if(bd) bd.scrollTop = sc;
 }
+// ── Revisione unica: turni, stati dei punti, azioni ──
+window._rvs = window._rvs || {};
+const RV_PS = {da_fare:'Da fare', attesa:'In attesa di risposta', fatto:'Fatto', confermato:'Confermato'};
+async function rvStLoad(aid){
+  try{ if(!rvOk() || !aid) return null;
+    const r = await CL.sb.from('pee_revisioni').select('id,archivio_id,revisore_email,stato,fase,esito,nota_chiusura,aperta_il,chiusa_il').eq('archivio_id', aid).order('aperta_il', {ascending:false}).limit(1);
+    if(r.error || !(r.data || []).length){ window._rvs[aid] = null; return null; }
+    const v = r.data[0], p = await CL.sb.from('pee_revisioni_punto').select('chiave,stato,nota').eq('revisione_id', v.id), pun = {}; (p.data || []).forEach(x => { pun[x.chiave] = x; });
+    return (window._rvs[aid] = {rev:v, pun}); }catch(e){ return null; }
+}
+function rvHas(aid, k){ const S = window._rvs[aid]; return !!(S && S.pun[k]); }
+function rvStCnt(S){ const L = Object.keys(S.pun).map(k => S.pun[k].stato), n = x => L.filter(y => y === x).length; return {tot:L.length, da:n('da_fare'), att:n('attesa'), fat:n('fatto'), con:n('confermato')}; }
+function rvStBar(aid, mine){
+  const S = window._rvs[aid]; if(!S) return ''; const v = S.rev, c = rvStCnt(S), bar = `<div class="rv-bar" aria-hidden="true"><span style="width:${c.tot ? Math.round(100 * c.con / c.tot) : 0}%"></span></div>`, hp = t => `<div class="rv-hp">${esc(t)}</div>`;
+  if(v.stato === 'chiusa') return `<div class="rv-q rv-st-bar"><b>✓ Revisione chiusa</b> <span class="rv-pn">${v.esito === 'approvata' ? 'approvata' : 'storica'}${v.chiusa_il ? ' il ' + esc(String(v.chiusa_il).slice(0, 10)) : ''}</span>${v.nota_chiusura ? `<div class="rv-hp">${esc(v.nota_chiusura)}</div>` : ''}</div>`;
+  const turno = v.fase === 'compilatore' ? (mine ? 'Tocca a te' : 'Tocca a chi ha scritto il progetto') : (mine ? 'Tocca al revisore' : 'Tocca a te'), mio = (v.fase === 'compilatore') === mine;
+  let h = `<div class="rv-q rv-st-bar"><b>${esc(turno)}</b> <span class="rv-pn">${c.con} confermati su ${c.tot}</span>${bar}`;
+  if(mine){
+    if(v.fase === 'compilatore'){ const pend = c.da + c.att; h += `<div class="rv-bs"><button type="button" class="rv-b${pend ? '' : ' on'}" ${pend ? 'disabled' : ''} onclick="rvAzione('${esc(aid)}','ho_finito')" title="Avvisa il revisore: rilegge solo ciò che hai segnato come fatto">Ho finito, può rileggere</button></div>` + hp(pend ? (pend === 1 ? 'Manca 1 punto da fare o in attesa di risposta.' : 'Mancano ' + pend + ' punti da fare o in attesa di risposta.') + ' Per ogni punto scegli «Fatto» o «Ho un dubbio».' : 'Tutti i punti sono sistemati: premi «Ho finito» e il revisore rilegge.'); }
+    else h += hp('Il revisore sta rileggendo. Puoi continuare a lavorare sul progetto e rispondere nella chat dei punti.');
+  } else {
+    if(v.fase === 'revisore'){
+      if(c.da + c.att) h += `<div class="rv-bs"><button type="button" class="rv-b on" onclick="rvAzione('${esc(aid)}','rimanda')">Rimanda al compilatore (${c.da + c.att})</button></div>` + hp('I punti ancora da fare o con una domanda tornano a chi ha scritto il progetto. Quelli già «fatti» li confermi o li riapri tu.');
+      else if(c.fat) h += hp('Ci sono ' + c.fat + ' punti «fatti»: confermali o riaprili, poi potrai approvare.');
+      else h += `<textarea id="rv-ap-n" rows="2" maxlength="600" aria-label="Nota di chiusura" placeholder="Una nota di chiusura (facoltativa)" style="width:100%;box-sizing:border-box;margin-top:6px;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif"></textarea><div class="rv-bs"><button type="button" class="rv-b on" onclick="rvAzione('${esc(aid)}','approva')">Approva e chiudi la revisione</button></div>` + hp('Con tutti i punti confermati il progetto è approvato e la revisione si chiude.');
+    } else h += hp('Il compilatore sta lavorando sui punti: ti avviso quando ha finito.');
+  }
+  return h + '</div>';
+}
+function rvStHTML(aid, k, mine){
+  const S = window._rvs[aid], x = S && S.pun[k]; if(!x) return ''; const aperta = S.rev.stato === 'aperta';
+  let h = `<div class="rv-st" data-a="${esc(aid)}" data-k="${esc(k)}"><span class="rv-ch rv-ch-${x.stato}">${esc(RV_PS[x.stato])}</span>${x.nota ? `<span class="rv-sn">${esc(x.nota)}</span>` : ''}`;
+  if(aperta && mine && x.stato !== 'confermato') h += `<textarea rows="1" maxlength="300" aria-label="Una riga: cosa hai fatto, o la tua domanda" placeholder="Una riga (facoltativa): cosa hai fatto, o la tua domanda"></textarea><div class="rv-bs">${x.stato !== 'fatto' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'fatto')" title="Hai sistemato il punto, o hai deciso di non cambiarlo (spiega perché in una riga)">Fatto</button>` : ''}${x.stato !== 'attesa' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'attesa')" title="Non ti è chiaro cosa serve: scrivi la domanda; il revisore risponde">Ho un dubbio</button>` : ''}</div>`;
+  if(aperta && !mine){ if(x.stato === 'fatto' || x.stato === 'attesa') h += `<div class="rv-bs">${x.stato === 'fatto' ? `<button type="button" class="rv-b on" onclick="rvPuntoSet(this,'confermato')" title="Il punto è sistemato come volevi">Conferma</button>` : ''}<button type="button" class="rv-b" onclick="rvPuntoSet(this,'da_fare')" title="Il punto non è a posto: torna al compilatore">Riapri</button></div>`; else if(x.stato === 'confermato') h += `<div class="rv-bs"><button type="button" class="rv-b" onclick="rvPuntoSet(this,'da_fare')">Riapri</button></div>`; }
+  return h + '</div>';
+}
+async function rvStRefresh(aid){ await rvStLoad(aid); try{ if(window._rd){ rvRender(); rvDocPaint(); } }catch(e){} try{ rpPaint(true); }catch(e){} }
+window.rvPuntoSet = async function(btn, stato){
+  const box = btn.closest('.rv-st'); if(!box) return; const aid = box.dataset.a, S = window._rvs[aid]; if(!S) return; const ta = box.querySelector('textarea');
+  btn.disabled = true;
+  try{ const r = await CL.sb.rpc('pee_rev_punto', {r:S.rev.id, k:box.dataset.k, s:stato, n:ta ? ta.value.trim() : ''}); if(r.error) throw r.error; await rvStRefresh(aid); }
+  catch(e){ btn.disabled = false; showToast('Non riuscito: ' + ((e && e.message) || 'riprova').slice(0, 80)); }
+};
+async function rvAutoCopia(S){
+  const L = (typeof ppGiriList === 'function' ? ppGiriList() : []).filter(x => x && !x.hist), last = L[L.length - 1] || {}, em = S.rev.revisore_email || '', sez = (last.sez && last.sez.length) ? last.sez.slice() : [1, 2, 3], c = rvStCnt(S);
+  window._giroForm = {blk:sez.some(x => x >= 4) ? 2 : 1, tutorIcdf:true, sez, nomi:last.nomi !== false, nota:'Ho finito: sistemati ' + (c.fat + c.con) + ' punti su ' + c.tot + '.', dest:[{k:'icdf', label:'Revisore', ruolo:'revisore', email:em, app:!!em, mail:false}]};
+  return await ppGiroCongela();
+}
+window.rvAzione = async function(aid, kind){
+  const S = window._rvs[aid]; if(!S) return; const nm = {ho_finito:'pee_rev_ho_finito', rimanda:'pee_rev_rimanda', approva:'pee_rev_approva'}[kind]; if(!nm) return;
+  if(kind === 'ho_finito'){ if(window.BRO || !CL.ctx || CL.ctx.id !== aid){ showToast('Per dire «Ho finito» apri il tuo progetto (menu Progetto Personale)'); return; }
+    const c = rvStCnt(S); if(c.da + c.att){ showToast('Ci sono ancora punti da fare o in attesa di risposta'); return; }
+    if(!(await rvAutoCopia(S))) return; }
+  const args = {r:S.rev.id}; if(kind === 'approva'){ const t = document.getElementById('rv-ap-n'); args.n = t ? t.value.trim() : ''; }
+  try{ const r = await CL.sb.rpc(nm, args); if(r.error) throw r.error; await rvStRefresh(aid);
+    showToast({ho_finito:'Fatto: il revisore può rileggere', rimanda:'Rimandato al compilatore', approva:'Revisione approvata e chiusa'}[kind]); }
+  catch(e){ showToast('Non riuscito: ' + ((e && e.message) || 'riprova').slice(0, 90)); }
+};
 // i testi scritti ma non ancora inviati e la posizione di scorrimento sopravvivono a ogni ridisegno
 (function(){
   const sk = t => { const th = t.closest && t.closest('.rd-th'); return th ? 'th:' + th.getAttribute('data-k') + '|' + th.getAttribute('data-u') : (t.getAttribute('data-bk') ? 'bk:' + t.getAttribute('data-bk') : 'al:' + (t.getAttribute('aria-label') || '')); };

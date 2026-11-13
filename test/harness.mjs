@@ -26,7 +26,23 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[]}; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[], pee_revisioni:[], pee_revisioni_punto:[]}; this.sql14 = false; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  revRuolo(uid, rid){ const v = this.t.pee_revisioni.find(x => x.id === rid); if(!v) return null; if(v.owner_id === uid) return 'titolare'; return this.t.pee_giri.some(g => g.archivio_id === v.archivio_id && this.giroRuolo(uid, g.id) === 'revisore') ? 'revisore' : null; }
+  revAfterGiro(g){ if(!this.sql14) return; const a = this.t.pee_revisioni.find(x => x.archivio_id === g.archivio_id && x.stato === 'aperta'); if(a){ a.ultimo_giro_id = g.id; } else this.t.pee_revisioni.push({id:'rev' + Math.random().toString(36).slice(2), archivio_id:g.archivio_id, owner_id:g.owner_id, revisore_email:null, stato:'aperta', fase:'revisore', esito:null, primo_giro_id:g.id, ultimo_giro_id:g.id, nota_chiusura:'', aperta_il:now(), chiusa_il:null}); }
+  revAfterNota(r, old){ if(!this.sql14 || r.tipo !== 'nota' || r.autore_ruolo === 'titolare' || !r.testo) return; const g = this.t.pee_giri.find(x => x.id === r.giro_id); const v = g && this.t.pee_revisioni.find(x => x.archivio_id === g.archivio_id && x.stato === 'aperta'); if(!v) return;
+    let pu = this.t.pee_revisioni_punto.find(x => x.revisione_id === v.id && x.chiave === r.chiave);
+    if(!old || old.testo !== r.testo){ if(!pu) this.t.pee_revisioni_punto.push({revisione_id:v.id, chiave:r.chiave, stato:'da_fare', nota:'', updated_at:now()}); else if(pu.stato !== 'da_fare'){ pu.stato = 'da_fare'; pu.nota = ''; } }
+    else if(r.recepita && !old.recepita && pu && pu.stato === 'da_fare') pu.stato = 'fatto'; else if(!r.recepita && old.recepita && pu && pu.stato === 'fatto') pu.stato = 'da_fare'; }
+  revRpc(name, a, uid){ if(!this.sql14) return this.err('PGRST202', 'Could not find the function'); const v = this.t.pee_revisioni.find(x => x.id === a.r); const ru = v ? this.revRuolo(uid, v.id) : null; const E = m => this.err('P0001', m);
+    if(!ru || v.stato !== 'aperta') return E('Revisione non disponibile'); const P = this.t.pee_revisioni_punto.filter(x => x.revisione_id === v.id);
+    if(name === 'pee_rev_punto'){ const cur = P.find(x => x.chiave === a.k);
+      if(ru === 'titolare'){ if(!['fatto','attesa'].includes(a.s) || !cur) return E('Azione non consentita'); if(cur.stato === 'confermato') return E('Punto già confermato dal revisore'); }
+      else { if(!['da_fare','confermato'].includes(a.s)) return E('Azione non consentita'); if(!cur && a.s !== 'da_fare') return E('Punto inesistente'); }
+      if(cur){ cur.stato = a.s; if(a.n) cur.nota = String(a.n).slice(0, 300); cur.updated_at = now(); } else this.t.pee_revisioni_punto.push({revisione_id:v.id, chiave:a.k, stato:a.s, nota:a.n || '', updated_at:now()}); return {data:null, error:null}; }
+    if(name === 'pee_rev_ho_finito'){ if(ru !== 'titolare') return E('Solo chi ha scritto il progetto'); if(v.fase !== 'compilatore') return E('Non è il tuo turno'); if(P.some(x => ['da_fare','attesa'].includes(x.stato))) return E('Ci sono ancora punti da fare o in attesa di risposta'); v.fase = 'revisore'; return {data:null, error:null}; }
+    if(name === 'pee_rev_rimanda'){ if(ru !== 'revisore') return E('Solo il revisore'); if(v.fase !== 'revisore') return E('Non è il tuo turno'); if(!P.some(x => ['da_fare','attesa'].includes(x.stato))) return E('Nessun punto da riaprire: puoi approvare'); v.fase = 'compilatore'; return {data:null, error:null}; }
+    if(name === 'pee_rev_approva'){ if(ru !== 'revisore') return E('Solo il revisore'); if(v.fase !== 'revisore') return E('Non è il tuo turno'); if(P.some(x => x.stato !== 'confermato')) return E('Ci sono punti non ancora confermati'); v.stato = 'chiusa'; v.esito = 'approvata'; v.nota_chiusura = String(a.n || '').slice(0, 600); v.chiusa_il = now(); return {data:null, error:null}; }
+    return this.err('PGRST202', 'Could not find the function'); }
   user(id){ return this.users.find(u => u.id === id); }
   pubUser(u){ return u ? {id:u.id, email:u.email, user_metadata:Object.assign({}, u.meta), new_email:u.pending||undefined} : null; }
   addUser(email, password = 'password123', nome = ''){ const u = {id:uuid(), email:email.toLowerCase(), password, meta: nome ? {nome} : {}}; this.users.push(u); return u; }
@@ -48,6 +64,8 @@ export class FakeDB {
       case 'pee_giri_dest': return r.email === em || this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid);
       case 'pee_giri_rev': return this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid) || (r.user_id === uid && !!this.giroRuolo(uid, r.giro_id));
       case 'pee_giri_msg': return this.isOwner(uid, r.archivio_id) || r.rev_id === uid;
+      case 'pee_revisioni': return this.revRuolo(uid, r.id) !== null;
+      case 'pee_revisioni_punto': return this.revRuolo(uid, r.revisione_id) !== null;
       case 'pee_gruppi': return true;
       case 'pee_profili': return r.user_id === uid;
       case 'pee_archivio_nazionale': return r.stato === 'approvata' || r.autore_id === uid || em === 'luca.bartolomei@cngei.it';
@@ -75,6 +93,7 @@ export class FakeDB {
       for(const p of this.pages) p.evaluate(m => window.__sbEmit && window.__sbEmit(m), {kind:'presence', channel:req.channel, state:ch}).catch(() => {}); return 'ok'; }
     if(req.kind === 'rpc'){
       if(!u) return this.err('42501', 'not logged');
+      if(/^pee_rev_(punto|ho_finito|rimanda|approva)$/.test(req.name)) return this.revRpc(req.name, req.args, uid);
       if(req.name === 'revisore_abilitato') return {data:this.revAbil(req.args.em), error:null};
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
@@ -123,6 +142,7 @@ export class FakeDB {
           r.n = Math.max(T.filter(x => x.archivio_id === r.archivio_id).reduce((m, x) => Math.max(m, x.n), 0) + 1, r.n || 0); }
         if(q.table === 'pee_giri_dest'){ if(!this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid)) return this.err('42501', 'new row violates row-level security policy');
           if(r.ruolo === 'revisore' && !this.revAbil(r.email)) return this.err('42501', 'new row violates row-level security policy');
+          if(r.ruolo === 'revisore' && this.sql14){ const gg = this.t.pee_giri.find(x => x.id === r.giro_id), vv = gg && this.t.pee_revisioni.find(x => x.archivio_id === gg.archivio_id && x.stato === 'aperta'); if(vv){ if(!vv.revisore_email) vv.revisore_email = r.email; else if(vv.revisore_email !== r.email) return this.err('P0001', 'Il revisore di questa revisione è già stato scelto'); } }
           if(T.some(x => x.giro_id === r.giro_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
         if(q.table === 'pee_giri_msg'){ r.user_id = uid; r.id = r.id || ('m' + Math.random().toString(36).slice(2)); r.created_at = now(); const ow = this.isOwner(uid, r.archivio_id), rv = r.rev_id === uid && this.t.pee_giri.some(g => g.archivio_id === r.archivio_id && this.giroRuolo(uid, g.id) === 'revisore');
           if(!((r.autore_ruolo === 'titolare' && ow) || (r.autore_ruolo === 'revisore' && rv))) return this.err('42501', 'new row violates row-level security policy'); }
@@ -135,7 +155,7 @@ export class FakeDB {
           if(!ok) return this.err('42501', 'new row violates row-level security policy');
           if(r.dest && !this.sql13) return this.err('42703', 'column "dest" does not exist'); }
         if(q.table === 'pee_archivio_nazionale'){ r.autore_id = uid; r.stato = v0.stato || 'in_attesa'; if(r.stato !== 'in_attesa') return this.err('42501', 'new row violates row-level security policy'); r.approvata_il = null; r.approvata_da = null; if(!r.titolo || r.titolo.length < 3 || r.titolo.length > 140) return this.err('23514', 'check constraint'); }
-        T.push(r); out.push(r); this.emit(q.table, 'INSERT', r);
+        T.push(r); out.push(r); if(q.table === 'pee_giri') this.revAfterGiro(r); if(q.table === 'pee_giri_rev') this.revAfterNota(r, null); this.emit(q.table, 'INSERT', r);
       }
       const rows = out.map(r => this.pick(r, q.ret || '*'));
       return {data: q.single ? rows[0] : rows, error:null};
@@ -154,6 +174,7 @@ export class FakeDB {
         const old = Object.assign({}, r);
         const changed = q.table === 'pee_archivi' && 'data' in q.vals && JSON.stringify(q.vals.data) !== JSON.stringify(r.data);
         Object.assign(r, JSON.parse(JSON.stringify(q.vals)));
+        if(q.table === 'pee_giri_rev') this.revAfterNota(r, old);
         if(changed) r.updated_at = now();
         out.push(r); this.emit(q.table, 'UPDATE', r, old);
       }
