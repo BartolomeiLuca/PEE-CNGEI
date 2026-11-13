@@ -127,7 +127,7 @@ t admin si "revisore cancella la propria" "delete from pee_giri_rev where id='$R
 t admin no "revisore cancella quella di un altro" "delete from pee_giri_rev where id='$R2' returning id"
 echo "--- interruttore aperto / chiuso / revoca"
 $P -c "update pee_config set valore='si' where chiave='revisori_aperto'" >/dev/null
-t owner si "aperto a tutti: titolare aggiunge un revisore qualunque" "insert into pee_giri_dest(giro_id,email,ruolo) values ('$G','estr@x.it','revisore') returning id"
+t owner no "revisore unico: dopo il primo invio il titolare non ne aggiunge un altro" "insert into pee_giri_dest(giro_id,email,ruolo) values ('$G','estr@x.it','revisore') returning id"
 $P -c "insert into pee_giri_dest(giro_id,email,ruolo) values ('$G','estr@x.it','revisore') on conflict do nothing" >/dev/null
 t estr si "aperto a tutti: il revisore legge la copia" "select id from pee_giri where id='$G'"
 t estr si "aperto a tutti: il revisore dà un esito" "insert into pee_giri_rev(giro_id,tipo,valore) values ('$G','esito','chiarimenti') returning id"
@@ -178,5 +178,35 @@ t estr no "un estraneo non legge" "select id from pee_giri_msg where id='$ME'"
 t owner si "il titolare legge" "select id from pee_giri_msg where id='$ME'"
 t owner no "nessuno modifica un messaggio" "update pee_giri_msg set testo='x' where id='$ME' returning id"
 t owner si "il titolare elimina il proprio" "delete from pee_giri_msg where id='$ME' returning id"
+echo "--- revisione unica, stati dei punti"
+OWN=00000000-0000-0000-0000-00000000000a; LUCA=00000000-0000-0000-0000-0000000000aa
+as(){ echo "select set_config('request.jwt.claim.sub','$1',true), set_config('request.jwt.claims','{\"email\":\"$2\"}',true);"; }
+$P >/dev/null <<SQL
+insert into pee_giri_rev(giro_id,user_id,autore_nome,autore_ruolo,tipo,chiave,testo) values ('$G','$LUCA','Luca','revisore','nota','c:1|a|b','Rivedi questo'),('$G','$LUCA','Luca','revisore','nota','c:2|a|c','E anche questo');
+SQL
+$P >/dev/null <<SQL
+delete from pee_revisioni_punto where chiave not in ('c:1|a|b','c:2|a|c');
+SQL
+RV="(select id from pee_revisioni where archivio_id='$A' and stato='aperta')"
+t owner si "una sola revisione aperta, la vede il titolare" "select id from pee_revisioni where archivio_id='$A' and stato='aperta'"
+t admin si "la vede il revisore" "select id from pee_revisioni where archivio_id='$A'"
+t estr no "un estraneo non la vede" "select id from pee_revisioni where archivio_id='$A'"
+t lett no "chi è in copia non la vede" "select id from pee_revisioni where archivio_id='$A'"
+t admin si "il commento diventa un punto da fare" "select chiave from pee_revisioni_punto where stato='da_fare' and chiave='c:1|a|b'"
+t owner no "nessuno scrive i punti direttamente" "update pee_revisioni_punto set stato='confermato' returning chiave"
+t owner no "nessuno apre revisioni a mano" "insert into pee_revisioni(archivio_id,owner_id) values ('$A','$OWN') returning id"
+t owner si "il compilatore segna «fatto»" "select pee_rev_punto($RV,'c:1|a|b','fatto','spiegato'); select 'ok'"
+t admin no "il revisore non segna «fatto»" "select pee_rev_punto($RV,'c:1|a|b','fatto','')"
+t owner no "il compilatore non conferma" "select pee_rev_punto($RV,'c:1|a|b','confermato','')"
+t owner no "«Ho finito» non è il suo turno (tocca al revisore)" "select pee_rev_ho_finito($RV)"
+t admin si "il revisore rimanda al compilatore" "select pee_rev_rimanda($RV); select 'ok'"
+t admin no "non si approva con punti da fare" "select pee_rev_approva($RV,'')"
+t owner no "«Ho finito» con punti da fare" "select pee_rev_rimanda($RV); select 1 where false"
+t lett no "chi è in copia non agisce" "select pee_rev_rimanda($RV)"
+t estr no "un estraneo non agisce" "select pee_rev_punto($RV,'c:1|a|b','da_fare','')"
+t admin si "flusso completo: rimanda, fatto, ho finito, conferma, approva" "$(as $LUCA luca.bartolomei@cngei.it) select pee_rev_rimanda($RV); $(as $OWN owner@x.it) select pee_rev_punto($RV,'c:1|a|b','fatto',''); select pee_rev_punto($RV,'c:2|a|c','attesa','domanda'); select pee_rev_punto($RV,'c:2|a|c','fatto',''); select pee_rev_ho_finito($RV); $(as $LUCA luca.bartolomei@cngei.it) select pee_rev_punto($RV,'c:1|a|b','confermato',''); select pee_rev_punto($RV,'c:2|a|c','confermato',''); select pee_rev_approva($RV,'ok'); select stato||esito from pee_revisioni where archivio_id='$A' and stato='chiusa'"
+t admin no "flusso: «Ho finito» con un punto in attesa" "$(as $LUCA luca.bartolomei@cngei.it) select pee_rev_rimanda($RV); $(as $OWN owner@x.it) select pee_rev_punto($RV,'c:1|a|b','attesa','dubbio'); select pee_rev_ho_finito($RV)"
+t admin si "il revisore riapre un punto già fatto" "$(as $OWN owner@x.it) select pee_rev_punto($RV,'c:1|a|b','fatto',''); $(as $LUCA luca.bartolomei@cngei.it) select pee_rev_punto($RV,'c:1|a|b','da_fare',''); select stato from pee_revisioni_punto where chiave='c:1|a|b' and stato='da_fare'"
+t admin si "se il revisore riscrive il commento il punto si riapre" "$(as $OWN owner@x.it) select pee_rev_punto($RV,'c:1|a|b','fatto',''); reset role; update pee_giri_rev set testo='Cambio idea' where giro_id='$G' and chiave='c:1|a|b'; select stato from pee_revisioni_punto where chiave='c:1|a|b' and stato='da_fare'"
 echo "--- eliminazione del progetto"
 t owner si "elimina il progetto: i giri vanno con lui" "delete from pee_archivi where id='$A' returning id"

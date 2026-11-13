@@ -317,3 +317,180 @@ drop policy if exists "pee_giri_msg: elimina" on public.pee_giri_msg;
 create policy "pee_giri_msg: elimina" on public.pee_giri_msg
   for delete to authenticated
   using (user_id = auth.uid());
+
+-- ══ 10. Una revisione sola per progetto: si apre al primo invio, si chiude quando il revisore approva ══
+-- Il revisore è uno solo (Tutor o ICdF), scelto all'invio. Ogni punto commentato ha uno stato:
+--   da_fare → (il compilatore) fatto oppure attesa (ha un dubbio) → (il revisore) confermato, oppure di nuovo da_fare.
+-- «fase» dice a chi tocca: 'revisore' (legge) o 'compilatore' (lavora). Le copie congelate (pee_giri) restano: una all'invio e una a ogni «Ho finito».
+create table if not exists public.pee_revisioni (
+  id              uuid primary key default gen_random_uuid(),
+  archivio_id     uuid not null references public.pee_archivi(id) on delete cascade,
+  owner_id        uuid not null references auth.users(id) on delete cascade,
+  revisore_email  text check (revisore_email is null or (revisore_email = lower(revisore_email) and char_length(revisore_email) <= 200)),
+  stato           text not null default 'aperta' check (stato in ('aperta', 'chiusa')),
+  fase            text not null default 'revisore' check (fase in ('revisore', 'compilatore')),
+  esito           text check (esito is null or esito in ('approvata', 'storica')),
+  primo_giro_id   uuid references public.pee_giri(id) on delete set null,
+  ultimo_giro_id  uuid references public.pee_giri(id) on delete set null,
+  nota_chiusura   text not null default '' check (char_length(nota_chiusura) <= 600),
+  aperta_il       timestamptz not null default now(),
+  chiusa_il       timestamptz,
+  updated_at      timestamptz not null default now()
+);
+create unique index if not exists pee_revisioni_una_aperta on public.pee_revisioni (archivio_id) where stato = 'aperta';
+create index if not exists pee_revisioni_arch on public.pee_revisioni (archivio_id, aperta_il);
+alter table public.pee_revisioni enable row level security;
+
+create table if not exists public.pee_revisioni_punto (
+  revisione_id   uuid not null references public.pee_revisioni(id) on delete cascade,
+  chiave         text not null check (char_length(chiave) <= 160),
+  stato          text not null default 'da_fare' check (stato in ('da_fare', 'attesa', 'fatto', 'confermato')),
+  nota           text not null default '' check (char_length(nota) <= 300),   -- una riga del compilatore: perché «fatto» senza modifiche, o la domanda
+  aggiornato_da  uuid default auth.uid(),
+  updated_at     timestamptz not null default now(),
+  primary key (revisione_id, chiave)
+);
+alter table public.pee_revisioni_punto enable row level security;
+
+-- chi è chi in una revisione: 'titolare', 'revisore' o null
+create or replace function public.pee_rev_ruolo(r uuid) returns text
+language sql stable security definer set search_path = public, auth as $$
+  select case when v.owner_id = auth.uid() then 'titolare'
+              when public.pee_arch_revisore(v.archivio_id) then 'revisore' end
+    from public.pee_revisioni v where v.id = r
+$$;
+revoke all on function public.pee_rev_ruolo(uuid) from public, anon;
+grant execute on function public.pee_rev_ruolo(uuid) to authenticated;
+
+drop policy if exists "pee_revisioni: lettura" on public.pee_revisioni;
+create policy "pee_revisioni: lettura" on public.pee_revisioni for select to authenticated using (public.pee_rev_ruolo(id) is not null);
+drop policy if exists "pee_revisioni_punto: lettura" on public.pee_revisioni_punto;
+create policy "pee_revisioni_punto: lettura" on public.pee_revisioni_punto for select to authenticated using (public.pee_rev_ruolo(revisione_id) is not null);
+revoke insert, update, delete on public.pee_revisioni, public.pee_revisioni_punto from authenticated, anon;
+
+-- al primo invio si apre la revisione; gli invii successivi (ogni «Ho finito») si agganciano a quella aperta
+create or replace function public.pee_rev_dopo_giro() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  perform pg_advisory_xact_lock(hashtext('pee_rev:' || new.archivio_id::text));
+  if exists (select 1 from public.pee_revisioni where archivio_id = new.archivio_id and stato = 'aperta') then
+    update public.pee_revisioni set ultimo_giro_id = new.id, updated_at = now() where archivio_id = new.archivio_id and stato = 'aperta';
+  else
+    insert into public.pee_revisioni (archivio_id, owner_id, primo_giro_id, ultimo_giro_id) values (new.archivio_id, new.owner_id, new.id, new.id);
+  end if;
+  return new;
+end $$;
+drop trigger if exists pee_rev_dopo_giro on public.pee_giri;
+create trigger pee_rev_dopo_giro after insert on public.pee_giri for each row execute function public.pee_rev_dopo_giro();
+
+-- il revisore è uno solo: lo fissa il primo invio, poi non si cambia (chi scrive dall'app; l'amministratore del database può correggere)
+create or replace function public.pee_rev_dest_prima() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare v public.pee_revisioni;
+begin
+  if new.ruolo <> 'revisore' then return new; end if;
+  select r.* into v from public.pee_revisioni r join public.pee_giri g on g.archivio_id = r.archivio_id
+   where g.id = new.giro_id and r.stato = 'aperta';
+  if v.id is null then return new; end if;
+  if v.revisore_email is null then
+    update public.pee_revisioni set revisore_email = new.email, updated_at = now() where id = v.id;
+  elsif v.revisore_email <> new.email and auth.uid() is not null then
+    raise exception 'Il revisore di questa revisione è già stato scelto (%): per cambiarlo bisogna chiuderla', v.revisore_email;
+  end if;
+  return new;
+end $$;
+drop trigger if exists pee_rev_dest_prima on public.pee_giri_dest;
+create trigger pee_rev_dest_prima before insert on public.pee_giri_dest for each row execute function public.pee_rev_dest_prima();
+
+-- ogni commento del revisore su un punto diventa (o riapre) un punto da fare; la vecchia casella «recepita» muove lo stesso stato
+create or replace function public.pee_rev_dopo_nota() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare v uuid; cur text;
+begin
+  if new.tipo <> 'nota' or new.autore_ruolo = 'titolare' then return new; end if;
+  select r.id into v from public.pee_revisioni r join public.pee_giri g on g.archivio_id = r.archivio_id
+   where g.id = new.giro_id and r.stato = 'aperta';
+  if v is null then return new; end if;
+  select stato into cur from public.pee_revisioni_punto where revisione_id = v and chiave = new.chiave;
+  if new.testo = '' then return new; end if;
+  if tg_op = 'INSERT' or old.testo is distinct from new.testo then
+    insert into public.pee_revisioni_punto (revisione_id, chiave, stato, aggiornato_da) values (v, new.chiave, 'da_fare', new.user_id)
+      on conflict (revisione_id, chiave) do update set stato = 'da_fare', nota = '', updated_at = now() where public.pee_revisioni_punto.stato <> 'da_fare';
+  elsif new.recepita and not old.recepita and cur = 'da_fare' then
+    update public.pee_revisioni_punto set stato = 'fatto', updated_at = now() where revisione_id = v and chiave = new.chiave;
+  elsif not new.recepita and old.recepita and cur = 'fatto' then
+    update public.pee_revisioni_punto set stato = 'da_fare', updated_at = now() where revisione_id = v and chiave = new.chiave;
+  end if;
+  return new;
+end $$;
+drop trigger if exists pee_rev_dopo_nota on public.pee_giri_rev;
+create trigger pee_rev_dopo_nota after insert or update on public.pee_giri_rev for each row execute function public.pee_rev_dopo_nota();
+
+-- azioni (le sole che cambiano gli stati)
+create or replace function public.pee_rev_punto(r uuid, k text, s text, n text default '') returns void
+language plpgsql security definer set search_path = public as $$
+declare ru text := public.pee_rev_ruolo(r); v public.pee_revisioni; cur text;
+begin
+  select * into v from public.pee_revisioni where id = r;
+  if ru is null or v.stato <> 'aperta' then raise exception 'Revisione non disponibile'; end if;
+  select stato into cur from public.pee_revisioni_punto where revisione_id = r and chiave = k;
+  if ru = 'titolare' then
+    if s not in ('fatto', 'attesa') or cur is null then raise exception 'Azione non consentita'; end if;
+    if cur = 'confermato' then raise exception 'Punto già confermato dal revisore'; end if;
+  else
+    if s not in ('da_fare', 'confermato') then raise exception 'Azione non consentita'; end if;
+    if cur is null and s <> 'da_fare' then raise exception 'Punto inesistente'; end if;
+  end if;
+  insert into public.pee_revisioni_punto (revisione_id, chiave, stato, nota, aggiornato_da) values (r, k, s, left(coalesce(n, ''), 300), auth.uid())
+    on conflict (revisione_id, chiave) do update set stato = excluded.stato, nota = case when excluded.nota <> '' then excluded.nota else public.pee_revisioni_punto.nota end, aggiornato_da = auth.uid(), updated_at = now();
+  update public.pee_revisioni set updated_at = now() where id = r;
+end $$;
+
+create or replace function public.pee_rev_ho_finito(r uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if public.pee_rev_ruolo(r) is distinct from 'titolare' then raise exception 'Solo chi ha scritto il progetto'; end if;
+  if not exists (select 1 from public.pee_revisioni where id = r and stato = 'aperta' and fase = 'compilatore') then raise exception 'Non è il tuo turno'; end if;
+  if exists (select 1 from public.pee_revisioni_punto where revisione_id = r and stato in ('da_fare', 'attesa')) then raise exception 'Ci sono ancora punti da fare o in attesa di risposta'; end if;
+  update public.pee_revisioni set fase = 'revisore', updated_at = now() where id = r;
+end $$;
+
+create or replace function public.pee_rev_rimanda(r uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if public.pee_rev_ruolo(r) is distinct from 'revisore' then raise exception 'Solo il revisore'; end if;
+  if not exists (select 1 from public.pee_revisioni where id = r and stato = 'aperta' and fase = 'revisore') then raise exception 'Non è il tuo turno'; end if;
+  if not exists (select 1 from public.pee_revisioni_punto where revisione_id = r and stato in ('da_fare', 'attesa')) then raise exception 'Nessun punto da riaprire: puoi approvare'; end if;
+  update public.pee_revisioni set fase = 'compilatore', updated_at = now() where id = r;
+end $$;
+
+create or replace function public.pee_rev_approva(r uuid, n text default '') returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if public.pee_rev_ruolo(r) is distinct from 'revisore' then raise exception 'Solo il revisore'; end if;
+  if not exists (select 1 from public.pee_revisioni where id = r and stato = 'aperta' and fase = 'revisore') then raise exception 'Non è il tuo turno'; end if;
+  if exists (select 1 from public.pee_revisioni_punto where revisione_id = r and stato <> 'confermato') then raise exception 'Ci sono punti non ancora confermati'; end if;
+  update public.pee_revisioni set stato = 'chiusa', esito = 'approvata', nota_chiusura = left(coalesce(n, ''), 600), chiusa_il = now(), updated_at = now() where id = r;
+end $$;
+revoke all on function public.pee_rev_punto(uuid, text, text, text), public.pee_rev_ho_finito(uuid), public.pee_rev_rimanda(uuid), public.pee_rev_approva(uuid, text) from public, anon;
+grant execute on function public.pee_rev_punto(uuid, text, text, text), public.pee_rev_ho_finito(uuid), public.pee_rev_rimanda(uuid), public.pee_rev_approva(uuid, text) to authenticated;
+
+-- giri e commenti già esistenti: una revisione per progetto (chiusa se l'ultimo giro ha un esito, altrimenti aperta); nessun dato viene toccato
+insert into public.pee_revisioni (archivio_id, owner_id, revisore_email, stato, fase, esito, primo_giro_id, ultimo_giro_id, aperta_il, chiusa_il)
+select g.archivio_id, (array_agg(g.owner_id order by g.n))[1],
+       (select d.email from public.pee_giri_dest d join public.pee_giri g2 on g2.id = d.giro_id where g2.archivio_id = g.archivio_id and d.ruolo = 'revisore' order by g2.n desc, d.created_at limit 1),
+       case when x.chiusa then 'chiusa' else 'aperta' end, 'revisore', case when x.chiusa then 'storica' end,
+       (array_agg(g.id order by g.n))[1], (array_agg(g.id order by g.n desc))[1], min(g.created_at), case when x.chiusa then max(g.created_at) end
+  from public.pee_giri g
+  cross join lateral (select exists (select 1 from public.pee_giri_rev e where e.tipo = 'esito' and e.giro_id = (select id from public.pee_giri where archivio_id = g.archivio_id order by n desc limit 1)) as chiusa) x
+ where not exists (select 1 from public.pee_revisioni r where r.archivio_id = g.archivio_id)
+ group by g.archivio_id, x.chiusa;
+
+insert into public.pee_revisioni_punto (revisione_id, chiave, stato, aggiornato_da)
+select distinct on (r.id, n.chiave) r.id, n.chiave,
+       case when r.stato = 'chiusa' or n.recepita then (case when r.stato = 'chiusa' then 'confermato' else 'fatto' end) else 'da_fare' end, n.user_id
+  from public.pee_revisioni r
+  join public.pee_giri g on g.archivio_id = r.archivio_id
+  join public.pee_giri_rev n on n.giro_id = g.id and n.tipo = 'nota' and n.testo <> '' and n.autore_ruolo <> 'titolare'
+ order by r.id, n.chiave, n.updated_at desc
+on conflict do nothing;
