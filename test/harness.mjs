@@ -159,6 +159,7 @@ export class FakeDB {
         if(q.table === 'pee_archivi') ok = r.user_id === uid;
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || r.email === u.email || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare');
         if(q.table === 'pee_versioni') ok = r.user_id === uid;
+        if(q.table === 'pee_giri') ok = r.owner_id === uid;
         if(q.table === 'pee_suggerimenti') ok = r.user_id === uid || this.isOwner(uid, r.archivio_id);
         if(q.table === 'pee_archivio_nazionale') ok = (r.autore_id === uid && r.stato !== 'approvata') || u.email === 'luca.bartolomei@cngei.it';
         if(!ok) continue;

@@ -3,12 +3,12 @@
 -- Non tocca né cancella dati esistenti. Funziona solo con l'anteprima: il sito principale non usa queste tabelle.
 --
 -- Cosa aggiunge
---   pee_giri          copie congelate (immutabili) del Progetto Personale: «Giro 1, 2, 3…», quanti ne servono
+--   pee_giri          copie congelate (immutabili, eliminabili dal titolare) del Progetto Personale: «Giro 1, 2, 3…», quanti ne servono
 --   pee_giri_dest     a chi è stato condiviso un giro in app: revisore (Tutor, ICdF) oppure in copia (Capo Gruppo, CdS)
 --   pee_giri_rev      note, stati, check-list ed esiti del revisore; «recepita» lo segna chi ha scritto il progetto
 --   pee_revisori_ammessi / pee_config   funzione ancora in prova: vale solo per gli indirizzi in elenco,
 --                     oppure per tutti se l'interruttore «revisori_aperto» è su «si»
--- I giri non stanno in pee_versioni: lì le copie vengono sfoltite, qui mai.
+-- I giri non stanno in pee_versioni: lì le copie vengono sfoltite, qui mai (si eliminano solo se il titolare lo decide).
 -- Il revisore NON diventa membro del progetto (pee_membri): vede solo la copia del giro a cui è stato invitato.
 
 -- ══ 1. Interruttore e elenco ammessi (nessun accesso diretto: solo tramite la funzione) ══
@@ -108,7 +108,12 @@ drop policy if exists "pee_giri: lettura" on public.pee_giri;
 create policy "pee_giri: lettura" on public.pee_giri
   for select to authenticated
   using (owner_id = auth.uid() or public.pee_giro_ruolo(id) is not null);
--- nessuna regola per modificare o cancellare: i giri restano come sono (spariscono solo con il progetto)
+-- un giro non si modifica mai (nessuna regola di modifica); il titolare può però eliminarlo: sparisce con la sua copia,
+-- le sue note e gli inviti (chi l'aveva ricevuto in app non lo vede più)
+drop policy if exists "pee_giri: il titolare elimina" on public.pee_giri;
+create policy "pee_giri: il titolare elimina" on public.pee_giri
+  for delete to authenticated
+  using (owner_id = auth.uid());
 
 -- ══ 5. Regole di accesso: destinatari ══
 drop policy if exists "pee_giri_dest: il titolare gestisce" on public.pee_giri_dest;

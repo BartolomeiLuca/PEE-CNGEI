@@ -68,10 +68,28 @@ await ev(([id, r]) => { ppGRiscSet(id, r, 'da', 'Tutor Marco'); ppGRiscSet(id, r
 s = await ev(() => ({ap: ppIter().apprB1, b2: ppBloccoHTML(2)}));
 ok(s.ap && s.ap.chi === 'Tutor Marco' && /ppGiroForm\(2\)/.test(s.b2), 'il riscontro «Approva» registra l’approvazione e sblocca la consegna finale');
 ok(await ev(() => /Apri la copia/.test(ppBloccoHTML(1))), 'il giro ha il pulsante «Apri la copia»');
-await ev(id => ppGiroApri(id), gid); await sleep(3500);
-s = await ev(() => ({ro: window.BRO && window.BRO.giro, bar: (document.getElementById('ro-bar') || {}).textContent || '', pp: !!(scheda && scheda.pp), nome: (scheda.pp || {}).nome}));
-ok(s.ro && /Copia del Giro/.test(s.bar), 'la copia si apre in sola lettura: ' + s.bar.slice(0, 60));
-ok(s.nome === 'Anna Rossi', 'la copia contiene il progetto com’era');
-await ev(() => roExit()); await sleep(3000);
-ok(await ev(() => !window.BRO && ppGiriList().length >= 1), 'si torna al proprio progetto con i giri intatti');
+const [pop] = await Promise.all([P.context().waitForEvent('page', {timeout:15000}), ev(id => ppGiroApri(id), gid)]);
+await pop.waitForLoadState('domcontentloaded'); await sleep(6000);
+s = await pop.evaluate(() => ({ro: window.BRO && window.BRO.giro, bar: (document.getElementById('giro-bar') || {}).textContent || '', nome: (scheda.pp || {}).nome, old: !!document.getElementById('ro-bar'), url: location.hash}));
+ok(s.ro && /COPIA CONGELATA · Giro/.test(s.bar) && /Chiudi e torna al tuo progetto/.test(s.bar) && !s.old, 'la copia si apre in una NUOVA scheda con la barra «COPIA CONGELATA» in alto: ' + s.bar.slice(0, 50));
+ok(s.nome === 'Anna Rossi' && s.url === '', 'la copia contiene il progetto com’era');
+const top = await pop.evaluate(() => Math.round(document.getElementById('giro-bar').getBoundingClientRect().top)); ok(top === 0, 'la barra è in cima alla pagina');
+ok(await ev(() => !window.BRO && ppGiriList().length >= 1), 'la scheda originale resta sul tuo progetto');
+await pop.evaluate(() => giroChiudi()).catch(() => {}); await sleep(1500); ok(pop.isClosed(), 'il pulsante chiude la scheda della copia');
+// Tutor = ICdF
+await ev(() => ppGiroForm(2)); await sleep(800);
+s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); return {n: ov.querySelectorAll('input[type=email]').length}; });
+await ev(() => { window._giroForm.tutorIcdf = true; ppGiroFormRender(); }); await sleep(300);
+let s2 = await ev(() => { const ov = document.getElementById('pp-giro-ov'); return {n: ov.querySelectorAll('input[type=email]').length, t: ov.innerText}; });
+ok(s2.n === s.n - 1 && /ICdF \(fa anche da Tutor\)/.test(s2.t), 'con «Tutor = ICdF» resta una sola riga, ICdF che fa anche da Tutor');
+await ev(() => { ppGiroFormClose(); });
+// elimina un giro
+const nBefore = cloud().length;
+await ev(id => ppGiroElimina(id), gid); await sleep(1500);
+ok(cloud().length === nBefore - 1 && !cloud().some(g => g.id === gid), 'il giro eliminato sparisce dal cloud');
+s = await ev(id => ({list: ppGiriList().some(g => g.id === id), raw: !!ppGiri()[id], nx: ppGiroNextN(), html: ppBloccoHTML(1)}), gid);
+ok(!s.list && s.raw && !/Elimina il giro<\/button>[\s\S]*ppGiroApri\('${gid}'\)/.test(s.html), 'in locale resta solo una traccia vuota: il giro non compare più');
+await ev(() => ppGiroForm(1)); await sleep(400); await ev(() => ppGiroCongela()); await sleep(2000);
+const ng = await ev(() => ppGiriList().map(g => g.n).join());
+ok(!ng.split(',').includes(String(gn)) || gn === 1, 'un nuovo giro non riusa il numero di quello eliminato: ' + ng);
 summary(); process.exit(0);
