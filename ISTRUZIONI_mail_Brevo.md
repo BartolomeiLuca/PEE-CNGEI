@@ -29,3 +29,21 @@ Serve un mittente del tuo dominio (es. `noreply@pee-app.it`), autenticato su Bre
 7. Prova: registra un account di test e controlla che la mail di benvenuto arrivi in posta in arrivo (non nello spam).
 
 Dopo qualche settimana senza problemi puoi passare il DMARC a `p=quarantine`.
+
+## 3. Far partire tutte le mail dell'app (13/11/2026) — da fare una volta
+Le mail (benvenuto, proposta all'archivio, giro inviato, «Rimanda», «Approva») partono solo se nel vault di Supabase ci sono `brevo_api_key` e `brevo_mittente`. Se mancano, l'app funziona lo stesso ma non spedisce nulla.
+
+1. **Brevo** → in alto a destra il tuo nome → **SMTP e API** → scheda **Chiavi API** → **Genera una nuova chiave API** (nome: `PEE`) → copia la chiave (inizia con `xkeysib-`; si vede una volta sola).
+2. **Brevo** → **Mittenti, domini e IP** → **Mittenti** → **Aggiungi un mittente**: un indirizzo che puoi davvero ricevere (es. `luca.bartolomei@cngei.it`), nome `PEE CNGEI`. Brevo manda un codice a quella casella: inseriscilo. Finché il mittente non è verificato Brevo rifiuta gli invii. (Il dominio `pee-app.it` con `noreply@` si fa dopo, come al punto 2.)
+3. **Supabase** → SQL Editor → New query → incolla (con la tua chiave e il tuo mittente) ed esegui:
+   ```sql
+   select vault.create_secret('xkeysib-LA-TUA-CHIAVE', 'brevo_api_key');
+   select vault.create_secret('luca.bartolomei@cngei.it', 'brevo_mittente');
+   ```
+   Se ti dice che esistono già, usa invece `vault.update_secret((select id from vault.secrets where name='brevo_api_key'), 'xkeysib-…')` (e lo stesso per `brevo_mittente`).
+4. Nuova query: incolla tutto `supabase_aggiornamento_13novembre_mail_revisione.sql` → Run (aggiunge le mail di «Rimanda» e «Approva»).
+5. Prova: dall'anteprima crea un account di prova, invia un giro a un tuo indirizzo → la mail arriva entro un minuto. Se non arriva, in SQL Editor:
+   ```sql
+   select id, status_code, content::text from net._http_response order by id desc limit 5;
+   ```
+   `201` = accettata da Brevo; `401` = chiave sbagliata; `400` con «sender» = mittente non verificato.
