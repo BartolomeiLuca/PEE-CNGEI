@@ -1565,10 +1565,12 @@ tr.rd-mod td:first-child{box-shadow:inset 3px 0 0 #e08a00}tr.rd-new td:first-chi
 .rd-onlymod .rd-b:not(.rd-ch),.rd-onlymod table:not(.rd-ch),.rd-onlymod tr:not(.rd-ch):not(.rd-cmr),.rd-onlymod h3:not(.rd-ch):not(.rd-chp),.rd-onlymod h2:not(.rd-chp){display:none}
 tr.rd-flash td,h3.rd-flash{background:#fff3c4!important;transition:background .4s}
 .rd-pv{font-size:12px;color:#5f5f58;border-left:3px solid #d8d8d0;padding-left:8px;margin-bottom:6px}.rd-n{margin-bottom:6px}
-#rv-nav{position:fixed;left:0;top:64px;bottom:0;width:250px;overflow:auto;background:#F7F7F2;border-right:1px solid #d8d8d0;padding:10px 8px;box-sizing:border-box;z-index:8500;font:12.5px/1.35 Montserrat,Arial,sans-serif;display:none}
-#rv-nav .rn-t{font-weight:800;font-size:12px;margin:0 6px 6px;color:#1b5e42}#rv-nav a{display:block;color:#1a1a1a;text-decoration:none;padding:5px 8px;border-radius:7px;min-height:24px}#rv-nav a:hover{background:#e6efe9}
-#rv-nav a.rn-s{font-weight:700;margin-top:8px}#rv-nav a.rn-h{padding-left:20px;font-size:12px;color:#444}#rv-nav a.ch::after{content:" ●";color:#e08a00;font-size:10px}
-@media(min-width:1100px){body.rv-nav-on #rv-nav{display:block}body.rv-nav-on #rv-doc{left:250px!important}}
+#rv-nav{position:fixed;left:0;top:64px;bottom:0;width:248px;overflow:auto;background:#fff;border-right:1px solid #D8D8D0;padding:12px 10px 24px;box-sizing:border-box;z-index:8500;font-family:'Montserrat',sans-serif;display:none}
+#rv-nav .rn-t{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5f5f58;padding:6px 12px}
+#rv-nav a{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;min-height:44px;border-radius:8px;font:600 13px/1.35 'Montserrat',sans-serif;color:#3D3D38;text-decoration:none;box-sizing:border-box}#rv-nav a:hover{background:#F0F0E8}
+#rv-nav a.rn-s{margin-top:6px}#rv-nav a.rn-h{padding:7px 12px 7px 28px;min-height:34px;font-weight:500;font-size:12.5px;color:#4a4a44}
+#rv-nav a.on{background:var(--green-pale,#e6f3ec);color:#1A1A18;box-shadow:inset 3px 0 0 var(--green,#25734e)}#rv-nav a:focus-visible{outline:3px solid #1d4f8f;outline-offset:2px}#rv-nav a.ch::after{content:" ●";color:#e08a00;font-size:10px;margin-left:auto}
+@media(min-width:1100px){body.rv-nav-on #rv-nav{display:block}body.rv-nav-on #rv-doc{left:248px!important}}
 .rv-sb{padding:2px 10px 10px}.rv-hp{font-size:11.5px;color:#6b6b62;line-height:1.4;margin-top:4px}.rv-pn{font-size:11.5px;color:#6b6b62}.rv-pw{display:inline-block;font-size:11px;font-weight:700;background:#eef2ef;border-radius:6px;padding:1px 6px;margin-top:2px}
 .rv-q{margin-top:10px;padding:8px 10px;border:1px solid #cfe6d8;background:#F1F8F4;border-radius:9px}.rv-pl2{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-height:190px;overflow:auto}
 .rv-pp{display:block;text-align:left;border:0;background:#fff;border:1px solid #d8d8d0;border-radius:7px;padding:5px 8px;font:12px Montserrat,Arial,sans-serif;cursor:pointer;min-height:30px}.rv-pp.done{background:#e8f4ec;border-color:#b7dcc4}.rv-pp.mod{border-left:3px solid #e08a00}.rv-pp.new{border-left:3px solid #2b6fd6}.rv-pp[disabled]{opacity:.6;cursor:default}
@@ -19319,8 +19321,10 @@ function rvNavBuild(){
   Array.from(art.querySelectorAll('h2,h3')).forEach(el => { const id = el.id || (el.id = 'rd-h' + (++n)); const ch = el.classList.contains('rd-ch') || el.classList.contains('rd-chp');
     if(el.tagName === 'H2'){ const m = /Sezione\s+(\d)\s*[—-]\s*(.*)/i.exec(el.textContent.trim()); h += `<a href="#${id}" class="rn-s${ch ? ' ch' : ''}" onclick="rvNavGo('${id}');return false">${m ? m[1] + ' · ' + esc(m[2].slice(0, 46)) : esc(el.textContent.trim().slice(0, 46))}</a>`; }
     else h += `<a href="#${id}" class="rn-h${ch ? ' ch' : ''}" onclick="rvNavGo('${id}');return false">${esc(el.textContent.replace(/💬/g, '').trim().slice(0, 44))}</a>`; });
-  nav.innerHTML = h; rvDockPos();
+  nav.innerHTML = h; rvDockPos(); rvNavActive();
 }
+function rvNavActive(){ const nav = document.getElementById('rv-nav'), art = document.querySelector('#rv-doc .rd-art'); if(!nav || !art) return; let cur = null; art.querySelectorAll('h2,h3').forEach(el => { if(el.getBoundingClientRect().top <= 140) cur = el.id; }); nav.querySelectorAll('a').forEach(a => a.classList.toggle('on', !!cur && a.getAttribute('href') === '#' + cur)); }
+window.addEventListener('scroll', () => { if(document.getElementById('rv-nav')) rvNavActive(); }, true);
 window.rvNavGo = function(id){ const e = document.getElementById(id); if(e) e.scrollIntoView({behavior:'smooth', block:'start'}); };
 function rvRender(){
   const d = window._rd, v = window._rv; if(!d || (!d.mine && !v)) return; const g = d.g, m = g.meta || {}, mine = d.mine, rev = !mine && v.ruolo === 'revisore';
