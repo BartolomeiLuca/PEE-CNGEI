@@ -1,0 +1,32 @@
+// Revisione unica su 12 profili: vista del documento e pannelli a turni senza scorrimento laterale, pulsanti presenti
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+import { devices } from 'playwright';
+process.env.SITE = process.env.SITE || '/tmp/site_pre';
+const base = (await serve()) + 'anteprima/';
+const P = [['iPhone 13','webkit'],['iPhone SE','webkit'],['iPad (gen 7)','webkit'],['iPad (gen 7) landscape','webkit'],['Desktop Safari','webkit'],['Desktop Firefox','firefox'],['Pixel 5','chromium'],['Galaxy S9+','chromium'],['Galaxy Tab S4','chromium'],['Desktop Chrome','chromium'],['Desktop Edge','chromium'],['Galaxy S8','chromium']];
+const only = process.argv[2];
+for (const [n, eng] of P) { if (only && eng !== only) continue;
+  const br = await launch(eng); const db = new FakeDB(); db.sql14 = true;
+  const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi'), L = db.addUser('luca.bartolomei@cngei.it', 'password123', 'Luca Prova');
+  const d = devices[n] || {viewport:{width:1280, height:800}}; const {defaultBrowserType, ...ctx} = d;
+  const pa = await person(br, db, {ctx}), PA = pa.page, errs = []; PA.on('pageerror', e => errs.push(String(e).slice(0, 120)));
+  await loginAs(PA, base, A); await PA.evaluate(() => exStart()); await sleep(2500);
+  await PA.evaluate(() => { scheda.pp.nome = 'Anna Rossi'; scheda.pp.mail = {area:'altoadriatico', tutorMail:'luca.bartolomei@cngei.it'}; saveData(true); }); await sleep(500);
+  await PA.evaluate(() => ppGiroForm(1)); await sleep(800);
+  const f = await PA.evaluate(() => ({ow: document.documentElement.scrollWidth <= innerWidth + 2, form: !!document.querySelector('#giro-form, .gf, [id^=giro]')}));
+  await PA.evaluate(() => { ppGiroDest(0, 'app', true); [0, 1, 2, 3].forEach(i => ppGiroDest(i, 'mail', false)); ppGiroCongela(); }); await sleep(2500);
+  const g0 = db.t.pee_giri[0];
+  const pl = await person(br, db, {ctx}), PL = pl.page; await loginAs(PL, base, L); await sleep(1500);
+  const [pop] = await Promise.all([PL.context().waitForEvent('page', {timeout:20000}), PL.evaluate(id => rvOpen(id), g0.id)]);
+  await pop.waitForLoadState('domcontentloaded'); await sleep(9000);
+  await pop.evaluate(() => { const a = _rd.anchors.find(x => /contesto-territoriale/.test(x.key)); rvDocOpen(a.key); });
+  await pop.evaluate(() => { const t = document.querySelector('#rv-doc textarea'); t.value = 'Aggiungi il quartiere'; t.dispatchEvent(new Event('change', {bubbles:true})); }); await sleep(900);
+  await pop.evaluate(() => { document.getElementById('rv-dock').classList.add('open'); rvSync(); }); await sleep(1200);
+  const r = await pop.evaluate(() => ({ow: document.documentElement.scrollWidth <= innerWidth + 2, doc: !!document.getElementById('rv-doc'), dock: !!document.getElementById('rv-dock'), bar: /Rimanda al compilatore/.test(document.getElementById('rv-dock').innerText), box: (() => { const b = document.getElementById('rv-dock').getBoundingClientRect(); return b.right <= innerWidth + 2 && b.left >= -2; })()}));
+  await pop.evaluate(a => rvAzione(a, 'rimanda'), g0.archivio_id); await sleep(900);
+  await PA.evaluate(() => rpLoad()); await sleep(1500); await PA.evaluate(() => rpTog()); await sleep(600);
+  const c = await PA.evaluate(() => { const d = document.getElementById('rp-dock'); const b = d && d.getBoundingClientRect(); return {ow: document.documentElement.scrollWidth <= innerWidth + 2, dock: !!d, fine: !!(d && /Ho finito/.test(d.innerText)), box: !!b && b.right <= innerWidth + 2 && b.left >= -2}; });
+  ok(f.ow && r.ow && r.doc && r.dock && r.bar && r.box && c.ow && c.dock && c.fine && c.box && !errs.length, n + ' invio ' + JSON.stringify(f.ow) + ' revisore ' + JSON.stringify(r) + ' compilatore ' + JSON.stringify(c) + ' ' + errs.join('|'));
+  await br.close();
+}
+summary(); process.exit(0);
