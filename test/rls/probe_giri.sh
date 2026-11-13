@@ -139,5 +139,27 @@ t owner si "richiuso: il titolare vede ancora tutto" "select id from pee_giri wh
 $P -c "delete from pee_revisori_ammessi where email='luca.bartolomei@cngei.it'" >/dev/null
 t admin no "revocato dall'elenco: perde la lettura" "select id from pee_giri where id='$G'"
 $P -c "insert into pee_revisori_ammessi(email) values ('luca.bartolomei@cngei.it')" >/dev/null
+echo "--- recepita e visto"
+R=60000000-0000-0000-0000-000000000009
+$P >/dev/null <<SQL
+insert into pee_giri_rev(id,giro_id,user_id,autore_nome,autore_ruolo,tipo,chiave,valore,testo) values ('$R','$G','00000000-0000-0000-0000-0000000000aa','Luca','revisore','nota','s2','','Prima versione') on conflict do nothing;
+insert into pee_giri_dest(giro_id,email,ruolo,nome) values ('$G','luca.bartolomei@cngei.it','revisore','Tutor') on conflict do nothing;
+SQL
+out=$($P 2>&1 <<SQL
+begin; set local role authenticated;
+set local request.jwt.claim.sub='00000000-0000-0000-0000-00000000000a'; set local request.jwt.claims='{"email":"owner@x.it"}';
+update pee_giri_rev set recepita=true where id='$R';
+set local request.jwt.claim.sub='00000000-0000-0000-0000-0000000000aa'; set local request.jwt.claims='{"email":"luca.bartolomei@cngei.it"}';
+select 'dopo_recepita=' || recepita from pee_giri_rev where id='$R';
+update pee_giri_rev set testo='Ripensata' where id='$R';
+select 'dopo_modifica=' || recepita from pee_giri_rev where id='$R';
+select pee_giro_visto('$G');
+select 'visto=' || (visto_il is not null) from pee_giri_dest where giro_id='$G' and email='luca.bartolomei@cngei.it';
+rollback;
+SQL
+)
+echo "$out" | grep -q "dopo_recepita=true" && echo "ok   titolare segna «recepita»" || echo "✗✗✗  titolare segna «recepita»: $out"
+echo "$out" | grep -q "dopo_modifica=false" && echo "ok   il revisore riscrive la nota: «recepita» si azzera" || echo "✗✗✗  reset di recepita: $out"
+echo "$out" | grep -q "visto=true" && echo "ok   il giro risulta visto" || echo "✗✗✗  visto: $out"
 echo "--- eliminazione del progetto"
 t owner si "elimina il progetto: i giri vanno con lui" "delete from pee_archivi where id='$A' returning id"

@@ -1,0 +1,17 @@
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+process.env.SITE = process.env.SITE || '/tmp/site_pre';
+const base = (await serve()) + 'anteprima/'; const db = new FakeDB();
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const br = await launch(process.argv[2] || 'chromium');
+const pa = await person(br, db, {ctx:{viewport:{width:1280, height:700}}}), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500);
+await ev(() => { scheda.pp.nome = 'Anna Rossi'; scheda.pp.mail = {area:'altoadriatico', tutorMail:'tutor@x.it'}; saveData(true); }); await sleep(500);
+await ev(() => ppGiroForm(1)); await sleep(800); await ev(() => ppGiroCongela()); await sleep(2500);
+await ev(() => shPP('i')); await sleep(1500);
+const gid = await ev(() => Object.keys(ppGiri())[0]);
+await ev(() => window.scrollTo(0, 400)); await sleep(300);
+const y0 = await ev(() => Math.round(window.pageYOffset));
+await ev(g => ppGRiscAdd(g), gid); await sleep(1200);
+const y1 = await ev(() => Math.round(window.pageYOffset));
+ok(y0 > 100 && Math.abs(y1 - y0) < 8, 'un clic su «Aggiungi il riscontro» non riporta in cima: prima ' + y0 + ', dopo ' + y1);
+summary(); process.exit(0);

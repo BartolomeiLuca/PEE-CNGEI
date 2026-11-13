@@ -204,7 +204,9 @@ begin
     end if;
     if old.user_id = auth.uid() and not public.pee_giro_is_owner(old.giro_id) then
       -- l'autore (revisore) cambia il proprio contenuto ma non «recepita»
-      new.recepita := old.recepita; new.recepita_il := old.recepita_il;
+      -- se rivede ciò che aveva scritto, «recepita» si azzera: chi ha scritto il progetto deve rileggerlo
+      if new.valore is distinct from old.valore or new.testo is distinct from old.testo then new.recepita := false; new.recepita_il := null;
+      else new.recepita := old.recepita; new.recepita_il := old.recepita_il; end if;
       if public.pee_giro_ruolo(old.giro_id) is null then raise exception 'Non hai più accesso a questo giro'; end if;
     elsif public.pee_giro_is_owner(old.giro_id) and old.user_id is distinct from auth.uid() then
       -- il titolare cambia solo «recepita»
@@ -217,3 +219,58 @@ begin
 end $$;
 drop trigger if exists pee_giri_rev_guard on public.pee_giri_rev;
 create trigger pee_giri_rev_guard before update on public.pee_giri_rev for each row execute function public.pee_giri_rev_guard();
+
+-- ── 13 novembre: giro «visto» (per il numero rosso di chi è in copia) e mail di avviso a chi riceve un giro in app ──
+alter table public.pee_giri_dest add column if not exists visto_il timestamptz;
+create or replace function public.pee_giro_visto(g uuid) returns void
+language sql security definer set search_path = public as $fn$
+  update public.pee_giri_dest set visto_il = coalesce(visto_il, now())
+   where giro_id = g and email = public.pee_my_email();
+$fn$;
+revoke all on function public.pee_giro_visto(uuid) from public;
+grant execute on function public.pee_giro_visto(uuid) to authenticated;
+
+do $$ begin create extension if not exists pg_net with schema extensions; exception when others then null; end $$;
+create or replace function public.pee_html(t text) returns text
+language sql immutable as $fn$
+  select replace(replace(replace(replace(coalesce(t, ''), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;')
+$fn$;
+
+-- mail di avviso (spedita da Brevo, stessa chiave e stesso mittente delle altre mail dell'app): solo il link, nessun contenuto del progetto
+create or replace function public.pee_mail_giro() returns trigger
+language plpgsql security definer set search_path = public, extensions, vault, auth as $fn$
+declare
+  chiave text; mittente text; g record; chi text; corpo text; ogg text; rev boolean := (new.ruolo = 'revisore');
+begin
+  begin
+    select decrypted_secret into chiave   from vault.decrypted_secrets where name = 'brevo_api_key';
+    select decrypted_secret into mittente from vault.decrypted_secrets where name = 'brevo_mittente';
+    if chiave is null or mittente is null then return new; end if;
+    select n, meta into g from public.pee_giri where id = new.giro_id;
+    chi := coalesce(nullif(trim(g.meta->>'nome'), ''), 'Una persona');
+    ogg := case when rev then 'PEE CNGEI: ' || left(chi, 60) || ' ti ha inviato un Progetto Personale da rivedere'
+                         else 'PEE CNGEI: ' || left(chi, 60) || ' ti ha inviato in copia un Progetto Personale' end;
+    corpo :=
+      '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#222;max-width:560px">'
+      || '<h2 style="color:#1b5e42;margin:0 0 12px">' || case when rev then 'Un Progetto Personale da rivedere' else 'Un Progetto Personale in copia' end || '</h2>'
+      || '<p><b>' || pee_html(chi) || '</b> ti ha inviato in PEE CNGEI il <b>Giro ' || coalesce(g.n, 0) || '</b>'
+      || coalesce(' del progetto «' || pee_html(nullif(g.meta->>'titolo', '')) || '»', '') || '.</p>'
+      || '<p>' || case when rev then 'Lo trovi nella pagina <b>Progetti</b>, sotto «Giri da rivedere»: puoi leggerlo e lasciare le tue osservazioni.'
+                       else 'Lo trovi nella pagina <b>Progetti</b>, sotto «Giri da rivedere»: puoi leggerlo e lasciare dei suggerimenti.' end || '</p>'
+      || '<p style="margin:18px 0"><a href="https://pee-app.it/anteprima/" style="background:#1b5e42;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Apri PEE CNGEI</a></p>'
+      || '<p style="color:#555;font-size:13px">Se non hai ancora un account, creane uno con questo stesso indirizzo email (' || pee_html(new.email) || '): vedrai il giro appena entri.</p>'
+      || '<p style="color:#777;font-size:12px;margin-top:20px">Questa mail non contiene il progetto, solo l’avviso.</p></div>';
+    perform net.http_post(
+      url     := 'https://api.brevo.com/v3/smtp/email',
+      headers := jsonb_build_object('api-key', chiave, 'Content-Type', 'application/json', 'accept', 'application/json'),
+      body    := jsonb_build_object('sender', jsonb_build_object('name', 'PEE CNGEI', 'email', mittente),
+        'to', jsonb_build_array(jsonb_build_object('email', new.email)), 'subject', ogg, 'htmlContent', corpo),
+      timeout_milliseconds := 5000);
+  exception when others then
+    raise warning 'pee_mail_giro: %', sqlerrm;
+  end;
+  return new;
+end
+$fn$;
+drop trigger if exists pee_mail_giro on public.pee_giri_dest;
+create trigger pee_mail_giro after insert on public.pee_giri_dest for each row execute function public.pee_mail_giro();
