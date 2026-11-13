@@ -45,10 +45,12 @@ create table if not exists public.pee_giri (
   sezioni       int[] not null default '{}',
   nomi_inclusi  boolean not null default true,
   nota          text not null default '' check (char_length(nota) <= 2000),
+  meta          jsonb not null default '{}'::jsonb,   -- intestazione leggera (nome, titolo, Branca) per l'elenco di chi deve rivedere
   data          jsonb not null,
   created_at    timestamptz not null default now(),
   unique (archivio_id, n)
 );
+alter table public.pee_giri add column if not exists meta jsonb not null default '{}'::jsonb;
 create index if not exists pee_giri_arch on public.pee_giri (archivio_id, n);
 alter table public.pee_giri enable row level security;
 
@@ -147,9 +149,15 @@ create table if not exists public.pee_giri_rev (
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
   check (tipo <> 'stato' or valore in ('ok', 'rivedere', 'domanda', '')),
-  check (tipo <> 'check' or valore in ('si', 'no', 'na', '')),
   check (tipo <> 'esito' or valore in ('da_integrare', 'chiarimenti', 'approva'))
 );
+-- check-list: sì / parzialmente / no (se la tabella è già stata creata con la versione precedente, si sostituisce la regola)
+do $$ declare r record; begin
+  for r in select conname from pg_constraint where conrelid = 'public.pee_giri_rev'::regclass and contype = 'c' and pg_get_constraintdef(oid) like '%''check''%' loop
+    execute format('alter table public.pee_giri_rev drop constraint %I', r.conname);
+  end loop;
+  alter table public.pee_giri_rev add constraint pee_giri_rev_check_val check (tipo <> 'check' or valore in ('si', 'parz', 'no', ''));
+end $$;
 create index if not exists pee_giri_rev_giro on public.pee_giri_rev (giro_id);
 -- stato, check ed esito: una riga per persona e per voce (si aggiorna); le note possono essere più d'una
 create unique index if not exists pee_giri_rev_unica on public.pee_giri_rev (giro_id, user_id, tipo, chiave, autore_nome)
