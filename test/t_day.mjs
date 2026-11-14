@@ -1,0 +1,30 @@
+// JSON della singola giornata: esporta e importa in coda
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+const engine = process.argv[2] || 'chromium';
+const base = (await serve()) + 'anteprima/'; const db = new FakeDB(); db.sql13 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const br = await launch(engine); const pa = await person(br, db, {}), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(1200);
+await loginAs(P, base, A); await ev(() => exStart('AN')); await sleep(3500); await ev(() => { try{ clClose(); }catch(e){} });
+const r = await ev(async () => {
+  shCal(); await new Promise(r => setTimeout(r, 600));
+  const M = uscMap(); const ids = Object.keys(M).filter(k => M[k] && !M[k].del && uscNG(M[k]) >= 2);
+  if(!ids.length) return {err:'nessun evento multigiorno'};
+  const id = ids[0]; window.shSrUsc ? shSrUsc(id, 0, '') : uscOpen(id); await new Promise(r => setTimeout(r, 600));
+  const u = uscCur(); const n0 = uscNG(u);
+  let got = null; const dl = window.uscJsonDl; window.uscJsonDl = (o, nome) => { got = o; };
+  uscJsonDay(1); window.uscJsonDl = dl;
+  const nb = Object.keys(u.prog).filter(k => u.prog[k] && !u.prog[k].del && Number(u.prog[k].g) === 1).length;
+  const pk = window.uscJsonPick; window.uscJsonPick = cb => cb(JSON.parse(JSON.stringify(got)));
+  uscJsonDayIn(); window.uscJsonPick = pk; await new Promise(r => setTimeout(r, 500));
+  const u2 = uscCur(); const n1 = uscNG(u2);
+  const nb2 = Object.keys(u2.prog).filter(k => u2.prog[k] && !u2.prog[k].del && Number(u2.prog[k].g) === n1).length;
+  return {id, n0, n1, nb, nb2, pee: got && got.pee, menu: [...document.querySelectorAll('.usc-pmm button')].map(b => b.textContent.replace(/\s+/g, ' ').trim()).slice(0, 8)};
+});
+console.log(JSON.stringify(r));
+ok(r.pee === 'giornata', 'esporta: file di tipo giornata');
+ok(r.n1 === r.n0 + 1, 'importa: una giornata in più (' + r.n0 + ' → ' + r.n1 + ')');
+ok(r.nb > 0 && r.nb2 === r.nb, 'importa: stessi momenti nella nuova giornata (' + r.nb + ' → ' + r.nb2 + ')');
+ok(r.menu.some(t => /Questa giornata JSON/.test(t)) && r.menu.some(t => /Tutto l’evento JSON/.test(t)), 'menu Esporta: Word e JSON');
+ok(!pa.errors.length, 'nessun errore ' + pa.errors.slice(0, 2).join('|'));
+const f = summary(); await br.close(); process.exit(f ? 1 : 0);
