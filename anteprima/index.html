@@ -17428,7 +17428,7 @@ function nacStrip(){
   }catch(e){}
 }
 // ── Aggiornamento automatico: controlla se è uscita una versione nuova ──
-function updSafe(){ try{ const a=document.activeElement; return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !window._pjBusy; }catch(e){ return true; } }
+function updSafe(){ try{ const a=document.activeElement; return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !window._pjBusy && !window._dlBusy && !window.BRO && !document.getElementById('rv-doc'); }catch(e){ return true; } }
 function updNow(){ try{ clearTimeout(_saveTimer); saveData(true); }catch(e){} setTimeout(appReload, 700); }
 async function updCheck(){
   try{
@@ -17436,7 +17436,7 @@ async function updCheck(){
     const u = location.href.split('#')[0].split('?')[0];
     const r = await fetch(u + (u.endsWith('/') ? '' : '') + '?c=' + Date.now(), {cache:'no-store'});
     if(!r.ok) return;
-    const m = (await r.text()).match(/const APP_BUILD='([^']+)'/);
+    const m = (await r.text()).match(/const APP_BUILD\s*=\s*'(\d{8,})'/);
     if(!m || m[1] === APP_BUILD) return;
     window._updFound = true;
     if(document.hidden && updSafe()){ updNow(); return; }
@@ -19511,32 +19511,32 @@ async function rvPackFill(root, aid, nome, titolo){
     const b = await giroWordBlob(g.id); if(b) root.file('copie/' + nm + '/' + nm + '.docx', b); else note += 'Word non disponibile per la copia ' + g.n + ' (si può riaprire dall’app).\n'; }
   return {copie:(gg.data || []).length, note};
 }
-async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}); window._dlBusy = false; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
 const rvSan = s => String(s || '').replace(/[^\w\-. àèéìòùÀÈÉÌÒÙ]+/g, '_').trim().slice(0, 60) || 'progetto';
 const RV_LEGGIMI = 'Archivio dello storico di revisione · PEE CNGEI\n\nContenuto:\n- «Storico della revisione.docx»: i punti, i commenti, le risposte e gli stati, da leggere.\n- «copie/»: ogni copia inviata, in Word (leggibile) e in .json (il formato dell’app).\n- «dati/storico_completo.json»: tutto in un unico file, per archiviarlo o ripristinarlo altrove.\n\nTieni questo file dove preferisci: è una copia, non dipende dall’app.\n';
 // compilatore: tutto lo storico del progetto aperto
 window.rvBackupMine = async function(){
   if(!rvOk() || !CL.ctx || window.BRO){ showToast('Apri il tuo progetto per scaricare lo storico'); return; }
-  try{ showToast('Preparo l’archivio dello storico… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+  try{ window._dlBusy = true; showToast('Preparo l’archivio dello storico… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), root = zip.folder('Storico - ' + rvSan(CL.ctx.titolo || 'progetto')), r = await rvPackFill(root, CL.ctx.id, clMyName(), CL.ctx.titolo || '');
     root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Storico revisione - ' + rvSan(CL.ctx.titolo) + ' - ' + td() + '.zip'); showToast('Archivio scaricato (' + r.copie + ' copie)');
-  }catch(e){ showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
+  }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 // revisore/tutor: tutti i progetti che segue, in un solo archivio
 window.rvBackupAll = async function(){
   if(!rvOk()) return; const G = rvGroup(window._rvL || []); if(!G.length){ showToast('Non ci sono progetti da scaricare'); return; }
-  try{ showToast('Preparo l’archivio di tutti i progetti… può servire qualche minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+  try{ window._dlBusy = true; showToast('Preparo l’archivio di tutti i progetti… può servire qualche minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), top = zip.folder('Storico di tutti i progetti'); let tot = 0, note = '';
     for(const p of G){ const root = top.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')); const r = await rvPackFill(root, p.aid, p.nome, p.titolo); tot += r.copie; if(r.note) note += p.nome + ':\n' + r.note; }
     top.file('LEGGIMI.txt', RV_LEGGIMI + (note ? '\nNote:\n' + note : '')); await rvZipOut(zip, 'Storico tutti i progetti - ' + td() + '.zip'); showToast('Archivio scaricato (' + G.length + ' progetti, ' + tot + ' copie)');
-  }catch(e){ showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
+  }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 window.rvPackage = async function(aid){
   const p = rvGroup(window._rvL || []).find(x => x.aid === aid); if(!p || !rvOk()) return;
-  try{ showToast('Preparo il pacchetto… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+  try{ window._dlBusy = true; showToast('Preparo il pacchetto… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), root = zip.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')), r = await rvPackFill(root, aid, p.nome, p.titolo);
     root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Pacchetto revisione - ' + rvSan(p.nome) + ' - ' + td() + '.zip'); showToast('Pacchetto scaricato');
-  }catch(e){ showToast('Non sono riuscito a preparare il pacchetto: ' + ((e && e.message) || '').slice(0, 70)); }
+  }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare il pacchetto: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 // ── spazio di revisione: nella copia aperta, a fianco, il pannello con stati, note, check-list ed esito ──
 window.rvGiroInit = function(){
