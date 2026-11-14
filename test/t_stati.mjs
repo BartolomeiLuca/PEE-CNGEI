@@ -51,6 +51,7 @@ await pe(() => { document.getElementById('rv-ap-n').value = 'Ottimo lavoro'; doc
 v = db.t.pee_revisioni[0]; ok(v.stato === 'chiusa' && v.esito === 'approvata' && v.nota_chiusura === 'Ottimo lavoro', 'approvata e chiusa');
 await ev(() => rpLoad()); await sleep(1500); s = await ev(() => document.getElementById('rp-dock') ? document.getElementById('rp-dock').innerText : '');
 ok(/Revisione chiusa/.test(s) && /Invia un nuovo giro/.test(s), 'compilatore: revisione chiusa e di nuovo possibile un nuovo invio');
+ok(/Revisione chiusa approvata il \d{2}\/\d{2}\/\d{4}/.test(s) && !/\d{4}-\d{2}-\d{2}/.test(s), 'la data della revisione chiusa è gg/mm/aaaa: ' + (s.match(/Revisione chiusa[^\n]{0,40}/) || [''])[0]);
 // backup in blocco (compilatore)
 const [dl] = await Promise.all([P.waitForEvent('download', {timeout:170000}), ev(() => rvBackupMine())]);
 const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const names = Object.keys(z.files);

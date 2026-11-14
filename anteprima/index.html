@@ -9081,7 +9081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141925'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141935'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -13988,7 +13988,7 @@ function saveBlob(blob, name){
   a.href = url; a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
 }
-const todayIso = () => new Date().toISOString().slice(0,10);
+const todayIso = () => { const d = new Date(); return String(d.getDate()).padStart(2,'0') + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear(); };  // solo per i nomi dei file: gg-mm-aaaa
 const todayIt = () => new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
 const stripEmoji = s => String(s==null?'':s).replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2B00}-\u{2BFF}]/gu,'').replace(/[ \t]{2,}/g,' ').trim();
 const plain = s => stripEmoji(String(s==null?'':s).replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>'));
@@ -17476,7 +17476,7 @@ window.addEventListener('beforeunload', ev => { if(window._appReload || !nacWork
 function movLater(){ try{ sessionStorage.setItem('bussola_mov_dopo', '1'); }catch(e){} document.querySelectorAll('.mov-strip').forEach(e => e.remove()); }
 function clBackup(){
   const d = clSnapshot();
-  const name = CL.ctx ? `PEE_${CL.ctx.anno}_${CL.ctx.titolo.replace(/[^\w\-]+/g,'_')}` : 'PEE_backup_'+new Date().toISOString().slice(0,10);
+  const name = CL.ctx ? `PEE_${CL.ctx.anno}_${CL.ctx.titolo.replace(/[^\w\-]+/g,'_')}` : 'PEE_backup_'+new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify({app:'bussola-pee-cngei', v:1, data:d}, null, 1)], {type:'application/json'}));
   a.download = name + '.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1500);
@@ -18115,7 +18115,7 @@ window.shExportJson = async function(){
     const rows = (SH.rows || []).filter(r => (r.meta || {}).mode !== 'anno'); if(!rows.length){ clToast('Non ci sono progetti da scaricare'); return; }
     const out = []; for(const r of rows){ const g = await dbGet(r.id); if(g) out.push({id:g.id, anno:g.anno, titolo:g.titolo, meta:r.meta || {}, data:g.data || {}}); }
     const blob = new Blob([JSON.stringify({app:'PEE CNGEI', esportato:new Date().toISOString(), progetti:out}, null, 1)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PEE_CNGEI_progetti_' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PEE_CNGEI_progetti_' + new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-') + '.json'; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); clToast('Ho scaricato ' + out.length + (out.length === 1 ? ' progetto' : ' progetti'));
   }catch(e){ clToast('Non sono riuscito a scaricare: ' + clErr(e)); }
 };
@@ -18983,6 +18983,9 @@ window.shShareRe = function(){ const p = $('panel-pp'); if(p && SH.ppv === 'shar
 
 // ── dashboard ──
 function td(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+// date da mostrare: sempre giorno/mese/anno (nei nomi dei file con il trattino); i dati restano in ISO
+function dGMA(v){ const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] + '/' + m[1] : String(v || ''); }
+function tdF(){ return dGMA(td()).replace(/\//g, '-'); }
 const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 function fmtD(iso){ const [y,m,g] = iso.split('-').map(Number); return g + ' ' + MESI[m-1].slice(0,3); }
 function fmtDL(iso){ try{ return new Date(iso + 'T12:00').toLocaleDateString('it-IT', {weekday:'short', day:'numeric', month:'short'}).replace(/\.$/, ''); }catch(e){ return iso; } }
@@ -19482,7 +19485,7 @@ function rvRestHTML(g, rows){
   const ck = CHK_PP.map(gr => `<h3>${esc(gr.sec)}</h3><ul>` + gr.items.map(it => { const v = by('check', it.id).valore; return `<li>${esc(it.q)} — <b>${esc(RV_CK[v] || 'non indicato')}</b></li>`; }).join('') + '</ul>').join('');
   const sez = (g.sezioni || []).slice().sort().map(s => { const st = by('stato', 's' + s).valore, nt = by('nota', 's' + s).testo; return `<h3>${s} · ${esc(PP_SEZ[s - 1])}</h3><p>${st ? '<b>' + esc(RV_ST[st] || '') + '</b>' : '<i>nessuno stato</i>'}${nt ? '<br>' + esc(nt).replace(/\n/g, '<br>') : ''}</p>`; }).join('');
   return `<!doctype html><html lang="it"><meta charset="utf-8"><title>Restituzione · Giro ${g.n}</title><style>body{font:15px/1.5 Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;color:#222}h1{font-size:20px}h3{font-size:15px;margin:18px 0 4px}</style>
-<h1>Restituzione · ${esc(m.nome || '')}${m.titolo ? ' · ' + esc(m.titolo) : ''}</h1><p>Giro ${g.n} del ${esc(String(g.created_at || '').slice(0, 10))} · Sezioni ${esc((g.sezioni || []).join(', '))}</p>
+<h1>Restituzione · ${esc(m.nome || '')}${m.titolo ? ' · ' + esc(m.titolo) : ''}</h1><p>Giro ${g.n} del ${esc(dGMA(g.created_at))} · Sezioni ${esc((g.sezioni || []).join(', '))}</p>
 <p><b>Esito:</b> ${es ? esc(GESITO[es.valore] || '') : 'non indicato'}${es && es.testo ? '<br>' + esc(es.testo).replace(/\n/g, '<br>') : ''}</p><h2>Sezione per sezione</h2>${sez}<h2>Check-list</h2>${ck}</html>`;
 }
 
@@ -19496,17 +19499,17 @@ function giroWordBlob(gid){
   });
 }
 async function rvStoricoDocx(D){
-  await needDocx(); const P = [dPara('Storico della revisione', {size:40, bold:true, after:60}), dPara((D.nome || '') + (D.titolo ? ' · ' + D.titolo : '') + ' · scaricato il ' + td(), {size:18, color:'666666', after:240})];
+  await needDocx(); const P = [dPara('Storico della revisione', {size:40, bold:true, after:60}), dPara((D.nome || '') + (D.titolo ? ' · ' + D.titolo : '') + ' · scaricato il ' + dGMA(td()), {size:18, color:'666666', after:240})];
   const nOf = {}; (D.copie || []).forEach(g => { nOf[g.id] = g.n; });
   (D.revisioni || []).slice().sort((a, b) => String(a.aperta_il).localeCompare(String(b.aperta_il))).forEach((v, i) => {
     P.push(dPara('Revisione ' + (i + 1) + ' · ' + (v.stato === 'chiusa' ? (v.esito === 'approvata' ? 'approvata' : 'chiusa (storica)') : 'aperta') + (v.revisore_email ? ' · revisore: ' + v.revisore_email : ''), {size:26, bold:true, before:200, after:80}));
-    P.push(dPara('Aperta il ' + String(v.aperta_il || '').slice(0, 10) + (v.chiusa_il ? ' · chiusa il ' + String(v.chiusa_il).slice(0, 10) : '') + (v.nota_chiusura ? ' · nota: ' + v.nota_chiusura : ''), {size:18, color:'666666'}));
+    P.push(dPara('Aperta il ' + dGMA(v.aperta_il) + (v.chiusa_il ? ' · chiusa il ' + dGMA(v.chiusa_il) : '') + (v.nota_chiusura ? ' · nota: ' + v.nota_chiusura : ''), {size:18, color:'666666'}));
     (D.punti || []).filter(x => x.revisione_id === v.id).forEach(x => {
       const lab = rpLabel(x.chiave), com = (D.commenti || []).filter(c => c.tipo === 'nota' && c.chiave === x.chiave && c.testo).sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at))).pop();
       P.push(dPara((lab.sec ? 'Sezione ' + lab.sec + ' · ' : '') + lab.txt + ' — ' + (RV_PS[x.stato] || x.stato), {bold:true, before:140, after:40, keepNext:true}));
       if(com) P.push(dPara((com.autore_nome || 'Revisore') + ': ' + com.testo, {after:40}));
       if(x.nota) P.push(dPara('Nota del compilatore: ' + x.nota, {after:40}));
-      (D.dialogo || []).filter(m => m.chiave === x.chiave).forEach(m => P.push(dPara((m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Compilatore' : 'Revisore')) + ' (' + String(m.created_at || '').slice(0, 10) + '): ' + m.testo, {size:18, indent:300, after:20})));
+      (D.dialogo || []).filter(m => m.chiave === x.chiave).forEach(m => P.push(dPara((m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Compilatore' : 'Revisore')) + ' (' + dGMA(m.created_at) + '): ' + m.testo, {size:18, indent:300, after:20})));
     });
   });
   const es = (D.commenti || []).filter(c => c.tipo === 'esito'); if(es.length){ P.push(dPara('Esiti registrati', {size:26, bold:true, before:240, after:80})); es.forEach(e => P.push(dPara('Copia ' + (nOf[e.giro_id] || '') + ' · ' + (e.autore_nome || 'Revisore') + ': ' + (GESITO[e.valore] || e.valore) + (e.testo ? ' — ' + e.testo : ''), {after:40}))); }
@@ -19523,7 +19526,7 @@ async function rvPackFill(root, aid, nome, titolo){
   root.file('dati/storico_completo.json', JSON.stringify(D, null, 1));
   let note = '';
   try{ root.file('Storico della revisione.docx', await rvStoricoDocx(D)); }catch(e){ note += 'Il Word dello storico non è stato generato.\n'; }
-  for(const g of (gg.data || [])){ const nm = 'Copia ' + g.n + ' - ' + String(g.created_at || '').slice(0, 10); root.file('copie/' + nm + '/copia_congelata.json', JSON.stringify(g.data || {}));
+  for(const g of (gg.data || [])){ const nm = 'Copia ' + g.n + ' - ' + dGMA(g.created_at).replace(/\//g, '-'); root.file('copie/' + nm + '/copia_congelata.json', JSON.stringify(g.data || {}));
     { const mine = (rr.data || []).filter(x => x.giro_id === g.id && x.user_id === CL.user.id); if(mine.length) root.file('copie/' + nm + '/restituzione.html', rvRestHTML(g, mine)); }
     giroWordBlob.err = ''; const b = await giroWordBlob(g.id); if(b) root.file('copie/' + nm + '/' + nm + '.docx', b); else note += 'Word non disponibile per la copia ' + g.n + (giroWordBlob.err ? ' (' + giroWordBlob.err + ')' : ' (nessuna risposta dal programma)') + ': si può riaprire dall’app.\n'; }
   return {copie:(gg.data || []).length, note};
@@ -19536,7 +19539,7 @@ window.rvBackupMine = async function(){
   if(!rvOk() || !CL.ctx || window.BRO){ showToast('Apri il tuo progetto per scaricare lo storico'); return; }
   try{ window._dlBusy = true; showToast('Preparo l’archivio dello storico… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), root = zip.folder('Storico - ' + rvSan(CL.ctx.titolo || 'progetto')), r = await rvPackFill(root, CL.ctx.id, clMyName(), CL.ctx.titolo || '');
-    root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Storico revisione - ' + rvSan(CL.ctx.titolo) + ' - ' + td() + '.zip'); showToast('Archivio scaricato (' + r.copie + ' copie)');
+    root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Storico revisione - ' + rvSan(CL.ctx.titolo) + ' - ' + tdF() + '.zip'); showToast('Archivio scaricato (' + r.copie + ' copie)');
   }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 // revisore/tutor: tutti i progetti che segue, in un solo archivio
@@ -19545,14 +19548,14 @@ window.rvBackupAll = async function(){
   try{ window._dlBusy = true; showToast('Preparo l’archivio di tutti i progetti… può servire qualche minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), top = zip.folder('Storico di tutti i progetti'); let tot = 0, note = '';
     for(const p of G){ const root = top.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')); const r = await rvPackFill(root, p.aid, p.nome, p.titolo); tot += r.copie; if(r.note) note += p.nome + ':\n' + r.note; }
-    top.file('LEGGIMI.txt', RV_LEGGIMI + (note ? '\nNote:\n' + note : '')); await rvZipOut(zip, 'Storico tutti i progetti - ' + td() + '.zip'); showToast('Archivio scaricato (' + G.length + ' progetti, ' + tot + ' copie)');
+    top.file('LEGGIMI.txt', RV_LEGGIMI + (note ? '\nNote:\n' + note : '')); await rvZipOut(zip, 'Storico tutti i progetti - ' + tdF() + '.zip'); showToast('Archivio scaricato (' + G.length + ' progetti, ' + tot + ' copie)');
   }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 window.rvPackage = async function(aid){
   const p = rvGroup(window._rvL || []).find(x => x.aid === aid); if(!p || !rvOk()) return;
   try{ window._dlBusy = true; showToast('Preparo il pacchetto… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), root = zip.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')), r = await rvPackFill(root, aid, p.nome, p.titolo);
-    root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Pacchetto revisione - ' + rvSan(p.nome) + ' - ' + td() + '.zip'); showToast('Pacchetto scaricato');
+    root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Pacchetto revisione - ' + rvSan(p.nome) + ' - ' + tdF() + '.zip'); showToast('Pacchetto scaricato');
   }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare il pacchetto: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 // ── spazio di revisione: nella copia aperta, a fianco, il pannello con stati, note, check-list ed esito ──
@@ -19968,7 +19971,7 @@ function rvHas(aid, k){ const S = window._rvs[aid]; return !!(S && S.pun[k]); }
 function rvStCnt(S){ const L = Object.keys(S.pun).map(k => S.pun[k].stato), n = x => L.filter(y => y === x).length; return {tot:L.length, da:n('da_fare'), att:n('attesa'), fat:n('fatto'), con:n('confermato')}; }
 function rvStBar(aid, mine){
   const S = window._rvs[aid]; if(!S) return ''; const v = S.rev, c = rvStCnt(S), bar = `<div class="rv-bar" aria-hidden="true"><span style="width:${c.tot ? Math.round(100 * c.con / c.tot) : 0}%"></span></div>`, hp = t => `<div class="rv-hp">${esc(t)}</div>`;
-  if(v.stato === 'chiusa') return `<div class="rv-q rv-st-bar"><b>✓ Revisione chiusa</b> <span class="rv-pn">${v.esito === 'approvata' ? 'approvata' : 'storica'}${v.chiusa_il ? ' il ' + esc(String(v.chiusa_il).slice(0, 10)) : ''}</span>${v.nota_chiusura ? `<div class="rv-hp">${esc(v.nota_chiusura)}</div>` : ''}</div>`;
+  if(v.stato === 'chiusa') return `<div class="rv-q rv-st-bar"><b>✓ Revisione chiusa</b> <span class="rv-pn">${v.esito === 'approvata' ? 'approvata' : 'storica'}${v.chiusa_il ? ' il ' + esc(dGMA(v.chiusa_il)) : ''}</span>${v.nota_chiusura ? `<div class="rv-hp">${esc(v.nota_chiusura)}</div>` : ''}</div>`;
   const turno = v.fase === 'compilatore' ? (mine ? 'Tocca a te' : 'Tocca a chi ha scritto il progetto') : (mine ? 'Tocca al revisore' : 'Tocca a te'), mio = (v.fase === 'compilatore') === mine;
   let h = `<div class="rv-q rv-st-bar"><b>${esc(turno)}</b> <span class="rv-pn">${c.con} confermati su ${c.tot}</span>${bar}`;
   if(mine){
