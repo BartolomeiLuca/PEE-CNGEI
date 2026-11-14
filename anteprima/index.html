@@ -9081,7 +9081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141500'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141620'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -15501,7 +15501,7 @@ async function clInit(){
     if(CL.user) setTimeout(clArcPrefetch, 1500);
     else setTimeout(nacReturn, 400);
     if(CL.user && !window.BRO) setTimeout(pjSplitAll, 2500);
-    if(CL.user){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 120000); }
+    if(CL.user){ clPerTe(); setInterval(() => { if(document.visibilityState === 'visible') clPerTe(); }, 30000); window.addEventListener('focus', () => { try{ if(CL.user) clPerTe(); }catch(e){} }); }
     if(CL.user && CL.ctx && !window.BRO) ptAvPending();
     if(CL.user){ clRealtime(); setInterval(clPollRemote, 60000); }
   }catch(e){ clSetStatus('off'); }
@@ -16359,7 +16359,7 @@ function ptMatMine(list, people){ const out=[]; (list||[]).forEach((per,idx)=>(p
 // avvisi e suggerimenti lasciati a me da chi ha il progetto
 const PT_KEEP_DAYS=15; // gli avvisi letti restano in «Per te» 15 giorni, poi si archiviano (restano nel progetto)
 function ptAvMine(d, people){ const A=(d&&d.scheda&&Array.isArray(d.scheda.avvisi))?d.scheda.avvisi:[]; return A.filter(a=>a&&affIsMe(a.a,people)&&(!a.letto||(a.lettoAt&&Date.now()-a.lettoAt<PT_KEEP_DAYS*864e5))); }
-function ptAckKey(x){ return [x.k,x.id,x.mid,x.idx,x.j,x.av,x.u,x.g,x.k==='usc'?x.t:'',x.prima,x.email,(x.parti||x.cose||[]).join(',')].join('|'); }
+function ptAckKey(x){ return [x.k,x.id,x.mid,x.idx,x.j,x.av,x.u,x.g,x.k==='usc'?x.t:'',x.prima,x.email,(x.parti||x.cose||[]).join(','),(x.k==='rvg'||x.k==='gfb')?(x.n||0)+'/'+(x.pend||0):''].join('|'); }
 function ptAckGet(){ try{ return JSON.parse(localStorage.getItem('bussola_pt_ok_'+((CL.user&&CL.user.email)||''))||'{}')||{}; }catch(e){ return {}; } }
 // «Ho capito»: l'avviso resta nell'elenco ma non conta più fra le novità
 function ptAckPt(n){ const x=(CL.perte||[])[n]; if(!x) return; try{ const S=ptAckGet(); S[ptAckKey(x)]=Date.now(); const ks=Object.keys(S); if(ks.length>400) ks.sort((a,b)=>S[a]-S[b]).slice(0,ks.length-400).forEach(k=>delete S[k]); localStorage.setItem('bussola_pt_ok_'+((CL.user&&CL.user.email)||''), JSON.stringify(S)); }catch(e){}
@@ -16417,6 +16417,7 @@ async function clPerTe(){
         const by = {}, pend = {}; ok.forEach(x => { if(x.updated_at > sn) by[x.giro_id] = (by[x.giro_id] || 0) + 1; if(x.tipo === 'nota' && !x.recepita) pend[x.giro_id] = (pend[x.giro_id] || 0) + 1; }); const ids = Array.from(new Set(Object.keys(by).concat(Object.keys(pend))));
         if(ids.length){ const gr = await CL.sb.from('pee_giri').select('id,n,archivio_id,meta').in('id', ids); let rvc = null; try{ const rr = await CL.sb.from('pee_revisioni').select('id,archivio_id').eq('stato', 'aperta').eq('owner_id', CL.user.id); if(!rr.error){ rvc = {}; const vi = (rr.data || []).map(x => x.id); const pp = vi.length ? await CL.sb.from('pee_revisioni_punto').select('revisione_id,stato').in('revisione_id', vi).in('stato', ['da_fare', 'attesa']) : {data:[]}; (rr.data || []).forEach(v => { rvc[v.archivio_id] = (pp.data || []).filter(x => x.revisione_id === v.id).length; }); } }catch(e){}
           (gr.data || []).forEach(g => { const pq = rvc ? (rvc[g.archivio_id] || 0) : (pend[g.id] || 0); if(!pq && !by[g.id]) return; _fbN++; items.push({k:'gfb', id:g.id, n:by[g.id] || 0, pend:pq, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
+    { const AK2 = ptAckGet(); items.forEach(x => { if(x.k === 'rvg' || x.k === 'gfb'){ x.ack = !!AK2[ptAckKey(x)]; if(x.ack) x.hot = false; } }); }
     CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
     try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });

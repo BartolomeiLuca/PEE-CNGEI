@@ -28,11 +28,11 @@
 23. [ ] Unificare scelta 1–3/1–5 nel pannello invio con «Consegna finale · Sezioni 1–5»
 24. [ ] «Recepita»/«fatto»: come si spunta? se fatto → recepita automatica
 25. [ ] Giro 1 e giro 2 del revisore da sistemare
-26. [ ] Refresh continuo della pagina
+26. [X] Refresh continuo della pagina
 27. [ ] Refresh nella pagina progetti apre la versione in revisione
-28. [ ] Avviso «è disponibile una nuova versione» che compare a volte
+28. [X] Avviso «è disponibile una nuova versione» che compare a volte
 29. [ ] Scarica pacchetto / tutto lo storico / Word non funzionano più
 30. [ ] Capogruppo: pulsante (mail/WhatsApp) al punto 2 dell'invio per coinvolgerlo prima del Tutor/ICdF
-31. [ ] «Ho capito» in «Per te»: il numerino deve spegnersi, per tutti gli avvisi
-32. [ ] Al compilatore il numerino della novità di revisione compare con troppo ritardo
+31. [X] «Ho capito» in «Per te»: il numerino deve spegnersi, per tutti gli avvisi
+32. [X] Al compilatore il numerino della novità di revisione compare con troppo ritardo
 33. [X] Barra in alto coperta nella copia del giro (screenshot) — correzione fatta (da verificare)
