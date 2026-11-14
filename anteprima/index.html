@@ -9081,7 +9081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141740'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141900'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -15982,7 +15982,7 @@ async function dbSgDel(id){ const {error} = await CL.sb.from('pee_suggerimenti')
 
 // ── sola lettura (progetto di un collega) ──
 window.giroChiudi = function(){ try{ if(window.opener){ window.close(); } }catch(e){} setTimeout(roExit, 250); };
-function roExit(){ try{ sessionStorage.removeItem('bussola_ro'); }catch(e){} appReload(); }
+function roExit(){ try{ sessionStorage.removeItem('bussola_ro'); }catch(e){} try{ if(/^#giro=/.test(String(location.hash))) history.replaceState(null, '', location.pathname + location.search); }catch(e){} appReload(); }
 async function clOpenShared(id){
   try{
     const list = await dbShared(); const it = list.find(x => x.id === id);
