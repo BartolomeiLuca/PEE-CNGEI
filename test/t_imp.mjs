@@ -1,0 +1,26 @@
+// «Importa» dentro l'evento: pulsante separato da Esporta; giornata e momento in JSON si aggiungono senza toccare il resto
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+process.env.SITE = process.env.SITE || '/tmp/site_pre';
+const base = (await serve()) + 'anteprima/'; const db = new FakeDB();
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi');
+const br = await launch(process.argv[2] || 'chromium');
+const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+const errs = []; P.on('pageerror', e => errs.push(String(e.message || e)));
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(3500);
+const evId = await ev(() => Object.values(scheda.uscite).find(u => u.dest === 'staff' && !u.del && /Riunione di staff · programmazione/.test(u.testo)).id);
+await ev(id => shSrUsc(id), evId); await sleep(1800);
+const ui = await ev(() => { const imp = Array.from(document.querySelectorAll('button')).find(b => /⤒ Importa/.test(b.textContent)); const menu = document.querySelector('.usc-pmm'); return {imp:!!imp, inMenu:!!(menu && /Importa/.test(menu.textContent)), beforeEsporta:!!(imp && imp.compareDocumentPosition(document.querySelector('.usc-pm')) & 4)}; });
+ok(ui.imp && !ui.inMenu, 'pulsante «Importa» separato, non più dentro Esporta: ' + JSON.stringify(ui));
+const before = await ev(id => { const u = scheda.uscite[id]; return {n:uscNG(u), blocchi:Object.values(u.prog).filter(m => m && !m.del).length}; }, evId);
+const pick = async (obj) => { const [fc] = await Promise.all([P.waitForEvent('filechooser', {timeout:8000}), P.evaluate(() => Array.from(document.querySelectorAll('button')).find(b => /⤒ Importa/.test(b.textContent)).click())]); await fc.setFiles({name:'x.json', mimeType:'application/json', buffer:Buffer.from(JSON.stringify(obj))}); await sleep(900); };
+await pick({pee:'giornata', v:1, g:1, label:'Prova', prog:{k1:{k:'mf', tipo:'mom', g:1, ord:1, dur:30, t:'Importato da giornata', f:[]}}, att:{}, bm:{}, piatti:[]});
+const d1 = await ev(id => { const u = scheda.uscite[id]; return {n:uscNG(u), t:Object.values(u.prog).filter(m => m && !m.del && m.t === 'Importato da giornata').length, blocchi:Object.values(u.prog).filter(m => m && !m.del).length}; }, evId);
+ok(d1.n === before.n + 1 && d1.t === 1 && d1.blocchi === before.blocchi + 1, 'giornata importata: aggiunta come nuova giornata, il resto resta: ' + JSON.stringify({before, d1}));
+await pick({pee:'momento', v:1, m:{k:'mf', tipo:'mom', dur:20, t:'Momento importato', f:[]}, att:null, bm:[]});
+const d2 = await ev(id => { const u = scheda.uscite[id]; return {n:uscNG(u), t:Object.values(u.prog).filter(m => m && !m.del && m.t === 'Momento importato').length, blocchi:Object.values(u.prog).filter(m => m && !m.del).length}; }, evId);
+ok(d2.n === d1.n && d2.t === 1 && d2.blocchi === d1.blocchi + 1, 'momento importato: aggiunto alla giornata aperta: ' + JSON.stringify(d2));
+await pick({pee:'evento', v:1, u:{testo:'X', prog:{}}, att:{}});
+const d3 = await ev(id => Object.values(scheda.uscite[id].prog).filter(m => m && !m.del).length, evId);
+ok(d3 === d2.blocchi, 'un evento intero non viene mescolato: nessuna modifica');
+ok(errs.length === 0, 'nessun errore di pagina: ' + errs.slice(0, 2).join(' | '));
+summary(); process.exit(0);
