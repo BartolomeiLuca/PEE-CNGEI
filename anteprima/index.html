@@ -9081,7 +9081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141900'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141915'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19490,7 +19490,7 @@ function rvRestHTML(g, rows){
 function giroWordBlob(gid){
   return new Promise(res => {
     let done = false; const f = document.createElement('iframe'), end = b => { if(done) return; done = true; window.removeEventListener('message', on); try{ f.remove(); }catch(e){} res(b); };
-    const on = ev => { if(ev.origin === location.origin && ev.data && ev.data.t === 'rvword' && ev.data.id === gid) end(ev.data.blob || null); };
+    const on = ev => { if(ev.origin === location.origin && ev.data && ev.data.t === 'rvword' && ev.data.id === gid){ giroWordBlob.err = ev.data.err || ''; end(ev.data.blob || null); } };
     window.addEventListener('message', on); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'preparazione Word'; f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:800px;border:0;opacity:0;pointer-events:none';
     f.src = location.href.split('#')[0] + '#giro=' + gid + '&word=1&wcap=1'; document.body.appendChild(f); setTimeout(() => end(null), 75000);
   });
@@ -19525,7 +19525,7 @@ async function rvPackFill(root, aid, nome, titolo){
   try{ root.file('Storico della revisione.docx', await rvStoricoDocx(D)); }catch(e){ note += 'Il Word dello storico non è stato generato.\n'; }
   for(const g of (gg.data || [])){ const nm = 'Copia ' + g.n + ' - ' + String(g.created_at || '').slice(0, 10); root.file('copie/' + nm + '/copia_congelata.json', JSON.stringify(g.data || {}));
     { const mine = (rr.data || []).filter(x => x.giro_id === g.id && x.user_id === CL.user.id); if(mine.length) root.file('copie/' + nm + '/restituzione.html', rvRestHTML(g, mine)); }
-    const b = await giroWordBlob(g.id); if(b) root.file('copie/' + nm + '/' + nm + '.docx', b); else note += 'Word non disponibile per la copia ' + g.n + ' (si può riaprire dall’app).\n'; }
+    giroWordBlob.err = ''; const b = await giroWordBlob(g.id); if(b) root.file('copie/' + nm + '/' + nm + '.docx', b); else note += 'Word non disponibile per la copia ' + g.n + (giroWordBlob.err ? ' (' + giroWordBlob.err + ')' : ' (nessuna risposta dal programma)') + ': si può riaprire dall’app.\n'; }
   return {copie:(gg.data || []).length, note};
 }
 async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}); window._dlBusy = false; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
@@ -19568,7 +19568,13 @@ window.rvGiroInit = function(){
       let word = false, docq = false, wcap = false; try{ wcap = sessionStorage.getItem('bussola_giro_wcap') === '1'; sessionStorage.removeItem('bussola_giro_wcap'); word = sessionStorage.getItem('bussola_giro_word') === '1'; sessionStorage.removeItem('bussola_giro_word'); docq = sessionStorage.getItem('bussola_giro_docq') === '1'; sessionStorage.removeItem('bussola_giro_docq'); }catch(e){}
       window._giroSez = (g.data.sezioni || []).slice();
       if(docq){ setTimeout(async () => { try{ const h = await rvDocHTML((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale'); parent.postMessage({t:'rvdoc', id:g.data.id, html:h}, location.origin); }catch(e){} }, 1500); return; }
-      if(word){ document.documentElement.classList.remove('rv-pre'); setTimeout(() => { try{ if(wcap) window._docxCapture = blob => { try{ parent.postMessage({t:'rvword', id:g.data.id, blob}, location.origin); }catch(e){} }; exportSchedaDocx((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale'); }catch(e){} }, 1800); }
+      if(word){ document.documentElement.classList.remove('rv-pre'); setTimeout(async () => {
+        // se il Word non si genera lo si dice subito (e perché), invece di lasciare chi aspetta fino allo scadere del tempo
+        const _wf = e => { try{ window._docxCapture = null; parent.postMessage({t:'rvword', id:g.data.id, blob:null, err:String((e && e.message) || e || 'generazione interrotta').slice(0, 140)}, location.origin); }catch(_e){} };
+        try{ if(wcap){ window._docxCapture = blob => { try{ parent.postMessage({t:'rvword', id:g.data.id, blob}, location.origin); }catch(e){} }; const _st = window.showToast; window.showToast = m => { window.__lastToast = m; try{ return _st(m); }catch(e){} }; }
+          await exportSchedaDocx((g.data.sezioni || []).some(x => x >= 4) ? 'completo' : 'parziale');
+          if(wcap && window._docxCapture) _wf(window.__lastToast || 'generazione interrotta');
+        }catch(e){ if(wcap) _wf(e); } }, 1800); }
       if(mine){ if(!word){ rvEnsureRd(g.data, true); setTimeout(() => { try{ window.rvDocInit(g.data, true); }catch(e){} }, 800); } return; }
       const d = await CL.sb.from('pee_giri_dest').select('ruolo').eq('giro_id', g.data.id).maybeSingle();
       const r = await CL.sb.from('pee_giri_rev').select('id,tipo,chiave,valore,testo,recepita').eq('giro_id', g.data.id).eq('user_id', CL.user.id);
