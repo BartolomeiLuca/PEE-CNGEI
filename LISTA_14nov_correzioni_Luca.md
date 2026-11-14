@@ -24,14 +24,14 @@
 19. [ ] Menu del progetto in copia uguale al menu dell'app
 20. [ ] Sottolineature/sfondi: solo per Sezione, Percorso, Attività (non ogni paragrafo)
 21. [ ] Revisioni da recepire: indicazione più precisa di dove intervenire
-22. [ ] Chiusura revisione 1–3 non appare nel pannello Progetti e non sblocca l'invio 1–5
+22. [X] Chiusura revisione 1–3 non appare nel pannello Progetti e non sblocca l'invio 1–5
 23. [ ] Unificare scelta 1–3/1–5 nel pannello invio con «Consegna finale · Sezioni 1–5»
 24. [ ] «Recepita»/«fatto»: come si spunta? se fatto → recepita automatica
 25. [ ] Giro 1 e giro 2 del revisore da sistemare
 26. [X] Refresh continuo della pagina
-27. [ ] Refresh nella pagina progetti apre la versione in revisione
+27. [X] Refresh nella pagina progetti apre la versione in revisione
 28. [X] Avviso «è disponibile una nuova versione» che compare a volte
-29. [ ] Scarica pacchetto / tutto lo storico / Word non funzionano più
+29. [X] Scarica pacchetto / tutto lo storico / Word non funzionano più
 30. [ ] Capogruppo: pulsante (mail/WhatsApp) al punto 2 dell'invio per coinvolgerlo prima del Tutor/ICdF
 31. [X] «Ho capito» in «Per te»: il numerino deve spegnersi, per tutti gli avvisi
 32. [X] Al compilatore il numerino della novità di revisione compare con troppo ritardo

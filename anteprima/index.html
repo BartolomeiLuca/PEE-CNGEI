@@ -19411,10 +19411,14 @@ window.rvListLoad = async function(){
     const ids = g.data.map(x => x.id);
     const d = await rvDestSel(ids);
     const r = await CL.sb.from('pee_giri_rev').select('giro_id,tipo,chiave,valore').eq('user_id', me).in('giro_id', ids);
-    return g.data.map(x => { const dd = d.find(y => y.giro_id === x.id) || {}, mine = (r.data || []).filter(y => y.giro_id === x.id);
-      const ruolo = dd.ruolo || 'copia', esito = (mine.find(y => y.tipo === 'esito') || {}).valore || '';
-      return {g:x, ruolo, esito, visto:!!dd.visto_il, mine, chiuso:mine.some(y => y.tipo === 'stato' && y.chiave === 'chiuso'),
-        done: ruolo === 'revisore' ? !!esito : (!!dd.visto_il || mine.length > 0)}; });
+    // revisione unica (13/11): l'ultima revisione di ciascun progetto, se esiste, decide se è chiusa o se la palla è del compilatore
+    const RV = {}; try{ const aids = Array.from(new Set(g.data.map(x => x.archivio_id))), q = await CL.sb.from('pee_revisioni').select('archivio_id,stato,fase,esito,aperta_il,revisore_email').in('archivio_id', aids).order('aperta_il', {ascending:false}); if(!q.error) (q.data || []).forEach(v => { if(!RV[v.archivio_id]) RV[v.archivio_id] = v; }); }catch(e){}
+    return g.data.map(x => { const dd = d.find(y => y.giro_id === x.id) || {}, mine = (r.data || []).filter(y => y.giro_id === x.id), R = RV[x.archivio_id];
+      const ruolo = dd.ruolo || 'copia'; let esito = (mine.find(y => y.tipo === 'esito') || {}).valore || '';
+      let chiuso = mine.some(y => y.tipo === 'stato' && y.chiave === 'chiuso'), waitC = false;
+      if(R){ if(R.stato === 'chiusa'){ chiuso = true; if(!esito && ruolo === 'revisore') esito = R.esito === 'approvata' ? 'approva' : 'da_integrare'; } else if(R.fase === 'compilatore') waitC = true; }
+      return {g:x, ruolo, esito, visto:!!dd.visto_il, mine, chiuso, rvChiusa:!!(R && R.stato === 'chiusa'),
+        done: ruolo === 'revisore' ? (!!esito || waitC || chiuso) : (!!dd.visto_il || mine.length > 0 || chiuso)}; });
   }catch(e){ return []; }
 };
 // raggruppa per compilatore/progetto; un progetto è «concluso» se l'ultimo giro porta il mio «concludi»
@@ -20044,7 +20048,11 @@ window.ppGiroFbAll = async function(){
   // l'approvazione della prima parte segue l'ultimo esito di ciascun revisore: se ci ripensa, si ritira da sola
   const last = {};
   L.filter(g => ppGiroBlk(g) === 1).forEach(g => (window._giroFb[g.id] || []).forEach(x => { if(x.tipo === 'esito' && x.autore_ruolo === 'revisore'){ const o = last[x.user_id]; if(!o || String(x.updated_at) > String(o.updated_at)) last[x.user_id] = x; } }));
-  const ap = Object.values(last).filter(x => x.valore === 'approva').sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))[0], cur = ppIter().apprB1;
+  let ap = Object.values(last).filter(x => x.valore === 'approva').sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))[0]; const cur = ppIter().apprB1;
+  // revisione unica: una revisione chiusa e approvata (anche se poi ne è partita un'altra) vale come approvazione della prima parte, se c'è stata una prima consegna (sezioni 1–3)
+  if(!ap){ try{ const aid = CL.ctx && CL.ctx.id;
+    if(aid && L.some(g => ppGiroBlk(g) === 1)){ const q = await CL.sb.from('pee_revisioni').select('stato,esito,chiusa_il,revisore_email').eq('archivio_id', aid).eq('stato', 'chiusa').eq('esito', 'approvata').order('chiusa_il', {ascending:true}).limit(1); const v = !q.error && (q.data || [])[0];
+      if(v) ap = {autore_nome:v.revisore_email || 'Revisore', updated_at:v.chiusa_il}; } }catch(e){} }
   if(ap && !cur){ ppIter().apprB1 = {chi:(ap.autore_nome || 'Revisore') + ' (in app)', date:String(ap.updated_at || '').slice(0, 10) || td(), src:'app'}; try{ saveData(true); }catch(e){} shPP('i'); }
   else if(!ap && cur && cur.src === 'app'){ delete ppIter().apprB1; try{ saveData(true); }catch(e){} shPP('i'); showToast('L’approvazione data in app è stata ritirata: il revisore ha cambiato esito'); }
 };
