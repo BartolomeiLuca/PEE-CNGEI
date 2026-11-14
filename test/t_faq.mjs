@@ -12,7 +12,7 @@ await ev(() => { try{ shDash(); }catch(e){} }); await sleep(500);
 await ev(() => faqOpen()); await sleep(300);
 const g = await ev(() => [...document.querySelectorAll('#g-modal .faq-sec, #g-modal .faq-gh')].map(e => (e.classList.contains('faq-sec') ? '## ' : '') + e.textContent.replace(/▶.*$/, '').trim()));
 ok(g[0] === '## In generale' && g.indexOf('## Pagina per pagina, come nel menu dell’app') > 5, 'gruppi: prima i generali, poi per pagina: ' + g.join(' / '));
-const t = await ev(() => document.getElementById('g-modal').innerText);
+const t = await ev(() => document.getElementById('g-modal').textContent);
 ok(!/piccole ⓘ/.test(t) && !/Dove vedo le novità/.test(t) && !/Indicatori di Raggiungimento/.test(t) && !/Archivio › Versioni/.test(t), 'voci tolte e termini corretti');
 ok(/Prossime scadenze/.test(t) && await ev(() => FAQ.some(f => /Riprendi da un progetto/.test(f[2]))), 'voci nuove presenti');
 await ev(() => modalClose());

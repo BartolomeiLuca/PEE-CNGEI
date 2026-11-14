@@ -1091,7 +1091,7 @@ body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .cl-row.cl-kE{box-shadow:inset 5px 0 0 #25734e}.cl-row.cl-kR{box-shadow:inset 5px 0 0 #c4231f}.cl-row.cl-kL{box-shadow:inset 5px 0 0 #e0d500}.cl-row.cl-kS{box-shadow:inset 5px 0 0 #1d4f8f}
 .cl-row.cl-kE.act{background:#e6f3ec}.cl-row.cl-kR.act{background:#fdecea}.cl-row.cl-kL.act{background:#fffbd0}.cl-row.cl-kS.act{background:#e8f0fa}
 .vid-list{padding:6px 12px 10px}
-.faq-home{padding:4px 20px 16px}.faq-sec{margin:18px 0 2px;padding:6px 0;border-bottom:2px solid var(--green,#1B5E42);font-size:12.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--green,#1B5E42)}.faq-sec:first-child{margin-top:6px}
+.faq-home{padding:4px 20px 16px}.faq-sec{margin:18px 0 2px;padding:6px 0;border-bottom:2px solid var(--green,#1B5E42);font-size:12.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--green,#1B5E42)}.faq-sec:first-child{margin-top:6px}.faq-mac{margin:0}.faq-mac>summary.faq-sec{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;min-height:40px;margin:10px 0 0}.faq-mac>summary.faq-sec::-webkit-details-marker{display:none}.faq-mac>summary.faq-sec::before{content:'▸';font-size:14px}.faq-mac[open]>summary.faq-sec::before{content:'▾'}
 @media(max-width:420px){.hdr .save-mini{display:none}.hdr-actions{gap:4px}.hdr-actions .hdr-btn{padding:6px 7px;min-width:36px}.hdr .cl-hdrbtn .cl-word,.hdr .fb-lbl{font-size:12px}}
 /* 11/11 (audit): sugli schermi più stretti (320px) la barra in alto di chi vede anche «Suggerimenti?» usciva di 3px e faceva scorrere la pagina */
 @media(max-width:340px){.hdr-actions{gap:2px}.hdr-actions .hdr-btn{min-width:34px;padding-left:5px;padding-right:5px}}
@@ -1716,7 +1716,7 @@ setTimeout(function(){ bootLd(false); }, 12000);
     </div>
     <div class="hdr-actions">
       <button class="hdr-btn fb-btn" onclick="fbOpen()" title="Scrivi un suggerimento o segnala un problema"><span class="fb-lbl">Suggerimenti?</span></button>
-      <button class="hdr-btn fb-btn faq-btn" onclick="faqOpen()" title="Domande frequenti"><span class="fb-lbl">FAQ</span></button>
+      <button class="hdr-btn fb-btn faq-btn" onclick="faqOpen(true)" title="Domande frequenti"><span class="fb-lbl">FAQ</span></button>
       <button class="hdr-btn" id="cl-histbtn" onclick="clOpenHist()" style="display:none" title="Versioni precedenti: torna a com'era il lavoro prima"><svg class="ic"><use href="#i-history"/></svg><span class="hdr-lbl"> Versioni</span></button>
       <button class="hdr-btn cl-hdrbtn" onclick="clOpen()" title="Account e archivio dei tuoi PEE · il lavoro si salva da solo"><span class="cl-word">Accedi</span><span class="save-mini"></span></button>
       <button class="hdr-btn hdr-zoom" onclick="zoomApp(0)" title="Cambia la dimensione del testo" aria-label="Cambia la dimensione del testo">A<small>a</small></button>
@@ -1751,7 +1751,7 @@ setTimeout(function(){ bootLd(false); }, 12000);
       </summary>
       <div class="istr-body">
 
-        <p style="font-size:12.5px;margin:0 0 10px">Hai un dubbio veloce? Guarda le <a href="#" onclick="faqOpen();return false">Domande frequenti</a>.</p>
+        <p style="font-size:12.5px;margin:0 0 10px">Hai un dubbio veloce? Guarda le <a href="#" onclick="faqOpen(true);return false">Domande frequenti</a>.</p>
         <h4>A cosa serve</h4>
         <p>PEE CNGEI accompagna educatori ed educatrici lungo l’intero anno di un’Unità: dall’osservazione del gruppo alla progettazione educativa, dall’organizzazione delle attività alla verifica, dalle spese alla conservazione dello storico. Non scrive al posto tuo: propone strutture, promemoria e spunti, e le scelte restano tue e del tuo staff. Una cosa scritta una volta serve a più scopi: la data di un’uscita alimenta calendario, elenco dell’anno, numeri e spese.</p>
 
@@ -1828,7 +1828,7 @@ setTimeout(function(){ bootLd(false); }, 12000);
     </details>
 
 
-    <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Suggerimenti?</a> · <a href="#" onclick="faqOpen();return false">Domande frequenti</a> · <a href="#" id="nov-link" onclick="novOpen();return false">Novità</a><span id="nov-dot" class="nov-dot" style="display:none" aria-label="ci sono novità"></span></p>
+    <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Suggerimenti?</a> · <a href="#" onclick="faqOpen(true);return false">Domande frequenti</a> · <a href="#" id="nov-link" onclick="novOpen();return false">Novità</a><span id="nov-dot" class="nov-dot" style="display:none" aria-label="ci sono novità"></span></p>
     <p style="text-align:center;font-size:12px;color:var(--ink-faint);margin:4px 0 0" id="app-ver"></p>
 
     <div class="tour-linkbox"><button class="tour-link" onclick="tourStart(true)">▶ Vedi il giro guidato (1 minuto)</button> <button class="tour-link" style="margin-left:14px" onclick="exStart('PP')">Esempio di Progetto Personale</button> <button class="tour-link" style="margin-left:14px" onclick="exStart('AN')">Esempio di Programmazione Educativa</button> <button class="tour-link" style="margin-left:14px;font-weight:500;opacity:.7" onclick="openModal()">Ricomincia da zero</button></div>
@@ -9360,36 +9360,59 @@ function faqHTML(k){
   const item = (f, i) => { const go = f[3] && (/^(gGo|shSub|shSec|shPerc|shShare)\(/.test(f[3]) ? inApp() : /^sh(Cal|Ele|AnnoV|Bil|NumAnno|Chk)\(/.test(f[3]) ? !!(typeof CL !== 'undefined' && CL.ctx) : true) ? `<button class="btn-ghost" style="margin-top:8px;font-size:12px;padding:6px 12px" onclick="faqGo(${i})">Portami lì →</button>` : '';
     return `<details class="faq-it" data-q="${sEsc((f[1]+' '+f[2]).replace(/<[^>]+>/g,'').toLowerCase())}"><summary>${SZT(f[1])}</summary><div class="faq-a">${SZT(f[2])}${go?'<div>'+go+'</div>':''}</div></details>`; };
   return `<input class="ax-in faq-q" id="faq-q${k}" type="search" placeholder="Cerca una domanda…" oninput="faqFilter(this.value,'${k}')" style="width:100%;margin:8px 0 6px">
-    <div id="faq-list${k}">${groups.map(g => `${g === FAQ_GEN[0] ? '<div class="faq-sec">In generale</div>' : g === FAQ_MENU[0] ? '<div class="faq-sec">Pagina per pagina, come nel menu dell’app</div>' : ''}<div class="faq-g"><div class="faq-gh">${g}${FAQ_VID[g]?` <a href="#" class="vid-lk" style="text-transform:none;letter-spacing:0;font-size:12px" onclick="vidOpen(${FAQ_VID[g]});return false">▶ video</a>`:''}</div>${FAQ.map((f,i)=>f[0]===g?item(f,i):'').join('')}</div>`).join('')}</div>
+    <div id="faq-list${k}">${[['In generale',FAQ_GEN],['Pagina per pagina, come nel menu dell’app',FAQ_MENU]].map(([tt,L]) => { const gs = groups.filter(g => L.includes(g)); return !gs.length ? '' : `<details class="faq-mac"><summary class="faq-sec">${tt}</summary>${gs.map(g => `<div class="faq-g"><div class="faq-gh">${g}${FAQ_VID[g]?` <a href="#" class="vid-lk" style="text-transform:none;letter-spacing:0;font-size:12px" onclick="vidOpen(${FAQ_VID[g]});return false">▶ video</a>`:''}</div>${FAQ.map((f,i)=>f[0]===g?item(f,i):'').join('')}</div>`).join('')}</details>`; }).join('')}</div>
     <p class="faq-none" id="faq-none${k}" style="display:none">Nessuna domanda trovata.</p>
     <p style="font-size:12px;color:var(--ink-mid);margin:14px 0 0">Non hai trovato la risposta? Scrivici da <a href="#" onclick="modalClose();fbOpen();return false">Suggerimenti?</a>: le domande che arrivano diventano nuove risposte.</p>`;
 }
-function faqOpen(){
-  let here = null; try{ if(document.body.classList.contains('sh-in')) here = VIDEOS.find(v => v.n === vidHere()); }catch(e){}
-  modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Guida</h3>
-    <div class="gd-vid"><div class="gd-vh"><span class="gd-vi" aria-hidden="true">▶</span><div><b>Video tutorial</b><span>${VIDEOS.length} video brevi, uno per argomento</span></div></div>
-    <div class="gd-va">${here ? `<button type="button" class="btn-primary" onclick="vidOpen(${here.n})">Guarda: ${here.t}</button>` : ''}<button type="button" class="btn-ghost" onclick="vidList()">Tutti i video</button></div></div>
-    
-    <details class="gd-pan"><summary><b>Che cosa puoi fare con PEE CNGEI</b></summary><ul>
-      <li><b>Capire e osservare</b>: l’Unità, il contesto, lo staff; la griglia osservativa e il KOS; la lettura del gruppo e le priorità.</li>
+function gdWhat(w){
+  const PE = `<ul>
+      <li><b>Capire e osservare</b>: l’Unità, il contesto, lo staff; la griglia osservativa e il KOS; la lettura del gruppo e le priorità. In «Come osservo» crei le <b>attività osservative</b>, partendo da ciò che non hai ancora osservato.</li>
       <li><b>Progettare</b>: obiettivi e indicatori, percorsi educativi con le loro attività, Visione d’insieme dell’anno.</li>
-      <li><b>Realizzare</b>: Calendario e attività (riunioni, uscite, bivacchi, campi, con persone, pasti, quota e circolare), Elenco dell’anno numerato, spese mese per mese con giustificativi, Check dello staff.</li>
+      <li><b>Realizzare</b>: Calendario e attività (riunioni, uscite, bivacchi, campi, con persone, pasti, quota e circolare), Elenco dell’anno numerato, spese mese per mese con giustificativi, Check dello staff. Nel calendario trovi anche il <b>pit stop</b> a fine ciclo e il pannello «Da collocare», con le attività dei percorsi educativi e i momenti formativi dello staff.</li>
       <li><b>Misurare</b>: verifica delle attività e valutazione finale, Numeri dell’anno, Verifica dell’anno con il Word.</li>
-      <li><b>Conservare e condividere</b>: archivio degli anni con cestino di 30 giorni, duplicazione scelta voce per voce, lavoro con lo staff, Word e circolari.</li>
-      <li><b>Più cicli in un anno</b>: ogni programmazione (autunno, primavera…) è un ciclo; «Il mio anno» li mette insieme.</li>
-      <li><b>Progetto Personale</b>: le cinque Sezioni delle Linee Guida, gli invii e la checklist dei criteri.</li></ul></details>
-    <h4 class="gd-h">Domande frequenti</h4>` + faqHTML(''));
+      <li><b>Formare lo staff</b>: il percorso formativo, i momenti formativi collocati negli eventi del calendario.</li>
+      <li><b>Conservare e condividere</b>: archivio degli anni con cestino di 30 giorni, duplicazione scelta voce per voce, lavoro con lo staff, Word e circolari. Ogni giornata di un evento si può <b>esportare e importare</b> in JSON (pulsanti «Esporta» e «Importa» nell’evento): l’importazione aggiunge il contenuto a quello che hai già.</li>
+      <li><b>Più cicli in un anno</b>: ogni programmazione (autunno, primavera…) è un ciclo; «Il mio anno» li mette insieme.</li></ul>`;
+  const PP = `<ul>
+      <li><b>Compilare il Progetto Personale</b>: le cinque Sezioni delle Linee Guida, con la checklist dei criteri a portata di mano.</li>
+      <li><b>Osservare</b>: la griglia dei 24 percorsi, le letture del gruppo e le attività osservative (in «Come osservo» parti da ciò che non hai ancora osservato; chi collabora può proporne altre).</li>
+      <li><b>Scegliere i percorsi</b>: i percorsi non sono tutti da fare, meglio pochi vissuti in profondità; l’app ti aiuta a vedere dove il gruppo ha più da guadagnare.</li>
+      <li><b>Inviare e rivedere</b>: quando invii il Progetto Personale al Tutor o all’ICdF si apre <b>una sola revisione</b>, a turni; ogni giro resta nello storico (Copia N). Il revisore lavora sulla sua copia, e il tuo progetto resta tuo.</li>
+      <li><b>Conservare e condividere</b>: Word del progetto, pacchetto con le copie, archivio degli anni.</li></ul>`;
+  const el = document.getElementById('gd-what'); if(el) el.innerHTML = (w === 'PP' ? PP : PE);
+  document.querySelectorAll('.gd-sw button').forEach(b => b.classList.toggle('on', b.dataset.w === w));
+}
+function gdEx(){ const d = document.getElementById('gd-ex'); if(d){ d.open = true; d.scrollIntoView({block:'start', behavior:'smooth'}); } }
+function faqOpen(soloFaq){
+  let here = null; try{ if(document.body.classList.contains('sh-in')) here = VIDEOS.find(v => v.n === vidHere()); }catch(e){}
+  let w = 'PE'; try{ if(typeof MODE !== 'undefined' && MODE === 'personale') w = 'PP'; }catch(e){}
+  modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Guida</h3>
+    <div class="gd-top"><button type="button" class="btn-primary" onclick="gdEx()">Progetti d’esempio</button>${here ? `<button type="button" class="btn-ghost" onclick="vidOpen(${here.n})">▶ Guarda: ${here.t}</button>` : ''}</div>
+    <details class="gd-pan"><summary><b>Che cosa puoi fare con PEE CNGEI</b></summary>
+      <p style="margin:8px 0 4px;font-size:13px;line-height:1.5">PEE CNGEI ti accompagna nel costruire il tuo progetto: il Progetto Personale (PP) per chi lo realizza, la Programmazione Educativa (PE) per chi guida un’Unità. Scegli la guida che ti serve.</p>
+      <div class="gd-sw" role="group" aria-label="Scegli la guida"><button type="button" data-w="PP" onclick="gdWhat('PP')">Progetto Personale</button><button type="button" data-w="PE" onclick="gdWhat('PE')">Programmazione Educativa</button></div>
+      <div id="gd-what"></div></details>
+    <details class="gd-pan" id="gd-ex"><summary><b>Progetti d’esempio</b></summary>
+      <p style="margin:8px 0;font-size:13px;line-height:1.5">Due progetti immaginari già compilati in ogni parte, per vedere come si presenta un lavoro finito e farti un’idea di cosa scrivere. Servono da pietra di paragone: li puoi aprire, modificare, e poi eliminare con un clic.</p>
+      <div class="gd-top" style="margin:0"><button type="button" class="btn-ghost" onclick="modalClose();exStart('PP')">Esempio di Progetto Personale</button><button type="button" class="btn-ghost" onclick="modalClose();exStart('AN')">Esempio di Programmazione Educativa</button></div></details>
+    <details class="gd-pan"><summary><b>Video tutorial</b></summary>
+      <p style="margin:8px 0;font-size:13px;line-height:1.5">${VIDEOS.length} video brevi, uno per argomento.</p>
+      <div class="gd-top" style="margin:0">${here ? `<button type="button" class="btn-primary" onclick="vidOpen(${here.n})">Guarda: ${here.t}</button>` : ''}<button type="button" class="btn-ghost" onclick="vidList()">Tutti i video</button></div></details>
+    <details class="gd-pan" id="gd-faq"><summary><b>Domande frequenti</b></summary>${faqHTML('')}</details>`);
+  gdWhat(w);
+  if(soloFaq === true){ const d = document.getElementById('gd-faq'); if(d){ d.open = true; setTimeout(() => { try{ d.scrollIntoView({block:'start'}); }catch(e){} }, 50); } }
 }
 function faqHome(){ const h = document.getElementById('faq-home'); if(h && !h.innerHTML) h.innerHTML = faqHTML('-h'); }
 function faqFilter(v, k){ k = k || '';
   const t = String(v||'').toLowerCase().trim().split(/\s+/).filter(Boolean); let n = 0;
   document.querySelectorAll('#faq-list' + k + ' .faq-it').forEach(d => { const ok = t.every(w => d.dataset.q.includes(w)); d.style.display = ok ? '' : 'none'; if(ok) n++; if(t.length && ok) d.open = n <= 2; });
   document.querySelectorAll('#faq-list' + k + ' .faq-g').forEach(g => { g.style.display = [...g.querySelectorAll('.faq-it')].some(d => d.style.display !== 'none') ? '' : 'none'; });
+  document.querySelectorAll('#faq-list' + k + ' .faq-mac').forEach(m => { const v = [...m.querySelectorAll('.faq-g')].some(g => g.style.display !== 'none'); m.style.display = v ? '' : 'none'; if(t.length) m.open = v; else m.open = false; });
   const e = document.getElementById('faq-none' + k); if(e) e.style.display = n ? 'none' : '';
 }
 function faqGo(i){ const f = FAQ[i]; if(!f || !f[3]) return; modalClose(); try{ if(!/^(clOpen|clOpenHist|shGoHome)\(/.test(f[3]) && typeof clClose === 'function') clClose(); }catch(e){} setTimeout(() => { try{ (new Function(f[3]))(); }catch(e){} }, 50); }
 // link «Domande frequenti» in fondo ai riquadri «Come funziona»
-function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = '<a href="#" class="vid-lk" onclick="vidOpen(vidHere());return false">▶ Guarda il video</a> · Hai un dubbio? <a href="#" onclick="faqOpen();return false">Domande frequenti</a>'; b.appendChild(p); }); }
+function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = '<a href="#" class="vid-lk" onclick="vidOpen(vidHere());return false">▶ Guarda il video</a> · Hai un dubbio? <a href="#" onclick="faqOpen(true);return false">Domande frequenti</a>'; b.appendChild(p); }); }
 function novOpen(){
   modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Novità</h3><p style="font-size:12px;color:var(--ink-mid);margin:0 0 12px">Versione ${APP_VERSION}. Qualcosa non va o hai un’idea? Scrivici da “Suggerimenti?”.</p>`+
     NOVITA.map(n=>`<div style="margin:0 0 14px"><div style="font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase">${n.d}</div><div style="font-size:14px;font-weight:800;margin:2px 0 6px">${n.t}</div><ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.55">${n.i.map(x=>`<li style="margin:3px 0">${x}</li>`).join('')}</ul></div>`).join(''));
@@ -22635,6 +22658,8 @@ body.sh-in.sh-ready #g-subnav:not(:has(.gsn-act)){display:none!important}
 .cf-t thead th{white-space:nowrap}
 .cf-t th:first-child,.cf-t td:first-child{min-width:150px;word-break:normal;overflow-wrap:normal;hyphens:none}.cf-t{table-layout:fixed}.sh-sp{font-style:italic;opacity:.9}.hd-lnk[data-n]::after{content:attr(data-n);display:inline-block;min-width:18px;margin-left:6px;padding:1px 6px;border-radius:10px;background:#d4380d;color:#fff;font-size:12px;font-weight:800;text-align:center}.pf-tg{border:1px solid var(--border-light);background:#fff;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px;flex:none}.pf-c.shut .pf-tg{transform:rotate(-90deg)}.pf-c.shut>*:not(.pf-h){display:none}.tip-leg{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 6px;font-size:12px}.tip-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.tip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}.tip-g4{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}.tip-mc{border:1px solid var(--border-light);border-radius:10px;background:#fff;padding:8px 10px}.tip-mc.now{border-color:var(--green);box-shadow:0 0 0 2px var(--green-pale)}.tip-mh{font-weight:800;font-size:14px;margin-bottom:6px}.tip-mh span{font-weight:600;font-size:12px;color:var(--green)}.tip-ch{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:4px 8px;margin:0 0 4px;border-top:0;border-right:0;border-bottom:0;border-radius:4px;color:#222}.tip-lg{display:inline-block;padding:3px 10px;border-radius:4px;font-size:12px}button.tip-ch{cursor:pointer}.tip-no{color:#999;font-size:12px}.tip-sb{margin:0 0 6px}.tip-sb b{font-size:12px;color:var(--ink-mid)}.tip-sb ul{margin:2px 0 0;padding-left:18px;font-size:12.5px;line-height:1.45}.cap-dets{display:grid;gap:10px;margin:10px 0 14px;max-width:80ch}.cap-det{border:1px solid var(--border-light);border-radius:10px;background:#fff;padding:8px 14px}.cap-det summary{font-weight:800;font-size:14px;cursor:pointer}.cap-det p{margin:6px 0 4px;font-size:13px;line-height:1.55}.cap-amb{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0 18px}.cap-card{border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;background:#fff}.cap-card p{font-size:12.5px;margin:4px 0 6px;color:var(--ink-mid)}.cap-card ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}.cap-h{font-size:16px;margin:18px 0 6px}.cap-passi{list-style:none;margin:0 0 14px;padding:0}.cap-passo{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}.cap-passo p{margin:3px 0 6px;font-size:13px;line-height:1.5;max-width:70ch}.cap-n{flex:none;width:26px;height:26px;border-radius:50%;background:#2c5f3f;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.cap-peg{display:grid;gap:10px;margin:10px 0 16px;max-width:75ch}.cap-peg>div{border-left:3px solid #2c5f3f;padding:4px 12px}.cap-peg p{margin:2px 0 0;font-size:13px;line-height:1.5}.gr-oth{font-size:12px;background:#f6f6f2;border-left:3px solid #c9c4a8;padding:4px 8px;margin:2px 0 6px;color:#444}.gr-oth b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#777}.cf-t thead th:not(:first-child){width:62px;white-space:normal;overflow-wrap:anywhere;font-size:11.5px;line-height:1.2}.cf-t td:not(:first-child){text-align:center}.cf-t td:first-child,.cf-t th:first-child{overflow-wrap:anywhere}
 @media(max-width:899px){.cf-grid{grid-template-columns:minmax(0,1fr)}}
+/* Guida a pannelli */
+.gd-top{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.gd-sw{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px}.gd-sw button{min-height:36px;padding:6px 12px;border:1px solid #d6dcd5;border-radius:18px;background:#fff;font:inherit;font-size:13px;cursor:pointer}.gd-sw button.on{background:var(--brand-fill,#25734e);color:#fff;border-color:transparent}
 /* Guida: i video sono la prima voce */
 .gd-vid{border:1.5px solid var(--brand-ink,#1B5E42);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:#fff}
 .gd-vh{display:flex;align-items:center;gap:12px}
