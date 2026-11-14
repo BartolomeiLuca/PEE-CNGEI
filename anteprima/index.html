@@ -4224,7 +4224,17 @@ function startTool() {
   if(mn) mn.style.display='';
   try{ gInitNav(); }catch(e){ console.error(e); }
   try{ exBar(); }catch(e){}
+  try{ setTimeout(exRepairPF, 600); }catch(e){}
 }
+// Esempi PE creati prima della correzione: le attività del percorso formativo avevano l'evento ma non il momento dentro l'evento. Lo creo solo dove manca (non tocca i momenti già presenti né i dati dell'utente).
+function exRepairPF(){
+  try{ if(window.BRO || !scheda || scheda.esempio !== true || !Array.isArray(scheda.pf) || typeof window.pfPlace !== 'function') return;
+    const U = (scheda.uscite && typeof scheda.uscite === 'object') ? scheda.uscite : {}; let n = 0;
+    scheda.pf.forEach(x => { if(!x || !x.ev || x.evCy) return; const u = U[x.ev]; if(!u || u.del) return;
+      const has = Object.values(u.prog || {}).some(m => m && m.pfId === x.id && !m.del); if(has) return;
+      if(window.pfPlace(x.id, true)) n++; });
+    if(n && typeof saveDataDebounced === 'function') saveDataDebounced();
+  }catch(e){ console.warn('esempio: riparazione momenti formativi', e); } }
 function applyTheme(){
   let t = MODE==='staff' ? 'S' : (MODE==='giovani' ? FASCIA : '');
   try{ if(window.shBrandNow){ const b = shBrandNow(); if(b) t = b; } }catch(e){}
@@ -9083,7 +9093,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611142005'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611142040'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
