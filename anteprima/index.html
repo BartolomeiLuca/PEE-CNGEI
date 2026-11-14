@@ -9081,7 +9081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141620'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141740'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19971,7 +19971,12 @@ async function rvStRefresh(aid){ await rvStLoad(aid); try{ if(window._rd){ rvRen
 window.rvPuntoSet = async function(btn, stato){
   const box = btn.closest('.rv-st'); if(!box) return; const aid = box.dataset.a, S = window._rvs[aid]; if(!S) return; const ta = box.querySelector('textarea');
   btn.disabled = true;
-  try{ const r = await CL.sb.rpc('pee_rev_punto', {r:S.rev.id, k:box.dataset.k, s:stato, n:ta ? ta.value.trim() : ''}); if(r.error) throw r.error; await rvStRefresh(aid); }
+  try{ const r = await CL.sb.rpc('pee_rev_punto', {r:S.rev.id, k:box.dataset.k, s:stato, n:ta ? ta.value.trim() : ''}); if(r.error) throw r.error;
+    // chi ha scritto il progetto: «Fatto» = «recepita» (si segna e si toglie da sola, in tutti e due i sistemi)
+    try{ if(!window.BRO && CL.ctx && !CL.ctx.ruolo && CL.ctx.id === aid){ const rec = stato === 'fatto' || stato === 'confermato', gq = await CL.sb.from('pee_giri').select('id').eq('archivio_id', aid); const ids = (gq.data || []).map(g => g.id);
+      if(ids.length){ await CL.sb.from('pee_giri_rev').update({recepita:rec, recepita_il:rec ? new Date().toISOString() : null}).in('giro_id', ids).eq('tipo', 'nota').eq('chiave', box.dataset.k); }
+      const x = window._rp && (window._rp.pts || []).filter(q => q.chiave === box.dataset.k); if(x) x.forEach(q => { q.recepita = rec; }); } }catch(e){}
+    await rvStRefresh(aid); }
   catch(e){ btn.disabled = false; showToast('Non riuscito: ' + ((e && e.message) || 'riprova').slice(0, 80)); }
 };
 async function rvAutoCopia(S){

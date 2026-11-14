@@ -26,7 +26,7 @@
 21. [ ] Revisioni da recepire: indicazione più precisa di dove intervenire
 22. [X] Chiusura revisione 1–3 non appare nel pannello Progetti e non sblocca l'invio 1–5
 23. [ ] Unificare scelta 1–3/1–5 nel pannello invio con «Consegna finale · Sezioni 1–5»
-24. [ ] «Recepita»/«fatto»: come si spunta? se fatto → recepita automatica
+24. [X] «Recepita»/«fatto»: come si spunta? se fatto → recepita automatica
 25. [ ] Giro 1 e giro 2 del revisore da sistemare
 26. [X] Refresh continuo della pagina
 27. [X] Refresh nella pagina progetti apre la versione in revisione
