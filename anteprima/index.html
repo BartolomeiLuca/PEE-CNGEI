@@ -1827,7 +1827,7 @@ setTimeout(function(){ bootLd(false); }, 12000);
     <p style="text-align:center;font-size:12px;margin:14px 0 0"><span class="fb-beta">BETA</span> Versione di prova · <a href="#" onclick="fbOpen();return false">Suggerimenti?</a> · <a href="#" onclick="faqOpen();return false">Domande frequenti</a> · <a href="#" id="nov-link" onclick="novOpen();return false">Novità</a><span id="nov-dot" class="nov-dot" style="display:none" aria-label="ci sono novità"></span></p>
     <p style="text-align:center;font-size:12px;color:var(--ink-faint);margin:4px 0 0" id="app-ver"></p>
 
-    <div class="tour-linkbox"><button class="tour-link" onclick="tourStart(true)">▶ Vedi il giro guidato (1 minuto)</button> <button class="tour-link" style="margin-left:14px" onclick="exStart()">Apri un progetto di esempio</button> <button class="tour-link" style="margin-left:14px;font-weight:500;opacity:.7" onclick="openModal()">Ricomincia da zero</button></div>
+    <div class="tour-linkbox"><button class="tour-link" onclick="tourStart(true)">▶ Vedi il giro guidato (1 minuto)</button> <button class="tour-link" style="margin-left:14px" onclick="exStart('PP')">Esempio di Progetto Personale</button> <button class="tour-link" style="margin-left:14px" onclick="exStart('AN')">Esempio di Programmazione Educativa</button> <button class="tour-link" style="margin-left:14px;font-weight:500;opacity:.7" onclick="openModal()">Ricomincia da zero</button></div>
 
     <div class="cl-land"><button class="cl-hdrbtn" onclick="clOpen()"><svg class="ic"><use href="#i-cloud"/></svg><span class="cl-lbl"> Accedi o crea un account</span></button><div class="cl-nolog" id="cl-nolog">Si salva da solo nel cloud e lo ritrovi su ogni dispositivo. <a href="#" onclick="clNoAcc();return false">Continua senza account</a> (il lavoro resta solo su questo computer).</div></div>
 
@@ -7133,6 +7133,7 @@ async function exStart(kind){
       localStorage.removeItem(LSK); window._exNoAcc = true;
     }
     exReset(); if(window._exKind==='PP') exBuildPP(); else exBuild();
+    try{ if(typeof clPush==='function' && CL.ctx){ CL.pending=true; await clPush(); } }catch(e){}
     try{ if(CL && CL.ctx && CL.ctx.id && window.shOpen && document.getElementById('sh-root') && document.getElementById('sh-root').classList.contains('show')) window.shOpen(CL.ctx.id); }catch(e){}
     try{ [300,1200].forEach(t=>setTimeout(()=>{ try{ grRefresh(); }catch(e){} }, t)); }catch(e){}
   }catch(e){ showToast('Non riesco a creare l’esempio: '+(e&&e.message||e)); }
@@ -7148,56 +7149,244 @@ function exReset(){
   try{ document.querySelectorAll('#ed-bar,#ro-bar').forEach(e=>e.remove()); }catch(e){}
   pageTop();
 }
+// ── Esempio della Programmazione Educativa: il Reparto Kontiki, con tutte le parti dell'app compilate (pietra di paragone) ──
+// compila un percorso (strumenti, attività con verifica, checklist delle 7 caratteristiche)
+function exPercFill(pid, S){
+  const all=getAllPercorsi(); const C=all.find(p=>p.percorsoId===pid); if(!C) return; const i=all.indexOf(C);
+  C.strumSel=C.strumSel||{}; Object.keys(S.strum||{}).forEach(n=>{ C.strumSel[n]=S.strum[n]; });
+  S.acts.forEach((r,j)=>{ updateAttivita(i,j,'testo',r.t); updateAttivita(i,j,'lancio',r.lan); updateAttivita(i,j,'sviluppo',r.svi); updateAttivita(i,j,'conclusione',r.con);
+    if(r.tipi) updateAttivita(i,j,'tipi',r.tipi);
+    if(r.vb!==undefined){ updateAttivita(i,j,'vBene',r.vb); updateAttivita(i,j,'vMigl',r.vm); updateAttivita(i,j,'vAgg',r.va); } });
+  C.checklist={}; Object.keys(S.ck).forEach(k=>{ C.checklist[k]={checked:S.ck[k][1]==='si', val:S.ck[k][1], note:S.ck[k][0]}; });
+  C.coCostr=''; C.rielab='';
+}
+function exPercP5(){
+  exPercFill('P5',{
+    strum:{'Capo Pattuglia e Capo Equipaggio':'Il Capo Pattuglia è il referente del materiale della Pattuglia','Consiglio di Pattuglia':'Qui si decide chi cura cosa','Incarichi':'Incarichi a rotazione, scritti sul tabellone di Pattuglia','Uscita':'Uscita di Pattuglia con un budget vero','Impresa':''},
+    acts:[
+      {t:'Officina di Pattuglia', tipi:['Tecnica (pionieristica, topografia, cucina, primo soccorso…)','Riunione di Pattuglia'],
+       lan:'Arriva una lettera dal custode del rifugio: il campo è da sistemare e servono mani esperte. Ogni Pattuglia riceve una busta con un disegno da realizzare.',
+       svi:'Ogni Pattuglia progetta e costruisce con legature un oggetto utile al campo (portascarpe, tavolo, scaffale), dividendosi compiti e materiali. Gli adulti non scelgono i ruoli: chi non ha ancora un incarico lo propone la Pattuglia stessa. Si lavora due ore, con un tempo di prova finale.',
+       con:'Mostra delle costruzioni al Reparto e scelta di quelle che andranno al campo. Ogni Pattuglia dice chi ha fatto cosa e cosa ha imparato.',
+       vb:'Tutte le Pattuglie hanno finito la costruzione e i più piccoli hanno avuto compiti veri: due Esploratori del primo anno hanno fatto le legature quadre da soli.',
+       vm:'Il materiale è tornato in magazzino senza ordine e abbiamo perso venti minuti a cercare le corde. Una Pattuglia ha diviso i compiti troppo presto, senza ascoltare i più piccoli.',
+       va:'Dalla volta dopo ogni Pattuglia ha un «responsabile materiali» a rotazione, con un elenco scritto da riconsegnare a fine attività.'},
+      {t:'Uscita di Pattuglia con bilancio', tipi:['Uscita di Pattuglia'],
+       lan:'Ogni Pattuglia riceve una busta con un budget e una meta da raggiungere: «La busta contiene tutto quello che avete: sappiatene fare buon uso».',
+       svi:'Le Pattuglie preparano da sole menù, lista della spesa e materiale, poi vivono la giornata. Il Capo Pattuglia coordina e tiene il conto delle spese; un adulto per Pattuglia si limita a garantire sicurezza e non interviene sulle scelte.',
+       con:'Rendiconto delle spese con scontrini e racconto al Reparto: cosa è mancato, cosa si poteva fare diversamente. Si scrive su un cartellone «cosa porterei in più la prossima volta».',
+       vb:'Tre Pattuglie su quattro hanno rispettato il budget e una ha avanzato dei soldi: li ha proposti per la cassa di Reparto. Nessun materiale dimenticato a casa.',
+       vm:'Una Pattuglia ha sbagliato la spesa e ha dovuto cambiare il menù: all’inizio c’è stato nervosismo, poi lo hanno risolto da soli. In un caso lo scontrino è stato perso.',
+       va:'Aggiungeremo un modulo del rendiconto con le righe già pronte, così non si perdono pezzi.'},
+      {t:'Il magazzino di Reparto', tipi:['Posti d’azione / Incarichi'],
+       lan:'Il magazziniere (un Esploratore di 4° anno) lancia una sfida: «In un’ora il magazzino deve tornare in ordine, e deve restarci».',
+       svi:'Inventario a squadre miste (anni diversi insieme) con un foglio da riempire; si decidono insieme le regole di riordino e gli incarichi a rotazione per la cura del materiale. I più piccoli propongono gli scaffali e le etichette.',
+       con:'Tabellone degli incarichi appeso in sede; un cerchio breve: «Cosa ci serve per mantenere l’ordine fino al campo?» e una regola scelta dal Reparto.',
+       vb:'In un’ora il magazzino è stato riordinato e inventariato; le squadre miste hanno funzionato bene e le regole sono state scritte da loro.',
+       vm:'Alcuni del 4° anno hanno fatto in fretta i lavori più pesanti senza coinvolgere i più piccoli; l’etichettatura è rimasta a metà.',
+       va:'Un secondo incontro di dieci minuti dopo due settimane: «come sta il magazzino?», per vedere se la regola regge.'}
+    ],
+    ck:{nuova:['I ragazzi non avevano mai gestito un budget né un inventario: il magazzino è un compito reale e nuovo.','si'],
+        stimolante:['Si parte da una lettera del custode del rifugio, da una busta con un budget vero e da una sfida del magazziniere: un compito riconoscibile, non una lezione.','si'],
+        progressiva:['Dalla costruzione guidata (1), alla spesa e al budget (2), alla gestione del materiale comune del Reparto (3): ogni attività richiede più autonomia.','si'],
+        costruita:['I compiti sono decisi dalla Pattuglia (1), dal Capo Pattuglia (2) e dal Reparto (3, le regole del magazzino): gli adulti propongono la cornice.','si'],
+        rielaborativa:['Rielaborazione cognitiva alla fine di ogni attività (cosa ho imparato, cosa farei diversamente). Manca ancora una vera rielaborazione emotiva: la useremo nella prossima Uscita.','parte'],
+        esperienziale:['Si impara facendo: costruire, spendere, riordinare; ogni attività produce un oggetto o un risultato verificabile.','si'],
+        educativa:['Risponde alla necessità di Sezione 1 (materiale trascurato e compiti sempre agli stessi) e agli indicatori scelti per P5.','si']}
+  });
+  scheda.idrComp=Object.assign(scheda.idrComp||{}, {P5:{1:{c:'stimolato',note:'Portano a termine i compiti operativi quando c’è un incarico preciso: finora c’è sempre stata una richiesta degli adulti o del Capo Pattuglia.'},3:{c:'spontaneo',note:'Dopo il magazzino due Pattuglie hanno deciso da sole di tenere a posto le corde e le tende senza che nessuno lo dicesse.'}}});
+  scheda.valCompl=Object.assign(scheda.valCompl||{}, {P5:'L’Obiettivo è stato raggiunto: le Pattuglie si organizzano meglio, il materiale viene curato e i compiti sono distribuiti anche ai più piccoli. Gli Indicatori mostrano autonomia stimolata da noi e, in due Pattuglie, già spontanea. Da migliorare: la rielaborazione emotiva e la continuità della cura del magazzino nei mesi in cui non c’è l’Impresa. Riproporrei il budget e le squadre miste.'});
+}
+function exPercS3(){
+  exPercFill('S3',{
+    strum:{'Uscita':'Bivacco di due giorni sulla collina','Quadrato di Reparto':'Il racconto della sera','Plancia e Consiglio di Reparto':'Il Cerchio finale','Impresa':''},
+    acts:[
+      {t:'La notte delle stelle', tipi:['Veglia','Uscita di Reparto'],
+       lan:'Un vecchio diario di bordo, trovato in sede, parla di un cielo che «racconta storie». Il Capo Reparto lo legge a un angolo del tramonto e lascia una domanda: «Cosa dice il cielo a voi?».',
+       svi:'Uscita serale sulla collina: osservazione del cielo, mappa delle costellazioni disegnata in Pattuglia, racconti e un lungo silenzio sdraiati sui teli. Gli adulti non spiegano le stelle: rispondono solo se chiesto.',
+       con:'Fuoco di bivacco breve e un giro in cerchio: ognuno scrive una riga su ciò che più lo ha stupito e la lascia in un barattolo che resterà in sede.',
+       vb:'Il Reparto ha fatto silenzio per un quarto d’ora senza sollecitazioni. Un Esploratore ha chiesto perché le stelle cambiano posto, e un’altra ha risposto con quello che sapeva.',
+       vm:'La serata è stata un po’ lunga e i più piccoli erano stanchi; due Pattuglie hanno parlato sopra gli altri durante il racconto.',
+       va:'Prima della prossima notte accorceremo il racconto e faremo un giro di parola breve, con un oggetto che passa di mano.'},
+      {t:'Hike all’alba', tipi:['Uscita di Pattuglia'],
+       lan:'Ultima sfida dell’uscita: all’alba, ogni Pattuglia riceve una mappa e una consegna: «Arrivate in vetta prima che sorga il sole, senza torce, in silenzio».',
+       svi:'Cammino di Pattuglia prima dell’alba su un sentiero già percorso il pomeriggio, con una tappa in cui si ferma il passo e si ascolta il bosco per cinque minuti. In vetta colazione condivisa.',
+       con:'Condivisione in Pattuglia: «cosa porto a casa?» e una frase in cerchio di Reparto. Il Capo Reparto chiude con un solo pensiero.',
+       vb:'Tutte le Pattuglie sono arrivate in vetta in silenzio e due ragazzi hanno raccontato come l’alba li ha fatti sentire piccoli e contenti.',
+       vm:'Qualcuno ha rotto il silenzio per scherzare e un’altra Pattuglia è partita in ritardo e non ha visto l’alba.',
+       va:'Fisseremo l’orario di partenza con un Capo Pattuglia di riferimento e un adulto in coda per non perdere nessuno.'},
+      {t:'Diario della natura', tipi:['Sedimentazione'],
+       lan:'Ogni Pattuglia riceve un quaderno vuoto da riempire durante l’anno, con una lente di cartone e una consegna: «Ogni volta che qualcosa vi colpisce, scrivete».',
+       svi:'Osservazioni, disegni e fotografie di piante, animali e cieli incontrati nelle attività; ogni mese una pagina raccolta insieme. Gli adulti non correggono: chiedono «perché ti ha colpito?».',
+       con:'Mostra finale dei diari in sede e una lettura a voce alta di una pagina per Pattuglia; si scrive su un cartellone «cosa abbiamo imparato guardando».',
+       vb:'I diari si sono riempiti anche fuori dalle uscite: due Pattuglie hanno aggiunto disegni dal tragitto verso la sede.',
+       vm:'Una Pattuglia ha smesso dopo due settimane; i diari sono rimasti spesso in sede e non nello zaino.',
+       va:'Metteremo il diario nello zaino di Pattuglia e un «custode del diario» a rotazione.'}
+    ],
+    ck:{nuova:['Una notte in cui l’obiettivo è fermarsi e non fare: il Reparto di solito è abituato a muoversi e a giocare, non a stare.','si'],
+        stimolante:['Il diario di bordo e la domanda «cosa dice il cielo a voi?» accendono la curiosità; l’alba è una sfida ma anche una ricompensa.','si'],
+        progressiva:['Dalla serata guidata (1), alla notte e all’alba dove sono i ragazzi a decidere come stare (2), al diario che dura tutto l’anno (3): più autonomia e più profondità.','si'],
+        costruita:['La mappa delle costellazioni e le consegne dell’alba le costruiscono le Pattuglie; il diario lo gestiscono loro senza adulti.','si'],
+        rielaborativa:['Rielaborazione in tre momenti: la riga nel barattolo (emotiva), la condivisione in Pattuglia (emotiva e cognitiva) e la mostra dei diari (cognitiva).','si'],
+        esperienziale:['Si impara sperimentando di persona: stare in silenzio, camminare al buio, guardare davvero; poi si dà un nome a ciò che si è provato.','si'],
+        educativa:['Risponde alla necessità emersa in Sezione 1 (poco spazio per fermarsi e dire come ci si sente) e ai due Indicatori scelti per S3.','si']}
+  });
+  scheda.idrComp=Object.assign(scheda.idrComp||{}, {S3:{0:{c:'stimolato',note:'Si soffermano ad osservare elementi dell’ambiente e li fanno notare agli altri quando la consegna lo chiede; nelle altre attività lo fanno di rado.'},3:{c:'spontaneo',note:'Al ritorno dall’hike un Esploratore ha detto da solo ai compagni: «ti ricordi come era l’aria? Mi sentivo piccolo e a posto».'}}});
+  scheda.valCompl=Object.assign(scheda.valCompl||{}, {S3:'L’Obiettivo è stato raggiunto in parte: il Reparto ha vissuto momenti di silenzio e di stupore che prima non c’erano, e alcuni ragazzi hanno trovato parole per dire cosa provavano. Il diario ci dirà se questa attenzione continua nelle settimane in cui non c’è un bivacco. Cambierei il racconto lungo della sera e darei più tempo alla condivisione emotiva.'});
+}
+function exBlockKey(){ return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+function exPlaceBlk(u, pid, aid){ u.prog = u.prog || {}; let mx = 0; Object.values(u.prog).forEach(m => { if(m && !m.del && (Number(m.g) || 1) === 1) mx = Math.max(mx, Number(m.ord) || 0); });
+  u.prog[exBlockKey()] = {k:'att', tipo:'att', g:1, ord:mx + 1, dur:120, pid, aid, f:((typeof USC_BT !== 'undefined' && USC_BT.att && USC_BT.att[2]) || []).slice(), cr:Date.now()}; }
+// una riunione, un'uscita, un bivacco o un campo (con persone, luogo, costi, programma a blocchi)
+let _exN=0;
+function exUscAdd(o){
+  const id=uscNewId('u'); const nt=22; const ad=o.ad||(o.dest==='staff'?['Giulia Neri (CU)','Paolo Riva (VCU)','Elena Sarti (VCU)']:['Giulia Neri (CU)','Paolo Riva (VCU)','Elena Sarti (VCU)']);
+  const x={data:o.data, durata:o.dataFine?'piu':'giorno', pres:o.dest==='staff'?{ad}:{ad, rag:String(o.rag||nt), ragF:'12', ragM:'10'}, cibo:o.cibo||{carico:'ragazzi'}, luogo:o.luogo||{}, mat:o.mat||[], spese:o.spese||[]};
+  if(o.dataFine) x.dataFine=o.dataFine; if(o.tt) x.tt2=o.tt; if(o.sic) x.sic=o.sic; if(o.pb) x.pb=o.pb; if(o.piatti) x.piatti=o.piatti; if(o.contrib) x.contrib=o.contrib;
+  if(o.modello==='sede'){ try{ uscLuogoTipo(x,'sede'); }catch(e){} if(o.luogo) Object.assign(x.luogo,o.luogo); }
+  const u={id, cr:Date.now()+(_exN++), testo:o.testo, modello:o.modello, ax:x, prog:{}, hid:Object.assign({},USC_HID[o.modello]||{}), own:{}};
+  if(o.tipo) u.tipo=o.tipo; if(o.dest) u.dest=o.dest; if(o.ng) u.ng=o.ng;
+  const _oc={}; (o.blocks||[]).forEach((b,i)=>{ const g=b.g||1; _oc[g]=(_oc[g]||0)+1; const k=exBlockKey()+i; u.prog[k]=Object.assign({k:b.k, tipo:b.k, g, ord:_oc[g], dur:b.dur||60, cr:Date.now()+i}, b.f||{}); });
+  uscMap()[id]=u; return u;
+}
+// colloca un'attività del percorso (per titolo) in un contenitore
+function exPlace(u, pid, titolo, g){
+  const per=getAllPercorsi().find(p=>p.percorsoId===pid); if(!per) return; attIdsEnsure(per);
+  const a=(per.attivita||[]).find(z=>z&&String(z.testo||'').trim()===titolo); if(!a) return; exPlaceBlk(u, pid, a.aid);
+  if(g&&g>1){ const ms=Object.values(u.prog).filter(m=>m&&m.k==='att'&&m.aid===a.aid); ms.forEach(m=>{ m.g=g; let mx=0; Object.values(u.prog).forEach(z=>{ if(z!==m&&z&&(Number(z.g)||1)===g) mx=Math.max(mx,Number(z.ord)||0); }); m.ord=mx+1; }); }
+}
+function exUscite(){
+  const AD3=['Giulia Neri (CU)','Paolo Riva (VCU)','Elena Sarti (VCU)'];
+  const sede={ritrovo:'15:00',ritrovoDove:'in sede',rientro:'18:00',rientroDove:'in sede'};
+  const U={};
+  U.kos1=exUscAdd({testo:'Riunione di Reparto · KOS 1', modello:'sede', tipo:'Riunione di Reparto', data:'2026-09-19', luogo:sede,
+    blocks:[{k:'cerim',dur:15,f:{desc:'Alzabandiera e saluto del Reparto',chi:'Paolo'}},{k:'gioco',dur:45,f:{desc:'Il cerchio delle identità: ognuno porta un oggetto che lo rappresenta',chi:'Giulia'}},{k:'libero',dur:30,f:{desc:'Angolo di Pattuglia e merenda'}}]});
+  U.off=exUscAdd({testo:'Riunione di Reparto · Officina di Pattuglia', modello:'sede', tipo:'Riunione di Reparto', data:'2026-10-03', luogo:sede,
+    mat:[{cosa:'Corde e pali per pionieristica',q:4,qm:'pat',prov:'unita'},{cosa:'Cordino di canapa da 4 mm',q:6,prezzo:3.2,prov:'comprare'}],
+    spese:[{voce:'Cordino e pali (negozio di ferramenta)',importo:38.5,modo:'tot',cat:'materiali',carico:'unita'}],
+    blocks:[{k:'cerim',dur:15,f:{desc:'Alzabandiera',chi:'Elena'}},{k:'libero',dur:20,f:{desc:'Merenda'}}], tt:[{start:'15:00',dur:15,cosa:'Alzabandiera e lettera del custode',chi:'Giulia'},{dur:120,cosa:'Officina di Pattuglia',chi:'Paolo'},{dur:20,cosa:'Mostra e chiusura',chi:'Elena'}]});
+  exPlace(U.off,'P5','Officina di Pattuglia');
+  U.gioco=exUscAdd({testo:'Uscita di giornata · Chi guida oggi?', modello:'giorno', tipo:'Uscita di Reparto', data:'2026-10-10',
+    luogo:{ritrovo:'09:00',ritrovoDove:'in sede',rientro:'17:30',rientroDove:'in sede',tipo:'uscita',nome:'Collina di San Bartolo',mezzo:'piedi'},
+    cibo:{modo:'medio',medio:'6',unita:'giorno',carico:'ragazzi'}, spese:[{voce:'Cassetta di primo soccorso (ricarica)',importo:12,modo:'tot',cat:'materiali',carico:'unita'}],
+    sic:{numeri:'112 · guardia medica · Gruppo: Marco (CG)',rischi:'Sentiero con tratti in discesa e fondo sconnesso: scarponi, giacca, borracce piene; ogni base ha un adulto che vede il percorso.'}, pb:{pioggia:'Con pioggia forte il gioco si svolge nel parco vicino alla sede, con le stesse basi ridotte a quattro.'},
+    blocks:[{k:'cerim',dur:15,f:{desc:'Alzabandiera in sede e partenza',chi:'Paolo'}},{k:'sposta',dur:40,f:{trip:'A piedi fino alla collina'}},{k:'pasto',dur:60,f:{pasto:'pranzo',menu:'Panino a sacco di Pattuglia'}}]});
+  exPlace(U.gioco,'C3','Chi guida oggi?');
+  U.camp=exUscAdd({testo:'Uscita di Reparto · costruzione del campo base', modello:'giorno', tipo:'Uscita di Reparto', data:'2026-10-17',
+    luogo:{ritrovo:'09:00',ritrovoDove:'in sede',rientro:'18:00',rientroDove:'in sede',tipo:'uscita',nome:'Pineta del Colle',mezzo:'piedi'},
+    cibo:{modo:'dettaglio',carico:'ragazzi'}, piatti:[{nome:'Pasta al sugo con verdure',g:1,pasto:'pranzo',unico:false,ingr:[{nome:'Pasta',dose:90,um:'g',prezzo:1.6},{nome:'Passata di pomodoro',dose:50,um:'g',prezzo:1.9},{nome:'Zucchine',dose:50,um:'g',prezzo:2.4}]},{nome:'Frutta di stagione',g:1,pasto:'merenda',ingr:[{nome:'Mele',dose:1,um:'pz',prezzo:0.45}]}],
+    spese:[{voce:'Autobus urbano per il gruppo',importo:1.5,modo:'pers',cat:'trasporti',carico:'ragazzi'}],
+    sic:{numeri:'112 · guardia medica',rischi:'Uso di coltelli e seghetti: lo staff ripete le regole all’inizio; chi ha meno di 12 anni non usa il seghetto da solo.'}, pb:{pioggia:'Se piove si costruisce sotto la tettoia della pineta e il pranzo è in sede.'},
+    blocks:[{k:'cerim',dur:15,f:{desc:'Alzabandiera, divisione in Pattuglie',chi:'Giulia'}},{k:'nuova',dur:150,f:{desc:'Si costruisce il campo base di Pattuglia'}},{k:'pasto',dur:75,f:{pasto:'pranzo',menu:'Pasta al sugo con verdure'}},{k:'gioco',dur:90,f:{desc:'Gioco a squadre miste di collaborazione tra Pattuglie'}}]});
+  exPlace(U.camp,'P5','Uscita di Pattuglia con bilancio');
+  U.cdr=exUscAdd({testo:'Consiglio di Reparto di ottobre', modello:'sede', tipo:'Consiglio di Reparto / Plancia', data:'2026-10-21', luogo:{ritrovo:'18:30',ritrovoDove:'in sede',rientro:'20:00',rientroDove:'in sede'}, rag:12,
+    blocks:[{k:'nuova',dur:50,f:{desc:'Mappe dei talenti e Posti d’azione'}}]});
+  exPlace(U.cdr,'C3','Il Consiglio dei talenti');
+  U.mag=exUscAdd({testo:'Riunione di Reparto · il magazzino', modello:'sede', tipo:'Riunione di Reparto', data:'2026-10-24', luogo:sede,
+    blocks:[{k:'cerim',dur:10,f:{desc:'Alzabandiera',chi:'Elena'}}]});
+  exPlace(U.mag,'P5','Il magazzino di Reparto');
+  U.biv=exUscAdd({testo:'Bivacco · la notte delle stelle', modello:'bivacco', tipo:'Bivacco', data:'2026-10-31', dataFine:'2026-11-01',
+    luogo:{ritrovo:'15:00',ritrovoDove:'in sede',rientro:'12:00',rientroDove:'in sede',tipo:'uscita',nome:'Casa della Montagna · Monte San Bartolo',mezzo:'pullman',km:14},
+    cibo:{modo:'dettaglio',carico:'ragazzi'}, piatti:[{nome:'Risotto con zucca e salsiccia',g:1,pasto:'cena',ingr:[{nome:'Riso',dose:90,um:'g',prezzo:2.2},{nome:'Zucca',dose:150,um:'g',prezzo:1.8},{nome:'Salsiccia',dose:60,um:'g',prezzo:9.5}]},{nome:'Latte, biscotti e marmellata',g:2,pasto:'colazione',ingr:[{nome:'Latte',dose:250,um:'ml',prezzo:1.5},{nome:'Biscotti',dose:50,um:'g',prezzo:4}]}],
+    spese:[{voce:'Casa della Montagna (affitto per la notte)',importo:180,modo:'tot',cat:'locazioni',carico:'ragazzi'},{voce:'Pullman andata e ritorno',importo:320,modo:'tot',cat:'trasporti',carico:'ragazzi'}],
+    mat:[{cosa:'Torce frontali',q:1,qm:'rag',prov:'unita'},{cosa:'Teli e coperte per il cielo',q:1,qm:'pat',prov:'unita'},{cosa:'Fornelletto e cartuccia',q:4,prov:'unita'}],
+    tt:[{start:'15:00',dur:30,cosa:'Ritrovo, carico del pullman, partenza',chi:'Paolo'},{dur:30,cosa:'Arrivo e sistemazione',chi:'Elena'},{dur:75,cosa:'Cena di Pattuglia',chi:'Giulia'},{dur:120,cosa:'La notte delle stelle',chi:'Giulia'},{start:'05:30',dur:150,cosa:'Hike all’alba e colazione in vetta',chi:'Paolo'}],
+    sic:{numeri:'112 · guardia medica · referente della casa',rischi:'Sentiero al buio: torcia per tutti, si cammina in fila con un adulto in testa e uno in coda; spenta ogni fiamma prima di dormire.'}, pb:{pioggia:'Se piove si resta dentro la casa: osservazione del cielo nella veranda e hike all’alba rinviata alla mattina dopo.',},
+    blocks:[{k:'sposta',dur:30,f:{trip:'Pullman per il Monte San Bartolo'}},{k:'pasto',g:1,dur:75,f:{pasto:'cena',menu:'Risotto con zucca e salsiccia'}},{k:'serata',g:1,dur:120,f:{desc:'La notte delle stelle',chi:'Giulia'}},{k:'sveglia',g:2,dur:30,f:{desc:'Sveglia alle 5:00'}},{k:'pasto',g:2,dur:45,f:{pasto:'colazione',menu:'Latte, biscotti e marmellata'}}]});
+  exPlace(U.biv,'S3','La notte delle stelle',1); exPlace(U.biv,'S3','Hike all’alba',2);
+  U.imp=exUscAdd({testo:'Impresa · il pranzo di quartiere', modello:'giorno', tipo:'Impresa', data:'2026-11-07',
+    luogo:{ritrovo:'09:00',ritrovoDove:'in sede',rientro:'17:00',rientroDove:'in sede',tipo:'sede'}, rag:22,
+    cibo:{modo:'dettaglio',carico:'unita'}, piatti:[{nome:'Lasagne al forno',g:1,pasto:'pranzo',ingr:[{nome:'Sfoglia fresca',dose:80,um:'g',prezzo:5},{nome:'Ragù',dose:70,um:'g',prezzo:7},{nome:'Besciamella',dose:60,um:'g',prezzo:3}]},{nome:'Torte di Pattuglia',g:1,pasto:'merenda',ingr:[{nome:'Farina, uova e zucchero',dose:80,um:'g',prezzo:1.8}]}],
+    contrib:90, sic:{numeri:'112 · guardia medica',rischi:'Forno e fornelli in sede: ogni Pattuglia lavora con un adulto presente; mani pulite e grembiuli.'}, pb:{},
+    blocks:[{k:'nuova',dur:180,f:{desc:'Preparazione del pranzo, a Pattuglie'}},{k:'pasto',dur:90,f:{pasto:'pranzo',menu:'Lasagne al forno e torte di Pattuglia'}}]});
+  exPlace(U.imp,'C3','Impresa: il pranzo per tutti');
+  U.cdr2=exUscAdd({testo:'Consiglio di Reparto di novembre', modello:'sede', tipo:'Consiglio di Reparto / Plancia', data:'2026-11-11', luogo:{ritrovo:'18:30',ritrovoDove:'in sede',rientro:'20:00',rientroDove:'in sede'}, rag:12, blocks:[{k:'nuova',dur:60,f:{desc:'Il Cerchio delle guide: rielaborazione cognitiva ed emotiva'}}]});
+  exPlace(U.cdr2,'C3','Il Cerchio delle guide');
+  U.dia=exUscAdd({testo:'Riunione di Reparto · diario della natura', modello:'sede', tipo:'Riunione di Reparto', data:'2026-11-12', luogo:sede, blocks:[{k:'libero',dur:30,f:{desc:'Angolo di Pattuglia'}}]});
+  exPlace(U.dia,'S3','Diario della natura');
+  // eventi ancora da vivere
+  U.nat=exUscAdd({testo:'Cena di Natale con le famiglie', modello:'sede', tipo:'Attività di Gruppo o Sezione', data:'2026-12-19', luogo:{ritrovo:'19:00',ritrovoDove:'in sede',rientro:'22:30',rientroDove:'in sede'}, rag:22,
+    spese:[{voce:'Torta e bevande per il Gruppo',importo:60,modo:'tot',cat:'pasti',carico:'gruppo'}], blocks:[{k:'cerim',dur:20,f:{desc:'Saluto del Reparto alle famiglie',chi:'Giulia'}},{k:'pasto',dur:90,f:{pasto:'cena',menu:'Buffet con piatti portati dalle famiglie'}}]});
+  U.neve=exUscAdd({testo:'Uscita di giornata · neve e orienteering', modello:'giorno', tipo:'Uscita di Reparto', data:'2027-01-23',
+    luogo:{ritrovo:'07:30',ritrovoDove:'in sede',rientro:'19:00',rientroDove:'in sede',tipo:'uscita',nome:'Altipiano di Monte Nerone',mezzo:'pullman',km:68},
+    spese:[{voce:'Pullman a/r',importo:360,modo:'tot',cat:'trasporti',carico:'ragazzi'}], cibo:{modo:'medio',medio:'7',unita:'giorno',carico:'ragazzi'},
+    sic:{numeri:'112 · soccorso alpino',rischi:'Neve e ghiaccio: abbigliamento a strati, ghette, pausa di ristoro, controllo meteo la sera prima.'}, pb:{pioggia:'Con rischio di ghiaccio o allerta meteo si ripiega sulla collina vicina alla sede.'}});
+  U.pit=exUscAdd({testo:'Pit stop dello staff · gennaio-febbraio', modello:'sede', tipo:'Pit stop', dest:'staff', data:'2027-02-13', luogo:{ritrovo:'20:30',ritrovoDove:'a casa di Elena',rientro:'23:00',rientroDove:'a casa di Elena'}});
+  U.bivp=exUscAdd({testo:'Bivacco di primavera', modello:'bivacco', tipo:'Bivacco', data:'2027-03-20', dataFine:'2027-03-21', luogo:{ritrovo:'15:00',ritrovoDove:'in sede',rientro:'12:00',rientroDove:'in sede',tipo:'uscita',nome:'Casa Scout «La Palazzina»',mezzo:'pullman',km:32},
+    spese:[{voce:'Casa Scout per la notte',importo:200,modo:'tot',cat:'locazioni',carico:'ragazzi'},{voce:'Pullman a/r',importo:280,modo:'tot',cat:'trasporti',carico:'ragazzi'}], cibo:{modo:'medio',medio:'8',unita:'giorno',carico:'ragazzi'}});
+  U.sg=exUscAdd({testo:'San Giorgio con il Gruppo', modello:'giorno', tipo:'San Giorgio', data:'2027-04-23', luogo:{ritrovo:'10:00',ritrovoDove:'al parco del Gruppo',rientro:'17:00',rientroDove:'al parco del Gruppo',tipo:'uscita',nome:'Parco della Repubblica',mezzo:'piedi'}});
+  U.camp2=exUscAdd({testo:'Campo estivo · Valle del Metauro', modello:'campo', tipo:'Campo estivo', data:'2027-08-01', dataFine:'2027-08-08',
+    luogo:{ritrovo:'08:00',ritrovoDove:'in sede',rientro:'17:00',rientroDove:'in sede',tipo:'uscita',nome:'Campeggio Valle del Metauro (PU)',mezzo:'pullman',km:55},
+    spese:[{voce:'Terreno del campo (8 notti)',importo:700,modo:'tot',cat:'locazioni',carico:'ragazzi'},{voce:'Pullman e furgone materiali',importo:900,modo:'tot',cat:'trasporti',carico:'ragazzi'},{voce:'Assicurazione per i non soci',importo:60,modo:'tot',cat:'altro',carico:'unita'}],
+    cibo:{modo:'medio',medio:'9',unita:'giorno',carico:'ragazzi'}, contrib:600,
+    sic:{numeri:'112 · guardia medica di zona · Alberto, referente del Gruppo',rischi:'Fiume vicino al campo: bagno solo con adulto e assistente bagnanti; attrezzi di pionieristica controllati ogni giorno.'}, pb:{pioggia:'Tendone di Reparto per i pasti e le riunioni; attività sotto la pioggia solo con mantelle e senza fuoco.'},
+    blocks:[{k:'cerim',g:1,dur:30,f:{desc:'Cerimonia di inizio campo',chi:'Giulia'}},{k:'pasto',g:2,dur:45,f:{pasto:'colazione',menu:'Latte e biscotti'}},{k:'nuova',g:2,dur:180,f:{desc:'Pionieristica di Pattuglia: portale e tavolo'}},{k:'serata',g:2,dur:90,f:{desc:'Fuoco di Reparto'}}]});
+  // eventi dello staff
+  U.st1=exUscAdd({testo:'Riunione di staff · programmazione', modello:'sede', tipo:'Riunione di staff', dest:'staff', data:'2026-09-05', luogo:{ritrovo:'20:30',ritrovoDove:'in sede',rientro:'23:00',rientroDove:'in sede'}});
+  U.st2=exUscAdd({testo:'Riunione con i genitori', modello:'sede', tipo:'Riunione con i genitori', dest:'staff', data:'2026-10-08', luogo:{ritrovo:'20:45',ritrovoDove:'in sede',rientro:'22:30',rientroDove:'in sede'}});
+  U.st3=exUscAdd({testo:'Riunione di staff · dopo il primo percorso', modello:'sede', tipo:'Riunione di staff', dest:'staff', data:'2026-11-20', luogo:{ritrovo:'20:30',ritrovoDove:'in sede',rientro:'23:00',rientroDove:'in sede'}});
+  return U;
+}
+// percorso formativo dello staff: quattro attività scelte per l'anno, legate agli incontri dello staff
+function exPF(U){
+  const mk=(n,o)=>{ const a=(typeof ATT_SCHEDE!=='undefined'&&ATT_SCHEDE[n])||null; if(!a) return null; const P=a.passi||[]; let sit=''; try{ const Z=STAFF_AREE.find(z=>z.n===mfArea(n)); if(Z) sit=Z.n+' · '+Z.nome; }catch(e){}
+    return Object.assign({id:'f'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), nome:n, cat:a.cat||'', sit, desc:a.desc||a.scopo||'', obiettivo:'', lancio:P[0]||'', sviluppo:P.slice(1,-1).join('\n'), conclusione:P.length>1?P[P.length-1]:'', ev:'', verifica:''}, o); };
+  const L=[
+    mk('Tela dell\'accordo di squadra',{ev:U.st1.id, obiettivo:'Scrivere insieme poche regole che valgono per tutto lo staff (orari, comunicazione, decisioni) e fissare quando rileggerle.', verifica:'Rilette a novembre: due regole funzionano (puntualità e chat solo per l’organizzazione), una no (le decisioni urgenti). Ne abbiamo cambiata una.'}),
+    mk('Rollercoaster check-in',{ev:U.st3.id, obiettivo:'Capire come sta ciascuno e il gruppo dopo il primo ciclo di percorsi, e decidere se serve alleggerire qualcosa.', verifica:'Da fare il 20 novembre: segnerò sul cartellone dove ci troviamo e cosa serve alle persone in discesa.'}),
+    mk('Il manuale d\'uso di me',{ev:U.st2.id, obiettivo:'Dire come lavoro meglio e come preferisco essere avvisato/a, soprattutto per chi è appena arrivato (Elena).', verifica:'Elena ha letto quelli degli altri e ha scritto il suo: ci ha aiutato a capire che preferisce essere avvisata una settimana prima.'}),
+    mk('Termometro dello staff',{ev:U.pit.id, obiettivo:'Al primo pit stop guardare insieme l’energia dello staff prima di riprogrammare il secondo ciclo.', verifica:''})
+  ].filter(Boolean);
+  scheda.pf=L;
+}
+// dati dell'anno scout: verifica dell'anno e registro delle spese (si salvano nella scheda dell'anno, separata dal progetto)
+async function exAnnoFill(U){
+  try{
+    if(!(CL&&CL.sb&&CL.user&&CL.ctx)) return;
+    const R=await window.annoRowEnsure(Number(CL.ctx.anno)); R.data=R.data||{};
+    R.data.ver={bene:'Il Reparto ha preso in mano il proprio materiale e le Pattuglie hanno cominciato a decidere da sole. L’Impresa del pranzo di quartiere ha mostrato quanto sanno fare, davanti alle famiglie. La notte delle stelle è stata il momento più bello dell’autunno.',
+      migl:'Le rielaborazioni emotive vanno preparate meglio e non lasciate alla fine. I più grandi tendono ancora a fare in fretta le cose difficili: dobbiamo dare più tempo e più ruoli ai più piccoli. Il rendiconto va tenuto durante l’anno e non a fine mese.',
+      porta:'Le squadre miste, la mappa dei talenti, il tavolo di coordinamento, il budget di Pattuglia e il diario della natura. Un patto di staff rivisto ogni due mesi. Il pit stop di febbraio per decidere i percorsi del secondo ciclo.',
+      ambiti:'Il Comunitario ha avuto più spazio nell’Impresa e nei Consigli; il Personale è stato presente nelle Officine; lo Spirituale è emerso soprattutto nel bivacco, ma c’è meno nelle attività del quotidiano: nel secondo ciclo daremo più occasioni brevi di silenzio e parola.',
+      staff:'Siamo in tre e abbiamo lavorato bene insieme; Elena è arrivata a settembre e si è inserita subito. In autunno abbiamo avuto più serate del previsto: a novembre abbiamo deciso di alleggerire il calendario di dicembre. Il patto di staff ci ha aiutato.'};
+    const cid=CL.ctx.id; const k=u=>cid+'|'+u.id;
+    R.data.sp=[
+      {id:'s1',data:'2026-10-02',desc:'Cordino di canapa e pali per l’Officina di Pattuglia',cat:'materiali',importo:38.5,att:k(U.off),chi:'Paolo Riva',pag:'carta',giust:'https://example.org/scontrini/ferramenta-ottobre',nota:'Rimborsato dalla cassa di Reparto',conf:true},
+      {id:'s2',data:'2026-10-09',desc:'Ricarica cassetta di primo soccorso',cat:'materiali',importo:12,att:k(U.gioco),chi:'Elena Sarti',pag:'contanti',giust:'',nota:'',conf:true},
+      {id:'s3',data:'2026-10-16',desc:'Spesa per il pranzo del campo base',cat:'pasti',importo:96.4,att:k(U.camp),chi:'Giulia Neri',pag:'carta',giust:'https://example.org/scontrini/pranzo-campo-base',nota:'',conf:true},
+      {id:'s4',data:'2026-10-30',desc:'Pullman andata e ritorno per il bivacco',cat:'trasporti',importo:320,att:k(U.biv),chi:'',pag:'bonifico',giust:'https://example.org/fatture/pullman-bivacco',nota:'Fattura intestata alla Sezione',conf:true},
+      {id:'s5',data:'2026-10-30',desc:'Casa della Montagna · affitto per la notte',cat:'locazioni',importo:180,att:k(U.biv),chi:'',pag:'bonifico',giust:'https://example.org/fatture/casa-montagna',nota:'',conf:true},
+      {id:'s6',data:'2026-10-30',desc:'Spesa per cena e colazione del bivacco',cat:'pasti',importo:131.7,att:k(U.biv),chi:'Paolo Riva',pag:'carta',giust:'',nota:'Scontrino da recuperare',conf:true},
+      {id:'s7',data:'2026-11-06',desc:'Spesa per il pranzo di quartiere',cat:'pasti',importo:204.3,att:k(U.imp),chi:'Giulia Neri',pag:'carta',giust:'https://example.org/scontrini/pranzo-quartiere',nota:'',conf:true},
+      {id:'s8',data:'2026-12-19',desc:'Torta e bevande per la cena di Natale',cat:'pasti',importo:60,att:k(U.nat),chi:'',pag:'',giust:'',nota:'Importo previsto',conf:false}
+    ];
+    R.data.ts=Date.now(); await dbUpdate(R.id,R.data,R.meta,null);
+  }catch(e){ console.error('exAnnoFill', e); }
+}
 function exBuild(){
-  try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){}
-  selectMode('giovani'); window._pjPick = false; selectFascia('E'); startTool();
-  UNIT_NAME='Reparto Kontiki'; scheda.esempio=true;
-  const pp=scheda.pp; Object.assign(pp,{nome:'Capo di esempio', sezione:'Pesaro',
-    ctxTerr:'Quartiere residenziale vicino al centro, con un grande parco e la collina a dieci minuti a piedi. Molti ragazzi arrivano in bicicletta; la sede è condivisa con altre associazioni il sabato mattina.',
-    ctxSez:'Gruppo con Branco, Reparto e Compagnia. Il Reparto conta 22 Esploratori ed Esploratrici in 4 Pattuglie, staff di 3 adulti. Buon rapporto con le famiglie, poche occasioni di attività all’aperto nell’ultimo anno.',
-    dinamiche:'Le Pattuglie sono affiatate al loro interno ma collaborano poco tra loro. I più grandi tendono a decidere per tutti, i più piccoli si espongono poco. Grande entusiasmo per le uscite, meno per la cura del materiale.',
-    condizioni:'Osservazione svolta da settembre a ottobre durante riunioni in sede, un’uscita di Reparto e due Consigli di Reparto.',
-    staffTab:[{ruolo:'CU',nome:'Giulia Neri'},{ruolo:'VCU',nome:'Paolo Riva'},{ruolo:'VCU',nome:'Elena Sarti'}]});
-  const val={P1:6,P2:5,P3:7,P4:4,P5:3,P6:5,P7:6,P8:5,C1:6,C2:7,C3:3,C4:5,C5:5,C6:4,C7:4,C8:'n',S1:5,S2:4,S3:3,S4:5,S5:6,S6:4,S7:'n',S8:'n'};
-  Object.entries(val).forEach(([k,v])=>setObs(k,v));
-  [['P5','P'],['C3','C'],['S3','S']].forEach(([id,a])=>togglePri(id,a));
-  [0,1,2].forEach(i=>{ try{ toggleObiettivo(i,0,true); toggleIdr(i,0,true); toggleIdr(i,1,true); }catch(e){} });
-  const nec=['Le Pattuglie faticano a organizzarsi da sole: materiale trascurato, compiti lasciati ai soliti.','Decidono sempre i più grandi: serve dare spazio e responsabilità a tutti.','Poche occasioni per fermarsi a guardare e stupirsi della natura.'];
-  nec.forEach((n,i)=>{ if(scheda.priorita[i]) scheda.priorita[i].necessita=n; });
-  const A={
-    P5:[['Officina di Pattuglia','Arriva una lettera dal custode del rifugio: il campo è da sistemare e servono mani esperte.','Ogni Pattuglia progetta e costruisce con legature un oggetto utile al campo, dividendosi i compiti e i materiali.','Mostra delle costruzioni e Consiglio di Reparto: cosa ha funzionato nell’organizzarsi?'],
-        ['Uscita di Pattuglia con bilancio','Ogni Pattuglia riceve una busta con un budget e una meta da raggiungere.','Le Pattuglie preparano da sole menù, lista della spesa e materiale, poi vivono l’uscita.','Rendiconto delle spese e racconto al Reparto.'],
-        ['Il magazzino di Reparto','Il magazziniere lancia una sfida: in un’ora il magazzino deve tornare in ordine.','Inventario a squadre miste, incarichi a rotazione per la cura del materiale.','Tabellone degli incarichi appeso in sede.']],
-    C3:[['Capi Pattuglia per un giorno','Un messaggio misterioso affida a ogni Esploratore ed Esploratrice un ruolo nuovo.','Grande gioco con ruoli a rotazione: ognuno guida la Pattuglia per una prova.','Cerchio: com’è stato guidare, com’è stato farsi guidare?'],
-        ['Consiglio di Reparto per l’Impresa','Il Reparto deve scegliere la prossima Impresa.','Ogni Pattuglia porta una proposta; si discute e si decide insieme con un metodo condiviso.','Si scrive il patto dell’Impresa con gli incarichi di tutti.'],
-        ['Impresa: il sentiero ritrovato','Il Comune chiede aiuto per segnare un sentiero dimenticato.','Le Pattuglie si dividono i tratti, coordinandosi tra loro.','Inaugurazione del sentiero con le famiglie.']],
-    S3:[['La notte delle stelle','Un vecchio diario di bordo parla di un cielo che “racconta storie”.','Uscita serale sulla collina: osservazione del cielo, racconti e silenzio.','Ognuno scrive una riga su ciò che più ha stupito.'],
-        ['Hike all’alba','Ultima sfida dell’uscita: vedere sorgere il sole dalla cima.','Cammino di Pattuglia prima dell’alba, colazione in vetta.','Condivisione in Pattuglia: cosa portiamo a casa?'],
-        ['Diario della natura','Ogni Pattuglia riceve un quaderno da riempire durante l’anno.','Osservazioni, disegni e fotografie di piante e animali incontrati nelle attività.','Mostra finale dei diari.']]
-  };
-  const all=getAllPercorsi();
-  all.forEach((per,idx)=>{ const L=A[per.percorsoId]; if(!L) return; per.tDal='2026-10'; per.tAl='2027-03';
-    L.forEach((r,j)=>{ updateAttivita(idx,j,'testo',r[0]); updateAttivita(idx,j,'lancio',r[1]); updateAttivita(idx,j,'sviluppo',r[2]); updateAttivita(idx,j,'conclusione',r[3]); }); });
-  // un'attività già vissuta e verificata, una in programma con la scheda organizzativa
-  const iP=all.findIndex(p=>p.percorsoId==='P5'), iS=all.findIndex(p=>p.percorsoId==='S3');
-  if(iP>=0){ const a=attGet(iP,0); a.ax=a.ax||{}; Object.assign(a.ax,{data:'2026-10-03',durata:'giorno'}); updateAttivita(iP,0,'vBene','Tutte le Pattuglie hanno finito la costruzione; i più piccoli hanno avuto compiti veri.'); updateAttivita(iP,0,'vMigl','Il materiale era in disordine: abbiamo perso mezz’ora a cercare le corde.'); }
-  if(iS>=0){ const a=attGet(iS,1); a.ax=a.ax||{}; Object.assign(a.ax,{data:'2026-11-14',durata:'piu',dataFine:'2026-11-15',pres:{ad:['Giulia Neri (CU)','Paolo Riva (VCU)'],rag:22},
-    luogo:{ritrovo:'15:00',ritrovoDove:'in sede',rientro:'12:00',rientroDove:'in sede',tipo:'uscita',nome:'Monte San Bartolo',mezzo:'piedi'},
-    tt2:[{start:'15:30',dur:30,cosa:'Lancio e divisione dei compiti',chi:'Giulia'},{dur:120,cosa:'Cammino di Pattuglia fino al bivacco',chi:'Paolo'},{dur:60,cosa:'Cena e racconti',chi:'Elena'}],
-    mat:[{cosa:'Torce frontali',q:1,qm:'rag',prov:'unita'},{cosa:'Fornelletto e cartuccia',q:4,prov:'unita'}],
-    sic:{numeri:'112 · guardia medica',rischi:'Sentiero al buio: torcia per tutti, si cammina in fila con un adulto in testa e uno in coda.'},
-    pb:{pioggia:'Se piove si dorme in sede e si sale all’alba con le mantelle.'}}); }
-  scheda.pp.occasioni=''; saveData(true);
+  exCore('AN'); const pp=scheda.pp;
+  const all0=getAllPercorsi(); all0.forEach(per=>{ const pr=scheda.priorita[per.prioritaIdx]; if(pr){ per.tDal=pr.tDal; per.tAl=pr.tAl; } });
+  exPercC3(); exPercP5(); exPercS3();
+  try{ cicloSync(); scheda.ciclo=scheda.ciclo||{}; scheda.ciclo.nome='Ciclo d’autunno'; }catch(e){}
+  exOssDemo(); exGriglia();
+  pp.occasioni='Dal KOS 2.0: tutti e tre gli incontri (con le attività svolte); due occasioni registrate a mano e due attività osservative create con lo strumento «Crea le tue attività osservative».';
+  const U=exUscite(); exPF(U);
+  window._exU=U;
+  scheda.pitHide=undefined; delete scheda.pitHide;
+  saveData(true);
   try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
-  try{ gGo('1b'); }catch(e){}
+  try{ exAnnoFill(U); }catch(e){}
+  try{ if(window.shDash && document.getElementById('sh-root') && document.getElementById('sh-root').classList.contains('show')) shDash(); else gGo('1b'); }catch(e){}
   exBar(); pageTop();
   showToast('Ecco il progetto di esempio (Reparto Kontiki, immaginario): esploralo, modificalo e poi eliminalo');
 }
 // ── Esempio del Progetto Personale: un PP completo (Sezioni 1–5) per un Reparto, da leggere come pietra di paragone ──
-function exBuildPP(){
+// Contesto, osservazione, griglia, priorità e obiettivi: il Reparto Kontiki è lo stesso nei due esempi (Progetto Personale e Programmazione Educativa)
+function exCore(kind){
   try{ _clTouched=true; _clUserAt=Date.now(); }catch(e){}
   selectMode('giovani'); window._pjPick = false; selectFascia('E'); startTool();
-  UNIT_NAME='Reparto Kontiki'; scheda.esempio='PP'; scheda.tipoProgetto='PP'; scheda.annoScout='2026-27'; scheda.veste={ruolo:'CU', branca:'E'};
+  UNIT_NAME='Reparto Kontiki'; scheda.esempio=(kind==='PP')?'PP':true; scheda.annoScout='2026-27';
+  if(kind==='PP'){ scheda.tipoProgetto='PP'; scheda.veste={ruolo:'CU', branca:'E'}; }
   const pp=scheda.pp; Object.assign(pp,{nome:'Giulia Neri', sezione:'Pesaro', gruppo:'1',
     mail:{area:'altoadriatico', tutorMail:'tutor.esempio@example.org', cgMail:'capogruppo.esempio@example.org', cdsMail:'commissario.esempio@example.org', destNome:'Marco'},
     ctxTerr:'Quartiere residenziale a pochi minuti dal centro, con un grande parco pubblico e la collina raggiungibile a piedi in dieci minuti: per le attività all’aperto non servono mezzi. La sede è un ex magazzino comunale in uso condiviso con altre associazioni il sabato mattina, quindi lo spazio di deposito è poco. Nel quartiere c’è una casa di riposo e una scuola media con cui il Gruppo ha già collaborato.',
@@ -7207,7 +7396,10 @@ function exBuildPP(){
     limitiOss:'Due Esploratori sono entrati a ottobre e non erano presenti alle prime occasioni; li osserveremo meglio nel percorso. L’uscita di Reparto è stata sotto la pioggia: alcune attività all’aperto sono state ridotte.',
     gruppoCoincide:'si',
     numTot:'22', numM:'10', numF:'12', numAnn:['8','6','5','3'],
-    staffTab:[{ruolo:'CU', nome:'Giulia Neri', mail:'giulia.esempio@example.org'},{ruolo:'VCU', nome:'Paolo Riva', mail:'paolo.esempio@example.org'},{ruolo:'VCU', nome:'Elena Sarti', mail:'elena.esempio@example.org'}]});
+    staffTab:[
+      {ruolo:'CU', nome:'Giulia Neri', mail:'giulia.esempio@example.org', tel:'333 0000001', eta:'34', form:'Campo di formazione di Branca E; Corso di formazione per Capi Unità', car:'Metodica, ascolta molto; tende a prendere in mano la regia quando c’è tensione', prof:'Insegnante di scuola primaria: gestione di gruppi, giochi di ruolo', ruoli:'Aiuto in Reparto per 3 anni, poi vice per 2', disp:'Riunioni del sabato e uscite; un weekend al mese in meno a gennaio', varie:'Referente dei rapporti con il Capo Gruppo e con le famiglie'},
+      {ruolo:'VCU', nome:'Paolo Riva', mail:'paolo.esempio@example.org', tel:'333 0000002', eta:'29', form:'Campo di formazione di Branca E', car:'Concreto, ottimo con le tecniche (nodi, topografia, cucina da campo); a volte parla al posto dei ragazzi', prof:'Geometra: topografia e costruzioni', ruoli:'Capo Pattuglia da ragazzo; da 3 anni in staff', disp:'Tutte le uscite; non disponibile nei giorni feriali', varie:'Segue il materiale e il magazzino di Reparto'},
+      {ruolo:'VCU', nome:'Elena Sarti', mail:'elena.esempio@example.org', tel:'333 0000003', eta:'24', form:'Ex Rover, primo anno in staff; Campo di formazione per Aiuti in programma a febbraio', car:'Entusiasta, vicina ai più piccoli; sta imparando a lasciare i tempi di silenzio', prof:'Studentessa di Scienze naturali: osservazione dell’ambiente', ruoli:'Rover in Noviziato e Clan; Capo Equipe di Impresa', disp:'Riunioni del sabato; uscite lunghe solo se concordate per tempo', varie:'È arrivata a settembre: la affianchiamo a Paolo nelle prime uscite'}]});
   scheda.osservazione={
     P:{positivi:'Le Pattuglie costruiscono volentieri: con corde e pali lavorano con cura e con orgoglio, e quasi tutti usano in sicurezza coltello e fornelletto. In uscita il Reparto si mette in moto con entusiasmo e senza bisogno di essere sollecitato.',
        necessita:'Il materiale di Pattuglia viene trascurato: a fine attività resta in giro e si perde mezz’ora a cercarlo. I compiti di cucina e di logistica ricadono quasi sempre sulle stesse tre persone, mentre gli altri aspettano di essere chiamati.',
@@ -7220,7 +7412,9 @@ function exBuildPP(){
        singoli:'Un Esploratore ha chiesto più volte dei perché sulla natura («perché le stelle cambiano posto?»): una curiosità da valorizzare, non da liquidare.'}};
   // KOS 2.0: i primi due incontri e quasi tutto il terzo
   kosIncToggle(0,true); kosIncToggle(1,true); kosIncToggle(2,true); delete pp.kosDone['E2_3']; delete pp.kosDone['E2_6'];
-  pp.occKos=pp.occKos||{}; ['E0_0','E0_1','E0_2','E0_3'].forEach(k=>{ pp.occKos[k]={data:'2026-09-19'}; }); ['E1_0','E1_1','E1_2','E1_3'].forEach(k=>{ pp.occKos[k]={data:'2026-09-26'}; }); ['E2_0','E2_1','E2_2','E2_4','E2_5'].forEach(k=>{ pp.occKos[k]={data:'2026-10-10'}; });
+  pp.occKos=pp.occKos||{}; const _kc={'2026-09-19':['In sede, il sabato pomeriggio','Giulia Neri|Paolo Riva|Elena Sarti','Prima conoscenza: i più grandi hanno parlato molto, i nuovi arrivati hanno osservato e rispondevano a monosillabi.'],'2026-09-26':['In sede, il sabato pomeriggio','Giulia Neri|Paolo Riva','Nei lavori a coppie le Pattuglie si sono mescolate volentieri; nell’analisi del gruppo molti hanno faticato a parlare di sé.'],'2026-10-10':['All’aperto, sulla collina','Giulia Neri|Elena Sarti','Con l’ambiente aperto sono emersi più spunti spontanei; alcuni piccoli si sono fermati a osservare da soli.']};
+  [['2026-09-19',['E0_0','E0_1','E0_2','E0_3']],['2026-09-26',['E1_0','E1_1','E1_2','E1_3']],['2026-10-10',['E2_0','E2_1','E2_2','E2_4','E2_5']]].forEach(([d,ks])=>ks.forEach(k=>{ const c=_kc[d]; pp.occKos[k]={data:d, ctx:c[0], chi:c[1], note:c[2]}; }));
+  pp.sedeVia='Via dei Tigli 12'; pp.sedeCitta='61100 Pesaro (PU)'; pp.sedeSito='esempio.example.org'; pp.sedeSocial='@reparto.kontiki'; pp.sedeCF='00000000000';
   pp.occMan=[
     {id:grNewId(), att:'Uscita di Reparto · costruzione del campo base', data:'2026-10-17', perc:['P5','P7','C2','C3'], chi:'Giulia Neri|Paolo Riva|Elena Sarti', ctx:'Uscita di giornata sulla collina, con pioggia nel pomeriggio', note:'Le Pattuglie si sono divise i compiti da sole; i più piccoli hanno aspettato indicazioni dai più grandi. Il materiale è finito in disordine sotto il telo.', foc:{P5:'Chi prende l’iniziativa nell’organizzare il materiale e chi aspetta di essere chiamato', C3:'Chi decide dentro la Pattuglia e come si raggiunge un accordo'}},
     {id:grNewId(), att:'Consiglio di Reparto di ottobre', data:'2026-10-21', perc:['C3','C1','C5'], chi:'Giulia Neri|Elena Sarti', ctx:'In sede, un’ora e mezza', note:'Hanno parlato soprattutto i Capi Pattuglia più grandi; le proposte dei piccoli sono state raccolte solo quando le abbiamo sollecitate.', foc:{C3:'Distribuzione degli interventi tra Capi Pattuglia e vice', C1:'Capacità di esporre una proposta davanti a tutti'}}];
@@ -7236,10 +7430,50 @@ function exBuildPP(){
   [[0,[1],[1,3]],[1,[1],[1,3,4]],[2,[3],[0,3]]].forEach(([i,o,idr])=>{ o.forEach(x=>toggleObiettivo(i,x,true)); idr.forEach(x=>toggleIdr(i,x,true)); });
   const nec=['Le Pattuglie non riescono a organizzarsi da sole: il materiale è trascurato e i compiti ricadono sempre sulle stesse persone.','Le decisioni sono dei più grandi: i più piccoli non si espongono e le Pattuglie non collaborano tra loro.','Poche occasioni per fermarsi a guardare, stupirsi e dire come ci si sente.'];
   nec.forEach((n,i)=>{ if(scheda.priorita[i]) scheda.priorita[i].necessita=n; });
-  const T=[['2026-11','2027-03'],['2026-11','2027-02'],['2026-12','2027-04']];
+  const T=[['2026-10','2026-12'],['2026-10','2026-12'],['2026-10','2026-12']];
   scheda.priorita.forEach((pr,i)=>{ if(!T[i]) return; pr.tDal=T[i][0]; pr.tAl=T[i][1]; pr.tempistica=tmRange(pr.tDal,pr.tAl); });
-  scheda.sez3Pri=1; const all=getAllPercorsi();
-  all.forEach(per=>{ const pr=scheda.priorita[per.prioritaIdx]; if(pr){ per.tDal=pr.tDal; per.tAl=pr.tAl; } });
+}
+  // Griglia osservativa: per ogni percorso e per ogni occasione, cosa ho visto (positivo, da migliorare, note)
+function exGriglia(){
+    const G={
+      P1:['Durante il barometro si sono spostati con sicurezza e senza spingersi; due Esploratrici hanno usato il corpo per dire la loro posizione prima di parlare.','Dopo la camminata lunga alcuni del primo anno faticano a dire che sono stanchi e mollano in silenzio.','Marco (1° anno) si ferma a metà salita ma non lo dice: da seguire con il Capo Pattuglia.','In orienteering la resistenza fisica è buona nel 3°-4° anno, più incerta nel 1°.'],
+      P2:['Nei temi controversi quasi tutti riescono ad aspettare il proprio turno; tre persone hanno detto «non sono d’accordo» con calma.','Quando una posizione viene contestata, in due si irrigidiscono o ridono per coprire l’imbarazzo.','Sara e Luca reagiscono di getto alle prese in giro: ne parlo con loro a parte.','Ritrovo la stessa dinamica anche nel gioco a squadre, ma più marcata.'],
+      P3:['Le Pattuglie hanno inventato in venti minuti tre nomi e tre grida originali; idee diverse dal solito, non copiate.','Si propongono soluzioni creative solo se qualcuno parte per primo; il resto del gruppo segue.','',''],
+      P4:['Nel pranzo dell’Impresa una squadra ha scritto un piano con tempi e ruoli e lo ha rispettato.','I piani sono realistici solo a breve termine: sulle cose a più settimane si perdono.','Il Consiglio di Pattuglia ha rinviato due volte la decisione sul menù: capire se manca la fiducia o il metodo.',''],
+      P5:['Il gruppo sa montare e smontare la tenda in tempi buoni; i Vice insegnano ai nuovi senza farsi pregare.','Il materiale viene riposto con poca cura: nodi e corde spesso lasciati a terra a fine attività.','Dal 2° anno in su la manualità è buona, dal 1° anno servono più occasioni pratiche.',''],
+      P6:['Nel barometro sono state portate motivazioni diverse e qualcuno ha cambiato idea ascoltando gli altri.','Alcune opinioni sono ripetute senza essere argomentate («lo dice mio padre», «lo hanno detto sui social»).','',''],
+      P7:['A merenda e a cena si fanno scelte alimentari varie e nessuno prende in giro chi sceglie diversamente.','Poca attenzione a dormire abbastanza e a bere durante le attività lunghe: tre casi in uscita.','',''],
+      P8:['Alcuni sanno dire «questa cosa mi viene bene, questa no» senza vergogna, soprattutto nell’orienteering.','Nel gruppo prevale l’autocritica negativa («sono scarso»): è più facile dire i limiti che i punti di forza.','',''],
+      C1:['Nel Consiglio dei talenti hanno parlato anche i meno vivaci, e a turno senza interrompersi.','Si parla addosso quando si accende il tema: l’ascolto regge pochi minuti.','Il gruppo parla bene tra pari, meno quando deve spiegare a un Capo qualcosa che non va.','Tra le Pattuglie la comunicazione è buona; tra le due Pattuglie dei grandi e quelle dei piccoli quasi inesistente.'],
+      C2:['Le coppie e i gruppetti sono variabili: si sono formate amicizie nuove tra Pattuglie diverse.','Persistono due sottogruppi che non si mescolano a nessuna attività.','In due casi tra Pattuglie c’è tensione dopo un gioco: va seguita.',''],
+      C3:['Nella staffetta dei ruoli i Capi Pattuglia hanno delegato senza imporsi e hanno chiesto aiuto quando serviva.','Alcuni Vice restano in secondo piano anche quando il Capo Pattuglia è assente.','Il Capo Pattuglia di Falchi tende a fare tutto lui: gli proporrò di affidare un compito a ogni Vice.','Nella seconda occasione la delega è migliorata, anche se ancora a spinta.'],
+      C4:['Il gruppo accoglie con curiosità le differenze di origine e di abitudini; nessuno ha preso in giro chi era diverso.','Si fa fatica a includere chi è arrivato da poco o chi ha meno confidenza: restano ai bordi.','',''],
+      C5:['Nei giochi sanno applicare le regole e le fanno rispettare, anche tra pari.','Quando una regola sembra ingiusta scatta la protesta immediata, senza chiedere cosa ci stia dietro.','',''],
+      C6:['Dopo il pranzo i rifiuti sono stati separati da tutte le Pattuglie senza ricordarlo.','Fuori dall’attività nessuno porta idee o iniziative per ridurre i rifiuti o i consumi.','',''],
+      C7:['Due Esploratori hanno proposto di aiutare la casa di riposo del quartiere: conferma che il tema è sentito.','Pochissime idee concrete di impegno fuori dal Reparto.','',''],
+      C8:['Alcuni argomentano bene la propria posizione; una Esploratrice ha sostenuto un punto contro la maggioranza.','Argomentare è ancora raro: spesso si rimanda a un capo o a un adulto.','',''],
+      S1:['Nel quaderno dei perché emergono domande vere su chi sono e su cosa conta; alcune scritte per sé, non per mostrare.','Poca disponibilità a condividere ad alta voce: si scrive ma non si dice.','Una Esploratrice ha chiesto di non leggere il suo quaderno: l’ho rispettato.',''],
+      S2:['Hanno portato canti e tradizioni di famiglie e luoghi diversi e le hanno spiegate agli altri.','Poche occasioni in cui si pensa alla cultura come scelta propria e non solo ereditata.','',''],
+      S3:['Il quaderno dei perché ha fatto emergere stupore per il bosco: domande su come nasce e come sopravvive.','Fuori dalle uscite l’attenzione alla natura sparisce: serve una domanda che li accompagni.','Una Pattuglia ha portato dal bosco oggetti raccolti per chiedere «che cos’è?»: è la porta d’ingresso.','Nella seconda occasione le domande sono diventate più precise.'],
+      S4:['Quando un compagno era in difficoltà qualcuno ha chiesto «come stai?» prima di dare consigli.','Si ascoltano bene gli amici; più difficile con chi non si frequenta.','',''],
+      S5:['Si fa quello che si dice, per lo più: promesse e Legge Scout vengono richiamate spontaneamente.','Quando fa comodo, la coerenza cala: qualche scorciatoia davanti al lavoro ingrato.','',''],
+      S6:['Davanti a due opzioni alcuni hanno scelto e spiegato perché, senza aspettare gli altri.','Quasi sempre si segue la maggioranza della Pattuglia.','',''],
+      S7:['Alcuni parlano di cosa vogliono fare tra due-tre anni (Rover, studio, sport): c’è una visione.','Progetti vaghi e lontani; manca il passaggio «cosa faccio già adesso?».','',''],
+      S8:['In un momento di silenzio durante l’uscita alcuni hanno detto che «c’è qualcosa di più grande»: apertura.','Poco spazio per fermarsi e dare un nome a questi momenti; il ritmo dell’attività lo impedisce.','','']
+    };
+    Object.keys(G).forEach(pid=>{
+      const t=G[pid]; let i=0;
+      grRows(pid).forEach(r=>{
+        const g=grG(pid, r.k); const d=g; if(String(g.pos||g.mig||g.note||'').trim()){ i++; return; }
+        if(i===0){ d.pos=t[0]; d.mig=t[1]; if(t[2]) d.note=t[2]; }
+        else { d.pos=(t[3]||'Ritrovo quanto visto nella prima occasione, in un contesto diverso: mi conferma che non era un caso.'); d.mig=''; }
+        i++;
+      });
+    });
+}
+// Percorso C3 «Leadership collaborativa» completo (strumenti, 4 attività con verifica, checklist, Sezione 5): lo usano entrambi gli esempi
+function exPercC3(){
+  const all=getAllPercorsi();
   const C=all.find(p=>p.percorsoId==='C3'), iC=all.indexOf(C);
   ['Capo Pattuglia e Capo Equipaggio','Vice Capo Equipaggio e Vice Capo Pattuglia','Consiglio di Pattuglia','Plancia e Consiglio di Reparto','Posti d\'azione','Incarichi','Impresa','Uscita'].forEach(n=>{ C.strumSel=C.strumSel||{}; C.strumSel[n]=''; });
   C.strumSel['Consiglio di Pattuglia']='Luogo dove i talenti diventano incarichi';
@@ -7270,54 +7504,27 @@ function exBuildPP(){
                       3:{c:'stimolato',note:'Nel Consiglio di Pattuglia i più grandi hanno proposto agli altri di provare compiti nuovi, ma solo dopo il nostro invito; tre proposte sono arrivate spontaneamente alla fine.'},
                       4:{c:'spontaneo',note:'Nell’ultimo Consiglio di Reparto chi era più grande ha chiesto ai più piccoli «e tu cosa ne pensi?» senza sollecitazioni degli adulti: lo hanno fatto in tre Pattuglie su quattro.'}}};
   scheda.valCompl={C3:'L’Obiettivo è stato raggiunto in modo parziale ma solido: il Reparto ha imparato che decidere è un compito di tutti e ha scritto una regola propria per le decisioni. Gli indicatori mostrano comportamenti spontanei solo nella fase finale: dobbiamo ancora lavorare perché diventino abituali. Riproporrei la mappa dei talenti e il tavolo di coordinamento, che sono piaciuti più di ogni altra cosa; cambierei il gioco iniziale, troppo lungo, e darei più tempo alla rielaborazione cognitiva con i più grandi. Come educatrice ho capito che devo trattenermi di più dal suggerire quando chi guida sta pensando.'};
-  try{ cicloSync(); }catch(e){}
-  // ci sono attività osservative svolte nel PP: due, create con lo strumento
+}
+// Le due attività osservative create con lo strumento (e svolte): le usano entrambi gli esempi
+function exOssDemo(){
   exOssAdd([
    {nome:'La staffetta dei ruoli', main:'C3', also:['C1','P5'], dom:'Chi propone, chi decide e chi segue quando la guida cambia a ogni prova?', foc:['Chi prende la parola per primo','Come si accorda la Pattuglia quando i pareri sono diversi','Chi si offre per un ruolo che non ha mai fatto'], dur:50, lan:'Un messaggio dal Servizio cartografico: ogni Pattuglia attraversa il bosco in quattro prove e a ogni prova guida una persona diversa, estratta a sorte.', svi:'Quattro prove brevi (nodi, orientamento, enigma, passaggio del materiale). Gli adulti osservano senza intervenire e annotano, per Pattuglia: chi propone, chi decide, chi si defila. Tra una prova e l’altra un minuto per cambiare guida.', con:'Cerchio finale di cinque minuti in cui ogni persona dice una cosa che l’ha sorpresa del guidare o dell’essere guidata. Gli adulti non commentano e riportano le frasi sulla scheda.', mom:'Primo mese', ctx:'Aperto, sulla collina', tipi:['Gioco a basi'], data:'2026-10-24', chi:['Giulia Neri','Paolo Riva','Elena Sarti']},
    {nome:'Il quaderno dei perché', main:'S3', also:['S4','P3'], dom:'Quando hanno uno spazio libero, chi si ferma a osservare la natura e che cosa ne fa: la nomina, la disegna, la racconta?', foc:['Chi si sofferma da solo a guardare','Come descrivono ciò che provano davanti all’ambiente','Chi coinvolge altri nella scoperta'], dur:45, lan:'Ogni Pattuglia riceve un quaderno vuoto e una «lente» di cartone: per trenta minuti si esplora un tratto di collina e si raccoglie ciò che fa venire una domanda.', svi:'Esplorazione libera a piccoli gruppi con la lente; si annotano o disegnano tre cose che colpiscono e un perché. Gli adulti osservano da lontano chi dedica più tempo, chi condivide, chi si annoia.', con:'Mostra dei quaderni in cerchio: ognuno racconta una pagina senza giudizi. Gli adulti raccolgono le frasi sull’emozione provata e le trascrivono sulla scheda.', mom:'Secondo mese', ctx:'Aperto, collina', tipi:['Uscita di Pattuglia'], data:'2026-11-07', chi:['Giulia Neri','Elena Sarti']}
   ]);
+}
+function exBuildPP(){
+  exCore('PP'); const pp=scheda.pp;
+  scheda.sez3Pri=1; const all=getAllPercorsi();
+  all.forEach(per=>{ const pr=scheda.priorita[per.prioritaIdx]; if(pr){ per.tDal=pr.tDal; per.tAl=pr.tAl; } });
+  exPercC3();
+  try{ cicloSync(); }catch(e){}
+  // ci sono attività osservative svolte nel PP: due, create con lo strumento
+  exOssDemo();
   scheda.pp.occasioni='Dal KOS 2.0: tutti e tre gli incontri (con le attività svolte); due occasioni registrate a mano e due attività osservative create con lo strumento «Crea le tue attività osservative».';
   scheda.pp.iter={avvio:{date:'2026-10-02'}, presa:{date:'2026-10-05'}, cgVer:{v:'si', date:'2026-11-02'}, prima:{date:'2026-11-03'},
     riscontri:[{date:'2026-11-10', note:'Il Tutor ha confermato il percorso (Sezione 3) e ha chiesto di esplicitare meglio dove avviene la rielaborazione emotiva: l’ho aggiunto nell’Attività 4 e nella checklist. Ha apprezzato la mappa dei talenti.'}]};
   try{ ppRiscSync(); }catch(e){}
-  // Griglia osservativa: per ogni percorso e per ogni occasione, cosa ho visto (positivo, da migliorare, note)
-  (function(){
-    const G={
-      P1:['Durante il barometro si sono spostati con sicurezza e senza spingersi; due Esploratrici hanno usato il corpo per dire la loro posizione prima di parlare.','Dopo la camminata lunga alcuni del primo anno faticano a dire che sono stanchi e mollano in silenzio.','Marco (1° anno) si ferma a metà salita ma non lo dice: da seguire con il Capo Pattuglia.','In orienteering la resistenza fisica è buona nel 3°-4° anno, più incerta nel 1°.'],
-      P2:['Nei temi controversi quasi tutti riescono ad aspettare il proprio turno; tre persone hanno detto «non sono d’accordo» con calma.','Quando una posizione viene contestata, in due si irrigidiscono o ridono per coprire l’imbarazzo.','Sara e Luca reagiscono di getto alle prese in giro: ne parlo con loro a parte.','Ritrovo la stessa dinamica anche nel gioco a squadre, ma più marcata.'],
-      P3:['Le Pattuglie hanno inventato in venti minuti tre nomi e tre grida originali; idee diverse dal solito, non copiate.','Si propongono soluzioni creative solo se qualcuno parte per primo; il resto del gruppo segue.','',''],
-      P4:['Nel pranzo dell’Impresa una squadra ha scritto un piano con tempi e ruoli e lo ha rispettato.','I piani sono realistici solo a breve termine: sulle cose a più settimane si perdono.','Il Consiglio di Pattuglia ha rinviato due volte la decisione sul menù: capire se manca la fiducia o il metodo.',''],
-      P5:['Il gruppo sa montare e smontare la tenda in tempi buoni; i Vice insegnano ai nuovi senza farsi pregare.','Il materiale viene riposto con poca cura: nodi e corde spesso lasciati a terra a fine attività.','Dal 2° anno in su la manualità è buona, dal 1° anno servono più occasioni pratiche.',''],
-      P6:['Nel barometro sono state portate motivazioni diverse e qualcuno ha cambiato idea ascoltando gli altri.','Alcune opinioni sono ripetute senza essere argomentate («lo dice mio padre», «lo hanno detto sui social»).','',''],
-      P7:['A merenda e a cena si fanno scelte alimentari varie e nessuno prende in giro chi sceglie diversamente.','Poca attenzione a dormire abbastanza e a bere durante le attività lunghe: tre casi in uscita.','',''],
-      P8:['Alcuni sanno dire «questa cosa mi viene bene, questa no» senza vergogna, soprattutto nell’orienteering.','Nel gruppo prevale l’autocritica negativa («sono scarso»): è più facile dire i limiti che i punti di forza.','',''],
-      C1:['Nel Consiglio dei talenti hanno parlato anche i meno vivaci, e a turno senza interrompersi.','Si parla addosso quando si accende il tema: l’ascolto regge pochi minuti.','Il gruppo parla bene tra pari, meno quando deve spiegare a un Capo qualcosa che non va.','Tra le Pattuglie la comunicazione è buona; tra le due Pattuglie dei grandi e quelle dei piccoli quasi inesistente.'],
-      C2:['Le coppie e i gruppetti sono variabili: si sono formate amicizie nuove tra Pattuglie diverse.','Persistono due sottogruppi che non si mescolano a nessuna attività.','In due casi tra Pattuglie c’è tensione dopo un gioco: va seguita.',''],
-      C3:['Nella staffetta dei ruoli i Capi Pattuglia hanno delegato senza imporsi e hanno chiesto aiuto quando serviva.','Alcuni Vice restano in secondo piano anche quando il Capo Pattuglia è assente.','Il Capo Pattuglia di Falchi tende a fare tutto lui: gli proporrò di affidare un compito a ogni Vice.','Nella seconda occasione la delega è migliorata, anche se ancora a spinta.'],
-      C4:['Il gruppo accoglie con curiosità le differenze di origine e di abitudini; nessuno ha preso in giro chi era diverso.','Si fa fatica a includere chi è arrivato da poco o chi ha meno confidenza: restano ai bordi.','',''],
-      C5:['Nei giochi sanno applicare le regole e le fanno rispettare, anche tra pari.','Quando una regola sembra ingiusta scatta la protesta immediata, senza chiedere cosa ci stia dietro.','',''],
-      C6:['Dopo il pranzo i rifiuti sono stati separati da tutte le Pattuglie senza ricordarlo.','Fuori dall’attività nessuno porta idee o iniziative per ridurre i rifiuti o i consumi.','',''],
-      C7:['Due Esploratori hanno proposto di aiutare la casa di riposo del quartiere: conferma che il tema è sentito.','Pochissime idee concrete di impegno fuori dal Reparto.','',''],
-      C8:['Alcuni argomentano bene la propria posizione; una Esploratrice ha sostenuto un punto contro la maggioranza.','Argomentare è ancora raro: spesso si rimanda a un capo o a un adulto.','',''],
-      S1:['Nel quaderno dei perché emergono domande vere su chi sono e su cosa conta; alcune scritte per sé, non per mostrare.','Poca disponibilità a condividere ad alta voce: si scrive ma non si dice.','Una Esploratrice ha chiesto di non leggere il suo quaderno: l’ho rispettato.',''],
-      S2:['Hanno portato canti e tradizioni di famiglie e luoghi diversi e le hanno spiegate agli altri.','Poche occasioni in cui si pensa alla cultura come scelta propria e non solo ereditata.','',''],
-      S3:['Il quaderno dei perché ha fatto emergere stupore per il bosco: domande su come nasce e come sopravvive.','Fuori dalle uscite l’attenzione alla natura sparisce: serve una domanda che li accompagni.','Una Pattuglia ha portato dal bosco oggetti raccolti per chiedere «che cos’è?»: è la porta d’ingresso.','Nella seconda occasione le domande sono diventate più precise.'],
-      S4:['Quando un compagno era in difficoltà qualcuno ha chiesto «come stai?» prima di dare consigli.','Si ascoltano bene gli amici; più difficile con chi non si frequenta.','',''],
-      S5:['Si fa quello che si dice, per lo più: promesse e Legge Scout vengono richiamate spontaneamente.','Quando fa comodo, la coerenza cala: qualche scorciatoia davanti al lavoro ingrato.','',''],
-      S6:['Davanti a due opzioni alcuni hanno scelto e spiegato perché, senza aspettare gli altri.','Quasi sempre si segue la maggioranza della Pattuglia.','',''],
-      S7:['Alcuni parlano di cosa vogliono fare tra due-tre anni (Rover, studio, sport): c’è una visione.','Progetti vaghi e lontani; manca il passaggio «cosa faccio già adesso?».','',''],
-      S8:['In un momento di silenzio durante l’uscita alcuni hanno detto che «c’è qualcosa di più grande»: apertura.','Poco spazio per fermarsi e dare un nome a questi momenti; il ritmo dell’attività lo impedisce.','','']
-    };
-    Object.keys(G).forEach(pid=>{
-      const t=G[pid]; let i=0;
-      grRows(pid).forEach(r=>{
-        const g=grG(pid, r.k); const d=g;
-        if(i===0){ d.pos=t[0]; d.mig=t[1]; if(t[2]) d.note=t[2]; }
-        else { d.pos=(t[3]||'Ritrovo quanto visto nella prima occasione, in un contesto diverso: mi conferma che non era un caso.'); d.mig=''; }
-        i++;
-      });
-    });
-  })();
+  exGriglia();
   scheda.chkPP={partecipante:'Giulia Neri', formatore:'', rev:'01', items:{}};
   saveData(true);
   try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
@@ -7337,7 +7544,9 @@ function exBar(){ const app=document.getElementById('main-app'); if(!app) return
   if(!b){ b=document.createElement('div'); b.id='ex-bar'; app.insertAdjacentElement('afterbegin', b); }
   b.innerHTML='<div class="grow"><strong>Progetto di esempio</strong> · Reparto Kontiki è immaginario: esplora ogni sezione e prova a modificare quello che vuoi. Quando hai finito, eliminalo.</div><button onclick="exDelete()">Elimina l’esempio</button>'; }
 async function exDelete(){ if(!confirm('Eliminare il progetto di esempio?')) return;
-  try{ if(typeof CL!=='undefined' && CL.sb && CL.user && CL.ctx){ const id=CL.ctx.id; CL.pending=false; clearTimeout(CL.timer); await dbDelete(id); CL.ctx=null; clSaveCtx(); }
+  try{ if(typeof CL!=='undefined' && CL.sb && CL.user && CL.ctx){ const id=CL.ctx.id; CL.pending=false; clearTimeout(CL.timer); await dbDelete(id); CL.ctx=null; clSaveCtx();
+      // la scheda dell'anno dell'esempio (verifica e spese) se ne va con lui
+      try{ const {data}=await CL.sb.from('pee_archivi').select('id,titolo,meta').eq('user_id', CL.user.id); for(const r of (data||[])){ if((r.meta||{}).mode==='anno' && /^Esempio/i.test(r.titolo||'')) await dbDelete(r.id); } }catch(e){} }
   }catch(e){}
   localStorage.removeItem(LSK); appReload(); }
 document.addEventListener('DOMContentLoaded',()=>{ let f=null; try{ f=sessionStorage.getItem('bussola_esempio'); sessionStorage.removeItem('bussola_esempio'); }catch(e){} if(f) setTimeout(exBuild, 400); });
@@ -8867,7 +9076,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611132340'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611140930'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'30 ottobre 2026', t:'Nomi coerenti, date più comode, cicli più chiari', i:[
@@ -9037,7 +9246,7 @@ function vidHome(){ const h = document.getElementById('vid-home'); if(!h) return
 const FAQ = [
   ['Per cominciare','A cosa serve PEE CNGEI?','Ti accompagna nella Programmazione Educativa Esperienziale della tua Unità: osservare il gruppo, scegliere le priorità, costruire percorsi e attività, verificare e valutare. Ti risparmia le parti ripetitive; le scelte educative restano tue.'],
   ['Per cominciare','Serve per il Progetto Personale o per la programmazione dell’Unità?','Per entrambi, ma sono due progetti diversi: quando ne crei uno scegli se è il tuo <b>Progetto Personale</b> (le cinque Sezioni delle Linee Guida, da inviare al Tutor e all’ICdF) o la <b>Programmazione di Unità</b> (osservazione, priorità, percorsi, calendario, verifica). Ognuno mostra solo ciò che gli serve.'],
-  ['Per cominciare','Posso provarla senza fare danni?','Sì: nella schermata iniziale premi <b>Apri un progetto di esempio</b>. È un Reparto già compilato: esplora e modifica liberamente, poi lo elimini con un clic.'],
+  ['Per cominciare','Posso provarla senza fare danni?','Sì: nella schermata iniziale scegli <b>Esempio di Progetto Personale</b> o <b>Esempio di Programmazione Educativa</b>. Sono due progetti già compilati con cura (Reparto Kontiki, immaginario): servono da pietra di paragone per vedere come si fa. Esplora e modifica liberamente, poi lo elimini con un clic.'],
   ['Per cominciare','Su quali dispositivi e browser funziona?','Funziona su <b>Windows</b> e <b>Mac</b> con Chrome, Edge, Firefox e Safari (versioni recenti), su <b>iPad</b> (Safari) e su <b>Android</b> (Chrome). Sul <b>telefono</b> funziona, ma è pensata soprattutto per computer e tablet: per scrivere molto o per i documenti Word è molto più comodo uno schermo grande. Con un account il lavoro è lo stesso su ogni dispositivo. Se qualcosa non va nel tuo browser, scrivicelo da «Suggerimenti?» indicando quale usi.'],
   ['Account e salvataggio','Devo per forza creare un account?','No: senza account il lavoro resta solo nel browser di questo dispositivo. Con l’account lo ritrovi ovunque e puoi lavorare con lo staff.','clOpen()'],
   ['Account e salvataggio','Come si salva il lavoro?','Da solo, a ogni modifica. Nel pulsante <b>Archivio</b> in alto il pallino verde e la spunta ✓ dicono che è tutto salvato.'],
@@ -17430,7 +17639,7 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 @media (min-width:1180px){.pf-cols{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}.pf-jump{display:none}.pf-right{position:sticky;top:70px;max-height:calc(100vh - 90px);overflow:auto;padding-right:4px}}
 .pf-new{animation:pfnew 4s ease-out;box-shadow:0 0 0 3px #f0b400}@keyframes pfnew{0%{background:#fff3c4}100%{background:inherit}}.pf-ne{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0;padding:10px;background:#f4f8f5;border:1px dashed #b9d6c4;border-radius:9px}.pf-ne label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700}
 .pf-c{margin:0 0 12px}.pf-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-n{width:28px;height:28px;border-radius:50%;background:var(--brand-ink,#1B5E42);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 28px}.pf-t{flex:1 1 220px;font-weight:800}.pf-tags{display:flex;gap:6px;flex-wrap:wrap}.pf-a{display:flex;gap:6px}
-.pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pf-ev select{max-width:340px}
+.pf-lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.pf-ev{display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:100%;overflow-x:clip;overflow-clip-margin:4px}.pf-ev select{max-width:min(340px,100%);min-width:0;overflow:hidden;text-overflow:ellipsis}.pf-left,.pf-right{min-width:0}
 .pf-pa{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid #e4e8e2}
 .ax-oss-who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 8px}.ax-pm{display:inline-flex;flex-wrap:wrap;gap:5px;align-items:center}.ax-pm-c{display:inline-flex;gap:3px;align-items:center;background:#e8f3ec;border:1px solid #b9d6c4;border-radius:999px;padding:2px 4px 2px 9px;font-size:12.5px;font-weight:600}.ax-pm-c button{border:0;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}.ax-pm-c button:hover,.ax-pm-c button:focus-visible{background:#cfe5d7}.ax-pm-s{max-width:210px}.sh-pt{margin:10px 0 14px}.sh-pt>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b3360f;padding:6px 0}.sh-pt .cl-perte{margin-top:6px}.usc-blk.pt-hl{box-shadow:0 0 0 3px #f0e603,0 0 0 5px #1a1800;transition:box-shadow .3s}.sh-exp{margin:22px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}label.sh-btn,a.sh-btn{display:inline-flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;line-height:1.2}.sh-trash{margin:26px 0 10px}.sh-trash summary{cursor:pointer;font-weight:800;font-size:14px}.sh-trash .sh-pr{margin-top:8px;opacity:.9}
 .sh-tag{font-size:12px;font-weight:700;border-radius:12px;padding:2px 9px;color:#1A1A18;white-space:nowrap}
@@ -20248,15 +20457,17 @@ window.cicloAskGo = async function(k, idx, how, tid){
 // ── Misurare · «Verifica dell'anno»: la riflessione sull'anno intero, sopra la verifica di ogni ciclo. Sta in una riga propria (non è un ciclo) ──
 async function annoRow(y){
   const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,data,meta,updated_at').eq('user_id', CL.user.id); if(error) throw error;
-  return (data || []).find(r => Number(r.anno) === Number(y) && (r.meta || {}).mode === 'anno' && !(r.meta || {}).cest && (!(r.meta || {}).fascia || !FASCIA || (r.meta || {}).fascia === FASCIA)) || null;
+  const ex = !!(scheda && scheda.esempio);   // l'esempio ha la sua scheda dell'anno: non tocca quella vera
+  return (data || []).find(r => Number(r.anno) === Number(y) && (r.meta || {}).mode === 'anno' && !(r.meta || {}).cest && /^Esempio/i.test(r.titolo || '') === ex && (!(r.meta || {}).fascia || !FASCIA || (r.meta || {}).fascia === FASCIA)) || null;
 }
 async function annoRowEnsure(y){
   let r = await annoRow(y); if(r){ r.data = r.data || {}; if(!r.data.ver) r.data.ver = {}; return r; }
   const as = scheda.annoScout || (y + '-' + String((y + 1) % 100).padStart(2, '0'));
   const d = {v:1, MODE:'anno', annoScout:as, UNIT_NAME:UNIT_NAME || '', FASCIA, ver:{}, ts:Date.now()}; const meta = {mode:'anno', fascia:FASCIA, tipo:'ANNO', nome:UNIT_NAME || ''};
-  const rows = await dbList(); let t = 'Verifica dell’anno ' + as + (UNIT_NAME ? ' · ' + UNIT_NAME : ''), k = 2; const base = t; while(rows.some(x => Number(x.anno) === Number(y) && x.titolo === t)) t = base + ' (' + (k++) + ')';
+  const rows = await dbList(); let t = (scheda && scheda.esempio ? 'Esempio · ' : '') + 'Verifica dell’anno ' + as + (UNIT_NAME ? ' · ' + UNIT_NAME : ''), k = 2; const base = t; while(rows.some(x => Number(x.anno) === Number(y) && x.titolo === t)) t = base + ' (' + (k++) + ')';
   const ins = await dbInsert(y, t, d, meta); return {id:ins.id, anno:y, titolo:ins.titolo, data:d, meta, updated_at:null};
 }
+window.annoRowEnsure = annoRowEnsure;
 function annoSum(it){
   const sc = it.data.scheda || {}; const per = it.ci.per; const idr = {spontaneo:0, stimolato:0, no:0}; const ic = sc.idrComp || {};
   Object.keys(ic).forEach(pid => Object.keys(ic[pid] || {}).forEach(j => { const c = (ic[pid][j] || {}).c; if(c && idr[c] !== undefined) idr[c]++; }));
@@ -20990,7 +21201,7 @@ function bilHTML0(){
   const leg = cats.map(c => `<span><i style="background:${AX_CATI[c][1]}"></i>${AX_CATI[c][0]}</span>`).join('') + '<span><b class="bil-lg"></b>Speso davvero</span>';
   const det = k => { const L = rows.filter(r => (k ? r.mese === k : !keys.includes(r.mese))); if(!L.length) return ''; return `<table class="bil-dt"><tbody>${L.map(r => `<tr><td>${esc(r.cont)}${items.length > 1 ? ' · <span class="sh-hint">' + esc(r.ciclo) + '</span>' : ''}</td><td>${esc(r.voce)}</td><td>${AX_CATI[r.cat] ? AX_CATI[r.cat][0] : 'Altre spese'}</td><td class="n">${axEur(r.c)}</td></tr>`).join('')}</tbody></table>`; };
   const trs = keys.concat(['']).map((k, i) => { const t = T[k]; if(!k && !t.tot) return ''; const e = eff[k];
-    return `<tr><th>${k ? BIL_MESI[i] + ' ' + k.slice(0, 4) : 'Senza data'}</th><td class="n">${t.tot ? axEur(t.tot) : '–'}</td><td class="n">${k ? `<input class="sh-in bil-in" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Speso davvero a ${BIL_MESI[i]}" value="${e == null ? '' : esc(e)}" ${can && reg[k] === undefined ? '' : 'readonly'} ${reg[k] !== undefined ? 'title="Somma delle spese registrate qui sotto"' : ''} oninput="bilEff('${k}',this.value)">` : '—'}</td><td class="n">${k && e !== undefined && e !== '' ? axEur(Number(e) - t.tot) : ''}</td><td>${t.tot ? `<details><summary>voci</summary>${det(k)}</details>` : ''}</td></tr>`; }).join('');
+    return `<tr><th>${k ? BIL_MESI[i] + ' ' + k.slice(0, 4) : 'Senza data'}</th><td class="n">${t.tot ? axEur(t.tot) : '–'}</td><td class="n">${k ? `<input class="sh-in bil-in" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Speso davvero a ${BIL_MESI[i]}" value="${e == null || e === '' ? '' : esc(isFinite(Number(e)) ? String(Math.round(Number(e) * 100) / 100) : String(e))}" ${can && reg[k] === undefined ? '' : 'readonly'} ${reg[k] !== undefined ? 'title="Somma delle spese registrate qui sotto"' : ''} oninput="bilEff('${k}',this.value)">` : '—'}</td><td class="n">${k && e !== undefined && e !== '' ? axEur(Number(e) - t.tot) : ''}</td><td>${t.tot ? `<details><summary>voci</summary>${det(k)}</details>` : ''}</td></tr>`; }).join('');
   const sumP = keys.concat(['']).reduce((a, k) => a + T[k].tot, 0), sumE = keys.reduce((a, k) => a + (Number(eff[k]) || 0), 0);
   const optC = '<option value="">Tutti i cicli</option>' + items.map(it => `<option value="${esc(it.id)}"${f.ciclo === it.id ? ' selected' : ''}>${esc(it.ci.nome)}</option>`).join('');
   const optK = '<option value="">Tutte le categorie</option>' + cats.map(c => `<option value="${c}"${f.cat === c ? ' selected' : ''}>${AX_CATI[c][0]}</option>`).join('');
