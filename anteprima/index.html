@@ -7343,6 +7343,8 @@ function exPF(U){
     mk('Termometro dello staff',{ev:U.pit.id, obiettivo:'Al primo pit stop guardare insieme l’energia dello staff prima di riprogrammare il secondo ciclo.', verifica:''})
   ].filter(Boolean);
   scheda.pf=L;
+  // ogni attività nasce anche come momento dentro il suo evento (come quando si sceglie «Dove la fai»): così compare nel calendario e nell'evento
+  L.forEach(x=>{ try{ if(x.ev){ x.evCy=''; window.pfPlace(x.id, true); } }catch(e){ console.warn('esempio: momento formativo non collocato', e); } });
 }
 // dati dell'anno scout: verifica dell'anno e registro delle spese (si salvano nella scheda dell'anno, separata dal progetto)
 async function exAnnoFill(U){
@@ -9081,7 +9083,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141945'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141955'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -11625,6 +11627,12 @@ function uscTripRetSync(k){ try{ const u=uscCur(), m=uscBlk(k); if(!u||!m) retur
 function uscTripRet(k){ const u=uscCur(); const m=uscBlk(k); if(!u||!m||!uscCan()) return; const T=m.trip||{}; const g=uscTripRetDay(u,m,T);
   const id=uscNewId('m'); u.prog[id]={k:'sposta',tipo:'mom',g,ord:0,dur:Number(m.dur)||60,t:'Ritorno'+(T.da?' a '+T.da:''),f:['trip','chi'],fix:true,ora:T.ro,trip:{da:T.a||'',a:T.da!=null?T.da:uscTripLoc(u),mezzo:T.mezzo||'',km:T.km||''},aff:m.aff||'',cr:Date.now()};
   T.rk=id; m.trip=T; USC_CUR=u.id; uscPlace(id); saveData(true); showToast('Ritorno messo il '+uscDayShort(u,g)+' alle '+T.ro); uscRe(); }
+// «Usa un'attività del tuo percorso formativo»: il momento prende il posto di quello scelto; l'attività resta una sola (se era in un altro evento, da là si toglie)
+function uscMfPfOpts(){ try{ const u=uscCur(); if(!u||!uscMap()[u.id]||typeof window.pfList!=='function') return ''; const L=window.pfList().filter(x=>(x.nome||'').trim()&&!(x.ev===u.id&&!x.evCy)); if(!L.length) return '';
+  return `<select class="sh-in" style="max-width:100%" aria-label="Usa un’attività del tuo percorso formativo" onchange="uscMfFromPf('${'%K%'}',this.value);this.value=''"><option value="">Usa un’attività del tuo percorso formativo…</option>${L.map(x=>`<option value="${uscE(x.id)}">${uscE(x.nome)}${x.ev?' (ora in un altro evento)':''}</option>`).join('')}</select>`; }catch(e){ return ''; } }
+window.uscMfFromPf=function(k,pid){ const u=uscCur(), m=uscBlk(k); if(!u||!m||!pid||!uscCan()||typeof window.pfList!=='function'||!uscMap()[u.id]) return; const x=window.pfList().find(z=>z.id===pid); if(!x) return;
+  Object.keys(u.prog||{}).forEach(q=>{ const o=u.prog[q]; if(o&&o!==m&&o.pfId===pid&&!o.del) o.del=true; });
+  m.pfId=pid; x.ev=u.id; x.evCy=''; try{ window.pfPlace(pid); }catch(e){} saveData(true); showToast('Il momento è ora «'+(x.nome||'')+'», dal tuo percorso formativo'); uscRe(); };
 function uscMfPick(k,name){ const m=uscBlk(k), a=ATT_SCHEDE[name]; if(!m||!a||!uscCan()) return; m.mfSrc=name; m.mfScopo=a.scopo||''; m.mfGruppo=a.gruppo||''; m.mfPassi=(a.passi||[]).join('\n'); m.mfDom=(a.domande||[]).join('\n'); m.mfAtt=(a.attenzione||[]).join('\n'); if(!(m.t||'').trim()||m.t===m.mfPrev||m.t==='Momento formativo') m.t=name; m.mfPrev=name;
   let meta=null; try{ SITUAZIONI_STAFF.forEach(x=>x.attivita.forEach(y=>{ if(!meta&&y.nome===name) meta=y; })); }catch(e){} const mm=meta&&/(\d+)\s*(?:-\s*\d+\s*)?min/.exec(meta.durata||''); if(mm) m.dur=Math.max(5,+mm[1]);
   // se i passi hanno i tempi, nasce la Scaletta del momento: gli orari partono dall'inizio del blocco
@@ -11668,7 +11676,7 @@ window.mfPickAll = function(k){
 window.mfPickFilt = function(v){ v = String(v || '').toLowerCase().trim(); document.querySelectorAll('#mf-all [data-n]').forEach(b => { b.style.display = !v || b.getAttribute('data-n').indexOf(v) >= 0 ? '' : 'none'; }); };
 try{ window.mfArea = mfArea; window.mfPill = mfPill; window.STAFF_AREE = STAFF_AREE; }catch(e){}
 function uscMfHTML(k,m,can){ const ro=can?'':'readonly'; const keys=Object.keys(ATT_SCHEDE); const ta=(f,l,ph)=>`<label class="ax-sub">${l}</label><textarea class="ax-ta" style="min-height:64px" ${ro} placeholder="${ph}" oninput="uscBlkSet('${k}','${f}',this.value)">${uscE(m[f]||'')}</textarea>`;
-  return (can?`<div class="ax-sub" style="margin-top:0">Parti da una scheda <span class="ax-opt">la copia qui e poi la scrivi come vuoi</span></div><div class="ax-chips"><button type="button" class="sh-btn" onclick="mfPickOpen('${k}')">Scegli un’attività partendo dalla necessità…</button><button type="button" class="btn-ghost" onclick="facGuideOpen()">Per chi conduce la verifica dello staff</button>${m.mfSrc?`<button type="button" class="usc-lnk" onclick="attSchedaOpen(${uscE(JSON.stringify(m.mfSrc)).replace(/&quot;/g,"'")})">vedi la scheda «${uscE(m.mfSrc)}»</button>`:''}</div>`:'')
+  return (can?`<div class="ax-sub" style="margin-top:0">Parti da una scheda <span class="ax-opt">la copia qui e poi la scrivi come vuoi</span></div><div class="ax-chips"><button type="button" class="sh-btn" onclick="mfPickOpen('${k}')">Scegli un’attività partendo dalla necessità…</button><button type="button" class="btn-ghost" onclick="facGuideOpen()">Per chi conduce la verifica dello staff</button>${uscMfPfOpts().replace('%K%',k)}${m.mfSrc?`<button type="button" class="usc-lnk" onclick="attSchedaOpen(${uscE(JSON.stringify(m.mfSrc)).replace(/&quot;/g,"'")})">vedi la scheda «${uscE(m.mfSrc)}»</button>`:''}</div>`:'')
    +ta('mfScopo','A cosa serve (scopo)','Perché lo facciamo, cosa vogliamo che resti')+ta('mfPassi','Passi e tempi','es. 5 min — Spiego le regole…')+ta('mfDom','Domande per ripensarci','Cosa ci portiamo a casa?')+ta('mfAtt','Attenzioni','Cosa può andare storto, come accorgersene'); }
 // Piano B di un momento: stesse situazioni del Piano B generale (pioggia, pochi presenti, manca materiale, tempo, altro); il testo scritto prima resta come «Note»
 function uscPbTxt(m){ const O=(m&&m.pbo&&typeof m.pbo==='object')?m.pbo:{}; const L=Object.fromEntries(AX_PB); const t=AX_PB.map(([q])=>q).filter(q=>(O[q]||'').trim()).map(q=>L[q]+': '+O[q].trim()); if((m&&m.pb||'').trim()) t.push(m.pb.trim()); return t.join('\n'); }
@@ -21389,12 +21397,13 @@ window.calKeep = function(key){ scheda.calOk = scheda.calOk || {}; scheda.calOk[
 function calAttsOf(z){ const out = []; const DBx = Object.values(DB).flat(); const lab = pid => { const P = DBx.find(q => q.id === pid); return {pid, nm:P ? P.name : '', amb:String(pid)[0]}; };
   try{
     if(!z.cy){ uscBlocks(z.u).forEach(o => { const m = o.m; if(m.k === 'att'){ const f = uscAttFind(m); if(f) out.push(Object.assign({t:(f.a.testo || '').trim() || 'Attività senza titolo'}, lab(f.per.percorsoId))); else if(m.pid) out.push(Object.assign({t:'Attività non più nei percorsi'}, lab(m.pid))); }
-        else if(m.obj && m.obj.pid) out.push(Object.assign({t:uscBlkTitle(m), propria:true}, lab(m.obj.pid))); }); }
-    else { Object.values(z.u.prog || {}).forEach(m => { if(!m || m.del) return; if(m.k === 'att' && m.pid){ const f = z.sc ? ccFind(z.sc, m.pid, m.aid) : null; out.push(Object.assign({t:f ? ((f.a.testo || '').trim() || 'Attività senza titolo') : 'Attività non più nei percorsi'}, lab(m.pid))); } else if(m.obj && m.obj.pid) out.push(Object.assign({t:String(m.t || '').trim() || 'Attività', propria:true}, lab(m.obj.pid))); }); }
+        else if(m.obj && m.obj.pid) out.push(Object.assign({t:uscBlkTitle(m), propria:true}, lab(m.obj.pid)));
+        else if(m.k === 'mf' && m.pfId) out.push({t:String(m.t || '').trim() || 'Momento formativo', mf:true}); }); }
+    else { Object.values(z.u.prog || {}).forEach(m => { if(!m || m.del) return; if(m.k === 'att' && m.pid){ const f = z.sc ? ccFind(z.sc, m.pid, m.aid) : null; out.push(Object.assign({t:f ? ((f.a.testo || '').trim() || 'Attività senza titolo') : 'Attività non più nei percorsi'}, lab(m.pid))); } else if(m.obj && m.obj.pid) out.push(Object.assign({t:String(m.t || '').trim() || 'Attività', propria:true}, lab(m.obj.pid))); else if(m.k === 'mf' && m.pfId) out.push({t:String(m.t || '').trim() || 'Momento formativo', mf:true}); }); }
   }catch(e){}
   return out;
 }
-function calAttsHTML(z){ const L = calAttsOf(z); if(!L.length) return ''; return `<span class="cal-atts">${L.map(a => `<span class="cal-ap" style="--c:${(AMB[a.amb] || ['', '#666'])[1]}"><b>Attività del percorso</b> «${esc(a.t)}» · ${esc(a.pid)}${a.nm ? ' ' + esc(a.nm) : ''}${a.propria ? ' <em>(nata nell’evento)</em>' : ''}</span>`).join('')}</span>`; }
+function calAttsHTML(z){ const L = calAttsOf(z); if(!L.length) return ''; return `<span class="cal-atts">${L.map(a => a.mf ? `<span class="cal-ap" style="--c:#7a3f8f"><b>Momento formativo</b> «${esc(a.t)}»</span>` : `<span class="cal-ap" style="--c:${(AMB[a.amb] || ['', '#666'])[1]}"><b>Attività del percorso</b> «${esc(a.t)}» · ${esc(a.pid)}${a.nm ? ' ' + esc(a.nm) : ''}${a.propria ? ' <em>(nata nell’evento)</em>' : ''}</span>`).join('')}</span>`; }
 function calDateTxt(u){ try{ return axDateTxt(u.ax || {}, true) || 'Date da scegliere'; }catch(e){ return ''; } }
 function calBlock(r, cx){
   const col = (AMB[r.amb] || ['', '#666'])[1]; const key = r.idx + '-' + r.j; const open = !!window._calOpen[key]; const can = calCan();
@@ -21406,11 +21415,26 @@ function calBlock(r, cx){
     <div class="cal-bt"><b>${esc(r.titolo)}</b><span>${esc((AMB[r.amb] || [''])[0])} · ${esc(r.pn)} · attività ${r.num}${r.date ? ' · ' + esc(fmtDL(r.date)) : ''}</span></div>
     <div class="cal-ba">${sel}<button type="button" class="cal-bt2" onclick="anJump({t:'att',pid:'${r.per.percorsoId}',aid:'${r.a.aid || ''}',pi:${r.idx},j:${r.j}})">Apri nel percorso</button><button type="button" class="cal-bt2" onclick="axDocx(${r.idx},${r.j})">Scarica la scheda (Word)</button></div>${org}</div>`;
 }
+// momento formativo ancora senza evento: si mette in un evento dello staff dal menù (stessa cosa di «Dove la fai» nel percorso formativo)
+function calPfBlock(x){
+  const can = calCan(); const stf = uscList().filter(u => u.dest === 'staff' || MODE === 'staff');
+  const nm = (x.nome || '').trim();
+  const sel = can ? `<label class="cal-mv"><span class="sr-only">Metti «${esc(nm)}» in</span><select class="cal-sel" aria-label="Metti «${esc(nm)}» in…" onchange="calPfSel(this,'${esc(x.id)}')"><option value="">Metti in…</option>${stf.map(u => `<option value="${esc(u.id)}">${esc(CAL_T[uscModK(u)] ? CAL_T[uscModK(u)][0] : 'Evento')} · ${esc(uscTit(u))}</option>`).join('')}${(calFXc.items || []).map(f => { const L = f.U.filter(u => u.dest === 'staff'); return L.length ? `<optgroup label="${esc(f.nome)}">${L.map(u => `<option value="${esc(f.id + '|' + u.id)}">${esc(CAL_T[uscModK(u)] ? CAL_T[uscModK(u)][0] : 'Evento')} · ${esc(uscTit(u))}</option>`).join('')}</optgroup>` : ''; }).join('')}</select></label>` : '';
+  return `<div class="cal-b" style="--c:#7a3f8f"><div class="cal-bt"><b>${esc(nm)}</b><span>Momento formativo${x.sit ? ' · ' + esc(x.sit) : (x.cat ? ' · ' + esc(x.cat) : '')}</span></div><div class="cal-ba">${sel}<button type="button" class="cal-bt2" onclick="shPF()">Apri nel percorso formativo</button></div></div>`;
+}
+window.calPfSel = function(el, id){ const v = el && el.value; if(!v || !calCan()) return; pfSet(id, 'ev', v, false); calRe(); };
+window.calPoolF = function(v){ SH._calPoolF = (v === 'edu' || v === 'for') ? v : 'all'; calRe(); };
 function calHTML(){
   const can = calCan(); const acts = calActs(); const pl = calPlaced(); const conts = uscList();
   const scopeY = (SH.calScope || 'anno') === 'anno'; const FX = scopeY ? calFX() : {items:[], ready:true}; calFXc = FX; const nCy = FX.items.length; const curCn = (scheda.ciclo || {}).nome || 'Questo ciclo';
   const pool = acts.filter(r => !(pl[r.idx + '-' + r.j] || []).length);
   const poolX = FX.items.reduce((A, f) => A.concat(calPoolX(f)), []);
+  // momenti formativi del percorso formativo dello staff non ancora messi in un evento
+  const poolF = (() => { try{ const ev = uscList(); return pfList().filter(x => (x.nome || '').trim() && (!x.ev || (!x.evCy && !ev.some(u => u.id === x.ev)))); }catch(e){ return []; } })();
+  const pFlt = (SH._calPoolF === 'edu' || SH._calPoolF === 'for') ? SH._calPoolF : 'all'; const nEdu = pool.length + poolX.length;
+  const fltH = (nEdu && poolF.length) ? `<div class="sh-seg sm cal-pf" role="group" aria-label="Che cosa vedi da collocare">${[['all', 'Tutto'], ['edu', 'Attività dei percorsi (' + nEdu + ')'], ['for', 'Percorso formativo (' + poolF.length + ')']].map(q => `<button type="button" aria-pressed="${pFlt === q[0]}" onclick="calPoolF('${q[0]}')">${q[1]}</button>`).join('')}</div>` : '';
+  const eduH = (pFlt !== 'for' && nEdu) ? (poolF.length ? '<h4 class="cal-ph">Per l’Unità · attività dei percorsi</h4>' : '') + pool.map(r => calBlock(r, null)).join('') + poolX.map(r => calBlockX(r)).join('') : '';
+  const forH = (pFlt !== 'edu' && poolF.length) ? '<h4 class="cal-ph">Per lo staff · momenti formativi</h4>' + poolF.map(x => calPfBlock(x)).join('') : '';
   const byK = {}; acts.forEach(r => { byK[r.idx + '-' + r.j] = r; });
   const conf = calConf(acts);
   const banner = conf.map(c => `<div class="cal-warn" role="status"><b>L’ordine ipotizzato del percorso «${esc(c.nm)}» sta cambiando.</b> Con le date scelte l’attività «${esc(c.inv[0].titolo)}» (la ${c.inv[0].num}ª, ${esc(fmtDL(c.inv[0].date))}) viene prima di «${esc(c.inv[1].titolo)}» (la ${c.inv[1].num}ª, ${esc(fmtDL(c.inv[1].date))}). Non riordino niente da solo.<div class="cal-wa"><button type="button" class="sh-btn" onclick="calReorder(${c.idx})">Aggiorna l’ordine del percorso</button><button type="button" class="sh-btn gh" onclick="calKeep('${esc(c.key).replace(/'/g, '')}')">Lascio com’è</button></div></div>`).join('');
@@ -21445,7 +21469,7 @@ function calHTML(){
     <div class="vis-opt"><div class="sh-seg sm" role="group" aria-label="Che cosa vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!scopeY}" onclick="calScopeSet('ciclo')">Questo ciclo</button><button type="button" aria-pressed="${scopeY}" onclick="calScopeSet('anno')">Tutto l’anno</button></div>${scopeY && !FX.ready ? '<span class="sh-hint" role="status">Carico gli altri cicli…</span>' : ''}</div>
     ${banner}${addB}${form}${calChkStrip(can)}
     <div class="cal-grid">
-      <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${pool.length + poolX.length}</span></header><div class="cal-cb">${(pool.length || poolX.length) ? pool.map(r => calBlock(r, null)).join('') + poolX.map(r => calBlockX(r)).join('') : `<div class="cal-empty">${acts.length ? 'Tutte le attività hanno un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi».'}</div>`}</div></section>
+      <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${nEdu + poolF.length}</span></header><div class="cal-cb">${fltH}${(eduH || forH) ? eduH + forH : `<div class="cal-empty">${(acts.length || pfList().length) ? 'Tutto ha un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi» o nel percorso formativo dello staff.'}</div>`}</div></section>
       <div class="cal-cs">${leg}${contH || '<div class="cal-empty cal-empty2">Nessun evento: con i pulsanti qui sopra crei una riunione, un’uscita, un bivacco o un campo.</div>'}</div>
     </div>`;
 }
@@ -22071,6 +22095,7 @@ const TIP_PV = [
 // ── Percorso formativo dello staff (o dei Capi Unità per il Capo Gruppo): vive nella programmazione annuale ──
 const PF_CAT = {tb:'Team Building', af:'Affiliativa', ps:'Problem Solving', ri:'Riflessione profonda', vf:'Verifica', av:'Autovalutazione'};
 function pfList(){ if(!Array.isArray(scheda.pf)) scheda.pf = []; return scheda.pf; }
+window.pfList = pfList;
 const pfCG = () => { try{ return STAFF_RUOLO === 'CG' && !window._stEmb && MODE === 'staff'; }catch(e){ return false; } };
 function pfEvents(){ try{ return uscList().filter(u => u.dest === 'staff' || MODE === 'staff'); }catch(e){ return []; } }
 // lo staff non ragiona per cicli: «Dove la fai» propone gli eventi dello staff di tutti i cicli dell'anno
@@ -22550,7 +22575,7 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .cal-pool,.cal-c{background:#fff;border:1px solid var(--u-line-s,#e4e8e2);border-radius:16px;overflow:hidden}
 .cal-pool{position:sticky;top:calc(var(--sh-hh,64px) + 12px)}
 @media(max-width:899px){.cal-pool{position:static}}
-.cal-pool>header,.cal-c>header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--u-line-s,#e4e8e2);font-size:13.5px}
+.cal-ph{margin:10px 0 4px;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:#555}.cal-pf{margin:0 0 6px}.cal-pool>header,.cal-c>header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--u-line-s,#e4e8e2);font-size:13.5px}
 .cal-n{margin-left:auto;background:#eef1ec;border-radius:999px;padding:2px 10px;font-weight:800;font-size:12px}
 .cal-ty{color:#fff;font:800 11.5px 'Montserrat',sans-serif;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:3px 10px}
 .cal-dt{color:#55554f;font-size:12.5px;font-weight:600}
