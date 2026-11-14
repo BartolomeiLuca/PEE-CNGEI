@@ -19194,7 +19194,9 @@ function ppIterHTML(){
       <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">Durante lo sviluppo il Capo Gruppo svolge il ruolo di mentore, offrendo:<ul style="margin:6px 0 0 18px;padding:0">${ITER_CG.map(x => '<li>' + esc(x) + '</li>').join('')}</ul></div>
       <div style="margin-top:10px;font-size:12.5px"><label for="it-cg" style="font-weight:700">Il Capo Gruppo ha verificato la completezza del lavoro prima dell’invio?</label>
         <select id="it-cg" style="margin-left:6px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;font:inherit" onchange="shIterVal('cgVer','v',this.value)"><option value="">— non indicato —</option><option value="si" ${sel('cgVer','v') === 'si' ? 'selected' : ''}>Sì</option><option value="no" ${sel('cgVer','v') === 'no' ? 'selected' : ''}>Non ancora</option></select>
-        <label style="margin-left:8px;font-size:12px">il <input type="date" class="sh-in" style="min-height:30px;padding:2px 6px;font-size:12px;width:auto" aria-label="Data della verifica del Capo Gruppo" value="${esc(sel('cgVer', 'date'))}" onchange="shIterVal('cgVer','date',this.value)"></label> <span style="font-size:12px;color:#6f6f66">Domanda di promemoria: non blocca l’invio.</span></div></div>
+        <label style="margin-left:8px;font-size:12px">il <input type="date" class="sh-in" style="min-height:30px;padding:2px 6px;font-size:12px;width:auto" aria-label="Data della verifica del Capo Gruppo" value="${esc(sel('cgVer', 'date'))}" onchange="shIterVal('cgVer','date',this.value)"></label> <span style="font-size:12px;color:#6f6f66">Domanda di promemoria: non blocca l’invio.</span></div>
+      <div style="margin-top:10px;font-size:12.5px;line-height:1.5"><b>Avvisa il Capo Gruppo</b> che il progetto è pronto per la sua lettura, prima di mandarlo al Tutor o all’ICdF:
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn-ghost" onclick="ppCgAvvisa('mail')">✉ Scrivigli una mail</button><button type="button" class="btn-ghost" onclick="ppCgAvvisa('wa')">💬 Scrivigli su WhatsApp</button></div></div></div>
     ${ppBloccoHTML(1)}
     ${ppBloccoHTML(2)}
     ${iterStep('appr', 6, 'Approvazione finale', 'L’approvazione del Progetto Personale completa questa tappa formativa e viene registrata negli archivi associativi tramite il Settore Risorse Adulte.', '', 'approvato')}
@@ -19203,6 +19205,16 @@ function ppIterHTML(){
 // ── PP · Giri di revisione (12/11): copie congelate del progetto, quanti ne servono ──
 // scheda.pp.giri = oggetto con una chiave per giro (così la sincronizzazione unisce i giri senza sovrascriverli). Le copie vere stanno nel cloud (pee_giri).
 function ppGiri(){ const pp = (scheda.pp || (scheda.pp = {})); if(!pp.giri || typeof pp.giri !== 'object' || Array.isArray(pp.giri)) pp.giri = {}; return pp.giri; }
+window.ppCgAvvisa = function(how){
+  const pp = scheda.pp || {}, m = pp.mail || {}, nome = (pp.nome || '').trim(), em = String(m.cgMail || '').trim();
+  const sub = 'Progetto Personale pronto per la tua lettura' + (nome ? ' - ' + nome : '');
+  const txt = 'Ciao, ho completato la prima stesura del mio Progetto Personale' + (nome ? ' (' + nome + ')' : '') + ' e vorrei che lo leggessi come Capo Gruppo mentore prima di inviarlo al Tutor. Quando puoi, mi dici quando ci sentiamo? Grazie!';
+  try{
+    if(how === 'wa') window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    else location.href = 'mailto:' + encodeURIComponent(em).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(sub) + '&body=' + encodeURIComponent(txt);
+  }catch(e){ showToast('Non riesco ad aprire il programma di posta: copia il testo a mano'); }
+  if(how === 'mail' && !em) showToast('Aggiungi l’email del Capo Gruppo nella pagina degli invii per averla già nel destinatario');
+};
 function ppGiriList(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id && !x.del).sort((a, b) => (a.n || 0) - (b.n || 0)); }
 function ppGiroNextN(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id && !x.del).reduce((m, x) => Math.max(m, x.n || 0), 0) + 1; }
 // gli invii già segnati a mano (prima consegna, consegna finale) diventano giri «storici», una volta sola, senza perdere nulla
@@ -19417,7 +19429,7 @@ window.rvListLoad = async function(){
       const ruolo = dd.ruolo || 'copia'; let esito = (mine.find(y => y.tipo === 'esito') || {}).valore || '';
       let chiuso = mine.some(y => y.tipo === 'stato' && y.chiave === 'chiuso'), waitC = false;
       if(R){ if(R.stato === 'chiusa'){ chiuso = true; if(!esito && ruolo === 'revisore') esito = R.esito === 'approvata' ? 'approva' : 'da_integrare'; } else if(R.fase === 'compilatore') waitC = true; }
-      return {g:x, ruolo, esito, visto:!!dd.visto_il, mine, chiuso, rvChiusa:!!(R && R.stato === 'chiusa'),
+      return {g:x, ruolo, esito, visto:!!dd.visto_il, mine, chiuso, rvChiusa:!!(R && R.stato === 'chiusa'), rvUnica:!!R,
         done: ruolo === 'revisore' ? (!!esito || waitC || chiuso) : (!!dd.visto_il || mine.length > 0 || chiuso)}; });
   }catch(e){ return []; }
 };
@@ -19441,8 +19453,8 @@ window.rvListPaint = async function(){
   box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Progetti Personali che segui</h4><p class="cl-note" style="margin:0 0 6px">Progetti Personali che ti sono stati inviati in app, uno spazio per ogni compilatore. Ogni giro è una copia ferma: le tue osservazioni arrivano a chi l’ha inviato.</p>` + G.map(p => {
     const stato = p.chiuso ? '<span class="rv-pill rv-pill-c">Concluso</span>' : p.pend ? `<span class="rv-pill rv-pill-a">${p.pend} da ${p.rev ? 'rivedere' : 'leggere'}</span>` : '<span class="rv-pill rv-pill-v">Tutto rivisto</span>';
     return `<details class="rv-pj${p.chiuso ? ' rv-closed' : ''}" ${p.chiuso ? '' : 'open'}><summary><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<span class="rv-sum">${p.giri.length === 1 ? '1 giro' : p.giri.length + ' giri'}</span>${stato}</summary>
-      ${p.giri.map(x => gi(p, x)).join('')}
-      <div class="rv-pj-f"><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto del progetto</button>${(p.rev && !(window._rvs && window._rvs[p.aid])) ? (p.chiuso ? `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',false)">Riapri la revisione</button>` : `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',true)">Concludi la revisione</button>`) : ''}</div></details>`; }).join('') + `<div style="margin-top:8px"><button type="button" class="cl-btn ghost sm" onclick="rvBackupAll()" title="Un solo archivio con tutti i progetti che segui: Word per leggere e file dati per archiviare">Scarica tutto lo storico (tutti i progetti)</button></div></div>`;
+      ${gi(p, p.giri[0])}${p.giri.length > 1 ? `<details class="rv-old" style="margin:4px 0 2px"><summary style="cursor:pointer;font-size:12.5px;color:#5f5f58">Giri precedenti (${p.giri.length - 1})</summary>${p.giri.slice(1).map(x => gi(p, x)).join('')}</details>` : ''}
+      <div class="rv-pj-f"><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto del progetto</button>${(p.rev && !p.giri.some(x => x.rvUnica) && !(window._rvs && window._rvs[p.aid])) ? (p.chiuso ? `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',false)">Riapri la revisione</button>` : `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',true)">Concludi la revisione</button>`) : ''}</div></details>`; }).join('') + `<div style="margin-top:8px"><button type="button" class="cl-btn ghost sm" onclick="rvBackupAll()" title="Un solo archivio con tutti i progetti che segui: Word per leggere e file dati per archiviare">Scarica tutto lo storico (tutti i progetti)</button></div></div>`;
 };
 window.rvOpen = function(gid){
   if(!rvOk()) return;
@@ -19884,7 +19896,10 @@ window.rvMsgSend = async function(box){
 };
 // ── lato compilatore, nell'app vera: «Revisioni da recepire» ──
 window._rp = window._rp || {pts:[], msgs:[], giri:[], open:false, t:0};
-function rpLabel(chiave){ const m = /^c:(\d)\|([^|]*)\|?(.*)$/.exec(chiave || ''); if(m){ const rd = s => String(s || '').replace(/#\d+$/, '').replace(/-/g, ' ').trim(); return {sec:+m[1], txt:[rd(m[2]), rd(m[3])].filter((x, i, A) => x && A.indexOf(x) === i).join(' › ')}; } const g = /^s(\d)$/.exec(chiave || ''); return {sec:g ? +g[1] : 0, txt:'Commento generale'}; }
+const RP_TIT = ['Composizione dell’Unità','Contesto territoriale','Contesto Sezione e Gruppo','Adulti in staff','Osservazione con il KOS: occasioni osservative','Condizioni dell\'osservazione','Analisi delle dinamiche di gruppo','Aspetti positivi e necessità educative','Priorizzazione delle necessità educative','Motivazione della scelta','Priorità 1','Priorità 2','Priorità 3','Allegato 1 — Griglia osservativa'];
+function rpLabel(chiave){ const m = /^c:(\d)\|([^|]*)\|?(.*)$/.exec(chiave || ''); if(m){ const cap = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : t, rd = s => cap(String(s || '').replace(/#\d+$/, '').replace(/-/g, ' ').trim()), tit = x => { const sl = String(x || '').replace(/#\d+$/, ''), f = RP_TIT.find(t => RD.slug(t) === sl); return f || rd(x); };
+  return {sec:+m[1], txt:[tit(m[2]), (m[3] ? rd(m[3]) : '')].filter((x, i, A) => x && A.indexOf(x) === i).join(' › ')}; } const g = /^s(\d)$/.exec(chiave || ''); return {sec:g ? +g[1] : 0, txt:'Commento generale'}; }
+window.rpLabel = rpLabel;
 window.rpLoad = async function(){
   if(window.BRO || typeof CL === 'undefined' || !CL.sb || !CL.user || !CL.ctx || CL.ctx.ruolo || !rvOk()) return;
   try{
@@ -19922,7 +19937,7 @@ function rpPaint(keep){
   const bd0 = dk.querySelector('.rv-body'), sc = bd0 ? bd0.scrollTop : 0;
   const tot = P.pts.length, ok = tot - pend.length, bySec = {}; P.pts.forEach((p, i) => { p.i = i; (bySec[p.sec] = bySec[p.sec] || []).push(p); });
   const item = p => { const th = P.msgs.filter(m => m.chiave === p.chiave && m.rev_id === p.user_id);
-    return `<div class="rv-pt${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button>${rvHas(CL.ctx.id, p.chiave) ? '' : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`}</div>${rvHas(CL.ctx.id, p.chiave) ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(CL.ctx.id, p.chiave, true)}</div>` : ''}
+    return `<div class="rv-pt${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${p.sec ? 'Sezione ' + p.sec + ' › ' : ''}${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw" style="color:#1b5e42">Tocca per andare a questo punto →</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button>${rvHas(CL.ctx.id, p.chiave) ? '' : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`}</div>${rvHas(CL.ctx.id, p.chiave) ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(CL.ctx.id, p.chiave, true)}</div>` : ''}
       <div class="rd-th" data-k="${esc(p.chiave)}" data-u="${esc(p.user_id)}" style="width:100%;padding:0 8px 6px;box-sizing:border-box">${th.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || 'Revisore'))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="Rispondi o chiedi un chiarimento" aria-label="Rispondi" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rpSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rpSend(this.closest('.rd-th'))">Invia</button></div></div></div>`; };
   const secs = Object.keys(bySec).sort().map(s => `<div class="rv-t" style="margin:10px 0 2px">${+s ? s + ' · ' + esc(PP_SEZ[s - 1]) : 'Generale'}</div>` + bySec[s].map(item).join('')).join('');
   dk.innerHTML = `<div class="rv-h" style="cursor:default"><b>📝 Revisioni da recepire</b><span>${ok} su ${tot} fatte</span><button type="button" class="rp-x" onclick="rpTog()" aria-label="Chiudi">✕</button></div>
