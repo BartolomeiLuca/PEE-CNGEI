@@ -9081,7 +9081,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611141935'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611141945'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -17256,7 +17256,7 @@ async function clDelete(id, msg){
     // era il progetto aperto: tolgo anche la copia di lavoro di questo dispositivo, così un nuovo progetto parte pulito
     window._pjBusy = true; clearTimeout(_saveTimer);
     CL.ctx = null; clSaveCtx(); clSetStatus('');
-    try{ localStorage.removeItem(CL_LS); clBaseSet({}); CL.pending = false; sessionStorage.removeItem('bussola_autoresume'); sessionStorage.setItem('bussola_opened_msg', 'Progetto eliminato. Scegli da dove ripartire: puoi aprirne un altro dall’archivio o iniziarne uno nuovo.'); }catch(e){}
+    try{ localStorage.removeItem(CL_LS); clBaseSet({}); CL.pending = false; sessionStorage.removeItem('bussola_autoresume'); sessionStorage.removeItem('bussola_ro'); sessionStorage.setItem('bussola_opened_msg', 'Progetto eliminato. Scegli da dove ripartire: puoi aprirne un altro dall’archivio o iniziarne uno nuovo.'); }catch(e){}
     appReload(); return;
   }
   if(!(window.SH && SH.on)) clRenderArchive();
@@ -19464,11 +19464,16 @@ window.rvOpen = function(gid){
   let w = null; try{ w = window.open(location.href.split('#')[0] + '#giro=' + gid, '_blank'); }catch(e){}
   if(!w) window.ppGiroApriQui(gid);
 };
+// Le pagine nascoste (Word, confronto) scrivono nella stessa memoria di sessione della scheda che le ha aperte: senza questa cautela, dopo un Word o un pacchetto
+// un refresh della scheda riaprirebbe da solo la copia in revisione. Si salva lo stato di prima e lo si rimette appena la pagina nascosta è partita (una volta sola).
+function roKeep(){ let v = null, fatto = false; try{ v = sessionStorage.getItem('bussola_ro'); }catch(e){}
+  return () => { if(fatto) return; fatto = true; try{ if(v === null) sessionStorage.removeItem('bussola_ro'); else sessionStorage.setItem('bussola_ro', v); }catch(e){} }; }
+function roKeepFrame(f){ const back = roKeep(); let nl = 0; f.addEventListener('load', () => { if(++nl >= 2) setTimeout(back, 1500); }); return back; }
 // il Word di un giro si scarica da solo, senza aprire schede: lo prepara una pagina nascosta che si richiude
 window.giroWordQuiet = function(gid){
   try{ showToast('Preparo il Word…'); }catch(e){}
   const f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'preparazione Word'; f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:800px;border:0;opacity:0;pointer-events:none';
-  f.src = location.href.split('#')[0] + '#giro=' + gid + '&word=1'; document.body.appendChild(f); setTimeout(() => { try{ f.remove(); }catch(e){} }, 60000);
+  const back = roKeepFrame(f); f.src = location.href.split('#')[0] + '#giro=' + gid + '&word=1'; document.body.appendChild(f); setTimeout(() => { try{ f.remove(); }catch(e){} back(); }, 60000);
 };
 window.rvWord = function(gid){ window.giroWordQuiet(gid); };
 window.rvConcludi = async function(aid, on){
@@ -19492,7 +19497,7 @@ function rvRestHTML(g, rows){
 // ── Backup in blocco dello storico (compilatore, revisore, tutor): Word per leggere + file dati per ripristinare/archiviare ──
 function giroWordBlob(gid){
   return new Promise(res => {
-    let done = false; const f = document.createElement('iframe'), end = b => { if(done) return; done = true; window.removeEventListener('message', on); try{ f.remove(); }catch(e){} res(b); };
+    let done = false; const f = document.createElement('iframe'), back = roKeepFrame(f), end = b => { if(done) return; done = true; window.removeEventListener('message', on); try{ f.remove(); }catch(e){} back(); res(b); };
     const on = ev => { if(ev.origin === location.origin && ev.data && ev.data.t === 'rvword' && ev.data.id === gid){ giroWordBlob.err = ev.data.err || ''; end(ev.data.blob || null); } };
     window.addEventListener('message', on); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'preparazione Word'; f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:800px;border:0;opacity:0;pointer-events:none';
     f.src = location.href.split('#')[0] + '#giro=' + gid + '&word=1&wcap=1'; document.body.appendChild(f); setTimeout(() => end(null), 75000);
@@ -19696,7 +19701,7 @@ function rvPrevHTML(id){
     let h = ''; try{ h = localStorage.getItem('bussola_rvdoc2_' + id) || ''; }catch(e){} if(h) return res(h);
     const keys = ['bussola_pee_ro_v1', 'bussola_cloud_ctx_ro']; const bk = keys.map(k => { let v = null; try{ v = localStorage.getItem(k); }catch(e){} return [k, v]; });
     const f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'confronto con il giro precedente'; f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:800px;border:0;opacity:0;pointer-events:none';
-    let t = 0; const done = html => { window.removeEventListener('message', on); clearTimeout(t); bk.forEach(([k, v]) => { try{ if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(e){} }); try{ f.remove(); }catch(e){}
+    const back = roKeepFrame(f); let t = 0; const done = html => { window.removeEventListener('message', on); clearTimeout(t); back(); bk.forEach(([k, v]) => { try{ if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(e){} }); try{ f.remove(); }catch(e){}
       if(html){ try{ localStorage.setItem('bussola_rvdoc2_' + id, html); }catch(e){} } res(html || ''); };
     const on = ev => { if(ev.origin === location.origin && ev.data && ev.data.t === 'rvdoc' && ev.data.id === id) done(ev.data.html); };
     window.addEventListener('message', on); t = setTimeout(() => done(''), 50000);
