@@ -30,20 +30,33 @@ Serve un mittente del tuo dominio (es. `noreply@pee-app.it`), autenticato su Bre
 
 Dopo qualche settimana senza problemi puoi passare il DMARC a `p=quarantine`.
 
-## 3. Far partire tutte le mail dell'app (13/11/2026) — da fare una volta
+## 3. Far partire tutte le mail dell'app (13/11/2026, corretto il 14/11) — da fare una volta
 Le mail (benvenuto, proposta all'archivio, giro inviato, «Rimanda», «Approva») partono solo se nel vault di Supabase ci sono `brevo_api_key` e `brevo_mittente`. Se mancano, l'app funziona lo stesso ma non spedisce nulla.
 
-1. **Brevo** → in alto a destra il tuo nome → **SMTP e API** → scheda **Chiavi API** → **Genera una nuova chiave API** (nome: `PEE`) → copia la chiave (inizia con `xkeysib-`; si vede una volta sola).
-2. **Brevo** → **Mittenti, domini e IP** → **Mittenti** → **Aggiungi un mittente**: un indirizzo che puoi davvero ricevere (es. `luca.bartolomei@cngei.it`), nome `PEE CNGEI`. Brevo manda un codice a quella casella: inseriscilo. Finché il mittente non è verificato Brevo rifiuta gli invii. (Il dominio `pee-app.it` con `noreply@` si fa dopo, come al punto 2.)
-3. **Supabase** → SQL Editor → New query → incolla (con la tua chiave e il tuo mittente) ed esegui:
+**Il mittente è `noreply@pee-app.it`**: su Brevo è già *Verificato*, con firma DKIM `pee-app.it` e DMARC configurato (punto 2 già fatto). **Non usare `luca.bartolomei@cngei.it`**: Brevo lo mostra con DKIM «Predefinito» e l'avviso dei requisiti Google/Yahoo/Microsoft, quindi le mail rischiano di essere rifiutate o finire nello spam. Non serve aggiungere nessun nuovo mittente.
+
+1. **Controlla cosa c'è già nel vault.** Supabase → SQL Editor → New query:
+   ```sql
+   select name, left(decrypted_secret, 8) as inizio from vault.decrypted_secrets where name in ('brevo_api_key','brevo_mittente');
+   ```
+   - `brevo_mittente` deve valere `noreply@pee-app.it` (la query ne mostra solo l'inizio: `noreply@`). Se manca o è diverso → passo 3.
+   - `brevo_api_key` deve iniziare con `xkeysib-`. Se manca → passo 2.
+2. **Chiave API (solo se manca).** Brevo → in alto a destra il tuo nome → **SMTP e API** → scheda **Chiavi API** → **Genera una nuova chiave API** (nome: `PEE`) → copiala (inizia con `xkeysib-`, si vede una volta sola). Poi in Supabase:
    ```sql
    select vault.create_secret('xkeysib-LA-TUA-CHIAVE', 'brevo_api_key');
-   select vault.create_secret('luca.bartolomei@cngei.it', 'brevo_mittente');
    ```
-   Se ti dice che esistono già, usa invece `vault.update_secret((select id from vault.secrets where name='brevo_api_key'), 'xkeysib-…')` (e lo stesso per `brevo_mittente`).
+   Se dice che esiste già: `select vault.update_secret((select id from vault.secrets where name='brevo_api_key'), 'xkeysib-…');`
+3. **Mittente (solo se manca o è diverso):**
+   ```sql
+   select vault.create_secret('noreply@pee-app.it', 'brevo_mittente');
+   ```
+   Se esiste già con un altro valore:
+   ```sql
+   select vault.update_secret((select id from vault.secrets where name='brevo_mittente'), 'noreply@pee-app.it');
+   ```
 4. Nuova query: incolla tutto `supabase_aggiornamento_13novembre_mail_revisione.sql` → Run (aggiunge le mail di «Rimanda» e «Approva»).
 5. Prova: dall'anteprima crea un account di prova, invia un giro a un tuo indirizzo → la mail arriva entro un minuto. Se non arriva, in SQL Editor:
    ```sql
    select id, status_code, content::text from net._http_response order by id desc limit 5;
    ```
-   `201` = accettata da Brevo; `401` = chiave sbagliata; `400` con «sender» = mittente non verificato.
+   `201` = accettata da Brevo; `401` = chiave sbagliata; `400` con «sender» = mittente non verificato o scritto male.
