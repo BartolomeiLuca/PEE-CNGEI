@@ -35,7 +35,7 @@ await ev(() => rpLoad()); await sleep(1500); await ev(() => rpTog()); await slee
 s = await ev(() => document.getElementById('rp-dock').innerText);
 ok(/Tocca a te/.test(s) && /Da fare/.test(s) && /Ho finito, può rileggere/.test(s) && !/Invia un nuovo giro/.test(s), 'compilatore: turno, chip «Da fare», «Ho finito», nessun nuovo invio a parte');
 ok(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled), '«Ho finito» è spento finché ci sono punti da fare');
-await ev(() => { const t = document.querySelector('#rp-dock .rv-st textarea'); t.value = 'Aggiunto il Quartiere San Carlo'; const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Fatto/.test(x.textContent)); b.click(); }); await sleep(1200);
+await ev(() => { const t = document.querySelector('#rp-dock .rv-st textarea'); t.value = 'Aggiunto il Quartiere San Carlo'; const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1200);
 const pu = db.t.pee_revisioni_punto[0]; ok(pu.stato === 'fatto' && /San Carlo/.test(pu.nota), 'il compilatore segna «Fatto» con una riga di nota');
 ok(!(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled)), '«Ho finito» si accende');
 await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').click()); await sleep(3500);

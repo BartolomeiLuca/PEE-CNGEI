@@ -1533,7 +1533,7 @@ details.usc-mpd:not([open])>summary{margin-bottom:0}
 #rv-dock{position:fixed;z-index:9000;background:#fff;color:var(--ink,#1a1a1a);font:13px/1.45 Montserrat,sans-serif;display:flex;flex-direction:column;box-sizing:border-box}
 #rv-dock .rv-h{display:flex;gap:8px;align-items:center;border:0;background:#1b5e42;color:#fff;padding:11px 14px;font:700 13px Montserrat,sans-serif;text-align:left;cursor:default;min-height:44px}#rv-dock .rv-h span{font-weight:600;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#rv-dock .rv-tg{margin-left:auto;display:none}
 #rv-dock .rv-body{flex:1;overflow:auto;padding:10px 12px 16px;min-height:0}#rv-dock .rv-foot{border-top:1px solid #d8d8d0;padding:10px 12px;background:#F7F7F2;max-height:46vh;overflow:auto}
-.rv-note{font-size:12.5px;line-height:1.5;background:#F1F8F4;border:1px solid #cfe6d8;border-radius:8px;padding:8px 10px}.rv-nn{margin-top:6px}.rv-q [hidden],#rv-dock [hidden]{display:none!important}.rv-st{margin-top:6px}.rv-ch{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;background:#eee;color:#444}.rv-ch-da_fare{background:#fff0d6;color:#8a4b00}.rv-ch-attesa{background:#e7ecfb;color:#2c3e7a}.rv-ch-fatto{background:#e3f1e3;color:#1f6b33}.rv-ch-confermato{background:#1b5e42;color:#fff}.rv-sn{display:block;font-size:12px;color:#444;margin-top:4px}.rv-st textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:6px 8px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif}.rv-b[disabled]{opacity:.5;cursor:not-allowed}
+.rv-note{font-size:12.5px;line-height:1.5;background:#F1F8F4;border:1px solid #cfe6d8;border-radius:8px;padding:8px 10px}.rv-nn{margin-top:6px}.rv-q [hidden],#rv-dock [hidden]{display:none!important}.rv-st{margin-top:6px}.rv-ch{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;background:#eee;color:#444}.rv-ch-da_fare{background:#fde2e2;color:#9b1c1c}.rv-ch-attesa{background:#fff3b0;color:#6b5500}.rv-ch-risp{background:#dbe8ff;color:#1e3f8f}.rv-ch-fatto{background:#e3f1e3;color:#1f6b33}.rv-pt-da_fare{border-left:4px solid #d94a4a!important}.rv-pt-attesa{border-left:4px solid #e0c200!important}.rv-pt-risp{border-left:4px solid #3b6fd6!important}.rv-pt-fatto,.rv-pt-confermato{border-left:4px solid #2e8b57!important}#rp-dock details.rp-sec>summary{cursor:pointer;font-weight:800;font-size:12.5px;padding:7px 4px;list-style:none;display:flex;gap:6px;align-items:center}#rp-dock details.rp-sec>summary::before{content:'▸';font-size:11px}#rp-dock details.rp-sec[open]>summary::before{content:'▾'}#rp-dock [hidden]{display:none!important}.rv-lk{background:none;border:0;color:#1b5e42;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px 2px}.rv-ch-confermato{background:#1b5e42;color:#fff}.rv-sn{display:block;font-size:12px;color:#444;margin-top:4px}.rv-st textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:6px 8px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif}.rv-b[disabled]{opacity:.5;cursor:not-allowed}
 .rv-arr{border:0;background:none;cursor:pointer;font-size:13px;line-height:1;padding:2px 6px 2px 0;min-width:24px;min-height:24px;color:#1b5e42}.rv-t{font-weight:800;font-size:13px;margin:12px 0 6px}.rv-t span{display:block;font-weight:500;font-size:11.5px;color:#666}
 .rv-sec{border:1px solid #d8d8d0;border-radius:9px;margin-top:6px;background:#fff}.rv-sec.cur{border-color:#1b5e42;box-shadow:0 0 0 2px #cfe6d8}.rv-sh{display:flex;gap:8px;align-items:center;width:100%;border:0;background:transparent;padding:9px 10px;text-align:left;cursor:pointer;font:700 12.5px Montserrat,sans-serif;color:inherit;min-height:40px}.rv-sn{flex:1}.rv-sl{font-weight:600;font-size:11.5px;color:#666}
 .rv-dot{width:11px;height:11px;border-radius:50%;flex:none;background:#ccc}.rv-dot.ok{background:#2f9e5b}.rv-dot.rv{background:#e08a00}.rv-dot.dm{background:#2b6fd6}.rv-dot.nt{background:#8a8a80}
@@ -4254,6 +4254,7 @@ function saveData(silent) {
   if(window._appReload) return;   // la pagina si sta ricaricando (cambio progetto o account): niente salvataggi dalla memoria, riscriverebbero dati non più validi
   if(window._pjBusy) return;   // separazione Unità/staff in corso: niente salvataggi dalla memoria della pagina
   if(window.BRO){ if(!silent) showToast('Sola lettura: il progetto è di un’altra persona dello staff'); return; }
+  if(typeof window.rvLocked === 'function' && window.rvLocked()){ rvLockRevert(); return; }   // tocca al revisore: qualunque modifica sfuggita ai campi bloccati non si salva e torna com'era
   try {
     localStorage.setItem(LSK, JSON.stringify({
       obs,pris,vals,scheda,MODE,FASCIA,STAFF_TYPE,STAFF_RUOLO,
@@ -4282,6 +4283,18 @@ function refreshUnitName(){
   if(sg){ if(MODE==='staff'){ const CG=STAFF_RUOLO==='CG'; if(!sg.contains(document.activeElement)){ sg.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">'+sezGrpHTML('display:block;font:700 12px Montserrat,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid)','display:block;margin-top:5px',false)+'</div>'; } sg.style.display='';
       i.removeAttribute('list'); }
     else { sg.style.display='none'; sg.innerHTML=''; } }
+}
+// rete di sicurezza del turno del revisore: se qualcosa cambia lo stato in memoria, si riporta com'era l'ultimo salvataggio (stessa routine degli aggiornamenti in diretta)
+function rvLockRevert(){
+  try{
+    if(window._rvlBusy) return; const raw = localStorage.getItem(LSK); if(!raw) return; const stored = JSON.parse(raw);
+    const cur = {obs,pris,vals,scheda,MODE,FASCIA,STAFF_TYPE,STAFF_RUOLO,STAFF_MEMBERS,staffObs,staffProfiles,staffTimeline,autoObs,CURRENT_MEMBER,autoProfile,UNIT_NAME,v:1};
+    const canon = x => JSON.stringify(x, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)) ? Object.keys(v).sort().reduce((o, q) => { o[q] = v[q]; return o; }, {}) : v);
+    const st = Object.assign({}, stored); delete st.ts; const a = canon(JSON.parse(JSON.stringify(cur))), b = canon(st);
+    if(a === b) return;
+    window._rvlBusy = true; setTimeout(() => { window._rvlBusy = false; }, 1500);
+    if(clApplyInPlace(stored)) showToast('Tocca al revisore: il progetto è in sola lettura, la modifica non è stata salvata');
+  }catch(e){ window._rvlBusy = false; }
 }
 function saveDataDebounced() {
   try{ if(typeof ppRefreshReady==='function') ppRefreshReady(); }catch(e){}
@@ -9117,7 +9130,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151640'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151750'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19917,7 +19930,8 @@ function rvRender(){
   // ── coda di lavoro ──
   let q = rvStBar(g.archivio_id, mine);
   const pend = P.filter(p => !p.rec).length;
-  if(mine && pend){ q += `<div class="rv-q"><b>${pend === 1 ? '1 punto da recepire' : pend + ' punti da recepire'}</b> <span class="rv-pn">su ${P.length}</span><div class="rv-pl2">${P.filter(p => !p.rec).slice(0, 30).map(p => `<button type="button" class="rv-pp" onclick="rvPtJump(${d.pts.indexOf(p)})">○ ${esc(p.label.slice(0, 50))}${p.who ? ' · ' + esc(p.who) : ''}</button>`).join('')}</div>${hp('Tocca un punto per vederlo nel progetto. Spunta «recepita» quando l’hai sistemato: chi ha rivisto lo vede.')}</div>`; }
+  if(mine && window._rvs[g.archivio_id]){ /* con la revisione unica lo stato dei punti è nella scheda sopra: niente secondo conteggio che la contraddice */ }
+  else if(mine && pend){ q += `<div class="rv-q"><b>${pend === 1 ? '1 punto da recepire' : pend + ' punti da recepire'}</b> <span class="rv-pn">su ${P.length}</span><div class="rv-pl2">${P.filter(p => !p.rec).slice(0, 30).map(p => `<button type="button" class="rv-pp" onclick="rvPtJump(${d.pts.indexOf(p)})">○ ${esc(p.label.slice(0, 50))}${p.who ? ' · ' + esc(p.who) : ''}</button>`).join('')}</div>${hp('Tocca un punto per vederlo nel progetto. Spunta «recepita» quando l’hai sistemato: chi ha rivisto lo vede.')}</div>`; }
   else if(mine) q += `<div class="rv-q"><b>${pend ? (pend === 1 ? '1 punto da recepire' : pend + ' punti da recepire') : 'Tutti i punti sono recepiti'}</b>${P.length ? ` <span class="rv-pn">su ${P.length}</span>` : ''}${hp('Tocca un punto per vederlo nel progetto. Spunta «recepita» quando l’hai sistemato: chi ha rivisto lo vede.')}</div>`;
   else { const pr = v.prev; let blocks = '';
     { const mp = P.slice(); if(mp.length){ const rc = mp.filter(x => x.rec).length; blocks += `<div class="rv-q"><b>I tuoi commenti in questo giro</b> <span class="rv-pn">${rc} recepiti su ${mp.length}</span><div class="rv-pl2">${mp.map(x => `<button type="button" class="rv-pp${(x.rec || (rvHas(g.archivio_id, x.key) && window._rvs[g.archivio_id].pun[x.key].stato === 'confermato')) ? ' done' : ''}" onclick="rvDocJump('${esc(x.key)}',${x.sec})">${rvHas(g.archivio_id, x.key) ? (({confermato:'✓ ', fatto:'◐ ', attesa:'? ', da_fare:'○ '})[window._rvs[g.archivio_id].pun[x.key].stato] + RV_PS[window._rvs[g.archivio_id].pun[x.key].stato]) : (x.rec ? '✓ recepita' : '○ da recepire')} · ${esc(x.label.slice(0, 50))}</button>`).join('')}</div></div>`; } }
@@ -20035,9 +20049,12 @@ function rpPaint(keep){
   const bd0 = dk.querySelector('.rv-body'), sc = bd0 ? bd0.scrollTop : 0;
   const tot = P.pts.length, ok = tot - pend.length, bySec = {}; P.pts.forEach((p, i) => { p.i = i; (bySec[p.sec] = bySec[p.sec] || []).push(p); });
   const item = p => { const th = P.msgs.filter(m => m.chiave === p.chiave && m.rev_id === p.user_id);
-    return `<div class="rv-pt${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${p.sec ? 'Sezione ' + p.sec + ' › ' : ''}${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw" style="color:#1b5e42">Tocca per andare a questo punto →</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button>${rvHas(CL.ctx.id, p.chiave) ? '' : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`}</div>${rvHas(CL.ctx.id, p.chiave) ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(CL.ctx.id, p.chiave, true)}</div>` : ''}
+    const _x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave], _ps = _x ? rvPtSt(CL.ctx.id, p.chiave, _x) : (p.recepita ? 'fatto' : 'da_fare');
+    return `<div class="rv-pt rv-pt-${_ps}${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${p.sec ? 'Sezione ' + p.sec + ' › ' : ''}${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw" style="color:#1b5e42">Tocca per andare a questo punto →</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button>${rvHas(CL.ctx.id, p.chiave) ? '' : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`}</div>${rvHas(CL.ctx.id, p.chiave) ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(CL.ctx.id, p.chiave, true)}</div>` : ''}
       <div class="rd-th" data-k="${esc(p.chiave)}" data-u="${esc(p.user_id)}" style="width:100%;padding:0 8px 6px;box-sizing:border-box">${th.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || 'Revisore'))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="Rispondi o chiedi un chiarimento" aria-label="Rispondi" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rpSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rpSend(this.closest('.rd-th'))">Invia</button></div></div></div>`; };
-  const secs = Object.keys(bySec).sort().map(s => `<div class="rv-t" style="margin:10px 0 2px">${+s ? s + ' · ' + esc(PP_SEZ[s - 1]) : 'Generale'}</div>` + bySec[s].map(item).join('')).join('');
+  P.sopen = P.sopen || {};
+  const secs = Object.keys(bySec).sort().map(s => { const L = bySec[s], nd = L.filter(p => { const x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave]; return x ? (x.stato === 'da_fare' || x.stato === 'attesa') : !p.recepita; }).length, op = s in P.sopen ? P.sopen[s] : nd > 0;
+    return `<details class="rp-sec" data-s="${esc(s)}" ${op ? 'open' : ''} ontoggle="window._rp.sopen[this.dataset.s]=this.open"><summary><span>${+s ? s + ' · ' + esc(PP_SEZ[s - 1]) : 'Generale'}</span><span class="rv-pn" style="margin-left:auto">${L.length - nd}/${L.length}</span></summary>` + L.map(item).join('') + '</details>'; }).join('');
   dk.innerHTML = `<div class="rv-h" style="cursor:default"><b>📝 Revisioni da recepire</b><span>${ok} su ${tot} fatte</span><button type="button" class="rp-x" onclick="rpTog()" aria-label="Chiudi">✕</button></div>
     <div class="rv-body">${rvStBar(CL.ctx.id, true)}<div class="rv-bar" aria-hidden="true"><span style="width:${tot ? Math.round(100 * ok / tot) : 0}%"></span></div><div class="rv-pn">${pend.length ? (pend.length === 1 ? 'Manca 1 punto' : 'Mancano ' + pend.length + ' punti') + (ok ? ' · bel lavoro, continua così' : '') : 'Tutti i punti sono a posto: puoi inviare un nuovo giro.'}</div>
       <div class="rv-hp">Tocca un punto per andare dove lavorarci. Quando l’hai sistemato spunta «fatto»: chi ha rivisto lo vede. Se hai un dubbio, scrivi una risposta sotto il punto.</div>${secs}</div>
@@ -20046,12 +20063,14 @@ function rpPaint(keep){
 }
 // ── Revisione unica: turni, stati dei punti, azioni ──
 window._rvs = window._rvs || {};
-const RV_PS = {da_fare:'Da fare', attesa:'In attesa di risposta', fatto:'Fatto', confermato:'Confermato'};
+const RV_PS = {da_fare:'Da fare', attesa:'Domanda aperta', risp:'Risposta ricevuta', fatto:'Fatto', confermato:'Confermato ✓'};
+// rosso = da fare · giallo = domanda aperta · blu = domanda con risposta · verde = fatto / confermato
+function rvPtSt(aid, k, x){ if(!x || x.stato !== 'attesa') return x ? x.stato : ''; try{ const ms = ((window._rp && window._rp.msgs) || []).concat((window._rd && window._rd.msgs) || []).filter(m => m.chiave === k && m.autore_ruolo !== 'titolare' && m.created_at && x.updated_at && String(m.created_at) > String(x.updated_at)); return ms.length ? 'risp' : 'attesa'; }catch(e){ return 'attesa'; } }
 async function rvStLoad(aid){
   try{ if(!rvOk() || !aid) return null;
     const r = await CL.sb.from('pee_revisioni').select('id,archivio_id,revisore_email,stato,fase,esito,nota_chiusura,aperta_il,chiusa_il').eq('archivio_id', aid).order('aperta_il', {ascending:false}).limit(1);
     if(r.error || !(r.data || []).length){ window._rvs[aid] = null; try{ rvLockApply(); }catch(e){} return null; }
-    const v = r.data[0], p = await CL.sb.from('pee_revisioni_punto').select('chiave,stato,nota').eq('revisione_id', v.id), pun = {}; (p.data || []).forEach(x => { pun[x.chiave] = x; });
+    const v = r.data[0], p = await CL.sb.from('pee_revisioni_punto').select('chiave,stato,nota,updated_at').eq('revisione_id', v.id), pun = {}; (p.data || []).forEach(x => { pun[x.chiave] = x; });
     window._rvs[aid] = {rev:v, pun}; try{ rvLockApply(); }catch(e){} return window._rvs[aid]; }catch(e){ return null; }
 }
 
@@ -20059,8 +20078,10 @@ async function rvStLoad(aid){
 // Quando la revisione è aperta e «tocca al revisore», chi ha scritto il PP può leggere, navigare e scrivere nella chat dei punti, non modificare il testo.
 // Si sblocca da solo quando il revisore restituisce le richieste (o approva). Nessun dato viene toccato: sono solo i campi a diventare in sola lettura.
 function rvLocked(){ try{ if(window.BRO || typeof CL === 'undefined' || !CL.ctx || CL.ctx.ruolo || !isPP()) return false; const S = window._rvs[CL.ctx.id]; return !!(S && S.rev && S.rev.stato === 'aperta' && S.rev.fase === 'revisore'); }catch(e){ return false; } }
+window.rvLocked = rvLocked;
 const RVL_SKIP = '#rp-dock,#rv-dock,#rp-pill,#rvl-bar,[data-conv],.rd-rp,.rv-st,.cl-ov,#cl-auth,#toast';
-const RVL_BLOCK = /(add|del|rem|new|crea|nuov|sposta|move|togli|elimina|aggiung|clear|reset|duplic|copia|import|ripristin|svuota)/i;
+const RVL_OK = /^(gGo|goPhase|shSec|shSub|shPP|shDrawer|shViewGo|shGoHome|faqOpen|vidOpen|closeTutorial|toggleCard|gPPHide|pcxToggle|renderValuation|ppGiroApri|ppGiroForm|ppMailOpen|ppCgAvvisa|rvBackupMine|rvPackage|rvWordDock|ossApri|ossExportJson|export\w*|rv\w+|rp\w+|anOpen|\w*Spunti\w*)$/;   // azioni di sola navigazione/lettura: tutto il resto, a turno del revisore, è fermato
+const RVL_JS = /^(if|else|return|function|confirm|alert|prompt|event|this|window|document|stopPropagation|preventDefault|stopImmediatePropagation|getElementById|querySelector|querySelectorAll|closest|contains|toggle|add|remove|setAttribute|getAttribute|focus|blur|click|scrollIntoView|encodeURIComponent|open|showToast|esc|String|Number|Math|JSON)$/;
 function rvLockSweep(){
   const app = document.getElementById('main-app'); if(!app) return; const on = rvLocked();
   app.querySelectorAll('input,textarea,select').forEach(el => {
@@ -20078,11 +20099,13 @@ function rvLockApply(){
     bar.innerHTML = '<b>Tocca al revisore.</b> Il progetto è in sola lettura finché non ti restituisce le richieste: puoi leggerlo e scrivere nella chat dei punti. <button type="button" onclick="try{ rpTog(); }catch(e){}">Apri le revisioni</button>';
     const hdr = document.getElementById('hdr') || app.firstElementChild; if(hdr && hdr.parentNode) hdr.parentNode.insertBefore(bar, hdr.nextSibling); else app.prepend(bar); }
   rvLockSweep();
-  if(app && !window._rvlObs && window.MutationObserver){ let t = 0; window._rvlObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { try{ rvLockSweep(); }catch(e){} }, 120); }); window._rvlObs.observe(app, {childList:true, subtree:true}); }
+  if(app && window._rvlObs && window._rvlNode !== app){ window._rvlObs.disconnect(); window._rvlObs = null; }   // se la pagina rimpiazza il contenitore, si ricomincia ad osservare quello nuovo
+  if(app && !window._rvlObs && window.MutationObserver){ let t = 0; window._rvlNode = app; window._rvlObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { try{ rvLockSweep(); }catch(e){} }, 60); }); window._rvlObs.observe(app, {childList:true, subtree:true}); }
+  if(!window._rvlTick){ window._rvlTick = setInterval(() => { try{ if(rvLocked()) rvLockApply(); }catch(e){} }, 3000); }   // cintura e bretelle: ogni 3 secondi si ricontrolla
 }
 document.addEventListener('click', e => { try{
   if(!rvLocked()) return; const t = e.target && e.target.closest && e.target.closest('button,[onclick],a[onclick]'); if(!t || t.closest(RVL_SKIP) || !document.getElementById('main-app') || !document.getElementById('main-app').contains(t)) return;
-  const h = t.getAttribute('onclick') || ''; if(!RVL_BLOCK.test(h)) return;
+  const h = t.getAttribute('onclick') || ''; const nm = (h.match(/[A-Za-z_$][\w$]*(?=\s*\()/g) || []).filter(n => !RVL_JS.test(n)); if(!nm.some(n => !RVL_OK.test(n))) return;
   e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); showToast('Tocca al revisore: il progetto è in sola lettura');
 }catch(x){} }, true);
 function rvHas(aid, k){ const S = window._rvs[aid]; return !!(S && S.pun[k]); }
@@ -20093,7 +20116,8 @@ function rvStBar(aid, mine){
   const turno = v.fase === 'compilatore' ? (mine ? 'Tocca a te' : 'Tocca a chi ha scritto il progetto') : (mine ? 'Tocca al revisore' : 'Tocca a te'), mio = (v.fase === 'compilatore') === mine;
   let h = `<div class="rv-q rv-st-bar"><b>${esc(turno)}</b> <span class="rv-pn">${c.con} confermati su ${c.tot}</span>${bar}`;
   if(mine){
-    if(v.fase === 'compilatore'){ const pend = c.da + c.att; h += `<div class="rv-bs"><button type="button" class="rv-b${pend ? '' : ' on'}" ${pend ? 'disabled' : ''} onclick="rvAzione('${esc(aid)}','ho_finito')" title="Avvisa il revisore: rilegge solo ciò che hai segnato come fatto">Ho finito, può rileggere</button></div>` + hp(pend ? (pend === 1 ? 'Manca 1 punto da fare o in attesa di risposta.' : 'Mancano ' + pend + ' punti da fare o in attesa di risposta.') + ' Per ogni punto scegli «Fatto» o «Ho un dubbio».' : 'Tutti i punti sono sistemati: premi «Ho finito» e il revisore rilegge.'); }
+    if(v.fase === 'compilatore' && window.BRO){ h += `<div class="rv-bs"><button type="button" class="rv-b on" onclick="giroChiudi()">Torna al tuo progetto</button></div>` + hp('Questa è la copia inviata: è ferma e serve solo a leggere. Per sistemare i punti e premere «Ho finito, può rileggere» lavori nel tuo progetto, con questo stesso elenco a destra.'); }
+    else if(v.fase === 'compilatore'){ const pend = c.da; h += `<div class="rv-bs"><button type="button" class="rv-b${pend ? '' : ' on'}" ${pend ? 'disabled' : ''} onclick="rvAzione('${esc(aid)}','ho_finito')" title="Avvisa il revisore: rilegge solo ciò che hai segnato come fatto">Ho finito, può rileggere</button></div>` + hp(pend ? (pend === 1 ? 'Manca 1 punto da fare.' : 'Mancano ' + pend + ' punti da fare.') + ' Per ogni punto scegli «Ho fatto» o «Ho un dubbio».' : (c.att ? 'Hai ' + c.att + (c.att === 1 ? ' domanda ancora aperta: non blocca l’invio, il revisore la vede.' : ' domande ancora aperte: non bloccano l’invio, il revisore le vede.') : 'Tutti i punti sono sistemati: premi «Ho finito» e il revisore rilegge.')); }
     else h += hp('Il revisore sta rileggendo. Puoi continuare a lavorare sul progetto e rispondere nella chat dei punti.');
   } else {
     if(v.fase === 'revisore'){
@@ -20106,12 +20130,18 @@ function rvStBar(aid, mine){
 }
 function rvStHTML(aid, k, mine){
   const S = window._rvs[aid], x = S && S.pun[k]; if(!x) return ''; const aperta = S.rev.stato === 'aperta';
-  let h = `<div class="rv-st" data-a="${esc(aid)}" data-k="${esc(k)}"><span class="rv-ch rv-ch-${x.stato}">${esc(RV_PS[x.stato])}</span>${x.nota ? `<span class="rv-sn">${esc(x.nota)}</span>` : ''}`;
-  if(aperta && mine && x.stato !== 'confermato') h += `<textarea rows="1" maxlength="300" aria-label="Una riga: cosa hai fatto, o la tua domanda" placeholder="Una riga, se vuoi: cosa hai fatto, o la tua domanda"></textarea><div class="rv-bs">${x.stato !== 'fatto' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'fatto')" title="Hai sistemato il punto, o hai deciso di non cambiarlo (spiega perché in una riga)">Fatto</button>` : ''}${x.stato !== 'attesa' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'attesa')" title="Non ti è chiaro cosa serve: scrivi la domanda; il revisore risponde">Ho un dubbio</button>` : ''}</div>`;
+  const ps = rvPtSt(aid, k, x); let h = `<div class="rv-st" data-a="${esc(aid)}" data-k="${esc(k)}"><span class="rv-ch rv-ch-${ps}">${esc(RV_PS[ps])}</span>${x.nota ? `<span class="rv-sn">${esc(x.nota)}</span>` : ''}`;
+  if(aperta && mine && window.BRO && x.stato !== 'confermato' && S.rev.fase === 'compilatore') h += `<div class="rv-bs"><button type="button" class="rv-b" onclick="giroChiudi()" title="Questa è la copia inviata, ferma: il punto si sistema nel tuo progetto">Sistemalo nel tuo progetto →</button></div>`;
+  else if(aperta && mine && !window.BRO && x.stato !== 'confermato' && S.rev.fase === 'compilatore') h += `<textarea rows="2" maxlength="300" hidden aria-label="Una riga: cosa hai fatto, o la tua domanda" placeholder="Una riga, se vuoi: cosa hai fatto, o la tua domanda"></textarea><div class="rv-bs">${x.stato !== 'fatto' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'fatto')" title="Hai sistemato il punto, o hai deciso di non cambiarlo (spiega perché in una riga)">Ho fatto</button>` : ''}${x.stato !== 'attesa' ? `<button type="button" class="rv-b" onclick="rvDubbio(this)" title="Non ti è chiaro cosa serve: scrivi la domanda; il revisore risponde">Ho un dubbio</button>` : ''}<button type="button" class="rv-lk" onclick="rvNotaTog(this)">+ una riga</button></div>`;
   if(aperta && !mine){ if(x.stato === 'fatto' || x.stato === 'attesa') h += `<div class="rv-bs">${x.stato === 'fatto' ? `<button type="button" class="rv-b on" onclick="rvPuntoSet(this,'confermato')" title="Il punto è sistemato come volevi">Conferma</button>` : ''}<button type="button" class="rv-b" onclick="rvPuntoSet(this,'da_fare')" title="Il punto non è a posto: torna al compilatore">Riapri</button></div>`; else if(x.stato === 'confermato') h += `<div class="rv-bs"><button type="button" class="rv-b" onclick="rvPuntoSet(this,'da_fare')">Riapri</button></div>`; }
   return h + '</div>';
 }
 async function rvStRefresh(aid){ await rvStLoad(aid); try{ if(window._rd){ rvRender(); rvDocPaint(); } }catch(e){} try{ rpPaint(true); }catch(e){} }
+window.rvNotaTog = function(b){ const box = b.closest('.rv-st'), ta = box && box.querySelector('textarea'); if(!ta) return; ta.hidden = !ta.hidden; if(!ta.hidden) ta.focus(); };
+window.rvDubbio = function(b){ const box = b.closest('.rv-st'), ta = box && box.querySelector('textarea'); if(!ta) return;
+  if(ta.hidden){ ta.hidden = false; ta.placeholder = 'Scrivi il tuo dubbio: il revisore ti risponde qui sotto'; b.textContent = 'Invia il dubbio'; ta.focus(); return; }
+  if(!ta.value.trim()){ showToast('Scrivi il tuo dubbio, poi premi «Invia il dubbio»'); ta.focus(); return; }
+  rvPuntoSet(b, 'attesa'); };
 window.rvPuntoSet = async function(btn, stato){
   const box = btn.closest('.rv-st'); if(!box) return; const aid = box.dataset.a, S = window._rvs[aid]; if(!S) return; const ta = box.querySelector('textarea');
   btn.disabled = true;
@@ -20131,7 +20161,7 @@ async function rvAutoCopia(S){
 window.rvAzione = async function(aid, kind){
   const S = window._rvs[aid]; if(!S) return; const nm = {ho_finito:'pee_rev_ho_finito', rimanda:'pee_rev_rimanda', approva:'pee_rev_approva'}[kind]; if(!nm) return;
   if(kind === 'ho_finito'){ if(window.BRO || !CL.ctx || CL.ctx.id !== aid){ showToast('Per dire «Ho finito» apri il tuo progetto (menu Progetto Personale)'); return; }
-    const c = rvStCnt(S); if(c.da + c.att){ showToast('Ci sono ancora punti da fare o in attesa di risposta'); return; }
+    const c = rvStCnt(S); if(c.da){ showToast('Ci sono ancora punti da fare'); return; }
     if(!(await rvAutoCopia(S))) return; }
   const args = {r:S.rev.id}; if(kind === 'approva'){ const t = document.getElementById('rv-ap-n'); args.n = t ? t.value.trim() : ''; }
   try{ const r = await CL.sb.rpc(nm, args); if(r.error) throw r.error; await rvStRefresh(aid);
