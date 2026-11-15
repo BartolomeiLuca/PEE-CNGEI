@@ -7383,8 +7383,23 @@ async function exAnnoFill(U){
       {id:'s7',data:'2026-11-06',desc:'Spesa per il pranzo di quartiere',cat:'pasti',importo:204.3,att:k(U.imp),chi:'Giulia Neri',pag:'carta',giust:'https://example.org/scontrini/pranzo-quartiere',nota:'',conf:true},
       {id:'s8',data:'2026-12-19',desc:'Torta e bevande per la cena di Natale',cat:'pasti',importo:60,att:k(U.nat),chi:'',pag:'',giust:'',nota:'Importo previsto',conf:false}
     ];
+    try{ exShiftDates(R.data.sp); }catch(e){}
     R.data.ts=Date.now(); await dbUpdate(R.id,R.data,R.meta,null);
   }catch(e){ console.error('exAnnoFill', e); }
+}
+// Le date dell'esempio seguono il calendario: ogni settimana l'esempio scorre in avanti (fino a 12 settimane), così «Prossime attività» e la linea del tempo hanno sempre qualcosa davanti; da settembre riparte con l'anno dopo. Le frasi restano quelle: per questo non scorre oltre.
+function exShiftInfo(){
+  const A=Date.UTC(2026,10,14), t=new Date(), T=Date.UTC(t.getFullYear(),t.getMonth(),t.getDate()), d=Math.floor((T-A)/864e5);
+  const years=Math.floor((d+75)/364); const w=Math.max(0,Math.min(12,Math.floor((d-364*years)/7)));
+  return {days:364*years+7*w, years, months:years*12+Math.round(w*7/30.44)};
+}
+function exShiftDates(o){
+  const I=exShiftInfo(); if(!I.days) return o;
+  const addD=v=>{ const [y,m,g]=v.split('-').map(Number); const d=new Date(Date.UTC(y,m-1,g)+I.days*864e5); return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0'); };
+  const addM=v=>{ const [y,m]=v.split('-').map(Number); const n=y*12+(m-1)+I.months; return Math.floor(n/12)+'-'+String(n%12+1).padStart(2,'0'); };
+  const walk=(x,key)=>{ if(Array.isArray(x)){ x.forEach((v,i)=>{ x[i]=walkv(v,key); }); return x; } if(x&&typeof x==='object'){ Object.keys(x).forEach(k=>{ x[k]=walkv(x[k],k); }); } return x; };
+  const walkv=(v,key)=>{ if(typeof v==='string'){ if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return addD(v); if((key==='tDal'||key==='tAl')&&/^\d{4}-\d{2}$/.test(v)) return addM(v); if(key==='annoScout'&&/^\d{4}-\d{2}$/.test(v)) return (2026+I.years)+'-'+String((2027+I.years)%100).padStart(2,'0'); return v; } return (v&&typeof v==='object')?walk(v,key):v; };
+  return walk(o,'');
 }
 function exBuild(){
   exCore('AN'); const pp=scheda.pp;
@@ -7396,6 +7411,7 @@ function exBuild(){
   const U=exUscite(); exPF(U);
   window._exU=U;
   scheda.pitHide=undefined; delete scheda.pitHide;
+  try{ exShiftDates(scheda); }catch(e){ console.warn('esempio: date', e); }
   saveData(true);
   try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
   try{ exAnnoFill(U); }catch(e){}
@@ -7549,6 +7565,7 @@ function exBuildPP(){
   try{ ppRiscSync(); }catch(e){}
   exGriglia();
   scheda.chkPP={partecipante:'Giulia Neri', formatore:'', rev:'01', items:{}};
+  try{ exShiftDates(scheda); }catch(e){ console.warn('esempio: date', e); }
   saveData(true);
   try{ if(typeof clPush==='function' && CL.ctx) clPush(true); }catch(e){}
   try{ shPP('0'); }catch(e){}
@@ -9099,7 +9116,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151045'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151420'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -9381,7 +9398,7 @@ function gdWhat(w){
       <li><b>Più cicli in un anno</b>: ogni programmazione (autunno, primavera…) è un ciclo; «Il mio anno» li mette insieme.</li></ul>`;
   const PP = `<ul>
       <li><b>Compilare il Progetto Personale</b>: le cinque Sezioni delle Linee Guida, con la checklist dei criteri a portata di mano.</li>
-      <li><b>Osservare</b>: la griglia dei 24 percorsi, le letture del gruppo e le attività osservative (in «Come osservo» parti da ciò che non hai ancora osservato; chi collabora può proporne altre).</li>
+      <li><b>Osservare</b>: la griglia dei 24 percorsi, le letture del gruppo e le attività osservative (in «Come osservo» trovi le attività osservative proposte dal KOS e puoi creare le tue personali).</li>
       <li><b>Scegliere i percorsi</b>: i percorsi non sono tutti da fare, meglio pochi vissuti in profondità; l’app ti aiuta a vedere dove il gruppo ha più da guadagnare.</li>
       <li><b>Inviare e rivedere</b>: quando invii il Progetto Personale al Tutor o all’ICdF si apre <b>una sola revisione</b>, a turni; ogni giro resta nello storico (Copia N). Il revisore lavora sulla sua copia, e il tuo progetto resta tuo.</li>
       <li><b>Conservare e condividere</b>: Word del progetto, pacchetto con le copie, archivio degli anni.</li></ul>`;
