@@ -4233,8 +4233,13 @@ function exRepairPF(){
     scheda.pf.forEach(x => { if(!x || !x.ev || x.evCy) return; const u = U[x.ev]; if(!u || u.del) return;
       const has = Object.values(u.prog || {}).some(m => m && m.pfId === x.id && !m.del); if(has) return;
       if(window.pfPlace(x.id, true)) n++; });
+    // anche le attività dei percorsi messe negli eventi: senza data propria prendono quella dell'evento (come dal Calendario)
+    Object.values(U).forEach(u => { if(!u || u.del) return; const iso = String((u.ax || {}).data || '').slice(0, 10); if(!iso) return;
+      Object.values(u.prog || {}).forEach(m => { if(!m || m.del || m.k !== 'att' || !m.pid || !m.aid) return;
+        const per = getAllPercorsi().find(p => p.percorsoId === m.pid); const a = per && (per.attivita || []).find(z => z && z.aid === m.aid);
+        if(a){ a.ax = a.ax || {}; if(!a.ax.data){ a.ax.data = iso; n++; } } }); });
     if(n && typeof saveDataDebounced === 'function') saveDataDebounced();
-  }catch(e){ console.warn('esempio: riparazione momenti formativi', e); } }
+  }catch(e){ console.warn('esempio: riparazione', e); } }
 function applyTheme(){
   let t = MODE==='staff' ? 'S' : (MODE==='giovani' ? FASCIA : '');
   try{ if(window.shBrandNow){ const b = shBrandNow(); if(b) t = b; } }catch(e){}
@@ -7268,6 +7273,7 @@ function exUscAdd(o){
 function exPlace(u, pid, titolo, g){
   const per=getAllPercorsi().find(p=>p.percorsoId===pid); if(!per) return; attIdsEnsure(per);
   const a=(per.attivita||[]).find(z=>z&&String(z.testo||'').trim()===titolo); if(!a) return; exPlaceBlk(u, pid, a.aid);
+  { const iso=String((u.ax||{}).data||'').slice(0,10); if(iso){ a.ax=a.ax||{}; if(!a.ax.data) a.ax.data=iso; } } // come quando si mette un'attività in un evento dal Calendario: la data è quella dell'evento
   if(g&&g>1){ const ms=Object.values(u.prog).filter(m=>m&&m.k==='att'&&m.aid===a.aid); ms.forEach(m=>{ m.g=g; let mx=0; Object.values(u.prog).forEach(z=>{ if(z!==m&&z&&(Number(z.g)||1)===g) mx=Math.max(mx,Number(z.ord)||0); }); m.ord=mx+1; }); }
 }
 function exUscite(){
@@ -9093,7 +9099,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611142040'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151045'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19019,7 +19025,7 @@ window.shNum = function(){
   ownOff(); shSub('1a', '', 'unit');
   setTimeout(() => { try{ const e = $('num-box'); if(e){ e.scrollIntoView({block:'center'}); const i = e.querySelector('input,textarea'); if(i) i.focus({preventScroll:true}); } }catch(e){} }, 300);
 };
-window.shShare = function(){ try{ if(CL.ctx){ if(typeof window.shSharePage === 'function') window.shSharePage(); else clShow('share'); } }catch(e){} };
+window.shShare = function(){ try{ if(CL.ctx){ if(typeof window.shSharePage === 'function') window.shSharePage(); else clShow('share'); } else { try{ modalClose(); }catch(e){} showToast('Per invitare lo staff serve un account: entra o creane uno dall’Archivio'); } }catch(e){} };
 window.shSharePage = function(){
   if(!CL.ctx) return; ownOff(); ensurePanels(); SH.ppv = 'share';
   $('panel-pp').innerHTML = `<div class="sh-dh"><div><h1>Condividi con lo staff</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Invita le persone del tuo staff e scegli come lavorano sul progetto. Chi ha già accesso lo trovi qui sotto.</p></div></div><section class="sh-card2 wide sh-share" id="sh-share">${clShareBody(true)}</section>`;
@@ -19916,7 +19922,7 @@ function rvRender(){
   if(rev && window._rvs[g.archivio_id]){ /* con la revisione unica l'esito è «Approva» nel pannello dei turni */ }
   else if(rev){ const es = v.rows['esito|esito'] || {};
     foot += `<div class="rv-t" style="margin:0 0 4px">Il tuo esito</div><div class="rv-bs">${Object.keys(GESITO).filter(k => k).map(k => btn(es.valore === k, GESITO[k], `rvEs('${k}')`, RV_HELP.esito)).join('')}</div>${hp(RV_HELP.esito)}
-      <textarea maxlength="2000" placeholder="Un commento per chi ha inviato il giro (facoltativo)" aria-label="Commento all’esito" onchange="rvEsNota(this.value)">${esc(es.testo || '')}</textarea>
+      <textarea maxlength="2000" placeholder="Un commento per chi ha inviato il giro, se vuoi" aria-label="Commento all’esito" onchange="rvEsNota(this.value)">${esc(es.testo || '')}</textarea>
       <div class="rv-bs" style="margin-top:6px">${v.closed ? `<button type="button" class="rv-b" title="${esc(RV_HELP.concludi)}" onclick="rvConcludiDock(false)">✓ Revisione conclusa · Riapri</button>` : `<button type="button" class="rv-b" title="${esc(RV_HELP.concludi)}" onclick="rvConcludiDock(true)">Concludi la revisione di questo progetto</button>`}</div>${hp(RV_HELP.concludi)}`; }
   else if(mine){ const E = rows.filter(r => r.tipo === 'esito'); foot += E.map(e => `<div style="margin-bottom:6px"><b>${esc(e.autore_nome || 'Revisore')}</b> · <span class="sh-pill ${e.valore === 'approva' ? 'sh-pill-ok' : ''}">${esc(GESITO[e.valore] || '')}</span>${e.testo ? '<div style="margin-top:3px">' + esc(e.testo) + '</div>' : ''}</div>`).join(''); }
   foot += `<div class="rv-bs" style="margin-top:6px"><button type="button" class="rv-b" title="${esc(RV_HELP.word)}" onclick="rvWordDock()">Scarica il Word di questo giro</button></div>`;
@@ -20032,7 +20038,7 @@ function rvStBar(aid, mine){
     if(v.fase === 'revisore'){
       if(c.da + c.att) h += `<div class="rv-bs"><button type="button" class="rv-b on" onclick="rvAzione('${esc(aid)}','rimanda')">Rimanda al compilatore (${c.da + c.att})</button></div>` + hp('I punti ancora da fare o con una domanda tornano a chi ha scritto il progetto. Quelli già «fatti» li confermi o li riapri tu.');
       else if(c.fat) h += hp('Ci sono ' + c.fat + ' punti «fatti»: confermali o riaprili, poi potrai approvare.');
-      else h += `<textarea id="rv-ap-n" rows="2" maxlength="600" aria-label="Nota di chiusura" placeholder="Una nota di chiusura (facoltativa)" style="width:100%;box-sizing:border-box;margin-top:6px;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif"></textarea><div class="rv-bs"><button type="button" class="rv-b on" onclick="rvAzione('${esc(aid)}','approva')">Approva e chiudi la revisione</button></div>` + hp('Con tutti i punti confermati il progetto è approvato e la revisione si chiude.');
+      else h += `<textarea id="rv-ap-n" rows="2" maxlength="600" aria-label="Nota di chiusura" placeholder="Una nota di chiusura, se vuoi" style="width:100%;box-sizing:border-box;margin-top:6px;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif"></textarea><div class="rv-bs"><button type="button" class="rv-b on" onclick="rvAzione('${esc(aid)}','approva')">Approva e chiudi la revisione</button></div>` + hp('Con tutti i punti confermati il progetto è approvato e la revisione si chiude.');
     } else h += hp('Il compilatore sta lavorando sui punti: ti avviso quando ha finito.');
   }
   return h + '</div>';
@@ -20040,7 +20046,7 @@ function rvStBar(aid, mine){
 function rvStHTML(aid, k, mine){
   const S = window._rvs[aid], x = S && S.pun[k]; if(!x) return ''; const aperta = S.rev.stato === 'aperta';
   let h = `<div class="rv-st" data-a="${esc(aid)}" data-k="${esc(k)}"><span class="rv-ch rv-ch-${x.stato}">${esc(RV_PS[x.stato])}</span>${x.nota ? `<span class="rv-sn">${esc(x.nota)}</span>` : ''}`;
-  if(aperta && mine && x.stato !== 'confermato') h += `<textarea rows="1" maxlength="300" aria-label="Una riga: cosa hai fatto, o la tua domanda" placeholder="Una riga (facoltativa): cosa hai fatto, o la tua domanda"></textarea><div class="rv-bs">${x.stato !== 'fatto' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'fatto')" title="Hai sistemato il punto, o hai deciso di non cambiarlo (spiega perché in una riga)">Fatto</button>` : ''}${x.stato !== 'attesa' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'attesa')" title="Non ti è chiaro cosa serve: scrivi la domanda; il revisore risponde">Ho un dubbio</button>` : ''}</div>`;
+  if(aperta && mine && x.stato !== 'confermato') h += `<textarea rows="1" maxlength="300" aria-label="Una riga: cosa hai fatto, o la tua domanda" placeholder="Una riga, se vuoi: cosa hai fatto, o la tua domanda"></textarea><div class="rv-bs">${x.stato !== 'fatto' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'fatto')" title="Hai sistemato il punto, o hai deciso di non cambiarlo (spiega perché in una riga)">Fatto</button>` : ''}${x.stato !== 'attesa' ? `<button type="button" class="rv-b" onclick="rvPuntoSet(this,'attesa')" title="Non ti è chiaro cosa serve: scrivi la domanda; il revisore risponde">Ho un dubbio</button>` : ''}</div>`;
   if(aperta && !mine){ if(x.stato === 'fatto' || x.stato === 'attesa') h += `<div class="rv-bs">${x.stato === 'fatto' ? `<button type="button" class="rv-b on" onclick="rvPuntoSet(this,'confermato')" title="Il punto è sistemato come volevi">Conferma</button>` : ''}<button type="button" class="rv-b" onclick="rvPuntoSet(this,'da_fare')" title="Il punto non è a posto: torna al compilatore">Riapri</button></div>`; else if(x.stato === 'confermato') h += `<div class="rv-bs"><button type="button" class="rv-b" onclick="rvPuntoSet(this,'da_fare')">Riapri</button></div>`; }
   return h + '</div>';
 }
