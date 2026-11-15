@@ -22,6 +22,8 @@ const [pop] = await Promise.all([PL.context().waitForEvent('page', {timeout:1500
 await pop.waitForLoadState('domcontentloaded'); await sleep(9000);
 const pe = (f, a) => pop.evaluate(f, a);
 await pe(() => { const a = _rd.anchors.find(x => /contesto-territoriale/.test(x.key)); rvDocOpen(a.key); });
+await pop.click('#rv-doc textarea'); await sleep(300);
+ok(await pe(() => !document.querySelector('#rv-doc .rt-ed') && document.activeElement && document.activeElement.tagName === 'TEXTAREA'), 'revisore: il campo resta una textarea normale (niente riquadro formattato che fa saltare la pagina)');
 await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value = 'Aggiungi il quartiere'; t.dispatchEvent(new Event('change', {bubbles:true})); }); await sleep(900);
 ok(db.t.pee_revisioni_punto.length === 1 && db.t.pee_revisioni_punto[0].stato === 'da_fare', 'il commento diventa un punto «da fare»');
 await pe(() => rvSync()); await sleep(1200);

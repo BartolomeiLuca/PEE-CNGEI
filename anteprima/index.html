@@ -9131,7 +9131,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151900'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151720'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19879,7 +19879,7 @@ function rvDocPaint(keepOpen){
     let h = '';
     if(P) h += `<div class="rd-pv">Giro ${esc(String(window._rv.prev.g.n))}: ${esc(P.testo)} <span class="rv-rec">${P.recepita ? '✓ recepita' : 'non ancora recepita'}</span></div>`;
     if(d.mine) h += L.map(n => `<div class="rd-n"><span class="rd-a">${esc(n.a)}</span><br>${esc(n.t).replace(/\n/g, '<br>')}<br>${rvHas(d.g.archivio_id, a.key) ? '' : `<label title="${esc(RV_HELP.rec)}"><input type="checkbox" ${n.rec ? 'checked' : ''} onchange="rvDocRec('${n.id}',this.checked)">recepita</label>`}${rvStHTML(d.g.archivio_id, a.key, true)}${rvThrHTML(a.key, n.uid)}</div>`).join('');
-    else { const n = L[0] || {t:'', rec:false}; h += `<textarea maxlength="2000" data-bk="${esc(a.key)}" aria-label="Commento" ${(window._rv && window._rv.ruolo === 'revisore' && rvRevAttesa(d.g.archivio_id)) ? 'readonly title="Tocca al compilatore: puoi scrivere di nuovo quando ti restituisce il progetto"' : ''} placeholder="${(window._rv && window._rv.ruolo === 'revisore') ? (rvRevAttesa(d.g.archivio_id) ? 'Tocca al compilatore' : 'Cosa va rivisto, o la tua domanda') : 'Un suggerimento'}" onchange="rvDocSave('${esc(a.key)}',${a.sec},this.value)">${esc(n.t)}</textarea>${rvHas(d.g.archivio_id, a.key) ? '' : (n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : '')}${rvStHTML(d.g.archivio_id, a.key, false)}${rvThrHTML(a.key, CL.user.id)}`; }
+    else { const n = L[0] || {t:'', rec:false}; h += `<textarea maxlength="2000" data-nort data-bk="${esc(a.key)}" aria-label="Commento" ${(window._rv && window._rv.ruolo === 'revisore' && rvRevAttesa(d.g.archivio_id)) ? 'readonly title="Tocca al compilatore: puoi scrivere di nuovo quando ti restituisce il progetto"' : ''} placeholder="${(window._rv && window._rv.ruolo === 'revisore') ? (rvRevAttesa(d.g.archivio_id) ? 'Tocca al compilatore' : 'Cosa va rivisto, o la tua domanda') : 'Un suggerimento'}" onchange="rvDocSave('${esc(a.key)}',${a.sec},this.value)">${esc(n.t)}</textarea>${rvHas(d.g.archivio_id, a.key) ? '' : (n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : '')}${rvStHTML(d.g.archivio_id, a.key, false)}${rvThrHTML(a.key, CL.user.id)}`; }
     box.innerHTML = h;
     const wide = Math.max.apply(null, Array.from(a.el.closest('table') ? a.el.closest('table').rows : []).map(r => Array.from(r.cells).reduce((s, c) => s + (c.colSpan || 1), 0)).concat([1]));
     if(a.kind === 'row'){ const tr = document.createElement('tr'); tr.className = 'rd-cmr'; const td = document.createElement('td'); td.colSpan = wide; td.className = 'rd-cmc'; td.appendChild(box); tr.appendChild(td); a.end.after(tr); }
@@ -19949,7 +19949,7 @@ function rvRender(){
       if(mine){ const byU = {}; rows.filter(r => r.tipo === 'stato' && r.chiave === 's' + s).forEach(r => { byU[r.user_id] = r; }); const sl = Object.keys(byU).map(u => `<span class="rv-pw">${esc(byU[u].autore_nome || 'Revisore')}: ${esc(RV_ST[byU[u].valore] || '')}</span>`).join(' '); inner += (sl ? `<div style="margin:2px 0 4px">${sl}</div>` : '') + gen.map(ptHTML).join('') + spec.map(ptHTML).join('') + (pts.length || sl ? '' : '<div class="rv-pn">Nessun commento su questa sezione.</div>'); }
       else { const st = v.rows['stato|s' + s] || {}, n0 = v.rows['nota|s' + s] || {};
         inner += `<div class="rv-ed">${rev ? `<div class="rv-bs">${Object.keys(RV_ST).map(k => btn(st.valore === k, RV_ST[k], `rvSt(${s},'${k}')`, RV_HELP.stato)).join('')}</div>${hp(RV_HELP.stato)}` : ''}
-          <textarea maxlength="2000" placeholder="${rev ? 'Un commento generale sulla sezione' : 'Un suggerimento'}" aria-label="Commento generale sezione ${s}" onchange="rvNota(${s},this.value)">${esc(n0.testo || '')}</textarea>${n0.id && n0.recepita ? '<span class="rv-rec">✓ recepito da chi ha inviato il giro</span>' : ''}
+          <textarea maxlength="2000" data-nort placeholder="${rev ? 'Un commento generale sulla sezione' : 'Un suggerimento'}" aria-label="Commento generale sezione ${s}" onchange="rvNota(${s},this.value)">${esc(n0.testo || '')}</textarea>${n0.id && n0.recepita ? '<span class="rv-rec">✓ recepito da chi ha inviato il giro</span>' : ''}
           ${spec.length ? `<div class="rv-t" style="margin:8px 0 3px">I tuoi punti in questa sezione</div>` + spec.map(ptHTML).join('') : '<div class="rv-hp">Per un punto preciso usa il fumetto 💬 accanto al testo.</div>'}</div>`; }
     }
     const cnt = pts.length, rc = pts.filter(p => p.rec).length;
@@ -19967,7 +19967,7 @@ function rvRender(){
   if(rev && window._rvs[g.archivio_id]){ /* con la revisione unica l'esito è «Approva» nel pannello dei turni */ }
   else if(rev){ const es = v.rows['esito|esito'] || {};
     foot += `<div class="rv-t" style="margin:0 0 4px">Il tuo esito</div><div class="rv-bs">${Object.keys(GESITO).filter(k => k).map(k => btn(es.valore === k, GESITO[k], `rvEs('${k}')`, RV_HELP.esito)).join('')}</div>${hp(RV_HELP.esito)}
-      <textarea maxlength="2000" placeholder="Un commento per chi ha inviato il giro, se vuoi" aria-label="Commento all’esito" onchange="rvEsNota(this.value)">${esc(es.testo || '')}</textarea>
+      <textarea maxlength="2000" data-nort placeholder="Un commento per chi ha inviato il giro, se vuoi" aria-label="Commento all’esito" onchange="rvEsNota(this.value)">${esc(es.testo || '')}</textarea>
       <div class="rv-bs" style="margin-top:6px">${v.closed ? `<button type="button" class="rv-b" title="${esc(RV_HELP.concludi)}" onclick="rvConcludiDock(false)">✓ Revisione conclusa · Riapri</button>` : `<button type="button" class="rv-b" title="${esc(RV_HELP.concludi)}" onclick="rvConcludiDock(true)">Concludi la revisione di questo progetto</button>`}</div>${hp(RV_HELP.concludi)}`; }
   else if(mine){ const E = rows.filter(r => r.tipo === 'esito'); foot += E.map(e => `<div style="margin-bottom:6px"><b>${esc(e.autore_nome || 'Revisore')}</b> · <span class="sh-pill ${e.valore === 'approva' ? 'sh-pill-ok' : ''}">${esc(GESITO[e.valore] || '')}</span>${e.testo ? '<div style="margin-top:3px">' + esc(e.testo) + '</div>' : ''}</div>`).join(''); }
   foot += `<div class="rv-bs" style="margin-top:6px"><button type="button" class="rv-b" title="${esc(RV_HELP.word)}" onclick="rvWordDock()">Scarica il Word di questo giro</button></div>`;
