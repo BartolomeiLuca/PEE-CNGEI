@@ -1582,6 +1582,8 @@ tr.rd-flash td,h3.rd-flash{background:#fff3c4!important;transition:background .4
 .rv-pt{flex-wrap:wrap}
 .rd-th{margin-top:6px}.rd-m{font-size:12.5px;line-height:1.4;padding:4px 8px;margin:3px 0;background:#fff;border-radius:7px;border:1px solid #e6d27a}.rd-m.me{background:#eef6f0;border-color:#cfe6d8}
 .rd-rp{display:flex;gap:6px;margin-top:4px}.rd-rp textarea,.rd-rp input{flex:1;min-width:0;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif;min-height:34px;box-sizing:border-box;resize:vertical}
+.rv-unr{margin-top:8px;padding:8px 10px;border:1px solid #f0c27a;background:#fff7e8;border-radius:9px;font-size:12.5px}.rv-unr-r{display:flex;gap:6px;align-items:center;margin-top:5px}.rv-unr-r .rv-ptb{flex:1;padding:4px 6px}tr.rd-unreq>:first-child::before,h3.rd-unreq::before{content:'Modificato, non richiesto';display:inline-block;margin:0 8px 2px 0;padding:1px 7px;border-radius:6px;background:#ffe3b0;color:#7a4b00;font:700 10.5px/1.5 'Montserrat',sans-serif}
+.rp-inl{margin:8px 0 12px;padding:10px 12px;border:1px solid #e3e3dc;border-left:5px solid #c0392b;border-radius:9px;background:#fff;font:13px/1.45 'Montserrat',Arial,sans-serif;color:#2b2b27;max-width:760px;box-sizing:border-box;clear:both;text-align:left;font-weight:400}.rp-inl.rv-pt-attesa{border-left-color:#d4a800}.rp-inl.rv-pt-risp{border-left-color:#1d4f8f}.rp-inl.rv-pt-fatto,.rp-inl.rv-pt-confermato{border-left-color:#25734e}.rp-inl-done{opacity:.72}.rp-inl-h{display:flex;gap:8px;font-size:12px;color:#5f5f58}.rp-inl-h b{color:#1A1A18}.rp-inl-t{margin:4px 0 8px;font-size:13.5px;white-space:pre-wrap}.rp-inl .rd-th{margin-top:8px}.rp-flash{animation:rpfl 2.2s}@keyframes rpfl{0%,60%{box-shadow:0 0 0 4px #fff3c4}100%{box-shadow:0 0 0 0 #fff3c4}}#rp-float{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(560px,94vw);max-height:60vh;overflow:auto;z-index:8800;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.28);padding:6px}#rp-float .rp-x{position:absolute;right:8px;top:6px}
 @media(min-width:1100px){body.sh-in.sh-ready #rvl-bar{margin-left:248px}}
 #rvl-bar{background:#fff4d6;color:#5a4300;border-bottom:2px solid #d9a400;padding:9px 16px;font-size:13px;line-height:1.45;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rvl-bar button{border:1px solid #b88a00;background:#fff;border-radius:8px;padding:5px 11px;font:inherit;font-weight:700;cursor:pointer}body.rev-lock #main-app textarea[readonly],body.rev-lock #main-app input[readonly]{background:#f4f4ee}
 #rp-pill{position:fixed;right:14px;bottom:14px;z-index:8400;border:0;border-radius:24px;background:#1b5e42;color:#fff;font:700 13px Montserrat,Arial,sans-serif;padding:11px 16px;min-height:44px;box-shadow:0 3px 12px rgba(0,0,0,.25);cursor:pointer}#rp-pill b{background:#fff;color:#1b5e42;border-radius:10px;padding:1px 7px;margin-left:4px}
@@ -9131,7 +9133,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151720'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151900'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19998,7 +20000,7 @@ async function rvMsgLoad(){
 function rvThr(key){ const d = window._rd; return d ? (d.msgs || []).filter(m => m.chiave === key) : []; }
 function rvThrHTML(key, uid){
   const d = window._rd; if(!d) return ''; const L = (d.msgs || []).filter(m => m.chiave === key && m.rev_id === uid);
-  return `<div class="rd-th" data-k="${esc(key)}" data-u="${esc(uid)}">${L.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Chi ha scritto' : 'Revisore')))}</b> ${esc(m.testo)}</div>`).join('')}${(d.mine || L.some(m => m.user_id !== CL.user.id)) ? `<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="${d.mine ? 'Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia' : (L.length ? 'Rispondi' : 'Rispondi a questo punto')}" aria-label="Scrivi su questo punto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rvMsgSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rvMsgSend(this.closest('.rd-th'))">Invia</button></div>` : ''}</div>`;
+  return `<div class="rd-th" data-k="${esc(key)}" data-u="${esc(uid)}">${L.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Chi ha scritto' : 'Revisore')))}</b> ${esc(m.testo)}</div>`).join('')}${(d.mine || L.some(m => m.user_id !== CL.user.id)) ? `<div class="rd-rp"><textarea rows="1" maxlength="600" data-nort placeholder="${d.mine ? 'Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia' : (L.length ? 'Rispondi' : 'Rispondi a questo punto')}" aria-label="Scrivi su questo punto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rvMsgSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rvMsgSend(this.closest('.rd-th'))">Invia</button></div>` : ''}</div>`;
 }
 window.rvMsgSend = async function(box){
   const d = window._rd; if(!d || !box) return; const inp = box.querySelector('textarea'), t = (inp.value || '').trim(); if(!t) return;
@@ -20034,15 +20036,61 @@ window.rpSend = async function(box){
     rpPaint(true);
   }catch(e){ showToast('Non sono riuscito a inviare: ' + ((e && e.message) || 'riprova').slice(0, 70)); }
 };
-window.rpGo = function(i){ const p = window._rp.pts[i]; if(!p) return; try{ if(p.sec >= 1) shPP(String(p.sec)); }catch(e){}
-  const lab = (p.chiave.split('|')[2] || '').replace(/#\d+$/, ''); setTimeout(() => { try{ if(!lab) return; const el = Array.from(document.querySelectorAll('main *, #sh-main *')).find(e => !e.children.length && RD.slug(e.textContent) === lab); if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.background = '#fff3c4'; setTimeout(() => { el.style.background = ''; }, 2000); } }catch(e){} }, 500);
-  if(window.innerWidth < 900){ window._rp.open = false; rpPaint(); } };
+window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; try{ if(p.sec >= 1) shPP(String(p.sec)); }catch(e){}
+  if(window.innerWidth < 900){ window._rp.open = false; rpPaint(); }
+  const wait = ms => new Promise(r => setTimeout(r, ms)), pk = p.chiave + '|' + p.user_id, find = () => { rpInlineSync(); return Array.from(document.querySelectorAll('.rp-inl')).find(e => e.dataset.pk === pk && e.offsetParent !== null); };
+  try{ await wait(450); let box = find();
+    if(!box && p.sec === 1){ for(const sub of [['1a', null, 'pctx'], ['1a', null, 'occ'], ['1a', null, 'unit'], ['1a', null, 'ctx'], ['1a', null, 'staff'], ['1b', 'P'], ['1b', 'C'], ['1b', 'S'], ['1c'], ['1d']]){ try{ shSub(sub[0], sub[1], sub[2]); }catch(e){} await wait(350); box = find(); if(box) break; } }
+    if(box){ const ff = document.getElementById('rp-float'); if(ff) ff.remove(); box.scrollIntoView({behavior:'smooth', block:'center'}); box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; }
+    // il punto non si trova nella pagina: la scheda si apre in primo piano
+    let ff = document.getElementById('rp-float'); if(!ff){ ff = document.createElement('div'); ff.id = 'rp-float'; document.body.appendChild(ff); }
+    ff.innerHTML = '<button type="button" class="rp-x" onclick="this.parentNode.remove()" aria-label="Chiudi">✕</button><div class="rp-inl rv-pt-' + rpPanelState(p) + '" data-pk="' + esc(pk) + '">' + rpPanelHTML(p) + '</div>'; }catch(e){} };
 window.rpGfbSeen = function(){ try{ localStorage.setItem('bussola_gfb_seen_' + CL.user.id, new Date().toISOString()); if(window.clPerTe) setTimeout(() => clPerTe(), 400); }catch(e){} };
 window.rpTog = function(){ window._rp.open = !window._rp.open; if(window._rp.open) window.rpGfbSeen(); rpPaint(); };
 window.rpNuovoGiro = function(forza){ const P = window._rp, pend = P.pts.filter(p => !p.recepita).length; if(pend && !forza && !confirm('Ci sono ancora ' + pend + ' punti non segnati come fatti. Vuoi inviare comunque un nuovo giro?')) return;
   const last = P.last, blk = last && (last.sezioni || []).some(x => x >= 4) ? 2 : 1; try{ rpTog(); ppGiroForm(blk); const rec = P.pts.filter(p => p.recepita).length; if(window._giroForm){ window._giroForm.nota = 'Ho lavorato sulle revisioni del giro ' + (last ? last.n : '') + ': ' + rec + ' punti recepiti su ' + P.pts.length + '.'; ppGiroFormRender(); } }catch(e){} };
+
+// ── Pannelli sotto i punti (compilatore): come li vede il revisore, nel punto esatto del progetto ──
+function rpPanelHTML(p){
+  const P = window._rp, aid = CL.ctx.id, th = P.msgs.filter(m => m.chiave === p.chiave && m.rev_id === p.user_id), has = rvHas(aid, p.chiave);
+  return `<div class="rp-inl-h"><b>${esc(p.autore_nome || 'Chi rivede')} scrive</b><span>giro ${p.n}</span></div><div class="rp-inl-t">${esc(p.testo)}</div>`
+    + (has ? `<div style="padding:0 0 4px">${rvStHTML(aid, p.chiave, true)}</div>` : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`)
+    + `<div class="rd-th" data-k="${esc(p.chiave)}" data-u="${esc(p.user_id)}">${th.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || 'Revisore'))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" data-nort placeholder="Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia" aria-label="Spiega cosa hai fatto o fai una domanda" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rpSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rpSend(this.closest('.rd-th'))">Invia</button></div></div>`;
+}
+function rpPanelState(p){ const x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave]; return x ? rvPtSt(CL.ctx.id, p.chiave, x) : (p.recepita ? 'fatto' : 'da_fare'); }
+function rpFindEl(p){ const lab = (p.chiave.split('|')[2] || '').replace(/#\d+$/, ''); if(!lab) return null;
+  const pool = Array.from(document.querySelectorAll('main *, #sh-main *')).filter(e => e.offsetParent !== null && !e.closest('.rp-inl,#rp-dock,#rp-float') && !/^(SCRIPT|STYLE|OPTION|TEXTAREA|INPUT|SELECT)$/.test(e.tagName) && (e.textContent || '').length < 400);
+  const own = e => !Array.from(e.children).some(c => RD.slug(c.textContent).indexOf(lab) === 0 || RD.slug(c.textContent) === lab);
+  let m = pool.find(e => !e.children.length && RD.slug(e.textContent) === lab); if(m) return m;
+  m = pool.filter(e => { const sl = RD.slug(e.textContent); return sl === lab || sl.indexOf(lab) === 0; }).find(own); if(m) return m;
+  const pre = /^(LABEL|LEGEND|H1|H2|H3|H4|H5|TH|SUMMARY|DT|STRONG|B|SPAN|P|DIV|TD)$/;
+  return pool.filter(e => pre.test(e.tagName) && RD.slug(e.textContent).indexOf(lab) >= 0).find(own) || null; }
+function rpHostOf(el){ const tr = el.closest('tr'); if(tr) return tr; let n = el; for(let i = 0; n && i < 6 && n.tagName !== 'MAIN' && n.id !== 'sh-main'; i++, n = n.parentElement){ if(/^(block|flex|grid|list-item)$/.test(getComputedStyle(n).display)) return n; } return el; }
+function rpInlineSync(){
+  try{
+    const P = window._rp, off = !P || !P.pts || !P.pts.length || window.BRO || typeof CL === 'undefined' || !CL.ctx || CL.ctx.ruolo;
+    if(window._rpObs) window._rpObs.disconnect();
+    if(off){ document.querySelectorAll('.rp-inl,.rp-inl-tr').forEach(e => e.remove()); return; }
+    const keep = new Set();
+    P.pts.forEach(p => { const k = p.chiave + '|' + p.user_id, st = rpPanelState(p), th = P.msgs.filter(m => m.chiave === p.chiave && m.rev_id === p.user_id), x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave];
+      const sig = [st, th.length, x ? x.nota : '', x ? x.updated_at : '', p.recepita, (window._rvs[CL.ctx.id] && window._rvs[CL.ctx.id].rev.fase) || ''].join('~');
+      let box = Array.from(document.querySelectorAll('.rp-inl')).find(e => e.dataset.pk === k);
+      if(box && !box.isConnected) box = null;
+      const el = box ? null : rpFindEl(p);
+      if(!box){ if(!el) return; let host = rpHostOf(el); for(let i = 0; i < 3; i++){ const nx = host.nextElementSibling; if(nx && (/^(TEXTAREA|INPUT|SELECT)$/.test(nx.tagName) || nx.classList.contains('rt-ed'))) host = nx; else break; } box = document.createElement('div'); box.className = 'rp-inl'; box.dataset.pk = k;
+        if(host.tagName === 'TR'){ const tr = document.createElement('tr'); tr.className = 'rp-inl-tr'; const td = document.createElement('td'); td.colSpan = 30; td.appendChild(box); tr.appendChild(td); host.after(tr); } else host.after(box); }
+      keep.add(k);
+      if(box.dataset.sig !== sig){ const ta = box.querySelector('textarea'), v = ta ? ta.value : '', f = ta && document.activeElement === ta;
+        box.className = 'rp-inl rv-pt-' + st + ((st === 'fatto' || st === 'confermato') ? ' rp-inl-done' : ''); box.innerHTML = rpPanelHTML(p); box.dataset.sig = sig;
+        if(v){ const t2 = box.querySelector('textarea'); if(t2){ t2.value = v; if(f) try{ t2.focus(); }catch(e){} } } } });
+    document.querySelectorAll('.rp-inl').forEach(e => { if(!keep.has(e.dataset.pk)){ const w = e.closest('.rp-inl-tr'); (w || e).remove(); } });
+  }catch(e){}
+  finally{ try{ const app = document.getElementById('main-app') || document.body; if(!window._rpObs && window.MutationObserver){ let t = 0; window._rpObs = new MutationObserver(m => { if(m.every(r => (r.target.closest && r.target.closest('.rp-inl')) || Array.from(r.addedNodes).concat(Array.from(r.removedNodes)).every(n => n.nodeType !== 1 || (n.classList && (n.classList.contains('rp-inl') || n.classList.contains('rp-inl-tr'))) ))) return; clearTimeout(t); t = setTimeout(rpInlineSync, 200); }); }
+    if(window._rpObs) window._rpObs.observe(app, {childList:true, subtree:true}); }catch(e){} }
+}
+window.rpInlineSync = rpInlineSync; window.rpFindEl = rpFindEl;
 function rpPaint(keep){
-  const P = window._rp; let pill = document.getElementById('rp-pill'), dk = document.getElementById('rp-dock');
+  const P = window._rp; setTimeout(rpInlineSync, 0); let pill = document.getElementById('rp-pill'), dk = document.getElementById('rp-dock');
   const pend = P.pts.filter(p => { const S = window._rvs[CL.ctx.id], x = S && S.pun[p.chiave]; return x ? (x.stato === 'da_fare' || x.stato === 'attesa') : !p.recepita; });
   if(!P.pts.length || window.BRO){ if(pill) pill.remove(); if(dk) dk.remove(); return; }
   if(!pill){ pill = document.createElement('button'); pill.type = 'button'; pill.id = 'rp-pill'; pill.onclick = rpTog; document.body.appendChild(pill); }
@@ -20051,16 +20099,14 @@ function rpPaint(keep){
   dk.classList.toggle('open', !!P.open); if(!P.open){ dk.innerHTML = ''; return; }
   const bd0 = dk.querySelector('.rv-body'), sc = bd0 ? bd0.scrollTop : 0;
   const tot = P.pts.length, ok = tot - pend.length, bySec = {}; P.pts.forEach((p, i) => { p.i = i; (bySec[p.sec] = bySec[p.sec] || []).push(p); });
-  const item = p => { const th = P.msgs.filter(m => m.chiave === p.chiave && m.rev_id === p.user_id);
-    const _x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave], _ps = _x ? rvPtSt(CL.ctx.id, p.chiave, _x) : (p.recepita ? 'fatto' : 'da_fare');
-    return `<div class="rv-pt rv-pt-${_ps}${p.recepita ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto"><span class="rv-pl">${p.sec ? 'Sezione ' + p.sec + ' › ' : ''}${esc(p.txt)} · giro ${p.n}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw" style="color:#1b5e42">Tocca per andare a questo punto →</span><span class="rv-pw">${esc(p.autore_nome || 'Revisore')}</span></button>${rvHas(CL.ctx.id, p.chiave) ? '' : `<label class="rv-pr" title="${esc(RV_HELP.rec)}"><input type="checkbox" ${p.recepita ? 'checked' : ''} onchange="rpRec('${p.id}',this.checked)">fatto</label>`}</div>${rvHas(CL.ctx.id, p.chiave) ? `<div style="width:100%;padding:0 8px 6px;box-sizing:border-box">${rvStHTML(CL.ctx.id, p.chiave, true)}</div>` : ''}
-      <div class="rd-th" data-k="${esc(p.chiave)}" data-u="${esc(p.user_id)}" style="width:100%;padding:0 8px 6px;box-sizing:border-box">${th.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || 'Revisore'))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" placeholder="Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia" aria-label="Spiega cosa hai fatto o fai una domanda" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rpSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rpSend(this.closest('.rd-th'))">Invia</button></div></div></div>`; };
+  const item = p => { const _x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave], _ps = _x ? rvPtSt(CL.ctx.id, p.chiave, _x) : (p.recepita ? 'fatto' : 'da_fare');
+    return `<div class="rv-pt rv-pt-${_ps}${(_ps === 'fatto' || _ps === 'confermato' || p.recepita) ? ' done' : ''}" style="flex-direction:column"><div style="display:flex;width:100%"><button type="button" class="rv-ptb" onclick="rpGo(${p.i})" title="Vai al punto nel tuo progetto: lì trovi cosa ha scritto chi rivede e puoi rispondere"><span class="rv-ch rv-ch-${_ps}" style="margin:0 6px 2px 0">${esc(_x ? RV_PS[_ps] : (p.recepita ? 'Fatto' : 'Da fare'))}</span><span class="rv-pl">${p.sec ? 'Sezione ' + p.sec + ' › ' : ''}${esc(p.txt)}</span><span class="rv-px">${esc(p.testo)}</span><span class="rv-pw" style="color:#1b5e42">Vai al punto →</span></button></div></div>`; };
   P.sopen = P.sopen || {};
   const secs = Object.keys(bySec).sort().map(s => { const L = bySec[s], nd = L.filter(p => { const x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave]; return x ? (x.stato === 'da_fare' || x.stato === 'attesa') : !p.recepita; }).length, op = s in P.sopen ? P.sopen[s] : nd > 0;
     return `<details class="rp-sec" data-s="${esc(s)}" ${op ? 'open' : ''} ontoggle="window._rp.sopen[this.dataset.s]=this.open"><summary><span>${+s ? s + ' · ' + esc(PP_SEZ[s - 1]) : 'Generale'}</span><span class="rv-pn" style="margin-left:auto">${L.length - nd}/${L.length}</span></summary>` + L.map(item).join('') + '</details>'; }).join('');
   dk.innerHTML = `<div class="rv-h" style="cursor:default"><b>📝 Revisioni da recepire</b><span>${ok} su ${tot} fatte</span><button type="button" class="rp-x" onclick="rpTog()" aria-label="Chiudi">✕</button></div>
     <div class="rv-body">${rvStBar(CL.ctx.id, true)}<div class="rv-bar" aria-hidden="true"><span style="width:${tot ? Math.round(100 * ok / tot) : 0}%"></span></div><div class="rv-pn">${pend.length ? (pend.length === 1 ? 'Manca 1 punto' : 'Mancano ' + pend.length + ' punti') + (ok ? ' · bel lavoro, continua così' : '') : 'Tutti i punti sono a posto: puoi inviare un nuovo giro.'}</div>
-      <div class="rv-hp">Tocca un punto per andare dove lavorarci. Quando l’hai sistemato spunta «fatto»: chi ha rivisto lo vede. Se hai un dubbio, scrivi una risposta sotto il punto.</div>${secs}</div>
+      <div class="rv-hp">Tocca un punto: ti porto nel progetto, dove sotto il punto trovi cosa ha scritto chi rivede. Lì lo sistemi, premi «Ho fatto» e, se serve, scrivi una domanda.</div>${secs}</div>
     ${(window._rvs[CL.ctx.id] && window._rvs[CL.ctx.id].rev.stato === 'aperta') ? '' : `<div class="rv-foot"><div class="rv-bs"><button type="button" class="rv-b${pend.length ? '' : ' on'}" onclick="rpNuovoGiro()" title="Apre il modulo di invio, già con una nota su quanto hai recepito">Invia un nuovo giro</button></div><div class="rv-hp">${pend.length ? 'Consigliato quando tutti i punti sono fatti. Se ne mancano, ti chiediamo conferma.' : 'Il nuovo giro è la copia che il revisore rileggerà: vedrà cosa è cambiato.'}</div></div>`}`;
   const bd = dk.querySelector('.rv-body'); if(bd) bd.scrollTop = sc;
 }
@@ -20083,7 +20129,7 @@ async function rvStLoad(aid){
 // Si sblocca da solo quando il revisore restituisce le richieste (o approva). Nessun dato viene toccato: sono solo i campi a diventare in sola lettura.
 function rvLocked(){ try{ if(window.BRO || typeof CL === 'undefined' || !CL.ctx || CL.ctx.ruolo || !isPP()) return false; const S = window._rvs[CL.ctx.id]; return !!(S && S.rev && S.rev.stato === 'aperta' && S.rev.fase === 'revisore'); }catch(e){ return false; } }
 window.rvLocked = rvLocked;
-const RVL_SKIP = '#rp-dock,#rv-dock,#rp-pill,#rvl-bar,[data-conv],.rd-rp,.rv-st,.cl-ov,#cl-auth,#toast';
+const RVL_SKIP = '.rp-inl,#rp-float,#rp-dock,#rv-dock,#rp-pill,#rvl-bar,[data-conv],.rd-rp,.rv-st,.cl-ov,#cl-auth,#toast';
 const RVL_OK = /^(gGo|goPhase|shSec|shSub|shPP|shDrawer|shViewGo|shGoHome|faqOpen|vidOpen|closeTutorial|toggleCard|gPPHide|pcxToggle|renderValuation|ppGiroApri|ppGiroForm|ppMailOpen|ppCgAvvisa|rvBackupMine|rvPackage|rvWordDock|ossApri|ossExportJson|export\w*|rv\w+|rp\w+|anOpen|\w*Spunti\w*)$/;   // azioni di sola navigazione/lettura: tutto il resto, a turno del revisore, è fermato
 const RVL_JS = /^(if|else|return|function|confirm|alert|prompt|event|this|window|document|stopPropagation|preventDefault|stopImmediatePropagation|getElementById|querySelector|querySelectorAll|closest|contains|toggle|add|remove|setAttribute|getAttribute|focus|blur|click|scrollIntoView|encodeURIComponent|open|showToast|esc|String|Number|Math|JSON)$/;
 function rvLockSweep(){
@@ -20114,6 +20160,16 @@ document.addEventListener('click', e => { try{
 }catch(x){} }, true);
 function rvHas(aid, k){ const S = window._rvs[aid]; return !!(S && S.pun[k]); }
 function rvStCnt(S){ const L = Object.keys(S.pun).map(k => S.pun[k].stato), n = x => L.filter(y => y === x).length; return {tot:L.length, da:n('da_fare'), att:n('attesa'), fat:n('fatto'), con:n('confermato')}; }
+
+// ── Modifiche fuori dalle richieste (il compilatore può modificare tutto il progetto): il revisore le vede e le conferma ──
+const RV_UNREQ_N = 'Modifica non richiesta: vista';
+function rvUnreq(aid){ const d = window._rd, S = window._rvs[aid]; if(!d || d.mine || !d.diff || !S) return []; return d.anchors.filter(a => d.diff[a.key] && !S.pun[a.key]).map(a => ({key:a.key, label:a.label, k:d.diff[a.key], el:a.el})); }
+function rvUnreqMark(aid){ const d = window._rd, S = window._rvs[aid]; if(!d || !d.diff || !S) return; const pend = new Set(rvUnreq(aid).map(u => u.key));
+  d.anchors.forEach(a => { let r = a.el; const on = pend.has(a.key); for(;;){ if(r.tagName === 'TR' || r === a.el){ r.classList.toggle('rd-unreq', on); } if(r === a.end) break; r = r.nextElementSibling; if(!r) break; } }); }
+window.rvUnreqGo = function(i){ const aid = window._rd && window._rd.g && window._rd.g.archivio_id, u = rvUnreq(aid)[i]; if(u && u.el){ if(u.el.scrollIntoView) u.el.scrollIntoView({behavior:'smooth', block:'center'}); u.el.classList.add('rp-flash'); setTimeout(() => u.el.classList.remove('rp-flash'), 2200); } };
+window.rvUnreqOk = async function(i, btn){ const aid = window._rd && window._rd.g && window._rd.g.archivio_id, S = window._rvs[aid], u = rvUnreq(aid)[i]; if(!S || !u) return; if(btn) btn.disabled = true;
+  try{ const r = await CL.sb.rpc('pee_rev_punto', {r:S.rev.id, k:u.key, s:'confermato', n:RV_UNREQ_N}); if(r.error) throw r.error; await rvStRefresh(aid); }
+  catch(e){ if(btn) btn.disabled = false; showToast('Non riuscito: ' + ((e && e.message) || 'riprova').slice(0, 90)); } };
 function rvStBar(aid, mine){
   const S = window._rvs[aid]; if(!S) return ''; const v = S.rev, c = rvStCnt(S), bar = `<div class="rv-bar" aria-hidden="true"><span style="width:${c.tot ? Math.round(100 * c.con / c.tot) : 0}%"></span></div>`, hp = t => `<div class="rv-hp">${esc(t)}</div>`;
   if(v.stato === 'chiusa') return `<div class="rv-q rv-st-bar"><b>✓ Revisione chiusa</b> <span class="rv-pn">${v.esito === 'approvata' ? 'approvata' : 'storica'}${v.chiusa_il ? ' il ' + esc(dGMA(v.chiusa_il)) : ''}</span>${v.nota_chiusura ? `<div class="rv-hp">${esc(v.nota_chiusura)}</div>` : ''}</div>`;
@@ -20121,14 +20177,16 @@ function rvStBar(aid, mine){
   let h = `<div class="rv-q rv-st-bar"><b>${esc(turno)}</b> <span class="rv-pn">${c.con} confermati su ${c.tot}</span>${bar}`;
   if(mine){
     if(v.fase === 'compilatore' && window.BRO){ h += `<div class="rv-bs"><button type="button" class="rv-b on" onclick="giroChiudi()">Torna al tuo progetto</button></div>` + hp('Questa è la copia inviata: è ferma e serve solo a leggere. Per sistemare i punti e premere «Ho finito, può rileggere» lavori nel tuo progetto, con questo stesso elenco a destra.'); }
-    else if(v.fase === 'compilatore'){ const pend = c.da; h += `<div class="rv-bs"><button type="button" class="rv-b${pend ? '' : ' on'}" ${pend ? 'disabled' : ''} onclick="rvAzione('${esc(aid)}','ho_finito')" title="Avvisa il revisore: rilegge solo ciò che hai segnato come fatto">Ho finito, può rileggere</button></div>` + hp(pend ? (pend === 1 ? 'Manca 1 punto da fare.' : 'Mancano ' + pend + ' punti da fare.') + ' Per ogni punto scegli «Ho fatto» o «Ho un dubbio».' : (c.att ? 'Hai ' + c.att + (c.att === 1 ? ' domanda ancora aperta: non blocca l’invio, il revisore la vede.' : ' domande ancora aperte: non bloccano l’invio, il revisore le vede.') : 'Tutti i punti sono sistemati: premi «Ho finito» e il revisore rilegge.')); }
+    else if(v.fase === 'compilatore'){ const pend = c.da; h += `<div class="rv-bs"><button type="button" class="rv-b${pend ? '' : ' on'}" ${pend ? 'disabled' : ''} onclick="rvAzione('${esc(aid)}','ho_finito')" title="Avvisa il revisore: rilegge solo ciò che hai segnato come fatto">Ho finito, può rileggere</button></div>` + hp(pend ? (pend === 1 ? 'Manca 1 punto da fare.' : 'Mancano ' + pend + ' punti da fare.') + ' Per ogni punto premi «Ho fatto»; se hai un dubbio scrivilo nel campo sotto il punto e premi Invia.' : (c.att ? 'Hai ' + c.att + (c.att === 1 ? ' domanda ancora aperta: non blocca l’invio, il revisore la vede.' : ' domande ancora aperte: non bloccano l’invio, il revisore le vede.') : 'Tutti i punti sono sistemati: premi «Ho finito» e il revisore rilegge.')); }
     else h += hp('Il revisore sta rileggendo. Puoi continuare a lavorare sul progetto e rispondere nella chat dei punti.');
   } else {
     if(v.fase === 'revisore'){
-      const aperti = c.da + c.att, daConf = aperti + c.fat;
+      const unr = rvUnreq(aid); try{ rvUnreqMark(aid); }catch(e){}
+      const aperti = c.da + c.att, daConf = aperti + c.fat + unr.length;
+      if(unr.length) h += `<div class="rv-unr"><b>${unr.length} ${unr.length === 1 ? 'modifica' : 'modifiche'} fuori dalle tue richieste</b><div class="rv-hp">Chi ha scritto il progetto ha cambiato anche questi punti. Guardali e premi «Visto» (puoi anche riaprirli con un commento).</div>${unr.map((u, i) => `<div class="rv-unr-r"><button type="button" class="rv-ptb" onclick="rvUnreqGo(${i})">${esc(u.label.slice(0, 70))} →</button><button type="button" class="rv-b" onclick="rvUnreqOk(${i},this)">Visto</button></div>`).join('')}</div>`;
       h += `<textarea id="rv-ap-n" rows="2" maxlength="600" aria-label="Nota di chiusura" placeholder="Una nota per chi ha scritto il progetto, se vuoi" style="width:100%;box-sizing:border-box;margin-top:6px;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif"></textarea>
         <div class="rv-bs"><button type="button" class="rv-b${aperti ? ' on' : ''}" ${aperti ? '' : 'disabled'} onclick="rvAzione('${esc(aid)}','rimanda')">Invia le richieste di revisione${aperti ? ' (' + aperti + ')' : ''}</button><button type="button" class="rv-b${daConf ? '' : ' on'}" ${daConf ? 'disabled' : ''} onclick="rvAzione('${esc(aid)}','approva')">Approva</button></div>`
-        + hp(daConf ? (aperti ? 'Ci sono ' + aperti + (aperti === 1 ? ' punto da fare o con una domanda' : ' punti da fare o con una domanda') + ': invia le richieste al compilatore. Per approvare tutti i punti devono essere confermati.' : 'Ci sono ' + c.fat + (c.fat === 1 ? ' punto fatto' : ' punti fatti') + ' da confermare (o riaprire): poi potrai approvare.') : 'Tutti i punti sono confermati: puoi approvare.');
+        + hp(daConf ? (!aperti && !c.fat && unr.length ? (unr.length === 1 ? 'C’è 1 modifica fuori dalle richieste da guardare: premi «Visto», poi potrai approvare.' : 'Ci sono ' + unr.length + ' modifiche fuori dalle richieste da guardare: premi «Visto» su ciascuna, poi potrai approvare.') : aperti ? 'Ci sono ' + aperti + (aperti === 1 ? ' punto da fare o con una domanda' : ' punti da fare o con una domanda') + ': invia le richieste al compilatore. Per approvare tutti i punti devono essere confermati.' : 'Ci sono ' + c.fat + (c.fat === 1 ? ' punto fatto' : ' punti fatti') + ' da confermare (o riaprire): poi potrai approvare.') : 'Tutti i punti sono confermati: puoi approvare.');
     } else h += hp('Il compilatore sta lavorando sui punti: ti avviso quando ha finito.');
   }
   return h + '</div>';
@@ -20171,6 +20229,7 @@ window.rvAzione = async function(aid, kind){
   if(kind === 'ho_finito'){ if(window.BRO || !CL.ctx || CL.ctx.id !== aid){ showToast('Per dire «Ho finito» apri il tuo progetto (menu Progetto Personale)'); return; }
     const c = rvStCnt(S); if(c.da){ showToast('Ci sono ancora punti da fare'); return; }
     if(!(await rvAutoCopia(S))) return; }
+  if(kind === 'approva' && rvUnreq(aid).length){ showToast('Ci sono modifiche fuori dalle richieste da guardare: premi «Visto» su ciascuna'); return; }
   const args = {r:S.rev.id}; if(kind === 'approva'){ const t = document.getElementById('rv-ap-n'); args.n = t ? t.value.trim() : ''; }
   try{ const r = await CL.sb.rpc(nm, args); if(r.error) throw r.error; await rvStRefresh(aid);
     showToast({ho_finito:'Fatto: il revisore può rileggere', rimanda:'Rimandato al compilatore', approva:'Revisione approvata e chiusa'}[kind]); }

@@ -37,7 +37,7 @@ export class FakeDB {
     if(!ru || v.stato !== 'aperta') return E('Revisione non disponibile'); const P = this.t.pee_revisioni_punto.filter(x => x.revisione_id === v.id);
     if(name === 'pee_rev_punto'){ const cur = P.find(x => x.chiave === a.k);
       if(ru === 'titolare'){ if(!['fatto','attesa'].includes(a.s) || !cur) return E('Azione non consentita'); if(cur.stato === 'confermato') return E('Punto già confermato dal revisore'); }
-      else { if(!['da_fare','confermato'].includes(a.s)) return E('Azione non consentita'); if(!cur && a.s !== 'da_fare') return E('Punto inesistente'); }
+      else { if(!['da_fare','confermato'].includes(a.s)) return E('Azione non consentita'); }
       if(cur){ cur.stato = a.s; if(a.n) cur.nota = String(a.n).slice(0, 300); cur.updated_at = now(); } else this.t.pee_revisioni_punto.push({revisione_id:v.id, chiave:a.k, stato:a.s, nota:a.n || '', updated_at:now()}); return {data:null, error:null}; }
     if(name === 'pee_rev_ho_finito'){ if(ru !== 'titolare') return E('Solo chi ha scritto il progetto'); if(v.fase !== 'compilatore') return E('Non è il tuo turno'); if(P.some(x => x.stato === 'da_fare')) return E('Ci sono ancora punti da fare'); v.fase = 'revisore'; return {data:null, error:null}; }
     if(name === 'pee_rev_rimanda'){ if(ru !== 'revisore') return E('Solo il revisore'); if(v.fase !== 'revisore') return E('Non è il tuo turno'); if(!P.some(x => ['da_fare','attesa'].includes(x.stato))) return E('Nessun punto da riaprire: puoi approvare'); v.fase = 'compilatore'; return {data:null, error:null}; }

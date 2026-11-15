@@ -34,12 +34,12 @@ s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tocca a ch
 await ev(() => rpLoad()); await sleep(1500); await ev(() => rpTog()); await sleep(600);
 s = await ev(() => document.getElementById('rp-dock').innerText);
 await ev(() => rpLoad()); await sleep(1500);
-const cls = () => ev(() => ({ chip: (document.querySelector('#rp-dock .rv-st .rv-ch') || {}).className, pt: (document.querySelector('#rp-dock .rv-pt') || {}).className, sec: !!document.querySelector('#rp-dock details.rp-sec'), open: !!document.querySelector('#rp-dock details.rp-sec[open]'), taHidden: (document.querySelector('#rp-dock .rv-st textarea') || {}).hidden }));
+const cls = () => ev(() => ({ chip: (document.querySelector('#rp-dock .rv-pt .rv-ch') || {}).className, pt: (document.querySelector('#rp-dock .rv-pt') || {}).className, sec: !!document.querySelector('#rp-dock details.rp-sec'), open: !!document.querySelector('#rp-dock details.rp-sec[open]'), taHidden: (document.querySelector('#rp-dock .rv-st textarea') || {}).hidden }));
 let c = await cls();
 ok(/rv-ch-da_fare/.test(c.chip) && /rv-pt-da_fare/.test(c.pt), 'punto da fare: rosso ' + JSON.stringify(c));
 ok(c.sec && c.open, 'le richieste sono raggruppate per sezione, aperta quella con punti da fare');
 ok(await ev(() => !Array.from(document.querySelectorAll('#rp-dock button')).some(x => /dubbio/i.test(x.textContent))), 'niente «Ho un dubbio»: un solo campo con Invia');
-await ev(() => { const th = document.querySelector('#rp-dock .rd-th'); th.querySelector('textarea').value = 'Intendi il quartiere o la frazione?'; rpSend(th); }); await sleep(1500);
+await ev(() => rpGo(0)); await sleep(3500); await ev(() => { const th = document.querySelector('.rp-inl .rd-th'); th.querySelector('textarea').value = 'Intendi il quartiere o la frazione?'; rpSend(th); }); await sleep(1500);
 c = await cls(); ok(db.t.pee_revisioni_punto[0].stato === 'attesa' && /rv-ch-attesa/.test(c.chip) && /rv-pt-attesa/.test(c.pt), 'domanda inviata nel campo: giallo ' + JSON.stringify(c));
 // «Ho finito» non è bloccato da una domanda aperta
 ok(!(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled)), '«Ho finito» resta acceso con una domanda ancora aperta');
@@ -51,7 +51,7 @@ await ev(() => rpLoad()); await sleep(1500);
 c = await cls(); ok(/rv-ch-risp/.test(c.chip) && /rv-pt-risp/.test(c.pt), 'risposta ricevuta: blu ' + JSON.stringify(c));
 await ev(() => { const b = document.querySelector('#rp-dock .rv-body'); }); await P.screenshot({path:'/tmp/colori_blu.png', clip:{x:880,y:0,width:400,height:700}});
 // «Ho fatto»: verde
-await ev(() => { const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1500);
+await ev(() => rpGo(0)); await sleep(3500); await ev(() => { const b = Array.from(document.querySelectorAll('.rp-inl .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1500);
 c = await cls(); ok(db.t.pee_revisioni_punto[0].stato === 'fatto' && /rv-ch-fatto/.test(c.chip) && /rv-pt-fatto/.test(c.pt), '«Ho fatto»: verde ' + JSON.stringify(c));
 await P.screenshot({path:'/tmp/colori_verde.png', clip:{x:880,y:0,width:400,height:700}});
 // nella copia inviata (ferma) niente pulsanti di lavoro: solo un invito chiaro a tornare al progetto

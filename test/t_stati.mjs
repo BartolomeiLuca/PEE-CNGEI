@@ -37,9 +37,12 @@ await ev(() => rpLoad()); await sleep(1500); await ev(() => rpTog()); await slee
 s = await ev(() => document.getElementById('rp-dock').innerText);
 ok(/Tocca a te/.test(s) && /Da fare/.test(s) && /Ho finito, può rileggere/.test(s) && !/Invia un nuovo giro/.test(s), 'compilatore: turno, chip «Da fare», «Ho finito», nessun nuovo invio a parte');
 ok(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled), '«Ho finito» è spento finché ci sono punti da fare');
-await ev(() => { const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1200);
+await ev(() => rpGo(0)); await sleep(3500);
+ok(await ev(() => !!document.querySelector('.rp-inl') && !document.querySelector('#rp-dock .rv-st .rv-b') && !document.querySelector('#rp-dock textarea')), 'compilatore: nell’elenco a destra niente pulsanti né campi, solo il link; il pannello è nel progetto');
+await ev(() => { const b = Array.from(document.querySelectorAll('.rp-inl .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1200);
 const pu = db.t.pee_revisioni_punto[0]; ok(pu.stato === 'fatto' , 'il compilatore segna «Fatto» con una riga di nota');
 ok(!(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled)), '«Ho finito» si accende');
+await ev(() => { scheda.pp.ctxSez = 'Cambiato dal compilatore senza che nessuno lo chiedesse'; saveData(true); }); await sleep(600);
 await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').click()); await sleep(3500);
 v = db.t.pee_revisioni[0]; ok(db.t.pee_giri.length === 2 && v.fase === 'revisore' && v.ultimo_giro_id === db.t.pee_giri[1].id, '«Ho finito» congela la copia 2 e passa il turno al revisore: giri ' + db.t.pee_giri.length + ', fase ' + v.fase);
 ok(db.t.pee_giri_dest.some(d => d.giro_id === db.t.pee_giri[1].id && d.email === 'luca.bartolomei@cngei.it'), 'la copia 2 va allo stesso revisore');
@@ -48,6 +51,16 @@ await pe(() => rvSync()); await sleep(1500);
 s = await pe(() => document.getElementById('rv-dock').innerText);
 ok(/◐ Fatto/.test(s), 'elenco del revisore: stato «Fatto»'); await pe(() => { rvDocOpen(_rd.pts[0].key); }); await sleep(800); await pe(() => { const b = Array.from(document.querySelectorAll('#rv-doc .rv-st .rv-b')).find(x => /Conferma/.test(x.textContent)); b.click(); }); await sleep(1200);
 ok(db.t.pee_revisioni_punto[0].stato === 'confermato', 'il revisore conferma il punto');
+const [pop2] = await Promise.all([PL.context().waitForEvent('page', {timeout:15000}), el(id => rvOpen(id), db.t.pee_giri[1].id)]);
+await pop2.waitForLoadState('domcontentloaded'); await sleep(9000); const p2 = (f, a) => pop2.evaluate(f, a);
+s = await p2(() => document.getElementById('rv-dock').innerText); console.log('DOCK2', s.replace(/\n+/g, ' | ').slice(0, 700));
+ok(/modific\w+ fuori dalle tue richieste/.test(s), 'il revisore vede le modifiche fuori dalle sue richieste');
+ok(await p2(() => { const b = Array.from(document.querySelectorAll('#rv-dock .rv-b')).find(x => x.textContent.trim() === 'Approva'); return !!b && b.disabled; }), '«Approva» resta spento finché non ha guardato quelle modifiche');
+ok(await p2(() => !!document.querySelector('.rd-unreq')), 'le righe modificate fuori richiesta sono segnate nel testo');
+await p2(() => { const b = Array.from(document.querySelectorAll('#rv-dock .rv-unr-r .rv-b')).find(x => x.textContent.trim() === 'Visto'); b.click(); }); await sleep(1500);
+await pop2.close();
+ok(db.t.pee_revisioni_punto.some(p => p.nota === 'Modifica non richiesta: vista' && p.stato === 'confermato'), '«Visto» registra la conferma');
+
 s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tutti i punti sono confermati/.test(s), 'con tutto confermato «Approva» si accende');
 await pe(() => { document.getElementById('rv-ap-n').value = 'Ottimo lavoro'; document.querySelector('#rv-dock .rv-b[onclick*=approva]').click(); }); await sleep(1200);
 v = db.t.pee_revisioni[0]; ok(v.stato === 'chiusa' && v.esito === 'approvata' && v.nota_chiusura === 'Ottimo lavoro', 'approvata e chiusa');
@@ -59,7 +72,7 @@ const [dl] = await Promise.all([P.waitForEvent('download', {timeout:170000}), ev
 const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const names = Object.keys(z.files);
 ok(names.some(n => /dati\/storico_completo\.json$/.test(n)) && names.some(n => /Storico della revisione\.docx$/.test(n)) && names.some(n => /LEGGIMI\.txt$/.test(n)), 'archivio del compilatore: dati, Word dello storico, LEGGIMI: ' + names.length + ' file');
 const js = JSON.parse(await z.file(names.find(n => /storico_completo\.json$/.test(n))).async('string'));
-ok(js.copie.length === 2 && js.punti.length === 1 && js.revisioni[0].esito === 'approvata' && js.commenti.some(c => c.tipo === 'nota'), 'il file dati contiene copie, punti, commenti ed esito');
+ok(js.copie.length === 2 && js.punti.length === 2 && js.revisioni[0].esito === 'approvata' && js.commenti.some(c => c.tipo === 'nota'), 'il file dati contiene copie, punti, commenti ed esito');
 ok(names.some(n => /copie\/Copia 1[^/]*\/Copia 1.*\.docx$/.test(n)), 'ogni copia è anche in Word');
 // backup (revisore, tutti i progetti)
 await el(() => rvListPaint()); await sleep(1500);
