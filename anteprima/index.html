@@ -9116,7 +9116,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151500'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151540'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19699,7 +19699,7 @@ window.rvGiroInit = function(){
 function rvDockPos(){ rvDocTop(); const dk = document.getElementById('rv-dock'); if(!dk) return; if(window.innerWidth < 768){ dk.style.top = ''; return; }
   let t = 0; document.querySelectorAll('#giro-bar, #hdr, .sh-top, header.hd, .hd').forEach(e => { const r = e.getBoundingClientRect(); if(r.height > 0 && r.top < 140 && r.bottom > t && r.bottom < 260 && getComputedStyle(e).display !== 'none') t = r.bottom; });
   if(document.getElementById('rv-doc')){ const b = document.getElementById('giro-bar'); t = b ? Math.max(0, b.getBoundingClientRect().bottom) : 0; }
-  dk.style.top = Math.max(0, Math.round(t)) + 'px'; }
+  dk.style.top = document.getElementById('rv-doc') ? 'var(--gbh,' + Math.max(0, Math.round(t)) + 'px)' : Math.max(0, Math.round(t)) + 'px'; }  /* come doc e indice: segue --gbh, così se la barra cambia altezza dopo il caricamento non resta uno spazio scoperto sopra il pannello */
 function rvDocTop(){ const e = document.getElementById('rv-doc'), b = document.getElementById('giro-bar'), n = document.getElementById('rv-nav'); if(e && b){ const r = b.getBoundingClientRect(), tp = 'var(--gbh,' + Math.max(0, Math.round(r.bottom)) + 'px)'; e.style.top = tp; if(n) n.style.top = tp; } }  /* segue --gbh: se la barra cambia altezza (font, a capo) il pannello non resta sfasato */
 window.rvDockToggle = function(){ const dk = document.getElementById('rv-dock'); if(dk) dk.classList.toggle('open'); };
 window.rvPut = async function(tipo, chiave, valore, testo, noRender){
