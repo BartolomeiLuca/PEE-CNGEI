@@ -7,7 +7,7 @@ const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f,
 const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default;
 const OUT = '/tmp/t_circ'; fs.mkdirSync(OUT, {recursive:true});
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.evaluate(() => exStart('AN')); await sleep(1800);
+await P.evaluate(() => exStart('AN')); await sleep(1800); await P.evaluate(() => { window._uscFull = new Proxy({}, {get: () => true}); });
 await ev(() => { scheda.pp.sezione = 'Pesaro'; scheda.pp.staffTab = [{ruolo:'CU', nome:'Giulia Neri', tel:'', mail:'giulia@x.it'}, {ruolo:'VCU', nome:'Paolo Riva', tel:'333 1112222'}, {ruolo:'VCU', nome:'Elena Bassi', tel:''}]; saveData(true); });
 await ev(() => gGo('3')); await sleep(800);
 const [p, j] = await ev(() => [getAllPercorsi().findIndex(x => x.percorsoId === 'S3'), 1]);

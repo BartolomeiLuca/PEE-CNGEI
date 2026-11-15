@@ -30,6 +30,7 @@ ok(st.occ.includes('Paolo Rivabella') && st.ppl.some(n => /Paolo Rivabella/.test
 // verifica degli Indicatori → Sezione 5 (segue finché non la si cambia lì)
 const iP = await ev(() => getAllPercorsi().findIndex(p => p.percorsoId === 'P5'));
 const k = await ev(p => { const per = getAllPercorsi()[p]; const ids = axIdr(per); const x = axX(p, 0); x.oss = x.oss || {}; x.oss[ids[0].k] = {on: true}; saveData(true); return ids[0].k; }, iP);
+await ev(k => { if(scheda.idrComp && scheda.idrComp.P5) delete scheda.idrComp.P5[k]; }, k); // l'esempio ha già la Sezione 5 compilata: qui parto da vuota
 await ev(([p, k]) => verIdrSet(p, 0, k, 'c', 'stimolato'), [iP, k]);
 const c1 = await ev(k => ((scheda.idrComp.P5 || {})[k] || {}).c, k);
 await ev(([p, k]) => verIdrSet(p, 0, k, 'c', 'spontaneo'), [iP, k]);

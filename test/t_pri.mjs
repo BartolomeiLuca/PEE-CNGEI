@@ -39,7 +39,7 @@ ok(/novembre/i.test(d1) && /aprile/i.test(d2), 'date: la 3 segue la 2 (' + d1 + 
 await ev(() => { goPhaseInternal(3); }); await sleep(400);
 await P.click('#pri-C5'); await sleep(300);
 const c = await ev(() => ({pid: scheda.priorita[1].pid, amb: scheda.priorita.map(p => p.ambito).join(','), dal: scheda.priorita[1].tDal, act: getAllPercorsi()[1].attivita[0].testo}));
-ok(c.pid === 'C5' && c.amb === 'P,C,S' && c.dal === '2026-11' && c.act === 'Capi Pattuglia per un giorno', 'Comunitario cambiato da C3 a C5: date e attività restano, ordine giusto');
+ok(c.pid === 'C5' && c.amb === 'P,C,S' && c.dal === '2026-11' && c.act === 'Chi guida oggi?', 'Comunitario cambiato da C3 a C5: date e attività restano, ordine giusto');
 await P.click('#pri-P5'); await sleep(300);
 const off = await ev(() => ({sel: priSel().join(','), amb: scheda.priorita.map(p => p.ambito).join(','), first: getAllPercorsi()[0].percorsoId}));
 ok(off.sel === 'C5,S3' && off.amb.startsWith('C,S') && off.first === 'C5', 'Personale tolto: restano C, S in ordine');

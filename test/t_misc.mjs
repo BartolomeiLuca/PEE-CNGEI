@@ -58,7 +58,7 @@ await ev(pa.page, () => occRefresh()); await sleep(200);
 ok(await ev(pa.page, () => /Il Capo Gruppo/.test(document.getElementById('occ-tab').textContent)), '10. il testo libero resta dopo il ridisegno');
 
 // ── 22-23. materiali di pattuglia e maglia termica ──
-await ev(pa.page, () => { gGo('3'); }); await sleep(800);
+await ev(pa.page, () => { window._uscFull = {'0-0': true}; gGo('3'); }); await sleep(800);
 await ev(pa.page, () => { document.querySelectorAll('details.att-extra,details.ax-g').forEach(d => d.open = true); }); await sleep(300);
 const sq = await ev(pa.page, () => { const g = document.querySelector('#att-0-0 details.ax-g[data-k="circ"]'); return g ? g.textContent : ''; });
 ok(/Di pattuglia/.test(sq) && /Cassone di pattuglia completo/.test(sq) && /Telo \/ tarp/.test(sq) && /Quaderno di pattuglia/.test(sq), '22. «Di pattuglia» con le voci del Reparto');

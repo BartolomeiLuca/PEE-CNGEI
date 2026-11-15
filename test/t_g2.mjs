@@ -70,7 +70,7 @@ await P.click('#sh-pers'); await sleep(200);
 await P.dragAndDrop('#panel-dash .sh-card2[data-c="verificare"]', '#panel-dash .sh-card2[data-c="avanz"]'); await sleep(400);
 const ord3 = await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c));
 ok(ord3.indexOf('verificare') < ord3.indexOf('avanz'), 'Personalizza: trascinando una scheda sopra un’altra si spostano');
-await P.click('text=Ripristina la disposizione iniziale'); await sleep(300);
+await P.click('button:has-text("Ripristina la disposizione iniziale")'); await sleep(300);
 ok((await ev(() => [...document.querySelectorAll('#panel-dash .sh-card2')].map(c => c.dataset.c))).includes('numeri'), 'Ripristina: torna la disposizione iniziale');
 await P.click('#sh-pers');
 // 5 · Progetto Personale

@@ -22,7 +22,7 @@ for (const [F, nA, lab] of [['L', 4, 'Branco'], ['R', 3, 'Compagnia']]) {
   await ev(() => { scheda.pp.numTot = '18'; scheda.pp.numM = '9'; scheda.pp.numF = '9'; scheda.pp.numAnn = ['5','5','4','4']; saveData(true); });
   const [d] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev(() => exportSchedaDocx())]);
   const z = await JSZip.loadAsync(fs.readFileSync(await d.path())); const t = (await z.file('word/document.xml').async('string')).replace(/<[^>]+>/g, '');
-  ok(/Composizione dell’Unità/.test(t) && /TotaleMaschiFemmine1899/.test(t) && (nA === 3 ? !/4° anno/.test(t) && /3° anno/.test(t) : /4° anno/.test(t)), lab + ': Word con i numeri (' + (nA === 3 ? '3' : '4') + ' anni)');
+  ok(/Composizione dell’Unità/.test(t) && /TotaleMaschiFemmine1899/.test(t) && (() => { const c = (t.match(/Composizione dell’Unità.*?Contesto territoriale/s) || [''])[0]; return nA === 3 ? !/4° anno/.test(c) && /3° anno/.test(c) : /4° anno/.test(c); })(), lab + ': Word con i numeri (' + (nA === 3 ? '3' : '4') + ' anni)');
   const [e] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev(() => exportExcel())]);
   ok(fs.statSync(await e.path()).size > 4000, lab + ': Excel scaricato');
   ok(!pa.errors.length, lab + ': nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));

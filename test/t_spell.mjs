@@ -4,7 +4,7 @@ const engine = process.argv[2] || 'chromium';
 const base = await serve(); const db = new FakeDB(); const br = await launch(engine);
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.evaluate(() => exStart('AN')); await sleep(1800);
+await P.evaluate(() => exStart('AN')); await sleep(1800); await P.evaluate(() => { window._uscFull = new Proxy({}, {get: () => true}); });
 await ev(() => gGo('3')); await sleep(900);
 // 9
 const arrows = await ev(() => [...document.querySelectorAll('.pcx-hd button')].filter(b => /Sposta (su|giù)/.test(b.title)).length);

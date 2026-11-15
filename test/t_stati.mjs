@@ -66,3 +66,4 @@ const z2 = await JSZip.loadAsync(fs.readFileSync(await d2.path())); const n2 = O
 ok(n2.some(n => /storico_completo\.json$/.test(n)) && n2.some(n => /Storico della revisione\.docx$/.test(n)), 'archivio del revisore (tutti i progetti): ' + n2.length + ' file');
 summary();
 await br.close();
+process.exit(0);

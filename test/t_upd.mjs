@@ -3,7 +3,7 @@ import fs from 'fs';
 const engine = process.argv[2] || 'chromium';
 // sito di prova con versione «b1» (la pagina aperta) e, su richiesta, «b2» (la versione nuova sul server)
 { const src = (process.env.SITE || '/tmp/site_pre') + '/index.html'; fs.rmSync('/tmp/site_upd', {recursive:true, force:true}); fs.mkdirSync('/tmp/site_upd', {recursive:true});
-  fs.writeFileSync('/tmp/site_upd/index.html', fs.readFileSync(src, 'utf8').replace(/const APP_BUILD='[^']*';/, "const APP_BUILD='b1';")); }
+  fs.writeFileSync('/tmp/site_upd/index.html', fs.readFileSync(src, 'utf8').replace(/const APP_BUILD\s*=\s*'[^']*';/, "const APP_BUILD='202601010001';")); }
 
 
 
@@ -13,7 +13,7 @@ const db = new FakeDB();
 const br = await launch(engine);
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 let newer = false, hits = 0;
-await P.route(/[?&]c=\d+/, async r => { hits++; const t = fs.readFileSync('/tmp/site_upd/index.html', 'utf8'); await r.fulfill({status: 200, contentType: 'text/html', body: newer ? t.replace("APP_BUILD='b1'", "APP_BUILD='b2'") : t}); });
+await P.route(/[?&]c=\d+/, async r => { hits++; const t = fs.readFileSync('/tmp/site_upd/index.html', 'utf8'); await r.fulfill({status: 200, contentType: 'text/html', body: newer ? t.replace("APP_BUILD='202601010001'", "APP_BUILD='202601010002'") : t}); });
 await P.route(u => { const x = new URL(u); return x.pathname === '/' && !/[?&]c=\d+/.test(x.search); }, r => r.fulfill({status:200, contentType:'text/html', body:fs.readFileSync('/tmp/site_upd/index.html','utf8')}));
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(1000);
 await ev(() => selectMode('staff')); 

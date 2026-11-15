@@ -7,7 +7,7 @@ const br = await launch(engine);
 // --- senza account
 { const pa = await person(br, db), P = pa.page, ev = (f, a) => P.evaluate(f, a);
   await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-  await P.evaluate(() => exStart('PP')); await sleep(1800);
+  await P.evaluate(() => exStart('AN')); await sleep(1800);
   ok(await ev(() => gCur()) === '1b', 'il progetto di esempio si apre come prima dalla 1.2 (' + await ev(() => gCur()) + ')');
   await ev(() => gGo('3')); await sleep(800);
   const H = await ev(() => document.documentElement.scrollHeight);

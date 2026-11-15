@@ -10,7 +10,7 @@ const row = (id, anno, titolo, tipo, data, ts) => ({id, user_id:u.id, anno, tito
 // PP 2026 con contenuto; PE 2026 vuota; PE 2025 con contesto, sede, staff e verifiche
 db.t.pee_archivi.push(row('pe', 2026, 'Programmazione Annuale 2026-27 · Reparto Kontiki', 'AN', {scheda:{tipoProgetto:'AN', annoScout:'2026-27', pp:{sezione:'Pesaro', gruppo:'1'}}}, '2026-10-21T10:00:00Z'));
 
-const fs = (await import('fs')).default; const { execSync } = await import('child_process'); const JSZip = (await import('/home/claude/work/node_modules/jszip/lib/index.js')).default; const OUT = '/tmp/t_staffcirc'; fs.mkdirSync(OUT, {recursive:true});
+const fs = (await import('fs')).default; const { execSync } = await import('child_process'); const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default; const OUT = '/tmp/t_staffcirc'; fs.mkdirSync(OUT, {recursive:true});
 await loginAs(P, base, u); await sleep(1200);
 P.evaluate(() => shOpen('pe', 0)).catch(() => {}); await sleep(3000);
 await ev(() => { try{ if(document.querySelector('#g-modal.show .ppb-ask')) _ppbGo(); }catch(e){} }); await sleep(2500);

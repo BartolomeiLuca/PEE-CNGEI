@@ -12,11 +12,13 @@ await pa.ctx.route(/nominatim\.openstreetmap\.org/, r => { const q = decodeURICo
 await pa.ctx.route(/router\.project-osrm\.org/, r => { const m = /driving\/([\d.]+),([\d.]+);([\d.]+),([\d.]+)/.exec(r.request().url());
   const d = Math.abs(+m[2] - +m[4]) * 111000 + Math.abs(+m[1] - +m[3]) * 80000; r.fulfill({status:200, contentType:'application/json', body:JSON.stringify({routes:[{distance:d}]})}); });
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.evaluate(() => exStart('AN')); await sleep(1800);
+await P.evaluate(() => exStart('AN')); await sleep(1800); await P.evaluate(() => { window._uscFull = new Proxy({}, {get: () => true}); });
 await ev(() => gGo('3')); await sleep(800);
 const [p, j] = await ev(() => { const all = getAllPercorsi(); const i = all.findIndex(x => x.percorsoId === 'S3'); return [i, 1]; });
 const AX = `#ax-${p}-${j}`;
-await ev(([p, j]) => { const x = axX(p, j); x.luogo.mezzo = 'bus'; x.luogo.km = ''; delete x.luogo.lat; delete x.luogo.lon; delete x.luogo.nomeAddr; x.luogo.nome = 'Rifugio Cotaline'; axSave(); ['chi','log','durante','mat','pasti','costi','sic','circ','imp'].forEach(k => axOpen[p+'-'+j+'-'+k] = true); axRe(p, j); let e = document.getElementById('ax-'+p+'-'+j); while(e){ if(e.tagName === 'DETAILS') e.open = true; e = e.parentElement; } document.querySelectorAll('#ax-'+p+'-'+j+' details').forEach(d => d.open = true); }, [p, j]); await sleep(300);
+await ev(([p, j]) => { const per = getAllPercorsi()[p], a = per.attivita[j]; Object.values(scheda.uscite || {}).forEach(u => Object.values((u && u.prog) || {}).forEach(m => { if(m && m.k === 'att' && m.aid === a.aid && m.pid === per.percorsoId) m.del = true; })); saveData(true); }, [p, j]); // l'esempio la mette in un evento: qui la voglio libera
+
+await ev(([p, j]) => { const x = axX(p, j); x.luogo = x.luogo || {}; if(!x.luogo.tipo || x.luogo.tipo === 'sede') x.luogo.tipo = 'uscita'; x.luogo.mezzo = 'bus'; x.luogo.km = ''; delete x.luogo.lat; delete x.luogo.lon; delete x.luogo.nomeAddr; x.luogo.nome = 'Rifugio Cotaline'; axSave(); ['chi','log','durante','mat','pasti','costi','sic','circ','imp'].forEach(k => axOpen[p+'-'+j+'-'+k] = true); axRe(p, j); let e = document.getElementById('ax-'+p+'-'+j); while(e){ if(e.tagName === 'DETAILS') e.open = true; e = e.parentElement; } document.querySelectorAll('#ax-'+p+'-'+j+' details').forEach(d => d.open = true); }, [p, j]); await sleep(300);
 const km = () => P.locator(`${AX} #ax-km-${p}-${j}`).inputValue();
 const NEWFROM = await P.locator(`${AX} :is(input,textarea)[oninput*="luogo.from"]`).count() === 0;   // anteprima: la partenza è il luogo di ritrovo
 const FROM = () => NEWFROM ? P.locator(`${AX} :is(input,textarea)[oninput*="'ritrovoDove'"]`) : P.locator(`${AX} :is(input,textarea)[oninput*="luogo.from"]`);

@@ -35,9 +35,10 @@ ok(await ev(() => { const m = MODE; MODE = 'staff'; const r = vidHere(); MODE = 
 ok(await ev(() => document.querySelectorAll('.tutorial-box .faq-lk').length) >= 4, 'link video/FAQ nei riquadri «Come funziona»');
 ok(await ev(() => [...document.querySelectorAll('.hdr .cl-hdrbtn')].some(b => /Archivio/.test(b.textContent))), 'pulsante «Archivio» con la parola');
 await P.click('.hdr .faq-btn'); await sleep(300); ok(await P.isVisible('#g-modal #faq-q'), 'pulsante FAQ in alto apre le domande'); await ev(() => modalClose());
-await ev(() => faqOpen(true)); await P.fill('#faq-q', 'invito lo staff'); await sleep(300);
+await ev(() => faqOpen(true)); await P.fill('#faq-q', 'invitato ma non vedo'); await sleep(300);
 await P.locator('#g-modal .faq-it:visible >> text=Portami lì').first().click(); await sleep(900);
-ok(await ev(() => gCur()) === '1a', '«Portami lì» apre la 1.1 (' + await ev(() => gCur()) + ')');
+await sleep(600); ok(await ev(() => /Il mio archivio/i.test((document.getElementById('cl-ov') || {innerText: ''}).innerText)), '«Portami lì» apre l’Archivio (domanda sugli inviti)');
+await ev(() => { try{ modalClose(); }catch(e){} });
 await ev(() => clOpen()); await sleep(1500);
 ok(await ev(() => /Video: il tuo spazio/.test(document.getElementById('cl-body').textContent)), 'archivio: link ai video');
 const sc = await ev(() => document.documentElement.scrollWidth <= window.innerWidth + 1); ok(sc, 'nessuno scorrimento orizzontale');
