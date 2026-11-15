@@ -34,6 +34,7 @@ export class FakeDB {
     if(!old || old.testo !== r.testo){ if(!pu) this.t.pee_revisioni_punto.push({revisione_id:v.id, chiave:r.chiave, stato:'da_fare', nota:'', updated_at:now()}); else if(pu.stato !== 'da_fare'){ pu.stato = 'da_fare'; pu.nota = ''; } }
     else if(r.recepita && !old.recepita && pu && pu.stato === 'da_fare') pu.stato = 'fatto'; else if(!r.recepita && old.recepita && pu && pu.stato === 'fatto') pu.stato = 'da_fare'; }
   revRpc(name, a, uid){ if(!this.sql14) return this.err('PGRST202', 'Could not find the function'); const v = this.t.pee_revisioni.find(x => x.id === a.r); const ru = v ? this.revRuolo(uid, v.id) : null; const E = m => this.err('P0001', m);
+    if(name === 'pee_rev_riapri'){ if(ru !== 'revisore') return E('Solo il revisore'); if(!String(a.n || '').trim()) return E('Scrivi perché riapri la revisione'); if(!v || v.stato !== 'chiusa' || v.esito !== 'approvata') return E('La revisione non è approvata'); v.stato = 'aperta'; v.fase = 'revisore'; v.esito = null; v.chiusa_il = null; v.nota_chiusura = 'Riaperta: ' + String(a.n).trim().slice(0, 590); return {data:null, error:null}; }
     if(!ru || v.stato !== 'aperta') return E('Revisione non disponibile'); const P = this.t.pee_revisioni_punto.filter(x => x.revisione_id === v.id);
     if(name === 'pee_rev_punto'){ const cur = P.find(x => x.chiave === a.k);
       if(ru === 'titolare'){ if(!['fatto','attesa'].includes(a.s) || !cur) return E('Azione non consentita'); if(cur.stato === 'confermato') return E('Punto già confermato dal revisore'); }
@@ -93,7 +94,7 @@ export class FakeDB {
       for(const p of this.pages) p.evaluate(m => window.__sbEmit && window.__sbEmit(m), {kind:'presence', channel:req.channel, state:ch}).catch(() => {}); return 'ok'; }
     if(req.kind === 'rpc'){
       if(!u) return this.err('42501', 'not logged');
-      if(/^pee_rev_(punto|ho_finito|rimanda|approva)$/.test(req.name)) return this.revRpc(req.name, req.args, uid);
+      if(/^pee_rev_(punto|ho_finito|rimanda|approva|riapri)$/.test(req.name)) return this.revRpc(req.name, req.args, uid);
       if(req.name === 'revisore_abilitato') return {data:this.revAbil(req.args.em), error:null};
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }

@@ -64,6 +64,10 @@ ok(db.t.pee_revisioni_punto.some(p => p.nota === 'Modifica non richiesta: vista'
 s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tutti i punti sono confermati/.test(s), 'con tutto confermato «Approva» si accende');
 await pe(() => { document.getElementById('rv-ap-n').value = 'Ottimo lavoro'; document.querySelector('#rv-dock .rv-b[onclick*=approva]').click(); }); await sleep(1200);
 v = db.t.pee_revisioni[0]; ok(v.stato === 'chiusa' && v.esito === 'approvata' && v.nota_chiusura === 'Ottimo lavoro', 'approvata e chiusa');
+// approvazione finale: se l'ultimo giro è del secondo invio (1–5), la voce 6 si completa da sola
+await ev(() => { const L = ppGiriList(); const g = L[L.length - 1]; g.blk = 2; g.sez = [1, 2, 3, 4, 5]; });
+await ev(() => ppGiroFbAll()); await sleep(2500);
+ok(await ev(() => !!(ppIter().appr && ppIter().appr.date && ppIter().appr.src === 'app')), 'approvazione finale: la voce 6 si completa da sola con la data');
 await ev(() => rpLoad()); await sleep(1500); s = await ev(() => document.getElementById('rp-dock') ? document.getElementById('rp-dock').innerText : '');
 ok(/Revisione chiusa/.test(s) && /Invia un nuovo giro/.test(s), 'compilatore: revisione chiusa e di nuovo possibile un nuovo invio');
 ok(/Revisione chiusa approvata il \d{2}\/\d{2}\/\d{4}/.test(s) && !/\d{4}-\d{2}-\d{2}/.test(s), 'la data della revisione chiusa è gg/mm/aaaa: ' + (s.match(/Revisione chiusa[^\n]{0,40}/) || [''])[0]);
@@ -79,6 +83,14 @@ await el(() => rvListPaint()); await sleep(1500);
 const [d2] = await Promise.all([PL.waitForEvent('download', {timeout:170000}), el(() => rvBackupAll())]);
 const z2 = await JSZip.loadAsync(fs.readFileSync(await d2.path())); const n2 = Object.keys(z2.files);
 ok(n2.some(n => /storico_completo\.json$/.test(n)) && n2.some(n => /Storico della revisione\.docx$/.test(n)), 'archivio del revisore (tutti i progetti): ' + n2.length + ' file');
+// il revisore riapre: nota obbligatoria
+await pe(() => rvSync()); await sleep(1500);
+await pe(() => rvAzione(_rd.g.archivio_id, 'riapri')); await sleep(600);
+ok(db.t.pee_revisioni[0].stato === 'chiusa', 'riapertura senza nota: rifiutata');
+await pe(() => { document.getElementById('rv-ri-n').value = 'Ho visto un errore nelle date'; return rvAzione(_rd.g.archivio_id, 'riapri'); }); await sleep(1500);
+ok(db.t.pee_revisioni[0].stato === 'aperta' && db.t.pee_revisioni[0].fase === 'revisore' && /errore nelle date/.test(db.t.pee_revisioni[0].nota_chiusura), 'riapertura con nota: la revisione torna aperta, turno al revisore');
+await ev(() => ppGiroFbAll()); await sleep(2500);
+ok(await ev(() => !(ppIter().appr && ppIter().appr.date)), 'riaperta: la voce 6 si ritira da sola');
 summary();
 await br.close();
 process.exit(0);

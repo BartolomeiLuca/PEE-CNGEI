@@ -9133,7 +9133,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151945'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611152010'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -20166,7 +20166,7 @@ window.rvUnreqOk = async function(i, btn){ const aid = window._rd && window._rd.
   catch(e){ if(btn) btn.disabled = false; showToast('Non riuscito: ' + ((e && e.message) || 'riprova').slice(0, 90)); } };
 function rvStBar(aid, mine){
   const S = window._rvs[aid]; if(!S) return ''; const v = S.rev, c = rvStCnt(S), bar = `<div class="rv-bar" aria-hidden="true"><span style="width:${c.tot ? Math.round(100 * c.con / c.tot) : 0}%"></span></div>`, hp = t => `<div class="rv-hp">${esc(t)}</div>`;
-  if(v.stato === 'chiusa') return `<div class="rv-q rv-st-bar"><b>✓ Revisione chiusa</b> <span class="rv-pn">${v.esito === 'approvata' ? 'approvata' : 'storica'}${v.chiusa_il ? ' il ' + esc(dGMA(v.chiusa_il)) : ''}</span>${v.nota_chiusura ? `<div class="rv-hp">${esc(v.nota_chiusura)}</div>` : ''}</div>`;
+  if(v.stato === 'chiusa') return `<div class="rv-q rv-st-bar"><b>✓ Revisione chiusa</b> <span class="rv-pn">${v.esito === 'approvata' ? 'approvata' : 'storica'}${v.chiusa_il ? ' il ' + esc(dGMA(v.chiusa_il)) : ''}</span>${v.nota_chiusura ? `<div class="rv-hp">${esc(v.nota_chiusura)}</div>` : ''}${(!mine && v.esito === 'approvata') ? `<textarea id="rv-ri-n" data-nort rows="2" maxlength="600" aria-label="Motivo della riapertura" placeholder="Perché riapri la revisione? (obbligatorio: chi ha scritto il progetto lo leggerà)" style="width:100%;box-sizing:border-box;margin-top:8px;padding:7px 9px;border:1px solid #c9c9c0;border-radius:7px;font:12.5px Montserrat,Arial,sans-serif"></textarea><div class="rv-bs"><button type="button" class="rv-b" onclick="rvAzione('${esc(aid)}','riapri')">Riapri la revisione</button></div>` : ''}</div>`;
   const turno = v.fase === 'compilatore' ? (mine ? 'Tocca a te' : 'Tocca a chi ha scritto il progetto') : (mine ? 'Tocca al revisore' : 'Tocca a te'), mio = (v.fase === 'compilatore') === mine;
   let h = `<div class="rv-q rv-st-bar"><b>${esc(turno)}</b> <span class="rv-pn">${c.con} confermati su ${c.tot}</span>${bar}`;
   if(mine){
@@ -20219,14 +20219,15 @@ async function rvAutoCopia(S){
   return await ppGiroCongela();
 }
 window.rvAzione = async function(aid, kind){
-  const S = window._rvs[aid]; if(!S) return; const nm = {ho_finito:'pee_rev_ho_finito', rimanda:'pee_rev_rimanda', approva:'pee_rev_approva'}[kind]; if(!nm) return;
+  const S = window._rvs[aid]; if(!S) return; const nm = {ho_finito:'pee_rev_ho_finito', rimanda:'pee_rev_rimanda', approva:'pee_rev_approva', riapri:'pee_rev_riapri'}[kind]; if(!nm) return;
   if(kind === 'ho_finito'){ if(window.BRO || !CL.ctx || CL.ctx.id !== aid){ showToast('Per dire «Ho finito» apri il tuo progetto (menu Progetto Personale)'); return; }
     const c = rvStCnt(S); if(c.da){ showToast('Ci sono ancora punti da fare'); return; }
     if(!(await rvAutoCopia(S))) return; }
   if(kind === 'approva' && rvUnreq(aid).length){ showToast('Ci sono modifiche fuori dalle richieste da guardare: premi «Visto» su ciascuna'); return; }
-  const args = {r:S.rev.id}; if(kind === 'approva'){ const t = document.getElementById('rv-ap-n'); args.n = t ? t.value.trim() : ''; }
+  const args = {r:S.rev.id}; if(kind === 'riapri'){ const t = document.getElementById('rv-ri-n'), nn = t ? t.value.trim() : ''; if(!nn){ showToast('Scrivi perché riapri la revisione'); if(t) t.focus(); return; } args.n = nn; }
+  if(kind === 'approva'){ const t = document.getElementById('rv-ap-n'); args.n = t ? t.value.trim() : ''; }
   try{ const r = await CL.sb.rpc(nm, args); if(r.error) throw r.error; await rvStRefresh(aid);
-    showToast({ho_finito:'Fatto: il revisore può rileggere', rimanda:'Rimandato al compilatore', approva:'Revisione approvata e chiusa'}[kind]); }
+    showToast({ho_finito:'Fatto: il revisore può rileggere', rimanda:'Rimandato al compilatore', approva:'Revisione approvata e chiusa', riapri:'Revisione riaperta'}[kind]); }
   catch(e){ showToast('Non riuscito: ' + ((e && e.message) || 'riprova').slice(0, 90)); }
 };
 // i testi scritti ma non ancora inviati e la posizione di scorrimento sopravvivono a ogni ridisegno
@@ -20295,6 +20296,11 @@ window.ppGiroFbAll = async function(){
       if(v) ap = {autore_nome:v.revisore_email || 'Revisore', updated_at:v.chiusa_il}; } }catch(e){} }
   if(ap && !cur){ ppIter().apprB1 = {chi:(ap.autore_nome || 'Revisore') + ' (in app)', date:String(ap.updated_at || '').slice(0, 10) || td(), src:'app'}; try{ saveData(true); }catch(e){} shPP('i'); }
   else if(!ap && cur && cur.src === 'app'){ delete ppIter().apprB1; try{ saveData(true); }catch(e){} shPP('i'); showToast('L’approvazione data in app è stata ritirata: il revisore ha cambiato esito'); }
+  // approvazione finale (voce 6 dell'iter): una revisione chiusa e approvata sul secondo invio (sezioni 1–5) la completa da sola, con la data; se il revisore la riapre, si ritira
+  try{ const aid = CL.ctx && CL.ctx.id; if(aid){ const q = await CL.sb.from('pee_revisioni').select('ultimo_giro_id,stato,esito,chiusa_il,revisore_email').eq('archivio_id', aid).eq('stato', 'chiusa').eq('esito', 'approvata').order('chiusa_il', {ascending:false});
+    if(!q.error){ const all = ppGiriList(), fin = (q.data || []).find(v => { const g = all.find(x => x.id === v.ultimo_giro_id); return g && ppGiroBlk(g) === 2; }), cf = ppIter().appr;
+      if(fin && !(cf && cf.date)){ ppIter().appr = {chi:(fin.revisore_email || 'Revisore') + ' (in app)', date:String(fin.chiusa_il || '').slice(0, 10) || td(), src:'app'}; try{ saveData(true); }catch(e){} shPP('i'); showToast('Approvazione finale registrata: il revisore ha approvato il progetto'); }
+      else if(!fin && cf && cf.src === 'app'){ delete ppIter().appr; try{ saveData(true); }catch(e){} shPP('i'); showToast('L’approvazione finale è stata ritirata: il revisore ha riaperto la revisione'); } } } }catch(e){}
 };
 // nella copia in sola lettura non si arriva a progetti, profilo, ricerca, versioni né suggerimenti del titolare
 setTimeout(() => { try{
