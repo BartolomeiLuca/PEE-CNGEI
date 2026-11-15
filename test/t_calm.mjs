@@ -4,7 +4,7 @@ const engine = process.argv[2] || 'chromium';
 const base = await serve(); const db = new FakeDB(); const br = await launch(engine);
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1500);
+await P.evaluate(() => exStart('PP')); await sleep(1500);
 await ev(() => gGo('3')); await sleep(600);
 const n = await ev(() => document.querySelectorAll('.pcx').length);
 ok(n >= 1 && await ev(() => [...document.querySelectorAll('.pcx')].every(c => c.classList.contains('closed'))), 'Sezione 3: tutti i percorsi si presentano chiusi (' + n + ')');

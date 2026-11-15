@@ -7,7 +7,7 @@ const base = await serve(); const db = new FakeDB(); const br = await launch(eng
 const old = http.createServer((q, r) => { r.setHeader('content-type', 'text/html'); r.end(fs.readFileSync('/tmp/site_leg/index.html')); }).listen(8099);
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await P.goto('http://127.0.0.1:8099/'); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1500);
+await P.evaluate(() => exStart('PP')); await sleep(1500);
 // dati ricchi: staff con osservazioni, scatti nel tempo nel vecchio formato
 await ev(() => { selectMode('giovani'); scheda.pp.ctxTerr = 'TERRITORIO-LEGACY'; scheda.pp.sezione = 'Pesaro'; saveData(true); });
 await sleep(800);

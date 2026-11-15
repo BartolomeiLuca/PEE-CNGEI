@@ -7,7 +7,7 @@ const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f,
 P.on('dialog', d => d.accept().catch(() => {}));
 const errs = []; P.on('pageerror', e => errs.push(e.message));
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1800);
+await P.evaluate(() => exStart('AN')); await sleep(1800);
 await ev(() => { scheda.pp.staffTab = [{ruolo:'CU', nome:'Anna Rossi', mail:'anna@x.it', eta:'34'}]; scheda.pp.sezione = 'Pesaro'; scheda.pp.sedeVia = 'Via Roma 1'; scheda.pp.sedeCitta = '61122 Pesaro (PU)'; scheda.pp.numTot = '18'; scheda.pp.numF = '7'; saveData(true); });
 await ev(() => gGo('3')); await sleep(800);
 const [p, j] = await ev(() => { const all = getAllPercorsi(); const i = all.findIndex(x => x.percorsoId === 'S3'); return [i >= 0 ? i : 0, 1]; });

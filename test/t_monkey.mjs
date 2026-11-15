@@ -8,7 +8,7 @@ const pa = await person(br, db, scen === 'phone' ? {ctx: {viewport: {width: 390,
 const P = pa.page, ev = (f, a) => P.evaluate(f, a); P.__answer = false;
 const trace = [];
 if (scen === 'acc' || scen === 'staffacc') { await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500); }
-else { await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800); await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1500); }
+else { await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800); await P.evaluate(() => exStart('PP')); await sleep(1500); }
 if (scen === 'L' || scen === 'R') await ev(f => selectFascia(f), scen);
 if (scen === 'staff' || scen === 'staffacc') { await ev(() => { window._pjPick = true; confirmBackToLanding(); selectMode('staff'); try{ selectRuolo('CU'); }catch(e){} STAFF_RUOLO = 'CU'; startTool(); }); await sleep(3500);
   await ev(() => { STAFF_MEMBERS.push('Lia', 'Marco'); staffObs.Lia = {P1:'6', C2:'4'}; saveData(true); try{ renderStaffPhase1(); }catch(e){} }); await sleep(500); }

@@ -7,7 +7,7 @@ const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f,
 const sent = []; let fail = false;
 await P.route(/api\.web3forms\.com/, async r => { const b = r.request().postData() || ''; if (fail) return r.fulfill({status: 500, body: '{}'}); sent.push(b); await r.fulfill({status: 200, contentType: 'application/json', body: '{"success":true}'}); });
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1500);
+await P.evaluate(() => exStart('PP')); await sleep(1500);
 const shown = () => ev(() => !!document.querySelector('#g-modal.show .sv-box'));
 // progetto di esempio: mai
 await ev(() => gGo('4')); await sleep(2500);

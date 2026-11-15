@@ -3,7 +3,7 @@ const engine = process.argv[2] || 'chromium';
 const base = await serve(); const db = new FakeDB(); const br = await launch(engine);
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1500);
+await P.evaluate(() => exStart('PP')); await sleep(1500);
 await ev(() => gGo('1a')); await sleep(600);
 const find = () => [...document.querySelectorAll('details.att-extra')].find(x => /Numeri dell/.test(x.textContent));
 ok(await ev(() => { const d = document.getElementById('num-box'); return !!d && d.offsetParent !== null && !/facoltativo/i.test(d.textContent) && !d.closest('details'); }), '1.1: «Numeri dell’Unità» visibile come gli altri campi, non più facoltativo né chiuso');

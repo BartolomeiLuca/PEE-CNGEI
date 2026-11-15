@@ -5,7 +5,7 @@ const engine = process.argv[2] || 'chromium';
 const base = await serve(); const db = new FakeDB(); const br = await launch(engine);
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1800);
+await P.evaluate(() => exStart('PP')); await sleep(1800);
 await ev(() => gGo('3')); await sleep(900);
 const LONG = Array.from({length:8}, (_, i) => 'Riga ' + (i + 1) + ' di nota, abbastanza lunga da occupare più righe nel campo.').join('\n');
 // riempio i campi mentre la scheda è chiusa (come quando i dati arrivano al caricamento)

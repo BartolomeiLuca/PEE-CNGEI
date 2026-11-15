@@ -12,7 +12,7 @@ await pa.ctx.route(/nominatim\.openstreetmap\.org/, r => { const q = decodeURICo
 await pa.ctx.route(/router\.project-osrm\.org/, r => { const m = /driving\/([\d.]+),([\d.]+);([\d.]+),([\d.]+)/.exec(r.request().url());
   const d = Math.abs(+m[2] - +m[4]) * 111000 + Math.abs(+m[1] - +m[3]) * 80000; r.fulfill({status:200, contentType:'application/json', body:JSON.stringify({routes:[{distance:d}]})}); });
 await P.goto(base); await ev(() => localStorage.setItem('bussola_tour_v3', '1')); await P.reload(); await sleep(800);
-await P.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click(); await sleep(1800);
+await P.evaluate(() => exStart('AN')); await sleep(1800);
 await ev(() => gGo('3')); await sleep(800);
 const [p, j] = await ev(() => { const all = getAllPercorsi(); const i = all.findIndex(x => x.percorsoId === 'S3'); return [i, 1]; });
 const AX = `#ax-${p}-${j}`;
