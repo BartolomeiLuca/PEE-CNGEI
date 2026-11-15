@@ -9116,7 +9116,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611151420'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611151500'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -13741,7 +13741,12 @@ const RCDF_AREE = [
   ['mediotirreno','Campania e Sardegna','rcdf.mediotirreno@cngei.it'],
   ['sud','Calabria e Sicilia','rcdf.sud@cngei.it']
 ];
-function ppMailState(){ const pp=scheda.pp||(scheda.pp={}); if(!pp.mail) pp.mail={area:'',tutorMail:'',cgMail:'',cdsMail:'',tono:'sobrio',l1:'',l2:'',body:'',edited:false}; return pp.mail; }
+// Il Capo Gruppo è uno solo: nome, email e telefono si leggono dalla tabella degli adulti in staff (riga con ruolo CG), senza crearla se non c'è
+function ppCgRow(){ const t=(scheda.pp||{}).staffTab; return Array.isArray(t)?(t.find(r=>String(r&&r.ruolo||'').trim().toUpperCase()==='CG'||/^capo\s*gruppo$/i.test(String(r&&r.ruolo||'').trim()))||null):null; }
+function ppCgMailOf(r){ return ((String(r&&r.mail||'').split(/[;,\s]+/).map(x=>x.trim()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x)))[0])||''; }
+function ppCgSave(mail){ const pp=scheda.pp||(scheda.pp={}); if(!Array.isArray(pp.staffTab)) return; let r=ppCgRow(); if(!r){ r={ruolo:'CG'}; pp.staffTab.push(r); } r.mail=mail; }
+function ppMailState(){ const pp=scheda.pp||(scheda.pp={}); if(!pp.mail) pp.mail={area:'',tutorMail:'',cgMail:'',cdsMail:'',tono:'sobrio',l1:'',l2:'',body:'',edited:false};
+  try{ const em=ppCgMailOf(ppCgRow()); if(em && pp.mail.cgMail!==em) pp.mail.cgMail=em; }catch(e){} return pp.mail; }
 function ppMailSubject(){ const pp=scheda.pp||{}; const k=(pp.mail||{})._kind; return (k==='avvio'?'Avvio Progetto Personale - ':'Invio Progetto Personale - ')+((pp.nome||'').trim()||'[Nome Cognome]')+' - '+((pp.sezione||'').trim()||'[Sezione]'); }
 function ppMailBuild(kind){
   const pp=scheda.pp||{}, m=ppMailState(); const nome=(pp.nome||'').trim(); const tutor=(m.destNome||pp.tutor||'').trim().split(/\s+/)[0]||'';
@@ -13812,7 +13817,7 @@ ${av?'':`    <label style="${lb}">Una cosa che ti è venuta bene o che ti ha fat
   ov.classList.add('show');
 }
 function ppMailClose(){ const ov=document.getElementById('pp-mail-ov'); if(ov) ov.classList.remove('show'); saveDataDebounced(); }
-function ppMailSet(k,v,noRegen){ const m=ppMailState(); m[k]=v; if(!noRegen && !m.edited){ m.body=ppMailBuild(m._kind||'parziale'); const t=document.getElementById('pp-mail-body'); if(t) t.value=m.body; } saveDataDebounced(); }
+function ppMailSet(k,v,noRegen){ const m=ppMailState(); m[k]=v; if(k==='cgMail'){ const e=ppCgMailOf({mail:v}); if(e) ppCgSave(e); } if(!noRegen && !m.edited){ m.body=ppMailBuild(m._kind||'parziale'); const t=document.getElementById('pp-mail-body'); if(t) t.value=m.body; } saveDataDebounced(); }
 function ppMailEdit(v){ const m=ppMailState(); m.body=v; m.edited=true; saveDataDebounced(); }
 function ppMailTono(t){ const m=ppMailState(); m.tono=t; m.edited=false; m.body=ppMailBuild(m._kind||'parziale'); const el=document.getElementById('pp-mail-body'); if(el) el.value=m.body; ['sobrio','caldo'].forEach(x=>{ const b=document.getElementById('pp-tono-'+x); if(b){ b.style.fontWeight=x===t?'800':''; b.style.borderColor=x===t?'var(--green)':''; } }); saveDataDebounced(); }
 function ppMailRegen(){ const m=ppMailState(); m.edited=false; m.body=ppMailBuild(m._kind||'parziale'); const el=document.getElementById('pp-mail-body'); if(el) el.value=m.body; saveDataDebounced(); }
@@ -19277,15 +19282,22 @@ function ppIterHTML(){
 // ── PP · Giri di revisione (12/11): copie congelate del progetto, quanti ne servono ──
 // scheda.pp.giri = oggetto con una chiave per giro (così la sincronizzazione unisce i giri senza sovrascriverli). Le copie vere stanno nel cloud (pee_giri).
 function ppGiri(){ const pp = (scheda.pp || (scheda.pp = {})); if(!pp.giri || typeof pp.giri !== 'object' || Array.isArray(pp.giri)) pp.giri = {}; return pp.giri; }
-window.ppCgAvvisa = function(how){
-  const pp = scheda.pp || {}, m = pp.mail || {}, nome = (pp.nome || '').trim(), em = String(m.cgMail || '').trim();
+window.ppCgAvvisa = function(how, mailNuova){
+  const pp = scheda.pp || {}, nome = (pp.nome || '').trim(), row = ppCgRow() || {}; ppMailState();
+  let em = ppCgMailOf(row) || ppGiroEmailOf(((pp.mail || {}).cgMail) || ''), cgNome = String(row.nome || '').trim();
+  if(mailNuova){ em = ppGiroEmailOf(mailNuova); if(!em){ showToast('L’indirizzo non sembra corretto'); return; } try{ ppMailState().cgMail = em; ppCgSave(em); saveDataDebounced(); }catch(e){} }
+  if(how === 'mail' && !em){ // manca: lo chiediamo qui e lo salviamo nella tabella degli adulti in staff
+    const ov = document.createElement('div'); ov.className = 'modal-ov show'; ov.id = 'cg-mail-ov'; ov.style.cssText = 'position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML = '<div role="dialog" aria-modal="true" aria-label="Email del Capo Gruppo" style="background:#fff;border-radius:14px;padding:16px;max-width:420px;width:100%"><div style="font-weight:800;font-size:15px">Qual è l’email del Capo Gruppo?</div><div style="font-size:12.5px;margin:6px 0 10px;color:#3D3D38">La salviamo nella tabella degli adulti in staff, così la ritrovi nelle mail e negli invii.</div><input id="cg-mail-in" type="email" class="sh-in" style="width:100%;box-sizing:border-box" placeholder="email del Capo Gruppo" aria-label="Email del Capo Gruppo"><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><button type="button" class="btn-ghost" onclick="document.getElementById(\'cg-mail-ov\').remove()">Annulla</button><button type="button" class="btn-primary" onclick="var v=document.getElementById(\'cg-mail-in\').value;document.getElementById(\'cg-mail-ov\').remove();ppCgAvvisa(\'mail\',v)">Scrivigli</button></div></div>';
+    document.body.appendChild(ov); setTimeout(() => { try{ document.getElementById('cg-mail-in').focus(); }catch(e){} }, 50); return;
+  }
   const sub = 'Progetto Personale pronto per la tua lettura' + (nome ? ' - ' + nome : '');
-  const txt = 'Ciao, ho completato la prima stesura del mio Progetto Personale' + (nome ? ' (' + nome + ')' : '') + ' e vorrei che lo leggessi come Capo Gruppo mentore prima di inviarlo al Tutor. Quando puoi, mi dici quando ci sentiamo? Grazie!';
+  const txt = (cgNome ? 'Ciao ' + cgNome.split(/\s+/)[0] : 'Ciao') + ', ho completato la prima stesura del mio Progetto Personale' + (nome ? ' (' + nome + ')' : '') + ' e vorrei che lo leggessi come Capo Gruppo mentore prima di inviarlo al Tutor. Quando puoi, mi dici quando ci sentiamo? Grazie!';
+  const tel = String(row.tel || '').replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/^00/, '').replace(/^3(\d{8,9})$/, '393$1');
   try{
-    if(how === 'wa') window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    if(how === 'wa') window.open('https://wa.me/' + (/^\d{8,15}$/.test(tel) ? tel : '') + '?text=' + encodeURIComponent(txt), '_blank', 'noopener');
     else location.href = 'mailto:' + encodeURIComponent(em).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(sub) + '&body=' + encodeURIComponent(txt);
   }catch(e){ showToast('Non riesco ad aprire il programma di posta: copia il testo a mano'); }
-  if(how === 'mail' && !em) showToast('Aggiungi l’email del Capo Gruppo nella pagina degli invii per averla già nel destinatario');
 };
 function ppGiriList(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id && !x.del).sort((a, b) => (a.n || 0) - (b.n || 0)); }
 function ppGiroNextN(){ const g = ppGiri(); return Object.keys(g).map(k => g[k]).filter(x => x && x.id && !x.del).reduce((m, x) => Math.max(m, x.n || 0), 0) + 1; }
@@ -19411,7 +19423,7 @@ window.ppGiroBlkSet = function(v){ const f = window._giroForm; if(!f) return; f.
 function ppGiroFormSet(k, v){ const f = window._giroForm; if(!f) return; f[k] = v; }
 function ppGiroSez(n, on){ const f = window._giroForm; if(!f) return; f.sez = f.sez.filter(x => x !== n); if(on) f.sez.push(n); f.sez.sort(); }
 function ppGiroDest(i, k, v){ const f = window._giroForm; if(!f || !f.dest[i]) return; const d = f.dest[i]; d[k] = v;
-  if(k === 'email'){ d.email = ppGiroEmailOf(v) || String(v || '').trim().toLowerCase(); d.app = false; if(d.ruolo === 'revisore') ppGiroAbilCheck(d.email).then(() => ppGiroFormRender()); }
+  if(k === 'email'){ d.email = ppGiroEmailOf(v) || String(v || '').trim().toLowerCase(); d.app = false; if(d.k === 'cg' && d.email){ try{ ppMailState().cgMail = d.email; ppCgSave(d.email); saveDataDebounced(); }catch(e){} } if(d.ruolo === 'revisore') ppGiroAbilCheck(d.email).then(() => ppGiroFormRender()); }
   ppGiroFormRender(); }
 function ppGiroFormRender(){
   const f = window._giroForm; if(!f) return;

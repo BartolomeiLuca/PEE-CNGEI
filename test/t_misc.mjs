@@ -91,19 +91,20 @@ await ev(pb.page, () => { gGo('3'); }); await sleep(1000);
 await ev(pb.page, () => { const el = document.getElementById('att-1-1') || document.getElementById('att-0-2'); el.scrollIntoView({block:'start'}); window.scrollBy(0, -120); });
 await sleep(800);
 await ev(pb.page, () => { window._trk = []; const el = document.getElementById('att-1-1') ? 'att-1-1' : 'att-0-2'; window._trkId = el; const t0 = performance.now();
-  const f = () => { const e = document.getElementById(window._trkId); if(e) window._trk.push(Math.round(e.getBoundingClientRect().top)); if(performance.now() - t0 < 9000) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+  const f = () => { const e = document.getElementById(window._trkId); requestAnimationFrame(() => setTimeout(() => { const e2 = document.getElementById(window._trkId); if(e2) window._trk.push(Math.round(e2.getBoundingClientRect().top)); }, 0)); if(performance.now() - t0 < 9000) requestAnimationFrame(f); }; requestAnimationFrame(f); });
 await ev(pa.page, () => { const a = getAllPercorsi()[0].attivita[0]; a.lancio = (a.lancio||'') + ' Arriva un messaggero.'; scheda.osservazione.P.positivi += ' Nuova riga.'; _clTouched = true; _clUserAt = Date.now(); saveData(true); });
 await sleep(9500);
 const trk = await ev(pb.page, () => window._trk);
 const got = await ev(pb.page, () => getAllPercorsi()[0].attivita[0].lancio);
 const dev = Math.max(...trk) - Math.min(...trk);
 ok(/messaggero/.test(got), '12. la modifica è arrivata sull’altro dispositivo');
+console.log('A:', trk.filter((v,i)=>i===0||v!==trk[i-1]).join(' '));
 ok(trk.length > 30 && dev <= 2, '12. la pagina non salta mentre arriva (scarto massimo ' + dev + ' px su ' + trk.length + ' fotogrammi)');
 
 // caso B: cursore fermo dentro un campo (Safari sposta la pagina quando si rimette il cursore)
 await ev(pb.page, () => { const el = document.querySelector('#att-0-2 textarea:not([data-conv])'); el.scrollIntoView({block:'center'}); el.focus({preventScroll:true}); el.setSelectionRange(2, 2); });
 await sleep(3500);
-await ev(pb.page, () => { window._trk = []; const t0 = performance.now(); const f = () => { const e = document.querySelector('#att-0-2 textarea:not([data-conv])'); if(e) window._trk.push(Math.round(e.getBoundingClientRect().top)); if(performance.now() - t0 < 9000) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+await ev(pb.page, () => { window._trk = []; const t0 = performance.now(); const f = () => { requestAnimationFrame(() => setTimeout(() => { const e = document.querySelector('#att-0-2 textarea:not([data-conv])'); if(e) window._trk.push(Math.round(e.getBoundingClientRect().top)); }, 0)); if(performance.now() - t0 < 9000) requestAnimationFrame(f); }; requestAnimationFrame(f); });
 await ev(pa.page, () => { const a = getAllPercorsi()[0].attivita[1]; a.lancio = (a.lancio||'') + ' Seconda novità.'; _clTouched = true; _clUserAt = Date.now(); saveData(true); });
 await sleep(9500);
 { const trk = await ev(pb.page, () => window._trk); const dev = Math.max(...trk) - Math.min(...trk);
