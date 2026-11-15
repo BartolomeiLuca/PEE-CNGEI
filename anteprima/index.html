@@ -1587,6 +1587,7 @@ tr.rd-flash td,h3.rd-flash{background:#fff3c4!important;transition:background .4
 @media(min-width:1100px){body.sh-in.sh-ready #rvl-bar{margin-left:248px}}
 #rvl-bar{background:#fff4d6;color:#5a4300;border-bottom:2px solid #d9a400;padding:9px 16px;font-size:13px;line-height:1.45;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rvl-bar button{border:1px solid #b88a00;background:#fff;border-radius:8px;padding:5px 11px;font:inherit;font-weight:700;cursor:pointer}body.rev-lock #main-app textarea[readonly],body.rev-lock #main-app input[readonly]{background:#f4f4ee}
 #rp-pill{position:fixed;right:14px;bottom:14px;z-index:8400;border:0;border-radius:24px;background:#1b5e42;color:#fff;font:700 13px Montserrat,Arial,sans-serif;padding:11px 16px;min-height:44px;box-shadow:0 3px 12px rgba(0,0,0,.25);cursor:pointer}#rp-pill b{background:#fff;color:#1b5e42;border-radius:10px;padding:1px 7px;margin-left:4px}
+@media(min-width:1100px){body.rp-dock-on #main-app{margin-right:360px!important}body.rp-dock-on #main-app .rp-inl{max-width:100%}}
 #rp-dock{position:fixed;right:0;top:0;bottom:0;width:360px;max-width:100vw;z-index:9100;background:#fff;box-shadow:-6px 0 18px rgba(0,0,0,.18);display:none;flex-direction:column;font:13px/1.45 Montserrat,Arial,sans-serif;box-sizing:border-box}#rp-dock.open{display:flex}
 #rp-dock .rv-h{display:flex;gap:8px;align-items:center;background:#1b5e42;color:#fff;padding:11px 14px;min-height:44px}#rp-dock .rv-body{flex:1;overflow:auto;padding:10px 12px 16px}#rp-dock .rv-foot{border-top:1px solid #d8d8d0;padding:10px 12px;background:#F7F7F2}.rp-x{margin-left:auto;border:0;background:transparent;color:#fff;font-size:18px;cursor:pointer;min-width:36px;min-height:36px}
 @media(max-width:600px){#rp-pill{bottom:10px;right:10px}}
@@ -9133,7 +9134,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611152010'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611152250'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -19881,6 +19882,7 @@ function rvDocPaint(keepOpen){
     let h = '';
     if(P) h += `<div class="rd-pv">Giro ${esc(String(window._rv.prev.g.n))}: ${esc(P.testo)} <span class="rv-rec">${P.recepita ? '✓ recepita' : 'non ancora recepita'}</span></div>`;
     if(d.mine) h += L.map(n => `<div class="rd-n"><span class="rd-a">${esc(n.a)}</span><br>${esc(n.t).replace(/\n/g, '<br>')}<br>${rvHas(d.g.archivio_id, a.key) ? '' : `<label title="${esc(RV_HELP.rec)}"><input type="checkbox" ${n.rec ? 'checked' : ''} onchange="rvDocRec('${n.id}',this.checked)">recepita</label>`}${rvStHTML(d.g.archivio_id, a.key, true)}${rvThrHTML(a.key, n.uid)}</div>`).join('');
+    else if(rvHas(d.g.archivio_id, a.key) && L[0] && L[0].t){ const n = L[0]; h += `<div class="rd-n rd-fix"><span class="rd-a">Tu · richiesta inviata</span><br>${esc(n.t).replace(/\n/g, '<br>')}</div>${n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : ''}${rvStHTML(d.g.archivio_id, a.key, false)}${rvThrHTML(a.key, CL.user.id)}`; }
     else { const n = L[0] || {t:'', rec:false}; h += `<textarea maxlength="2000" data-nort data-bk="${esc(a.key)}" aria-label="Commento" ${(window._rv && window._rv.ruolo === 'revisore' && rvRevAttesa(d.g.archivio_id)) ? 'readonly title="Tocca al compilatore: puoi scrivere di nuovo quando ti restituisce il progetto"' : ''} placeholder="${(window._rv && window._rv.ruolo === 'revisore') ? (rvRevAttesa(d.g.archivio_id) ? 'Tocca al compilatore' : 'Cosa va rivisto, o la tua domanda') : 'Un suggerimento'}" onchange="rvDocSave('${esc(a.key)}',${a.sec},this.value)">${esc(n.t)}</textarea>${rvHas(d.g.archivio_id, a.key) ? '' : (n.rec ? '<span class="rv-rec">✓ Recepita da chi ha inviato il giro</span>' : '')}${rvStHTML(d.g.archivio_id, a.key, false)}${rvThrHTML(a.key, CL.user.id)}`; }
     box.innerHTML = h;
     const wide = Math.max.apply(null, Array.from(a.el.closest('table') ? a.el.closest('table').rows : []).map(r => Array.from(r.cells).reduce((s, c) => s + (c.colSpan || 1), 0)).concat([1]));
@@ -20000,7 +20002,7 @@ async function rvMsgLoad(){
 function rvThr(key){ const d = window._rd; return d ? (d.msgs || []).filter(m => m.chiave === key) : []; }
 function rvThrHTML(key, uid){
   const d = window._rd; if(!d) return ''; const L = (d.msgs || []).filter(m => m.chiave === key && m.rev_id === uid);
-  return `<div class="rd-th" data-k="${esc(key)}" data-u="${esc(uid)}">${L.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Chi ha scritto' : 'Revisore')))}</b> ${esc(m.testo)}</div>`).join('')}${(d.mine || L.some(m => m.user_id !== CL.user.id)) ? `<div class="rd-rp"><textarea rows="1" maxlength="600" data-nort placeholder="${d.mine ? 'Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia' : (L.length ? 'Rispondi' : 'Rispondi a questo punto')}" aria-label="Scrivi su questo punto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rvMsgSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rvMsgSend(this.closest('.rd-th'))">Invia</button></div>` : ''}</div>`;
+  return `<div class="rd-th" data-k="${esc(key)}" data-u="${esc(uid)}">${L.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || (m.autore_ruolo === 'titolare' ? 'Chi ha scritto' : 'Revisore')))}</b> ${esc(m.testo)}</div>`).join('')}${(d.mine || L.some(m => m.user_id !== CL.user.id) || (rvHas(d.g.archivio_id, key) && !rvRevAttesa(d.g.archivio_id))) ? `<div class="rd-rp"><textarea rows="1" maxlength="600" data-nort placeholder="${d.mine ? 'Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia' : (L.length ? 'Rispondi' : 'Rispondi a questo punto')}" aria-label="Scrivi su questo punto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rvMsgSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rvMsgSend(this.closest('.rd-th'))">Invia</button></div>` : ''}</div>`;
 }
 window.rvMsgSend = async function(box){
   const d = window._rd; if(!d || !box) return; const inp = box.querySelector('textarea'), t = (inp.value || '').trim(); if(!t) return;
@@ -20038,19 +20040,24 @@ window.rpSend = async function(box){
 };
 const RP_SCR = {   // dove si trova, nel progetto, ciascun titolo della sezione 1 (nessun giro a vuoto per le altre sezioni)
   a:[['1a', null, 'pctx'], ['1a', null, 'unit'], ['1a', null, 'ctx'], ['1a', null, 'staff']], occ:[['1a', null, 'occ'], ['1b', 'P'], ['1b', 'C'], ['1b', 'S']], b:[['1b', 'P'], ['1b', 'C'], ['1b', 'S'], ['1a', null, 'occ']], d:[['1d'], ['1c']] };
-function rpScreens(p){ if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
-  if(/^(composizione|contesto|adulti)/.test(h)) return RP_SCR.a; if(/^(osservazione-con|attivit|condizioni)/.test(h)) return RP_SCR.occ; if(/^(priorizzazione|motivazione)/.test(h)) return RP_SCR.d; return RP_SCR.b; }
+function rpScreens(p){ if(p.sec === 3 && !(p.chiave.split('|')[1] || '')) return [['1b', 'P'], ['1b', 'C'], ['1b', 'S']]; if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
+  if(/^(composizione|contesto|adulti)/.test(h)) return RP_SCR.a; if(/^(osservazione-con|attivit|condizioni|focus|lancio|sviluppo|conclusione)/.test(h)) return RP_SCR.occ; if(/^(priorizzazione|motivazione)/.test(h)) return RP_SCR.d; if(/^(aspetti|analisi)/.test(h)) return [['1c'], ['1s']]; return RP_SCR.b; }
+window.addEventListener('resize', () => { try{ document.body.classList.toggle('rp-dock-on', !!(window._rp && window._rp.open) && window.innerWidth >= 1100); }catch(e){} });
 window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; const tk = window._rpGoTk = (window._rpGoTk || 0) + 1, stop = () => tk !== window._rpGoTk;
   const pk = p.chiave + '|' + p.user_id, wait = ms => new Promise(r => setTimeout(r, ms));
   document.querySelectorAll('.rp-inl-tr').forEach(e => e.remove()); document.querySelectorAll('.rp-inl[data-pk]').forEach(e => e.remove()); const old = document.getElementById('rp-float'); if(old) old.remove();
   if(window.innerWidth < 900){ window._rp.open = false; rpPaint(); }
-  try{ if(p.sec >= 1) shPP(String(p.sec)); }catch(e){}
-  let el = null; const cands = rpScreens(p); await wait(400); if(stop()) return; el = rpFindEl(p);
-  for(let n = 0; !el && n < cands.length; n++){ const c = cands[n]; try{ shSub(c[0], c[1], c[2]); }catch(e){} await wait(350); if(stop()) return; el = rpFindEl(p); }
+  try{ if(p.sec >= 1) shPP(String(p.sec)); else if(p.chiave.indexOf('c:0') === 0) shPP('1'); }catch(e){}
+  p._last = false; let tg = null; const cands = rpScreens(p); const hm = /^percorso-\d+-(personale|comunitario|spirituale)-/.exec(p.chiave.split('|')[1] || ''); if(hm && typeof shPerc === 'function'){ try{ shPerc({personale:'P', comunitario:'C', spirituale:'S'}[hm[1]]); }catch(e){} }
+  await wait(350); if(stop()) return; tg = rpTarget(p);
+  for(let w = 0; !tg && w < 8; w++){ await wait(250); if(stop()) return; tg = rpTarget(p); }
+  for(let n = 0; !tg && n < cands.length; n++){ const c = cands[n]; p._last = (n === cands.length - 1); try{ shSub(c[0], c[1], c[2]); }catch(e){} for(let w = 0; !tg && w < 12; w++){ await wait(250); if(stop()) return; tg = rpTarget(p); } }
   const box = document.createElement('div'); box.className = 'rp-inl rv-pt-' + rpPanelState(p); box.dataset.pk = pk; box.innerHTML = rpPanelHTML(p);
-  if(el){ let host = rpHostOf(el); for(let k = 0; k < 3; k++){ const nx = host.nextElementSibling; if(nx && (/^(TEXTAREA|INPUT|SELECT)$/.test(nx.tagName) || nx.classList.contains('rt-ed'))) host = nx; else break; }
-    if(host.tagName === 'TR'){ const tr = document.createElement('tr'); tr.className = 'rp-inl-tr'; const td = document.createElement('td'); td.colSpan = 30; td.appendChild(box); tr.appendChild(td); host.after(tr); } else host.after(box);
-    try{ box.scrollIntoView({block:'center'}); }catch(e){} box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; }
+  if(tg){ (tg.open || []).forEach(x => { if(x.tagName === 'DETAILS') x.open = true; else try{ x.click(); }catch(e){} }); const el = tg.el, mode = tg.mode;
+    if(mode === 'tr'){ const tr = document.createElement('tr'); tr.className = 'rp-inl-tr'; const td = document.createElement('td'); td.colSpan = 30; td.appendChild(box); tr.appendChild(td); el.after(tr); }
+    else if(mode === 'prepend') el.prepend(box); else if(mode === 'before') el.before(box); else if(mode === 'append') el.appendChild(box); else if(mode === 'afterSummary') el.after(box); else if(mode === 'afterField'){ let h = el; const nx = h.nextElementSibling; if(nx && (/^(TEXTAREA|INPUT|SELECT)$/.test(nx.tagName) || nx.classList.contains('rt-ed'))) h = nx; if(/^(TEXTAREA|INPUT|SELECT)$/.test(h.tagName) && h.nextElementSibling && h.nextElementSibling.classList.contains('rt-ed')) h = h.nextElementSibling; h.after(box); }
+    else el.after(box);
+    await wait(60); try{ box.scrollIntoView({block:'center'}); }catch(e){} box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; }
   // il punto non ha un campo riconoscibile nella pagina: la scheda si apre in primo piano, uguale a quella del revisore
   const ff = document.createElement('div'); ff.id = 'rp-float'; ff.innerHTML = '<button type="button" class="rp-x" onclick="this.parentNode.remove()" aria-label="Chiudi">✕</button><div class="rp-inl-w">' + esc(p.sec ? 'Sezione ' + p.sec + ' › ' : '') + esc(p.txt || '') + '</div>'; ff.appendChild(box); document.body.appendChild(ff); };
 window.rpGfbSeen = function(){ try{ localStorage.setItem('bussola_gfb_seen_' + CL.user.id, new Date().toISOString()); if(window.clPerTe) setTimeout(() => clPerTe(), 400); }catch(e){} };
@@ -20066,12 +20073,69 @@ function rpPanelHTML(p){
     + `<div class="rd-th" data-k="${esc(p.chiave)}" data-u="${esc(p.user_id)}">${th.map(m => `<div class="rd-m${m.user_id === CL.user.id ? ' me' : ''}"><b>${esc(m.user_id === CL.user.id ? 'Tu' : (m.autore_nome || 'Revisore'))}</b> ${esc(m.testo)}</div>`).join('')}<div class="rd-rp"><textarea rows="1" maxlength="600" data-nort placeholder="Qui puoi spiegare cosa hai fatto o fare una domanda a chi rivede, poi premi Invia" aria-label="Spiega cosa hai fatto o fai una domanda" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();rpSend(this.closest('.rd-th'));}"></textarea><button type="button" class="rv-b" onclick="rpSend(this.closest('.rd-th'))">Invia</button></div></div>`;
 }
 function rpPanelState(p){ const x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave]; return x ? rvPtSt(CL.ctx.id, p.chiave, x) : (p.recepita ? 'fatto' : 'da_fare'); }
-function rpFindEl(p){ const lab = (p.chiave.split('|')[2] || '').replace(/#\d+$/, ''); if(!lab) return null;
-  const pool = Array.from(document.querySelectorAll('main *, #sh-main *')).filter(e => e.offsetParent !== null && !e.closest('.rp-inl,#rp-dock,#rp-float') && !/^(SCRIPT|STYLE|OPTION|TEXTAREA|INPUT|SELECT|BUTTON|A)$/.test(e.tagName) && (e.textContent || '').length < 400);
-  let m = pool.find(e => !e.children.length && RD.slug(e.textContent) === lab); if(m) return m;
-  if(lab.length < 10) return null;   // etichette brevi («percorso», «stato»…): solo corrispondenza esatta, per non sbagliare campo
-  const own = e => !Array.from(e.children).some(c => RD.slug(c.textContent).indexOf(lab) === 0);
-  return pool.filter(e => /^(LABEL|LEGEND|H1|H2|H3|H4|H5|TH|SUMMARY|DT|DIV|SPAN|P|TD)$/.test(e.tagName) && RD.slug(e.textContent).indexOf(lab) === 0).find(own) || null; }
+// ── Dove sta nel progetto il punto commentato ──
+// Ogni punto è (sezione | titolo | riga). Si trova il blocco giusto (priorità, percorso, titolo) e poi la riga dentro quel blocco: così, con voci uguali in più blocchi, si arriva sempre a quella giusta.
+const rpSl = t => RD.slug(String(t || '').replace(/\s+/g, ' ').trim()).replace(/^-+|-+$/g, '');
+function rpVis(e){ return e && e.offsetParent !== null; }
+function rpLeafs(root, re){ return Array.from(root.querySelectorAll('label,legend,summary,h1,h2,h3,h4,h5,td,th,dt,div,span,b,strong,p')).filter(e => rpVis(e) && !e.closest('.rp-inl,#rp-dock,#rp-float') && (e.textContent || '').length < 300 && re(rpSl(e.textContent)) && !Array.from(e.children).some(c => re(rpSl(c.textContent)))); }
+function rpPcx(h){ const m = /^percorso-(\d+)-[^-]+-([a-z]\d+)-/.exec(h); if(!m) return null; return Array.from(document.querySelectorAll('.pcx')).find(c => { const hd = Array.from(c.querySelectorAll('.pcx-hd > span')).find(x => !x.classList.contains('pcx-chev')), sl = hd ? rpSl(hd.firstChild ? hd.firstChild.textContent : hd.textContent) : ''; return sl.indexOf('percorso-' + m[1] + '-') === 0 && sl.indexOf('-' + m[2] + '-') > 0; }) || null; }
+function rpRowTd(card, re){ return Array.from(card.querySelectorAll('.perc-tab > tbody > tr')).find(tr => tr.firstElementChild && re(rpSl(tr.firstElementChild.firstChild ? tr.firstElementChild.firstChild.textContent : tr.firstElementChild.textContent))) || null; }
+function rpGroupEnd(lb){   // fine del blocco «etichetta + campo»: così il pannello sta sotto il campo e non in mezzo
+  const w = lb.parentElement; if(w && w.firstElementChild === lb && w.querySelectorAll(':scope > label').length === 1 && !/^(DETAILS|TD|TR|TBODY|TABLE|MAIN)$/.test(w.tagName) && !/profile-card|u-fold-in|pcx-body|panel/.test(String(w.className))) return w;
+  let n = lb; while(n.nextElementSibling && !/^(LABEL|H1|H2|H3|H4|H5|SUMMARY|DETAILS)$/.test(n.nextElementSibling.tagName) && !n.nextElementSibling.matches('.pcx,.asp-cta,[data-blk]:not(textarea):not(input):not(select)') ) n = n.nextElementSibling; return n; }
+function rpTarget(p){
+  const kk = p.chiave.split('|'), sec = kk[0], h3 = kk[1] || '', row = (kk[2] || '').replace(/#\d+$/, ''), isH = !row || row === h3;
+  const res = (el, mode, open) => el ? {el, mode, open: open || []} : null;
+  // ── Sezione 3 · percorsi
+  const card = rpPcx(h3);
+  if(card){ const hd = card.querySelector('.pcx-hd'), body = card.querySelector('.pcx-body'), open = (body && body.offsetParent === null) ? [hd] : [];
+    if(!isH && !card.querySelector('.perc-tab')){ if(!card._rpOpening){ card._rpOpening = true; try{ hd.click(); }catch(e){} setTimeout(() => { card._rpOpening = false; }, 1500); } return null; }
+    if(isH) return res(hd, 'after', open);
+    let m;
+    const TR = re => res(rpRowTd(card, re), 'tr', open);
+    if(row === 'obiettivoi') return TR(x => x === 'obiettivi');
+    if(row === 'strumenti-del-metodo') return TR(x => x.indexOf('strumenti-del-metodo') === 0);
+    if(row === 'tempistiche') return TR(x => x === 'tempistiche');
+    if(row === 'le-7-caratteristiche') return TR(x => x.indexOf('le-7-caratteristiche') === 0);
+    if((m = /^le-7-caratteristiche-(.+)$/.exec(row))){ const tr = rpRowTd(card, x => x.indexOf('le-7-caratteristiche') === 0); if(!tr) return null; const nm = m[1].split('-')[0];
+      const box = Array.from(tr.querySelectorAll('div')).find(d => d.firstElementChild && rpSl(d.firstElementChild.textContent).indexOf(nm) === 0 && d.querySelector('textarea')); return box ? res(box.querySelector('textarea'), 'afterField', open) : res(tr, 'tr', open); }
+    if((m = /^attività-(\d+)(?:-(lancio|sviluppo|conclusione))?$/.exec(row))){ const d = Array.from(card.querySelectorAll('details[id^="att-"]'))[+m[1] - 1]; if(!d) return res(hd, 'after', open); const sum = d.querySelector('summary'), op = open.concat(d.open ? [] : [d]);
+      if(!m[2]) return res(sum, 'afterSummary', op);
+      const lb = Array.from(d.children).find(l => l.tagName === 'LABEL' && rpSl(l.textContent).indexOf(m[2]) === 0); return lb ? res(lb, 'afterField', op) : res(sum, 'afterSummary', op); }
+    return res(hd, 'after', open);
+  }
+  // ── Intestazione (nome, Sezione, Gruppo, Unità, Branca): sono nella prima pagina
+  if(sec === 'c:0'){ const sc0 = document.querySelector('#main-app .panel.active') || document.getElementById('main-app') || document.body, pick = re => rpLeafs(sc0, x => re.test(x))[0];
+    const lb = row === 'compilata-da' ? pick(/^nome-e-cognome/) : row === 'sezione' ? pick(/^sezione/) : (row === 'gruppo' ? pick(/^gruppo/) : (pick(new RegExp('^' + row)) || pick(/^gruppo/)));
+    return lb ? res(lb.tagName === 'LABEL' ? lb : (lb.closest('label') || lb), 'after', []) : null; }
+  // ── Allegato 1 · griglia osservativa (schede dei comportamenti, nelle pagine «Osservare»)
+  if(sec === 'c:3' && !h3){
+    const ms = /^sviluppo-(personale|comunitario|spirituale)$/.exec(row);
+    if(ms){ const a = {personale:'P', comunitario:'C', spirituale:'S'}[ms[1]], c1 = document.getElementById('card-' + a + '1'); return rpVis(c1) ? res(c1, 'before', []) : null; }
+    const mn = /^(\d)-/.exec(row), nm = /^\s*\d+\.\s*([^:›]+?)\s*(?::|›|$)/.exec(p.txt || '');
+    if(mn && nm){ const stems = rpSl(nm[1]).split('-').filter(w => w.length >= 5).map(w => w.slice(0, 5)); for(const a of ['P', 'C', 'S']){ const c = document.getElementById('card-' + a + mn[1]); if(!rpVis(c)) continue; const tx = rpSl(c.textContent); if(stems.length && !stems.some(w => tx.indexOf(w) >= 0) && !p._last) continue; const open = c.classList.contains('expanded') ? [] : [c.querySelector('.pc-hd,.pc-head,[class*=hd]') || c]; const inn = c.querySelector('.pc-body-inner') || c; return res(inn, 'append', open); } }
+    return null;
+  }
+  // ── Sezione 2 · priorità
+  let m2 = /^priorità-(\d+)$/.exec(h3);
+  if(m2){ const det = Array.from(document.querySelectorAll('details.u-ob')).find(d => { const t = d.querySelector('.u-ttl'); return t && rpSl(t.textContent).indexOf(h3 + '-') === 0; }); if(!det) return null; const open = det.open ? [] : [det], inn = det.querySelector('.u-fold-in');
+    const rowDiv = re => Array.from(det.querySelectorAll('.u-fold-in > div')).find(d => d.firstElementChild && d.firstElementChild.tagName === 'LABEL' && re(rpSl(d.firstElementChild.textContent)));
+    if(isH || row === 'ambito-di-sviluppo' || row === 'percorso') return res(inn, 'prepend', open);
+    const map = {'necessità-educativa': x => x === 'necessità-educativa', 'obiettivo-di-percorso': x => x.indexOf('obiettivo-di-percorso') === 0, 'indicatori-di-risultato': x => x.indexOf('indicatori-di-risultato') === 0, 'tempistica': x => x.indexOf('tempistica') === 0};
+    const rd = map[row] ? rowDiv(map[row]) : null; return rd ? res(rd, 'after', open) : res(inn, 'prepend', open); }
+  // ── Sezione 1 e il resto: si cerca il titolo, poi la riga che lo segue
+  const sc = document.querySelector('#main-app .panel.active') || document.getElementById('main-app') || document.body;
+  const AL = {'composizione-dellunità': /^numeri-dellunità/, 'osservazione-con-il-kos-occasioni-osservative': /^occasioni-osservative/, 'attività-osservative-create-con-lo-strumento-del-kos': /^crea-le-tue-attività-osservative/, 'motivazione-della-scelta': /^perché-queste-priorità/, 'focus-che-cosa-guardo': /^crea-le-tue-attività-osservative/, 'lancio': /^crea-le-tue-attività-osservative/, 'sviluppo': /^crea-le-tue-attività-osservative/, 'conclusione': /^crea-le-tue-attività-osservative/};
+  const alKey = Object.keys(AL).find(a => h3 && (a === h3 || a.indexOf(h3) === 0 || h3.indexOf(a) === 0)), alRe = alKey ? AL[alKey] : null;
+  const heads = h3 ? rpLeafs(sc, x => x === h3 || (h3.length >= 12 && x.indexOf(h3) === 0) || (alRe && alRe.test(x))) : [];
+  const H = heads[0] || null;
+  if(H && (isH || !row || /^(focus-che-cosa-guardo|lancio|sviluppo|conclusione)$/.test(h3))) return res(rpGroupEnd(H), 'after', []);
+  if(row && H){ const trs = Array.from(sc.querySelectorAll('tbody tr')).filter(tr => rpVis(tr) && tr.firstElementChild && rpSl(tr.firstElementChild.innerText || '').indexOf(row) === 0 && row.length >= 6); if(trs[0]) return res(trs[0], 'tr', []); }
+  if(row){ const pool = rpLeafs(sc, x => x === row || (row.length >= 12 && x.indexOf(row) === 0)), after = H ? pool.filter(e => H.compareDocumentPosition(e) & 4) : pool;
+    const el = after[0] || (!h3 ? pool[0] : null); if(el){ const tr = el.closest('tr'); return tr ? res(tr, 'tr', []) : (el.tagName === 'LABEL' ? res(rpGroupEnd(el), 'after', []) : res(el, 'after', [])); } }
+  return H ? res(rpGroupEnd(H), 'after', []) : null;
+}
+function rpFindEl(p){ const t = rpTarget(p); return t ? t.el : null; }
 function rpHostOf(el){ const tr = el.closest('tr'); if(tr) return tr; let n = el; for(let i = 0; n && i < 6 && n.tagName !== 'MAIN' && n.id !== 'sh-main'; i++, n = n.parentElement){ if(/^(block|flex|grid|list-item)$/.test(getComputedStyle(n).display)) return n; } return el; }
 function rpInlineSync(){   // aggiorna i pannelli già aperti (stato, messaggi); non ne crea e non sposta la pagina
   try{ const P = window._rp; if(!P || !P.pts || window.BRO || typeof CL === 'undefined' || !CL.ctx) return;
@@ -20082,7 +20146,7 @@ function rpInlineSync(){   // aggiorna i pannelli già aperti (stato, messaggi);
       box.className = 'rp-inl rv-pt-' + st + ((st === 'fatto' || st === 'confermato') ? ' rp-inl-done' : ''); box.innerHTML = rpPanelHTML(p); box.dataset.sig = sig;
       if(v){ const t2 = box.querySelector('textarea'); if(t2){ t2.value = v; if(f) try{ t2.focus({preventScroll:true}); }catch(e){} } } }); }catch(e){}
 }
-window.rpInlineSync = rpInlineSync; window.rpFindEl = rpFindEl;
+window.rpInlineSync = rpInlineSync; window.rpFindEl = rpFindEl; window.rpTarget = rpTarget; window.rpSl = rpSl; window.rpPcx = rpPcx; window.rpLeafs = rpLeafs; window.rpRowTd = rpRowTd;
 function rpPaint(keep){
   const P = window._rp; setTimeout(rpInlineSync, 0); let pill = document.getElementById('rp-pill'), dk = document.getElementById('rp-dock');
   const pend = P.pts.filter(p => { const S = window._rvs[CL.ctx.id], x = S && S.pun[p.chiave]; return x ? (x.stato === 'da_fare' || x.stato === 'attesa') : !p.recepita; });
@@ -20090,7 +20154,8 @@ function rpPaint(keep){
   if(!pill){ pill = document.createElement('button'); pill.type = 'button'; pill.id = 'rp-pill'; pill.onclick = rpTog; document.body.appendChild(pill); }
   pill.innerHTML = '📝 Revisioni da recepire' + (pend.length ? ' <b>' + pend.length + '</b>' : ' ✓'); pill.title = 'Apri l’elenco dei punti segnalati da chi rivede il tuo Progetto Personale';
   if(!dk){ dk = document.createElement('aside'); dk.id = 'rp-dock'; dk.setAttribute('aria-label', 'Revisioni da recepire'); document.body.appendChild(dk); }
-  dk.classList.toggle('open', !!P.open); if(!P.open){ dk.innerHTML = ''; return; }
+  dk.classList.toggle('open', !!P.open); try{ document.body.classList.toggle('rp-dock-on', !!P.open && window.innerWidth >= 1100); }catch(e){}
+  if(!P.open){ dk.innerHTML = ''; return; }
   const bd0 = dk.querySelector('.rv-body'), sc = bd0 ? bd0.scrollTop : 0;
   const tot = P.pts.length, ok = tot - pend.length, bySec = {}; P.pts.forEach((p, i) => { p.i = i; (bySec[p.sec] = bySec[p.sec] || []).push(p); });
   const item = p => { const _x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.chiave], _ps = _x ? rvPtSt(CL.ctx.id, p.chiave, _x) : (p.recepita ? 'fatto' : 'da_fare');
