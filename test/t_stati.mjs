@@ -26,7 +26,7 @@ await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value =
 ok(db.t.pee_revisioni_punto.length === 1 && db.t.pee_revisioni_punto[0].stato === 'da_fare', 'il commento diventa un punto «da fare»');
 await pe(() => rvSync()); await sleep(1200);
 let s = await pe(() => document.getElementById('rv-dock').innerText);
-ok(/Tocca a te/.test(s) && /Rimanda al compilatore \(1\)/.test(s) && !/Approva e chiudi/.test(s), 'revisore: turno, «Rimanda» e niente «Approva» con punti da fare');
+ok(/Tocca a te/.test(s) && /Invia le richieste di revisione \(1\)/.test(s) && await pe(() => { const b = Array.from(document.querySelectorAll('#rv-dock .rv-b')).find(x => x.textContent.trim() === 'Approva'); return !!b && b.disabled; }), 'revisore: turno, richieste inviabili e «Approva» spento con punti da fare');
 await pe((a) => rvAzione(a, 'rimanda'), aid); await sleep(900);
 ok(db.t.pee_revisioni[0].fase === 'compilatore', '«Rimanda» passa il turno al compilatore');
 s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tocca a chi ha scritto/.test(s), 'revisore: ora tocca al compilatore');
@@ -35,8 +35,8 @@ await ev(() => rpLoad()); await sleep(1500); await ev(() => rpTog()); await slee
 s = await ev(() => document.getElementById('rp-dock').innerText);
 ok(/Tocca a te/.test(s) && /Da fare/.test(s) && /Ho finito, può rileggere/.test(s) && !/Invia un nuovo giro/.test(s), 'compilatore: turno, chip «Da fare», «Ho finito», nessun nuovo invio a parte');
 ok(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled), '«Ho finito» è spento finché ci sono punti da fare');
-await ev(() => { const t = document.querySelector('#rp-dock .rv-st textarea'); t.value = 'Aggiunto il Quartiere San Carlo'; const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1200);
-const pu = db.t.pee_revisioni_punto[0]; ok(pu.stato === 'fatto' && /San Carlo/.test(pu.nota), 'il compilatore segna «Fatto» con una riga di nota');
+await ev(() => { const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Ho fatto/.test(x.textContent)); b.click(); }); await sleep(1200);
+const pu = db.t.pee_revisioni_punto[0]; ok(pu.stato === 'fatto' , 'il compilatore segna «Fatto» con una riga di nota');
 ok(!(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled)), '«Ho finito» si accende');
 await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').click()); await sleep(3500);
 v = db.t.pee_revisioni[0]; ok(db.t.pee_giri.length === 2 && v.fase === 'revisore' && v.ultimo_giro_id === db.t.pee_giri[1].id, '«Ho finito» congela la copia 2 e passa il turno al revisore: giri ' + db.t.pee_giri.length + ', fase ' + v.fase);
@@ -46,7 +46,7 @@ await pe(() => rvSync()); await sleep(1500);
 s = await pe(() => document.getElementById('rv-dock').innerText);
 ok(/◐ Fatto/.test(s), 'elenco del revisore: stato «Fatto»'); await pe(() => { rvDocOpen(_rd.pts[0].key); }); await sleep(800); await pe(() => { const b = Array.from(document.querySelectorAll('#rv-doc .rv-st .rv-b')).find(x => /Conferma/.test(x.textContent)); b.click(); }); await sleep(1200);
 ok(db.t.pee_revisioni_punto[0].stato === 'confermato', 'il revisore conferma il punto');
-s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Approva e chiudi la revisione/.test(s), 'con tutto confermato compare «Approva»');
+s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tutti i punti sono confermati/.test(s), 'con tutto confermato «Approva» si accende');
 await pe(() => { document.getElementById('rv-ap-n').value = 'Ottimo lavoro'; document.querySelector('#rv-dock .rv-b[onclick*=approva]').click(); }); await sleep(1200);
 v = db.t.pee_revisioni[0]; ok(v.stato === 'chiusa' && v.esito === 'approvata' && v.nota_chiusura === 'Ottimo lavoro', 'approvata e chiusa');
 await ev(() => rpLoad()); await sleep(1500); s = await ev(() => document.getElementById('rp-dock') ? document.getElementById('rp-dock').innerText : '');

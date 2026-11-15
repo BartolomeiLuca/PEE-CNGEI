@@ -26,7 +26,7 @@ await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value =
 ok(db.t.pee_revisioni_punto.length === 1 && db.t.pee_revisioni_punto[0].stato === 'da_fare', 'il commento diventa un punto «da fare»');
 await pe(() => rvSync()); await sleep(1200);
 let s = await pe(() => document.getElementById('rv-dock').innerText);
-ok(/Tocca a te/.test(s) && /Rimanda al compilatore \(1\)/.test(s) && !/Approva e chiudi/.test(s), 'revisore: turno, «Rimanda» e niente «Approva» con punti da fare');
+ok(/Tocca a te/.test(s) && /Invia le richieste di revisione \(1\)/.test(s) && await pe(() => { const b = Array.from(document.querySelectorAll('#rv-dock .rv-b')).find(x => x.textContent.trim() === 'Approva'); return !!b && b.disabled; }), 'revisore: turno, richieste inviabili e «Approva» spento con punti da fare');
 await pe((a) => rvAzione(a, 'rimanda'), aid); await sleep(900);
 ok(db.t.pee_revisioni[0].fase === 'compilatore', '«Rimanda» passa il turno al compilatore');
 s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tocca a chi ha scritto/.test(s), 'revisore: ora tocca al compilatore');
@@ -38,14 +38,9 @@ const cls = () => ev(() => ({ chip: (document.querySelector('#rp-dock .rv-st .rv
 let c = await cls();
 ok(/rv-ch-da_fare/.test(c.chip) && /rv-pt-da_fare/.test(c.pt), 'punto da fare: rosso ' + JSON.stringify(c));
 ok(c.sec && c.open, 'le richieste sono raggruppate per sezione, aperta quella con punti da fare');
-ok(c.taHidden === true, 'il campo di testo è chiuso finché non serve');
-// «Ho un dubbio»: prima apre il campo, poi invia
-await ev(() => { const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Ho un dubbio/.test(x.textContent)); b.click(); }); await sleep(300);
-c = await cls(); ok(c.taHidden === false, '«Ho un dubbio» apre il campo');
-await ev(() => { const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Invia il dubbio/.test(x.textContent)); b.click(); }); await sleep(300);
-ok(db.t.pee_revisioni_punto[0].stato === 'da_fare', 'senza testo il dubbio non parte');
-await ev(() => { document.querySelector('#rp-dock .rv-st textarea').value = 'Intendi il quartiere o la frazione?'; const b = Array.from(document.querySelectorAll('#rp-dock .rv-st .rv-b')).find(x => /Invia il dubbio/.test(x.textContent)); b.click(); }); await sleep(1500);
-c = await cls(); ok(db.t.pee_revisioni_punto[0].stato === 'attesa' && /rv-ch-attesa/.test(c.chip) && /rv-pt-attesa/.test(c.pt), 'dubbio inviato: giallo ' + JSON.stringify(c));
+ok(await ev(() => !Array.from(document.querySelectorAll('#rp-dock button')).some(x => /dubbio/i.test(x.textContent))), 'niente «Ho un dubbio»: un solo campo con Invia');
+await ev(() => { const th = document.querySelector('#rp-dock .rd-th'); th.querySelector('textarea').value = 'Intendi il quartiere o la frazione?'; rpSend(th); }); await sleep(1500);
+c = await cls(); ok(db.t.pee_revisioni_punto[0].stato === 'attesa' && /rv-ch-attesa/.test(c.chip) && /rv-pt-attesa/.test(c.pt), 'domanda inviata nel campo: giallo ' + JSON.stringify(c));
 // «Ho finito» non è bloccato da una domanda aperta
 ok(!(await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').disabled)), '«Ho finito» resta acceso con una domanda ancora aperta');
 // risposta del revisore dopo il dubbio: blu
