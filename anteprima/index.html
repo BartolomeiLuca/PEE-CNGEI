@@ -9143,7 +9143,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611161442'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611161555'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -21052,11 +21052,11 @@ async function annoRow(y){
   return (data || []).find(r => Number(r.anno) === Number(y) && (r.meta || {}).mode === 'anno' && !(r.meta || {}).cest && /^Esempio/i.test(r.titolo || '') === ex && (!(r.meta || {}).fascia || !FASCIA || (r.meta || {}).fascia === FASCIA)) || null;
 }
 async function annoRowEnsure(y){
-  let r = await annoRow(y); if(r){ r.data = r.data || {}; if(!r.data.ver) r.data.ver = {}; return r; }
+  let r = await annoRow(y); if(r){ r.data = r.data || {}; if(!r.data.ver) r.data.ver = {}; r.raw = r.updated_at; try{ r.base = JSON.parse(JSON.stringify(r.data)); }catch(e){} return r; }
   const as = scheda.annoScout || (y + '-' + String((y + 1) % 100).padStart(2, '0'));
   const d = {v:1, MODE:'anno', annoScout:as, UNIT_NAME:UNIT_NAME || '', FASCIA, ver:{}, ts:Date.now()}; const meta = {mode:'anno', fascia:FASCIA, tipo:'ANNO', nome:UNIT_NAME || ''};
   const rows = await dbList(); let t = (scheda && scheda.esempio ? 'Esempio · ' : '') + 'Verifica dell’anno ' + as + (UNIT_NAME ? ' · ' + UNIT_NAME : ''), k = 2; const base = t; while(rows.some(x => Number(x.anno) === Number(y) && x.titolo === t)) t = base + ' (' + (k++) + ')';
-  const ins = await dbInsert(y, t, d, meta); return {id:ins.id, anno:y, titolo:ins.titolo, data:d, meta, updated_at:null};
+  const ins = await dbInsert(y, t, d, meta); return {id:ins.id, anno:y, titolo:ins.titolo, data:d, meta, updated_at:null, base:JSON.parse(JSON.stringify(d))};
 }
 window.annoRowEnsure = annoRowEnsure;
 function annoSum(it){
@@ -21067,9 +21067,30 @@ function annoSum(it){
   const pv = per.map(p => { const a = Number(obs0[p.pid]) || 0, b = Number(ri[p.pid]) || 0; return {nm:p.nm, a, b, vc:String((sc.valCompl || {})[p.pid] || '').trim(), n:p.acts.length, ok:p.acts.filter(x => x.st === 'ok').length, da:p.acts.filter(x => x.st === 'ver').length}; });
   return {idr, pv};
 }
+// salvataggio degli strumenti dell'anno: controlla l'ora dell'ultima versione letta; se un altro dispositivo ha salvato nel frattempo, unisce le due versioni invece di sovrascrivere
+async function annoPush(R){
+  if(!R.raw && R.updated_at) R.raw = R.updated_at;
+  for(let i = 0; i < 3; i++){
+    try{
+      await dbUpdate(R.id, R.data, R.meta, R.raw || null);
+      const t = await dbTsRaw(R.id).catch(() => null); if(t) R.raw = t.raw;
+      try{ R.base = JSON.parse(JSON.stringify(R.data)); }catch(e){}
+      return;
+    }catch(e){
+      if(!e || e.message !== 'stale') throw e;
+      const g = await dbGet(R.id); if(!g) throw e;
+      const out = {conf:[]};
+      const merged = clMerge(R.base || {}, R.data, g.data || {}, out);
+      if(out.conf.length){ try{ await dbSnap(R.id, g.data || {}, 'Versione sostituita'); }catch(x){} }
+      R.data = merged; R.raw = g.raw; R.updated_at = g.raw;
+    }
+  }
+  throw new Error('stale');
+}
+window.annoPush = annoPush;
 window.annoVerSave = function(k, v){
   const R = SH._av; if(!R) return; R.data.ver[k] = v; R.data.ts = Date.now(); clearTimeout(SH._avT);
-  SH._avT = setTimeout(async () => { try{ await dbUpdate(R.id, R.data, R.meta, null); SH._avSaved = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); const e = $('anv-st'); if(e) e.textContent = '✓ Salvato ' + SH._avSaved; }catch(e){ const x = $('anv-st'); if(x) x.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700);
+  SH._avT = setTimeout(async () => { try{ await annoPush(R); SH._avSaved = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); const e = $('anv-st'); if(e) e.textContent = '✓ Salvato ' + SH._avSaved; }catch(e){ const x = $('anv-st'); if(x) x.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700);
 };
 function annoVerHTML(){
   const R = SH._av, items = SH._ay;
@@ -21695,7 +21716,7 @@ const SP_PAG = [['', '—'], ['contanti', 'Contanti'], ['carta', 'Carta'], ['bon
 function spList(R){ R = R || SH._av; if(!R) return []; R.data.sp = Array.isArray(R.data.sp) ? R.data.sp : []; return R.data.sp; }
 function bilRegSum(R){ const o = {}; spList(R).forEach(r => { if(r.conf === false) return; const m = /^\d{4}-\d{2}/.test(r.data || '') ? r.data.slice(0, 7) : ''; if(m) o[m] = (o[m] || 0) + (Number(r.importo) || 0); }); return o; }
 function spSave(){ const R = SH._av; if(!R || window.BRO) return; R.data.ts = Date.now(); clearTimeout(SH._spT);
-  SH._spT = setTimeout(async () => { try{ await dbUpdate(R.id, R.data, R.meta, null); const e = $('sp-st'); if(e) e.textContent = '✓ Salvato ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); }catch(err){ const e = $('sp-st'); if(e) e.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700); }
+  SH._spT = setTimeout(async () => { try{ await annoPush(R); const e = $('sp-st'); if(e) e.textContent = '✓ Salvato ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); }catch(err){ const e = $('sp-st'); if(e) e.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700); }
 function spConts(){ const o = []; (SH._ay || []).forEach(it => { const U = (it.data.scheda || {}).uscite || {}; Object.keys(U).forEach(k => { const u = U[k]; if(u && typeof u === 'object' && !u.del && u.id) o.push({key:it.id + '|' + u.id, cid:it.id, uid:u.id, nome:uscTit(u) + ((SH._ay || []).length > 1 ? ' · ' + it.ci.nome : '')}); }); }); return o; }
 function spFilt(){ const f = SH._sf = SH._sf || {}; return spList().filter(r => { const m = (r.data || '').slice(0, 7);
   return (!f.da || m >= f.da) && (!f.a || m <= f.a) && (!f.cat || r.cat === f.cat) && (!f.att || r.att === f.att) && (!f.doc || (f.doc === 'con' ? !!(r.giust || '').trim() : !(r.giust || '').trim())); }); }
@@ -21807,7 +21828,7 @@ window.bilTot = bilTot; window.bilRows = bilRows; window.bilKeys = bilKeys;
 window.bilFlt = function(k, v){ (SH._bf = SH._bf || {})[k] = v; const p = $('panel-pp'); if(p && SH.ppv === 'bil') p.innerHTML = bilHTML(); };
 window.bilEff = function(k, v){
   const R = SH._av; if(!R || window.BRO) return; R.data.bil = R.data.bil || {}; if(v === '') delete R.data.bil[k]; else R.data.bil[k] = Number(v) || 0; R.data.ts = Date.now(); clearTimeout(SH._bilT);
-  SH._bilT = setTimeout(async () => { try{ await dbUpdate(R.id, R.data, R.meta, null); const e = $('bil-st'); if(e) e.textContent = '✓ Salvato ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); }catch(err){ const e = $('bil-st'); if(e) e.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700);
+  SH._bilT = setTimeout(async () => { try{ await annoPush(R); const e = $('bil-st'); if(e) e.textContent = '✓ Salvato ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}); }catch(err){ const e = $('bil-st'); if(e) e.textContent = 'Non sono riuscito a salvare: riprova.'; } }, 700);
   const p = $('panel-pp'); if(p && SH.ppv === 'bil'){ const tr = document.activeElement && document.activeElement.closest ? document.activeElement.closest('tr') : null; if(tr){ const T = bilTot(bilFilt(bilRows(SH._ay)), bilKeys(Number(CL.ctx.anno))), d = tr.children[3], t = T[k]; if(d) d.textContent = v === '' ? '' : axEur(Number(v) - t.tot); } }
 };
 window.shBil = async function(){

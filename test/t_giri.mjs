@@ -18,8 +18,8 @@ ok(s.sw <= s.cw + 1 && s.bw <= s.vw + 1, 'su schermo stretto (320 px) il modulo 
 await ev(() => ppGiroFormClose()); await P.setViewportSize({width:1280, height:900});
 // apro il modulo: proposta di default e blocco per i tester
 await ev(() => ppGiroForm(1)); await sleep(1200);
-s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); const t = ov.innerText; return {t, tutor: ov.querySelectorAll('input[type=email]')[0].value, icdf: window._giroForm.dest[1].email, dis: [...ov.querySelectorAll('input[type=email]')].map(e => e.parentElement.querySelector('input[type=checkbox]').disabled).join(), title: /Copia 3/.test(t)}; });
-ok(s.title && /Progettazione \(Sezioni 1–3\)/.test(s.t) && !/Che cosa copre il giro/.test(s.t), 'la nuova copia è la 3, ambito «Progettazione (Sezioni 1–3)»'); ok(s.tutor === 'tutor@x.it' && s.icdf === 'rcdf.altoadriatico@cngei.it', 'Tutor e ICdF precompilati');
+s = await ev(() => { const ov = document.getElementById('pp-giro-ov'); const t = ov.innerText; return {t, tutor: ov.querySelectorAll('input[type=email]')[0].value, icdf: window._giroForm.dest[1].email, dis: [...ov.querySelectorAll('input[type=email]')].map(e => e.parentElement.querySelector('input[type=checkbox]').disabled).join(), title: /Giro 3/.test(t)}; });
+ok(s.title && /Prima consegna · Sezioni 1–3/.test(s.t), 'il nuovo giro è il 3, «Prima consegna · Sezioni 1–3»'); ok(s.tutor === 'tutor@x.it' && s.icdf === 'rcdf.altoadriatico@cngei.it', 'Tutor e ICdF precompilati');
 ok(/Funzione in preparazione: la condivisione in app con Tutor e ICdF non è ancora attiva/.test(s.t), 'disclaimer per i tester accanto a Tutor/ICdF');
 ok(s.dis === 'true,false,true', '«Condividi in app» disabilitato per Tutor e ICdF (e abilitato per Capo Gruppo)');
 // indirizzo ammesso: il pulsante si abilita e il disclaimer sparisce per quella riga
