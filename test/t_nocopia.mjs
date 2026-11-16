@@ -35,11 +35,14 @@ ok(pt.it.length === 1 && pt.it[0].aid === aid, 'in «Per te» c’è la riga del
 ok(/rpOpenDock\('/.test(pt.html) && !/rvOpenAny/.test(pt.html), '«Leggi le revisioni» apre il progetto vivo, non la copia');
 const card = await ev(() => ppBloccoHTML(1));
 ok(!/ppGiroApri/.test(card) && !/Vedi il progetto inviato/.test(card) && !/Leggi le revisioni ricevute/.test(card), 'nella scheda del giro non ci sono pulsanti sulla copia');
-ok(/rpOpenDock\(CL\.ctx/.test(card) && /Elimina il giro/.test(card), 'resta «Apri le revisioni nel progetto» e «Elimina il giro»');
+ok(!/rpOpenDock/.test(card) && /Elimina il giro/.test(card) && !/\bcopia\b/i.test(card.replace(/in copia/g, '')), 'nella scheda resta «Elimina il giro» e non compare la parola «copia»');
+await ev(() => ppGiroFbAll()); await sleep(1500);
+ok(await ev(() => { const h = ppBloccoHTML(1); return /1 punto da recepire|punti da recepire/.test(h) && !/recepita<\/label>/.test(h); }), 'il riquadro dei riscontri nella scheda è solo da leggere (niente «recepita»)');
 // clic dal progetto aperto: nessuna nuova scheda, nessuna copia
 let nPag = P.context().pages().length;
 await ev(() => { document.querySelector('.cl-perte') ; }); 
-await ev(id => rpOpenDock(id), aid); await sleep(3500);
+await ev(() => { const d = document.createElement('div'); d.id = 'tst-pt'; d.innerHTML = clPerTeHTML(); document.body.appendChild(d); }); await sleep(300);
+await ev(() => { const b = Array.from(document.querySelectorAll('#tst-pt button')).find(x => /Leggi le revisioni/.test(x.textContent)); b.click(); }); await sleep(3500);
 let st = await ev(() => ({bro: !!window.BRO, open: !!(window._rp && window._rp.open), dock: !!document.querySelector('#rp-dock.open'), n: (window._rp.pts || []).length, flag: sessionStorage.getItem('bussola_rp_open'), hash: location.hash}));
 ok(!st.bro && st.open && st.dock && st.n === 1, 'si apre l’elenco delle revisioni nel progetto vivo: ' + JSON.stringify(st));
 ok(P.context().pages().length === nPag && st.hash === '' && !st.flag, 'nessuna scheda nuova, nessuna copia in sola lettura, flag consumato');
