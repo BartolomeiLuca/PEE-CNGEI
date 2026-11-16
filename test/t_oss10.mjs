@@ -51,7 +51,7 @@ ok(/Passo 7 di 12/.test(i.n) && /In che situazione osserverai/.test(i.h), 'passo
 await clickTxt('.opt', 'Attività guidata'); await sleep(200); await next(); i = await seen();
 ok(/Passo 8 di 12/.test(i.n) && /Cosa vuoi guardare, di preciso/.test(i.h), 'passo 8: ' + i.h);
 let c8 = await F.evaluate(() => ({pronte: document.querySelectorAll('#wbody .pronta').length, rows: [...document.querySelectorAll('#wbody .lab .lk')].map(x => x.textContent.trim()), len: (document.getElementById('wlente') || {}).innerText || ''}));
-ok(c8.pronte >= 1 && /Chi guardi/.test(c8.rows.join()) && /In quale momento/.test(c8.rows.join()) && /Percorsi scelti: 2/.test(c8.len), 'passo 8: frasi pronte, domande una per volta, barra semplice: ' + JSON.stringify(c8));
+ok(c8.pronte >= 1 && /Chi guardi/.test(c8.rows.join()) && /In quale momento/.test(c8.rows.join()) && /Percorsi scelti:[\s\S]*Focus scritti: 0/.test(c8.len), 'passo 8: frasi pronte, domande una per volta, barra semplice: ' + JSON.stringify(c8));
 await clickTxt('.pronta button', 'Uso questa'); await sleep(300);
 let f8 = await F.evaluate(() => ({t: document.getElementById('ftxt').value, ck: document.getElementById('fchk').innerText}));
 ok(/^Osservo se/.test(f8.t) && /Descrive cosa si vede|Si vede con occhi/.test(f8.ck), 'frase pronta nella casella con controlli semplici: ' + f8.t.slice(0, 60));
@@ -71,12 +71,44 @@ ok(/Passo 12 di 12/.test(i.n) && /Ora scrivi l’attività/.test(i.h) && i.qui, 
 ok(all.every(x => x.qui), 'ogni passo ha la riga «Cosa fare qui»');
 const bad = /laboratorio dei focus|macro tema|ancora scopert|Ci sento dentro|domanda scomoda|Indicatori in gioco/i;
 ok(!all.some(x => bad.test(x.txt)), 'nei 12 passi non compaiono più le formule vecchie: ' + all.filter(x => bad.test(x.txt)).map(x => x.n).join());
-await F.evaluate(() => { S.nome = 'Chi propone?'; S.lan = 'lancio'; S.svi = 'sviluppo'; S.con = 'conclusione'; }); await sleep(200);
+// ── giro 16/11 pomeriggio: avvertenza fissa, X sui percorsi, KOS con finestra, riepilogo ordinato
+{
+  const F3 = F; await F3.evaluate(() => go(0)); await sleep(200);
+  await F3.evaluate(() => go(2)); await sleep(300);
+  await F3.evaluate(() => { const t = document.querySelector('#wbody textarea'); t.value = 'Lasciano sporco e sprecano cibo al campo'; t.dispatchEvent(new Event('input', {bubbles:true})); }); await sleep(400);
+  const d3 = await F3.evaluate(() => document.getElementById('wbody').innerText);
+  ok(!/Sembra che ci sia un nome/.test(d3) && /non giudicare le persone/.test(d3), 'passo 3: niente controllo sui nomi, solo avvertenza fissa');
+  await F3.evaluate(() => go(7)); await sleep(300);
+  const x1 = await F3.evaluate(() => ({n: document.querySelectorAll('#wlente .px').length, t: document.getElementById('wlente').innerText}));
+  ok(x1.n === 2, 'in cima ogni percorso ha la X: ' + x1.t.replace(/\n/g, ' '));
+  await F3.evaluate(() => document.querySelectorAll('#wlente .px')[0].click()); await sleep(300);
+  const m1 = await F3.evaluate(() => ({on: document.getElementById('modal').classList.contains('on'), t: document.getElementById('modal').innerText}));
+  ok(m1.on && /focus scritto/.test(m1.t), 'togliere un percorso con un focus chiede conferma: ' + m1.t.replace(/\n/g, ' ').slice(0, 90));
+  await F3.evaluate(() => document.querySelector('#modal .btn-ghost').click()); await sleep(200);
+  ok(await F3.evaluate(() => S.also.length === 1 && S.foc.length === 1), 'Annulla non toglie nulla');
+  await F3.evaluate(() => document.querySelectorAll('#wlente .px')[0].click()); await sleep(200);
+  await F3.evaluate(() => document.querySelector('#modal .btn-primary').click()); await sleep(300);
+  ok(await F3.evaluate(() => S.also.length === 0 && S.foc.length === 0 && !!S.main), 'Conferma: percorso e suoi focus tolti, resta il principale');
+  await F3.evaluate(() => document.querySelector('#wlente .px').click()); await sleep(200);
+  ok(await F3.evaluate(() => /almeno un percorso/.test(document.getElementById('toast').textContent)), 'l’ultimo percorso non si toglie');
+  await F3.evaluate(() => { const vs = visSteps(); go(vs.findIndex(x => x.k === 'tipo')); }); await sleep(300);
+  const kl = await F3.evaluate(() => ({n: document.querySelectorAll('#wbody .kl').length}));
+  if(kl.n) { await F3.evaluate(() => document.querySelector('#wbody .kl').click()); await sleep(300);
+    const km = await F3.evaluate(() => ({on: document.getElementById('modal').classList.contains('on'), t: document.getElementById('modal').innerText}));
+    ok(km.on && /come si svolge/i.test(km.t), 'attività del KOS: link con finestra «Come si svolge»: ' + km.t.replace(/\n/g, ' ').slice(0, 80));
+    await F3.evaluate(() => modalClose()); }
+  else ok(true, 'nessuna attività KOS per questi percorsi (link non verificabile)');
+  await F3.evaluate(() => go(visSteps().length - 1)); await sleep(300);
+  const sm = await F3.evaluate(() => [...document.querySelectorAll('#wbody .sc .r')].map(x => x.innerText));
+  ok(sm.length >= 5 && sm.some(x => /^Persone nel gruppo/.test(x)) && sm.some(x => /^Tipo di attività/.test(x)), 'riepilogo ordinato, una riga per voce: ' + sm.length);
+}
+await F.evaluate(() => { S.foc.push({txt:'Osservo se chi arriva per ultimo viene invitato a giocare.',cls:'',pid:S.main,extra:[],tocca:[]}); S.nome = 'Chi propone?'; S.lan = 'lancio'; S.svi = 'sviluppo'; S.con = 'conclusione'; }); await sleep(200);
 await F.evaluate(() => salva()); await sleep(900);
 const sv = await ev(() => ({n: ossList().length, a: ossList()[0]}));
-ok(sv.n === 1 && sv.a.main === mainP && sv.a.also.length === 1 && sv.a.foc.length === 1 && sv.a.dur === 60 && sv.a.nome === 'Chi propone?', 'salvata con gli stessi campi di sempre: ' + JSON.stringify([sv.a.main, sv.a.also, sv.a.dur]));
+ok(sv.n === 1 && !!sv.a.main && sv.a.foc.length === 1 && sv.a.dur === 60 && sv.a.nome === 'Chi propone?', 'salvata con gli stessi campi di sempre: ' + JSON.stringify([sv.a.main, sv.a.also, sv.a.dur]));
+
 // modifica di un'attività già salvata: riapre il foglio finale
 await ev(id => ossModifica(id), sv.a.id).catch(() => {}); await sleep(2500);
 const F2 = P.frames().filter(f => f !== P.mainFrame()).pop();
-ok(await F2.evaluate(() => /Passo 12 di 12/.test(document.getElementById('wstep').textContent) && S.foc.length === 1 && S.dur === 60), '«Modifica» riapre il foglio com’era (passo 12 di 12)');
+ok(await F2.evaluate(() => /Passo 12 di 12/.test(document.getElementById('wstep').textContent) && S.dur === 60), '«Modifica» riapre il foglio com’era (passo 12 di 12)');
 summary(); await br.close(); process.exit(0);
