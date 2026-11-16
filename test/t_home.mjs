@@ -16,7 +16,9 @@ const pl = await person(br, db, {ctx:{viewport:{width:1920, height:700}}}), PL =
 await loginAs(PL, base, L); await sleep(1500);
 await el(() => shGoHome()); await sleep(2500);
 let s = await el(() => { const b = document.getElementById('cl-rev'); return b ? b.innerText : 'nessun contenitore'; });
-const rr = await el(() => { const b = document.getElementById('sh-revrows'); return b ? b.innerText : 'nessun contenitore'; });
-ok(/Da rivedere/.test(rr) && /Anna Rossi/.test(rr) && /Leggi e rivedi/.test(rr), 'home del revisore: il progetto è subito tra i progetti con «Da rivedere»: ' + rr.replace(/\s+/g, ' ').slice(0, 160));
-ok(await el(() => { const b = document.getElementById('sh-revrows'); const y = b.getBoundingClientRect().top; return y > 0 && y < 700; }), 'è in vista, senza scorrere');
+console.log('CL-REV:', s.replace(/\s+/g, ' ').slice(0, 400));
+ok(/Tocca a te/.test(s) && /Anna Rossi/.test(s) && /Leggi e rivedi/.test(s), 'home del revisore: il progetto è subito nel pannello in alto con «Tocca a te»');
+ok(await el(() => { const b = document.getElementById('cl-rev'); const y = b.getBoundingClientRect().top; return y > 0 && y < 700; }), 'è in vista, senza scorrere');
+ok(await el(() => !document.querySelector('#cl-rev .rv-hist')), 'senza progetti chiusi non compare lo storico');
+ok(await el(() => !(document.getElementById('sh-revrows') || {innerText:''}).innerText.trim()), 'nessun secondo elenco di revisioni in fondo alla home');
 summary(); await br.close(); process.exit(0);

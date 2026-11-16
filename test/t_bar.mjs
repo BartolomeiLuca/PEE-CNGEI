@@ -16,7 +16,7 @@ const pl = await person(br, db, {ctx:{viewport:{width:1920, height:700}}}), PL =
 await loginAs(PL, base, L); await sleep(1500);
 await el(() => shGoHome()); await sleep(2500);
 let s = await el(() => { const b = document.getElementById('cl-rev'); return b ? b.innerText : 'nessun contenitore'; });
-ok(/progetti personali che segui/i.test(s) && /Anna Rossi/.test(s) && /Giro 1/.test(s) && /Leggi e rivedi/.test(s) && /Scarica il Word/.test(s) && /Concludi la revisione/.test(s), 'home del revisore: pannello per compilatore con «Leggi e rivedi», Word e «Concludi»: ' + s.replace(/\n/g,' | ').slice(0,140));
+ok(/progetti personali da rivedere/i.test(s) && /Anna Rossi/.test(s) && /copia 1/.test(s) && /Leggi e rivedi/.test(s) && /Scarica il Word/.test(s) && /Concludi la revisione/.test(s), 'home del revisore: pannello per compilatore con «Leggi e rivedi», Word e «Concludi»: ' + s.replace(/\n/g,' | ').slice(0,140));
 P.evaluate(id => ppGiroApriQui(id), g0.id).catch(() => {}); await sleep(11000);
 const geo = () => P.evaluate(() => { const dk0 = document.getElementById('rv-dock'); window._dkTop = dk0 ? Math.round(dk0.getBoundingClientRect().top) : null; const b = document.getElementById('giro-bar').getBoundingClientRect().bottom, d = document.getElementById('rv-doc').getBoundingClientRect().top, n = document.getElementById('rv-nav').getBoundingClientRect().top, h = document.getElementById('hdr').getBoundingClientRect(); return {barBottom:Math.round(b), docTop:Math.round(d), navTop:Math.round(n), hdrTop:Math.round(h.top), hdrBottom:Math.round(h.bottom)}; });
 console.log('iniziale', JSON.stringify(await geo()));

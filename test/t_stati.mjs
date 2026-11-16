@@ -76,7 +76,7 @@ await ev(() => rpLoad()); await sleep(1500); s = await ev(() => document.getElem
 ok(/Revisione chiusa/.test(s) && /Invia un nuovo giro/.test(s), 'compilatore: revisione chiusa e di nuovo possibile un nuovo invio');
 ok(/Revisione chiusa approvata il \d{2}\/\d{2}\/\d{4}/.test(s) && !/\d{4}-\d{2}-\d{2}/.test(s), 'la data della revisione chiusa è gg/mm/aaaa: ' + (s.match(/Revisione chiusa[^\n]{0,40}/) || [''])[0]);
 // backup in blocco (compilatore)
-const [dl] = await Promise.all([P.waitForEvent('download', {timeout:170000}), ev(() => rvBackupMine())]);
+const [dl] = await Promise.all([P.waitForEvent('download', {timeout:170000}), ev(() => rvBackupMine(true))]);
 const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const names = Object.keys(z.files);
 ok(names.some(n => /dati\/storico_completo\.json$/.test(n)) && names.some(n => /Storico della revisione\.docx$/.test(n)) && names.some(n => /LEGGIMI\.txt$/.test(n)), 'archivio del compilatore: dati, Word dello storico, LEGGIMI: ' + names.length + ' file');
 const js = JSON.parse(await z.file(names.find(n => /storico_completo\.json$/.test(n))).async('string'));
@@ -84,9 +84,26 @@ ok(js.copie.length === 2 && js.punti.length === 2 && js.revisioni[0].esito === '
 ok(names.some(n => /copie\/Copia 1[^/]*\/Copia 1.*\.docx$/.test(n)), 'ogni copia è anche in Word');
 // backup (revisore, tutti i progetti)
 await el(() => rvListPaint()); await sleep(1500);
-const [d2] = await Promise.all([PL.waitForEvent('download', {timeout:170000}), el(() => rvBackupAll())]);
+// pagina progetti del revisore: pannello in alto = solo aperti; storico in fondo, chiuso, con i progetti conclusi
+await el(() => shGoHome()); await sleep(1500);
+const hp = await el(() => { const r = document.getElementById('cl-rev'), d = r && r.querySelector('details.rv-hist'); return {txt: r ? r.innerText.replace(/\s+/g, ' ') : '', hist: !!d, open: !!(d && d.open), sum: d ? d.querySelector('summary').innerText.replace(/\s+/g, ' ') : '', n: r ? r.querySelectorAll('.rv-pj2').length : -1}; });
+console.log('HOME-REV:', JSON.stringify(hp).slice(0, 500));
+ok(hp.hist && !hp.open && /Storico/.test(hp.sum), 'storico in fondo, chiuso di default: «' + hp.sum + '»');
+ok(!/Tocca a te|Leggi e rivedi/.test(hp.txt.replace(/Storico.*$/, '')) , 'il pannello in alto non contiene progetti conclusi');
+await el(() => { document.querySelector('#cl-rev details.rv-hist > summary').click(); }); await sleep(400);
+const hp2 = await el(() => { const d = document.querySelector('#cl-rev details.rv-hist'); return {open: d.open, txt: d.innerText.replace(/\s+/g, ' ')}; });
+ok(hp2.open && /Anna Rossi/.test(hp2.txt) && /pacchetto/i.test(hp2.txt) && /Approvato/.test(hp2.txt), 'espanso: progetto concluso, esito e pacchetto scaricabile: ' + hp2.txt.slice(0, 200));
+await PL.screenshot({path: '/tmp/home_rev.png'});
+await el(() => { document.querySelector('#cl-rev details.rv-hist > summary').click(); }); await sleep(300);
+ok(await el(() => !document.querySelector('#cl-rev details.rv-hist').open), 'si richiude col triangolino');
+const [d2] = await Promise.all([PL.waitForEvent('download', {timeout:170000}), el(() => rvBackupAll(true))]);
 const z2 = await JSZip.loadAsync(fs.readFileSync(await d2.path())); const n2 = Object.keys(z2.files);
 ok(n2.some(n => /storico_completo\.json$/.test(n)) && n2.some(n => /Storico della revisione\.docx$/.test(n)), 'archivio del revisore (tutti i progetti): ' + n2.length + ' file');
+await el(() => rvListPaint()); await sleep(1500);
+const t0 = Date.now(); const [dq] = await Promise.all([PL.waitForEvent('download', {timeout:120000}), el((a) => rvPackage(a), aid)]); const zq = await JSZip.loadAsync(fs.readFileSync(await dq.path())), nq = Object.keys(zq.files);
+ok(nq.some(n => /storico_completo\.json$/.test(n)) && nq.some(n => /Storico della revisione\.docx$/.test(n)) && !nq.some(n => /copie\/.*\.docx$/.test(n)), 'pacchetto rapido del progetto concluso: dati + storico in Word, senza i Word delle copie (' + Math.round((Date.now() - t0) / 1000) + ' s)');
+const [dk] = await Promise.all([PL.waitForEvent('download', {timeout:170000}), el((a) => rvPackage(a, true), aid)]); const zk = await JSZip.loadAsync(fs.readFileSync(await dk.path()));
+ok(Object.keys(zk.files).filter(n => /copie\/.*\.docx$/.test(n)).length === 2, 'pacchetto completo: Word di tutte le copie');
 summary();
 await br.close();
 process.exit(0);

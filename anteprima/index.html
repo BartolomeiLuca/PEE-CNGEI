@@ -1564,6 +1564,7 @@ html.rv-pre body::before{content:"Preparo il progetto…";display:block;padding:
 #rv-doc td.rd-cmc{width:auto!important;padding:2px 0 8px!important}
 tr.rd-mod td:first-child{box-shadow:inset 3px 0 0 #e08a00}tr.rd-new td:first-child{box-shadow:inset 3px 0 0 #2b6fd6}h3.rd-mod,h3.rd-new{border-left:3px solid #e08a00;padding-left:8px}h3.rd-new{border-left-color:#2b6fd6}
 .rv-pend{border-color:#B8860B!important;background:#FFF9E5!important}.rv-pend-i{border-top:1px solid #e6d9a8;padding:8px 0}
+.rv-pj2{border:1px solid #d7d7cc;border-radius:10px;padding:9px 11px;margin:6px 0;background:#fff}.rv-pj2.rv-todo{border-color:#B8860B;background:#FFF9E5}.rv-pj2.rv-closed{background:#f6f6f1}.rv-pj2-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.rv-hist>summary{padding:4px 0}
 .rv-mr summary{cursor:pointer}.rv-mr-l{list-style:none;margin:6px 0 0;padding:0;max-height:260px;overflow:auto}.rv-mr-i{border-top:1px solid #dcdcd2;padding:6px 0}.rv-mr-h{display:flex;justify-content:space-between;gap:8px;font-size:12px}.rv-mr-h span{color:#5f5f58;white-space:nowrap}.rv-mr-t{font-size:12.5px;margin:2px 0 4px;white-space:pre-wrap;color:#222}
 #rv-tg{position:sticky;top:0;z-index:40;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:2px solid var(--rd-br,#1B5E42);box-shadow:0 2px 8px rgba(0,0,0,.08);font:600 13px/1.3 system-ui}.rv-tg-l{color:#555;margin-right:2px}.rv-tg-b{border:2px solid var(--rd-br,#1B5E42);background:#fff;color:var(--rd-br,#1B5E42);border-radius:999px;padding:6px 14px;font:700 13px system-ui;cursor:pointer}.rv-tg-b.on{background:var(--rd-br,#1B5E42);color:#fff}.rv-tg-b:disabled{opacity:.45;cursor:default}.rv-tg-b b{margin-left:4px}
 .rd-onlymod .rd-b:not(.rd-ch),.rd-onlymod table:not(.rd-ch),.rd-onlymod tr:not(.rd-ch):not(.rd-cmr),.rd-onlymod h3:not(.rd-ch):not(.rd-chp),.rd-onlymod h2:not(.rd-chp){display:none}
@@ -9137,7 +9138,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611161240'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611161310'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -18228,7 +18229,7 @@ async function homeHTML(){
     const p = SH.prof || {};
     const RN = Object.fromEntries(RUOLI); const BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
     const riga = `<div class="sh-prof-line"><span>${esc([RN[p.ruolo] || '', p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
-    let h = top(true) + `<main class="sh-wrap">` + riga + `<div id="sh-perte"></div><div id="sh-revrows"></div>`;
+    let h = top(true) + `<main class="sh-wrap">` + riga + `<div id="sh-perte"></div><div id="cl-rev"></div>`;
     if(!rows.length && !shr.length){
       if(noBranca(p.ruolo)){
         h += `<h1>Da dove vuoi cominciare?</h1><p class="sh-sub">Come ${esc(RUOLO_TXT[p.ruolo] || 'responsabile')} lavori con gli adulti del Gruppo: osservi, programmi la loro formazione e organizzi gli eventi per loro. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
@@ -18245,7 +18246,7 @@ async function homeHTML(){
       if(shr.length) h += `<h2>Condivisi con te</h2>` + shr.map(x => rowHTML(x, true)).join('');
     }
     if(rows.length || shr.length) h += exLinksHTML();
-    h += `<div id="cl-rev"></div><div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shPerTeRe(); clPerTe(); }catch(e){} try{ window.shRevRows && window.shRevRows(); }catch(e){} try{ window.rvListPaint && window.rvListPaint(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
+    h += `<div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shPerTeRe(); clPerTe(); }catch(e){} try{ window.shRevRows && window.shRevRows(); }catch(e){} try{ window.rvListPaint && window.rvListPaint(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
   };
   if(SH.rows) draw(); else r.innerHTML = top(true) + '<div class="sh-wrap"><p class="sh-sub" role="status">Carico i tuoi progetti…</p></div>';
   try{
@@ -19372,7 +19373,7 @@ function ppBloccoHTML(b){
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center"><input id="apb1-chi" type="text" class="sh-in" style="min-height:34px;font-size:12.5px;flex:1;min-width:140px" maxlength="120" placeholder="chi l’ha data (es. Tutor Marco)" aria-label="Chi ha approvato"><input id="apb1-d" type="date" class="sh-in" style="min-height:34px;font-size:12.5px;width:auto" value="${td()}" aria-label="Data dell’approvazione"><button type="button" class="btn-ghost" style="min-height:34px" onclick="ppApprB1Form()">Registra l’approvazione</button></div><div class="sh-hint" style="margin-top:3px">Registrata dal compilatore, con data.</div></div>`;
   } else if(ap){ appr = `<div style="margin-top:10px;font-size:12.5px"><span class="sh-pill sh-pill-ok">Approvato</span> il ${esc(fmtDL(ap.date || ''))}</div>`; }
   const leg5 = prima ? (ppRisc().length ? `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">Riscontri registrati prima dei giri (${ppRisc().length})</summary>${ppRiscHTML()}</details>` : '') : '';
-  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>${L.length ? `<button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine()" title="Un solo archivio: tutte le copie inviate, i commenti, le risposte e gli stati. Word per leggere e file dati per archiviare">Scarica tutto lo storico</button>` : ''}`
+  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>${L.length ? `<button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine()" title="Un solo archivio, rapido: tutte le copie inviate in formato dati, i commenti, le risposte e gli stati, con lo storico in Word">Scarica lo storico (rapido)</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine(true)" title="Include anche il Word di ogni copia inviata: può richiedere diversi minuti">Storico completo con tutti i Word</button>` : ''}`
     : `<div style="font-size:12.5px;color:#8a4b00;line-height:1.45">La consegna finale si apre quando la prima parte è approvata (dal Tutor; dall’ICdF se è lui il Tutor o se il Tutor non c’è). Puoi intanto scrivere le Sezioni 4 e 5.</div>`;
   if(prima) setTimeout(() => { try{ window.ppGiroFbAll && window.ppGiroFbAll(); }catch(e){} }, 60);
   return `<div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">${prima ? 4 : 5}</span>${titolo}</h3>
@@ -19529,12 +19530,12 @@ window.rvListLoad = async function(){
     const d = await rvDestSel(ids);
     const r = await CL.sb.from('pee_giri_rev').select('giro_id,tipo,chiave,valore').eq('user_id', me).in('giro_id', ids);
     // revisione unica (13/11): l'ultima revisione di ciascun progetto, se esiste, decide se è chiusa o se la palla è del compilatore
-    const RV = {}; try{ const aids = Array.from(new Set(g.data.map(x => x.archivio_id))), q = await CL.sb.from('pee_revisioni').select('archivio_id,stato,fase,esito,aperta_il,revisore_email').in('archivio_id', aids).order('aperta_il', {ascending:false}); if(!q.error) (q.data || []).forEach(v => { if(!RV[v.archivio_id]) RV[v.archivio_id] = v; }); }catch(e){}
+    const RV = {}; try{ const aids = Array.from(new Set(g.data.map(x => x.archivio_id))), q = await CL.sb.from('pee_revisioni').select('archivio_id,stato,fase,esito,aperta_il,chiusa_il,revisore_email').in('archivio_id', aids).order('aperta_il', {ascending:false}); if(!q.error) (q.data || []).forEach(v => { if(!RV[v.archivio_id]) RV[v.archivio_id] = v; }); }catch(e){}
     return g.data.map(x => { const dd = d.find(y => y.giro_id === x.id) || {}, mine = (r.data || []).filter(y => y.giro_id === x.id), R = RV[x.archivio_id];
       const ruolo = dd.ruolo || 'copia'; let esito = (mine.find(y => y.tipo === 'esito') || {}).valore || '';
       let chiuso = mine.some(y => y.tipo === 'stato' && y.chiave === 'chiuso'), waitC = false;
       if(R){ if(R.stato === 'chiusa'){ chiuso = true; if(!esito && ruolo === 'revisore') esito = R.esito === 'approvata' ? 'approva' : 'da_integrare'; } else if(R.fase === 'compilatore') waitC = true; }
-      return {g:x, ruolo, esito, visto:!!dd.visto_il, mine, chiuso, rvChiusa:!!(R && R.stato === 'chiusa'), rvUnica:!!R,
+      return {g:x, ruolo, esito, visto:!!dd.visto_il, mine, chiuso, rvChiusa:!!(R && R.stato === 'chiusa'), rvChiusaIl:(R && R.chiusa_il) || '', rvEsito:(R && R.esito) || '', rvUnica:!!R, rvWait:!!(R && R.stato !== 'chiusa' && R.fase === 'compilatore'),
         done: ruolo === 'revisore' ? (!!esito || waitC || chiuso) : (!!dd.visto_il || mine.length > 0 || chiuso)}; });
   }catch(e){ return []; }
 };
@@ -19548,13 +19549,7 @@ function rvGroup(L){
 }
 window.rvPendingN = L => rvGroup(L).reduce((s, p) => s + p.pend, 0);
 // Nella home, tra i progetti: quelli che ho ricevuto in revisione, subito, con il segno «Da rivedere» quando tocca a me
-window.shRevRows = function(){
-  const box = document.getElementById('sh-revrows'); if(!box) return; const L = window._rvL || [];
-  const G = (typeof rvGroup === 'function' ? rvGroup(L) : []).filter(p => p.rev || p.giri.some(x => x.ruolo === 'revisore'));
-  if(!G.length){ box.innerHTML = ''; return; }
-  box.innerHTML = '<h2 style="margin:8px 0 6px">Progetti Personali da rivedere</h2>' + G.map(p => { const last = p.giri[0], wait = last.rvUnica && !last.chiuso && last.done && !p.pend, st = p.chiuso ? ['Concluso', 'ok'] : (p.pend ? ['Da rivedere', 'new'] : (wait ? ['Aspetta il compilatore', 'w'] : ['Tutto rivisto', 'ok']));
-    return `<div class="sh-pr${st[1] === 'new' ? ' act' : ''}" data-rv="${esc(p.aid)}"><div style="min-width:0"><div class="t">${esc(p.nome)}${p.titolo ? ' · ' + esc(p.titolo) : ''}</div><div class="s">Progetto Personale · copia ${last.g.n}${p.giri.length > 1 ? ' (' + p.giri.length + ' giri)' : ''}</div></div><span class="sh-tag X" style="${st[1] === 'new' ? 'background:#B8860B;color:#fff;font-weight:800' : ''}">${st[0]}</span><span class="sh-role">Il tuo ruolo: Revisore</span><span class="sh-hs"></span><div class="sh-act"><button class="sh-btn sm" type="button" onclick="rvOpen('${last.g.id}')">${st[1] === 'new' ? 'Leggi e rivedi' : 'Apri'}</button></div></div>`; }).join('');
-};
+window.shRevRows = function(){ const b = document.getElementById('sh-revrows'); if(b) b.innerHTML = ''; };
 window.rvListPaint = async function(){
   const box = document.getElementById('cl-rev'); if(!box) return;
   const L = await window.rvListLoad(); if(!document.getElementById('cl-rev')) return;
@@ -19563,11 +19558,19 @@ window.rvListPaint = async function(){
   const gi = (p, x) => { const rev = x.ruolo === 'revisore', dt = esc(fmtDL(String(x.g.created_at || '').slice(0, 10)));
     return `<div class="rv-gi${x.done ? ' rv-done' : ''}"><div class="rv-gi-t"><b>Giro ${x.g.n}</b> · ${dt} · Sezioni ${esc((x.g.sezioni || []).slice().sort().join(', '))}<span class="rv-gi-s">${rev ? 'revisore' : 'in copia'}${x.esito ? ' · il tuo esito: <b>' + esc(GESITO[x.esito] || '') + '</b>' : x.done ? ' · letto' : ' · da ' + (rev ? 'rivedere' : 'leggere')}</span></div>
       <div class="rv-gi-b"><button type="button" class="cl-btn sm" onclick="rvOpen('${x.g.id}')">${rev ? (x.done ? 'Rileggi e rivedi' : 'Leggi e rivedi') : 'Leggi il progetto'}</button><button type="button" class="cl-btn ghost sm" onclick="rvWord('${x.g.id}')">Scarica il Word</button></div></div>`; };
-  box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Progetti Personali che segui</h4><p class="cl-note" style="margin:0 0 6px">Progetti Personali che ti sono stati inviati in app, uno spazio per ogni compilatore. Ogni giro è una copia ferma: le tue osservazioni arrivano a chi l’ha inviato.</p>` + G.map(p => {
-    const stato = p.chiuso ? '<span class="rv-pill rv-pill-c">Concluso</span>' : p.pend ? `<span class="rv-pill rv-pill-a">${p.pend} da ${p.rev ? 'rivedere' : 'leggere'}</span>` : '<span class="rv-pill rv-pill-v">Tutto rivisto</span>';
-    return `<details class="rv-pj${p.chiuso ? ' rv-closed' : ''}" ${p.chiuso ? '' : 'open'}><summary><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<span class="rv-sum">${p.giri.length === 1 ? '1 giro' : p.giri.length + ' giri'}</span>${stato}</summary>
-      ${gi(p, p.giri[0])}${p.giri.length > 1 ? `<details class="rv-old" style="margin:4px 0 2px"><summary style="cursor:pointer;font-size:12.5px;color:#5f5f58">Giri precedenti (${p.giri.length - 1})</summary>${p.giri.slice(1).map(x => gi(p, x)).join('')}</details>` : ''}
-      <div class="rv-pj-f"><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto del progetto</button>${(p.rev && !p.giri.some(x => x.rvUnica) && !(window._rvs && window._rvs[p.aid])) ? (p.chiuso ? `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',false)">Riapri la revisione</button>` : `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',true)">Concludi la revisione</button>`) : ''}</div></details>`; }).join('') + `<div style="margin-top:8px"><button type="button" class="cl-btn ghost sm" onclick="rvBackupAll()" title="Un solo archivio con tutti i progetti che segui: Word per leggere e file dati per archiviare">Scarica tutto lo storico (tutti i progetti)</button></div></div>`;
+  const esc2 = esc, chip = p => p.chiuso ? ['Concluso', 'rv-pill-c'] : (p.pend ? ['Tocca a te', 'rv-pill-a'] : (p.giri[0].rvWait ? ['Aspetta il compilatore', 'rv-pill-v'] : [p.rev ? 'Tutto rivisto' : 'Da leggere', 'rv-pill-v']));
+  const allc = p => `<details class="rv-old" style="margin:6px 0 0"><summary style="cursor:pointer;font-size:12.5px;color:#5f5f58">Tutte le copie (${p.giri.length})</summary>${p.giri.map(x => gi(p, x)).join('')}</details>`;
+  const leg = p => (p.rev && !p.giri.some(x => x.rvUnica) && !(window._rvs && window._rvs[p.aid])) ? (p.chiuso ? `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',false)">Riapri la revisione</button>` : `<button type="button" class="cl-btn ghost sm" onclick="rvConcludi('${p.aid}',true)">Concludi la revisione</button>`) : '';
+  const apri = G.filter(p => !p.chiuso), chiusi = G.filter(p => p.chiuso);
+  const rowA = p => { const last = p.giri[0], c = chip(p), rv = last.ruolo === 'revisore';
+    return `<div class="rv-pj2${p.pend ? ' rv-todo' : ''}"><div class="rv-pj2-h"><div><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<div class="rv-pn">Progetto Personale · copia ${last.g.n}${p.giri.length > 1 ? ' · ' + p.giri.length + ' giri' : ''}</div></div><span class="rv-pill ${c[1]}">${c[0]}</span></div>
+      <div class="rv-gi-b"><button type="button" class="cl-btn sm" onclick="rvOpen('${last.g.id}')">${rv ? (p.pend ? 'Leggi e rivedi' : 'Apri l’ultima copia') : 'Leggi il progetto'}</button><button type="button" class="cl-btn ghost sm" onclick="rvWord('${last.g.id}')">Scarica il Word</button>${leg(p)}</div>${allc(p)}</div>`; };
+  const rowC = p => { const last = p.giri[0], at = last.rvChiusaIl ? esc(fmtDL(String(last.rvChiusaIl).slice(0, 10))) : '', es = last.rvEsito === 'approvata' ? ' · Approvato' : (last.rvEsito === 'storica' ? ' · Storico' : '');
+    return `<div class="rv-pj2 rv-closed"><div class="rv-pj2-h"><div><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<div class="rv-pn">Concluso${at ? ' il ' + at : ''}${es} · ${p.giri.length === 1 ? '1 copia' : p.giri.length + ' copie'}</div></div></div>
+      <div class="rv-gi-b"><button type="button" class="cl-btn sm" onclick="rvOpen('${last.g.id}')">Rileggi</button><button type="button" class="cl-btn ghost sm" onclick="rvWord('${last.g.id}')">Scarica il Word</button><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto (rapido)</button><button type="button" class="cl-btn ghost sm" title="Include il Word di ogni copia: può richiedere diversi minuti" onclick="rvPackage('${p.aid}',true)">Pacchetto completo con tutti i Word</button>${leg(p)}</div>${allc(p)}</div>`; };
+  box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Progetti Personali da rivedere</h4>` + (apri.length ? apri.map(rowA).join('') : '<p class="cl-note" style="margin:0 0 6px">Nessun progetto aspetta la tua revisione in questo momento.</p>')
+    + (chiusi.length ? `<details class="rv-hist" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700">Storico · progetti conclusi (${chiusi.length})</summary><div style="margin-top:6px">${chiusi.map(rowC).join('')}<div style="margin-top:8px"><button type="button" class="cl-btn ghost sm" onclick="rvBackupAll()" title="Un solo archivio con tutti i progetti che segui (rapido: dati e storico in Word)">Scarica tutto lo storico (rapido)</button></div></div></details>` : '')
+    + `</div>`;
 };
 window.rvOpen = function(gid){
   if(!rvOk()) return;
@@ -19630,7 +19633,7 @@ async function rvStoricoDocx(D){
   const es = (D.commenti || []).filter(c => c.tipo === 'esito'); if(es.length){ P.push(dPara('Esiti registrati', {size:26, bold:true, before:240, after:80})); es.forEach(e => P.push(dPara('Copia ' + (nOf[e.giro_id] || '') + ' · ' + (e.autore_nome || 'Revisore') + ': ' + (GESITO[e.valore] || e.valore) + (e.testo ? ' — ' + e.testo : ''), {after:40}))); }
   const doc = dDocument(P, 'Storico della revisione'); return await dxLib().Packer.toBlob(doc);
 }
-async function rvPackFill(root, aid, nome, titolo){
+async function rvPackFill(root, aid, nome, titolo, words){
   const gg = await CL.sb.from('pee_giri').select('id,n,archivio_id,owner_id,created_at,sezioni,nomi_inclusi,meta,nota,data').eq('archivio_id', aid).order('n'); if(gg.error) throw gg.error;
   const ids = (gg.data || []).map(g => g.id), rr = ids.length ? await CL.sb.from('pee_giri_rev').select('id,giro_id,user_id,autore_nome,autore_ruolo,tipo,chiave,valore,testo,recepita,updated_at').in('giro_id', ids) : {data:[]};
   const dd = ids.length ? await CL.sb.from('pee_giri_dest').select('giro_id,email,ruolo,nome').in('giro_id', ids) : {data:[]};
@@ -19643,33 +19646,36 @@ async function rvPackFill(root, aid, nome, titolo){
   try{ root.file('Storico della revisione.docx', await rvStoricoDocx(D)); }catch(e){ note += 'Il Word dello storico non è stato generato.\n'; }
   for(const g of (gg.data || [])){ const nm = 'Copia ' + g.n + ' - ' + dGMA(g.created_at).replace(/\//g, '-'); root.file('copie/' + nm + '/copia_congelata.json', JSON.stringify(g.data || {}));
     { const mine = (rr.data || []).filter(x => x.giro_id === g.id && x.user_id === CL.user.id); if(mine.length) root.file('copie/' + nm + '/restituzione.html', rvRestHTML(g, mine)); }
+    if(!words){ continue; }
+    try{ showToast('Preparo il Word della copia ' + g.n + ' (' + ((gg.data || []).indexOf(g) + 1) + ' di ' + (gg.data || []).length + ')… ogni copia può richiedere un minuto'); }catch(e){}
     giroWordBlob.err = ''; const b = await giroWordBlob(g.id); if(b) root.file('copie/' + nm + '/' + nm + '.docx', b); else note += 'Word non disponibile per la copia ' + g.n + (giroWordBlob.err ? ' (' + giroWordBlob.err + ')' : ' (nessuna risposta dal programma)') + ': si può riaprire dall’app.\n'; }
+  if(!words && (gg.data || []).length) note += 'Versione rapida: i Word delle singole copie non sono inclusi (ci sono i file .json e il Word dello storico). Per averli, scarica il pacchetto completo.\n';
   return {copie:(gg.data || []).length, note};
 }
 async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}); window._dlBusy = false; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
 const rvSan = s => String(s || '').replace(/[^\w\-. àèéìòùÀÈÉÌÒÙ]+/g, '_').trim().slice(0, 60) || 'progetto';
 const RV_LEGGIMI = 'Archivio dello storico di revisione · PEE CNGEI\n\nContenuto:\n- «Storico della revisione.docx»: i punti, i commenti, le risposte e gli stati, da leggere.\n- «copie/»: ogni copia inviata, in Word (leggibile) e in .json (il formato dell’app).\n- «dati/storico_completo.json»: tutto in un unico file, per archiviarlo o ripristinarlo altrove.\n\nTieni questo file dove preferisci: è una copia, non dipende dall’app.\n';
 // compilatore: tutto lo storico del progetto aperto
-window.rvBackupMine = async function(){
+window.rvBackupMine = async function(words){
   if(!rvOk() || !CL.ctx || window.BRO){ showToast('Apri il tuo progetto per scaricare lo storico'); return; }
   try{ window._dlBusy = true; showToast('Preparo l’archivio dello storico… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
-    const zip = new JSZip(), root = zip.folder('Storico - ' + rvSan(CL.ctx.titolo || 'progetto')), r = await rvPackFill(root, CL.ctx.id, clMyName(), CL.ctx.titolo || '');
+    const zip = new JSZip(), root = zip.folder('Storico - ' + rvSan(CL.ctx.titolo || 'progetto')), r = await rvPackFill(root, CL.ctx.id, clMyName(), CL.ctx.titolo || '', words === true);
     root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Storico revisione - ' + rvSan(CL.ctx.titolo) + ' - ' + tdF() + '.zip'); showToast('Archivio scaricato (' + r.copie + ' copie)');
   }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
 };
 // revisore/tutor: tutti i progetti che segue, in un solo archivio
-window.rvBackupAll = async function(){
+window.rvBackupAll = async function(words){
   if(!rvOk()) return; const G = rvGroup(window._rvL || []); if(!G.length){ showToast('Non ci sono progetti da scaricare'); return; }
   try{ window._dlBusy = true; showToast('Preparo l’archivio di tutti i progetti… può servire qualche minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
     const zip = new JSZip(), top = zip.folder('Storico di tutti i progetti'); let tot = 0, note = '';
-    for(const p of G){ const root = top.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')); const r = await rvPackFill(root, p.aid, p.nome, p.titolo); tot += r.copie; if(r.note) note += p.nome + ':\n' + r.note; }
+    for(const p of G){ const root = top.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')); const r = await rvPackFill(root, p.aid, p.nome, p.titolo, words === true); tot += r.copie; if(r.note) note += p.nome + ':\n' + r.note; }
     top.file('LEGGIMI.txt', RV_LEGGIMI + (note ? '\nNote:\n' + note : '')); await rvZipOut(zip, 'Storico tutti i progetti - ' + tdF() + '.zip'); showToast('Archivio scaricato (' + G.length + ' progetti, ' + tot + ' copie)');
   }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare l’archivio: ' + ((e && e.message) || '').slice(0, 70)); }
 };
-window.rvPackage = async function(aid){
+window.rvPackage = async function(aid, words){
   const p = rvGroup(window._rvL || []).find(x => x.aid === aid); if(!p || !rvOk()) return;
   try{ window._dlBusy = true; showToast('Preparo il pacchetto… può servire un minuto'); await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
-    const zip = new JSZip(), root = zip.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')), r = await rvPackFill(root, aid, p.nome, p.titolo);
+    const zip = new JSZip(), root = zip.folder(rvSan(p.nome) + (p.titolo ? ' - ' + rvSan(p.titolo) : '')), r = await rvPackFill(root, aid, p.nome, p.titolo, words === true);
     root.file('LEGGIMI.txt', RV_LEGGIMI + (r.note ? '\nNote:\n' + r.note : '')); await rvZipOut(zip, 'Pacchetto revisione - ' + rvSan(p.nome) + ' - ' + tdF() + '.zip'); showToast('Pacchetto scaricato');
   }catch(e){ window._dlBusy = false; showToast('Non sono riuscito a preparare il pacchetto: ' + ((e && e.message) || '').slice(0, 70)); }
 };
@@ -20115,8 +20121,8 @@ function rpGridPid(p){ try{ const row = (p.chiave.split('|')[2] || '').replace(/
   const rest = m[2], cand = Object.values(DB).flat().filter(x => x && /^[PCS]\d+$/.test(x.id || '') && x.id.slice(1) === m[1] && x.name);
   const sc = cand.map(x => { const st = rpSl(x.name).split('-').filter(w => w.length >= 4).map(w => w.slice(0, 5)); return {id:x.id, n:st.filter(w => rest.indexOf(w) >= 0).length, t:st.length}; }).sort((a, b) => b.n - a.n);
   if(!sc.length || sc[0].n < 1) return ''; if(sc.length > 1 && sc[1].n === sc[0].n) return ''; return sc[0].id; }catch(e){ return ''; } }
-function rpGridAmb(p){ if(p.sec !== 3 || (p.chiave.split('|')[1] || '')) return ''; { const pid = rpGridPid(p); if(pid) return pid[0]; } const m = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || '') || /^sviluppo-(personale|comunitario|spirituale)$/.exec((p.chiave.split('|')[2] || '').replace(/#\d+$/, '')); return m ? {personale:'P', comunitario:'C', spirituale:'S'}[m[1].toLowerCase()] : ''; }
-function rpScreens(p){ if(p.sec === 3 && !(p.chiave.split('|')[1] || '')){ const g = rpGridAmb(p); return g ? [['1b', g]] : [['1b', 'P'], ['1b', 'C'], ['1b', 'S']]; } if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
+function rpGridAmb(p){ if((p.sec !== 3 && p.sec !== 5) || (p.chiave.split('|')[1] || '')) return ''; { const pid = rpGridPid(p); if(pid) return pid[0]; } const m = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || '') || /^sviluppo-(personale|comunitario|spirituale)$/.exec((p.chiave.split('|')[2] || '').replace(/#\d+$/, '')); return m ? {personale:'P', comunitario:'C', spirituale:'S'}[m[1].toLowerCase()] : ''; }
+function rpScreens(p){ if((p.sec === 3 || p.sec === 5) && !(p.chiave.split('|')[1] || '')){ const g = rpGridAmb(p); return g ? [['1b', g]] : [['1b', 'P'], ['1b', 'C'], ['1b', 'S']]; } if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
   if(/^(composizione|contesto|adulti)/.test(h)) return RP_SCR.a; if(/^(osservazione-con|attivit|condizioni|focus|lancio|sviluppo|conclusione)/.test(h)) return RP_SCR.occ; if(/^(priorizzazione|motivazione)/.test(h)) return RP_SCR.d; if(/^(aspetti|analisi)/.test(h)) return [['1c'], ['1s']]; return RP_SCR.b; }
 window.addEventListener('resize', () => { try{ document.body.classList.toggle('rp-dock-on', !!(window._rp && window._rp.open) && window.innerWidth >= 1100); }catch(e){} });
 window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; const tk = window._rpGoTk = (window._rpGoTk || 0) + 1, stop = () => tk !== window._rpGoTk;
@@ -20186,7 +20192,7 @@ function rpTarget(p){
     const lb = row === 'compilata-da' ? pick(/^nome-e-cognome/) : row === 'sezione' ? pick(/^sezione/) : (row === 'gruppo' ? pick(/^gruppo/) : (pick(new RegExp('^' + row)) || pick(/^gruppo/)));
     return lb ? res(lb.tagName === 'LABEL' ? lb : (lb.closest('label') || lb), 'after', []) : null; }
   // ── Allegato 1 · griglia osservativa (schede dei comportamenti, nelle pagine «Osservare»)
-  if(sec === 'c:3' && !h3){
+  if((sec === 'c:3' || sec === 'c:5') && !h3){
     const ms = /^sviluppo-(personale|comunitario|spirituale)$/.exec(row);
     if(ms){ const a = {personale:'P', comunitario:'C', spirituale:'S'}[ms[1]], c1 = document.getElementById('card-' + a + '1'); return rpVis(c1) ? res(c1, 'before', []) : null; }
     const am = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || ''), amL = am ? {personale:'P', comunitario:'C', spirituale:'S'}[am[1].toLowerCase()] : '', txt2 = String(p.txt || '').replace(/^.*?sviluppo (personale|comunitario|spirituale)\s*›\s*/i, '');
@@ -20194,6 +20200,34 @@ function rpTarget(p){
     { const pid = rpGridPid(p), c = pid ? document.getElementById('card-' + pid) : null; if(pid){ if(!rpVis(c)) return null; const open = c.classList.contains('expanded') ? [] : [c.querySelector('.pc-hd,.pc-head,[class*=hd]') || c]; return res(c.querySelector('.pc-body-inner') || c, 'append', open); } }
     if(mn && nm){ const stems = rpSl(nm[1]).split('-').filter(w => w.length >= 5).map(w => w.slice(0, 5)); for(const a of (amL ? [amL] : ['P', 'C', 'S'])){ const c = document.getElementById('card-' + a + mn[1]); if(!rpVis(c)) continue; const tx = rpSl(c.textContent); if(!amL && stems.length && !stems.some(w => tx.indexOf(w) >= 0) && !p._last) continue; const open = c.classList.contains('expanded') ? [] : [c.querySelector('.pc-hd,.pc-head,[class*=hd]') || c]; const inn = c.querySelector('.pc-body-inner') || c; return res(inn, 'append', open); } }
     return null;
+  }
+  // ── Sezione 4 · verifica delle attività (un blocco per percorso, una scheda per attività)
+  if(sec === 'c:4' && /^percorso-\d+-/.test(h3)){
+    const nPc = +/^percorso-(\d+)-/.exec(h3)[1], nm = h3.replace(/^percorso-\d+-/, ''), root = document.getElementById('val-root'); if(!root || !rpVis(root)) return null;
+    const grp = []; let cur = null;   // i blocchi «Percorso N — …» e le schede delle attività sono fratelli: si raggruppano in ordine
+    Array.from(root.querySelectorAll('div')).forEach(d => { if(d.classList.contains('ver-c')){ if(cur) cur.vc.push(d); return; } if(d.children.length === 0 && /^percorso-\d+-/.test(rpSl(d.textContent))) cur = {hd:d, s:rpSl(d.textContent).replace(/^(percorso-\d+)-[psc]\d+-/, '$1-'), vc:[]}, grp.push(cur); });
+    const pre = (u, v) => { u = u.replace(/-$/, ''); v = v.replace(/-$/, ''); const L = Math.min(u.length, v.length); return L >= 8 && u.slice(0, L) === v.slice(0, L); };   // la chiave taglia i titoli lunghi
+    const g = grp.find(x => x.s === h3) || grp.find(x => pre(x.s.replace(/^percorso-\d+-/, ''), nm) && x.s.indexOf('percorso-' + nPc + '-') === 0) || grp.find(x => x.s.indexOf('percorso-' + nPc + '-') === 0); if(!g) return null;
+    if(isH) return res(g.hd, 'after', []);
+    const lab = {'cosa-è-andato-bene':1, 'cosa-è-da-migliorare':1, 'aggiustamenti-necessari':1}[row] ? row : ''; if(!lab) return res(g.hd, 'after', []);
+    const k = +((/#(\d+)$/.exec(kk[2] || '') || [0, 1])[1]), full = g.vc.filter(v => Array.from(v.querySelectorAll('textarea')).some(t => (t.value || '').trim())), vc = (full.length >= k ? full : g.vc)[k - 1];   // il Word elenca solo le attività con un testo
+    if(!vc) return res(g.hd, 'after', []);
+    const vb = vc.querySelector('.ver-b'), open = (vb && vb.offsetParent === null) ? [vc.querySelector('.ver-hd') || vc] : [];
+    const lb = vb && Array.from(vb.querySelectorAll('label')).find(l => rpSl(l.textContent).indexOf(lab) === 0);
+    return lb ? res(lb, 'afterField', open) : res(vc, 'after', open);
+  }
+  // ── Sezione 5 · valutazione finale (una scheda per priorità, con gli indicatori)
+  if(sec === 'c:5' && /^(priorità|percorso)-\d+-/.test(h3)){
+    const nm = h3.replace(/^(priorità|percorso)-\d+-(personale|comunitario|spirituale)-/, ''), cards = Array.from(document.querySelectorAll('#val-root .val-card')).filter(rpVis);
+    const pre = (u, v) => { u = u.replace(/-$/, ''); v = v.replace(/-$/, ''); const L = Math.min(u.length, v.length); return L >= 8 && u.slice(0, L) === v.slice(0, L); };   // la chiave taglia i titoli lunghi
+    const vc = cards.find(c => { const n = c.querySelector('.val-card-name'); return n && pre(rpSl(n.textContent), nm); }); if(!vc) return null;
+    const hdr = vc.querySelector('.val-card-hdr') || vc.firstElementChild, bd = vc.querySelector('.val-card-body') || vc;
+    if(isH) return res(hdr, 'after', []);
+    if(row === 'indicatore-di-risultato'){ const l = bd.querySelector('.val-idr-lbl'); return res(l || hdr, 'after', []); }
+    if(row === 'valutazione-complessiva'){ const lb = Array.from(bd.querySelectorAll('label')).find(l => rpSl(l.textContent).indexOf('valutazione-complessiva') === 0); return lb ? res(lb, 'afterField', []) : res(hdr, 'after', []); }
+    const sp = Array.from(bd.querySelectorAll('span')).filter(x => !x.closest('.pp5sp,.rp-inl')).find(x => { const t = rpSl(x.textContent); return t.length >= 8 && (t.indexOf(row) === 0 || row.indexOf(t.slice(0, Math.min(t.length, row.length))) === 0 && row.length >= 8); });
+    if(sp){ const w = sp.parentElement && sp.parentElement.parentElement; return res(w && w !== bd ? w : sp.parentElement, 'after', []); }
+    return res(hdr, 'after', []);
   }
   // ── Sezione 2 · priorità
   let m2 = /^priorità-(\d+)$/.exec(h3);
@@ -20225,7 +20259,7 @@ function rpInlineSync(){   // aggiorna i pannelli già aperti (stato, messaggi);
       box.className = 'rp-inl rv-pt-' + st + ((st === 'fatto' || st === 'confermato') ? ' rp-inl-done' : ''); box.innerHTML = rpPanelHTML(p); box.dataset.sig = sig;
       if(v){ const t2 = box.querySelector('textarea'); if(t2){ t2.value = v; if(f) try{ t2.focus({preventScroll:true}); }catch(e){} } } }); }catch(e){}
 }
-window.rpInlineSync = rpInlineSync; window.rpFindEl = rpFindEl; window.rpTarget = rpTarget; window.rpSl = rpSl; window.rpPcx = rpPcx; window.rpLeafs = rpLeafs; window.rpRowTd = rpRowTd;
+window.rpGridPid = rpGridPid; window.rpGridAmb = rpGridAmb; window.rpInlineSync = rpInlineSync; window.rpFindEl = rpFindEl; window.rpTarget = rpTarget; window.rpSl = rpSl; window.rpPcx = rpPcx; window.rpLeafs = rpLeafs; window.rpRowTd = rpRowTd;
 // punti della revisione senza richiesta scritta nell'elenco (per esempio il revisore ha poi svuotato il testo): se sono «da fare» bloccano «Ho finito», quindi vanno mostrati e chiudibili
 function rpOrphansHTML(){
   try{ const P = window._rp, aid = CL.ctx.id, S = window._rvs[aid]; if(!S || !S.rev || S.rev.stato !== 'aperta') return '';
