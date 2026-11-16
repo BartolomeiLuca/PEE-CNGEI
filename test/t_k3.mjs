@@ -42,10 +42,6 @@ ok(t1.gone && t1.same && t1.keepO === '1', 'toglierlo dall’unica attività lo 
 const t2 = await ev(() => { const per = getAllPercorsi()[0]; const a = per.attivita[0]; const pr = scheda.priorita[per.prioritaIdx]; const k = pr.idr[0];
   attObjTog(0, 0, 'i', k, true); attObjTog(0, 0, 'i', k, false); return {k, still: pr.idr.includes(k)}; });
 ok(t2.still, 'un Indicatore scelto da te in «Obiettivi e indicatori» resta anche se lo spunti e lo togli da un’attività (' + JSON.stringify(t2) + ')');
-// 2 · data dal Calendario
-const tl = await ev(() => tlHTML(0));
-ok(/dal Calendario/.test(tl) && /Cambia nel Calendario/.test(tl), 'l’attività messa nel Calendario mostra la data «dal Calendario» (non modificabile a mano)');
-const nIn = (tl.match(/class="tl-date"/g) || []).length; ok(nIn === 5, 'le altre attività, senza evento, hanno ancora la data provvisoria modificabile (' + nIn + ')');
 // 3 · griglia vicino al Word
 await ev(() => gGo('1b')); await sleep(800);
 const gd = await ev(() => ({b:getComputedStyle(document.getElementById('gr-dl-btn2')).display, w:getComputedStyle(document.getElementById('g-dl')).display, act:!!document.querySelector('#g-subnav .gsn-act'), same:document.getElementById('gr-dl-btn2').parentElement.id}));

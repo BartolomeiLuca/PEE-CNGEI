@@ -22,7 +22,7 @@ const memb = () => db.t.pee_membri.find(m => m.id === 'm1');
 const pa = await person(br, db, {ctx:{viewport:{width:1400, height:900}}}); const A = pa.page, ea = (f, x) => A.evaluate(f, x);
 A.on('pageerror', e => console.log('PAGEERR', String(e).slice(0, 250)));
 await loginAs(A, base, ua); await sleep(1200); A.evaluate(() => shOpen('c1', 0)).catch(() => {}); await sleep(3000);
-await ea(() => shCap()); await sleep(600);
+await ea(() => shGrpPage('Capire')); await sleep(600);
 let t = await ea(() => document.getElementById('panel-pp').innerText);
 ok(/Sviluppo Spirituale/.test(t) && /Advocacy/.test(t) && /sei passi/.test(t), 'prima volta: ambiti, percorsi e passi');
 ok(!/[A-Z][a-z]+ [A-Z][a-z]+ \(sez\./.test(t) && /Documentazione formativa CNGEI/.test(t), 'fonte generica, nessun nome');

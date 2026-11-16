@@ -51,6 +51,5 @@ const after = await ev(() => (document.getElementById('ob-rc-1') || {}).textCont
 ok(/Obiettivo 1/.test(after) && !/Obiettivo da scegliere/.test(after), 'scelto l’obiettivo, il riepilogo cambia subito (' + after.slice(0, 70) + ')');
 // aspetto del pannello attività nel calendario
 await ev(() => { shCal(); }); await sleep(2500);
-await ev(() => { window._calOpen['0-0'] = true; calOrg(0, 0); calOrg(0, 0); }); await sleep(800);
 await P.screenshot({path:'/tmp/l2_cal.png', fullPage:false});
 process.exit(summary() ? 1 : 0);

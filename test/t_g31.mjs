@@ -29,7 +29,7 @@ ok(await ev(() => document.getElementById('sh-cf').open), 'scegliendo anche la f
 await ev(() => { scheda.pp = scheda.pp || {}; scheda.pp.numTot = 13; scheda.pp.numM = 6; scheda.pp.numF = 7; shDash(); }); await sleep(400);
 s = await ev(() => ({num: document.querySelector('[data-c="numeri"]').innerText, pr: document.querySelector('[data-c="prossime"]').innerText}));
 ok(/Rover: 6 maschi e 7 femmine/.test(s.num) && !/Lupetti/.test(s.num), 'Numeri e cassa: «Rover» in Branca R (' + s.num.replace(/\n/g, ' ') + ')');
-ok(/Bivacco di gennaio/.test(s.pr) && /Riunione di novembre/.test(s.pr) && /Bivacco/.test(s.pr), '«Prossime attività»: riunioni, uscite e bivacchi con il tipo');
+ok(/Bivacco di gennaio · Bivacco/.test(s.pr) && /2 già passati/.test(s.pr), '«Prossime attività»: il bivacco con il tipo; riunione e uscita di novembre contate fra i già passati');
 // 4 · Riprendi dal ciclo precedente
 await ev(() => { shSub('1a', '', 'unit'); }); await sleep(1200);
 s = await ev(() => ({bar: !!document.getElementById('sh-prev'), nome: (scheda.pp || {}).nome, sez: (scheda.pp || {}).sezione}));

@@ -66,7 +66,7 @@ const sh = await ev(() => { const keep = scheda.tipoProgetto; scheda.tipoProgett
 ok(sh.pp === '' && sh.an > 0, 'nel PP niente «Gestione condivisa con lo staff», nella Programmazione sì');
 
 // ── 4. attività dello staff: percorsi dall'osservazione dello staff
-const sp = await ev(() => { STAFF_MEMBERS = ['Ada', 'Bruno']; staffObs = {Ada:{C2:2, P6:8}, Bruno:{C2:3, P6:9}}; return uscStaffPrio().map(p => p.id); });
+const sp = await ev(() => { STAFF_MEMBERS = ['Ada', 'Bruno']; staffObs = {Ada:{C2:2, P6:8}, Bruno:{C2:3, P6:9}}; return uscStaffPrioX().L.map(p => p.id); });
 ok(sp.length === 1 && sp[0] === 'C2', 'le priorità dello staff vengono dall’osservazione dello staff (' + sp.join() + ')');
 const sh2 = await ev(() => { const m = {k:'nuova', obj:{}}; USC_CUR = null; const stf = uscObjHTML('k1', m, true); return stf.length; });
 ok(sh2 > 0, 'selettore per eventi (non crasha)');

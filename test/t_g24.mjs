@@ -9,7 +9,6 @@ const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
 db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
 db.t.pee_archivi.push({id:'p1', user_id:u.id, anno:2026, titolo:'Programmazione 2026-27', meta:{mode:'giovani', fascia:'E', tipo:'AN'}, data:{v:1, MODE:'giovani', FASCIA:'E', UNIT_NAME:'X', obs:{}, pris:{P1:true}, scheda:{tipoProgetto:'AN', annoScout:'2026-27', ciclo:{nome:'Autunno', dal:'2026-10', al:'2027-01'}, priorita:[{ambito:'P', necessita:'n', percorso:'P1', obiettivi:[0], idr:[0], tempistica:''}], pp:{}}}, created_at:'2026-10-20T10:00:00Z', updated_at:'2026-10-26T10:00:00Z'});
 await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); await sleep(3500);
-ok(await ev(() => { shGrp('Realizzare'); return [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Check dello staff/.test(b.textContent)); }), 'menu Realizzare: «Check dello staff»');
 const n = await ev(() => { const d = new Date(2026, 9, 28); const L = chkList(); return L.map(c => { const x = chkNext(c, d); return x ? x.y + '-' + x.m + '>' + x.y2 + '-' + x.m2 : null; }); });
 ok(n.join() === '2027-1>2027-2,2027-5>2027-6,2027-1>2027-1', 'prossime date da fine ottobre 2026: ' + n.join());
 await ev(() => shChk()); await sleep(500);

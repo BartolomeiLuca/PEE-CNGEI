@@ -11,6 +11,8 @@ const br = await launch(engine);
 const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default;
 const pa = await person(br, db), P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await loginAs(P, base, A); await ev(() => exStart()); await sleep(3000);
+// l'esempio ha già molte uscite ed eventi: qui si parte da un progetto senza uscite
+await ev(() => { scheda.uscite = {}; try{ saveData(true); }catch(e){} }); await sleep(500);
 const pid = await ev(() => CL.ctx.id);
 await ev(() => { window._uscNoPrint = true; scheda.pp.numTot = '22'; scheda.pp.numF = '10'; scheda.pp.numM = '12'; scheda.pp.sedeVia = 'Via del Bosco 1'; scheda.pp.sedeCitta = 'Pesaro'; scheda.pp.staffTab = [{nome:'Giulia Neri', ruolo:'CR', tel:'320 1'},{nome:'Dario Blu', ruolo:'VCR', mail:'dario@x.it'},{nome:'Elena', ruolo:'AR'}]; saveData(true); });
 // 1.1: nome dell'Unità prima dei Numeri dell'Unità, non più nella 1.2
@@ -21,9 +23,11 @@ await ev(() => gGo('1b')); await sleep(500);
 ok(!(await P.locator('#unit-name-in').isVisible()), '1.2: il nome dell’Unità non c’è più');
 // Sezione 3: riquadro «Hai un'uscita o un campo?» dentro la parte facoltativa, avvisi
 await ev(() => gGo('3')); await sleep(900);
-const iP = await ev(() => getAllPercorsi().findIndex(p => (p.attivita||[]).some(a => (a.testo||'').trim())));
-const jA = await ev(i => getAllPercorsi()[i].attivita.findIndex(a => (a.testo||'').trim()), iP);
-const box = P.locator(`#ax-${iP}-${jA} .usc-ina`);
+// l'esempio ha tutte le attività già dentro un evento: ne aggiungo una nuova, libera
+await ev(() => { const p = getAllPercorsi()[0]; p.attivita.push({testo:'Attività di prova fuori da ogni evento', link:'', lancio:'', sviluppo:'', conclusione:'', vBene:'', vMigl:'', vAgg:'', ax:{}}); try{ saveData(true); }catch(e){} gGo('1a'); }); await sleep(300); await ev(() => gGo('3')); await sleep(1200);
+// la prima attività che NON fa già parte di un'uscita (l'esempio ne ha già alcune dentro un evento)
+const [iP, jA] = await ev(() => { const e = [...document.querySelectorAll('.usc-ina:not(.in)')].map(x => { let p = x; while(p && !/^ax-\d+-\d+$/.test(p.id || '')) p = p.parentElement; return p ? p.id.split('-').slice(1).map(Number) : null; }).find(Boolean); return e || [-1, -1]; });
+const box = P.locator(`#ax-${iP}-${jA} .usc-ina:not(.in)`);
 ok(await box.count() === 1 && /Hai un’uscita o un campo\?/.test(await box.textContent()), 'Sezione 3: «Hai un’uscita o un campo?» nella parte organizzativa dell’attività');
 ok(await P.locator('.usc-s3').count() === 0, '…e non più in fondo alla Sezione 3');
 ok(await ev(([i,j]) => { const h = document.getElementById('ax-'+i+'-'+j).innerHTML; return h.indexOf('usc-ina') < h.indexOf('data-k="chi"'); }, [iP, jA]), '…prima di «Chi e quando»');
@@ -262,7 +266,7 @@ const dtxt = async (f, a) => { const [d] = await Promise.all([P.waitForEvent('do
 const pr = await dtxt(() => uscExport('giorno', 2));
 ok(/\.docx$/.test(pr.n) && /Sveglia e ginnastica/.test(pr.t) && /LANCIO DALL’USCITA/.test(pr.t) && /Cartine/.test(pr.t) && /Pattuglia Volpi/.test(pr.t), 'Esporta la giornata in Word: time table e blocchi con i dettagli (' + pr.n + ')');
 const pt = await dtxt(() => uscExport('tuttotutto'));
-ok(/Time table dell’evento/.test(pt.t) && /Lista della spesa/.test(pt.t) && /Quota/.test(pt.t) && /Circolare/.test(pt.t), '«Tutto di tutto» in Word: time table, giornate, menù e spesa, quota, circolare');
+ok(/Time table (dell’evento|del campo)/.test(pt.t) && /Lista della spesa/.test(pt.t) && /Quota/.test(pt.t) && /Circolare/.test(pt.t), '«Tutto di tutto» in Word: time table, giornate, menù e spesa, quota, circolare');
 // scheda Campo: time table generale e moduli
 await P.locator('#usc-tab-campo').click(); await sleep(300);
 ok(await P.locator('.usc-slot').count() >= 14 && /spesa totale/.test(await P.locator('.usc-sint').textContent()) && await P.locator('.usc-camp .usc-ctab tr').count() === 6, 'scheda Campo: time table di tutto il campo, sintesi e riepilogo per giornata');
@@ -317,8 +321,8 @@ await loginAs(PD, base, D); await sleep(1200);
 await ed(() => { const x = (CL._inv||[])[0]; clInvOpen(x.id); }); await sleep(3500);
 const uid = await ev(() => USC_CUR);
 await ed(id => uscOpen(id, 3), uid); await sleep(800);
-await P.locator('#usc-tab-3').click(); await sleep(300);
-await P.locator('.usc-pi[data-pi="6"]').click(); await PD.locator('.usc-pi', {hasText:'Momento personalizzato'}).click(); await sleep(400);
+await P.locator('#usc-tab-3').click(); await PD.locator('#usc-tab-3').click(); await sleep(300);
+await P.locator('.usc-pi[data-pi="6"]').click(); await PD.locator('.usc-pi', {hasText:/Momento personalizzato|Blocco tuo/}).click(); await sleep(400);
 await P.locator('.usc-bti').last().fill('Gioco di Anna'); await PD.locator('.usc-bti').last().fill('Blocco di Dario');
 await P.locator('body').click({position:{x:5, y:5}}); await PD.locator('body').click({position:{x:5, y:5}});
 await sleep(14000);

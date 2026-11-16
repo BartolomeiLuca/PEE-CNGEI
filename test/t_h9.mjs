@@ -28,8 +28,8 @@ ok(await ev(() => /Percorso formativo/.test((document.querySelector('#panel-pp h
 const sit = await ev(() => SITUAZIONI_STAFF.find(x => x.attivita.some(y => y.cat === 'vf' || y.cat === 'av')));
 ok(!!sit, 'nel paniere ci sono attività di verifica e autovalutazione');
 const va = await ev(() => { const x = SITUAZIONI_STAFF.find(x => x.attivita.some(y => y.cat === 'vf' || y.cat === 'av')); const y = x.attivita.find(y => y.cat === 'vf' || y.cat === 'av'); return [x.id, y.nome]; });
-await ev(([a, b]) => pfAdd(a, b), va); await sleep(300);
-await ev(() => pfAdd('connessione', 'Check-in narrativo')); await sleep(300);
+await ev(([a, b]) => { window._pfL = [b, 'Check-in narrativo']; pfAddS(0); }, va); await sleep(300);
+await ev(() => { window._pfL = ['Check-in narrativo']; pfAddS(0); }); await sleep(300);
 await ev(() => pfOwn()); await sleep(400);
 await P.fill('.pf-c >> nth=2 >> .pf-t', 'La mia serata sul metodo'); await P.fill('.pf-c >> nth=2 >> .gr-f >> nth=0 >> textarea', 'Capire come usiamo gli strumenti'); await sleep(300);
 s = await ev(() => ({n: scheda.pf.length, own: scheda.pf[2].nome, ob: scheda.pf[2].obiettivo}));

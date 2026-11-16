@@ -1,0 +1,13 @@
+import { FakeDB, serve, launch, person, sleep, ok, loginAs } from './harness.mjs';
+import fs from 'fs';
+process.env.SITE = process.env.SITE || '/tmp/site_pre';
+const base = (await serve()) + 'anteprima/';
+const br = await launch('chromium');
+const db = new FakeDB(); const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); const P = pa.page;
+const u = db.addUser('anna@x.it', 'password123', 'Anna Verdi');
+db.t.pee_profili.push({user_id:u.id, nome:'Anna Verdi', ruolo:'cu', branca:'E', sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
+await loginAs(P, base, u); await sleep(2000);
+const names = JSON.parse(fs.readFileSync('lint/names.json'));
+const r = await P.evaluate(ns => ns.filter(n => { try{ return (0, eval)('typeof ' + n) === 'undefined'; }catch(e){ return true; } }), names);
+console.log('NON DEFINITI A RUNTIME:', JSON.stringify(r));
+process.exit(0);

@@ -35,12 +35,13 @@ const r2 = await ev(() => { const per = getAllPercorsi()[0]; window._attObjOpen 
 // 3 · lo scorrimento della dashboard non salta cambiando lettura o colore
 await P.click('.sh-seg button:has-text("Il mio anno")'); await sleep(2500);
 await ev(() => window.scrollTo(0, 800)); await sleep(300);
-const y0 = await ev(() => Math.round(scrollY));
-await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][1].querySelectorAll('button')[2].click()); await sleep(600);
-const y1 = await ev(() => Math.round(scrollY));
-await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][0].querySelectorAll('button')[2].click()); await sleep(600);
-const y2 = await ev(() => Math.round(scrollY));
-ok(y0 > 300 && Math.abs(y1 - y0) <= 40 && Math.abs(y2 - y0) <= 40, 'dashboard: cambiando colore o lettura la pagina resta dov’era (' + y0 + ' → ' + y1 + ' → ' + y2 + ')');
+const T = () => ev(() => Math.round(document.querySelector('.vis-opt').getBoundingClientRect().top));
+const y0 = await ev(() => Math.round(scrollY)), t0 = await T();
+await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][1].querySelectorAll('button')[2].click()); await sleep(1200);
+const t1 = await T();
+await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][0].querySelectorAll('button')[2].click()); await sleep(1800);
+const t2 = await T();
+ok(y0 > 300 && Math.abs(t1 - t0) <= 8 && Math.abs(t2 - t0) <= 8, 'dashboard: cambiando colore o lettura i comandi restano dov’erano sullo schermo (' + t0 + ' → ' + t1 + ' → ' + t2 + ')');
 // 4 · zoom: la posizione orizzontale resta dopo un cambio di lettura
 await ev(() => [...document.querySelectorAll('.vis-opt .sh-seg')][0].querySelectorAll('button')[0].click()); await sleep(400);
 await ev(() => vzSet(document.querySelector('#an-year .vis-zr'), 4)); await sleep(400);

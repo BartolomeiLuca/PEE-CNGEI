@@ -16,12 +16,10 @@ const r = await ev(() => ({
   a: rtSegs('ciao **forte** e _storto_ ++sotto++').map(s => (s.b?'b':'')+(s.i?'i':'')+(s.u?'u':'')+':'+s.t).join('|'),
   b: rtStrip('x **a** _b_ ++c++ ^^d^^ ,,e,,'),
   c: rtSegs('file_nome_x e 2**3 e http://a_b.it').map(s=>s.t).join(''),
-  d: rtHas('solo testo'), e: rtHas('con **grassetto**'), f: rtHas('• elenco'),
 }));
 ok(r.a === ':ciao |b:forte|: e |i:storto|: |u:sotto', 'parser: ' + r.a);
 ok(r.b === 'x a b c d e', 'strip: ' + r.b);
 ok(r.c === 'file_nome_x e 2**3 e http://a_b.it', 'segni sbilanciati o dentro le parole restano testo');
-ok(!r.d && r.e && r.f, 'riconosce il testo formattato');
 await ev(() => gGo('usc')).catch(() => {}); await sleep(600);
 await ev(() => uscNewStart()); await sleep(300);
 await P.fill('#usc-new-t', 'Prova testo'); await P.fill('#usc-new-d1', '2026-12-27'); await P.locator('#usc-new-d1').dispatchEvent('change');

@@ -21,8 +21,8 @@ ok(T.n === 51 && T.uniq === 51 && T.seq && T.orph === 0 && T.ch === 10, 'tabella
 ok(T.noOk === 0, 'nessun video attivo: sono tutti segnaposto');
 await openP('c1');
 await go("shSec('chk')"); let b = await box();
-ok(b && b.first && !b.open && /^▶ Video tutorial \(2\)/.test(b.sum), 'Controllo e invio: riquadro in cima, chiuso, con il numero: ' + (b && b.sum));
-ok(b && b.rows.length === 2 && b.soon === 2, 'le righe sono segnaposto «in arrivo»: ' + (b && b.rows.join(' | ')));
+ok(b && b.first && !b.open && /^▶ Video tutorial \(1\)/.test(b.sum), 'Controllo e invio: riquadro in cima, chiuso, con il numero: ' + (b && b.sum));
+ok(b && b.rows.length === 1 && b.soon === 1, 'le righe sono segnaposto «in arrivo»: ' + (b && b.rows.join(' | ')));
 await go('shCal()'); b = await box(); ok(b && /\(1\)/.test(b.sum) && /Calendario e attività/.test(b.rows[0]), 'Calendario: 1 video «Calendario e attività»: ' + (b && b.rows.join()));
 await go('shEle()'); b = await box(); ok(b && /Elenco dell’anno/.test(b.rows[0]), 'Elenco dell’anno');
 await go("shSub('1a','','occ')"); b = await box(); ok(b && b.rows.length === 2 && /Crea le tue attività osservative/.test(b.rows[1]), 'Come osservo: KOS 2.0 e «Crea le tue attività osservative»: ' + (b && b.rows.join(' | ')));
@@ -42,7 +42,7 @@ await ev(() => { vidSeenMark(3); try{ modalClose(); }catch(e){} }); await sleep(
 ok(await ev(() => JSON.parse(localStorage.getItem('pee_vid_seen')).includes(3)), '«già visto» salvato sul dispositivo');
 await ev(() => { faqOpen(); [...document.querySelectorAll('#g-modal details.gd-pan')].forEach(d => { if(/Video tutorial/.test(d.querySelector('summary').textContent)) d.open = true; }); }); await sleep(500);
 const g = await ev(() => { const t = document.getElementById('g-modal').innerText; return {t: /per questa pagina/i.test(t), ch: [...document.querySelectorAll('#g-modal .vid-grp > summary')].map(s => s.firstElementChild.textContent), seen: !!document.querySelector('#g-modal .vid-ic') && /✓/.test(document.getElementById('g-modal').innerText)}; });
-ok(g.t && g.ch.length === 8 && g.ch[0] === 'Per iniziare', 'Guida: «Per questa pagina» e 8 capitoli per un progetto di Unità: ' + g.ch.join(' / '));
+ok(g.t && g.ch.length === 7 && g.ch[0] === 'Per iniziare', 'Guida: «Per questa pagina» e 7 capitoli per un progetto di Unità: ' + g.ch.join(' / '));
 await ev(() => { try{ modalClose(); }catch(e){} });
 // pagina di apertura di capitolo
 await go("shGrp('Capire')"); b = await box();

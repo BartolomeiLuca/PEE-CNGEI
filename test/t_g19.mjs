@@ -15,7 +15,7 @@ await loginAs(P, base, u); await sleep(1200); await ev(() => shOpen('p1', 0)); a
 await ev(() => shGrp('Progettare')); await sleep(200);
 ok(await ev(() => [...document.querySelectorAll('#sh-side .sh-si')].some(b => /Visione d’insieme/.test(b.textContent))), 'menu Progettare: «Visione d’insieme»');
 await ev(() => shVis()); await sleep(800);
-let s = await ev(() => ({rows: document.querySelectorAll('#panel-pp .vis-r:not(.vis-rh)').length, bars: [...document.querySelectorAll('#panel-pp .vis-bar')].map(b => b.style.left.slice(0, 5) + '/' + b.style.width.slice(0, 5)), dots: document.querySelectorAll('#panel-pp .vis-t .vis-dot').length, oc: document.querySelectorAll('#panel-pp .vis-oc').length, on: document.querySelector('#sh-side .sh-si.on') && document.querySelector('#sh-side .sh-si.on').textContent.trim()}));
+let s = await ev(() => ({rows: document.querySelectorAll('#panel-pp .vis-r:not(.vis-rh)').length, bars: [...document.querySelectorAll('#panel-pp .vis-bar.av:not(.ph)')].map(b => b.style.left.slice(0, 5) + '/' + b.style.width.slice(0, 5)), dots: document.querySelectorAll('#panel-pp .vis-t .vis-dot').length, oc: document.querySelectorAll('#panel-pp .vis-oc').length, on: document.querySelector('#sh-side .sh-si.on') && document.querySelector('#sh-side .sh-si.on').textContent.trim()}));
 ok(s.bars.length === 2 && s.bars[0] === '8.333/33.33' && s.bars[1] === '16.66/33.33', 'blocchi nei mesi giusti: ottobre-gennaio e novembre-febbraio ' + s.bars.join(' '));
 ok(s.dots === 1 && s.oc === 1, 'un’attività con data e un’uscita segnate sulla linea');
 ok(/Visione d’insieme/.test(s.on || ''), 'voce del menu evidenziata');

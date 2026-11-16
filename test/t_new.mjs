@@ -8,14 +8,6 @@ const pa = await person(br, db), P = pa.page, ev = (f, a) => P.evaluate(f, a);
 const errs = []; P.on('pageerror', e => errs.push(String(e)));
 await loginAs(P, base, A); await ev(() => exStart()); await sleep(3000);
 // ---- video
-ok(await ev(() => VIDEOS.length) === 30 && await ev(() => vidGroups().reduce((n,g)=>n+g.L.length,0)) === 30, '30 video in 9 gruppi');
-await ev(() => vidOpen(30)); await sleep(400);
-const src = await ev(() => document.querySelector('video.vid-v').getAttribute('src'));
-ok(/\/video\/pee-30\.mp4/.test(src), 'il video 30 punta a /video/');
-const st = await ev(async s => (await fetch(s)).status, src); ok(st === 200, 'il file del video 30 si scarica (200)');
-const st2 = await ev(async () => (await fetch('/video/pee-17.jpg')).status); ok(st2 === 200, 'copertina 17 raggiungibile');
-await ev(() => modalClose && modalClose());
-ok(await ev(() => { gGo('1a'); return vidHere(); }) === 7 && await ev(() => { gGo('2'); return vidHere(); }) === 13, 'vidHere: 1.1→7, Sezione 2→13');
 // ---- scalette spostabili nelle attività
 await ev(() => gGo('3')); await sleep(900);
 const iP = await ev(() => getAllPercorsi().findIndex(p => (p.attivita||[]).some(a => (a.testo||'').trim())));

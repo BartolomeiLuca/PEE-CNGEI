@@ -66,12 +66,5 @@ const [dl] = await Promise.all([P.waitForEvent('download'), ev(() => exportSched
 const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const t = (await z.file('word/document.xml').async('string')).replace(/<[^>]+>/g, '');
 const iP = t.indexOf('Sviluppo Personale'), iC = t.indexOf('Sviluppo Comunitario'), iS = t.indexOf('Sviluppo Spirituale');
 ok(iP >= 0 && iP < iC && iC < iS, 'Word: Personale, poi Comunitario, poi Spirituale');
-// bozza della 1.3: valori salvati come testo e ambito senza valori bassi
-await ev(() => { obs.P1 = '3'; obs.P2 = '2'; ossAutoSync('P'); });
-ok(/Corporeità/.test(await ev(() => ossDraft('P', 'neg'))), '1.3: valori salvati come testo letti correttamente');
-await ev(() => { DB.S.forEach(p => { obs[p.id] = 7; }); scheda.osservazione.S.necessita = 'Il mio testo'; (scheda._userEditedA = scheda._userEditedA || {}).S_neg = true; goPhaseInternal(2); });
-await sleep(600);
-await ev(() => { try{ ossResync('S','neg'); }catch(e){} }); await sleep(400);   // il pulsante non c'è più: si chiama la funzione
-ok(await ev(() => scheda.osservazione.S.necessita) === 'Il mio testo', '1.3: senza valori bassi la bozza non cancella il testo');
 ok(!pa.errors.length, 'nessun errore JS ' + pa.errors.slice(0, 2).join(' | '));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

@@ -44,6 +44,7 @@ ok(dbTT() === 'Primo,Secondo,Terzo' && db.t.pee_membri.length === 3, 'preparazio
 ok(dbTTu() === 'Spiegazione,Caccia,Giro finale', 'preparazione: uscita con attività salvata');
 
 // ───────── 2. matrice ruolo × dispositivo ─────────
+const NU = await ea(() => Object.keys(scheda.uscite || {}).length);
 const ROLES = [['bruno', 'cotitolare', true], ['carla', 'collaboratore', true], ['dario', 'lettore', false]];
 for (const dev of DEVS) for (const [nome, ruolo, edita] of ROLES) {
   const L = `${ruolo}/${dev}`; let p;
@@ -51,7 +52,7 @@ for (const dev of DEVS) for (const [nome, ruolo, edita] of ROLES) {
     p = await open(dev, U[nome]); const P = p.page, ev = p.ev; await sleep(1500);
     await openInv(p);
     const st = await ev(() => ({bro: !!window.BRO, id: CL.ctx && CL.ctx.id, ruolo: CL.ctx && CL.ctx.ruolo, nu: Object.keys(scheda.uscite || {}).length}));
-    ok(st.id === pid && st.bro === !edita && st.nu === 1, `${L}: apre il progetto condiviso (${edita ? 'modifica' : 'sola lettura'}) con l’uscita ${JSON.stringify(st)}`);
+    ok(st.id === pid && st.bro === !edita && st.nu === NU, `${L}: apre il progetto condiviso (${edita ? 'modifica' : 'sola lettura'}) con l’uscita ${JSON.stringify(st)}`);
     // Sezione 3: scaletta
     await ev(() => gGo('3')); await sleep(1100);
     const [i, j] = await ev(() => { const L2 = getAllPercorsi(); const i = L2.findIndex(p => (p.attivita || []).some(a => (a.testo || '').trim())); return [i, L2[i].attivita.findIndex(a => (a.testo || '').trim())]; });

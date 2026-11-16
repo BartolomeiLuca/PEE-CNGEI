@@ -139,3 +139,7 @@ $P -c "truncate net.log" >/dev/null
 t estr si "propone (mail ok)" "$N"
 $P -c "create or replace function net.http_post(url text, headers jsonb, body jsonb, timeout_milliseconds int default 1000) returns bigint language plpgsql as \$\$ begin raise exception 'Brevo giù'; end \$\$" >/dev/null
 t estr si "propone con Brevo che dà errore" "$N" 
+echo "--- inviti dei co-titolari (aggiornamento 16 novembre)"
+t cot si "invita un lettore con il proprio owner_id (come fa l'app)" "insert into pee_membri(archivio_id,email,ruolo,owner_email) values ('$A','nuovo@x.it','lettore','Olga') returning id"
+t cot no "invita scrivendo un owner_id altrui" "insert into pee_membri(archivio_id,owner_id,email,ruolo) values ('$A','00000000-0000-0000-0000-00000000000a','finto@x.it','lettore') returning id"
+t cot no "invita un altro co-titolare" "insert into pee_membri(archivio_id,email,ruolo) values ('$A','cot2@x.it','cotitolare') returning id"

@@ -20,7 +20,7 @@ await sleep(300);
 const welcome = await ev(pa.page, () => document.getElementById('welcome-screen').style.display !== 'none');
 ok(welcome, '5. torna alla schermata iniziale senza conferma');
 ok(!(pa.page.__dialogs||[]).length, '5. nessuna finestra di conferma');
-await pa.page.locator(':is(a,button):visible', {hasText:'Apri un progetto di esempio'}).first().click();
+await ev(pa.page, () => exStart());
 await sleep(1500);
 const ex = await ev(pa.page, () => ({main: document.getElementById('main-app').style.display, ex: !!document.getElementById('ex-bar'), unit: UNIT_NAME, ctx: CL.ctx && CL.ctx.titolo}));
 ok(reloads === 0, '4. esempio aperto senza ricaricare la pagina (navigazioni: ' + reloads + ')');
@@ -65,9 +65,9 @@ const pid = saved.id;
 await ev(pa.page, () => {
   const per = getAllPercorsi()[0];
   const a0 = per.attivita[0]; a0.condivisa = true; a0.aff = 'bruno@x.it'; a0.vBene = ''; a0.vMigl = '';
-  const a1 = per.attivita[1]; a1.condivisa = true; a1.aff = 'dario@x.it'; a1.ax = a1.ax || {}; a1.ax.mat = [{cosa:'Torce frontali', q:1, chi:'Carla Neri (VCU)'}];
+  const a1 = per.attivita[1]; a1.vBene = ''; a1.vMigl = ''; a1.condivisa = true; a1.aff = 'dario@x.it'; a1.ax = a1.ax || {}; a1.ax.mat = [{cosa:'Torce frontali', q:1, chi:'Carla Neri (VCU)'}];
   const a2 = per.attivita[2]; a2.condivisa = true; a2.ax = a2.ax || {}; a2.ax.ref = {log:'Bruno Verdi (VCU)'};
-  _clTouched = true; _clUserAt = Date.now(); saveData(true); gGo('3'); });
+  _clTouched = true; _clUserAt = Date.now(); saveData(true); window._uscFull = {'0-0':true, '0-1':true, '0-2':true}; gGo('3'); });
 await sleep(2500);
 
 // ── 18+25: Anna vede in sola lettura le parti affidate a Bruno (collaboratore) e a Dario (co-titolare) ──
@@ -123,7 +123,7 @@ const b11 = await ev(pb.page, () => { const el = document.getElementById('panel4
 ok(b11.n > 0 && b11.dis === b11.n, '15. 1.1: il collaboratore non modifica nulla (' + b11.dis + '/' + b11.n + ')');
 ok(b11.bn > 0 && b11.bd === b11.bn, '17. pulsanti di modifica davvero disattivati (' + b11.bd + '/' + b11.bn + ')');
 ok(b11.prog, '9. il collaboratore non cambia «Come programmi?»');
-await ev(pb.page, () => { gGo('3'); }); await sleep(800);
+await ev(pb.page, () => { window._uscFull = {'0-0':true, '0-1':true, '0-2':true}; gGo('3'); }); await sleep(800);
 await ev(pb.page, () => { document.querySelectorAll('details.att-extra,details.ax-g').forEach(d => d.open = true); edLock(); }); await sleep(400);
 const b3 = await ev(pb.page, () => {
   const st = id => { const d = document.getElementById(id); const f = [...d.querySelectorAll('textarea,input,select')]; return {n:f.length, en:f.filter(e => !e.disabled && !e.classList.contains('aff-sel') && !e.classList.contains('share-chk')).length}; };

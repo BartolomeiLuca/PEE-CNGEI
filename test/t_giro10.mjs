@@ -30,6 +30,7 @@ ok(await ev(() => { const e = document.getElementById('boot-ld'); return !e || g
 // 1. appunti
 await ev(() => shDash()); await sleep(1500);
 await ev(() => { try{ shGrp('Capire'); }catch(e){} }); await sleep(800);
+for(let i = 0; i < 20 && !(await ev(() => !!document.querySelector('[data-id="a-prev"]'))); i++) await sleep(500);
 const hasMenu = await ev(() => ({el: !!document.querySelector('[data-id="a-prev"]'), prev: !!(SH && SH._prev)}));
 console.log(JSON.stringify(hasMenu));
 ok(hasMenu.el, 'nel menu c’è «Appunti dalla programmazione precedente»');
