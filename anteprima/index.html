@@ -9138,7 +9138,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611161310'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611161335'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -16558,7 +16558,7 @@ function ptHotN(it){ return ptGroup(it || CL.perte || []).filter(o => o.x.hot !=
 function ptAckMany(ns){ (ns || []).forEach(n => { const x = (CL.perte || [])[n]; if(!x) return; try{ const S = ptAckGet(); S[ptAckKey(x)] = Date.now(); localStorage.setItem('bussola_pt_ok_' + ((CL.user && CL.user.email) || ''), JSON.stringify(S)); }catch(e){} x.ack = true; x.hot = false; });
   clSetStatus(CL.status); const pt = $cl('cl-perte'); if(pt) pt.innerHTML = clPerTeHTML(); try{ if(window.shPerTeRe) shPerTeRe(); }catch(e){} }
 function clPerTeHTML(){
-  const it = CL.perte || []; if(!it.length) return '';
+  const it = (CL.perte || []).filter(x => x.k !== 'rvg'); if(!it.length) return '';
   const row = x => {
     if(x.k === 'inv') return `<div class="cl-row"><div style="min-width:0"><div class="t">Invito: ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div><div class="s">da ${clEsc(x.owner||'un’altra persona')} · come ${clEsc((CL_RUOLI[x.ruolo]||'lettore').toLowerCase())}</div></div><button class="cl-btn sm" onclick="clOpenShared('${x.id}')">${clEditRole(x.ruolo)?'Apri e modifica':'Apri'}</button></div>`;
     if(x.k === 'an') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n===1?'1 proposta':x.n+' proposte'} per l’archivio nazionale da approvare</div><div class="s">Le leggi, poi approvi o rifiuti</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};anOpen('pend')">Leggi e decidi</button></div>`;
@@ -18190,7 +18190,7 @@ window.shTrashKill = async function(id){ if(!confirm('Eliminare per sempre? Non 
 // «Per te» nella pagina «I tuoi progetti»: inviti, parti affidate, materiali da procurare, suggerimenti. Aperta se c'è qualcosa di nuovo
 window.shPerTeRe = function(){
   const b = $('sh-perte'); if(!b) return;
-  const it = CL.perte || []; if(!it.length){ b.innerHTML = ''; return; }
+  const it = (CL.perte || []).filter(x => x.k !== 'rvg'); if(!it.length){ b.innerHTML = ''; return; }   // le revisioni stanno solo nel pannello «Progetti personali da rivedere»
   const hot = ptHotN(it); const was = b.querySelector('details');
   const open = was ? was.open : hot > 0;
   const inner = clPerTeHTML().replace(/<h4>[\s\S]*?<\/h4>/, '');

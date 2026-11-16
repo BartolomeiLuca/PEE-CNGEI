@@ -21,4 +21,6 @@ ok(/Tocca a te/.test(s) && /Anna Rossi/.test(s) && /Leggi e rivedi/.test(s), 'ho
 ok(await el(() => { const b = document.getElementById('cl-rev'); const y = b.getBoundingClientRect().top; return y > 0 && y < 700; }), 'è in vista, senza scorrere');
 ok(await el(() => !document.querySelector('#cl-rev .rv-hist')), 'senza progetti chiusi non compare lo storico');
 ok(await el(() => !(document.getElementById('sh-revrows') || {innerText:''}).innerText.trim()), 'nessun secondo elenco di revisioni in fondo alla home');
+console.log('PERTE kinds', JSON.stringify(await el(() => (CL.perte||[]).map(x => x.k))));
+ok(await el(() => !/Da rivedere|Progetto Personale di/.test((document.getElementById('sh-perte') || {innerText:''}).innerText)), 'il riquadro «Per te» non ripete le revisioni (stanno solo nel pannello dedicato)');
 summary(); await br.close(); process.exit(0);
