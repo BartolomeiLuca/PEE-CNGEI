@@ -1113,6 +1113,11 @@ body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .vid-hd{margin:0 34px 10px 0}.vid-k{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase}.vid-hd h3{margin:2px 0 0;font-size:16px}
 .vid-v{width:100%;border-radius:8px;background:#000;display:block;aspect-ratio:16/9}
 .vid-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.vid-row.soon{opacity:.72}.vid-row.soon .vid-rd{font-style:italic}
+.vid-pg{border:1px solid var(--border-light);border-radius:10px;background:#fff;margin:0 0 12px;padding:0}.vid-pg>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--green);padding:9px 12px;min-height:36px;display:flex;align-items:center}.vid-pg[open]>summary{border-bottom:1px solid var(--border-light)}
+.vid-pgl{padding:2px 6px 8px}.vid-all{display:block;margin:6px 8px 0;background:none;border:0;padding:4px 0;font:inherit;font-size:12px;font-weight:700;color:var(--green);cursor:pointer;text-decoration:underline}
+.vid-here{border:1.5px solid var(--green);border-radius:10px;padding:4px 6px 6px;margin:0 0 12px;background:var(--green-pale)}.vid-hh2{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--green);padding:6px 8px 2px}
+.vid-soon{background:var(--bg);border-radius:8px;padding:28px 18px;text-align:center;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px}.vid-soon span{font-size:13px;color:var(--ink-mid);max-width:420px}
 .vid-lk{font-weight:700;white-space:nowrap;color:var(--green)!important;text-decoration:none}.vid-lk:hover{text-decoration:underline}
 .vid-nav .btn-ghost,.vid-nav .btn-primary{width:auto;flex:1 1 0;min-width:0;padding:8px 10px;font-size:13px;margin:0}
 .faq-it summary{list-style:none;position:relative;padding-left:18px}.faq-it summary::-webkit-details-marker{display:none}.faq-it summary::before{content:'▸';position:absolute;left:2px;color:var(--green)}.faq-it[open] summary::before{content:'▾'}
@@ -9138,7 +9143,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611161421'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611161442'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -9256,64 +9261,133 @@ const NOVITA = [
     'Vademecum della cassetta di primo soccorso da scaricare.',
     'Materiale comune per i Rover, consigli per lo zaino, lista della spesa.']}
 ];
-// ── Video tutorial: otto capitoli brevi, nella cartella /video del sito ──
-const VID_GROUPS = [['i','Per iniziare'],['s','Lavorare con lo staff'],['a','Sezione 1 · Conoscere il gruppo'],['b','Sezioni 2 e 3 · Obiettivi e percorso'],['d','Le attività'],['u','Uscite e campi'],['v','Sezioni 4 e 5 · Verifica e valutazione'],['t','La modalità staff'],['c','Cerca e archivio nazionale']];
+// ── Video tutorial: 51 video in 10 capitoli. Finché il file non è in /video/v2/ resta un segnaposto («in arrivo»). ──
+// Per attivare un video: copiare pee-NN.mp4 (e pee-NN.jpg) in /video/v2/ e scrivere il numero in VID_OK (valore = versione, da cambiare se il video viene rifatto).
+const VID_CH = [['i','Per iniziare'],['c','Capire'],['o','Osservare'],['p','Progettare'],['r','Calendario e realizzazione'],['m','Misurare'],['d','Condividere'],['pp','Progetto Personale'],['rv','La revisione'],['st','Staff e Capo Gruppo']];
+// a = per chi è: A programmazione di Unità, P Progetto Personale, S staff, C Capo Gruppo
 const VIDEOS = [
-  {n:1, g:'i', t:'Da dove si parte', d:'1:22'},
-  {n:2, g:'i', t:'Account, accesso e password', d:'1:16'},
-  {n:3, g:'i', t:'L’archivio e le copie di sicurezza', d:'0:58'},
-  {n:4, g:'i', t:'Telefono, tablet, aiuto', d:'0:49'},
-  {n:5, g:'s', t:'Programmare con lo staff', d:'1:13'},
-  {n:6, g:'s', t:'Lavorare insieme e «Per te»', d:'1:19'},
-  {n:7, g:'a', t:'Il contesto dell’Unità', d:'1:01'},
-  {n:8, g:'a', t:'KOS 2.0 e altre occasioni osservative', d:'1:06'},
-  {n:9, g:'a', t:'1.2 La scheda di osservazione', d:'1:07'},
-  {n:10, g:'a', t:'1.2 Osservazione condivisa', d:'1:06'},
-  {n:11, g:'a', t:'1.3 Lettura del gruppo', d:'0:54'},
-  {n:12, g:'a', t:'1.4 Le priorità', d:'0:42'},
-  {n:13, g:'b', t:'Sezione 2: obiettivi e indicatori', d:'0:56'},
-  {n:14, g:'b', t:'Sezione 3: strumenti del metodo e tempi', d:'0:42'},
-  {n:15, g:'b', t:'Sezione 3: le attività', d:'0:43'},
-  {n:16, g:'b', t:'Sezione 3: le sette caratteristiche', d:'0:37'},
-  {n:17, g:'b', t:'Sezione 3: gli spunti', d:'0:57'},
-  {n:18, g:'b', t:'Ordinare, spostare, duplicare', d:'0:42'},
-  {n:19, g:'d', t:'Attività: chi, quando e referenti', d:'0:57'},
-  {n:20, g:'d', t:'Attività: logistica e viaggio', d:'0:45'},
-  {n:21, g:'d', t:'Attività: materiali, pasti e spesa', d:'0:58'},
-  {n:22, g:'d', t:'Attività: cassa, costi e quota', d:'0:39'},
-  {n:23, g:'d', t:'Attività: durante, sicurezza, piano B', d:'1:01'},
-  {n:24, g:'d', t:'Foglio del giorno, calendario, circolare', d:'1:04'},
-  {n:25, g:'u', t:'Uscite e campi: creare e organizzare', d:'1:55'},
-  {n:26, g:'u', t:'Uscite: affidare, pasti, cassa e stampa', d:'1:03'},
-  {n:27, g:'v', t:'Sezioni 4 e 5, controllo e invio', d:'1:37'},
-  {n:28, g:'t', t:'La modalità staff', d:'1:12'},
-  {n:29, g:'t', t:'Uscite dello staff', d:'0:57'},
-  {n:30, g:'c', t:'Cerca e archivio nazionale', d:'1:12'}
+  {n:1, g:'i', t:'Da dove si parte: panoramica dell’app', d:'2:50', a:'APSC'},
+  {n:2, g:'i', t:'La Dashboard', d:'3:57', a:'APSC'},
+  {n:3, g:'i', t:'Account, accesso e password', d:'3:02', a:'APSC'},
+  {n:4, g:'i', t:'Creare il primo progetto', d:'2:56', a:'APSC'},
+  {n:5, g:'i', t:'Salvataggio, archivio degli anni e copie di sicurezza', d:'5:03', a:'APSC'},
+  {n:6, g:'i', t:'Telefono, tablet, testo formattato e guida', d:'3:52', a:'APSC'},
+  {n:7, g:'i', t:'Il ciclo: cos’è, a cosa serve, come si crea', d:'2:26', a:'A'},
+  {n:8, g:'c', t:'La mia unità e il mio contesto', d:'2:45', a:'AP'},
+  {n:9, g:'c', t:'Il mio staff', d:'2:58', a:'A'},
+  {n:10, g:'o', t:'Come osservo: KOS 2.0 e griglia osservativa', d:'', a:'AP'},
+  {n:11, g:'o', t:'Crea le tue attività osservative', d:'', a:'AP', s:'Il percorso guidato in 12 passi: da dove parti, dove osservi, cosa guardi, come lo organizzi, e poi scrivi tu l’attività.'},
+  {n:12, g:'o', t:'Scheda di osservazione dei percorsi e griglia', d:'4:15', a:'AP'},
+  {n:13, g:'o', t:'Osservazione individuale e osservazione condivisa', d:'4:51', a:'A'},
+  {n:14, g:'o', t:'Confronto e sintesi', d:'4:25', a:'A'},
+  {n:15, g:'o', t:'Lettura del gruppo e Priorità', d:'3:57', a:'AP'},
+  {n:16, g:'o', t:'Le tre Branche a confronto', d:'3:06', a:'AP'},
+  {n:17, g:'p', t:'Obiettivi e indicatori', d:'4:07', a:'AP'},
+  {n:18, g:'p', t:'Percorso: strumenti del metodo e tempi', d:'4:10', a:'AP'},
+  {n:19, g:'p', t:'Percorso: attività, spunti e sette caratteristiche', d:'5:43', a:'AP'},
+  {n:20, g:'p', t:'Ordinare le attività e Visione d’insieme', d:'4:12', a:'A'},
+  {n:21, g:'p', t:'Progettazione condivisa con lo staff', d:'4:01', a:'A'},
+  {n:22, g:'p', t:'Percorso Formativo: staff e Capo Gruppo', d:'3:39', a:'ASC'},
+  {n:23, g:'p', t:'Il mio anno e i cicli', d:'3:20', a:'A'},
+  {n:24, g:'r', t:'Calendario e attività', d:'7:53', a:'A'},
+  {n:25, g:'r', t:'Elenco dell’anno', d:'3:46', a:'A'},
+  {n:26, g:'r', t:'Chi, quando, referenti', d:'3:50', a:'A'},
+  {n:27, g:'r', t:'Logistica e viaggio', d:'6:57', a:'A'},
+  {n:28, g:'r', t:'Pasti, materiali e spesa', d:'7:30', a:'A'},
+  {n:29, g:'r', t:'Cassa, costi e quota', d:'6:21', a:'A'},
+  {n:30, g:'r', t:'Durante, sicurezza e piano B', d:'6:09', a:'A'},
+  {n:31, g:'r', t:'Costruire la giornata', d:'8:30', a:'A'},
+  {n:32, g:'r', t:'Foglio del giorno, circolare e stampe', d:'4:22', a:'A'},
+  {n:33, g:'r', t:'Uscite ed eventi: creare e organizzare', d:'4:26', a:'A'},
+  {n:34, g:'r', t:'L’anno di solito', d:'2:22', a:'A'},
+  {n:35, g:'m', t:'Verifica delle attività', d:'2:27', a:'A'},
+  {n:36, g:'m', t:'Valutazione finale', d:'3:02', a:'A'},
+  {n:37, g:'m', t:'Numeri dell’anno', d:'2:35', a:'A'},
+  {n:38, g:'m', t:'Spese mese per mese', d:'3:18', a:'A'},
+  {n:39, g:'m', t:'Verifica dell’anno', d:'2:14', a:'A'},
+  {n:40, g:'d', t:'Condividi con lo staff', d:'2:12', a:'ASC'},
+  {n:41, g:'d', t:'Lavorare in due', d:'3:22', a:'ASC'},
+  {n:42, g:'d', t:'Controllo e invio', d:'2:56', a:'A'},
+  {n:43, g:'d', t:'Cerca e archivio nazionale', d:'3:13', a:'A'},
+  {n:44, g:'pp', t:'Progetto Personale: dalla Sezione 1 alla 3', d:'', a:'P'},
+  {n:45, g:'pp', t:'Progetto Personale: verifica e valutazione', d:'', a:'P'},
+  {n:46, g:'pp', t:'Progetto Personale: gli invii', d:'', a:'P'},
+  {n:47, g:'rv', t:'La revisione in app: dal lato di chi compila', d:'', a:'APSC', s:'Come si invia un giro, cosa vede chi compila, come si recepiscono i punti segnalati e si manda il giro successivo.'},
+  {n:48, g:'rv', t:'La revisione in app: dal lato di chi rivede', d:'', a:'APSC', s:'La pagina dei progetti di chi rivede, la lettura del giro, i punti da segnalare, l’esito e lo storico.'},
+  {n:49, g:'st', t:'Osservazione degli adulti: il mio staff', d:'4:58', a:'S'},
+  {n:50, g:'st', t:'Eventi per gli adulti', d:'5:03', a:'SC'},
+  {n:51, g:'st', t:'Capo Gruppo: Capi Unità e Check degli adulti', d:'3:35', a:'C'}
 ];
-function vidGroups(){ return VID_GROUPS.map(([k,l]) => ({k, l, L: VIDEOS.filter(v => v.g === k)})).filter(g => g.L.length); }
-const VID_BASE = '/video/', VID_V = '?v=30';
-function vidVer(n){ return VID_V; }
-function vidSrc(n){ return VID_BASE + 'pee-' + n + '.mp4' + vidVer(n); }
-function vidOpen(n){ window._vidCur = n;
-  const v = VIDEOS.find(x => x.n === n) || VIDEOS[0], nx = VIDEOS.find(x => x.n === v.n + 1);
-  modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length}</span><h3>${v.t}</h3></div>
-    <video class="vid-v" src="${vidSrc(v.n)}" poster="${VID_BASE}pee-${v.n}.jpg${vidVer(v.n)}" controls autoplay playsinline preload="metadata"></video>
-    <div class="vid-nav">${v.n > 1 ? `<button class="btn-ghost" onclick="vidOpen(${v.n - 1})">‹ Precedente</button>` : '<span></span>'}<button class="btn-ghost" onclick="vidList()">Tutti i video</button>${nx ? `<button class="btn-primary" onclick="vidOpen(${nx.n})">Prossimo ›</button>` : '<span></span>'}</div>`);
-  vidWide(true);
-}
-function vidList(){
-  modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Video: come funziona</h3>${vidGroups().map(g => `<details class="vid-grp" ${g.L.some(v => v.n === (window._vidCur||0)) ? 'open' : ''}><summary><span>${g.l}</span><span class="vid-gn">${g.L.length} video</span></summary><div class="vid-grid">${g.L.map(vidTile).join('')}</div></details>`).join('')}`);
-  vidWide(true);
-}
-function vidTile(v){ return `<button class="vid-tile" onclick="vidOpen(${v.n})"><span class="vid-th" style="background-image:url('${VID_BASE}pee-${v.n}.jpg${vidVer(v.n)}')"><span class="vid-play">▶</span><span class="vid-du">${v.d}</span></span><span class="vid-tt"><b>${v.n}</b> ${v.t}</span></button>`; }
-function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !ov.firstElementChild) return; ov.firstElementChild.style.maxWidth = on ? '860px' : ''; }
-// quale video per la parte dell'app in cui ti trovi
-function vidHere(){ try{ if(typeof MODE !== 'undefined' && MODE === 'staff') return 28; if(typeof MODE !== 'undefined' && MODE !== 'giovani') return 5; const k = gCur(); return ({'1a':7,'1b':9,'1c':11,'1d':12,'2':13,'3':14,'usc':25,'4':27,'5':27,'chk':27})[k] || 1; }catch(e){ return 1; } }
+const VID_OK = {};   // es. {1:'1', 2:'1'}: numero → versione del file pronto
+const VID_BASE = '/video/v2/';
+// pagina del progetto → video (di solito 1 o 2); le pagine di apertura di un capitolo elencano tutto il capitolo
+const VID_PG = {dash:[2], 'a-unit':[8], 'a-ctx':[8], 'a-staff':[9], 'o-occ':[10,11], 'o-P':[12,13], 'o-C':[12,13], 'o-S':[12,13], 'o-conf':[14], 'o-1c':[15], 'o-1d':[15], 'o-staff':[49],
+  'p-2':[17], 'p-3P':[18,19], 'p-3C':[18,19], 'p-3S':[18,19], 'p-vis':[20], 'p-pf':[22], 'r-cal':[24], 'r-ele':[25], 'r-tip':[34],
+  'm-4':[35], 'm-5':[36], 'm-num':[37], 'r-bil':[38], 'm-anno':[39], 'k-arc':[5], 'd-sha':[40,41], 'd-chk':[42,47],
+  pp0:[44], pp1:[44], pp2:[44], pp3:[44], pp4:[45], pp5:[45], ppc:[45], ppi:[46,47],
+  st1:[49], st2:[49], 'st-pf0':[22], usc:[50], sha:[40,41], arc:[5], 'r-chk':[51]};
+const VID_GRP = {A:{'Capire':'c','Osservare':'o','Progettare':'p','Realizzare':'r','Misurare':'m','Conservare':'i','Condividere':'d'}, P:{'Progettare':'pp','Inviare':'rv'}, S:{'Progettare':'st','Realizzare':'st','Misurare e conservare':'i'}, C:{'Progettare':'st','Realizzare':'st','Misurare e conservare':'i'}};
+const VID_ORD = {A:['i','c','o','p','r','m','d','rv'], P:['i','pp','o','rv'], S:['st','i','p','d','rv'], C:['st','i','p','d','rv']};
+function vidOk(n){ return !!VID_OK[n]; }
+function vidNum(n){ return String(n).padStart(2, '0'); }
+function vidSrc(n){ return VID_BASE + 'pee-' + vidNum(n) + '.mp4?v=' + VID_OK[n]; }
+function vidPoster(n){ return VID_BASE + 'pee-' + vidNum(n) + '.jpg?v=' + VID_OK[n]; }
+function vidSeenGet(){ try{ return JSON.parse(localStorage.getItem('pee_vid_seen') || '[]') || []; }catch(e){ return []; } }
+function vidSeenMark(n){ try{ const s = vidSeenGet(); if(s.indexOf(n) < 0){ s.push(n); localStorage.setItem('pee_vid_seen', JSON.stringify(s)); } }catch(e){} try{ vidPageSync(true); }catch(e){} }
+function vidSecs(d){ const m = /^(\d+):(\d\d)$/.exec(d || ''); return m ? (+m[1]) * 60 + (+m[2]) : 0; }
+// per chi sto guardando: P, S, C, A (dentro un progetto), oppure '' (fuori da un progetto: dal profilo, se è Capo Gruppo i suoi capitoli vengono per primi)
+function vidAud(){ try{ if(document.body.classList.contains('sh-in') && window.vidCtx) return window.vidCtx().aud; }catch(e){} try{ if(typeof SH !== 'undefined' && SH.prof && SH.prof.ruolo === 'cg') return 'C'; }catch(e){} return ''; }
+function vidFor(v, aud){ return !aud || v.a.indexOf(aud) >= 0; }
+function vidMinTxt(L){ if(!L.length || L.some(v => !vidSecs(v.d))) return ''; const m = Math.round(L.reduce((s, v) => s + vidSecs(v.d), 0) / 60); return ' · ' + Math.max(1, m) + ' min'; }
+function vidGroups(aud){ const ord = VID_ORD[aud] || VID_CH.map(c => c[0]); const lab = Object.fromEntries(VID_CH);
+  return ord.map(k => ({k, l: lab[k], L: VIDEOS.filter(v => v.g === k && vidFor(v, aud))})).filter(g => g.L.length); }
+function vidHere(){ try{ const c = window.vidCtx && window.vidCtx(); const L = c ? vidPageList(c) : []; return L.length ? L[0].n : 1; }catch(e){ return 1; } }
 function vidLink(n, txt){ return `<a href="#" class="vid-lk" onclick="vidOpen(${n});return false">▶ ${txt || 'Guarda il video'}</a>`; }
-function vidRow(v){ return `<button class="vid-row" onclick="vidOpen(${v.n})"><span class="vid-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span><span class="vid-rt"><b>${v.n}</b> ${v.t}</span><span class="vid-rd">${v.d}</span></button>`; }
+function vidRow(v){ const seen = vidSeenGet().indexOf(v.n) >= 0, ok = vidOk(v.n);
+  return `<button type="button" class="vid-row${ok ? '' : ' soon'}" onclick="vidOpen(${v.n})"><span class="vid-ic" aria-hidden="true">${seen ? '✓' : '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>'}</span><span class="vid-rt"><b>${v.n}</b> ${v.t}</span><span class="vid-rd">${ok ? (v.d || '') : 'in arrivo'}</span></button>`; }
+function vidChaptersHTML(aud, openAll){ const seen = vidSeenGet();
+  return vidGroups(aud).map(g => `<details class="vid-grp"${openAll ? ' open' : ''}><summary><span>${g.l}</span><span class="vid-gn">${g.L.length} ${g.L.length === 1 ? 'video' : 'video'}${g.L.every(v => seen.indexOf(v.n) >= 0) ? ' · ✓' : ''}</span></summary>${g.L.map(vidRow).join('')}</details>`).join(''); }
 function vidHome(){ const h = document.getElementById('vid-home'); if(!h) return;
-  h.innerHTML = vidGroups().map(g => `<details class="vid-grp"><summary><span>${g.l}</span><span class="vid-gn">${g.L.length} video</span></summary>${g.L.map(vidRow).join('')}</details>`).join('')
-    + `<p class="vid-note">${VIDEOS.length} video, divisi per argomento. Li ritrovi anche nei riquadri «Come funziona» di ogni sezione.</p>`; }
+  h.innerHTML = vidChaptersHTML(vidAud()) + `<p class="vid-note">${VIDEOS.length} video, divisi per capitolo. Dentro un progetto li trovi anche in cima a ogni pagina, nel riquadro «Video tutorial».</p>`; }
+function vidList(){
+  const aud = vidAud(), c = (document.body.classList.contains('sh-in') && window.vidCtx) ? window.vidCtx() : null, here = c ? vidPageList(c) : [];
+  modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Video tutorial</h3>${here.length ? `<div class="vid-here"><div class="vid-hh2">Per questa pagina</div>${here.map(vidRow).join('')}</div>` : ''}${vidChaptersHTML(aud)}<p class="vid-note">${VIDEOS.length} video. ✓ = già guardato su questo dispositivo.</p>`);
+  vidWide(true);
+}
+function vidOpen(n){ window._vidCur = n;
+  const v = VIDEOS.find(x => x.n === n) || VIDEOS[0], nx = VIDEOS.find(x => x.n === v.n + 1), pv = VIDEOS.find(x => x.n === v.n - 1);
+  const ch = (VID_CH.find(c => c[0] === v.g) || [])[1] || '';
+  const nav = `<div class="vid-nav">${pv ? `<button class="btn-ghost" onclick="vidOpen(${pv.n})">‹ Precedente</button>` : '<span></span>'}<button class="btn-ghost" onclick="vidList()">Tutti i video</button>${nx ? `<button class="btn-primary" onclick="vidOpen(${nx.n})">Prossimo ›</button>` : '<span></span>'}</div>`;
+  if(!vidOk(v.n)){
+    modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length} · ${ch}</span><h3>${v.t}</h3></div><div class="vid-soon"><b>Questo video arriva presto.</b><span>${v.s ? v.s : 'Stiamo preparando i video: appena è pronto lo trovi qui.'}</span></div>${nav}`);
+    vidWide(true); return;
+  }
+  modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length} · ${ch}</span><h3>${v.t}</h3></div>
+    <video class="vid-v" src="${vidSrc(v.n)}" poster="${vidPoster(v.n)}" controls autoplay playsinline preload="metadata"></video>${nav}`);
+  vidWide(true);
+  try{ const el = document.querySelector('.vid-v'); if(el){ el.addEventListener('ended', () => vidSeenMark(v.n)); el.addEventListener('timeupdate', () => { if(el.duration && el.currentTime / el.duration >= .9) vidSeenMark(v.n); }); } }catch(e){}
+}
+function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !ov.firstElementChild) return; ov.firstElementChild.style.maxWidth = on ? '860px' : ''; }
+// ── riquadro «Video tutorial ▸» in cima a ogni pagina del progetto ──
+// c = {id, grp, aud}: id della pagina (voce di menu), grp = nome del gruppo se è la pagina di apertura di un capitolo
+function vidPageList(c){ const aud = c.aud || 'A';
+  if(c.grp){ const k = (VID_GRP[aud] || {})[c.grp]; if(k) return VIDEOS.filter(v => v.g === k && vidFor(v, aud)); }
+  const ids = VID_PG[c.id] || []; return ids.map(n => VIDEOS.find(v => v.n === n)).filter(v => v && vidFor(v, aud)); }
+function vidPageSync(force){
+  try{
+    if(!document.body.classList.contains('sh-in') || !window.vidCtx) return;
+    const host = document.querySelector('#main-app > .panel.active'); const old = document.getElementById('vid-pg');
+    const c = window.vidCtx(); const L = vidPageList(c);
+    if(!host || !L.length){ if(old) old.remove(); return; }
+    const key = (c.grp ? 'g:' + c.grp : c.id) + '|' + c.aud + '|' + L.map(v => v.n).join();
+    if(old && old.parentElement === host && host.firstChild === old && old.dataset.k === key && !force) return;
+    const wasOpen = !!(old && old.open && old.dataset.k === key); if(old) old.remove();
+    const seen = vidSeenGet().length, d = document.createElement('details'); d.id = 'vid-pg'; d.className = 'vid-pg'; d.dataset.k = key; if(wasOpen) d.open = true;
+    d.innerHTML = `<summary>▶ Video tutorial (${L.length})${vidMinTxt(L)}</summary><div class="vid-pgl">${L.map(vidRow).join('')}<button type="button" class="vid-all" onclick="vidList()">Tutti i video</button></div>`;
+    host.insertBefore(d, host.firstChild);
+  }catch(e){}
+}
+(function(){ try{ setInterval(() => vidPageSync(), 1500); }catch(e){} })();
 
 // ── Domande frequenti: cerca, apri la risposta, «Portami lì» ──
 const FAQ = [
@@ -9396,7 +9470,7 @@ const FAQ = [
   ['Se qualcosa non va','Vedo una versione vecchia o la pagina non si aggiorna.','Ricarica la pagina; se resta così, esci dall’account e rientra.'],
   ['Se qualcosa non va','Ho trovato un errore o ho un’idea.','Premi <b>Suggerimenti?</b>: il messaggio arriva direttamente a chi cura l’app.','fbOpen()']
 ];
-const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':2, 'Lavorare con lo staff':5, 'Capire':7, 'Osservare':8, 'Progettare':13, 'Realizzare':25};
+const FAQ_VID = {'Per cominciare':1, 'Account e salvataggio':3, 'Lavorare con lo staff':40, 'Capire':8, 'Osservare':10, 'Progettare':17, 'Realizzare':24};
 const FAQ_GEN = ['Per cominciare','Account e salvataggio','Lavorare con lo staff','Documenti','Se qualcosa non va'];
 const FAQ_MENU = ['Dashboard','Capire','Osservare','Progettare','Realizzare','Misurare','Progetto Personale','Revisione del Progetto Personale'];
 function faqHTML(k){
@@ -9429,7 +9503,7 @@ function gdWhat(w){
 }
 function gdEx(){ const d = document.getElementById('gd-ex'); if(d){ d.open = true; d.scrollIntoView({block:'start', behavior:'smooth'}); } }
 function faqOpen(soloFaq){
-  let here = null; try{ if(document.body.classList.contains('sh-in')) here = VIDEOS.find(v => v.n === vidHere()); }catch(e){}
+  let here = null, hereL = []; try{ if(document.body.classList.contains('sh-in') && window.vidCtx){ hereL = vidPageList(window.vidCtx()); here = hereL[0] || null; } }catch(e){}
   let w = 'PE'; try{ if(typeof MODE !== 'undefined' && MODE === 'personale') w = 'PP'; }catch(e){}
   modalShow(`<h3 style="margin:0 0 10px;font-size:17px">Guida</h3>
     <div class="gd-top"><button type="button" class="btn-primary" onclick="gdEx()">Progetti d’esempio</button>${here ? `<button type="button" class="btn-ghost" onclick="vidOpen(${here.n})">▶ Guarda: ${here.t}</button>` : ''}</div>
@@ -9441,8 +9515,8 @@ function faqOpen(soloFaq){
       <p style="margin:8px 0;font-size:13px;line-height:1.5">Due progetti immaginari già compilati in ogni parte, per vedere come si presenta un lavoro finito e farti un’idea di cosa scrivere. Servono da pietra di paragone: li puoi aprire, modificare, e poi eliminare con un clic.</p>
       <div class="gd-top" style="margin:0"><button type="button" class="btn-ghost" onclick="modalClose();exStart('PP')">Esempio di Progetto Personale</button><button type="button" class="btn-ghost" onclick="modalClose();exStart('AN')">Esempio di Programmazione Educativa</button></div></details>
     <details class="gd-pan"><summary><b>Video tutorial</b></summary>
-      <p style="margin:8px 0;font-size:13px;line-height:1.5">${VIDEOS.length} video brevi, uno per argomento.</p>
-      <div class="gd-top" style="margin:0">${here ? `<button type="button" class="btn-primary" onclick="vidOpen(${here.n})">Guarda: ${here.t}</button>` : ''}<button type="button" class="btn-ghost" onclick="vidList()">Tutti i video</button></div></details>
+      <p style="margin:8px 0;font-size:13px;line-height:1.5">${VIDEOS.length} video brevi, divisi per capitolo. ✓ = già guardato su questo dispositivo.</p>
+      ${hereL.length ? `<div class="vid-here"><div class="vid-hh2">Per questa pagina</div>${hereL.map(vidRow).join('')}</div>` : ''}${vidChaptersHTML(vidAud())}</details>
     <details class="gd-pan" id="gd-faq"><summary><b>Domande frequenti</b></summary>${faqHTML('')}</details>`);
   gdWhat(w);
   if(soloFaq === true){ const d = document.getElementById('gd-faq'); if(d){ d.open = true; setTimeout(() => { try{ d.scrollIntoView({block:'start'}); }catch(e){} }, 50); } }
@@ -9457,7 +9531,7 @@ function faqFilter(v, k){ k = k || '';
 }
 function faqGo(i){ const f = FAQ[i]; if(!f || !f[3]) return; modalClose(); try{ if(!/^(clOpen|clOpenHist|shGoHome)\(/.test(f[3]) && typeof clClose === 'function') clClose(); }catch(e){} setTimeout(() => { try{ (new Function(f[3]))(); }catch(e){} }, 50); }
 // link «Domande frequenti» in fondo ai riquadri «Come funziona»
-function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = '<a href="#" class="vid-lk" onclick="vidOpen(vidHere());return false">▶ Guarda il video</a> · Hai un dubbio? <a href="#" onclick="faqOpen(true);return false">Domande frequenti</a>'; b.appendChild(p); }); }
+function faqLinks(){ document.querySelectorAll('.tutorial-box').forEach(b => { if(b.querySelector('.faq-lk')) return; const p = document.createElement('p'); p.className = 'faq-lk'; p.innerHTML = 'Hai un dubbio? <a href="#" onclick="faqOpen(true);return false">Domande frequenti</a>'; b.appendChild(p); }); }
 function novOpen(){
   modalShow(`<h3 style="margin:0 0 4px;font-size:17px">Novità</h3><p style="font-size:12px;color:var(--ink-mid);margin:0 0 12px">Versione ${APP_VERSION}. Qualcosa non va o hai un’idea? Scrivici da “Suggerimenti?”.</p>`+
     NOVITA.map(n=>`<div style="margin:0 0 14px"><div style="font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--green);text-transform:uppercase">${n.d}</div><div style="font-size:14px;font-weight:800;margin:2px 0 6px">${n.t}</div><ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.55">${n.i.map(x=>`<li style="margin:3px 0">${x}</li>`).join('')}</ul></div>`).join(''));
@@ -15644,7 +15718,7 @@ function clShow(view){
       ${view==='login'?`<button class="cl-btn ghost" onclick="clShow('reset')">Password dimenticata?</button>`:''}
       ${isR?`<button class="cl-btn ghost" onclick="clShow('login')">Indietro</button>`:''}</div>
       <div class="cl-msg" id="cl-msg"></div>
-      <p class="cl-note" style="margin:10px 0 0"><a href="#" class="vid-lk" onclick="clClose();vidOpen(3);return false">▶ Video: archivio e copie di sicurezza</a></p>
+      <p class="cl-note" style="margin:10px 0 0"><a href="#" class="vid-lk" onclick="clClose();vidOpen(5);return false">▶ Video: archivio e copie di sicurezza</a></p>
       <p class="cl-note">In questo strumento possono esserci osservazioni su persone reali: usa nomi in forma abbreviata o di fantasia per i ragazzi. Solo tu vedi i tuoi dati.</p>`;
   } else if(view === 'email'){
     t.textContent = 'Cambia email';
@@ -15693,7 +15767,7 @@ function clShow(view){
     t.textContent = rows.length === 1 ? 'Hai un invito su «' + r.anno + ' · ' + r.titolo + '»' : 'Hai ' + rows.length + ' inviti';
     b.innerHTML = rows.slice(0, 4).map(x => `<div class="cl-row"><div style="min-width:0"><div class="t" style="font-weight:500;line-height:1.5">${clInvTxt(x)}.</div><div class="s">${clEsc(CL_RUOLI_TXT[x.ruolo] || CL_RUOLI_TXT.lettore)}</div></div><button class="cl-btn sm" onclick="clInvOpen('${x.id}')">${clEditRole(x.ruolo) ? 'Apri e modifica' : 'Apri'}</button></div>`).join('')
       + (rows.length > 4 ? `<p class="cl-note" style="margin:6px 0 0">Gli altri li trovi in Archivio › Condivisi con me.</p>` : '')
-      + `<p class="cl-note">Il tuo lavoro resta dove è: lo ritrovi nel tuo archivio. <a href="#" class="vid-lk" onclick="clClose();vidOpen(6);return false">▶ Video: lavorare insieme</a></p><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="cl-btn ghost" onclick="clInvLater()">Più tardi</button></div>`;
+      + `<p class="cl-note">Il tuo lavoro resta dove è: lo ritrovi nel tuo archivio. <a href="#" class="vid-lk" onclick="clClose();vidOpen(41);return false">▶ Video: lavorare insieme</a></p><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="cl-btn ghost" onclick="clInvLater()">Più tardi</button></div>`;
   } else if(view === 'ro'){
     t.textContent = 'Sola lettura';
     b.innerHTML = `<p class="cl-note" style="margin:0 0 12px">Stai guardando un progetto condiviso con te${window.BRO&&window.BRO.owner?' da <strong>'+clEsc(window.BRO.owner)+'</strong>':''}. Per aprire i tuoi PEE torna al tuo lavoro.</p>
@@ -15948,7 +16022,7 @@ async function clRenderArchive(){
       <div style="font-size:12px;color:#555">Account: ${clMyName()?`<strong>${clEsc(clMyName())}</strong> · `:''}<strong>${clEsc(CL.user.email)}</strong>${clMyName()?` · <a href="#" onclick="event.preventDefault();clAskNome()" style="color:#1b5e42">cambia nome</a>`:''} · <a href="#" onclick="event.preventDefault();clShow('email')" style="color:#1b5e42">cambia email</a> · <a href="#" onclick="event.preventDefault();clShow('recovery')" style="color:#1b5e42">cambia password</a>${CL.user.new_email?`<br><span style="color:#8a4b00">In attesa di conferma: ${clEsc(CL.user.new_email)}</span>`:''}</div>
       <button class="cl-btn ghost sm" onclick="clLogout()">Esci</button></div>`;
   if(!clMyName()) h += clNomeBox();
-  h += `<p class="cl-note" style="margin:0 0 8px"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: il tuo spazio</a> · <a href="#" class="vid-lk" onclick="clClose();vidOpen(5);return false">▶ Video: programmare con lo staff</a></p>`;
+  h += `<p class="cl-note" style="margin:0 0 8px"><a href="#" class="vid-lk" onclick="clClose();vidOpen(2);return false">▶ Video: il tuo spazio</a> · <a href="#" class="vid-lk" onclick="clClose();vidOpen(21);return false">▶ Video: programmare con lo staff</a></p>`;
   h += '<div id="cl-perte">' + clPerTeHTML() + '</div>';
   if(!window.BRO) h += '<div style="margin:0 0 10px"><button class="cl-btn ghost sm" id="cl-cerca" onclick="clClose();anOpen()">🔎 Cerca un’attività · le mie proposte</button></div>';
   h += '<div id="cl-shared"></div><div id="cl-rev"></div>';
@@ -18860,6 +18934,7 @@ const NAV_CG = [
 ];
 const navItems = () => isPP() ? NAV_PP : isCGp() ? NAV_CG : isST() ? NAV_ST : NAV_AN;
 window.shNavItems = navItems;
+window.vidCtx = function(){ return {id: active(), grp: (SH.ppv === 'grp' ? (SH._grp || '') : ''), aud: isPP() ? 'P' : isCGp() ? 'C' : isST() ? 'S' : 'A'}; };
 let cur = null;
 
 // Sezione 1: sottovoci (Sviluppo Personale, Comunitario, Spirituale = una pagina per Ambito, niente scroll infinito)
@@ -18942,7 +19017,7 @@ function active(){
 // pagina del guscio in cui si sta lavorando: si salva prima di aggiornare il progetto con le modifiche altrui e si rimette dopo
 window.shViewSave = function(){ try{ const id = active(); const it = navItems().find(i => i.id === id); return (it && it.go) ? {id:id, go:it.go} : null; }catch(e){ return null; } };
 window.shViewGo = function(v){ try{ if(!v || !v.go) return false; (new Function(v.go))(); return true; }catch(e){ return false; } };
-window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevEnsure(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } };
+window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevEnsure(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } try{ setTimeout(() => window.vidPageSync && vidPageSync(), 60); }catch(e){} };
 function gFootFix(){
   try{
     if(MODE !== 'giovani') return;
