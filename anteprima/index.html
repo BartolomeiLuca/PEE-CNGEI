@@ -9138,7 +9138,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611161335'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611161415'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -16512,7 +16512,7 @@ async function clPerTe(){
       if(!_q.error){ const ok = (_q.data || []).filter(x => (x.tipo === 'nota' && x.testo) || x.tipo === 'esito' || (x.tipo === 'stato' && x.valore !== 'ok') || (x.tipo === 'check' && (x.valore === 'parz' || x.valore === 'no')));
         const by = {}, pend = {}; ok.forEach(x => { if(x.updated_at > sn) by[x.giro_id] = (by[x.giro_id] || 0) + 1; if(x.tipo === 'nota' && !x.recepita) pend[x.giro_id] = (pend[x.giro_id] || 0) + 1; }); const ids = Array.from(new Set(Object.keys(by).concat(Object.keys(pend))));
         if(ids.length){ const gr = await CL.sb.from('pee_giri').select('id,n,archivio_id,meta').in('id', ids); let rvc = null; try{ const rr = await CL.sb.from('pee_revisioni').select('id,archivio_id').eq('stato', 'aperta').eq('owner_id', CL.user.id); if(!rr.error){ rvc = {}; const vi = (rr.data || []).map(x => x.id); const pp = vi.length ? await CL.sb.from('pee_revisioni_punto').select('revisione_id,stato').in('revisione_id', vi).in('stato', ['da_fare', 'attesa']) : {data:[]}; (rr.data || []).forEach(v => { rvc[v.archivio_id] = (pp.data || []).filter(x => x.revisione_id === v.id).length; }); } }catch(e){}
-          (gr.data || []).forEach(g => { const pq = rvc ? (rvc[g.archivio_id] || 0) : (pend[g.id] || 0); if(!pq && !by[g.id]) return; _fbN++; items.push({k:'gfb', id:g.id, n:by[g.id] || 0, pend:pq, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
+          (gr.data || []).forEach(g => { const pq = rvc ? (rvc[g.archivio_id] || 0) : (pend[g.id] || 0); if(!pq && !by[g.id]) return; _fbN++; items.push({k:'gfb', id:g.id, aid:g.archivio_id, n:by[g.id] || 0, pend:pq, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
     { const AK2 = ptAckGet(); items.forEach(x => { if(x.k === 'rvg' || x.k === 'gfb'){ x.ack = !!AK2[ptAckKey(x)]; if(x.ack) x.hot = false; } }); }
     CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
     try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
@@ -16577,7 +16577,7 @@ function clPerTeHTML(){
     if(x.k === 'email') return `<div class="cl-row"><div style="min-width:0"><div class="t">${clEsc(x.nome||x.email)} ha cambiato email</div><div class="s">${clEsc(x.prima)} → ${clEsc(x.email)} · ${clEsc(x.anno)} · ${clEsc(x.titolo)}</div></div><button class="cl-btn sm" onclick="clMailFix('${x.mid}')">Aggiorna nella tabella dello staff</button></div>`;
     if(x.k === 'att') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.parti?clEsc(x.parti.join(', '))+' di':'Attività affidata a te:'} ${x.t?'«'+clEsc(x.t.slice(0,60))+'»':'attività '+(x.j+1)}${x.parti?' · affidat'+(x.parti.length>1?'e':'a')+' a te':''}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${x.cur?' · è il progetto aperto':(x.owner?' · di '+clEsc(x.owner):'')}</div></div><button class="cl-btn sm" onclick="ptMarkSeen('${x.id}',${x.idx},${x.j});${go}">Apri</button></div>`;
     if(x.k === 'rvg') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.rev ? 'Da rivedere' : 'Da leggere'}: Progetto Personale di ${clEsc(x.nome)}</div><div class="s">${x.n === 1 ? '1 giro' : x.n + ' giri'} in attesa${x.titolo ? ' · ' + clEsc(x.titolo) : ''}</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};rvOpen('${clEsc(x.gid)}')">Apri</button></div>`;
-    if(x.k === 'gfb') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n ? 'Nuovi riscontri' : 'Riscontri'} sul tuo Progetto Personale · Giro ${x.gn}</div><div class="s">${x.pend ? (x.pend === 1 ? '1 punto ancora da recepire' : x.pend + ' punti ancora da recepire') + (x.n ? ' · ' : '') : ''}${x.n ? (x.n === 1 ? '1 novità' : x.n + ' novità') + ': commenti, esito o check-list' : ''}</div></div><button class="cl-btn sm" onclick="try{clClose()}catch(e){};rvOpenAny('${clEsc(x.id)}')">Leggi le revisioni</button></div>`;
+    if(x.k === 'gfb') return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n ? 'Nuovi riscontri' : 'Riscontri'} sul tuo Progetto Personale · Giro ${x.gn}</div><div class="s">${x.pend ? (x.pend === 1 ? '1 punto ancora da recepire' : x.pend + ' punti ancora da recepire') + (x.n ? ' · ' : '') : ''}${x.n ? (x.n === 1 ? '1 novità' : x.n + ' novità') + ': commenti, esito o check-list' : ''}</div></div><button class="cl-btn sm" onclick="rpOpenDock('${clEsc(x.aid || '')}')">Leggi le revisioni</button></div>`;
     const cur = CL.ctx && CL.ctx.id === x.id && !CL.ctx.ruolo;
     return `<div class="cl-row"><div style="min-width:0"><div class="t">${x.n === 1 ? '1 suggerimento da leggere' : x.n + ' suggerimenti da leggere'}</div><div class="s">${clEsc(x.anno)} · ${clEsc(x.titolo)}${cur?' · è il progetto aperto':''}</div></div><button class="cl-btn sm" onclick="${cur?'clPtGoSg()':`clOpenProject('${x.id}')`}">${cur?'Leggili':'Apri'}</button></div>`;
   };
@@ -19354,8 +19354,8 @@ function ppGiroCardHTML(g){
   return `<div style="border:1px solid #d8d8d0;border-radius:10px;padding:10px 12px;margin-top:10px">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Giro ${g.n}</b><span style="font-size:12.5px">${esc(fmtDL(g.at || ''))}${g.nomi === false ? ' · senza griglia osservativa' : ''}</span>
       ${g.hist ? '<span class="sh-hint"><i>segnato a mano: non c’è una copia</i></span>' : '<span class="sh-pill sh-pill-ok">Congelato</span>'}
-      ${g.hist ? '' : `<button type="button" class="btn-ghost" style="margin-left:auto;min-height:34px;font-size:12.5px" onclick="ppGiroApri('${g.id}')">${ppGiroBtnLabel(g)}</button><button type="button" class="btn-ghost" style="min-height:34px;font-size:12.5px" onclick="ppGiroApri('${g.id}',true)">Scarica il Word</button>`}<button type="button" class="btn-ghost" style="min-height:34px;font-size:12.5px;color:#8B2216${g.hist ? ';margin-left:auto' : ''}" onclick="ppGiroElimina('${g.id}')">Elimina il giro</button></div>
-    ${g.hist ? '' : '<div class="sh-hint" style="margin-top:4px;font-size:12px;line-height:1.45">Il pulsante apre, in una nuova scheda e in sola lettura, il progetto com’era il giorno dell’invio, con le revisioni ricevute a fianco: lì le leggi, segni «recepita» e rispondi. Il tuo progetto resta aperto nella scheda di prima. «Scarica il Word» scarica proprio quella versione.</div>'}
+      ${(!g.hist && (g.dest || []).some(d => d.app)) ? `<button type="button" class="btn-ghost" style="margin-left:auto;min-height:34px;font-size:12.5px" onclick="rpOpenDock(CL.ctx && CL.ctx.id)">Apri le revisioni nel progetto</button>` : ''}<button type="button" class="btn-ghost" style="min-height:34px;font-size:12.5px;color:#8B2216${(g.hist || !(g.dest || []).some(d => d.app)) ? ';margin-left:auto' : ''}" onclick="ppGiroElimina('${g.id}')">Elimina il giro</button></div>
+    ${(!g.hist && (g.dest || []).some(d => d.app)) ? '<div class="sh-hint" style="margin-top:4px;font-size:12px;line-height:1.45">Le revisioni si leggono e si sistemano direttamente nel tuo progetto, punto per punto: il pulsante apre l’elenco.</div>' : ''}
     <div style="font-size:12.5px;margin-top:4px;line-height:1.5">${dst ? 'A: ' + dst : g.hist ? '' : '<span class="sh-hint">Non condiviso con nessuno: resta una copia ferma del progetto</span>'}${g.nota ? '<br><span class="sh-hint">' + esc(g.nota) + '</span>' : ''}</div>
     ${(!g.hist && (g.dest || []).some(d => d.app)) ? '<div id="gfb-' + g.id + '">' + ppGiroFbHTML(g) + '</div>' : ''}
     ${rr}<button type="button" class="btn-ghost" style="margin-top:8px;font-size:12px" onclick="ppGRiscAdd('${g.id}')">+ ${R.length ? 'Aggiungi un altro riscontro' : 'Aggiungi il riscontro ricevuto'}</button></div>`;
@@ -20144,6 +20144,26 @@ window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; con
   // il punto non ha un campo riconoscibile nella pagina: la scheda si apre in primo piano, uguale a quella del revisore
   const ff = document.createElement('div'); ff.id = 'rp-float'; ff.innerHTML = '<button type="button" class="rp-x" onclick="this.parentNode.remove()" aria-label="Chiudi">✕</button><div class="rp-inl-w">' + esc(p.sec ? 'Sezione ' + p.sec + ' › ' : '') + esc(p.txt || '') + '</div>'; ff.appendChild(box); document.body.appendChild(ff); };
 window.rpGfbSeen = function(){ try{ localStorage.setItem('bussola_gfb_seen_' + CL.user.id, new Date().toISOString()); if(window.clPerTe) setTimeout(() => clPerTe(), 400); }catch(e){} };
+// «Per te» e scheda del giro: si apre il progetto vero (mai la copia) e, nel progetto, l'elenco delle revisioni da recepire
+window.rpOpenDock = function(aid){
+  if(!aid){ showToast('Non trovo il progetto: aprilo da «I tuoi progetti»'); return; }
+  window._rpOpenedHome = false;
+  try{ sessionStorage.setItem('bussola_rp_open', JSON.stringify({aid:aid, t:Date.now()})); }catch(e){}
+  try{ clClose(); }catch(e){}
+  if(CL.ctx && CL.ctx.id === aid && !CL.ctx.ruolo){ const home = ptHome(); if(home){ try{ shOpen(aid, false); }catch(e){} } setTimeout(() => window.rpOpenRun(0), home ? 1100 : 0); }
+  else clOpenProject(aid);
+};
+window.rpOpenRun = async function(n){
+  let f = null; try{ f = JSON.parse(sessionStorage.getItem('bussola_rp_open') || 'null'); }catch(e){} if(!f) return;
+  const clr = () => { try{ sessionStorage.removeItem('bussola_rp_open'); }catch(e){} };
+  if(Date.now() - (f.t || 0) > 90000){ clr(); return; }
+  n = n || 0; if(n > 40){ clr(); return; }
+  // dopo la ricarica si può arrivare alla pagina «I tuoi progetti» con il progetto già in memoria: lo si apre una volta sola
+  if(CL && CL.ctx && CL.ctx.id === f.aid && !CL.ctx.ruolo && CL.user && CL.sb && ptHome() && !window._rpOpenedHome){ window._rpOpenedHome = true; try{ shOpen(f.aid, false); }catch(e){} }
+  if(!(CL && CL.ctx && CL.ctx.id === f.aid && !CL.ctx.ruolo && CL.user && CL.sb && document.getElementById('sh-root') && document.querySelector('#sh-side .sh-gh') && !ptHome())){ setTimeout(() => window.rpOpenRun(n + 1), 500); return; }
+  clr();
+  try{ await window.rpLoad(); const P = window._rp; if(P && P.pts && P.pts.length){ P.open = true; window.rpGfbSeen(); rpPaint(); } else showToast('Non trovo punti da recepire in questo progetto'); }catch(e){}
+};
 window.rpTog = function(){ window._rp.open = !window._rp.open; if(window._rp.open) window.rpGfbSeen(); rpPaint(); };
 window.rpNuovoGiro = function(forza){ const P = window._rp, pend = P.pts.filter(p => !p.recepita).length; if(pend && !forza && !confirm('Ci sono ancora ' + pend + ' punti non segnati come fatti. Vuoi inviare comunque un nuovo giro?')) return;
   const last = P.last, blk = last && (last.sezioni || []).some(x => x >= 4) ? 2 : 1; try{ rpTog(); ppGiroForm(blk); const rec = P.pts.filter(p => p.recepita).length; if(window._giroForm){ window._giroForm.nota = 'Ho lavorato sulle revisioni del giro ' + (last ? last.n : '') + ': ' + rec + ' punti recepiti su ' + P.pts.length + '.'; ppGiroFormRender(); } }catch(e){} };
@@ -20431,7 +20451,7 @@ window.rvAzione = async function(aid, kind){
   rvRender = wrap(rvRender); rvDocPaint = wrap(rvDocPaint);
 })();
 Object.assign(window, {rvGroup, rvDocOpen, rvDocPaint, rvRender, rvThr, rvPoints, rvSync, rvAnchors, ppGiroBtnLabel, rvMsgLoad});
-setTimeout(() => { try{ if(!window.BRO){ window.rpLoad(); setInterval(() => { if(!document.hidden) window.rpLoad(); }, 60000); window.addEventListener('focus', () => window.rpLoad()); } }catch(e){} }, 4000);
+setTimeout(() => { try{ if(!window.BRO){ window.rpOpenRun && window.rpOpenRun(0); window.rpLoad(); setInterval(() => { if(!document.hidden) window.rpLoad(); }, 60000); window.addEventListener('focus', () => window.rpLoad()); } }catch(e){} }, 4000);
 // lato compilatore: i riscontri arrivati in app, con «recepita»
 window._giroFb = window._giroFb || {};
 function ppGiroBtnLabel(g){ const n = (window._giroFb[g.id] || []).filter(x => (x.tipo === 'nota' && x.testo) || x.tipo === 'esito' || (x.tipo === 'stato' && x.valore !== 'ok') || (x.tipo === 'check' && x.valore !== 'si')).length; return n ? 'Leggi le revisioni ricevute · Giro ' + g.n : 'Vedi il progetto inviato'; }

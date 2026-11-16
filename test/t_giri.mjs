@@ -67,7 +67,7 @@ const rid = await ev(id => Object.keys(ppGiri()[id].risc)[0], gid);
 await ev(([id, r]) => { ppGRiscSet(id, r, 'da', 'Tutor Marco'); ppGRiscSet(id, r, 'esito', 'approva'); }, [gid, rid]); await sleep(500);
 s = await ev(() => ({ap: ppIter().apprB1, b2: ppBloccoHTML(2)}));
 ok(s.ap && s.ap.chi === 'Tutor Marco' && /ppGiroForm\(2\)/.test(s.b2), 'il riscontro «Approva» registra l’approvazione e sblocca la consegna finale');
-ok(await ev(() => /Vedi il progetto inviato/.test(ppBloccoHTML(1)) && /Scarica il Word/.test(ppBloccoHTML(1))), 'il giro ha i pulsanti «Vedi il progetto inviato» e «Scarica il Word»');
+ok(await ev(() => !/Vedi il progetto inviato|Scarica il Word<\/button><button[^>]*Elimina|ppGiroApri\('/.test(ppBloccoHTML(1))), 'il compilatore non ha pulsanti sulla copia (14/11: la copia non si apre dal compilatore)');
 const [pop] = await Promise.all([P.context().waitForEvent('page', {timeout:15000}), ev(id => ppGiroApri(id), gid)]);
 await pop.waitForLoadState('domcontentloaded'); await sleep(6000);
 s = await pop.evaluate(() => ({ro: window.BRO && window.BRO.giro, bar: (document.getElementById('giro-bar') || {}).textContent || '', nome: (scheda.pp || {}).nome, old: !!document.getElementById('ro-bar'), url: location.hash}));
