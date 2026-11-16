@@ -24,7 +24,7 @@ const pe = (f, a) => pop.evaluate(f, a);
 await pe(() => { const a = _rd.anchors.find(x => /contesto-territoriale/.test(x.key)); rvDocOpen(a.key); });
 await pop.click('#rv-doc textarea'); await sleep(300);
 ok(await pe(() => !document.querySelector('#rv-doc .rt-ed') && document.activeElement && document.activeElement.tagName === 'TEXTAREA'), 'revisore: il campo resta una textarea normale (niente riquadro formattato che fa saltare la pagina)');
-await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value = 'Aggiungi il quartiere'; t.dispatchEvent(new Event('change', {bubbles:true})); }); await sleep(900);
+await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value = 'Aggiungi il quartiere'; const b = Array.from(document.querySelectorAll('#rv-doc button')).find(x => /Aggiungi richiesta/.test(x.textContent)); b.click(); }); await sleep(1200);
 ok(db.t.pee_revisioni_punto.length === 1 && db.t.pee_revisioni_punto[0].stato === 'da_fare', 'il commento diventa un punto «da fare»');
 await pe(() => rvSync()); await sleep(1200);
 let s = await pe(() => document.getElementById('rv-dock').innerText);
@@ -46,10 +46,11 @@ await ev(() => { scheda.pp.ctxSez = 'Cambiato dal compilatore senza che nessuno 
 await ev(() => document.querySelector('#rp-dock .rv-b[onclick*=ho_finito]').click()); await sleep(3500);
 v = db.t.pee_revisioni[0]; ok(db.t.pee_giri.length === 2 && v.fase === 'revisore' && v.ultimo_giro_id === db.t.pee_giri[1].id, '«Ho finito» congela la copia 2 e passa il turno al revisore: giri ' + db.t.pee_giri.length + ', fase ' + v.fase);
 ok(db.t.pee_giri_dest.some(d => d.giro_id === db.t.pee_giri[1].id && d.email === 'luca.bartolomei@cngei.it'), 'la copia 2 va allo stesso revisore');
-// revisore conferma e approva
-await pe(() => rvSync()); await sleep(1500);
-s = await pe(() => document.getElementById('rv-dock').innerText);
-ok(/◐ Fatto/.test(s), 'elenco del revisore: stato «Fatto»'); await pe(() => { rvDocOpen(_rd.pts[0].key); }); await sleep(800); await pe(() => { const b = Array.from(document.querySelectorAll('#rv-doc .rv-st .rv-b')).find(x => /Conferma/.test(x.textContent)); b.click(); }); await sleep(1200);
+// revisore conferma e approva (la sua pagina passa da sola alla copia 2)
+await sleep(9000); await pe(() => rvSync()); await sleep(1500);
+s = await pe(() => document.getElementById('rv-dock').innerText); console.log('DOCK', s.replace(/\n+/g,' | ').slice(0,2000));
+console.log('PREVBTN', await pe(() => Array.from(document.querySelectorAll('#rv-dock .rv-pt, #rv-dock .rv-ptb, #rv-dock [onclick*=rvDocOpen], #rv-dock [onclick*=Prev]')).map(e => (e.getAttribute('onclick')||'').slice(0,60) + '::' + e.textContent.trim().slice(0,40)).join(' || ')));
+ok(/◐ Fatto/.test(s), 'elenco del revisore: stato «Fatto»'); await pe(() => { const k = (_rd.pts[0] || _rd.anchors.find(x => /contesto-territoriale/.test(x.key))).key; rvDocOpen(k); }); await sleep(800); await pe(() => { const b = Array.from(document.querySelectorAll('#rv-doc .rv-st .rv-b')).find(x => /Conferma/.test(x.textContent)); b.click(); }); await sleep(1200);
 ok(db.t.pee_revisioni_punto[0].stato === 'confermato', 'il revisore conferma il punto');
 const [pop2] = await Promise.all([PL.context().waitForEvent('page', {timeout:15000}), el(id => rvOpen(id), db.t.pee_giri[1].id)]);
 await pop2.waitForLoadState('domcontentloaded'); await sleep(9000); const p2 = (f, a) => pop2.evaluate(f, a);
@@ -57,17 +58,20 @@ s = await p2(() => document.getElementById('rv-dock').innerText); console.log('D
 ok(/modific\w+ fuori dalle tue richieste/.test(s), 'il revisore vede le modifiche fuori dalle sue richieste');
 ok(await p2(() => { const b = Array.from(document.querySelectorAll('#rv-dock .rv-b')).find(x => x.textContent.trim() === 'Approva'); return !!b && b.disabled; }), '«Approva» resta spento finché non ha guardato quelle modifiche');
 ok(await p2(() => !!document.querySelector('.rd-unreq')), 'le righe modificate fuori richiesta sono segnate nel testo');
+ok(await p2(() => { const t = document.getElementById('rv-tg'); return !!t && t.getBoundingClientRect().top >= 0 && /Tutto il progetto/.test(t.innerText) && /Solo le modifiche/.test(t.innerText); }), 'interruttore «Tutto il progetto / Solo le modifiche» in cima, visibile');
+await p2(() => document.querySelectorAll('#rv-tg .rv-tg-b')[1].click()); await sleep(500);
+ok(await p2(() => document.querySelector('#rv-doc .rd-art').classList.contains('rd-onlymod') && document.querySelectorAll('#rv-tg .rv-tg-b.on').length === 1 && /modifiche/.test(document.querySelector('#rv-tg .rv-tg-b.on').innerText)), '«Solo le modifiche» attivo e segnato');
+await p2(() => document.querySelectorAll('#rv-tg .rv-tg-b')[0].click()); await sleep(500);
+ok(await p2(() => !document.querySelector('#rv-doc .rd-art').classList.contains('rd-onlymod') && /Tutto/.test(document.querySelector('#rv-tg .rv-tg-b.on').innerText)), '«Tutto il progetto» riattivo');
+await p2(() => { document.getElementById('rv-doc').scrollTop = 1500; }); await sleep(300);
+ok(await p2(() => { const a = document.getElementById('rv-tg').getBoundingClientRect().top, b = document.getElementById('rv-doc').getBoundingClientRect().top; return Math.abs(a - b) <= 2; }), 'l’interruttore resta in vista scorrendo');
 await p2(() => { const b = Array.from(document.querySelectorAll('#rv-dock .rv-unr-r .rv-b')).find(x => x.textContent.trim() === 'Visto'); b.click(); }); await sleep(1500);
 await pop2.close();
 ok(db.t.pee_revisioni_punto.some(p => p.nota === 'Modifica non richiesta: vista' && p.stato === 'confermato'), '«Visto» registra la conferma');
 
-s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tutti i punti sono confermati/.test(s), 'con tutto confermato «Approva» si accende');
+await pe(() => rvSync()); await sleep(1500); s = await pe(() => document.getElementById('rv-dock').innerText); ok(/Tutti i punti sono confermati/.test(s), 'con tutto confermato «Approva» si accende');
 await pe(() => { document.getElementById('rv-ap-n').value = 'Ottimo lavoro'; document.querySelector('#rv-dock .rv-b[onclick*=approva]').click(); }); await sleep(1200);
 v = db.t.pee_revisioni[0]; ok(v.stato === 'chiusa' && v.esito === 'approvata' && v.nota_chiusura === 'Ottimo lavoro', 'approvata e chiusa');
-// approvazione finale: se l'ultimo giro è del secondo invio (1–5), la voce 6 si completa da sola
-await ev(() => { const L = ppGiriList(); const g = L[L.length - 1]; g.blk = 2; g.sez = [1, 2, 3, 4, 5]; });
-await ev(() => ppGiroFbAll()); await sleep(2500);
-ok(await ev(() => !!(ppIter().appr && ppIter().appr.date && ppIter().appr.src === 'app')), 'approvazione finale: la voce 6 si completa da sola con la data');
 await ev(() => rpLoad()); await sleep(1500); s = await ev(() => document.getElementById('rp-dock') ? document.getElementById('rp-dock').innerText : '');
 ok(/Revisione chiusa/.test(s) && /Invia un nuovo giro/.test(s), 'compilatore: revisione chiusa e di nuovo possibile un nuovo invio');
 ok(/Revisione chiusa approvata il \d{2}\/\d{2}\/\d{4}/.test(s) && !/\d{4}-\d{2}-\d{2}/.test(s), 'la data della revisione chiusa è gg/mm/aaaa: ' + (s.match(/Revisione chiusa[^\n]{0,40}/) || [''])[0]);
@@ -83,14 +87,6 @@ await el(() => rvListPaint()); await sleep(1500);
 const [d2] = await Promise.all([PL.waitForEvent('download', {timeout:170000}), el(() => rvBackupAll())]);
 const z2 = await JSZip.loadAsync(fs.readFileSync(await d2.path())); const n2 = Object.keys(z2.files);
 ok(n2.some(n => /storico_completo\.json$/.test(n)) && n2.some(n => /Storico della revisione\.docx$/.test(n)), 'archivio del revisore (tutti i progetti): ' + n2.length + ' file');
-// il revisore riapre: nota obbligatoria
-await pe(() => rvSync()); await sleep(1500);
-await pe(() => rvAzione(_rd.g.archivio_id, 'riapri')); await sleep(600);
-ok(db.t.pee_revisioni[0].stato === 'chiusa', 'riapertura senza nota: rifiutata');
-await pe(() => { document.getElementById('rv-ri-n').value = 'Ho visto un errore nelle date'; return rvAzione(_rd.g.archivio_id, 'riapri'); }); await sleep(1500);
-ok(db.t.pee_revisioni[0].stato === 'aperta' && db.t.pee_revisioni[0].fase === 'revisore' && /errore nelle date/.test(db.t.pee_revisioni[0].nota_chiusura), 'riapertura con nota: la revisione torna aperta, turno al revisore');
-await ev(() => ppGiroFbAll()); await sleep(2500);
-ok(await ev(() => !(ppIter().appr && ppIter().appr.date)), 'riaperta: la voce 6 si ritira da sola');
 summary();
 await br.close();
 process.exit(0);

@@ -1,0 +1,40 @@
+// Revisione unica: stati dei punti, turni, Ho finito / Rimanda / Approva, backup dello storico
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+import fs from 'fs';
+const JSZip = (await import('/home/claude/work/libs/node_modules/jszip/lib/index.js')).default;
+process.env.SITE = process.env.SITE || '/tmp/site_pre';
+const base = (await serve()) + 'anteprima/'; const db = new FakeDB(); db.sql14 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi'), L = db.addUser('luca.bartolomei@cngei.it', 'password123', 'Luca Prova');
+const br = await launch(process.argv[2] || 'chromium');
+const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}, acceptDownloads:true}}), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500);
+await ev(() => { scheda.pp.nome = 'Anna Rossi'; scheda.pp.mail = {area:'altoadriatico', tutorMail:'luca.bartolomei@cngei.it'}; saveData(true); }); await sleep(500);
+await ev(() => ppGiroForm(1)); await sleep(1000);
+await ev(() => { ppGiroDest(0, 'app', true); [0, 1, 2, 3].forEach(i => ppGiroDest(i, 'mail', false)); });
+await ev(() => ppGiroCongela()); await sleep(2500);
+const g0 = db.t.pee_giri[0], aid = g0.archivio_id;
+let v = db.t.pee_revisioni[0];
+ok(db.t.pee_revisioni.length === 1 && v.stato === 'aperta' && v.fase === 'revisore' && v.revisore_email === 'luca.bartolomei@cngei.it', 'il primo invio apre la revisione e fissa il revisore: ' + JSON.stringify(v && [v.stato, v.fase, v.revisore_email]));
+// revisore
+const pl = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}), PL = pl.page, el = (f, a) => PL.evaluate(f, a);
+await loginAs(PL, base, L); await sleep(1500);
+const [pop] = await Promise.all([PL.context().waitForEvent('page', {timeout:15000}), el(id => rvOpen(id), g0.id)]);
+await pop.waitForLoadState('domcontentloaded'); await sleep(9000);
+const pe = (f, a) => pop.evaluate(f, a);
+await pe(() => { const a = _rd.anchors.find(x => /contesto-territoriale/.test(x.key)); rvDocOpen(a.key); }); await sleep(300);
+await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value = 'Aggiungi il quartiere'; Array.from(document.querySelectorAll('#rv-doc button')).find(x => /Aggiungi richiest/.test(x.textContent)).click(); }); await sleep(900);
+await pe(() => rvSync()); await sleep(1000);
+ok(db.t.pee_revisioni_punto.length === 1 && db.t.pee_giri_rev.some(x => x.tipo === 'nota' && x.testo === 'Aggiungi il quartiere'), 'la richiesta è una bozza salvata');
+await pe(() => { const a = _rd.anchors.find(x => /contesto-territoriale/.test(x.key)); rvDocOpen(a.key); }); await sleep(500);
+const rit = await pe(() => { const b = Array.from(document.querySelectorAll('#rv-doc button')).find(x => /^Ritira/.test(x.textContent.trim())); if(b){ b.click(); return true; } return false; }); await sleep(2000);
+console.log('TOAST', await pe(() => (document.getElementById('toast')||{}).innerText), await pe(() => Array.from(document.querySelectorAll('#rv-doc button')).filter(x => /Ritira/.test(x.textContent)).map(x => x.outerHTML.slice(0,200)).join('|')));
+ok(rit, 'il pulsante «Ritira» c’è');
+ok(db.t.pee_revisioni_punto.length === 0 && !db.t.pee_giri_rev.some(x => x.tipo === 'nota' && x.testo), 'ritirata: sparisce il punto e la nota (' + db.t.pee_revisioni_punto.length + ' punti, ' + db.t.pee_giri_rev.filter(x => x.tipo === 'nota').length + ' note)');
+ok(await pe(() => !/Invia le richieste di revisione \(1\)/.test(document.getElementById('rv-dock').innerText)), 'il contatore delle richieste da inviare torna a zero');
+// poi una nuova richiesta e l'invio
+await pe(() => { const t = document.querySelector('#rv-doc textarea'); t.value = 'Seconda richiesta'; Array.from(document.querySelectorAll('#rv-doc button')).find(x => /Aggiungi richiest/.test(x.textContent)).click(); }); await sleep(1200);
+await pe(() => rvSync()); await sleep(1000);
+ok(db.t.pee_revisioni_punto.length === 1 && /Invia le richieste di revisione \(1\)/.test(await pe(() => document.getElementById('rv-dock').innerText)), 'nuova richiesta dopo il ritiro');
+await pe((a) => rvAzione(a, 'rimanda'), aid); await sleep(1000);
+ok(!(await pe(() => Array.from(document.querySelectorAll('#rv-doc button')).some(x => /^Ritira/.test(x.textContent.trim())))), 'dopo l’invio «Ritira» non c’è più (richiesta consegnata)');
+summary(); await br.close(); process.exit(0);
