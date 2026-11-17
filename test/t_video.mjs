@@ -18,11 +18,14 @@ const go = async g => { await ev(g => (new Function(g))(), g); await sleep(1700)
 // tabella
 const T = await ev(() => ({n: VIDEOS.length, uniq: new Set(VIDEOS.map(v => v.n)).size, ch: VID_CH.length, orph: VIDEOS.filter(v => !VID_CH.some(c => c[0] === v.g)).length, seq: VIDEOS.every((v, i) => v.n === i + 1), noOk: Object.keys(VID_OK).length}));
 ok(T.n === 51 && T.uniq === 51 && T.seq && T.orph === 0 && T.ch === 10, 'tabella: 51 video numerati 1–51 in 10 capitoli: ' + JSON.stringify(T));
-ok(T.noOk === 0, 'nessun video attivo: sono tutti segnaposto');
+ok(T.noOk === 51, 'tutti i 51 video sono attivi (VID_OK)');
+const U = await ev(() => ({src: vidSrc(7), sub: vidSub(7), chap: vidChap(7), durOk: VIDEOS.every(v => /^\d+:\d\d$/.test(v.d))}));
+ok(U.src === 'https://bartolomeiluca.github.io/PEE-CNGEI-video/v2/07.mp4?v=1' && /07\.vtt\?v=1$/.test(U.sub) && /07\.chapters\.vtt\?v=1$/.test(U.chap), 'indirizzi dei video, sottotitoli e capitoli: ' + JSON.stringify(U));
+ok(U.durOk, 'tutti i video hanno la durata');
 await openP('c1');
 await go("shSec('chk')"); let b = await box();
 ok(b && b.first && !b.open && /^▶ Video tutorial \(1\)/.test(b.sum), 'Controllo e invio: riquadro in cima, chiuso, con il numero: ' + (b && b.sum));
-ok(b && b.rows.length === 1 && b.soon === 1, 'le righe sono segnaposto «in arrivo»: ' + (b && b.rows.join(' | ')));
+ok(b && b.rows.length === 1 && b.soon === 0, 'la riga è un video attivo, non un segnaposto: ' + (b && b.rows.join(' | ')));
 await go('shCal()'); b = await box(); ok(b && /\(1\)/.test(b.sum) && /Calendario e attività/.test(b.rows[0]), 'Calendario: 1 video «Calendario e attività»: ' + (b && b.rows.join()));
 await go('shEle()'); b = await box(); ok(b && /Elenco dell’anno/.test(b.rows[0]), 'Elenco dell’anno');
 await go("shSub('1a','','occ')"); b = await box(); ok(b && b.rows.length === 2 && /Crea le tue attività osservative/.test(b.rows[1]), 'Come osservo: KOS 2.0 e «Crea le tue attività osservative»: ' + (b && b.rows.join(' | ')));
@@ -31,13 +34,14 @@ await go("shSec('2')"); b = await box(); ok(b && /Obiettivi e indicatori/.test(b
 await ev(() => { document.querySelector('#vid-pg summary').click(); }); await sleep(300);
 ok((await box()).open, 'il riquadro si apre al clic');
 await go('shCal()'); await go("shSec('chk')"); b = await box(); ok(b && !b.open, 'cambiando pagina il riquadro torna chiuso');
-await ev(() => document.querySelector('#vid-pg .vid-row').click()); await sleep(400);
+await ev(() => { window._okSave = VID_OK[51]; delete VID_OK[51]; vidOpen(51); }); await sleep(400);
 const m1 = await ev(() => document.getElementById('g-modal').innerText);
 ok(/arriva presto/i.test(m1) , 'un segnaposto dice che il video arriva presto: ' + m1.replace(/\n/g, ' ').slice(0, 90));
-await ev(() => { try{ modalClose(); }catch(e){} }); await sleep(200);
+await ev(() => { try{ modalClose(); }catch(e){} VID_OK[51] = window._okSave; }); await sleep(200);
 // video attivo + già visto
-await ev(() => { VID_OK[3] = '1'; vidOpen(3); }); await sleep(400);
-ok(await ev(() => !!document.querySelector('#g-modal video.vid-v') && /pee-03\.mp4/.test(document.querySelector('video.vid-v').src)), 'con il file attivo si apre il lettore (/video/v2/pee-03.mp4)');
+await ev(() => { vidOpen(3); }); await sleep(400);
+ok(await ev(() => !!document.querySelector('#g-modal video.vid-v') && /PEE-CNGEI-video\/v2\/03\.mp4/.test(document.querySelector('video.vid-v').src)), 'si apre il lettore con il file dal repo dei video');
+ok(await ev(() => { const v = document.querySelector('video.vid-v'); const t = [...v.querySelectorAll('track')]; return v.getAttribute('crossorigin') === 'anonymous' && t.length === 2 && t[0].kind === 'subtitles' && t[0].srclang === 'it' && t[0].default && /03\.vtt/.test(t[0].src) && t[1].kind === 'chapters' && /03\.chapters\.vtt/.test(t[1].src); }), 'sottotitoli in italiano e capitoli collegati al lettore');
 await ev(() => { vidSeenMark(3); try{ modalClose(); }catch(e){} }); await sleep(300);
 ok(await ev(() => JSON.parse(localStorage.getItem('pee_vid_seen')).includes(3)), '«già visto» salvato sul dispositivo');
 await ev(() => { faqOpen(); [...document.querySelectorAll('#g-modal details.gd-pan')].forEach(d => { if(/Video tutorial/.test(d.querySelector('summary').textContent)) d.open = true; }); }); await sleep(500);

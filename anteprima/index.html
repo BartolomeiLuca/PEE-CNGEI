@@ -8892,7 +8892,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611171340'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611171441'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -9010,65 +9010,65 @@ const NOVITA = [
     'Vademecum della cassetta di primo soccorso da scaricare.',
     'Materiale comune per i Rover, consigli per lo zaino, lista della spesa.']}
 ];
-// ── Video tutorial: 51 video in 10 capitoli. Finché il file non è in /video/v2/ resta un segnaposto («in arrivo»). ──
-// Per attivare un video: copiare pee-NN.mp4 (e pee-NN.jpg) in /video/v2/ e scrivere il numero in VID_OK (valore = versione, da cambiare se il video viene rifatto).
+// ── Video tutorial: 51 video in 10 capitoli, ospitati nel repo BartolomeiLuca/PEE-CNGEI-video (GitHub Pages). Un video non presente in VID_OK resta un segnaposto («in arrivo»). ──
+// Per sostituire un video: caricare il nuovo NN.mp4 (e NN.vtt, NN.chapters.vtt) in v2/ del repo dei video e cambiare qui la versione in VID_OK[NN].
 const VID_CH = [['i','Per iniziare'],['c','Capire'],['o','Osservare'],['p','Progettare'],['r','Calendario e realizzazione'],['m','Misurare'],['d','Condividere'],['pp','Progetto Personale'],['rv','La revisione'],['st','Staff e Capo Gruppo']];
 // a = per chi è: A programmazione di Unità, P Progetto Personale, S staff, C Capo Gruppo
 const VIDEOS = [
-  {n:1, g:'i', t:'Da dove si parte: panoramica dell’app', d:'2:50', a:'APSC'},
-  {n:2, g:'i', t:'La Dashboard', d:'3:57', a:'APSC'},
-  {n:3, g:'i', t:'Account, accesso e password', d:'3:02', a:'APSC'},
-  {n:4, g:'i', t:'Creare il primo progetto', d:'2:56', a:'APSC'},
-  {n:5, g:'i', t:'Salvataggio, archivio degli anni e copie di sicurezza', d:'5:03', a:'APSC'},
-  {n:6, g:'i', t:'Telefono, tablet, testo formattato e guida', d:'3:52', a:'APSC'},
-  {n:7, g:'i', t:'Il ciclo: cos’è, a cosa serve, come si crea', d:'2:26', a:'A'},
-  {n:8, g:'c', t:'La mia unità e il mio contesto', d:'2:45', a:'AP'},
-  {n:9, g:'c', t:'Il mio staff', d:'2:58', a:'A'},
-  {n:10, g:'o', t:'Come osservo: KOS 2.0 e griglia osservativa', d:'', a:'AP'},
-  {n:11, g:'o', t:'Crea le tue attività osservative', d:'', a:'AP', s:'Il percorso guidato in 12 passi: da dove parti, dove osservi, cosa guardi, come lo organizzi, e poi scrivi tu l’attività.'},
-  {n:12, g:'o', t:'Scheda di osservazione dei percorsi e griglia', d:'4:15', a:'AP'},
-  {n:13, g:'o', t:'Osservazione individuale e osservazione condivisa', d:'4:51', a:'A'},
-  {n:14, g:'o', t:'Confronto e sintesi', d:'4:25', a:'A'},
-  {n:15, g:'o', t:'Lettura del gruppo e Priorità', d:'3:57', a:'AP'},
-  {n:16, g:'o', t:'Le tre Branche a confronto', d:'3:06', a:'AP'},
-  {n:17, g:'p', t:'Obiettivi e indicatori', d:'4:07', a:'AP'},
-  {n:18, g:'p', t:'Percorso: strumenti del metodo e tempi', d:'4:10', a:'AP'},
-  {n:19, g:'p', t:'Percorso: attività, spunti e sette caratteristiche', d:'5:43', a:'AP'},
-  {n:20, g:'p', t:'Ordinare le attività e Visione d’insieme', d:'4:12', a:'A'},
-  {n:21, g:'p', t:'Progettazione condivisa con lo staff', d:'4:01', a:'A'},
-  {n:22, g:'p', t:'Percorso Formativo: staff e Capo Gruppo', d:'3:39', a:'ASC'},
-  {n:23, g:'p', t:'Il mio anno e i cicli', d:'3:20', a:'A'},
-  {n:24, g:'r', t:'Calendario e attività', d:'7:53', a:'A'},
-  {n:25, g:'r', t:'Elenco dell’anno', d:'3:46', a:'A'},
-  {n:26, g:'r', t:'Chi, quando, referenti', d:'3:50', a:'A'},
-  {n:27, g:'r', t:'Logistica e viaggio', d:'6:57', a:'A'},
-  {n:28, g:'r', t:'Pasti, materiali e spesa', d:'7:30', a:'A'},
-  {n:29, g:'r', t:'Cassa, costi e quota', d:'6:21', a:'A'},
-  {n:30, g:'r', t:'Durante, sicurezza e piano B', d:'6:09', a:'A'},
-  {n:31, g:'r', t:'Costruire la giornata', d:'8:30', a:'A'},
-  {n:32, g:'r', t:'Foglio del giorno, circolare e stampe', d:'4:22', a:'A'},
-  {n:33, g:'r', t:'Uscite ed eventi: creare e organizzare', d:'4:26', a:'A'},
-  {n:34, g:'r', t:'L’anno di solito', d:'2:22', a:'A'},
-  {n:35, g:'m', t:'Verifica delle attività', d:'2:27', a:'A'},
-  {n:36, g:'m', t:'Valutazione finale', d:'3:02', a:'A'},
-  {n:37, g:'m', t:'Numeri dell’anno', d:'2:35', a:'A'},
-  {n:38, g:'m', t:'Spese mese per mese', d:'3:18', a:'A'},
-  {n:39, g:'m', t:'Verifica dell’anno', d:'2:14', a:'A'},
-  {n:40, g:'d', t:'Condividi con lo staff', d:'2:12', a:'ASC'},
-  {n:41, g:'d', t:'Lavorare in due', d:'3:22', a:'ASC'},
-  {n:42, g:'d', t:'Controllo e invio', d:'2:56', a:'A'},
-  {n:43, g:'d', t:'Cerca e archivio nazionale', d:'3:13', a:'A'},
-  {n:44, g:'pp', t:'Progetto Personale: dalla Sezione 1 alla 3', d:'', a:'P'},
-  {n:45, g:'pp', t:'Progetto Personale: verifica e valutazione', d:'', a:'P'},
-  {n:46, g:'pp', t:'Progetto Personale: gli invii', d:'', a:'P'},
-  {n:47, g:'rv', t:'La revisione in app: dal lato di chi compila', d:'', a:'P', s:'Come si invia un giro, cosa vede chi compila, come si recepiscono i punti segnalati e si manda il giro successivo.'},
-  {n:48, g:'rv', t:'La revisione in app: dal lato di chi rivede', d:'', a:'P', s:'La pagina dei progetti di chi rivede, la lettura del giro, i punti da segnalare, l’esito e lo storico.'},
-  {n:49, g:'st', t:'Osservazione degli adulti: il mio staff', d:'4:58', a:'S'},
-  {n:50, g:'st', t:'Eventi per gli adulti', d:'5:03', a:'SC'},
-  {n:51, g:'st', t:'Capo Gruppo: Capi Unità e Check degli adulti', d:'3:35', a:'C'}
+  {n:1, g:'i', t:'Da dove si parte: panoramica dell’app', d:'2:52', a:'APSC'},
+  {n:2, g:'i', t:'La Dashboard', d:'3:59', a:'APSC'},
+  {n:3, g:'i', t:'Account, accesso e password', d:'3:04', a:'APSC'},
+  {n:4, g:'i', t:'Creare il primo progetto', d:'2:58', a:'APSC'},
+  {n:5, g:'i', t:'Salvataggio, archivio degli anni e copie di sicurezza', d:'5:05', a:'APSC'},
+  {n:6, g:'i', t:'Telefono, tablet, testo formattato e guida', d:'4:01', a:'APSC'},
+  {n:7, g:'i', t:'Il ciclo: cos’è, a cosa serve, come si crea', d:'2:29', a:'A'},
+  {n:8, g:'c', t:'La mia unità e il mio contesto', d:'2:47', a:'AP'},
+  {n:9, g:'c', t:'Il mio staff', d:'3:00', a:'A'},
+  {n:10, g:'o', t:'Come osservo: KOS 2.0 e griglia osservativa', d:'5:59', a:'AP'},
+  {n:11, g:'o', t:'Crea le tue attività osservative', d:'4:47', a:'AP', s:'Il percorso guidato in 12 passi: da dove parti, dove osservi, cosa guardi, come lo organizzi, e poi scrivi tu l’attività.'},
+  {n:12, g:'o', t:'Scheda di osservazione dei percorsi e griglia', d:'4:28', a:'AP'},
+  {n:13, g:'o', t:'Osservazione individuale e osservazione condivisa', d:'4:52', a:'A'},
+  {n:14, g:'o', t:'Confronto e sintesi', d:'4:27', a:'A'},
+  {n:15, g:'o', t:'Lettura del gruppo e Priorità', d:'3:59', a:'AP'},
+  {n:16, g:'o', t:'Le tre Branche a confronto', d:'3:09', a:'AP'},
+  {n:17, g:'p', t:'Obiettivi e indicatori', d:'4:09', a:'AP'},
+  {n:18, g:'p', t:'Percorso: strumenti del metodo e tempi', d:'4:12', a:'AP'},
+  {n:19, g:'p', t:'Percorso: attività, spunti e sette caratteristiche', d:'5:45', a:'AP'},
+  {n:20, g:'p', t:'Ordinare le attività e Visione d’insieme', d:'4:14', a:'A'},
+  {n:21, g:'p', t:'Progettazione condivisa con lo staff', d:'4:03', a:'A'},
+  {n:22, g:'p', t:'Percorso Formativo: staff e Capo Gruppo', d:'3:41', a:'ASC'},
+  {n:23, g:'p', t:'Il mio anno e i cicli', d:'3:22', a:'A'},
+  {n:24, g:'r', t:'Calendario e attività', d:'7:56', a:'A'},
+  {n:25, g:'r', t:'Elenco dell’anno', d:'3:49', a:'A'},
+  {n:26, g:'r', t:'Chi, quando, referenti', d:'3:52', a:'A'},
+  {n:27, g:'r', t:'Logistica e viaggio', d:'6:59', a:'A'},
+  {n:28, g:'r', t:'Pasti, materiali e spesa', d:'7:32', a:'A'},
+  {n:29, g:'r', t:'Cassa, costi e quota', d:'6:24', a:'A'},
+  {n:30, g:'r', t:'Durante, sicurezza e piano B', d:'6:12', a:'A'},
+  {n:31, g:'r', t:'Costruire la giornata', d:'7:48', a:'A'},
+  {n:32, g:'r', t:'Foglio del giorno, circolare e stampe', d:'4:24', a:'A'},
+  {n:33, g:'r', t:'Uscite ed eventi: creare e organizzare', d:'4:29', a:'A'},
+  {n:34, g:'r', t:'L’anno di solito', d:'2:25', a:'A'},
+  {n:35, g:'m', t:'Verifica delle attività', d:'2:29', a:'A'},
+  {n:36, g:'m', t:'Valutazione finale', d:'3:04', a:'A'},
+  {n:37, g:'m', t:'Numeri dell’anno', d:'2:38', a:'A'},
+  {n:38, g:'m', t:'Spese mese per mese', d:'3:20', a:'A'},
+  {n:39, g:'m', t:'Verifica dell’anno', d:'2:18', a:'A'},
+  {n:40, g:'d', t:'Condividi con lo staff', d:'2:14', a:'ASC'},
+  {n:41, g:'d', t:'Lavorare in due', d:'3:58', a:'ASC'},
+  {n:42, g:'d', t:'Controllo e invio', d:'2:58', a:'A'},
+  {n:43, g:'d', t:'Cerca e archivio nazionale', d:'3:16', a:'A'},
+  {n:44, g:'pp', t:'Progetto Personale: dalla Sezione 1 alla 3', d:'6:58', a:'P'},
+  {n:45, g:'pp', t:'Progetto Personale: verifica e valutazione', d:'2:58', a:'P'},
+  {n:46, g:'pp', t:'Progetto Personale: gli invii', d:'3:03', a:'P'},
+  {n:47, g:'rv', t:'La revisione in app: dal lato di chi compila', d:'2:20', a:'P', s:'Come si invia un giro, cosa vede chi compila, come si recepiscono i punti segnalati e si manda il giro successivo.'},
+  {n:48, g:'rv', t:'La revisione in app: dal lato di chi rivede', d:'2:18', a:'P', s:'La pagina dei progetti di chi rivede, la lettura del giro, i punti da segnalare, l’esito e lo storico.'},
+  {n:49, g:'st', t:'Osservazione degli adulti: il mio staff', d:'5:10', a:'S'},
+  {n:50, g:'st', t:'Eventi per gli adulti', d:'5:05', a:'SC'},
+  {n:51, g:'st', t:'Capo Gruppo: Capi Unità e Check degli adulti', d:'3:37', a:'C'}
 ];
-const VID_OK = {};   // es. {1:'1', 2:'1'}: numero → versione del file pronto
-const VID_BASE = '/video/v2/';
+const VID_OK = {}; for(let i = 1; i <= 51; i++) VID_OK[i] = '1';   // numero → versione del file (da cambiare se un video viene rifatto: così il browser non tiene la copia vecchia)
+const VID_BASE = 'https://bartolomeiluca.github.io/PEE-CNGEI-video/v2/';   // repo dei video (GitHub Pages): NN.mp4, NN.vtt (sottotitoli), NN.chapters.vtt (capitoli)
 // pagina del progetto → video (di solito 1 o 2); le pagine di apertura di un capitolo elencano tutto il capitolo
 const VID_PG = {dash:[2], 'a-unit':[8], 'a-ctx':[8], 'a-staff':[9], 'o-occ':[10,11], 'o-P':[12,13], 'o-C':[12,13], 'o-S':[12,13], 'o-conf':[14], 'o-1c':[15], 'o-1d':[15], 'o-staff':[49],
   'p-2':[17], 'p-3P':[18,19], 'p-3C':[18,19], 'p-3S':[18,19], 'p-vis':[20], 'p-pf':[22], 'r-cal':[24], 'r-ele':[25], 'r-tip':[34],
@@ -9079,8 +9079,9 @@ const VID_GRP = {A:{'Capire':'c','Osservare':'o','Progettare':'p','Realizzare':'
 const VID_ORD = {A:['i','c','o','p','r','m','d'], P:['i','pp','o','rv'], S:['st','i','p','d'], C:['st','i','p','d']};
 function vidOk(n){ return !!VID_OK[n]; }
 function vidNum(n){ return String(n).padStart(2, '0'); }
-function vidSrc(n){ return VID_BASE + 'pee-' + vidNum(n) + '.mp4?v=' + VID_OK[n]; }
-function vidPoster(n){ return VID_BASE + 'pee-' + vidNum(n) + '.jpg?v=' + VID_OK[n]; }
+function vidSrc(n){ return VID_BASE + vidNum(n) + '.mp4?v=' + VID_OK[n]; }
+function vidSub(n){ return VID_BASE + vidNum(n) + '.vtt?v=' + VID_OK[n]; }
+function vidChap(n){ return VID_BASE + vidNum(n) + '.chapters.vtt?v=' + VID_OK[n]; }
 function vidSeenGet(){ try{ return JSON.parse(localStorage.getItem('pee_vid_seen') || '[]') || []; }catch(e){ return []; } }
 function vidSeenMark(n){ try{ const s = vidSeenGet(); if(s.indexOf(n) < 0){ s.push(n); localStorage.setItem('pee_vid_seen', JSON.stringify(s)); } }catch(e){} try{ vidPageSync(true); }catch(e){} }
 function vidSecs(d){ const m = /^(\d+):(\d\d)$/.exec(d || ''); return m ? (+m[1]) * 60 + (+m[2]) : 0; }
@@ -9110,7 +9111,7 @@ function vidOpen(n){ window._vidCur = n;
     vidWide(true); return;
   }
   modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length} · ${ch}</span><h3>${v.t}</h3></div>
-    <video class="vid-v" src="${vidSrc(v.n)}" poster="${vidPoster(v.n)}" controls autoplay playsinline preload="metadata"></video>${nav}`);
+    <video class="vid-v" src="${vidSrc(v.n)}" crossorigin="anonymous" controls autoplay playsinline preload="metadata"><track kind="subtitles" srclang="it" label="Italiano" src="${vidSub(v.n)}" default><track kind="chapters" srclang="it" label="Capitoli" src="${vidChap(v.n)}"></video>${nav}`);
   vidWide(true);
   try{ const el = document.querySelector('.vid-v'); if(el){ el.addEventListener('ended', () => vidSeenMark(v.n)); el.addEventListener('timeupdate', () => { if(el.duration && el.currentTime / el.duration >= .9) vidSeenMark(v.n); }); } }catch(e){}
 }

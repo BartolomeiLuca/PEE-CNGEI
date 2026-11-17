@@ -13,7 +13,7 @@ await P.click('#faq-box summary'); await sleep(200);
 await P.click('#vid-box summary'); await sleep(300); await P.locator('#vid-home details.vid-grp summary').first().click(); await sleep(200);
 await P.locator('#vid-home .vid-row').nth(1).click(); await sleep(1200);
 const v = await ev(() => ({t: document.querySelector('#g-modal h3').textContent, soon: /arriva presto/i.test(document.getElementById('g-modal').innerText), vids: document.querySelectorAll('#g-modal video').length}));
-ok(/La Dashboard/.test(v.t) && v.soon && v.vids === 0, 'il video 2 è un segnaposto «arriva presto» ' + JSON.stringify(v));
+ok(/La Dashboard/.test(v.t) && !v.soon && v.vids === 1, 'il video 2 si apre nel lettore (non è più un segnaposto) ' + JSON.stringify(v));
 await P.click('#g-modal >> text=Prossimo ›'); await sleep(500);
 ok(await ev(() => /Account, accesso e password/.test(document.querySelector('#g-modal h3').textContent)), '«Prossimo» porta al video 3');
 await ev(() => modalClose()); await sleep(200);
