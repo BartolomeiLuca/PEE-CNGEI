@@ -8877,7 +8877,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611162127'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611162136'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -16103,7 +16103,7 @@ async function clMergeNow(){
     clAutoSnap(id, merged);
   }
   localStorage.setItem(CL_LS, JSON.stringify(merged));
-  CL.ctx.ts = ts; CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(merged);
+  CL.ctx.ts = ts; CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upExtra = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(merged);
   if(clSameData(merged, local)){ CL.pending = false; clSetStatus('ok'); return 'same'; }
   // se cambiano solo testi che l'app ricalcola da sola, li aggiorno senza ricaricare la pagina
   const dp = clDiffPaths(local, merged);
@@ -17110,6 +17110,7 @@ function clQueuePush(){
   if(window.BRO || !CL.sb || !CL.user || !CL.ctx) return;
   if(_clTouched && !CL.ctx.udirty){ CL.ctx.udirty = true; clSaveCtx(); }
   if(!_clTouched && !CL.ctx.udirty) return;
+  CL._qseq = (CL._qseq || 0) + 1;   // 16/11: conta le modifiche, per accorgersi di quelle arrivate mentre un salvataggio è in corso
   CL.pending = true; clSetStatus('sync');
   if(!CL.ctx.dirty){ CL.ctx.dirty = true; clSaveCtx(); }
   clearTimeout(CL.timer); CL.timer = setTimeout(() => clPush(), 1200);
@@ -17135,7 +17136,7 @@ async function clPush(force){
     }
     if(!force){
       const t0 = await dbTsRaw(CL.ctx.id); const cur = t0 && t0.ts; raw = t0 && t0.raw;
-      const mine = (CL.ctx.upaths||[]).length > 0 || (CL.ctx.udirty && !Array.isArray(CL.ctx.upaths));
+      const mine = (CL.ctx.upaths||[]).length > 0 || !!CL.ctx.upExtra || (CL.ctx.udirty && !Array.isArray(CL.ctx.upaths));
       if(!mine){
         // nessuna modifica fatta da una persona su questo dispositivo: non salvo, al massimo prendo le novità
         CL.pending = false;
@@ -17149,9 +17150,10 @@ async function clPush(force){
         CL.busy = false; return;
       }
     }
+    const seq0 = CL._qseq || 0, up0 = (CL.ctx.upaths || []).slice();
     const d = clSnapshot();
     const base = clBaseGet();
-    if(!force && base && clSameData(d, base)){ CL.ctx.dirty = false; clSaveCtx(); CL.pending = false; clSetStatus('ok'); CL.busy = false; return; }
+    if(!force && base && clSameData(d, base)){ CL.ctx.dirty = false; CL.ctx.upExtra = false; clSaveCtx(); CL.pending = false; clSetStatus('ok'); CL.busy = false; return; }
     // protezione: un salvataggio molto più scarno di quanto già nel cloud non parte da solo (prima si tiene una versione di sicurezza)
     if(base && clShrinks(d, base)){
       try{ await dbSnap(CL.ctx.id, base, 'Prima di un salvataggio molto più scarno'); }catch(e){}
@@ -17160,7 +17162,12 @@ async function clPush(force){
     }
     try{ CL.ctx.ts = await dbUpdate(CL.ctx.id, d, clMeta(d), raw); }
     catch(e){ if(e.message === 'stale'){ CL.busy = false; CL.pending = true; clSetStatus('sync'); clWhenIdle(() => clPush()); return; } throw e; }
-    CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
+    // 16/11: se mentre salvavo è arrivata un'altra modifica, resta da salvare (prima veniva dichiarata «salvata» e, se non ne seguivano altre, non partiva più)
+    if((CL._qseq || 0) !== seq0){
+      CL.ctx.upaths = (CL.ctx.upaths || []).filter(x => up0.indexOf(x) < 0); CL.ctx.upExtra = true; CL.ctx.dirty = true; CL.ctx.udirty = true; clSaveCtx(); clBaseSet(d);
+      CL.pending = true; clSetStatus('sync'); clAutoSnap(CL.ctx.id, d); CL.busy = false; clearTimeout(CL.timer); CL.timer = setTimeout(() => clPush(), 300); return;
+    }
+    CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upExtra = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
     clAutoSnap(CL.ctx.id, d);
   }catch(e){ clSetStatus('off'); CL.pending = true; if(CL.ctx && CL.ctx.ruolo) clRoleCheck(); }
   CL.busy = false;
@@ -21859,7 +21866,7 @@ window.shPpBridge = async function(r, force){
   if(force){ try{ const bl = ((sc.ppImp || {}).blocks) || {}; ppbBlocks(d, d).forEach(B => { if(bl[B.n] && bl[B.n].own && ppbEmpty(B.g(d))) delete bl[B.n]; }); }catch(e){} }
   if(!SH.on || d.MODE !== 'giovani' || sc.tipoProgetto === 'PP' || sc.cicloDa || sc.esempio || /^Esempio/i.test(r.titolo || '')) return null;
   const rows = await dbList();
-  const cand = rows.filter(x => x.id !== r.id && Number(x.anno) === Number(r.anno) && (x.meta || {}).tipo === 'PP').sort((a, b) => b.ts - a.ts);
+  const cand = rows.filter(x => x.id !== r.id && Number(x.anno) === Number(r.anno) && (x.meta || {}).tipo === 'PP' && !/^Esempio/i.test(x.titolo || '')).sort((a, b) => b.ts - a.ts);
   if(!cand.length) return null;
   const pp = await dbGet(cand[0].id); if(!pp || !pp.data) return null;
   const pend = ppbNew(d, pp.data); let only, later = false;
