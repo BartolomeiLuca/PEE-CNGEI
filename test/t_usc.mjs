@@ -362,7 +362,7 @@ await ev(() => uscTab(4)); await sleep(300);
 ok(JSON.stringify(await ev(() => uscBlocks(uscCur(), 4).map(o => [uscBlkTitle(o.m), o.m.k, axHM(uscTimes(uscCur(), 4)[o.k].s), o.m.dur]))) === JSON.stringify([['Sveglia vecchia','mio','07:30',60],['Colazione vecchia','pasto','08:00',45]]), 'blocchi salvati con la prima anteprima: ordine, tipo, ora e durata giusti');
 // versione principale (senza uscite) apre e salva: le uscite restano
 const OLD = '/home/claude/pee-cngei';
-const old = http.createServer((q, s) => { let p = decodeURIComponent(q.url.split('?')[0]); if(p.endsWith('/')) p += 'index.html'; fs.readFile(path.join(OLD, p), (e, b) => { if(e){ s.writeHead(404); s.end(); return; } s.writeHead(200, {'content-type': p.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream'}); s.end(b); }); }).listen(8098);
+const old = http.createServer((q, s) => { let p = decodeURIComponent(q.url.split('?')[0]); if(p.endsWith('/')) p += 'index.html'; fs.readFile(p === '/index.html' ? path.join(OLD, 'archivio_versioni/index_sito_principale_prima_del_17nov2026_lottoA.html') : path.join(OLD, p), (e, b) => { if(e){ s.writeHead(404); s.end(); return; } s.writeHead(200, {'content-type': p.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream'}); s.end(b); }); }).listen(8098);
 await sleep(2500);
 const po = await person(br, db), PO = po.page, eo = (f, a) => PO.evaluate(f, a);
 await loginAs(PO, 'http://127.0.0.1:8098/', A); await sleep(1200);

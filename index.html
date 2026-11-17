@@ -8892,7 +8892,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611171725'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611171947'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'17 novembre 2026', t:'Nuova versione: account, progetti, Progetto Personale, 51 video', i:[
@@ -9076,11 +9076,16 @@ const VIDEOS = [
 const VID_OK = {}; for(let i = 1; i <= 51; i++) VID_OK[i] = '1';   // numero → versione del file (da cambiare se un video viene rifatto: così il browser non tiene la copia vecchia)
 const VID_BASE = 'https://bartolomeiluca.github.io/PEE-CNGEI-video/v2/';   // repo dei video (GitHub Pages): NN.mp4, NN.vtt (sottotitoli), NN.chapters.vtt (capitoli)
 // pagina del progetto → video (di solito 1 o 2); le pagine di apertura di un capitolo elencano tutto il capitolo
-const VID_PG = {dash:[2], 'a-unit':[8], 'a-ctx':[8], 'a-staff':[9], 'o-occ':[10,11], 'o-P':[12,13], 'o-C':[12,13], 'o-S':[12,13], 'o-conf':[14], 'o-1c':[15], 'o-1d':[15], 'o-staff':[49],
-  'p-2':[17], 'p-3P':[18,19], 'p-3C':[18,19], 'p-3S':[18,19], 'p-vis':[20], 'p-pf':[22], 'r-cal':[24], 'r-ele':[25], 'r-tip':[34],
+const VID_PG = {dash:[2,7,23], 'a-unit':[8], 'a-ctx':[8], 'a-staff':[9,21], 'o-occ':[10,11,16], 'o-P':[12,13], 'o-C':[12,13], 'o-S':[12,13], 'o-conf':[14], 'o-1c':[15], 'o-1d':[15], 'o-staff':[49],
+  'p-2':[17], 'p-3P':[18,19,21,43], 'p-3C':[18,19,21,43], 'p-3S':[18,19,21,43], 'p-vis':[20], 'p-pf':[22], 'r-cal':[24,33], 'r-usc':[33,26,27,28,29,30,31,32,43], 'r-ele':[25], 'r-tip':[34],
   'm-4':[35], 'm-5':[36], 'm-num':[37], 'r-bil':[38], 'm-anno':[39], 'k-arc':[5], 'd-sha':[40,41], 'd-chk':[42],
-  pp0:[44], pp1:[44], pp2:[44], pp3:[44], pp4:[45], pp5:[45], ppc:[45], ppi:[46,47],
+  pp0:[44], pp1:[44], pp2:[44], pp3:[44], pp4:[45], pp5:[45], ppc:[45], ppi:[46,47,48],
   st1:[49], st2:[49], 'st-pf0':[22], usc:[50], sha:[40,41], arc:[5], 'r-chk':[51]};
+const VID_HOME = [1, 3, 4, 6];   // «Video per iniziare» nella pagina dei progetti (fuori da un progetto)
+function vidHomeBox(open){
+  const L = VID_HOME.map(n => VIDEOS.find(v => v.n === n)).filter(v => v && vidOk(v.n)); if(!L.length) return '';
+  return `<details id="vid-home-box" class="vid-pg" style="margin:18px 0 0"${open ? ' open' : ''}><summary>▶ Video per iniziare (${L.length})${vidMinTxt(L)}</summary><div class="vid-pgl">${L.map(vidRow).join('')}<button type="button" class="vid-all" onclick="vidList()">Tutti i video</button></div></details>`;
+}
 const VID_GRP = {A:{'Capire':'c','Osservare':'o','Progettare':'p','Realizzare':'r','Misurare':'m','Conservare':'i','Condividere':'d'}, P:{'Progettare':'pp','Inviare':'rv'}, S:{'Progettare':'st','Realizzare':'st','Misurare e conservare':'i'}, C:{'Progettare':'st','Realizzare':'st','Misurare e conservare':'i'}};
 const VID_ORD = {A:['i','c','o','p','r','m','d'], P:['i','pp','o','rv'], S:['st','i','p','d'], C:['st','i','p','d']};
 function vidOk(n){ return !!VID_OK[n]; }
@@ -18009,7 +18014,7 @@ async function homeHTML(){
       if(shr.length) h += `<h2>Condivisi con te</h2>` + shr.map(x => rowHTML(x, true)).join('');
     }
     if(rows.length || shr.length) h += exLinksHTML();
-    h += `<div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shPerTeRe(); clPerTe(); }catch(e){} try{ window.shRevRows && window.shRevRows(); }catch(e){} try{ window.rvListPaint && window.rvListPaint(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
+    h += vidHomeBox(!(rows.length || shr.length)) + `<div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ shPerTeRe(); clPerTe(); }catch(e){} try{ window.shRevRows && window.shRevRows(); }catch(e){} try{ window.rvListPaint && window.rvListPaint(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
   };
   if(SH.rows) draw(); else r.innerHTML = top(true) + '<div class="sh-wrap"><p class="sh-sub" role="status">Carico i tuoi progetti…</p></div>';
   try{
@@ -18623,7 +18628,7 @@ const NAV_CG = [
 ];
 const navItems = () => isPP() ? NAV_PP : isCGp() ? NAV_CG : isST() ? NAV_ST : NAV_AN;
 window.shNavItems = navItems;
-window.vidCtx = function(){ return {id: active(), grp: (SH.ppv === 'grp' ? (SH._grp || '') : ''), aud: isPP() ? 'P' : isCGp() ? 'C' : isST() ? 'S' : 'A'}; };
+window.vidCtx = function(){ let id = active(); try{ if(id === 'r-cal' && !isPP() && !isST() && MODE === 'giovani' && schedaStep === 'usc'){ const pp = $('panel-pp'); if(!(pp && pp.classList.contains('active'))) id = 'r-usc'; } }catch(e){} return {id: id, grp: (SH.ppv === 'grp' ? (SH._grp || '') : ''), aud: isPP() ? 'P' : isCGp() ? 'C' : isST() ? 'S' : 'A'}; };
 let cur = null;
 
 // Sezione 1: sottovoci (Sviluppo Personale, Comunitario, Spirituale = una pagina per Ambito, niente scroll infinito)
@@ -19312,6 +19317,8 @@ function rvGroup(L){
 window.rvPendingN = L => rvGroup(L).reduce((s, p) => s + p.pend, 0);
 // Nella home, tra i progetti: quelli che ho ricevuto in revisione, subito, con il segno «Da rivedere» quando tocca a me
 window.shRevRows = function(){ const b = document.getElementById('sh-revrows'); if(b) b.innerHTML = ''; };
+function rvVidBox(){ try{ const v = VIDEOS.find(x => x.n === 48); if(!v || !vidOk(48)) return ''; return `<details id="vid-rv-box" class="vid-pg" style="margin:0 0 10px"><summary>▶ Video: come si rivede un Progetto Personale (1)${vidMinTxt([v])}</summary><div class="vid-pgl">${vidRow(v)}</div></details>`; }catch(e){ return ''; } }
+window.rvVidBox = rvVidBox;
 window.rvListPaint = async function(){
   const box = document.getElementById('cl-rev'); if(!box) return;
   const L = await window.rvListLoad(); if(!document.getElementById('cl-rev')) return;
@@ -19330,7 +19337,7 @@ window.rvListPaint = async function(){
   const rowC = p => { const last = p.giri[0], at = last.rvChiusaIl ? esc(fmtDL(String(last.rvChiusaIl).slice(0, 10))) : '', es = last.rvEsito === 'approvata' ? ' · Approvato' : (last.rvEsito === 'storica' ? ' · Storico' : '');
     return `<div class="rv-pj2 rv-closed"><div class="rv-pj2-h"><div><b>${esc(p.nome)}</b>${p.titolo ? ' · ' + esc(p.titolo) : ''}<div class="rv-pn">Concluso${at ? ' il ' + at : ''}${es} · ${p.giri.length === 1 ? '1 copia' : p.giri.length + ' copie'}</div></div></div>
       <div class="rv-gi-b"><button type="button" class="cl-btn sm" onclick="rvOpen('${last.g.id}')">Rileggi</button><button type="button" class="cl-btn ghost sm" onclick="rvWord('${last.g.id}')">Scarica il Word</button><button type="button" class="cl-btn ghost sm" onclick="rvPackage('${p.aid}')">Scarica il pacchetto (rapido)</button><button type="button" class="cl-btn ghost sm" title="Include il Word di ogni copia: può richiedere diversi minuti" onclick="rvPackage('${p.aid}',true)">Pacchetto completo con tutti i Word</button>${leg(p)}</div>${allc(p)}</div>`; };
-  box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Progetti Personali da rivedere</h4>` + (apri.length ? apri.map(rowA).join('') : '<p class="cl-note" style="margin:0 0 6px">Nessun progetto aspetta la tua revisione in questo momento.</p>')
+  box.innerHTML = `<div class="cl-sec" style="margin-top:10px"><h4>Progetti Personali da rivedere</h4>` + (G.some(p => p.rev) ? rvVidBox() : '') + (apri.length ? apri.map(rowA).join('') : '<p class="cl-note" style="margin:0 0 6px">Nessun progetto aspetta la tua revisione in questo momento.</p>')
     + (chiusi.length ? `<details class="rv-hist" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700">Storico · progetti conclusi (${chiusi.length})</summary><div style="margin-top:6px">${chiusi.map(rowC).join('')}<div style="margin-top:8px"><button type="button" class="cl-btn ghost sm" onclick="rvBackupAll()" title="Un solo archivio con tutti i progetti che segui (rapido: dati e storico in Word)">Scarica tutto lo storico (rapido)</button></div></div></details>` : '')
     + `</div>`;
 };
