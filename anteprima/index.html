@@ -3640,7 +3640,7 @@ function ossCardHTML(a){
     ${a.dom ? `<div class="oss-q">«${sEsc(a.dom)}»</div>` : ''}
     ${orphan ? '<div class="oss-warn">La riga di questa attività non c’è più nelle occasioni osservative (forse l’hai tolta dalla tabella): i percorsi non risultano osservati finché non la rimetti.</div>' : ''}
     ${sg.length ? `<details class="oss-sg"><summary>Suggerimenti ricevuti · ${sg.length}</summary>${sg.map(s => `<div class="oss-sgi"><b>${sEsc(s.da || '')}</b> · ${sEsc(ossWhen(s.at))}<div>${sEsc(s.t)}</div></div>`).join('')}</details>` : ''}
-    ${a.anAt ? `<div class="oss-q" style="font-style:normal">Proposta all’archivio nazionale il ${sEsc(grDateTxt(new Date(a.anAt).toISOString().slice(0, 10)))}: lo stato lo vedi in «Cerca › Le mie proposte».</div>` : ''}
+    ${a.anAt ? `<div class="oss-q" style="font-style:normal">Proposta all’archivio nazionale il ${sEsc(grDateTxt(isoOggi(a.anAt)))}: lo stato lo vedi in «Cerca › Le mie proposte».</div>` : ''}
     <div class="oss-aa">${acts.join('')}</div></div>`;
 }
 function ossRefresh(){ const e = document.getElementById('oss-panel'); if(e) e.innerHTML = ossPanelHTML(); }
@@ -3804,7 +3804,7 @@ function ossSumHTML(){ try{ if(MODE !== 'giovani' || window._stEmb) return ''; c
   return `<section class="oss-sm" aria-label="Riepilogo dei percorsi osservati"><h4>Riepilogo: che cosa hai osservato</h4><p>«Osservato» compare già dopo una sola occasione. Accanto c’è il numero di occasioni; con una sola, ti invito a cercare un secondo contesto.</p><div class="oss-sm-g">${['P', 'C', 'S'].map(col).join('')}</div></section>`; }catch(e){ return ''; } }
 function ossSumRefresh(){ const e = document.getElementById('oss-sum'); if(e) e.innerHTML = ossSumHTML(); }
 // ═══ Esportare e importare: JSON completo dell'attività, scheda Word ═══
-function ossDl(name, text, type){ const b = new Blob([text], {type}); const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = name; document.body.appendChild(l); l.click(); setTimeout(() => { l.remove(); URL.revokeObjectURL(u); }, 600); }
+function ossDl(name, text, type){ const b = new Blob([text], {type}); const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = fileNameCap(name); document.body.appendChild(l); l.click(); setTimeout(() => { l.remove(); URL.revokeObjectURL(u); }, 600); }
 function ossSlug(t){ return String(t || 'attivita').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'attivita'; }
 function ossExpRec(a){ const o = {}; ['nome','aut','main','also','dom','foc','focD','dur','lan','svi','con','temi','mom','momK','ctx','ctxK','tipi','strum','strD'].forEach(k => { if(a[k] !== undefined) o[k] = JSON.parse(JSON.stringify(a[k])); });
   if(a.w && typeof a.w === 'object'){ const w = JSON.parse(JSON.stringify(a.w)); delete w.oss; delete w.nR; o.w = w; } return o; }
@@ -4332,12 +4332,14 @@ function loadSaved() {
       Object.keys(d.scheda).forEach(k=>{ if(!_done.has(k) && d.scheda[k]!==undefined) scheda[k]=d.scheda[k]; });
     }
     try{ priAlign(); }catch(e){}
-    if(d.STAFF_MEMBERS) STAFF_MEMBERS = d.STAFF_MEMBERS;
-    if(d.staffObs) Object.assign(staffObs,d.staffObs);
-    if(d.staffProfiles) Object.assign(staffProfiles,d.staffProfiles);
-    if(d.staffTimeline) Object.assign(staffTimeline,d.staffTimeline);
-    if(d.autoObs) Object.assign(autoObs,d.autoObs);
-    if(d.autoProfile) Object.assign(autoProfile, d.autoProfile);
+    // dati danneggiati (tipo sbagliato): si leggono solo i contenitori del tipo giusto, il resto si ignora senza rompere l'app
+    const _obj = x => !!x && typeof x === 'object' && !Array.isArray(x);
+    if(Array.isArray(d.STAFF_MEMBERS)) STAFF_MEMBERS = d.STAFF_MEMBERS.filter(x => typeof x === 'string');
+    if(_obj(d.staffObs)) Object.assign(staffObs,d.staffObs);
+    if(_obj(d.staffProfiles)) Object.assign(staffProfiles,d.staffProfiles);
+    if(_obj(d.staffTimeline)) Object.assign(staffTimeline,d.staffTimeline);
+    if(_obj(d.autoObs)) Object.assign(autoObs,d.autoObs);
+    if(_obj(d.autoProfile)) Object.assign(autoProfile, d.autoProfile);
     if(d.CURRENT_MEMBER) CURRENT_MEMBER = d.CURRENT_MEMBER;
     if(typeof d.UNIT_NAME === 'string') UNIT_NAME = d.UNIT_NAME;
     // Ripristina variabili di sessione (solo se l'utente non ha già scelto qualcosa)
@@ -6189,7 +6191,7 @@ function renderAutoOssPanel() {
 
   html += `<div class="staff-section-header" style="margin-top:16px"> La mia evoluzione nel tempo</div>
     <div class="member-add-form" style="flex-wrap:wrap;gap:6px;margin-bottom:8px">
-      <input type="date" id="auto-tl-date" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px" value="${new Date().toISOString().slice(0,10)}">
+      <input type="date" id="auto-tl-date" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px" value="${isoOggi()}">
       <input type="text" id="auto-tl-note" style="flex:1;min-width:200px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px" placeholder="Nota su di me...">
       <button class="btn-primary" onclick="addAutoTimeline()" style="white-space:nowrap">Aggiungi</button>
     </div>`;
@@ -6463,7 +6465,7 @@ function renderTimelineHTML() {
     <p class="tl-intro">Ogni volta che osservi qualcosa di nuovo, aggiungi uno <b>scatto</b>: una data, una nota e i percorsi che sono cambiati. Qui sotto vedi cosa è cambiato e come sta andando.</p>`;
   h += `<details class="tl-new" id="tl-new" ${timeline.length ? '' : 'open'}><summary>+ Nuovo scatto</summary>
     <div class="tl-new-b">
-      <div class="tl-f1"><label>Data</label><input type="date" id="tl-date-input" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="tl-f1"><label>Data</label><input type="date" id="tl-date-input" value="${isoOggi()}"></div>
       <label class="tl-lb">Nota (momento, contesto, cosa hai visto fare)</label>
       <textarea id="tl-note-input" placeholder="Es: Alla riunione ha proposto lui come dividere i compiti e ha ascoltato le idee degli altri."></textarea>
       <label class="tl-lb">Aggiorna i percorsi che sono cambiati <span class="tl-opt">(lascia «invariato» sugli altri)</span></label>
@@ -8889,7 +8891,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611170005'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611170845'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -9523,7 +9525,7 @@ function icsEvent(p,j){
 }
 function icsFile(evs,name){
   const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CNGEI//PEE CNGEI//IT','CALSCALE:GREGORIAN','METHOD:PUBLISH',...evs.flat(),'END:VCALENDAR'].map(icsFold).join('\r\n')+'\r\n';
-  const bl=new Blob([lines],{type:'text/calendar;charset=utf-8'}); const u=URL.createObjectURL(bl); const el=document.createElement('a'); el.href=u; el.download=name; document.body.appendChild(el); el.click(); setTimeout(()=>{ URL.revokeObjectURL(u); el.remove(); },1500);
+  const bl=new Blob([lines],{type:'text/calendar;charset=utf-8'}); const u=URL.createObjectURL(bl); const el=document.createElement('a'); el.href=u; el.download=fileNameCap(name); document.body.appendChild(el); el.click(); setTimeout(()=>{ URL.revokeObjectURL(u); el.remove(); },1500);
 }
 // ── foglio del giorno: una pagina da stampare e portare con sé ──
 // ── Foglio del giorno: i contenuti in un'unica struttura, poi stampati in PDF o scaricati in Word ──
@@ -11775,7 +11777,7 @@ async function axLogoCrop(buf){
     const blob=await new Promise(r=>c2.toBlob(r,'image/png')); if(!blob) return null;
     return {buf:await blob.arrayBuffer(), w, h, circ:w, padL:x0/W, padT:y0/H, padB:(H-1-y1)/H}; }catch(e){ return null; } }
 function axPngSize(buf){ try{ const d=new DataView(buf); if(d.getUint32(0)===0x89504E47) return {w:d.getUint32(16),h:d.getUint32(20)}; }catch(e){} return {w:1,h:1}; }
-function axDownload(blob,nm){ const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=nm; document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+function axDownload(blob,nm){ const url=URL.createObjectURL(blob); const A=document.createElement('a'); A.href=url; A.download=fileNameCap(nm); document.body.appendChild(A); A.click(); A.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
 function axCircCheck(p,j){ const a=attGet(p,j)||{}, x=a.ax||{}; if(x.ambientProp||x.citProp) showToast('Citazione o frase sono ancora la proposta: personalizzale prima di inviare'); }
 // Word: carta intestata nazionale (circolare/base.docx) così com'è: colonna dei loghi, contatti a lato, margini e font del modello
 // Word: carta intestata nazionale ricostruita SENZA immagini flottanti (si vede uguale su Word, Pages, Google Drive e iPad):
@@ -13825,12 +13827,17 @@ function loadLib(url, check){
 }
 const needExcel = () => { exportTheme(); return loadLib(LIB_URLS.exceljs, () => !!window.ExcelJS); };
 const needDocx  = () => { exportTheme(); return loadLib(LIB_URLS.docx, () => !!window.docx); };
+// nomi di file lunghi (titolo molto lungo o pieno di simboli) non vengono accettati da tutti i sistemi: si accorcia la parte prima dell'estensione
+function fileNameCap(name, max){ name = String(name || 'file'); max = max || 120; if(name.length <= max) return name; const m = name.match(/(\.[A-Za-z0-9]{1,5})$/), ext = m ? m[1] : ''; return name.slice(0, max - ext.length).replace(/_+$/, '') + ext; }
 function saveBlob(blob, name){
+  name = fileNameCap(name);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
 }
+// data di oggi AAAA-MM-GG secondo l'orologio della persona (toISOString darebbe la data UTC: tra mezzanotte e le 2 in Italia sarebbe ieri)
+function isoOggi(t){ const d = t ? new Date(t) : new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 const todayIso = () => { const d = new Date(); return String(d.getDate()).padStart(2,'0') + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear(); };  // solo per i nomi dei file: gg-mm-aaaa
 const todayIt = () => new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
 const stripEmoji = s => String(s==null?'':s).replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2B00}-\u{2BFF}]/gu,'').replace(/[ \t]{2,}/g,' ').trim();
@@ -16426,6 +16433,8 @@ async function clRoleCheck(){
       msg('Il tuo ruolo è cambiato: ora vedi questo progetto in sola lettura.');
       appReload(); return;
     }
+    // il titolare ha rinominato il progetto mentre ero dentro: il nuovo titolo compare senza ricaricare
+    if(!ro && it.titolo && it.titolo !== CL.ctx.titolo){ CL.ctx.titolo = it.titolo; clSaveCtx(); try{ if(!CL.pending && !CL.busy) clSetStatus('ok'); }catch(e){} }
     if(!ro && it.ruolo !== CL.ctx.ruolo){ CL.ctx.ruolo = it.ruolo; clSaveCtx(); edInit(); clToast('Il tuo ruolo è cambiato: ora sei ' + CL_RUOLI[it.ruolo].toLowerCase()); }
   }catch(e){}
   finally{ _rcBusy = false; }
@@ -17327,7 +17336,7 @@ function clBackup(){
   const name = CL.ctx ? `PEE_${CL.ctx.anno}_${CL.ctx.titolo.replace(/[^\w\-]+/g,'_')}` : 'PEE_backup_'+new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify({app:'bussola-pee-cngei', v:1, data:d}, null, 1)], {type:'application/json'}));
-  a.download = name + '.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1500);
+  a.download = fileNameCap(name + '.json'); document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1500);
 }
 // ── tutti i progetti in un unico file ──
 const CL_LASTBK = 'bussola_last_backup_all';
@@ -17350,7 +17359,7 @@ async function clBackupAll(){
       const r2 = await CL.sb.from('pee_suggerimenti').select('archivio_id,percorso,autore_nome,testo,stato,created_at').in('archivio_id', rows.map(r=>r.id));
       if(!r2.error) sugg = r2.data||[];
     }catch(e){}
-    const oggi = new Date().toISOString().slice(0,10);
+    const oggi = isoOggi();
     const pacchetto = {app:'bussola-pee-cngei', v:2, tipo:'tutti-i-progetti', esportato:new Date().toISOString(), account:CL.user.email||'',
       progetti: rows.map(r => ({anno:r.anno, titolo:r.titolo, meta:r.meta||{}, aggiornato:r.updated_at, data:r.data||{},
         suggerimenti: sugg.filter(s => s.archivio_id === r.id).map(({archivio_id, ...x}) => x)}))};
@@ -19397,7 +19406,7 @@ async function rvPackFill(root, aid, nome, titolo, words){
   if(!words && (gg.data || []).length) note += 'Versione rapida: i Word delle singole copie non sono inclusi (ci sono i file .json e il Word dello storico). Per averli, scarica il pacchetto completo.\n';
   return {copie:(gg.data || []).length, note};
 }
-async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}); window._dlBusy = false; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+async function rvZipOut(zip, name){ const blob = await zip.generateAsync({type:'blob'}); window._dlBusy = false; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileNameCap(name); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
 const rvSan = s => String(s || '').replace(/[^\w\-. àèéìòùÀÈÉÌÒÙ]+/g, '_').trim().slice(0, 60) || 'progetto';
 const RV_LEGGIMI = 'Archivio dello storico di revisione · PEE CNGEI\n\nContenuto:\n- «Storico della revisione.docx»: i punti, i commenti, le risposte e gli stati, da leggere.\n- «copie/»: ogni copia inviata, in Word (leggibile) e in .json (il formato dell’app).\n- «dati/storico_completo.json»: tutto in un unico file, per archiviarlo o ripristinarlo altrove.\n\nTieni questo file dove preferisci: è una copia, non dipende dall’app.\n';
 // compilatore: tutto lo storico del progetto aperto
@@ -20287,7 +20296,7 @@ function ppActsHTML(){
   const ver = a => ['vBene', 'vMigl', 'vAgg'].some(k => String(a[k] || '').trim());
   L = L.slice().sort((a, b) => String(a.date || '9').localeCompare(String(b.date || '9')) || a.idx - b.idx || a.pos - b.pos);
   const AMB = {P:'Personale', C:'Comunitario', S:'Spirituale'};
-  const oggi = new Date().toISOString().slice(0, 10);
+  const oggi = isoOggi();
   const rows = L.map(o => { const d = o.date ? fmtDL(o.date) : 'senza data', fatta = ver(o.a), pass = o.date && o.date < oggi;
     return `<tr><td>${esc(d)}</td><td><b>${esc(o.titolo)}</b><div class="sh-hint">${esc(AMB[o.amb] || '')} · ${esc(o.pn)}</div></td><td>${fatta ? 'Verificata' : pass ? '<b>Da verificare</b>' : 'Da fare'}</td></tr>`; }).join('');
   return `<div class="sh-dh"><div><h1>Le attività del mio percorso</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Tutte le attività scritte nella Sezione 3, in ordine di data. Quelle già passate e non ancora verificate si chiudono nella Sezione 4.</p></div></div>
@@ -21246,7 +21255,7 @@ window.eleSeq = eleSeq; window.eleLoad = eleLoad;
 
 // ── Misurare · «Numeri dell'anno»: i dati già scritti nell'app, sommati. Quantitativi calcolati; qualitativi solo contati o riportati, mai trasformati in punteggi ──
 function numCalc(items, staffItems){
-  const oggi = new Date().toISOString().slice(0, 10); const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
+  const oggi = isoOggi(); const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
   const R = {tpa:{}, cont:0, fmt:{Riunione:0, Uscita:0, Bivacco:0, Campo:0}, fatte:0, daFare:0, senzaData:0, giorni:0, notti:0, fuori:0, resid:0, pres:0, presN:0, km:0, staffN:0, mese:{}, tipo:{}, spese:{}, spTot:0, amb:{P:0, C:0, S:0}, perc:{}, strum:{}, att:0, ver:0, migl:[], bene:[], idr:{spontaneo:0, stimolato:0, no:0}, cicli:items.length};
   const ing = (u, staff) => { const x = u.ax || {}; try{ Object.defineProperty(x, '__u', {value:u.id, enumerable:false, configurable:true, writable:true}); }catch(e){}
     if(staff){ R.staffN++; return; }
@@ -21346,7 +21355,7 @@ function spReportHTML(L){ const D = spReportData(L); const ks = Object.keys(AX_C
   const tp = ks.reduce((a, c) => a + (D.prev[c] || 0), 0), tc = ks.reduce((a, c) => a + (D.cats[c] || 0), 0);
   return `<div class="vis-lst"><table class="bil-t"><thead><tr><th>Categoria</th><th>Preventivo</th><th>Speso</th><th>Differenza</th></tr></thead><tbody>${ks.map(c => `<tr><th>${AX_CATI[c][0]}</th><td class="n">${axEur(D.prev[c] || 0)}</td><td class="n">${axEur(D.cats[c] || 0)}</td><td class="n">${axEur((D.cats[c] || 0) - (D.prev[c] || 0))}</td></tr>`).join('')}<tr class="bil-tot"><th>Totale</th><td class="n">${axEur(tp)}</td><td class="n">${axEur(tc)}</td><td class="n">${axEur(tc - tp)}</td></tr></tbody></table></div>`; }
 window.spRe = function(){ const p = $('panel-pp'); if(p && SH.ppv === 'bil') p.innerHTML = bilHTML(); };
-window.spAdd = function(){ spList().push({id:'s' + Date.now().toString(36), data:new Date().toISOString().slice(0, 10), desc:'', cat:'altro', importo:'', att:'', chi:'', pag:'', giust:'', nota:'', conf:true}); spSave(); spRe(); };
+window.spAdd = function(){ spList().push({id:'s' + Date.now().toString(36), data:isoOggi(), desc:'', cat:'altro', importo:'', att:'', chi:'', pag:'', giust:'', nota:'', conf:true}); spSave(); spRe(); };
 window.spDel = function(i){ if(window.BRO) return; spList().splice(i, 1); spSave(); spRe(); };
 window.spSet = function(i, k, v, re){ if(window.BRO) return; const r = spList()[i]; if(!r) return; r[k] = k === 'importo' ? (v === '' ? '' : Number(v)) : v; spSave(); if(re || k === 'conf' || k === 'importo' || k === 'att' || k === 'giust'){ if(k === 'importo' || k === 'giust'){ const t = document.querySelector('.sp-tot'); if(t && k === 'importo'){ spTotUp(); return; } if(k === 'giust') return; } spRe(); } };
 function spTotUp(){ const t = document.querySelector('.sp-tot'); if(!t) return; const ok = spFilt().filter(r => r.conf !== false); const noDoc = ok.filter(r => !(r.giust || '').trim()).length; t.innerHTML = `<b>Speso e confermato: ${axEur(ok.reduce((a, r) => a + (Number(r.importo) || 0), 0))}</b>${ok.length ? ` · ${noDoc ? noDoc + ' senza giustificativo' : 'tutte con giustificativo'}` : ''}`; }
