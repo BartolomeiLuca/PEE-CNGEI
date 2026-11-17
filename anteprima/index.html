@@ -6776,7 +6776,19 @@ function mvSetMine(id,s){ const me=mvMe(); if(!me) return; const M=mvM(); const 
 function mvNote(pid,v){ const me=mvMe(); if(!me) return; const M=mvM(); const o=M.by[me]||(M.by[me]={nome:mvMyName(),v:{},note:{}}); if(!o.note) o.note={}; o.note[pid]=v; if(!o.at) o.at={}; o.at[pid]=Date.now(); mvRevNotify(pid); saveDataDebounced(); }
 function mvSetMode(on){
   if(!mvCanDecide()) return; const M=mvM(); const me=mvMe();
-  if(on){ if(me && !(M.by[me]&&Object.keys(M.by[me].v||{}).length)){ const v={}; Object.values(DB).flat().forEach(p=>{ const n=mvNum(obs[p.id]); if(n!=null) v[p.id]=n; }); M.by[me]={nome:mvMyName(),v,note:{}}; } M.on=true; }
+  if(on){
+    if(me && !(M.by[me]&&Object.keys(M.by[me].v||{}).length)){ const v={}; Object.values(DB).flat().forEach(p=>{ const n=mvNum(obs[p.id]); if(n!=null) v[p.id]=n; }); M.by[me]={nome:mvMyName(),v,note:{}}; }
+    else if(me){
+      // 17/11: i valori scritti MENTRE l'osservazione a più voci era spenta sono la tua voce: prima, riaccendendola, venivano sostituiti dai vecchi valori
+      // (mentre è spenta, obs coincide con il valore finale di quando l'hai spenta: se è diverso, l'hai cambiato tu)
+      const o = M.by[me] || (M.by[me] = {nome:mvMyName(), v:{}, note:{}}); if(!o.v) o.v = {}; if(!o.at) o.at = {}; let n = 0;
+      Object.values(DB).flat().forEach(p => { const cur = obs[p.id]; if(cur === undefined || cur === null || cur === '') return;
+        const c = cur === 'n' ? 'n' : Number(cur), f = mvFinal(p.id); if(c === f || (c !== 'n' && isNaN(c))) return;
+        o.v[p.id] = c; o.at[p.id] = Date.now(); n++;
+        const d = M.dec[p.id]; if(d && mvCanDecide()){ M.log.push({pid:p.id, da:d.v, a:c, chi:mvMyName(), at:Date.now(), why:'valore scritto con l’osservazione a più voci spenta'}); delete M.dec[p.id]; } });
+      if(n) try{ showToast(n === 1 ? 'Il valore che avevi scritto a voce singola è diventato la tua voce' : 'I ' + n + ' valori che avevi scritto a voce singola sono diventati la tua voce'); }catch(e){}
+    }
+    M.on = true; }
   else M.on=false;
   saveData(true); renderPhase1();
 }
@@ -8877,7 +8889,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-10-24 · beta';
-const APP_BUILD = '202611162136'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611170005'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'14 novembre 2026', t:'Due progetti di esempio completi, domande frequenti rinnovate', i:[
@@ -15450,6 +15462,11 @@ function clErr(e){
   if(/Email not confirmed/i.test(m)) return 'Email non ancora confermata: clicca il link che ti è arrivato per posta.';
   if(/rate limit/i.test(m)) return 'Troppe richieste: riprova tra qualche minuto.';
   if(/Failed to fetch|NetworkError/i.test(m)) return 'Connessione assente.';
+  if(/Unable to validate email|invalid format|valid email/i.test(m)) return 'L’indirizzo email non è valido.';
+  if(/Password should be at least|weak.?password|Password is too short/i.test(m)) return 'La password è troppo corta o troppo debole: usa almeno 8 caratteri.';
+  if(/New password should be different/i.test(m)) return 'La nuova password deve essere diversa da quella di prima.';
+  if(/token.*(expired|invalid)|(expired|invalid).*token|otp_expired/i.test(m)) return 'Il link non è più valido: richiedine uno nuovo.';
+  if(/Unexpected (token|end)|JSON/i.test(m)) return 'il file non è un JSON valido.';
   if(/relation .* does not exist|schema cache/i.test(m)) return 'Il database non è ancora pronto: esegui lo script SQL su Supabase.';
   return m;
 }
@@ -17131,7 +17148,7 @@ async function clPush(force){
       let t0 = null; try{ t0 = await dbTsRaw(CL.ctx.id); }catch(e){}
       if(t0){ raw = t0.raw;
         if(t0.ts > CL.ctx.ts && clBaseGet()){
-          let mr = null; try{ mr = await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; }
+          let mr = null; try{ mr = await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; clRetrySoon(); }
           CL.busy = false; return mr === 'applied' ? 'merged' : undefined; } }
     }
     if(!force){
@@ -17146,14 +17163,14 @@ async function clPush(force){
       }
       if(cur && cur > CL.ctx.ts){
         if(!clIdle()){ CL.busy = false; clSetStatus('sync'); clWhenIdle(() => clPush()); return; }
-        try{ await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; }
+        try{ await clMergeNow(); }catch(e){ clSetStatus('off'); CL.pending = true; clRetrySoon(); }
         CL.busy = false; return;
       }
     }
     const seq0 = CL._qseq || 0, up0 = (CL.ctx.upaths || []).slice();
     const d = clSnapshot();
     const base = clBaseGet();
-    if(!force && base && clSameData(d, base)){ CL.ctx.dirty = false; CL.ctx.upExtra = false; clSaveCtx(); CL.pending = false; clSetStatus('ok'); CL.busy = false; return; }
+    if(!force && base && clSameData(d, base)){ CL._retry = 0; CL.ctx.dirty = false; CL.ctx.upExtra = false; clSaveCtx(); CL.pending = false; clSetStatus('ok'); CL.busy = false; return; }
     // protezione: un salvataggio molto più scarno di quanto già nel cloud non parte da solo (prima si tiene una versione di sicurezza)
     if(base && clShrinks(d, base)){
       try{ await dbSnap(CL.ctx.id, base, 'Prima di un salvataggio molto più scarno'); }catch(e){}
@@ -17167,10 +17184,16 @@ async function clPush(force){
       CL.ctx.upaths = (CL.ctx.upaths || []).filter(x => up0.indexOf(x) < 0); CL.ctx.upExtra = true; CL.ctx.dirty = true; CL.ctx.udirty = true; clSaveCtx(); clBaseSet(d);
       CL.pending = true; clSetStatus('sync'); clAutoSnap(CL.ctx.id, d); CL.busy = false; clearTimeout(CL.timer); CL.timer = setTimeout(() => clPush(), 300); return;
     }
+    CL._retry = 0;
     CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upExtra = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(d); CL.pending = false; clSetStatus('ok');
     clAutoSnap(CL.ctx.id, d);
-  }catch(e){ clSetStatus('off'); CL.pending = true; if(CL.ctx && CL.ctx.ruolo) clRoleCheck(); }
+  }catch(e){ clSetStatus('off'); CL.pending = true; clRetrySoon(); if(CL.ctx && CL.ctx.ruolo) clRoleCheck(); }
   CL.busy = false;
+}
+// 17/11: dopo un errore (rete o server) il salvataggio riprova da solo, con pause sempre più lunghe; prima restava in attesa fino alla modifica successiva
+function clRetrySoon(){
+  CL._retry = Math.min((CL._retry || 0) + 1, 6); clearTimeout(CL.timer);
+  CL.timer = setTimeout(() => { if(CL.pending && !CL.busy) clPush(); }, [4, 10, 30, 60, 120, 300][CL._retry - 1] * 1000);
 }
 // Stile Google Drive: dopo l'accesso c'è sempre un progetto attivo che si salva da solo.
 // - dispositivo vuoto + progetti nel cloud → apre l'ultimo modificato
@@ -17411,7 +17434,7 @@ function clRestore(inp){
       localStorage.setItem(CL_LS, JSON.stringify(d));
       try{ if(d.MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
       appReload();
-    }catch(e){ clMsg('File non valido: '+e.message, 'err'); }
+    }catch(e){ clMsg('File non valido: '+clErr(e), 'err'); }
   };
   r.readAsText(f);
 }
@@ -17927,7 +17950,7 @@ window.shImportJson = function(inp){ const f = inp.files && inp.files[0]; if(!f)
       else { const d = j && (j.data || j); if(!d || typeof d !== 'object' || !('obs' in d || 'STAFF_MEMBERS' in d || 'scheda' in d)) throw new Error('non è un progetto di PEE CNGEI');
         const y = Number(j.anno) || Number((CL.ctx || {}).anno) || new Date().getFullYear(); P = {app:'PEE CNGEI', esportato:j.esportato || null, progetti:[{anno:y, titolo:j.titolo || ((d.scheda || {}).tipoProgetto === 'PP' ? 'Progetto Personale' : 'Progetto') + ' (caricato)', meta:j.meta || clMeta(d), data:d}]}; }
       if(!P.progetti.length) throw new Error('il file non contiene progetti'); CL.bundle = P; inp.value = ''; clShowBundle(); SH.rows = null;
-    }catch(e){ clToast('File non valido: ' + e.message); inp.value = ''; } };
+    }catch(e){ clToast('File non valido: ' + clErr(e)); inp.value = ''; } };
   r.readAsText(f); };
 window.shExportJson = async function(){
   try{
