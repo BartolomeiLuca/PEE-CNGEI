@@ -8842,7 +8842,10 @@ function attPreDoc(x){ const o=[]; const ax=x.ax||{}; const dur=attDurTot(x)||Nu
       o.push(dPara([...(bits?[dTxt(bits+' — ',{size:18,bold:true})]:[]),dTxt(plain(r.cosa)||'—',{size:18}),...(r.chi?[dTxt(' ('+affName(r.chi)+')',{size:18,italics:true,color:GRTXT})]:[])],{after:20,indent:480})); if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; }); }
   return o; }
 function attPostDoc(x){ const M=((x.ax||{}).mat||[]).filter(r=>r&&(r.cosa||'').trim()); if(!M.length) return [];
-  return [dPara([dTxt('Materiali: ',{size:18,bold:true,color:GRTXT}),...M.flatMap((r,i)=>[dTxt((i?'; ':'')+plain(r.cosa),{size:18}),...(r.chi?[dTxt(' (chi lo procura: '+affName(r.chi)+')',{size:18,italics:true,color:GRTXT})]:[])])],{after:30,indent:240})]; }
+  // 18/11: materiali in tabella, uno sotto l'altro: il materiale e, a fianco, chi se ne occupa
+  return [dPara([dTxt('Materiali:',{size:18,bold:true,color:GRTXT})],{after:30,indent:240,keepNext:true}),
+    dGridTable(['Materiale','Chi se ne occupa'], M.map(r=>[plain(r.cosa)||'—', (r.chi?affName(r.chi):'')||'—']), [3700,2900], 17),
+    dPara('',{size:8,after:60})]; }
 function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
 function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx>=per.attivita.length) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
   let inCal=false; try{ inCal=!!(a&&a.aid&&uscListAll().some(u=>Object.values(u.prog||{}).some(m=>m&&!m.del&&m.k==='att'&&m.aid===a.aid&&m.pid===per.percorsoId))); }catch(e){}
@@ -8918,7 +8921,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611181704'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611182029'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'17 novembre 2026', t:'Nuova versione: account, progetti, Progetto Personale, 51 video', i:[
@@ -14540,8 +14543,10 @@ function exportDocx(){
 // ── Scheda completa (Unità / staff / personale): A riepilogo, B priorità, C percorsi, D valutazione IDR, E evoluzione ──
 function dMulti(text, o={}){
   const t = plain(text).trim(); if(!t) return [dPara('—',{size:o.size||19,after:0,color:'999999'})];
-  return rtLines(t).filter(l => l.trim()).map(l => dPara(l,{size:o.size||19,after:40}));
+  return rtParas(t).map((p,i,A) => dPara(p.l,{size:o.size||19,after:(p.gap && i<A.length-1)?160:40}));
 }
+// 18/11: una riga vuota nel testo è uno stacco tra paragrafi: prima si perdeva e il testo diventava un blocco unico. Ogni riga piena è un paragrafo; se dopo c'è una riga vuota, lo stacco è più ampio
+function rtParas(t){ const out = []; rtLines(t).forEach(l => { if(!l.trim()){ if(out.length) out[out.length-1].gap = true; return; } out.push({l, gap:false}); }); return out; }
 // un grassetto (o corsivo, sottolineato…) che va a capo: ogni riga si chiude e la successiva si riapre, così nel Word non restano asterischi
 function rtLines(t){ const L = rtNormTok(t).split(/\n/); const TOK = ['**','~~','++','^^',',,']; let open = [];
   return L.map(line => { let l = open.join('') + line; const cnt = {}; const re = /(\*\*|~~|\+\+|\^\^|,,)/g; let m; while((m = re.exec(l))) cnt[m[1]] = (cnt[m[1]]||0) + 1;
@@ -14723,7 +14728,7 @@ async function exportPPDocx(mode){
       ...(acts.length ? acts.map(({x,j}) => [`Attività ${attNum(per,j)}`, [
         dPara([dTxt(`${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40}),
         ...attPreDoc(x),
-        ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap(k => rtLines(plain(x[k])).filter(l=>l.trim()).map((l,q) => dPara(q===0?[dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(l,{size:18})]:dLinkRuns(l,{size:18}),{after:30,indent:240}))),
+        ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap(k => rtParas(plain(x[k])).map(({l,gap},q,AA) => dPara(q===0?[dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(l,{size:18})]:dLinkRuns(l,{size:18}),{after:(gap && q<AA.length-1)?120:30,indent:240}))),
         ...attPostDoc(x),
         ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[])
       ]]) : [['Attività', attCell]]),
@@ -19611,18 +19616,21 @@ async function rvDocHTML(mode){
   return (await window.mammoth.convertToHtml({arrayBuffer: await blob.arrayBuffer()})).value;
 }
 // le «voci» commentabili: titoli di sezione e riga d'etichetta (con le righe vuote che la seguono); Lancio/Sviluppo/Conclusione e le 7 caratteristiche hanno la propria voce
+// 18/11: righe e titoli che il Word compone da sé (riepilogo del percorso sviluppato, «Altri percorsi accennati») non sono un campo del compilatore: non si commentano
+const RV_NOCOM = /^(Percorso sviluppato:|Altri percorsi)/i;
 function rvAnchors(root){
-  const out = []; let sec = 0, h3 = '', seen = {}, cur = null, tab = null, amb = '';
+  const out = []; let sec = 0, h3 = '', seen = {}, cur = null, tab = null, amb = '', alleg = false;
   const mk = (el, slugLab, label, kind) => { const k0 = 'c:' + sec + '|' + RD.slug(h3) + '|' + RD.slug(slugLab); seen[k0] = (seen[k0] || 0) + 1;
-    const a = {el, end:el, key:(k0 + (seen[k0] > 1 ? '#' + seen[k0] : '')).slice(0, 160), kind, sec, label:(kind === 'h3' ? label : (h3 ? h3 + ' › ' : (amb && !/^sviluppo /i.test(label) ? 'Sviluppo ' + amb + ' › ' : '')) + label)}; out.push(a); return a; };
+    const a = {el, end:el, key:(k0 + (seen[k0] > 1 ? '#' + seen[k0] : '')).slice(0, 160), kind, sec:(alleg ? 1 : sec), label:(kind === 'h3' ? label : (h3 ? h3 + ' › ' : (amb && !/^sviluppo /i.test(label) ? 'Sviluppo ' + amb + ' › ' : '')) + label)}; out.push(a); return a; };
   Array.from(root.querySelectorAll('h2,h3,tr')).forEach(el => {
     const tx = (el.textContent || '').replace(/💬/g, '').trim();
-    if(el.tagName === 'H2'){ const m = /Sezione\s+(\d)/i.exec(tx); sec = m ? +m[1] : sec; h3 = ''; amb = ''; cur = null; return; }
-    if(el.tagName === 'H3'){ h3 = tx; amb = ''; cur = null; if(/^(Percorso|Attivit)/i.test(tx)) el.classList.add('rd-key'); mk(el, tx, tx, 'h3'); return; }
+    if(el.tagName === 'H2'){ const m = /Sezione\s+(\d)/i.exec(tx); sec = m ? +m[1] : sec; alleg = !m && /^Allegato\s*1\b/i.test(tx); h3 = ''; amb = ''; cur = null; return; }
+    if(el.tagName === 'H3'){ h3 = tx; amb = ''; cur = null; if(/^(Percorso|Attivit)/i.test(tx)) el.classList.add('rd-key'); if(!RV_NOCOM.test(tx)) mk(el, tx, tx, 'h3'); return; }
     const t = el.closest('table'); if(t !== tab){ tab = t; cur = null; }
     const cells = el.cells; if(!cells || !cells.length) return;
     let lab = (cells[0].textContent || '').replace(/💬/g, '').trim(); if(lab === '—' || lab === '-') lab = '';
     const ma = /^sviluppo\s+(personale|comunitario|spirituale)$/i.exec(lab); if(ma) amb = ma[1].toLowerCase();
+    if(lab && RV_NOCOM.test(lab)){ cur = null; return; }
     if(lab){ cur = mk(el, lab, lab, 'row'); cur.base = lab; cur.grp = cur; return; }
     const c1 = cells[1] || cells[0], st = c1.querySelector('strong'), m = st && /^([^:]{1,40}):/.exec((st.textContent || '').trim());
     if(m && cur && (c1.textContent || '').trim().indexOf(m[1]) === 0){ const base = cur.base; const a = mk(el, base + ' ' + m[1], base + ' › ' + m[1].trim(), 'row'); a.base = base; a.sub = true; a.grp = cur.grp; cur = a; return; }
@@ -19754,7 +19762,7 @@ function rvRows(){ const d = window._rd, v = window._rv; if(!d) return []; retur
 function rvLabelOf(x){ const d = window._rd; const a = d.anchors.find(q => q.key === x.chiave); return a ? a.label : (/^s\d$/.test(x.chiave) ? 'Commento generale · ' + PP_SEZ[+x.chiave[1] - 1] : 'Punto del progetto'); }
 function rvPoints(){
   const d = window._rd; if(!d) return []; const out = [];
-  rvRows().filter(x => x.tipo === 'nota' && x.testo).forEach(x => { const m = /^c:(\d)/.exec(x.chiave) || /^s(\d)$/.exec(x.chiave); out.push({id:x.id, key:x.chiave, sec:m ? +m[1] : 0, label:rvLabelOf(x), t:x.testo, rec:!!x.recepita, who:d.mine ? (x.autore_nome || 'Revisore') : '', gen:!/^c:/.test(x.chiave), uid:x.user_id}); });
+  rvRows().filter(x => x.tipo === 'nota' && x.testo).forEach(x => { out.push({id:x.id, key:x.chiave, sec:rvKeySec(x.chiave), label:rvLabelOf(x), t:x.testo, rec:!!x.recepita, who:d.mine ? (x.autore_nome || 'Revisore') : '', gen:!/^c:/.test(x.chiave), uid:x.user_id}); });
   out.sort((a, b) => a.sec - b.sec || (a.gen ? -1 : 1) - (b.gen ? -1 : 1));
   d.pts = out; return out;
 }
@@ -19913,9 +19921,12 @@ window.rvMsgSend = async function(box){
 // ── lato compilatore, nell'app vera: «Revisioni da recepire» ──
 window._rp = window._rp || {pts:[], msgs:[], giri:[], open:false, t:0};
 const RP_TIT = ['Composizione dell’Unità','Contesto territoriale','Contesto Sezione e Gruppo','Adulti in staff','Osservazione con il KOS: occasioni osservative','Condizioni dell\'osservazione','Analisi delle dinamiche di gruppo','Aspetti positivi e necessità educative','Priorizzazione delle necessità educative','Motivazione della scelta','Priorità 1','Priorità 2','Priorità 3','Allegato 1 — Griglia osservativa'];
+// 18/11: le richieste sulla griglia osservativa (Allegato 1) appartengono alla sezione 1, dove nasce la griglia (le chiavi restano quelle salvate: c:3|| o c:5||)
+function rpIsGrid(k){ return /^c:[35]\|\|(sviluppo-(personale|comunitario|spirituale)|\d+-)/.test(k || ''); }
+function rvKeySec(k){ if(rpIsGrid(k)) return 1; const m = /^c:(\d)/.exec(k || '') || /^s(\d)$/.exec(k || ''); return m ? +m[1] : 0; }
 function rpLabel(chiave){ const m = /^c:(\d)\|([^|]*)\|?(.*)$/.exec(chiave || ''); if(m){ const cap = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : t, rd = s => cap(String(s || '').replace(/#\d+$/, '').replace(/-/g, ' ').trim()), tit = x => { const sl = String(x || '').replace(/#\d+$/, ''), f = RP_TIT.find(t => RD.slug(t) === sl); return f || rd(x); };
-  return {sec:+m[1], txt:[tit(m[2]), (m[3] ? rd(m[3]) : '')].filter((x, i, A) => x && A.indexOf(x) === i).join(' › ')}; } const g = /^s(\d)$/.exec(chiave || ''); return {sec:g ? +g[1] : 0, txt:'Commento generale'}; }
-window.rpLabel = rpLabel;
+  return {sec:rpIsGrid(chiave) ? 1 : +m[1], txt:[tit(m[2]), (m[3] ? rd(m[3]) : '')].filter((x, i, A) => x && A.indexOf(x) === i).join(' › ')}; } const g = /^s(\d)$/.exec(chiave || ''); return {sec:g ? +g[1] : 0, txt:'Commento generale'}; }
+window.rpLabel = rpLabel; window.rvKeySec = rvKeySec; window.rpIsGrid = rpIsGrid;
 window.rpLoad = async function(){
   if(window.BRO || typeof CL === 'undefined' || !CL.sb || !CL.user || !CL.ctx || CL.ctx.ruolo || !rvOk()) return;
   try{
@@ -19944,8 +19955,8 @@ function rpGridPid(p){ try{ const row = (p.chiave.split('|')[2] || '').replace(/
   const rest = m[2], cand = Object.values(DB).flat().filter(x => x && /^[PCS]\d+$/.test(x.id || '') && x.id.slice(1) === m[1] && x.name);
   const sc = cand.map(x => { const st = rpSl(x.name).split('-').filter(w => w.length >= 4).map(w => w.slice(0, 5)); return {id:x.id, n:st.filter(w => rest.indexOf(w) >= 0).length, t:st.length}; }).sort((a, b) => b.n - a.n);
   if(!sc.length || sc[0].n < 1) return ''; if(sc.length > 1 && sc[1].n === sc[0].n) return ''; return sc[0].id; }catch(e){ return ''; } }
-function rpGridAmb(p){ if((p.sec !== 3 && p.sec !== 5) || (p.chiave.split('|')[1] || '')) return ''; { const pid = rpGridPid(p); if(pid) return pid[0]; } const m = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || '') || /^sviluppo-(personale|comunitario|spirituale)$/.exec((p.chiave.split('|')[2] || '').replace(/#\d+$/, '')); return m ? {personale:'P', comunitario:'C', spirituale:'S'}[m[1].toLowerCase()] : ''; }
-function rpScreens(p){ if((p.sec === 3 || p.sec === 5) && !(p.chiave.split('|')[1] || '')){ const g = rpGridAmb(p); return g ? [['1b', g]] : [['1b', 'P'], ['1b', 'C'], ['1b', 'S']]; } if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
+function rpGridAmb(p){ if(!rpIsGrid(p.chiave)) return ''; { const pid = rpGridPid(p); if(pid) return pid[0]; } const m = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || '') || /^sviluppo-(personale|comunitario|spirituale)$/.exec((p.chiave.split('|')[2] || '').replace(/#\d+$/, '')); return m ? {personale:'P', comunitario:'C', spirituale:'S'}[m[1].toLowerCase()] : ''; }
+function rpScreens(p){ if(rpIsGrid(p.chiave)){ const g = rpGridAmb(p); return g ? [['1b', g]] : [['1b', 'P'], ['1b', 'C'], ['1b', 'S']]; } if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
   if(/^(composizione|contesto|adulti|appunti-dal-piano)/.test(h)) return RP_SCR.a; if(/^(osservazione-con|attivit|condizioni|focus|lancio|sviluppo|conclusione)/.test(h)) return RP_SCR.occ; if(/^(priorizzazione|motivazione)/.test(h)) return RP_SCR.d; if(/^(aspetti|analisi|appunti-dalla-programmazione)/.test(h)) return [['1c'], ['1s']]; return RP_SCR.b; }
 window.addEventListener('resize', () => { try{ document.body.classList.toggle('rp-dock-on', !!(window._rp && window._rp.open) && window.innerWidth >= 1100); }catch(e){} });
 window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; const tk = window._rpGoTk = (window._rpGoTk || 0) + 1, stop = () => tk !== window._rpGoTk;
@@ -19958,14 +19969,16 @@ window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; con
   if(!gAmb){ await wait(350); if(stop()) return; tg = rpTarget(p);
     for(let w = 0; !tg && w < 8; w++){ await wait(250); if(stop()) return; tg = rpTarget(p); } }
   for(let n = 0; !tg && n < cands.length; n++){ const c = cands[n]; p._last = (n === cands.length - 1); try{ shSub(c[0], c[1], c[2]); }catch(e){} for(let w = 0; !tg && w < 12; w++){ await wait(250); if(stop()) return; tg = rpTarget(p); } }
-  const box = document.createElement('div'); box.className = 'rp-inl rv-pt-' + rpPanelState(p); box.dataset.pk = pk; box.innerHTML = rpPanelHTML(p);
+  // 18/11: se la riga esatta non c'è, il commento si apre sul blocco che la contiene (il titolo), non in cima alla pagina
+  if(!tg){ const kk = p.chiave.split('|'); if(kk[1] && kk[2] && kk[2] !== kk[1]){ try{ tg = rpTarget(Object.assign({}, p, {chiave:kk[0] + '|' + kk[1]})); }catch(e){} if(tg) p._near = true; } }
+  const box = document.createElement('div'); box.className = 'rp-inl rv-pt-' + rpPanelState(p); box.dataset.pk = pk; box.innerHTML = rpPanelHTML(p); if(p._near) box.dataset.near = '1';
   if(tg){ (tg.open || []).forEach(x => { if(x.tagName === 'DETAILS') x.open = true; else try{ x.click(); }catch(e){} }); const el = tg.el, mode = tg.mode;
     if(mode === 'tr'){ const tr = document.createElement('tr'); tr.className = 'rp-inl-tr'; const td = document.createElement('td'); td.colSpan = 30; td.appendChild(box); tr.appendChild(td); el.after(tr); }
     else if(mode === 'prepend') el.prepend(box); else if(mode === 'before') el.before(box); else if(mode === 'append') el.appendChild(box); else if(mode === 'afterSummary') el.after(box); else if(mode === 'afterField'){ let h = el; const nx = h.nextElementSibling; if(nx && (/^(TEXTAREA|INPUT|SELECT)$/.test(nx.tagName) || nx.classList.contains('rt-ed'))) h = nx; if(/^(TEXTAREA|INPUT|SELECT)$/.test(h.tagName) && h.nextElementSibling && h.nextElementSibling.classList.contains('rt-ed')) h = h.nextElementSibling; h.after(box); }
     else el.after(box);
     await wait(60); try{ box.scrollIntoView({block:'center'}); }catch(e){} box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; }
   // 18/11: nessun campo riconoscibile → il commento resta comunque agganciato, in cima alla pagina aperta (con l'indicazione di dove si riferisce), non in una scheda fluttuante
-  { const pn0 = document.querySelector('#main-app .panel.active'); if(pn0){ const cx = document.createElement('div'); cx.className = 'rp-inl-w'; cx.style.cssText = 'font-weight:700;margin:0 0 4px'; cx.textContent = (p.sec ? 'Sezione ' + p.sec + ' › ' : '') + (p.txt || ''); box.insertBefore(cx, box.firstChild);
+  { const pn0 = document.querySelector('#main-app .panel.active'); if(pn0){ box.dataset.fb = '1'; const cx = document.createElement('div'); cx.className = 'rp-inl-w'; cx.style.cssText = 'font-weight:700;margin:0 0 4px'; cx.textContent = (p.sec ? 'Sezione ' + p.sec + ' › ' : '') + (p.txt || ''); box.insertBefore(cx, box.firstChild);
       const hh = Array.from(pn0.querySelectorAll('h1,h2,h3')).find(h => rpVis(h) && !h.closest('.rp-inl,#rp-float,#vid-pg,.vid-pg,.rp-inl-tr')); if(hh) hh.before(box); else pn0.prepend(box);
       await wait(60); try{ box.scrollIntoView({block:'center'}); }catch(e){} box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; } }
   // il punto non ha un campo riconoscibile nella pagina: la scheda si apre in primo piano, uguale a quella del revisore
@@ -20008,7 +20021,9 @@ function rpPanelState(p){ const x = (window._rvs[CL.ctx.id] || {pun:{}}).pun[p.c
 const rpSl = t => RD.slug(String(t || '').replace(/\s+/g, ' ').trim()).replace(/^-+|-+$/g, '');
 function rpVis(e){ return e && e.offsetParent !== null; }
 function rpLeafs(root, re){ return Array.from(root.querySelectorAll('label,legend,summary,h1,h2,h3,h4,h5,td,th,dt,div,span,b,strong,p')).filter(e => rpVis(e) && !e.closest('.rp-inl,#rp-dock,#rp-float') && (e.textContent || '').length < 300 && re(rpSl(e.textContent)) && !Array.from(e.children).some(c => re(rpSl(c.textContent)))); }
-function rpPcx(h){ const m = /^percorso-(\d+)-[^-]+-([a-z]\d+)-/.exec(h); if(!m) return null; return Array.from(document.querySelectorAll('.pcx')).find(c => { const hd = Array.from(c.querySelectorAll('.pcx-hd > span')).find(x => !x.classList.contains('pcx-chev')), sl = hd ? rpSl(hd.firstChild ? hd.firstChild.textContent : hd.textContent) : ''; return sl.indexOf('percorso-' + m[1] + '-') === 0 && sl.indexOf('-' + m[2] + '-') > 0; }) || null; }
+function rpPcx(h){ const m = /^percorso-(\d+)-[^-]+-([a-z]\d+)-/.exec(h); if(!m) return null; const all = Array.from(document.querySelectorAll('.pcx')), test = (c, strict) => { const hd = Array.from(c.querySelectorAll('.pcx-hd > span')).find(x => !x.classList.contains('pcx-chev')), sl = hd ? rpSl(hd.firstChild ? hd.firstChild.textContent : hd.textContent) : ''; return (!strict || sl.indexOf('percorso-' + m[1] + '-') === 0) && sl.indexOf('-' + m[2] + '-') > 0; };
+  // 18/11: nel Progetto Personale il Word mette per primo il percorso sviluppato, nella pagina i percorsi seguono l'ordine degli ambiti: il numero può non coincidere, il codice del percorso (C1, P1…) sì
+  return all.find(c => test(c, true)) || all.find(c => test(c, false)) || null; }
 function rpRowTd(card, re){ return Array.from(card.querySelectorAll('.perc-tab > tbody > tr')).find(tr => tr.firstElementChild && re(rpSl(tr.firstElementChild.firstChild ? tr.firstElementChild.firstChild.textContent : tr.firstElementChild.textContent))) || null; }
 function rpGroupEnd(lb){   // fine del blocco «etichetta + campo»: così il pannello sta sotto il campo e non in mezzo
   const w = lb.parentElement; if(w && w.firstElementChild === lb && w.querySelectorAll(':scope > label').length === 1 && !/^(DETAILS|TD|TR|TBODY|TABLE|MAIN)$/.test(w.tagName) && !/profile-card|u-fold-in|pcx-body|panel/.test(String(w.className))) return w;
@@ -20043,7 +20058,7 @@ function rpTarget(p){
     const lb = row === 'compilata-da' ? pick(/^nome-e-cognome/) : row === 'sezione' ? pick(/^sezione/) : (row === 'gruppo' ? pick(/^gruppo/) : (pick(new RegExp('^' + row)) || pick(/^gruppo/)));
     return lb ? res(lb.tagName === 'LABEL' ? lb : (lb.closest('label') || lb), 'after', []) : null; }
   // ── Allegato 1 · griglia osservativa (schede dei comportamenti, nelle pagine «Osservare»)
-  if((sec === 'c:3' || sec === 'c:5') && !h3){
+  if(rpIsGrid(p.chiave)){
     const ms = /^sviluppo-(personale|comunitario|spirituale)$/.exec(row);
     if(ms){ const a = {personale:'P', comunitario:'C', spirituale:'S'}[ms[1]], c1 = document.getElementById('card-' + a + '1'); return rpVis(c1) ? res(c1, 'before', []) : null; }
     const am = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || ''), amL = am ? {personale:'P', comunitario:'C', spirituale:'S'}[am[1].toLowerCase()] : '', txt2 = String(p.txt || '').replace(/^.*?sviluppo (personale|comunitario|spirituale)\s*›\s*/i, '');

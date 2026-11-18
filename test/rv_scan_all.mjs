@@ -30,11 +30,11 @@ const bad = [];
 for(const p of pts){ if(p.k === 's1') continue;
   await ev(() => { const f = document.getElementById('rp-float'); if(f) f.remove(); document.querySelectorAll('.rp-inl,.rp-inl-tr').forEach(e => e.remove()); });
   await ev(i => { rpGo(i); }, p.i); await sleep(3500);
-  let r = await ev(() => ({float: !!document.getElementById('rp-float'), inl: !!document.querySelector('.rp-inl')}));
-  for(let w = 0; w < 14 && !r.float && !r.inl; w++){ await sleep(1000); r = await ev(() => ({float: !!document.getElementById('rp-float'), inl: !!document.querySelector('.rp-inl')})); }
-  await sleep(1500); r = await ev(() => ({float: !!document.getElementById('rp-float'), inl: !!document.querySelector('.rp-inl')}));
+  let r = await ev(() => ({float: !!document.getElementById('rp-float') || !!document.querySelector('.rp-inl[data-fb]'), inl: !!document.querySelector('.rp-inl')}));
+  for(let w = 0; w < 14 && !r.float && !r.inl; w++){ await sleep(1000); r = await ev(() => ({float: !!document.getElementById('rp-float') || !!document.querySelector('.rp-inl[data-fb]'), inl: !!document.querySelector('.rp-inl')})); }
+  await sleep(1500); r = await ev(() => ({float: !!document.getElementById('rp-float') || !!document.querySelector('.rp-inl[data-fb]'), inl: !!document.querySelector('.rp-inl')}));
   if(r.float){ bad.push(p.k); console.log('FLOAT', p.k); }
 }
-fs.writeFileSync('/tmp/rvall.json', JSON.stringify({tot:pts.length, bad}));
+fs.writeFileSync('/tmp/rvall_pe.json', JSON.stringify({tot:pts.length, bad}));
 ok(bad.length === 0, 'punti senza aggancio: ' + bad.length + ' su ' + pts.length + ' → ' + bad.join(' ; '));
 await br.close(); summary(); process.exit(0);

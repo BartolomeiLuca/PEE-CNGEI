@@ -1,0 +1,28 @@
+// Quali punti del revisore non trovano un aggancio nella pagina del compilatore? (ogni ancora del documento, una per una)
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+import fs from 'fs';
+process.env.SITE = process.env.SITE || '/tmp/site_pre';
+const base = (await serve()) + 'anteprima/'; const db = new FakeDB(); db.sql14 = true;
+const A = db.addUser('anna@x.it', 'password123', 'Anna Rossi'), L = db.addUser('luca.bartolomei@cngei.it', 'password123', 'Luca Prova');
+const br = await launch(process.argv[2] || 'chromium');
+const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}), P = pa.page, ev = (f, a) => P.evaluate(f, a);
+await loginAs(P, base, A); await ev(() => exStart()); await sleep(2500);
+await ev(() => { scheda.pp.nome = 'Anna Rossi'; scheda.pp.mail = {area:'altoadriatico', tutorMail:'luca.bartolomei@cngei.it'}; saveData(true); }); await sleep(500);
+await ev(() => ppGiroForm(1)); await sleep(1000);
+await ev(() => { ppGiroDest(0, 'app', true); [0, 1, 2, 3].forEach(i => ppGiroDest(i, 'mail', false)); });
+await ev(() => ppGiroCongela()); await sleep(2500);
+const g0 = db.t.pee_giri[0], aid = g0.archivio_id;
+const pl = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}), PL = pl.page, el = (f, a) => PL.evaluate(f, a);
+await loginAs(PL, base, L); await sleep(1500);
+const [pop] = await Promise.all([PL.context().waitForEvent('page', {timeout:15000}), el(id => rvOpen(id), g0.id)]);
+await pop.waitForLoadState('domcontentloaded'); await sleep(9000);
+const pe = (f, a) => pop.evaluate(f, a);
+const anchors = await pe(() => _rd.anchors.map(a => ({key:a.key, label:a.label, sec:a.sec})));
+console.log('ANCORE', anchors.length);
+const gridA = anchors.filter(a => /^c:[35]\|\|(sviluppo-|\d+-)/.test(a.key));
+ok(gridA.length > 0 && gridA.every(a => a.sec === 1), 'le ancore della griglia (Allegato 1) sono nella sezione 1: ' + gridA.length + ' ancore');
+ok(!anchors.some(a => /^Percorso sviluppato:|^Altri percorsi/i.test(a.label)), 'il riepilogo «Percorso sviluppato» e «Altri percorsi accennati» non sono commentabili');
+ok(anchors.some(a => /^c:\d\|percorso-\d+-/.test(a.key)), 'i percorsi veri restano commentabili');
+const lab = await pa.page.evaluate(() => [rpLabel('c:3||sviluppo-personale'), rpLabel('c:5||1-corporeità-x#2'), rpLabel('c:3|percorso-1-comunitario-c1-comunicare-perco|obiettivoi'), rvKeySec('c:3||2-gestione-emozioni'), rvKeySec('c:3|attivita|x')]);
+ok(lab[0].sec === 1 && lab[1].sec === 1 && lab[2].sec === 3 && lab[3] === 1 && lab[4] === 3, 'le chiavi già salvate: griglia → sezione 1, percorsi → sezione 3 ' + JSON.stringify(lab.map(x => x.sec || x)));
+await br.close(); summary(); process.exit(0);
