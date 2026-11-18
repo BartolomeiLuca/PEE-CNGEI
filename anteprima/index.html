@@ -8918,7 +8918,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611181213'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611181704'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'17 novembre 2026', t:'Nuova versione: account, progetti, Progetto Personale, 51 video', i:[
@@ -19149,10 +19149,14 @@ function ppGiroBlk(g){ return g.blk || ((g.sez || []).some(x => x >= 4) ? 2 : 1)
 function ppBlkAppr(b){ return b === 1 ? (ppIter().apprB1 || null) : (ppIter().appr && ppIter().appr.date ? ppIter().appr : null); }
 window.ppApprB1Set = function(chi, date){ const it = ppIter(); if(!chi && !date){ delete it.apprB1; } else it.apprB1 = {chi:String(chi || '').trim(), date:date || td()}; try{ saveData(true); }catch(e){} shPP('i'); };
 window.ppApprB1Form = function(){ const chi = (document.getElementById('apb1-chi') || {}).value || '', d = (document.getElementById('apb1-d') || {}).value || td(); if(!chi.trim()){ showToast('Scrivi chi ha dato l’approvazione'); return; } ppApprB1Set(chi, d); };
+// 18/11: approvazione della consegna finale registrata a mano (come per la prima parte): si toglie e si rimette senza toccare il resto; quella data in app (src 'app') si ritira da sola se il revisore riapre
+window.ppApprB2Set = function(chi, date){ const it = ppIter(); if(!chi && !date){ delete it.appr; } else it.appr = {chi:String(chi || '').trim(), date:date || td()}; try{ saveData(true); }catch(e){} shPP('i'); };
+window.ppApprB2Form = function(){ const chi = (document.getElementById('apb2-chi') || {}).value || '', d = (document.getElementById('apb2-d') || {}).value || td(); if(!chi.trim()){ showToast('Scrivi chi ha dato l’approvazione'); return; } ppApprB2Set(chi, d); };
 function ppRiscDeiGiri(g){ const r = g.risc || {}; return Object.keys(r).map(k => Object.assign({rid:k}, r[k])).sort((a, b) => String(a.date || '').localeCompare(String(b.date || ''))); }
 window.ppGRiscAdd = function(gid){ const g = ppGiri()[gid]; if(!g) return; if(!g.risc || typeof g.risc !== 'object') g.risc = {}; const rid = 'r' + Date.now().toString(36); g.risc[rid] = {date:td(), da:'', esito:'', note:''}; try{ saveData(true); }catch(e){} shPP('i'); };
 window.ppGRiscSet = function(gid, rid, f, v){ const g = ppGiri()[gid]; if(!g || !g.risc || !g.risc[rid]) return; g.risc[rid][f] = v;
   if(f === 'esito' && v === 'approva' && ppGiroBlk(g) === 1 && !ppIter().apprB1){ ppIter().apprB1 = {chi:g.risc[rid].da || '', date:g.risc[rid].date || td()}; try{ saveData(true); }catch(e){} shPP('i'); return; }
+  if(f === 'esito' && v === 'approva' && ppGiroBlk(g) === 2 && !(ppIter().appr && ppIter().appr.date)){ ppIter().appr = {chi:g.risc[rid].da || '', date:g.risc[rid].date || td()}; try{ saveData(true); }catch(e){} shPP('i'); return; }
   try{ saveDataDebounced(); }catch(e){} };
 window.ppGRiscDel = function(gid, rid){ const g = ppGiri()[gid]; if(!g || !g.risc || !g.risc[rid]) return; const r = g.risc[rid]; if(((r.note || '').trim()) && !confirm('Togliere questo riscontro e i suoi appunti?')) return; delete g.risc[rid]; try{ saveData(true); }catch(e){} shPP('i'); };
 const GESITO = {'':'— esito non indicato —', da_integrare:'Da integrare', chiarimenti:'Servono chiarimenti', approva:'Approva'};
@@ -19184,13 +19188,17 @@ function ppBloccoHTML(b){
     appr = ap ? `<div style="margin-top:10px;font-size:12.5px"><span class="sh-pill sh-pill-ok">Prima parte approvata</span> da ${esc(ap.chi || '—')} il ${esc(fmtDL(ap.date || ''))} <button type="button" class="btn-ghost" style="padding:2px 9px;font-size:12px;margin-left:6px" onclick="if(confirm('Togliere l’approvazione registrata?')) ppApprB1Set('','')">togli</button></div>`
       : `<div style="margin-top:10px;font-size:12.5px"><b>Approvazione della prima parte</b> <span class="sh-hint">(la dà il Tutor; se il Tutor è anche l’ICdF, o non c’è, la dà l’ICdF. Se l’hai ricevuta fuori dall’app, registrala qui: sblocca la consegna finale)</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center"><input id="apb1-chi" type="text" class="sh-in" style="min-height:34px;font-size:12.5px;flex:1;min-width:140px" maxlength="120" placeholder="chi l’ha data (es. Tutor Marco)" aria-label="Chi ha approvato"><input id="apb1-d" type="date" class="sh-in" style="min-height:34px;font-size:12.5px;width:auto" value="${td()}" aria-label="Data dell’approvazione"><button type="button" class="btn-ghost" style="min-height:34px" onclick="ppApprB1Form()">Registra l’approvazione</button></div><div class="sh-hint" style="margin-top:3px">Registrata dal compilatore, con data.</div></div>`;
-  } else if(ap){ appr = `<div style="margin-top:10px;font-size:12.5px"><span class="sh-pill sh-pill-ok">Approvato</span> il ${esc(fmtDL(ap.date || ''))}</div>`; }
+  } else {
+    appr = ap ? `<div style="margin-top:10px;font-size:12.5px"><span class="sh-pill sh-pill-ok">Progetto approvato</span> da ${esc(ap.chi || '—')} il ${esc(fmtDL(ap.date || ''))} <button type="button" class="btn-ghost" style="padding:2px 9px;font-size:12px;margin-left:6px" onclick="if(confirm('Togliere l’approvazione registrata?')) ppApprB2Set('','')">togli</button></div>`
+      : (aperto ? `<div style="margin-top:10px;font-size:12.5px"><b>Approvazione finale</b> <span class="sh-hint">(la dà il Tutor o l’ICdF. Se l’hai ricevuta fuori dall’app, registrala qui)</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center"><input id="apb2-chi" type="text" class="sh-in" style="min-height:34px;font-size:12.5px;flex:1;min-width:140px" maxlength="120" placeholder="chi l’ha data (es. Tutor Marco)" aria-label="Chi ha approvato"><input id="apb2-d" type="date" class="sh-in" style="min-height:34px;font-size:12.5px;width:auto" value="${td()}" aria-label="Data dell’approvazione"><button type="button" class="btn-ghost" style="min-height:34px" onclick="ppApprB2Form()">Registra l’approvazione</button></div><div class="sh-hint" style="margin-top:3px">Registrata dal compilatore, con data.</div></div>` : '');
+  }
   const leg5 = prima ? (ppRisc().length ? `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">Riscontri registrati prima dei giri (${ppRisc().length})</summary>${ppRiscHTML()}</details>` : '') : '';
   const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>${L.length ? `<button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine()" title="Un solo archivio, rapido: tutte le copie inviate in formato dati, i commenti, le risposte e gli stati, con lo storico in Word">Scarica lo storico (rapido)</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine(true)" title="Include anche il Word di ogni giro inviato: può richiedere diversi minuti">Storico completo con tutti i Word</button>` : ''}`
     : `<div style="font-size:12.5px;color:#8a4b00;line-height:1.45">La consegna finale si apre quando la prima parte è approvata (dal Tutor; dall’ICdF se è lui il Tutor o se il Tutor non c’è). Puoi intanto scrivere le Sezioni 4 e 5.</div>`;
   if(prima) setTimeout(() => { try{ window.ppGiroFbAll && window.ppGiroFbAll(); }catch(e){} }, 60);
   return `<div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">${prima ? 4 : 5}</span>${titolo}</h3>
-    <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">${leg} Ogni invio è un <b>giro</b>: il progetto fissato com’era quel giorno, che non cambia più. Ne fai quanti servono, in app e/o per mail.</div>
+    <div class="sub" style="font-size:12.5px;color:#3D3D38;line-height:1.5">${leg} Ogni invio è un <b>giro</b>: il progetto fissato com’era quel giorno, che non cambia più. Ne fai quanti servono, in app e/o per mail.<br><b>Puoi anche fare tutto a mano</b>, senza passare dal revisore in app: con «${L.length ? 'Nuovo invio' : 'Invia in revisione'}» togli i destinatari e l’invio resta registrato nello storico con la data; su ogni invio aggiungi i riscontri ricevuti; in fondo registri l’approvazione.</div>
     ${L.map(ppGiroCardHTML).join('')}${leg5}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center">${btns}</div>${appr}</div>`;
 }
@@ -19278,6 +19286,7 @@ function ppGiroFormRender(){
         <label style="display:inline-flex;gap:5px;align-items:center;font-size:12.5px;min-height:32px"><input type="checkbox" ${d.mail ? 'checked' : ''} onchange="ppGiroDest(${i},'mail',this.checked)">Prepara la mail</label></div>
       ${rev && !ab ? '<div style="font-size:12px;color:#8a4b00;margin-top:4px;line-height:1.45">Funzione in preparazione: la condivisione in app con Tutor e ICdF non è ancora attiva. Intanto puoi congelare il giro e preparare la mail.</div>' : ''}
       ${!rev && !d.email ? '' : ''}</div>`; }).join('');
+  const soloReg = !f.dest.some(d => (d.app || d.mail) && !ppGiroSkip(f, d));
   ov.innerHTML = `<div style="background:var(--surface,#fff);color:var(--ink);border-radius:14px;max-width:640px;width:calc(100% - 24px);max-height:92vh;overflow:auto;padding:18px 18px 16px">
     <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:15px;font-weight:800">Invia il progetto in revisione · Giro ${ppGiroNextN()}</div><button class="btn-ghost" onclick="ppGiroFormClose()" style="padding:4px 10px" aria-label="Chiudi">✕</button></div>
     <p style="font-size:12px;color:var(--ink-mid);margin:6px 0 0;line-height:1.5">L’invio fissa il progetto com’è adesso ed è quello che legge il revisore: tu intanto puoi continuare a lavorarci. Chi è in copia (Capo Gruppo, Commissario) può solo leggere e dare suggerimenti.</p>
@@ -19287,7 +19296,8 @@ function ppGiroFormRender(){
     <div style="font-size:12px;font-weight:700;margin:12px 0 0">A chi</div>
     <div role="radiogroup" aria-label="Chi rivede il progetto" style="margin-top:4px">${[[false, 'Il mio Tutor'], [true, 'L’ICdF']].map(([v, t]) => `<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;min-height:34px${f.revLock ? ';opacity:.6' : ''}"><input type="radio" name="pp-giro-rev" ${f.tutorIcdf === v ? 'checked' : ''} ${f.revLock ? 'disabled' : ''} onchange="ppGiroFormSet('tutorIcdf',${v});ppGiroFormRender()">${t}</label>`).join('')}</div><div style="font-size:12px;color:var(--ink-mid);line-height:1.45;margin-top:2px">${f.revLock ? 'La revisione è già aperta con questo revisore: non si cambia finché non è chiusa.' : 'Il revisore è uno solo: lo scegli ora e resta lo stesso fino alla chiusura della revisione.'}</div>${rows}
     ${cloud ? '' : '<div style="font-size:12px;color:#8a4b00;margin-top:10px;line-height:1.45">Per congelare un giro serve l’accesso con il tuo account e un progetto salvato nel cloud, e solo chi ha creato il progetto può farlo. Intanto puoi preparare la mail dalla pagina degli invii.</div>'}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn-primary" id="pp-giro-go" ${cloud ? '' : 'disabled'} onclick="ppGiroCongela()">Invia in revisione</button><button class="btn-ghost" onclick="ppGiroFormClose()">Annulla</button></div>
+    ${soloReg ? '<div style="font-size:12.5px;color:var(--ink-mid);margin-top:12px;line-height:1.5;border-left:3px solid var(--border);padding-left:10px"><b>Nessun destinatario scelto.</b> Il progetto viene fissato com’è oggi e registrato nello storico, con la data, senza essere condiviso con nessuno. È il modo per segnare a mano un invio fatto per conto tuo: poi potrai aggiungere i riscontri ricevuti e l’approvazione.</div>' : ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn-primary" id="pp-giro-go" ${cloud ? '' : 'disabled'} onclick="ppGiroCongela()">${soloReg ? 'Registra l’invio nello storico' : 'Invia in revisione'}</button><button class="btn-ghost" onclick="ppGiroFormClose()">Annulla</button></div>
   </div>`;
   ov.classList.add('show'); if(ov.firstElementChild) ov.firstElementChild.scrollTop = keep;
 }
@@ -19316,7 +19326,7 @@ async function ppGiroCongela(){
     ppGiri()[g.id] = g; { const itx = ppIter(), kk = g.blk === 2 ? 'finale' : 'prima'; if(!(itx[kk] || {}).date) itx[kk] = Object.assign(itx[kk] || {}, {date:td()}); }
     try{ saveData(true); }catch(e){}
     ppGiroFormClose(); try{ shPP('i'); }catch(e){}
-    showToast('Progetto inviato in revisione · copia ' + g.n + (appKo ? ' · ' + appKo + ' condivisione in app non riuscita' : ''));
+    showToast((g.dest.length ? 'Progetto inviato in revisione' : 'Invio registrato nello storico') + ' · copia ' + g.n + (appKo ? ' · ' + appKo + ' condivisione in app non riuscita' : ''));
     if(f.dest.some(d => d.mail && !ppGiroSkip(f, d))) ppMailOpen(g.sez.some(x => x >= 4) ? 'completo' : 'parziale');
     return true;
   }catch(e){
@@ -20145,7 +20155,7 @@ async function rvStLoad(aid){
 // ── Turno del revisore: il progetto di chi l'ha scritto è in sola lettura (13-15/11) ──
 // Quando la revisione è aperta e «tocca al revisore», chi ha scritto il PP può leggere, navigare e scrivere nella chat dei punti, non modificare il testo.
 // Si sblocca da solo quando il revisore restituisce le richieste (o approva). Nessun dato viene toccato: sono solo i campi a diventare in sola lettura.
-function rvLocked(){ try{ if(window.BRO || typeof CL === 'undefined' || !CL.ctx || CL.ctx.ruolo || !isPP()) return false; const S = window._rvs[CL.ctx.id]; return !!(S && S.rev && S.rev.stato === 'aperta' && S.rev.fase === 'revisore'); }catch(e){ return false; } }
+function rvLocked(){ try{ if(window.BRO || typeof CL === 'undefined' || !CL.ctx || CL.ctx.ruolo || !isPP()) return false; const S = window._rvs[CL.ctx.id]; return !!(S && S.rev && S.rev.revisore_email && S.rev.stato === 'aperta' && S.rev.fase === 'revisore'); }catch(e){ return false; } }   // 18/11: senza un revisore scelto (giro solo congelato o inviato per mail) non tocca a nessuno: il progetto resta modificabile
 window.rvLocked = rvLocked;
 const RVL_SKIP = '.rp-inl,#rp-float,#rp-dock,#rv-dock,#rp-pill,#rvl-bar,[data-conv],.rd-rp,.rv-st,.cl-ov,#cl-auth,#toast';
 const RVL_OK = /^(gGo|goPhase|shSec|shSub|shPP|shDrawer|shViewGo|shGoHome|faqOpen|vidOpen|closeTutorial|toggleCard|gPPHide|pcxToggle|renderValuation|ppGiroApri|ppGiroForm|ppMailOpen|ppCgAvvisa|rvBackupMine|rvPackage|rvWordDock|ossApri|ossExportJson|export\w*|rv\w+|rp\w+|anOpen|\w*Spunti\w*)$/;   // azioni di sola navigazione/lettura: tutto il resto, a turno del revisore, è fermato
