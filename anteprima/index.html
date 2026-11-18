@@ -8817,6 +8817,32 @@ function attMove(pidx,j,dir){ const per=getAllPercorsi()[pidx]; if(!per||window.
   saveData(true); renderValuation();
   setTimeout(()=>{ const d=document.getElementById('att-'+pidx+'-'+j); if(d){ d.scrollIntoView({block:'nearest'}); d.classList.add('att-moved'); setTimeout(()=>d.classList.remove('att-moved'),900); const b=d.querySelector(dir<0?'.att-mv-up':'.att-mv-dn')||d.querySelector('.att-mv-up,.att-mv-dn'); if(b) try{ b.focus({preventScroll:true}); }catch(e){} } },60); }
 function attCanMove(){ try{ if(window.BRO) return false; if(typeof CL!=='undefined'&&CL.ctx&&CL.ctx.ruolo==='collaboratore') return false; }catch(e){} return true; }
+// 18/11: nella scheda attività dei percorsi: durata, scaletta (prima di Lancio) e materiali (dopo Conclusione). Sono gli STESSI dati della scheda a calendario (a.durMin, a.ax.tt2, a.ax.mat): cambiandoli di qua cambiano di là
+function attRe(p,j){ try{ window._attOpen=window._attOpen||{}; window._attOpen[p+'-'+j]=true; const y=window.scrollY, ae=document.activeElement; let fi=-1, ft='';
+    const box=document.getElementById('att-'+p+'-'+j); if(box&&ae&&box.contains(ae)&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ ft=ae.tagName; fi=[...box.querySelectorAll(ft)].indexOf(ae); }
+    renderValuation(); const de=document.documentElement; de.style.scrollBehavior='auto'; window.scrollTo({top:y,left:0,behavior:'instant'}); de.style.scrollBehavior='';
+    if(fi>=0){ const b2=document.getElementById('att-'+p+'-'+j); const f=b2&&b2.querySelectorAll(ft)[fi]; if(f) f.focus({preventScroll:true}); } }catch(e){ console.error(e); } }
+function attDurTot(a){ return ((a&&a.ax&&a.ax.tt2)||[]).reduce((n,r)=>n+(Number(r&&r.dur)||0),0); }
+window.attDurSet = function(p,j,v){ const a=attGet(p,j); if(!a) return; a.durMin=Number(v)||''; saveDataDebounced(); try{ axCount(p,j); }catch(e){} };
+function attPreHTML(idx,j,att){ const tot=attDurTot(att); const hint=t=>`<span style="font-weight:400;color:var(--ink-faint)">${t}</span>`;
+  let h=`<label style="${SC_LBL}">Durata dell’attività ${hint('— quanto dura, in tutto')}</label>`;
+  h+=tot?`<div class="ax-hint" style="margin:0 0 2px">${axDurTxt(tot)} — è la somma delle durate della scaletta qui sotto</div>`:`<select class="ax-in" style="max-width:170px" aria-label="Durata dell’attività" onchange="attDurSet(${idx},${j},this.value)">${axDurOpts(att.durMin)}</select>`;
+  let sc=''; try{ const per=getAllPercorsi()[idx]; const real=per&&(per.attivita||[])[j]; const old=real&&Array.isArray(real.tt)&&real.tt.some(r=>(r.t||r.cosa||'').trim()); const has=real&&real.ax&&Array.isArray(real.ax.tt2)&&real.ax.tt2.length;
+    sc=(real&&(has||old))?axDurante(idx,j,real,real.ax||{}):axDuranteH(idx,j,real||{},(real&&real.ax)||{},[]); }catch(e){ console.error(e); sc=''; }
+  sc=sc.replace(/^<div class="ax-lbl">Scaletta\s*<span>[^<]*<\/span><\/div>/, `<label style="${SC_LBL}">Scaletta ${hint('— i momenti dell’attività, con durata e chi li conduce')}</label>`);
+  return h+sc; }
+function attMatHTML(idx,j,att){ const x=att.ax||{}; const M=Array.isArray(x.mat)?x.mat:[]; const rows=M.length?M:[{}];
+  const row=(r,i)=>`<div class="ax-mat" style="grid-template-columns:minmax(120px,1fr) minmax(140px,1fr) auto;align-items:center"><input class="ax-in" aria-label="Materiale" placeholder="Che materiale serve" value="${sEsc(r.cosa||'')}" oninput="axRowSet(${idx},${j},'mat',${i},'cosa',this.value)"><span>${axPersonMulti(r.chi,`axRowSet(${idx},${j},'mat',${i},'chi',@V,true)`)}</span>${M.length?`<button type="button" class="btn-ghost ax-x" title="Togli" aria-label="Togli il materiale" onclick="axRowDel(${idx},${j},'mat',${i})">×</button>`:'<span></span>'}</div>`;
+  return `<label style="${SC_LBL}">Materiali <span style="font-weight:400;color:var(--ink-faint)">— che cosa serve e chi lo procura</span></label><div class="ax-mats">${rows.map(row).join('')}</div><button type="button" class="btn-ghost ax-add" onclick="axRowAdd(${idx},${j},'mat',{prov:'unita',q:1,qm:'fissa'})">+ Aggiungi materiale</button>`; }
+function attPreDoc(x){ const o=[]; const ax=x.ax||{}; const dur=attDurTot(x)||Number(x.durMin)||0;
+  if(dur) o.push(dPara([dTxt('Durata: ',{size:18,bold:true,color:GRTXT}),dTxt(axDurTxt(dur),{size:18})],{after:30,indent:240}));
+  const S=(ax.tt2||[]).filter(r=>r&&((r.cosa||'').trim()||r.dur));
+  if(S.length){ o.push(dPara([dTxt('Scaletta:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240,keepNext:true})); let t=axMin((ax.tt2[0]||{}).start);
+    (ax.tt2||[]).forEach(r=>{ if(!(r&&((r.cosa||'').trim()||r.dur))) return; const bits=[t!=null?axHM(t):'',axDurTxt(r.dur)].filter(Boolean).join(' · ');
+      o.push(dPara([...(bits?[dTxt(bits+' — ',{size:18,bold:true})]:[]),dTxt(plain(r.cosa)||'—',{size:18}),...(r.chi?[dTxt(' ('+affName(r.chi)+')',{size:18,italics:true,color:GRTXT})]:[])],{after:20,indent:480})); if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; }); }
+  return o; }
+function attPostDoc(x){ const M=((x.ax||{}).mat||[]).filter(r=>r&&(r.cosa||'').trim()); if(!M.length) return [];
+  return [dPara([dTxt('Materiali: ',{size:18,bold:true,color:GRTXT}),...M.flatMap((r,i)=>[dTxt((i?'; ':'')+plain(r.cosa),{size:18}),...(r.chi?[dTxt(' (chi lo procura: '+affName(r.chi)+')',{size:18,italics:true,color:GRTXT})]:[])])],{after:30,indent:240})]; }
 function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
 function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx>=per.attivita.length) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
   let inCal=false; try{ inCal=!!(a&&a.aid&&uscListAll().some(u=>Object.values(u.prog||{}).some(m=>m&&!m.del&&m.k==='att'&&m.aid===a.aid&&m.pid===per.percorsoId))); }catch(e){}
@@ -8892,7 +8918,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611171947'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611181213'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'17 novembre 2026', t:'Nuova versione: account, progetti, Progetto Personale, 51 video', i:[
@@ -9423,7 +9449,7 @@ function axUWho(){ const n=(typeof UNIT_NAME==='string'?UNIT_NAME:'').trim().rep
 function axSt(){ return MODE==='staff' || (typeof USC_CUR!=='undefined' && !!USC_CUR && window._axP===USC_P && uscSt()); }
 function axX(p,j){ window._axP=p; const a=axA(p,j); return a?a.ax:{}; }
 function axSave(){ saveDataDebounced(); }
-function axRe(p,j){ if(p===USC_P){ uscRe(); return; } const el=document.getElementById('ax-'+p+'-'+j); if(!el) return; if(el.dataset.usc){ uscRe(); return; } [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open);
+function axRe(p,j){ if(p===USC_P){ uscRe(); return; } const el=document.getElementById('ax-'+p+'-'+j); if(!el){ if(document.getElementById('att-'+p+'-'+j)) attRe(p,j); return; } if(el.dataset.usc){ uscRe(); return; } [...el.querySelectorAll('details[data-k]')].forEach(d=>axOpen[p+'-'+j+'-'+d.dataset.k]=d.open);
   // ridisegnando l'attività la pagina non deve saltare: tengo la posizione e il campo in cui si stava scrivendo
   const y=window.scrollY, H=el.offsetHeight, ae=document.activeElement; let fi=-1, ft=''; try{ if(ae&&el.contains(ae)&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ ft=ae.tagName; fi=[...el.querySelectorAll(ft)].indexOf(ae); } }catch(e){}
   el.style.minHeight=H+'px'; el.innerHTML=axBody(p,j); axCount(p,j);
@@ -9930,8 +9956,12 @@ function axCosti2(p,j,a,x){ let h=`<div class="ax-hint" style="margin-bottom:6px
   return h; }
 
 // ── 3. DURANTE ──
+function axDurAtt(p,j,a){ const tt=attDurTot(a); return axLbl('Durata dell’attività')+(tt?`<div class="ax-hint">${axDurTxt(tt)} — è la somma delle durate della scaletta</div>`:`<select class="ax-in" style="max-width:170px" aria-label="Durata dell’attività" onchange="attDurSet(${p},${j},this.value)">${axDurOpts(a.durMin)}</select>`); }
 function axDurante(p,j,a,x){ const per=getAllPercorsi()[p];
   const S=axArrP(p,j,'tt2'); if(!S.length && Array.isArray(a.tt) && a.tt.some(r=>(r.t||r.cosa||'').trim())){ a.tt.forEach(r=>{ const m=/(\d{1,2}[:.]\d{2})/.exec(r.t||''); const d=/(\d+)\s*[′']/.exec(r.t||''); S.push({start:m?m[1].replace('.',':').padStart(5,'0'):'',dur:d?+d[1]:'',cosa:r.cosa||'',chi:r.chi||''}); }); }
+  return axDuranteH(p,j,a,x,S); }
+// disegna la scaletta partendo dalle righe date (senza toccare i dati: lo usa anche la scheda del percorso per le attività non ancora create)
+function axDuranteH(p,j,a,x,S){ const per=getAllPercorsi()[p];
   const rows=S.length?S:[{},{},{}]; let t=axMin((rows[0]||{}).start);
   let h=axLbl('Scaletta','scegli l’ora d’inizio e le durate: gli orari sotto si calcolano da soli')+`<div class="ax-tt">`+rows.map((r,i)=>{ const st=i===0?r.start:(t!=null?axHM(t):''); const line=`<div class="ax-ttr"><div class="ax-tt1">${i===0?`<select class="ax-in" title="Ora d’inizio" onchange="axTT(${p},${j},0,'start',this.value)">${axTimeOpts(r.start)}</select>`:`<span class="ax-ttt">${st||'—'}</span>`}<select class="ax-in" title="Durata" onchange="axTT(${p},${j},${i},'dur',this.value)">${axDurOpts(r.dur)}</select></div><input class="ax-in" placeholder="${['Lancio','Sviluppo','Conclusione'][i]||'Cosa succede'}" value="${axE(r.cosa)}" oninput="axTT(${p},${j},${i},'cosa',this.value,1)">${axPersonSel(r.chi,`axTT(${p},${j},${i},'chi',@V)`)}${S.length?`<span class="ax-mv"><button type="button" class="btn-ghost ax-x" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="axTTMove(${p},${j},${i},-1)">↑</button><button type="button" class="btn-ghost ax-x" title="Sposta giù" aria-label="Sposta giù" ${i===S.length-1?'disabled':''} onclick="axTTMove(${p},${j},${i},1)">↓</button><button type="button" class="btn-ghost ax-x" title="Togli" aria-label="Togli" onclick="axRowDel(${p},${j},'tt2',${i})">×</button></span>`:''}</div>`; if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; return line; }).join('')+`</div><button type="button" class="btn-ghost ax-add" onclick="axTTAdd(${p},${j})">+ Aggiungi riga</button>`;
   const tot=rows.reduce((s,r)=>s+(Number(r.dur)||0),0); const st=axMin((rows[0]||{}).start); if(tot) h+=`<div class="ax-tot">${st!=null?'Fine prevista <b>'+axHM(st+tot)+'</b> · ':''}durata totale <b>${axDurTxt(tot)}</b></div>`;
@@ -10025,7 +10055,7 @@ function axCopy(id){ const el=document.getElementById(id); const t=el.value; try
 function axFilledN(a){ const x=a.ax||{}, L=x.luogo||{}, P=x.pres||{}; let n=0;
   if((P.ad||[]).length||P.rag) n++; if(x.data||L.tipo||L.ritrovo||L.ritrovoDove) n++; if((x.todo||[]).some(r=>(r.cosa||'').trim())) n++;
   if((x.mat||[]).some(r=>(r.cosa||'').trim())||(a.materiali||'').trim()||(x.portare||'').trim()||(x.portareSel||[]).length||(x.sqSel||[]).length||(x.sqAltro||'').trim()) n++; if((x.piatti||[]).length) n++; if((x.spese||[]).some(r=>(r.voce||'').trim()||r.importo)) n++;
-  if((x.tt2||[]).some(r=>(r.cosa||'').trim()||r.dur)||(a.tt||[]).some(r=>(r.t||r.cosa||'').trim())) n++; if((x.strum||[]).length||(x.ruoli||[]).length||(x.ruoliAltro||'').trim()) n++; if(Object.values(x.oss||{}).some(o=>o&&o.on)||(x.ossX||[]).length||(x.ossA||[]).length) n++;
+  if((x.tt2||[]).some(r=>(r.cosa||'').trim()||r.dur)||(a.tt||[]).some(r=>(r.t||r.cosa||'').trim())||a.durMin) n++; if((x.strum||[]).length||(x.ruoli||[]).length||(x.ruoliAltro||'').trim()) n++; if(Object.values(x.oss||{}).some(o=>o&&o.on)||(x.ossX||[]).length||(x.ossA||[]).length) n++;
   if(Object.values(x.pb||{}).some(v=>(v||'').trim())||(a.pianoB||'').trim()) n++; if(Object.values(x.sic||{}).some(v=>(v||'').trim())) n++; if((a.incRischi||'').trim()||(a.incAzioni||'').trim()) n++; if((a.link||'').trim()) n++; if((x.ambient||'').trim()||(x.citaz||'').trim()||x.paga||x.entro) n++; return n; }
 function attExtraFilled(a){ return axFilledN(a)>0; }
 function axCount(p,j){ const el=document.getElementById('ax-n-'+p+'-'+j); if(el){ const n=axFilledN(attGet(p,j)); el.textContent=n?' · '+n+' compilat'+(n===1?'a':'e'):''; } }
@@ -10033,7 +10063,7 @@ function axLive(p,j){ axCount(p,j); const a=attGet(p,j), x=a.ax||{}; const t=doc
 function axBody(p,j){ const a=axA(p,j); const x=a.ax; const slim=p!==USC_P&&uscInUsc(p,j)&&!(window._uscFull||{})[p+'-'+j]; const G=(pp,jj,k,...r)=>slim&&/^(chi|log|pasti|costi|circ)$/.test(k)?'':axGroup(pp,jj,k,...r);
   return (p!==USC_P?uscAttHTML(p,j,a):'')+G(p,j,'chi','Chi e quando <span>· presenti, data, permessi, cose da fare</span>',axChi(p,j,a,x))+
     G(p,j,'log','Ritrovo e spostamenti <span>· luogo, spostamenti, km e CO₂</span>',axLog(p,j,a,x))+
-    G(p,j,'durante','Durante l’attività <span>· scaletta e link utili</span>',axDurante(p,j,a,x)+axLinkEst(p,j,a))+
+    G(p,j,'durante','Durante l’attività <span>· scaletta e link utili</span>',axDurAtt(p,j,a)+axDurante(p,j,a,x)+axLinkEst(p,j,a))+
     G(p,j,'mat','Materiali <span>· cosa serve, chi lo procura, quanto costa</span>',axMatOld(x)+axMat(p,j,a,x))+
     ((x.piatti||[]).length||x.durata==='piu'?G(p,j,'pasti','Pasti e spesa <span>· menù, diete speciali, lista della spesa</span>',axCibo(p,j,x)):'')+
     G(p,j,'costi','Cassa e costi <span>· altre spese, riepilogo, quota a testa</span>',axSpese(p,j,x)+axCosti2(p,j,a,x))+
@@ -11426,7 +11456,7 @@ function uscAttSetTitle(k,v){ const m=uscBlk(k); const fa=m&&uscAttFind(m); if(!
 function uscAttFieldHTML(u,k,m,fk,f,can){ const a=f.a, x=a.ax=a.ax||{}; const p=f.idx, j=f.j; const W=h=>`<div class="usc-axw" id="ax-${p}-${j}" data-usc="1">${h}</div>`; const N=axN(x);
   const T={tipo:'a:tipo',met:'a:met',scal:'a:scal',mat:'a:mat',sic:'a:sic',ben:'a:ben',pb:'a:pb',link:'a:link',obj:'a:obj'}[fk]; let sum='', inner='';
   try{
-    if(fk==='scal'){ const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()); sum=S.length?S.length+(S.length===1?' momento':' momenti'):''; try{ const tb=uscTimes(u,Number(m.g)||1)[k]; if(tb&&Array.isArray(x.tt2)&&x.tt2.length&&x.tt2[0]){ const hm=axHM(tb.s); if(x.tt2[0].start!==hm){ x.tt2[0].start=hm; saveDataDebounced(); } } }catch(e){} inner=W(axDurante(p,j,a,x)); }
+    if(fk==='scal'){ const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()); sum=S.length?S.length+(S.length===1?' momento':' momenti'):''; try{ const tb=uscTimes(u,Number(m.g)||1)[k]; if(tb&&Array.isArray(x.tt2)&&x.tt2.length&&x.tt2[0]){ const hm=axHM(tb.s); if(x.tt2[0].start!==hm){ x.tt2[0].start=hm; saveDataDebounced(); } } }catch(e){} inner=W(axDurAtt(p,j,a)+axDurante(p,j,a,x)); }
     else if(fk==='mat'){ const M=(x.mat||[]).filter(r=>(r.cosa||'').trim()); sum=M.length?M.map(r=>uscE(r.cosa)).slice(0,3).join(', ')+(M.length>3?'…':''):''; inner=W(axMat(p,j,a,x)); }
     else if(fk==='sic'){ sum=uscSumTxt((x.sic||{}).rischi); inner=W(axSic(p,j,a,x)); }
     else if(fk==='ben'){ sum=uscSumTxt(a.incRischi||a.incAzioni); inner=W(axBen(p,j,a,x)); }
@@ -11624,6 +11654,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
   // In breve
   const tipo=Object.fromEntries(AX_TIPO), mz=Object.fromEntries(AX_MEZZI);
   const kv=[];
+  { const dm=attDurTot(a)||Number(a.durMin)||0; if(dm) kv.push(['Durata dell’attività',axDurTxt(dm)]); }
   if(x.data) kv.push([axMulti(x)?'Date':'Data', (t=>t.charAt(0).toUpperCase()+t.slice(1))(axDateTxt(x,true))+(axMulti(x)?' · '+axNGiorni(x)+' giorni':'')]);
   const kvMap=(txt,k)=>{ const u=k?axPlaceShort(L,k):''; if(u&&k&&axIsLinkTxt(L[k])) txt=txt.replace(L[k],'').replace(/\s·\s*$/,'').trim(); return u?[dPara([dTxt(txt,{size:19})],{after:20}), dPara([dLink(u,{size:16,label:'Apri su Google Maps'})],{after:0})]:txt; };
   if(L.ritrovo||L.ritrovoDove) kv.push(['Ritrovo',kvMap([L.ritrovo?'ore '+L.ritrovo:'',L.ritrovoDove||''].filter(Boolean).join(' · '),'ritrovoDove')]);
@@ -12451,6 +12482,8 @@ function renderSchedaCtx(root){
     <div style="font-size:12px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span></div>
     <div style="font-size:12px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (${(window.SH&&SH.on&&scheda.tipoProgetto!=='PP')?'Capo Gruppo, Commissario di Sezione':'ICdF, Capo Gruppo, Commissario di Sezione'}). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).</div>
     <div id="staff-tab">${staffTabHTML()}</div>
+    <label style="${SC_LBL};margin-top:16px">Appunti dal Piano di Gruppo e dal Progetto di Sezione <span style="font-weight:400;color:var(--ink-faint)">— che cosa dicono questi documenti e riguarda la tua Unità: priorità, scelte condivise, impegni da tenere presenti</span></label>
+    <textarea style="${SC_TA}" placeholder="Che cosa c’è nel Piano di Gruppo e nel Progetto di Sezione che riguarda la tua Unità? Appunti liberi, anche in poche righe." oninput="ppSet('appPdg',this.value)">${sEsc(pp.appPdg)}</textarea>
     <div style="font-size:12px;font-weight:800;margin:18px 0 2px;color:var(--ink)">Osservazione con il Kit di Osservazione e Scoperta (KOS 2.0)</div>
     <div id="gr-coinc">${grCoincHTML()}</div>
     ${kosPathHTML()}
@@ -12500,11 +12533,15 @@ function gRenderLettura(){
     <p style="font-size:12px;color:var(--ink-mid);margin:0 0 6px">Dalla fotografia qui sopra alla tua lettura: le dinamiche del gruppo, gli aspetti positivi e le necessità educative per ciascun Ambito di Sviluppo.</p>
     <label style="${SC_LBL}">Analisi delle dinamiche di gruppo emerse dall'osservazione <span style="font-weight:400;color:var(--ink-faint)">— come il gruppo sta insieme: clima, ruoli, sottogruppi, partecipazione, relazioni</span></label>
     <textarea style="${SC_TA};min-height:80px" placeholder="Come si relaziona il gruppo nel suo insieme? Come prende le decisioni? Come gestisce i disaccordi? Descrivi senza giudicare." oninput="ppSet('dinamiche',this.value)">${sEsc(pp.dinamiche)}</textarea>
-    <div style="font-size:12px;font-weight:800;margin:16px 0 4px;color:var(--ink)">Aspetti positivi e necessità educative</div>
+    <label style="${SC_LBL};margin-top:16px">Appunti dalla Programmazione dell’anno precedente <span style="font-weight:400;color:var(--ink-faint)">— che cosa è emerso dalle verifiche e dalle valutazioni dell’anno scorso e ti serve per leggere questo gruppo</span></label>
+    <textarea id="app-prec" style="${SC_TA};min-height:72px" placeholder="Che cosa hai imparato dall’anno scorso (attività, percorsi, gruppo, staff) e porti in questa lettura?" oninput="ppSet('appPrec',this.value)">${sEsc(pp.appPrec)}</textarea>
+    <div id="app-prec-btn" style="margin:4px 0 0"></div>
+    <label style="${SC_LBL};margin-top:16px">Aspetti positivi e necessità educative</label>
     <p style="font-size:12px;color:var(--ink-mid);margin-bottom:8px">Le colonne partono dall’osservazione dei percorsi: rivedile e completale con comportamenti concreti.</p>
     <p class="gr-expl">Il pulsante <b>Componi la bozza dalla griglia osservativa</b>, sotto il nome di ogni Ambito, prende quello che avete scritto nella griglia osservativa per i percorsi di quell’Ambito (comportamenti positivi, da migliorare, note su singoli o gruppetti) e lo aggiunge in fondo alle tre colonne, come bozza da rileggere e sistemare. Non cancella e non cambia nulla di quello che c’è già scritto.</p>
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:620px;table-layout:fixed"><colgroup><col style="width:16%"><col style="width:28%"><col style="width:28%"><col style="width:28%"></colgroup><thead><tr>${th('Ambito')}${th('Aspetti positivi emersi')}${th('Necessità educative')}${th('Necessità educative specifiche del singolo/gruppetto meritevoli di attenzione')}</tr></thead><tbody>${rows}</tbody></table></div>
     ${gCrit(['focus sul gruppo nel suo complesso, non solo sui singoli','descrizione oggettiva e non giudicante','bilanciamento tra aspetti positivi e necessità','necessità concrete, risolvibili e rilevanti'])}</div>`;
+  try{ if(typeof shPrevBtn === 'function') shPrevBtn(); }catch(e){}
   try{ sg13Render(); }catch(e){}
 }
 // Sezione 1.4 — perché queste priorità (sotto la scelta)
@@ -12906,13 +12943,15 @@ function renderSchedaC(root,selected){
             ${attSgPanelHTML(idx,j)}${att.dalPP?'<div class="ered-n" style="margin:4px 0 0">Bozza dal Progetto Personale: controllala e adattala all’Unità</div>':''}<div class="att-lock" id="att-lock-${idx}-${j}"></div>${(att.ax&&att.ax.data&&tlStato(att).k==='ver')?`<div class="att-ver">L’attività è stata vissuta: com’è andata? <button type="button" class="btn-ghost" onclick="verGo(${idx},${j})">Fai la verifica →</button></div>`:''}${attShareHTML(idx,j,att)}
             <label class="ax-sub" style="display:block;margin:8px 0 2px;font-weight:700">Titolo dell’attività</label><input type="text" style="${SC_IN};margin:0 0 4px" placeholder="Scrivi qui il titolo, o una breve sintesi" value="${sEsc(att.testo)}" oninput="updateAttivita(${idx},${j},'testo',this.value);saveDataDebounced()">
             ${scheda.tipoProgetto!=='PP'?attMetHTML(idx,j,att):''}${attTipiHTML(idx,j,att)}
+            ${attPreHTML(idx,j,att)}
             <label style="${SC_LBL}">Lancio</label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come presenti l'attività, che cosa motiva i ragazzi a partire…" oninput="updateAttivita(${idx},${j},'lancio',this.value);saveDataDebounced()">${sEsc(att.lancio)}</textarea>
             <label style="${SC_LBL}">Sviluppo</label>
             <textarea style="${SC_TA};min-height:56px" placeholder="Che cosa fanno i ragazzi, con quali ruoli, materiali e tempi…" oninput="updateAttivita(${idx},${j},'sviluppo',this.value);saveDataDebounced()">${sEsc(att.sviluppo)}</textarea>
             <label style="${SC_LBL}">Conclusione <span style="font-weight:400;color:var(--ink-faint)">— compresa l'eventuale rielaborazione</span></label>
             <textarea style="${SC_TA};min-height:48px" placeholder="Come si chiude, che cosa resta ai ragazzi…" oninput="updateAttivita(${idx},${j},'conclusione',this.value);saveDataDebounced()">${sEsc(att.conclusione)}</textarea>
-            ${scheda.tipoProgetto==='PP'?'<div class="ax-hint" style="margin-top:6px">Se vuoi richiamare un materiale (Drive, Canva, video…), scrivi qui sopra il link: nel Word diventa cliccabile.</div>':(window.SH&&SH.on?'<div class="ax-hint" style="margin-top:6px">Qui progetti il cuore educativo. Allegati, materiali e logistica si gestiscono in <button type="button" class="sh-lk" onclick="shCal()">Calendario e attività</button>.</div>':attLinksHTML(idx,j,att))}
+            ${attMatHTML(idx,j,att)}
+            ${scheda.tipoProgetto==='PP'?'<div class="ax-hint" style="margin-top:6px">Se vuoi richiamare un materiale (Drive, Canva, video…), scrivi qui sopra il link: nel Word diventa cliccabile.</div>':(window.SH&&SH.on?'<div class="ax-hint" style="margin-top:6px">Qui progetti il cuore educativo, con durata, scaletta e materiali essenziali: sono gli stessi che trovi nella scheda dell’attività in <button type="button" class="sh-lk" onclick="shCal()">Calendario e attività</button>, e se li cambi di qua cambiano anche di là. Allegati, quantità, costi e logistica si gestiscono lì.</div>':attLinksHTML(idx,j,att))}
             ${(scheda.tipoProgetto!=='PP'&&window.SH&&SH.on)?attObjHTML(idx,j,att):''}
             ${(scheda.tipoProgetto!=='PP'&&!window.BRO&&has&&typeof CL!=='undefined'&&CL&&CL.user)?`<div class="usc-bact" style="justify-content:flex-end;margin-top:8px"><span class="an-prop" style="${(typeof AN!=='undefined'&&AN.st==='no')?'display:none':''}"><button type="button" class="usc-lnk" onclick="anPropose(${idx},${j})">📚 Proponi all’archivio nazionale</button></span></div>`:''}
             ${(scheda.tipoProgetto==='PP'||(window.SH&&SH.on))?'':attExtraHTML(idx,j,att,`<div style="display:flex;gap:8px;align-items:center;margin-top:2px"><input type="text" inputmode="url" autocomplete="off" style="${SC_IN};font-size:12px;flex:1" placeholder="es. drive.google.com/… oppure un video su YouTube" value="${sEsc(att.link)}" oninput="updateAttivita(${idx},${j},'link',this.value);attLinkBtn(this);saveDataDebounced()"><a class="att-link-open" href="${sEsc(linkNorm(att.link))}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--green);white-space:nowrap;${/^(https?:|mailto:)/i.test(linkNorm(att.link))?'':'display:none'}">Apri ↗</a></div>`)}
@@ -14557,7 +14596,9 @@ async function exportPPDocx(mode){
         rowsS.push(SH.map((c,i)=>dCell(dPara(String((c[0]==='giungla'?staffGiungla(r):r[c[0]])||'—'),{size:17,bold:true,after:0}),{w:ws[i],fill:PALE,vAlign:D.VerticalAlign.TOP})));
         const lp=LG.filter(c=>T_(r[c[0]])).map(c=>dPara(c[1]+': '+plain(r[c[0]]),{size:17,after:40}));
         rowsS.push([dCell(lp.length?lp:[dPara('—',{size:17,after:0})],{w:CW,span:SH.length})]); });
-      ch.push(dTable(rowsS, ws, true)); } }  ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
+      ch.push(dTable(rowsS, ws, true)); } }
+  if(T_(pp.appPdg)){ ch.push(dH3('Appunti dal Piano di Gruppo e dal Progetto di Sezione')); ch.push(...dMulti(pp.appPdg)); }
+  ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
   { const kr=occKosRows(); const man=(pp.occMan||[]).filter(r=>T_(r.att)||OCC_COLS.some(c=>T_(r[c[0]]))||(r.perc||[]).length);
     const pc=ids=>(ids||[]).slice().sort((a,b)=>'PCS'.indexOf(a[0])-'PCS'.indexOf(b[0])||(+a.slice(1))-(+b.slice(1))).join(', ');
     const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', grDateTxt(o.data), o.ctx, occChiTxt(o.chi), o.note, pc(a.f)]; }).concat(man.map(r=>[r.att,grDateTxt(r.data),r.ctx,occChiTxt(r.chi),r.note,pc(r.perc)]));
@@ -14573,6 +14614,7 @@ async function exportPPDocx(mode){
   if(mvOn()){ const ob=mvObservers(); if(ob.length>1) ch.push(dPara('Osservazione condotta da '+ob.length+' capi ('+ob.map(o=>o.nome).join(', ')+').',{size:18,italics:true,after:80})); }
   if(T_(pp.condizioni)){ ch.push(dH3('Condizioni dell\'osservazione')); ch.push(...dMulti(pp.condizioni)); }
   ch.push(dH3('Analisi delle dinamiche di gruppo')); ch.push(...dMulti(pp.dinamiche));
+  if(T_(pp.appPrec)){ ch.push(dH3('Appunti dalla Programmazione dell’anno precedente')); ch.push(...dMulti(pp.appPrec)); }
   ch.push(dH3('Aspetti positivi e necessità educative'));
   if(['P','C','S'].some(a=>DB[a].some(p=>numOf(obsVal(p))>0)) || Object.keys(typeof obsSources==='function'?obsSources():{}).length || Object.keys(scheda.griglia||{}).length) ch.push(dPara('Questa è la sintesi. Il dettaglio dell’osservazione, percorso per percorso, è nell’Allegato 1 (griglia osservativa e scala), in fondo al documento.',{size:18,italics:true,color:'777777',after:80}));
   const w1 = [1500, 2700, 2700, CW-6900];
@@ -14662,10 +14704,12 @@ async function exportPPDocx(mode){
     const pid = per.percorsoId; const p = allP.find(x=>x.id===pid); if(!p) return; const a = pid[0];
     const ob = typeof per.prioritaIdx==='number' ? (scheda.priorita[per.prioritaIdx]?.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean) : (per.obiettiviExtra||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const cl = per.checklist || {};
-    const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))));
+    const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>['testo','lancio','sviluppo','conclusione'].some(k=>T_(o.x[k]))||attDurTot(o.x)>0||Number(o.x.durMin)>0||(((o.x.ax||{}).mat||[]).some(r=>r&&(r.cosa||'').trim()))));
     const attCell = acts.length ? acts.flatMap(({x,j}) => [
       dPara([dTxt(`${attNum(per,j)}. ${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40}),
+      ...attPreDoc(x),
       ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,q,arr) => [dPara([dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(plain(x[k]),{size:18})],{after:30,indent:240}), ...(q<arr.length-1?[dPara('',{size:12,after:60})]:[])]),
+      ...attPostDoc(x),
       ...(acts[acts.length-1].j===j?[]:[dPara('',{size:12,after:240})]),
       ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
     ]) : '—';
@@ -14678,7 +14722,9 @@ async function exportPPDocx(mode){
       // 9/11: una riga per attività (le righe piccole si spezzano bene tra le pagine anche in Pages e LibreOffice)
       ...(acts.length ? acts.map(({x,j}) => [`Attività ${attNum(per,j)}`, [
         dPara([dTxt(`${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40}),
+        ...attPreDoc(x),
         ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap(k => rtLines(plain(x[k])).filter(l=>l.trim()).map((l,q) => dPara(q===0?[dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(l,{size:18})]:dLinkRuns(l,{size:18}),{after:30,indent:240}))),
+        ...attPostDoc(x),
         ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[])
       ]]) : [['Attività', attCell]]),
       ...(T_(per.coCostr) ? [['Co-costruzione nel percorso', dMulti(per.coCostr)]] : []),
@@ -15585,7 +15631,7 @@ function clArcRowsHTML(rows){
 function clArcCountHTML(rows){ return rows.length ? `${rows.length} ${rows.length===1?'progetto':'progetti'} in archivio${clLastBackupTxt()}` : ''; }
 // ── Unità e staff: sempre due progetti distinti (puoi averne quanti ne vuoi) ──
 function pjUnitHas(d){ d=d||{}; const pp=(d.scheda&&d.scheda.pp)||{};
-  return Object.values(d.obs||{}).some(v=>v&&v!=='n') || (d.MODE==='staff'?['ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta']:['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta']).some(k=>String(pp[k]||'').trim())
+  return Object.values(d.obs||{}).some(v=>v&&v!=='n') || (d.MODE==='staff'?['ctxTerr','ctxSez','appPdg','occasioni','condizioni','dinamiche','scelta']:['nome','sezione','gruppo','ctxTerr','ctxSez','appPdg','appPrec','occasioni','condizioni','dinamiche','scelta']).some(k=>String(pp[k]||'').trim())
     || ((d.scheda&&d.scheda.priorita)||[]).some(p=>p&&(p.percorso||String(p.necessita||'').trim())) || ((d.scheda&&d.scheda.percorsiExtra)||[]).length>0; }
 function pjStaffHas(d){ d=d||{}; return (d.STAFF_MEMBERS||[]).length>0 || Object.values(d.staffObs||{}).some(o=>Object.values(o||{}).some(v=>v&&v!=='n')) || Object.values(d.autoObs||{}).some(v=>v&&v!=='n'); }
 function pjType(d){ d=d||{}; if(d.MODE==='giovani'||d.MODE==='staff') return d.MODE; return pjUnitHas(d)?'giovani':(pjStaffHas(d)?'staff':null); }
@@ -17472,7 +17518,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const d = clSnapshot();
     const pp0 = (d.scheda&&d.scheda.pp)||{};
     const hasWork = d.MODE && ((d.STAFF_MEMBERS||[]).length || Object.keys(d.autoObs||{}).length || Object.values(d.obs||{}).some(v => v && v !== 'n')
-      || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
+      || (d.MODE==='giovani' && ['nome','sezione','gruppo','ctxTerr','ctxSez','appPdg','appPrec','occasioni','condizioni','dinamiche','scelta'].some(k => (pp0[k]||'').trim()) || (pp0.occMan||[]).length ) || Object.keys(pp0.kosDone||{}).length || (d.UNIT_NAME||'').trim());
     if((hasWork || (ar && (d.MODE === 'giovani' || d.MODE === 'staff'))) && typeof resumeSession==='function'){ let hv = false; try{ hv = !!sessionStorage.getItem('bussola_view'); }catch(e){} setTimeout(() => { resumeSession(); if(!hv) setTimeout(() => { try{ posRestore(); }catch(e){} }, 120); }, 50); clRestoreView(); }
     else setTimeout(() => { if(document.getElementById('welcome-screen').style.display !== 'none') tourStart(false); }, 500);
   }catch(e){}
@@ -19890,7 +19936,7 @@ function rpGridPid(p){ try{ const row = (p.chiave.split('|')[2] || '').replace(/
   if(!sc.length || sc[0].n < 1) return ''; if(sc.length > 1 && sc[1].n === sc[0].n) return ''; return sc[0].id; }catch(e){ return ''; } }
 function rpGridAmb(p){ if((p.sec !== 3 && p.sec !== 5) || (p.chiave.split('|')[1] || '')) return ''; { const pid = rpGridPid(p); if(pid) return pid[0]; } const m = /sviluppo (personale|comunitario|spirituale)/i.exec(p.txt || '') || /^sviluppo-(personale|comunitario|spirituale)$/.exec((p.chiave.split('|')[2] || '').replace(/#\d+$/, '')); return m ? {personale:'P', comunitario:'C', spirituale:'S'}[m[1].toLowerCase()] : ''; }
 function rpScreens(p){ if((p.sec === 3 || p.sec === 5) && !(p.chiave.split('|')[1] || '')){ const g = rpGridAmb(p); return g ? [['1b', g]] : [['1b', 'P'], ['1b', 'C'], ['1b', 'S']]; } if(p.sec !== 1) return []; const h = (p.chiave.split('|')[1] || '');
-  if(/^(composizione|contesto|adulti)/.test(h)) return RP_SCR.a; if(/^(osservazione-con|attivit|condizioni|focus|lancio|sviluppo|conclusione)/.test(h)) return RP_SCR.occ; if(/^(priorizzazione|motivazione)/.test(h)) return RP_SCR.d; if(/^(aspetti|analisi)/.test(h)) return [['1c'], ['1s']]; return RP_SCR.b; }
+  if(/^(composizione|contesto|adulti|appunti-dal-piano)/.test(h)) return RP_SCR.a; if(/^(osservazione-con|attivit|condizioni|focus|lancio|sviluppo|conclusione)/.test(h)) return RP_SCR.occ; if(/^(priorizzazione|motivazione)/.test(h)) return RP_SCR.d; if(/^(aspetti|analisi|appunti-dalla-programmazione)/.test(h)) return [['1c'], ['1s']]; return RP_SCR.b; }
 window.addEventListener('resize', () => { try{ document.body.classList.toggle('rp-dock-on', !!(window._rp && window._rp.open) && window.innerWidth >= 1100); }catch(e){} });
 window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; const tk = window._rpGoTk = (window._rpGoTk || 0) + 1, stop = () => tk !== window._rpGoTk;
   const pk = p.chiave + '|' + p.user_id, wait = ms => new Promise(r => setTimeout(r, ms));
@@ -19908,6 +19954,10 @@ window.rpGo = async function(i){ const p = window._rp.pts[i]; if(!p) return; con
     else if(mode === 'prepend') el.prepend(box); else if(mode === 'before') el.before(box); else if(mode === 'append') el.appendChild(box); else if(mode === 'afterSummary') el.after(box); else if(mode === 'afterField'){ let h = el; const nx = h.nextElementSibling; if(nx && (/^(TEXTAREA|INPUT|SELECT)$/.test(nx.tagName) || nx.classList.contains('rt-ed'))) h = nx; if(/^(TEXTAREA|INPUT|SELECT)$/.test(h.tagName) && h.nextElementSibling && h.nextElementSibling.classList.contains('rt-ed')) h = h.nextElementSibling; h.after(box); }
     else el.after(box);
     await wait(60); try{ box.scrollIntoView({block:'center'}); }catch(e){} box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; }
+  // 18/11: nessun campo riconoscibile → il commento resta comunque agganciato, in cima alla pagina aperta (con l'indicazione di dove si riferisce), non in una scheda fluttuante
+  { const pn0 = document.querySelector('#main-app .panel.active'); if(pn0){ const cx = document.createElement('div'); cx.className = 'rp-inl-w'; cx.style.cssText = 'font-weight:700;margin:0 0 4px'; cx.textContent = (p.sec ? 'Sezione ' + p.sec + ' › ' : '') + (p.txt || ''); box.insertBefore(cx, box.firstChild);
+      const hh = Array.from(pn0.querySelectorAll('h1,h2,h3')).find(h => rpVis(h) && !h.closest('.rp-inl,#rp-float,#vid-pg,.vid-pg,.rp-inl-tr')); if(hh) hh.before(box); else pn0.prepend(box);
+      await wait(60); try{ box.scrollIntoView({block:'center'}); }catch(e){} box.classList.add('rp-flash'); setTimeout(() => box.classList.remove('rp-flash'), 2200); return; } }
   // il punto non ha un campo riconoscibile nella pagina: la scheda si apre in primo piano, uguale a quella del revisore
   const ff = document.createElement('div'); ff.id = 'rp-float'; ff.innerHTML = '<button type="button" class="rp-x" onclick="this.parentNode.remove()" aria-label="Chiudi">✕</button><div class="rp-inl-w">' + esc(p.sec ? 'Sezione ' + p.sec + ' › ' : '') + esc(p.txt || '') + '</div>'; ff.appendChild(box); document.body.appendChild(ff); };
 window.rpGfbSeen = function(){ try{ localStorage.setItem('bussola_gfb_seen_' + CL.user.id, new Date().toISOString()); if(window.clPerTe) setTimeout(() => clPerTe(), 400); }catch(e){} };
@@ -19956,6 +20006,10 @@ function rpGroupEnd(lb){   // fine del blocco «etichetta + campo»: così il pa
 function rpTarget(p){
   const kk = p.chiave.split('|'), sec = kk[0], h3 = kk[1] || '', row = (kk[2] || '').replace(/#\d+$/, ''), isH = !row || row === h3;
   const res = (el, mode, open) => el ? {el, mode, open: open || []} : null;
+  // ── Commento generale sul capitolo (chiave s1…s5): sta in cima alla pagina del capitolo, sopra il primo titolo
+  if(/^s\d$/.test(p.chiave)){ const pn = document.querySelector('#main-app .panel.active'); if(!pn) return null;
+    const hh = Array.from(pn.querySelectorAll('h1,h2,h3')).find(h => rpVis(h) && !h.closest('.rp-inl,#rp-float,#vid-pg,.vid-pg,.rp-inl-tr'));
+    return hh ? res(hh, 'before', []) : res(pn, 'prepend', []); }
   // ── Sezione 3 · percorsi
   const card = rpPcx(h3);
   if(card){ const hd = card.querySelector('.pcx-hd'), body = card.querySelector('.pcx-body'), open = (body && body.offsetParent === null) ? [hd] : [];
@@ -20553,7 +20607,7 @@ function ncFormHTML(items){
     <div class="sh-hint" style="flex:1 1 100%">Un ciclo è la programmazione di un periodo, di solito di 3-4 mesi. Il nuovo ciclo parte da quello aperto ora: contesto, unità, staff e sede passano; passano anche i percorsi in evidenza e i livelli osservati (la rilettura di fine ciclo è il punto di partenza), marcati «dal ciclo precedente» e modificabili o eliminabili. Obiettivi, percorsi, attività e verifica sono nuovi.</div><div class="cal-wa"><button type="button" class="sh-btn" id="nc-go" onclick="ncMake()">Crea e apri</button><button type="button" class="sh-btn gh" onclick="SH._ncForm=false;annoRe()">Annulla</button></div></div>`;
 }
 window.ncOpen = function(){ SH._ncForm = true; annoRe(); setTimeout(() => { const e = $('nc-n'); if(e) e.focus(); }, 40); };
-const NC_PP = ['sezione', 'gruppo', 'ctxTerr', 'ctxSez', 'sedeVia', 'sedeCitta', 'sedeCF', 'sedeSocial', 'sedeSito', 'numTot', 'numM', 'numF', 'numAnn', 'staffTab', 'checkStaff'];
+const NC_PP = ['sezione', 'gruppo', 'ctxTerr', 'ctxSez', 'appPdg', 'appPrec', 'sedeVia', 'sedeCitta', 'sedeCF', 'sedeSocial', 'sedeSito', 'numTot', 'numM', 'numF', 'numAnn', 'staffTab', 'checkStaff'];
 async function ncBuild(nome, dal, al){
     const rows = await dbList(); const y = Number(CL.ctx.anno);
     let base0 = String(CL.ctx.titolo || 'Programmazione Annuale'); const cn0 = ((scheda.ciclo || {}).nome || '').trim(); if(cn0 && base0.endsWith(' · ' + cn0)) base0 = base0.slice(0, -(' · ' + cn0).length); const base = base0 + ' · ' + nome; let titolo = base, k = 2; while(rows.some(r => Number(r.anno) === y && r.titolo === titolo)) titolo = base + ' (' + (k++) + ')';
@@ -21938,6 +21992,7 @@ const PREV_V = [
   ['sede', 'Sede della Sezione', ['sedeVia', 'sedeCitta', 'sedeCF', 'sedeSocial', 'sedeSito']],
   ['unit', 'Composizione dell’Unità (numeri)', ['numTot', 'numM', 'numF', 'numAnn']],
   ['staff', 'Adulti in staff (la tabella, con i contatti)', ['staffTab']],
+  ['pdg', 'Appunti dal Piano di Gruppo e dal Progetto di Sezione', ['appPdg']],
   ['iban', 'Coordinate per i pagamenti (IBAN)', ['iban', 'ibanInt']]
 ];
 // «Dall'anno scorso» / «Dal ciclo precedente»: il ciclo nuovo riprende dal ciclo di partenza; il primo ciclo dell'anno riprende da tutti i cicli dell'anno prima e dalla sua verifica
@@ -22015,10 +22070,30 @@ window.shPrev = async function(mode){
   const blocks = L.map(x => ({x, n:prevNotes(x.data)})).filter(z => z.n.length);
   const nBody = z => z.n.map(n => `<div class="sh-pnb"><b>${esc(n.nm)}</b>${n.vc ? `<p><i>Valutazione complessiva</i><br>${esc(n.vc).replace(/\n/g, '<br>')}</p>` : ''}${n.att.map(a => `<p><i>${esc(a.testo || 'Attività')}</i>${a.vBene ? `<br><u>Andato bene</u> ${esc(a.vBene)}` : ''}${a.vMigl ? `<br><u>Da migliorare</u> ${esc(a.vMigl)}` : ''}${a.vAgg ? `<br><u>Aggiustamenti</u> ${esc(a.vAgg)}` : ''}</p>`).join('')}</div>`).join('');
   const ver = ar && ar.ver && VER_Q.some(q => String(ar.ver[q[0]] || '').trim()) ? `<details class="u-fold sh-pn" open><summary>Verifica dell’anno<span class="u-sub">la riflessione dell’anno intero</span></summary><div class="u-fold-in">${VER_Q.filter(q => String(ar.ver[q[0]] || '').trim()).map(q => `<div class="sh-pnb"><b>${esc(q[1])}</b><p>${esc(ar.ver[q[0]]).replace(/\n/g, '<br>')}</p></div>`).join('')}</div></details>` : '';
+  try{ const T = []; if(ar && ar.ver) VER_Q.forEach(q => { const v = String(ar.ver[q[0]] || '').trim(); if(v) T.push(q[1] + ': ' + v); });
+    blocks.forEach(z => z.n.forEach(n => { const R = []; if(n.vc) R.push('Valutazione complessiva: ' + n.vc); n.att.forEach(a => { const q = [a.vBene && 'andato bene: ' + a.vBene, a.vMigl && 'da migliorare: ' + a.vMigl, a.vAgg && 'aggiustamenti: ' + a.vAgg].filter(Boolean).join('; '); if(q) R.push((a.testo || 'Attività') + ' — ' + q); }); if(R.length) T.push(n.nm + '\n' + R.join('\n')); }));
+    SH._prevTxt = T.join('\n\n'); }catch(e){ SH._prevTxt = ''; }
   const nH = (ver + blocks.map((z, zi) => `<details class="u-fold sh-pn"${onlyN && !ver && zi === 0 ? ' open' : ''}><summary>${PV.kind === 'ciclo' || L.length === 1 ? 'Appunti dalla programmazione precedente' : esc(z.x.ci.nome || z.x.titolo)}<span class="u-sub">${z.n.length} percorso${z.n.length === 1 ? '' : 'i'} con verifica o valutazione</span></summary><div class="u-fold-in">${nBody(z)}</div></details>`).join('')) || '<p class="sh-hint">Non ci sono ancora verifiche o valutazioni da rileggere.</p>';
-  if(onlyN){ modalShow(`<h3 style="margin:0 0 4px;font-size:17px">${tt}</h3><p class="sh-hint" style="margin:0 0 10px">${esc(PV.da.charAt(0).toUpperCase() + PV.da.slice(1))}: le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno, da rileggere prima di osservare e progettare.</p>${nH}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">${rowsH ? '<button type="button" class="sh-btn gh" onclick="shPrev()">Riprendi anche contesto, staff e numeri</button>' : ''}<button type="button" class="sh-btn" onclick="modalClose()">Chiudi</button></div>`); return; }
+  if(onlyN){ modalShow(`<h3 style="margin:0 0 4px;font-size:17px">${tt}</h3><p class="sh-hint" style="margin:0 0 10px">${esc(PV.da.charAt(0).toUpperCase() + PV.da.slice(1))}: le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno, da rileggere prima di osservare e progettare.</p>${nH}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">${SH._prevTxt && $('app-prec') ? '<button type="button" class="sh-btn" onclick="shPrevToField()">Porta nel campo «Appunti dalla Programmazione dell’anno precedente»</button>' : ''}${rowsH ? '<button type="button" class="sh-btn gh" onclick="shPrev()">Riprendi anche contesto, staff e numeri</button>' : ''}<button type="button" class="sh-btn gh" onclick="modalClose()">Chiudi</button></div>`); return; }
   modalShow(`<h3 style="margin:0 0 4px;font-size:17px">${tt}</h3><p class="sh-hint" style="margin:0 0 10px">${esc(PV.da.charAt(0).toUpperCase() + PV.da.slice(1))}. Scegli le voci da riprendere: potrai modificarle. Contesto, sede, numeri e staff li prendo dall’ultimo ciclo.</p>${rowsH ? `<div class="sh-pvl">${rowsH}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" class="sh-btn" onclick="shPrevApply()">Riprendi le voci scelte</button><button type="button" class="sh-btn gh" onclick="modalClose()">Chiudi</button></div>` : '<p class="sh-hint">Non ci sono voci da riprendere (contesto, sede, numeri, staff).</p>'}<h4 class="gd-h" style="margin:8px 0 4px">Appunti dalla programmazione precedente</h4>${nH}`);
 };
+// 18/11: il campo «Appunti dalla Programmazione dell'anno precedente» (1.3) ha il suo pulsante: rileggere gli appunti e portarli nel campo
+window.shPrevToField = function(){
+  const t = String(SH._prevTxt || '').trim(); const ta = $('app-prec'); if(!t || !ta){ showToast('Non trovo niente da portare'); return; }
+  const cur = String(ta.value || '').trim(); if(cur && cur.indexOf(t) >= 0){ modalClose(); showToast('Questi appunti ci sono già'); return; }
+  ta.value = cur ? cur + '\n\n' + t : t; ppSet('appPrec', ta.value);
+  try{ ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 480) + 'px'; }catch(e){}
+  modalClose(); showToast('Ho portato gli appunti dell’anno scorso: puoi modificarli');
+};
+function shPrevBtn(){
+  const b = $('app-prec-btn'); if(!b) return;
+  if(window.BRO || !CL.ctx || !CL.user || isST()){ b.innerHTML = ''; return; }
+  const draw = () => { const bb = $('app-prec-btn'); if(!bb) return; bb.innerHTML = SH._prev ? '<button type="button" class="sh-btn gh" onclick="shPrev(\'note\')">Rileggi gli appunti dell’anno scorso e portali qui</button>' : ''; };
+  if(SH._prevFor !== CL.ctx.id){ SH._prevFor = CL.ctx.id; SH._prev = undefined; SH._prevBusy = false; }
+  if(SH._prev !== undefined){ draw(); return; }
+  if(SH._prevBusy) return; SH._prevBusy = true; const id = CL.ctx.id;
+  prevProbe().then(r => { if(SH._prevFor === id) SH._prev = r || null; SH._prevBusy = false; draw(); }).catch(() => { SH._prev = null; SH._prevBusy = false; });
+}
 window.shPrevApply = function(){
   const pd = SH._prevData; if(!pd) return; const ppo = Object.assign({}, (pd.scheda || {}).pp || {}, {__un:pd.UNIT_NAME || ''});
   const chosen = [...document.querySelectorAll('.sh-pvc:checked')].map(i => i.value); if(!chosen.length){ showToast('Nessuna voce scelta'); return; }
