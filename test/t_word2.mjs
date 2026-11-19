@@ -31,9 +31,12 @@ ok(aft(paraOf('Seconda riga subito')) === 160, 'riga vuota: stacco più ampio do
 ok(aft(paraOf('Nuovo paragrafo')) === 160, 'due righe vuote: un solo stacco');
 ok(aft(paraOf('Ultimo dopo')) === 40, 'l’ultimo paragrafo non ha lo stacco');
 ok(aft(paraOf('Primo capoverso')) !== null && /Secondo capoverso/.test(x), 'attività: capoversi nel Word');
-const i1 = x.indexOf('Corda da 10 m'), iT = x.lastIndexOf('<w:tbl>', i1), iH = x.lastIndexOf('Materiale', i1);
-ok(i1 > 0 && iH > 0 && iT > 0, 'materiali: tabella con intestazione «Materiale»');
-ok(x.indexOf('Chi se ne occupa') > 0 && x.indexOf('Anna Verdi', i1) > 0 && x.indexOf('Fogli e pennarelli') > i1, 'materiali: colonna «Chi se ne occupa» con il nome, righe una sotto l’altra');
+const i1 = x.indexOf('Corda da 10 m');
+ok(i1 > 0, 'materiali: presenti nel Word');
+{ const p = paraOf('Corda da 10 m') || ''; ok(/Anna Verdi/.test(p) && /w:numPr/.test(p), 'materiali: elenco puntato, chi se ne occupa nella stessa riga'); }
+ok(x.indexOf('Fogli e pennarelli') > i1, 'materiali: righe una sotto l’altra');
+ok(!/<w:tc>(?:(?!<\/w:tc>)[\s\S])*<w:tbl>/.test(x), 'nessuna tabella dentro una cella (Pages non la rende)');
+ok(!/Chi se ne occupa/.test(x), 'niente intestazione di tabella «Chi se ne occupa»');
 ok(!/chi lo procura:/.test(x), 'il vecchio paragrafo unico non c’è più');
 // ogni cella termina con un paragrafo (requisito del Word)
 const bad = (x.match(/<\/w:tbl><\/w:tc>/g) || []).length; ok(bad === 0, 'nessuna cella termina con una tabella (' + bad + ')');

@@ -51,7 +51,7 @@ await P.screenshot({path:'/tmp/card_'+mode+'.png', clip:undefined}).catch(()=>{}
 async function dl(fn){ const [d] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(fn)]); return fs.readFileSync(await d.path()); }
 const xml = async b => { const z = await JSZip.loadAsync(b); return (await z.file('word/document.xml').async('string')).replace(/<[^>]+>/g, ''); };
 const t = await xml(await dl(() => exportSchedaDocx())); 
-ok(/Durata: 20|Durata: 1h30|Durata: 20′/.test(t) && /Scaletta:/.test(t) && /Gioco di apertura/.test(t) && /Materiali:\s*MaterialeChi se ne occupa\s*Corda da 10 m/.test(t) && /Pennarelli rossi/.test(t) && /Marta/.test(t), 'il Word contiene durata, scaletta e materiali in tabella (se compilati)');
+ok(/Durata: 20|Durata: 1h30|Durata: 20′/.test(t) && /Scaletta:/.test(t) && /Gioco di apertura/.test(t) && /Materiali:\s*Corda da 10 m/.test(t) && !/Chi se ne occupa/.test(t) && /Pennarelli rossi/.test(t) && /Marta/.test(t), 'il Word contiene durata, scaletta e materiali in elenco (se compilati)');
 const pos = k => t.indexOf(k);
 ok(pos('Scaletta:') < pos('Lancio: ') || pos('Lancio: ') < 0 || true, 'ordine nel Word (verifico sotto)');
 const idx = t.indexOf('Gioco di apertura'); const seg = t.slice(Math.max(0, idx - 200), idx + 1500);
