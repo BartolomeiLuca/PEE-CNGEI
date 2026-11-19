@@ -8923,9 +8923,13 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611191000'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611191600'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
+    '<b>PDF della Scheda</b>: nell’invio del Progetto Personale (punti 4 e 5) c’è «Stampa o salva in PDF», prima di «Scarica il Word». Si apre la stampa del browser: scegli «Salva come PDF». Il contenuto è quello del Word, con i colori degli ambiti.',
+    '<b>Video</b>: i sottotitoli non partono più da soli. Si accendono dal pulsante CC del lettore, se servono.',
+    '<b>Numerino su «Progetti»</b>: non conta più ciò che ti sei affidata o affidato da sola o da solo (materiali, attività, verifiche): quelle cose stanno in «Prossime scadenze». Prima poteva comparire un numero senza nulla in «Per te».']},
   {d:'19 novembre 2026', t:'Word più ordinato, con i colori degli ambiti', i:[
     '<b>Colori PEE</b>: nel Word, le tabelle e i titoli che parlano degli ambiti usano i colori del PEE (Personale ocra, Comunitario rosso, Spirituale blu); il resto resta nel colore della Branca.',
     '<b>Materiali</b>: nelle attività sono un elenco, con a fianco chi se ne occupa (prima la tabella si rompeva in Pages). Tra Lancio, Sviluppo e Conclusione c’è di nuovo uno stacco.',
@@ -9157,9 +9161,10 @@ function vidOpen(n){ window._vidCur = n;
     vidWide(true); return;
   }
   modalShow(`<div class="vid-hd"><span class="vid-k">Video ${v.n} di ${VIDEOS.length} · ${ch}</span><h3>${v.t}</h3></div>
-    <video class="vid-v" src="${vidSrc(v.n)}" crossorigin="anonymous" controls autoplay playsinline preload="metadata"><track kind="subtitles" srclang="it" label="Italiano" src="${vidSub(v.n)}" default><track kind="chapters" srclang="it" label="Capitoli" src="${vidChap(v.n)}"></video>${nav}`);
+    <video class="vid-v" src="${vidSrc(v.n)}" crossorigin="anonymous" controls autoplay playsinline preload="metadata"><track kind="subtitles" srclang="it" label="Italiano" src="${vidSub(v.n)}"><track kind="chapters" srclang="it" label="Capitoli" src="${vidChap(v.n)}"></video>${nav}`);
   vidWide(true);
-  try{ const el = document.querySelector('.vid-v'); if(el){ el.addEventListener('ended', () => vidSeenMark(v.n)); el.addEventListener('timeupdate', () => { if(el.duration && el.currentTime / el.duration >= .9) vidSeenMark(v.n); }); } }catch(e){}
+  try{ const el = document.querySelector('.vid-v'); if(el){ const noSub = () => { try{ for(const t of el.textTracks) if(t.kind === 'subtitles') t.mode = 'disabled'; }catch(e){} }; noSub(); el.addEventListener('loadedmetadata', noSub);   // i sottotitoli partono spenti (si accendono dal pulsante CC del lettore): su Safari sono difficili da togliere
+    el.addEventListener('ended', () => vidSeenMark(v.n)); el.addEventListener('timeupdate', () => { if(el.duration && el.currentTime / el.duration >= .9) vidSeenMark(v.n); }); } }catch(e){}
 }
 function vidWide(on){ const ov = document.getElementById('g-modal'); if(!ov || !ov.firstElementChild) return; ov.firstElementChild.style.maxWidth = on ? '860px' : ''; }
 // ── riquadro «Video tutorial ▸» in cima a ogni pagina del progetto ──
@@ -9222,7 +9227,7 @@ const FAQ = [
   ['Realizzare','Come cerco un’attività già fatta?','Con <b>Cerca un’attività</b> (nei Percorsi, in cima alle Uscite e nell’Archivio) cerchi fra le attività di tutti i tuoi progetti, comprese quelle nate dentro le uscite, e nell’archivio nazionale. <b>Apri</b> ti porta nel punto esatto in cui l’attività comincia; <b>Riusa</b> la copia nel tuo progetto (nelle Uscite: la aggiunge all’uscita aperta). Per proporne una a tutti vedi la domanda seguente.','anOpen()'],
   ['Realizzare','Cambio una data: devo correggerla dappertutto?','No: circolare, messaggio alle famiglie, calendario e foglio del giorno si aggiornano da soli.','shCal()'],
   ['Progettare','Cosa sono gli Indicatori di Risultato?','I segnali concreti che ti dicono se il gruppo è cresciuto nell’obiettivo. Li scegli in <b>Obiettivi e indicatori</b>; le verifiche delle attività ti aiutano a vederli nella Valutazione finale.','shSec(\'2\')'],
-  ['Documenti','Come ottengo il documento da consegnare?','Con <b>↓ Scarica la Scheda (Word)</b>, in fondo a ogni sezione o in <b>Controllo e invio</b>. Il documento ha la stessa struttura delle Linee Guida e comprende la griglia osservativa. Nel Progetto Personale la Sezione 3 comincia con il riquadro «Percorso sviluppato», dove trovi per primo il percorso che hai scelto; seguono gli «Altri percorsi (accennati)».','shSec(\'chk\')'],
+  ['Documenti','Come ottengo il documento da consegnare?','Con <b>↓ Scarica la Scheda (Word)</b>, in fondo a ogni sezione o in <b>Controllo e invio</b>. Il documento ha la stessa struttura delle Linee Guida e comprende la griglia osservativa. Nel Progetto Personale la Sezione 3 comincia con il riquadro «Percorso sviluppato», dove trovi per primo il percorso che hai scelto; seguono gli «Altri percorsi (accennati)». Se preferisci il PDF, nell’invio del Progetto Personale (punti 4 e 5) trovi <b>Stampa o salva in PDF</b>: si apre la stampa del browser, scegli «Salva come PDF».','shSec(\'chk\')'],
   ['Documenti','A chi va consegnato?','Il Progetto Personale va all’Incaricato del Centro della Formazione, con in copia il Capo Gruppo e il Commissario di Sezione. La programmazione dell’Unità va al Capo Gruppo.','shSec(\'chk\')'],
   ['Documenti','Il Word si apre anche con Pages o Google Documenti?','Sì.'],
   ['Per cominciare','C’è il controllo ortografico?','Sì, quello del tuo browser o dispositivo: le parole sbagliate vengono sottolineate in rosso e con il tasto destro (o tenendo premuto sul telefono) trovi i suggerimenti. Su <b>Safari per Mac</b> va attivato da <i>Modifica › Ortografia e grammatica › Controlla ortografia durante la digitazione</i>; su <b>Firefox</b> serve il dizionario italiano (tasto destro su un campo › Lingue › Aggiungi dizionari). Indirizzi, mail e telefoni non vengono controllati.'],
@@ -13874,7 +13879,8 @@ const LIB_URLS = {
   docx: 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
   jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
   jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  mammoth: 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js'
+  mammoth: 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js',
+  docxprev: 'https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js'
 };
 function loadLib(url, check){
   return new Promise((res, rej) => {
@@ -14565,6 +14571,53 @@ function rtLines(t){ const L = rtNormTok(t).split(/\n/); const TOK = ['**','~~',
 async function exportSchedaDocx(mode){
   if(MODE==='giovani'){ const r = await exportPPDocx(mode); svAfter('word', 2500); return r; }
   return exportSchedaDocxLegacy();
+}
+// ── «Stampa o salva in PDF» della Scheda (punti 4 e 5 dell'invio): stesso contenuto del Word, che viene generato e poi disegnato in una pagina da stampare ──
+const PDF_CSS = `*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{margin:0;padding:0;background:#fff}
+body{font-family:'Montserrat',Arial,sans-serif;color:#222}
+.docx-wrapper{background:#fff!important;padding:0!important;display:block!important}
+.docx-wrapper>section.docx{box-shadow:none!important;margin:0!important;padding:0!important;width:auto!important;min-height:0!important;box-sizing:border-box!important}
+.docx-wrapper header,.docx-wrapper footer{display:none!important}
+table{border-collapse:collapse}
+tr,img{break-inside:avoid;page-break-inside:avoid}
+h1,h2,h3{break-after:avoid;page-break-after:avoid}
+p{orphans:2;widows:2}`;
+// docx-preview usa lo stesso nome globale («docx») della libreria che crea il Word: dopo averla caricata si rimette al suo posto quella del Word
+async function pdfPrevLib(){
+  if(window._docxPrev) return window._docxPrev;
+  const keep = window.docx;
+  await loadLib(LIB_URLS.docxprev, () => !!(window.docx && window.docx !== keep && window.docx.renderAsync));
+  const p = window.docx; window.docx = keep; window._docxPrev = p; return p;
+}
+async function exportSchedaPdf(mode){
+  if(MODE!=='giovani'){ showToast('Il PDF si stampa dal Progetto Personale'); return; }
+  let blob = null, prev = null;
+  try{
+    showToast('Preparo il PDF…');
+    blob = await new Promise(res => { window._docxCapture = res; exportPPDocx(mode).then(() => { if(window._docxCapture){ window._docxCapture = null; res(null); } }, () => { window._docxCapture = null; res(null); }); });
+    if(!blob) return;
+    await loadLib(LIB_URLS.jszip, () => !!window.JSZip);
+    prev = await pdfPrevLib();
+  }catch(e){ showToast('Impossibile preparare il PDF: ' + e.message); return; }
+  let fr = document.getElementById('pdf-frame'); if(fr) fr.remove();
+  fr = document.createElement('iframe'); fr.id = 'pdf-frame'; fr.setAttribute('aria-hidden', 'true');
+  fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0';
+  document.body.appendChild(fr);
+  try{
+    const d = fr.contentWindow.document; d.open();
+    d.write('<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Scheda di Programmazione Educativa Esperienziale</title></head><body></body></html>');
+    d.close();
+    await prev.renderAsync(blob, d.body, d.head, {className:'docx', inWrapper:true, ignoreWidth:true, ignoreHeight:true, breakPages:false, renderHeaders:false, renderFooters:false, useBase64URL:true});
+    // la libreria svuota il contenitore degli stili: i miei si aggiungono dopo
+    const ft = String((window._dFootOverride != null ? window._dFootOverride : docFooterText()) || '').replace(/[\\"\n\r]/g, ' ');
+    const lk = d.createElement('link'); lk.rel = 'stylesheet'; lk.href = 'https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;1,400&display=swap'; d.head.appendChild(lk);
+    const st = d.createElement('style'); st.textContent = '@page{size:A4;margin:18mm 18mm 20mm 18mm;@bottom-left{content:"' + ft + '";font:7.5pt Montserrat,Arial,sans-serif;color:#999}@bottom-right{content:counter(page);font:7.5pt Montserrat,Arial,sans-serif;color:#999}}' + PDF_CSS; d.head.appendChild(st);
+    try{ await Promise.race([d.fonts.ready, new Promise(r => setTimeout(r, 1800))]); }catch(e){}
+  }catch(e){ try{ fr.remove(); }catch(_){} showToast('Impossibile preparare il PDF: ' + e.message); return; }
+  if(window._pdfPrintHook){ const h = window._pdfPrintHook; window._pdfPrintHook = null; h(fr); return; }
+  showToast('Si apre la stampa: scegli «Salva come PDF»');
+  setTimeout(() => { try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ showToast('Stampa non disponibile su questo dispositivo'); } setTimeout(() => { try{ fr.remove(); }catch(e){} }, 60000); }, 300);
 }
 // ── Progetto Personale (Linee Guida PEE): copertina + Sezioni 1–5 + allegati ──
 async function exportPPDocx(mode){
@@ -16359,7 +16412,8 @@ async function clPerTe(){
           (gr.data || []).forEach(g => { const pq = rvc ? (rvc[g.archivio_id] || 0) : (pend[g.id] || 0); if(!pq && !by[g.id]) return; _fbN++; items.push({k:'gfb', id:g.id, aid:g.archivio_id, n:by[g.id] || 0, pend:pq, gn:g.n, nome:(g.meta && g.meta.titolo) || '', hot:!!by[g.id], ack:false}); }); } } } }catch(e){}
     { const AK2 = ptAckGet(); items.forEach(x => { if(x.k === 'rvg' || x.k === 'gfb'){ x.ack = !!AK2[ptAckKey(x)]; if(x.ack) x.hot = false; } }); }
     CL.scad = items.filter(x => ['att','mat','usc','ver'].includes(x.k)); CL.perte = items.filter(x => !x.self); clSetStatus(CL.status); try{ if(window.shScadRe) shScadRe(); }catch(e){}
-    try{ const n = ptHotN(items); const prev = CL._ptN; CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
+    try{ const n = ptHotN(items.filter(x => !x.self)); const prev = CL._ptN;   // il numerino conta ciò che si vede in «Per te»: ciò che ci si è affidati da soli sta solo in «Prossime scadenze»
+      CL._ptN = n; const _pg = CL._rvN || 0; CL._rvN = _rvN;
       document.querySelectorAll('.hd-lnk').forEach(b => { if(/^Progetti/.test(b.textContent.trim())){ if(n) b.setAttribute('data-n', n); else b.removeAttribute('data-n'); } });
       if(prev !== undefined && _fbN > (CL._fbPrev || 0)) clToast('Hai nuovi riscontri sul tuo Progetto Personale: li trovi in «Per te».'); CL._fbPrev = _fbN;
       if(prev !== undefined && _rvN > _pg){ clToast(_rvN - _pg === 1 ? 'Hai un giro da rivedere: lo trovi in Progetti.' : 'Hai ' + (_rvN - _pg) + ' giri da rivedere: li trovi in Progetti.'); }
@@ -19222,7 +19276,7 @@ function ppBloccoHTML(b){
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center"><input id="apb2-chi" type="text" class="sh-in" style="min-height:34px;font-size:12.5px;flex:1;min-width:140px" maxlength="120" placeholder="chi l’ha data (es. Tutor Marco)" aria-label="Chi ha approvato"><input id="apb2-d" type="date" class="sh-in" style="min-height:34px;font-size:12.5px;width:auto" value="${td()}" aria-label="Data dell’approvazione"><button type="button" class="btn-ghost" style="min-height:34px" onclick="ppApprB2Form()">Registra l’approvazione</button></div><div class="sh-hint" style="margin-top:3px">Registrata dal compilatore, con data.</div></div>` : '');
   }
   const leg5 = prima ? (ppRisc().length ? `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">Riscontri registrati prima dei giri (${ppRisc().length})</summary>${ppRiscHTML()}</details>` : '') : '';
-  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>${L.length ? `<button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine()" title="Un solo archivio, rapido: tutte le copie inviate in formato dati, i commenti, le risposte e gli stati, con lo storico in Word">Scarica lo storico (rapido)</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine(true)" title="Include anche il Word di ogni giro inviato: può richiedere diversi minuti">Storico completo con tutti i Word</button>` : ''}`
+  const btns = aperto ? `<button type="button" class="btn-primary" style="min-height:40px" onclick="ppGiroForm(${b})">${L.length ? 'Nuovo invio' : 'Invia in revisione'}</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaPdf('${prima ? 'parziale' : 'completo'}')" title="Apre la stampa del browser: scegli «Salva come PDF»">🖨 Stampa o salva in PDF (Sezioni ${prima ? '1–3' : '1–5'})</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="exportSchedaDocx('${prima ? 'parziale' : 'completo'}')">Scarica il Word (Sezioni ${prima ? '1–3' : '1–5'})</button>${L.length ? `<button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine()" title="Un solo archivio, rapido: tutte le copie inviate in formato dati, i commenti, le risposte e gli stati, con lo storico in Word">Scarica lo storico (rapido)</button><button type="button" class="btn-ghost" style="min-height:40px" onclick="rvBackupMine(true)" title="Include anche il Word di ogni giro inviato: può richiedere diversi minuti">Storico completo con tutti i Word</button>` : ''}`
     : `<div style="font-size:12.5px;color:#8a4b00;line-height:1.45">La consegna finale si apre quando la prima parte è approvata (dal Tutor; dall’ICdF se è lui il Tutor o se il Tutor non c’è). Puoi intanto scrivere le Sezioni 4 e 5.</div>`;
   if(prima) setTimeout(() => { try{ window.ppGiroFbAll && window.ppGiroFbAll(); }catch(e){} }, 60);
   return `<div class="sh-card2" style="margin-bottom:10px"><h3><span class="sh-badge" style="margin-right:8px">${prima ? 4 : 5}</span>${titolo}</h3>

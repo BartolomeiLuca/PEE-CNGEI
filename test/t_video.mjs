@@ -50,7 +50,7 @@ await ev(() => { try{ modalClose(); }catch(e){} VID_OK[51] = window._okSave; });
 // video attivo + già visto
 await ev(() => { vidOpen(3); }); await sleep(400);
 ok(await ev(() => !!document.querySelector('#g-modal video.vid-v') && /PEE-CNGEI-video\/v2\/03\.mp4/.test(document.querySelector('video.vid-v').src)), 'si apre il lettore con il file dal repo dei video');
-ok(await ev(() => { const v = document.querySelector('video.vid-v'); const t = [...v.querySelectorAll('track')]; return v.getAttribute('crossorigin') === 'anonymous' && t.length === 2 && t[0].kind === 'subtitles' && t[0].srclang === 'it' && t[0].default && /03\.vtt/.test(t[0].src) && t[1].kind === 'chapters' && /03\.chapters\.vtt/.test(t[1].src); }), 'sottotitoli in italiano e capitoli collegati al lettore');
+ok(await ev(() => { const v = document.querySelector('video.vid-v'); const t = [...v.querySelectorAll('track')]; return v.getAttribute('crossorigin') === 'anonymous' && t.length === 2 && t[0].kind === 'subtitles' && t[0].srclang === 'it' && !t[0].default && [...v.textTracks].every(x => x.kind !== 'subtitles' || x.mode !== 'showing') && /03\.vtt/.test(t[0].src) && t[1].kind === 'chapters' && /03\.chapters\.vtt/.test(t[1].src); }), 'sottotitoli in italiano disponibili ma spenti all’avvio, capitoli collegati al lettore');
 await ev(() => { vidSeenMark(3); try{ modalClose(); }catch(e){} }); await sleep(300);
 ok(await ev(() => JSON.parse(localStorage.getItem('pee_vid_seen')).includes(3)), '«già visto» salvato sul dispositivo');
 await ev(() => { faqOpen(); [...document.querySelectorAll('#g-modal details.gd-pan')].forEach(d => { if(/Video tutorial/.test(d.querySelector('summary').textContent)) d.open = true; }); }); await sleep(500);

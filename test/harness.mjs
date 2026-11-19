@@ -214,6 +214,7 @@ export async function person(browser, db, opts = {}){
   await ctx.route(/cdn\.jsdelivr\.net\/npm\/@supabase/, r => r.fulfill({status:200, contentType:'text/javascript', body:CLIENT}));
   const LIB = '/home/claude/work/libs/node_modules/';
   await ctx.route(/docx@8\.5\.0\/build\/index\.umd\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'docx/build/index.umd.js')}));
+  await ctx.route(/docx-preview@0\.3\.3\/dist\/docx-preview\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'docx-preview/dist/docx-preview.min.js')}));
   await ctx.route(/exceljs\/4\.4\.0\/exceljs\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'exceljs/dist/exceljs.min.js')}));
   await ctx.route(/jszip\/3\.10\.1\/jszip\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'jszip/dist/jszip.min.js')}));
   await ctx.route(/jspdf\/2\.5\.1\/jspdf\.umd\.min\.js/, r => r.fulfill({status:200, contentType:'text/javascript', body:fs.readFileSync(LIB + 'jspdf/dist/jspdf.umd.min.js')}));
