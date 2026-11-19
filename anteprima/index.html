@@ -8923,7 +8923,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611190905'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611190925'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'Word più ordinato, con i colori degli ambiti', i:[
@@ -14641,14 +14641,14 @@ async function exportPPDocx(mode){
   if(['P','C','S'].some(a=>DB[a].some(p=>numOf(obsVal(p))>0)) || Object.keys(typeof obsSources==='function'?obsSources():{}).length || Object.keys(scheda.griglia||{}).length) ch.push(dPara('Questa è la sintesi. Il dettaglio dell’osservazione, percorso per percorso, è nell’Allegato 1 (griglia osservativa e scala), in fondo al documento.',{size:18,italics:true,color:'777777',after:80}));
   const w1 = [1500, 2700, 2700, CW-6900];
   const rows1 = [[
-    dCell(dPara('Ambito',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[0],fill:'404040',border:'404040'}),
-    dCell(dPara('Aspetti positivi emersi',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[1],fill:'404040',border:'404040'}),
-    dCell(dPara('Necessità educative',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[2],fill:'404040',border:'404040'}),
-    dCell(dPara('Necessità educative specifiche del singolo/gruppetto',{size:17,bold:true,color:'FFFFFF',after:0}),{w:w1[3],fill:'404040',border:'404040'})
+    dCell(dPara('Ambito',{size:17,bold:true,color:ONG,after:0}),{w:w1[0],fill:GREEN,border:GREEN}),
+    dCell(dPara('Aspetti positivi emersi',{size:17,bold:true,color:ONG,after:0}),{w:w1[1],fill:GREEN,border:GREEN}),
+    dCell(dPara('Necessità educative',{size:17,bold:true,color:ONG,after:0}),{w:w1[2],fill:GREEN,border:GREEN}),
+    dCell(dPara('Necessità educative specifiche del singolo/gruppetto',{size:17,bold:true,color:ONG,after:0}),{w:w1[3],fill:GREEN,border:GREEN})
   ]];
   ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
     rows1.push([
-      dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,color:AMB_ON[a],after:0}),{w:w1[0],fill:AMB_HEX[a],border:AMB_HEX[a],vAlign:dxLib().VerticalAlign.TOP}),
+      dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,after:0}),{w:w1[0],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP}),
       dCell(dMulti(o.positivi,{size:18}),{w:w1[1],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP}),
       dCell(dMulti(o.necessita,{size:18}),{w:w1[2],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP}),
       dCell(dMulti(o.singoli,{size:18}),{w:w1[3],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP})
@@ -14659,7 +14659,7 @@ async function exportPPDocx(mode){
   if(longTxt){
     const w2 = [2400, CW-2400]; const rows2 = [];
     ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
-      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,color:AMB_ON[a],after:0}),{w:CW,span:2,fill:AMB_HEX[a],border:AMB_HEX[a]})]);
+      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,after:0}),{w:CW,span:2,fill:AMB_PALE[a],border:AMB_BDR[a]})]);
       [['Aspetti positivi emersi',o.positivi],['Necessità educative',o.necessita],['Necessità educative specifiche del singolo/gruppetto',o.singoli]].forEach(([l,v]) => {
         dSplitRows(l, dMulti(v,{size:18}), w2, {fill:AMB_PALE[a], border:AMB_BDR[a]}).forEach(r => rows2.push(r)); }); });
     ch.push(dTable(rows2, w2));

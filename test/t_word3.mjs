@@ -37,9 +37,9 @@ ok(/Tutti presenti/.test(txt), 'note: la nota breve resta nella colonna');
 ok(/<w:gridSpan w:val="6"\/>/.test(x), 'note: riga a tutta larghezza (6 colonne unite)');
 // colori degli ambiti
 const has = c => new RegExp('w:fill="' + c + '"').test(x);
-ok(has('BF9000') && has('990000') && has('1155CC'), 'Aspetti positivi: etichette con i colori PEE (ocra, rosso, blu)');
+ok(has('FFF8E1') && has('FCECEC') && has('EAF1FC'), 'Aspetti positivi: righe nelle tinte tenui degli ambiti');
 ok(has('FFF8E1') && has('FCECEC') && has('EAF1FC'), 'tinte chiare degli ambiti nelle tabelle');
-ok(!/w:fill="404040"/.test(x) === false, 'intestazione neutra nella tabella degli ambiti');
+{ const i0 = x.indexOf('Aspetti positivi emersi'); const hd = x.slice(Math.max(0, i0 - 900), i0); ok(/w:fill="F1F7F3"|w:fill="1B5E42"/.test(hd) && !/w:fill="404040"/.test(x), 'intestazione degli Aspetti positivi nel colore della Branca'); }
 const iS2 = x.indexOf('Sezione 2'), iS3 = x.indexOf('Sezione 3');
 const sec2 = x.slice(iS2, iS3);
 ok(/w:fill="FCECEC"/.test(sec2) && /w:fill="EAF1FC"/.test(sec2) && /w:fill="FFF8E1"/.test(sec2), 'Sezione 2: tabelle di priorità nel colore del proprio ambito');
@@ -54,5 +54,5 @@ ok(!/w:fill="F1F7F3"/.test(sec2 + sec3.slice(0, sec3.indexOf('Sezione 4') > 0 ? 
 await ev(() => { scheda.osservazione.P.positivi = 'x '.repeat(220); saveData(true); });
 const [dl2] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(() => exportSchedaDocx('completo'))]);
 const z2 = await JSZip.loadAsync(fs.readFileSync(await dl2.path())); const x2 = await z2.file('word/document.xml').async('string');
-ok(/<w:gridSpan w:val="2"\/>[\s\S]{0,400}?BF9000|BF9000[\s\S]{0,400}?<w:gridSpan w:val="2"\/>/.test(x2), 'testi lunghi: fascia dell’ambito a tutta larghezza nel colore PEE');
+ok(/<w:gridSpan w:val="2"\/>[\s\S]{0,400}?FFF8E1|FFF8E1[\s\S]{0,400}?<w:gridSpan w:val="2"\/>/.test(x2), 'testi lunghi: fascia dell’ambito a tutta larghezza nella tinta tenue');
 await br.close(); summary(); process.exit(0);
