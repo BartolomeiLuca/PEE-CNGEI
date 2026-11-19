@@ -8921,7 +8921,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611182029'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611190045'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'17 novembre 2026', t:'Nuova versione: account, progetti, Progetto Personale, 51 video', i:[
@@ -16093,7 +16093,13 @@ function clViewRestore(v){
   const det = () => app.querySelectorAll('details').forEach(d => { const k = clDetKey(d); if(map.has(k) && d.open !== map.get(k)) d.open = map.get(k); });
   const to = y => { y = Math.max(0, Math.round(y)); if(Math.abs(window.scrollY - y) >= 1) window.scrollTo({top:y, left:0, behavior:'instant'}); };
   const go = () => { if(v.anchor){ const el = document.getElementById(v.anchor.id); if(el){ to(el.getBoundingClientRect().top + window.scrollY - v.anchor.off); return; } } to(v.y || 0); };
-  const foc = () => { if(!v.focus) return; let el = null;
+  // dopo il primo ripristino, se la persona ha scritto o cliccato, i ripristini tardivi (120 ms, 700 ms) non devono più toccare cursore e fuoco:
+  // userebbero la posizione di prima e farebbero saltare il cursore a metà frase
+  let acted = false, first = true;
+  const actEv = ['keydown','input','mousedown','touchstart','paste','cut','compositionstart'], act = () => { if(!first) acted = true; };
+  actEv.forEach(e => document.addEventListener(e, act, true));
+  setTimeout(() => actEv.forEach(e => document.removeEventListener(e, act, true)), 1500);
+  const foc = () => { if(!v.focus || acted) return; let el = null;
     if(v.focus.key){ const [aid, ix] = v.focus.key.split('|'); const anc = document.getElementById(aid); if(anc) el = [...anc.querySelectorAll('input,textarea,select')][+ix]; }
     if(!el) el = [...app.querySelectorAll('input,textarea,select')][v.focus.i];
     if(el && el.tagName === v.focus.tag && !el.disabled){
@@ -16104,7 +16110,7 @@ function clViewRestore(v){
       if(window.scrollY !== y || window.scrollX !== x) window.scrollTo({top:y, left:x, behavior:'instant'}); } };
   const expd = () => (v.exp || []).forEach(id => { const e = document.getElementById(id); if(e && !e.classList.contains('expanded')) e.classList.add('expanded'); });
   const grr = () => { try{ grRefresh(); }catch(e){} };
-  expd(); det(); grr(); go(); foc();
+  expd(); det(); grr(); go(); foc(); first = false;
   // Safari (Mac, iPhone, iPad) non tiene ferma la pagina quando il contenuto sopra cambia altezza:
   // per un attimo, a ogni fotogramma, riporto il punto che si stava guardando esattamente dov'era
   const body = document.body; body.style.minHeight = Math.max(document.documentElement.scrollHeight, v.y + window.innerHeight) + 'px';
@@ -19621,7 +19627,7 @@ const RV_NOCOM = /^(Percorso sviluppato:|Altri percorsi)/i;
 function rvAnchors(root){
   const out = []; let sec = 0, h3 = '', seen = {}, cur = null, tab = null, amb = '', alleg = false;
   const mk = (el, slugLab, label, kind) => { const k0 = 'c:' + sec + '|' + RD.slug(h3) + '|' + RD.slug(slugLab); seen[k0] = (seen[k0] || 0) + 1;
-    const a = {el, end:el, key:(k0 + (seen[k0] > 1 ? '#' + seen[k0] : '')).slice(0, 160), kind, sec:(alleg ? 1 : sec), label:(kind === 'h3' ? label : (h3 ? h3 + ' › ' : (amb && !/^sviluppo /i.test(label) ? 'Sviluppo ' + amb + ' › ' : '')) + label)}; out.push(a); return a; };
+    const a = {el, end:el, key:(k0 + (seen[k0] > 1 ? '#' + seen[k0] : '')).slice(0, 160), kind, sec:(alleg ? 1 : sec), hsec:sec, label:(kind === 'h3' ? label : (h3 ? h3 + ' › ' : (amb && !/^sviluppo /i.test(label) ? 'Sviluppo ' + amb + ' › ' : '')) + label)}; out.push(a); return a; };
   Array.from(root.querySelectorAll('h2,h3,tr')).forEach(el => {
     const tx = (el.textContent || '').replace(/💬/g, '').trim();
     if(el.tagName === 'H2'){ const m = /Sezione\s+(\d)/i.exec(tx); sec = m ? +m[1] : sec; alleg = !m && /^Allegato\s*1\b/i.test(tx); h3 = ''; amb = ''; cur = null; return; }
@@ -19661,7 +19667,8 @@ async function rvDocDiff(){
   try{
     const html = await rvPrevHTML(d.prevG.id); if(!html) return;
     const root = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html').body, pa = rvAnchors(root), pm = {}; pa.forEach(a => { pm[a.key] = rvBlockText(a); });
-    const prevSec = new Set(pa.map(a => a.sec)), diff = {}; d.anchors.forEach(a => { if(a.sec < 1 || !prevSec.has(a.sec)) return; const p = pm[a.key]; if(p === undefined) diff[a.key] = 'new'; else if(p !== rvBlockText(a)) diff[a.key] = 'mod'; });
+    // il confronto tra giri usa la sezione «vera» del Word (hsec): la griglia dell'Allegato 1 conta come sezione 1 solo per mostrare le richieste, non per sapere cosa c'era nel giro precedente
+    const prevSec = new Set(pa.map(a => a.hsec)), diff = {}; d.anchors.forEach(a => { if(a.sec < 1 || !prevSec.has(a.hsec)) return; const p = pm[a.key]; if(p === undefined) diff[a.key] = 'new'; else if(p !== rvBlockText(a)) diff[a.key] = 'mod'; });
     d.diff = diff; d.pm = pm;
     d.anchors.forEach(a => { const k = diff[a.key]; if(!k) return; let r = a.el; for(;;){ if(r.tagName === 'TR'){ r.classList.add('rd-ch', k === 'new' ? 'rd-new' : 'rd-mod'); } if(r === a.end) break; r = r.nextElementSibling; if(!r) break; }
       if(a.kind === 'h3'){ a.el.classList.add('rd-ch', k === 'new' ? 'rd-new' : 'rd-mod'); let n = a.el.nextElementSibling; while(n && !/^(H2|H3|TABLE)$/.test(n.tagName)){ n.classList.add('rd-b', 'rd-ch'); n = n.nextElementSibling; } } });

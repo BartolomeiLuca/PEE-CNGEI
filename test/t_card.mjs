@@ -51,7 +51,7 @@ await P.screenshot({path:'/tmp/card_'+mode+'.png', clip:undefined}).catch(()=>{}
 async function dl(fn){ const [d] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(fn)]); return fs.readFileSync(await d.path()); }
 const xml = async b => { const z = await JSZip.loadAsync(b); return (await z.file('word/document.xml').async('string')).replace(/<[^>]+>/g, ''); };
 const t = await xml(await dl(() => exportSchedaDocx())); 
-ok(/Durata: 20|Durata: 1h30|Durata: 20′/.test(t) && /Scaletta:/.test(t) && /Gioco di apertura/.test(t) && /Materiali: Corda da 10 m/.test(t) && /Pennarelli rossi/.test(t) && /Marta/.test(t), 'il Word contiene durata, scaletta e materiali (se compilati)');
+ok(/Durata: 20|Durata: 1h30|Durata: 20′/.test(t) && /Scaletta:/.test(t) && /Gioco di apertura/.test(t) && /Materiali:\s*MaterialeChi se ne occupa\s*Corda da 10 m/.test(t) && /Pennarelli rossi/.test(t) && /Marta/.test(t), 'il Word contiene durata, scaletta e materiali in tabella (se compilati)');
 const pos = k => t.indexOf(k);
 ok(pos('Scaletta:') < pos('Lancio: ') || pos('Lancio: ') < 0 || true, 'ordine nel Word (verifico sotto)');
 const idx = t.indexOf('Gioco di apertura'); const seg = t.slice(Math.max(0, idx - 200), idx + 1500);
@@ -59,6 +59,6 @@ ok(seg.indexOf('Scaletta:') < seg.search(/Lancio: /) && seg.search(/Conclusione:
 // senza nulla compilato non compare niente
 await ev(([p, j]) => { const a = attGet(p, j); delete a.durMin; a.ax.tt2 = []; a.ax.mat = []; saveData(true); }, [p, j]);
 const t2 = await xml(await dl(() => exportSchedaDocx()));
-ok(!/Gioco di apertura|Corda da 10 m/.test(t2) && (t2.match(/Materiali: /g) || []).length <= (t.match(/Materiali: /g) || []).length - 1, 'svuotati i campi, spariscono dal Word');
+ok(!/Gioco di apertura|Corda da 10 m/.test(t2) && (t2.match(/Materiali:/g) || []).length <= (t.match(/Materiali:/g) || []).length - 1, 'svuotati i campi, spariscono dal Word');
 ok(errs.length === 0, 'nessun errore di pagina' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
 await br.close(); summary(); process.exit(0);
