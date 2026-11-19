@@ -3456,6 +3456,8 @@ function kosCovered(){ return new Set(Object.keys(obsSources())); }
 function grNewId(){ return 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function grIso(v){ v = String(v || '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''; }
 function grStart(){ const a = String((typeof scheda !== 'undefined' && scheda && scheda.annoScout) || '').match(/^(\d{4})/); let y; if(a) y = +a[1]; else { const d = new Date(); y = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1; } return y + '-09-01'; }
+// 19/11: data breve (gg/mm/aa) per le tabelle del Word; un testo libero resta com'è
+function grDateShort(v){ const i = grIso(v); if(!i) return String(v || '').trim(); return i.slice(8,10)+'/'+i.slice(5,7)+'/'+i.slice(2,4); }
 function grDateTxt(v){ const i = grIso(v); if(!i) return String(v || '').trim(); return new Date(i + 'T12:00:00').toLocaleDateString('it-IT', {day:'numeric', month:'long'}); }
 function grRows(pid){
   const pp = scheda.pp || {}; const out = []; let dirty = false;
@@ -8842,9 +8844,9 @@ function attPreDoc(x){ const o=[]; const ax=x.ax||{}; const dur=attDurTot(x)||Nu
       o.push(dPara([...(bits?[dTxt(bits+' — ',{size:18,bold:true})]:[]),dTxt(plain(r.cosa)||'—',{size:18}),...(r.chi?[dTxt(' ('+affName(r.chi)+')',{size:18,italics:true,color:GRTXT})]:[])],{after:20,indent:480})); if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; }); }
   return o; }
 function attPostDoc(x){ const M=((x.ax||{}).mat||[]).filter(r=>r&&(r.cosa||'').trim()); if(!M.length) return [];
-  // 18/11: materiali in tabella, uno sotto l'altro: il materiale e, a fianco, chi se ne occupa
-  return [dPara([dTxt('Materiali:',{size:18,bold:true,color:GRTXT})],{after:30,indent:240,keepNext:true}),
-    dGridTable(['Materiale','Chi se ne occupa'], M.map(r=>[plain(r.cosa)||'—', (r.chi?affName(r.chi):'')||'—']), [3700,2900], 17),
+  // 19/11: niente tabella dentro la cella dell'attività (in Pages le celle si fondevano e il testo si incollava): un elenco, con il materiale e, dopo il puntino, chi se ne occupa
+  return [dPara([dTxt('Materiali:',{size:18,bold:true,color:GRTXT})],{after:30,before:60,indent:240,keepNext:true}),
+    ...M.map(r=>{ const who=(r.chi?affName(r.chi):''); return dPara([dTxt(plain(r.cosa)||'—',{size:18}), ...(who?[dTxt('  ·  '+who,{size:17,italics:true,color:GRTXT})]:[])],{after:30,bullet:true}); }),
     dPara('',{size:8,after:60})]; }
 function attAdd(pidx){ const per=getAllPercorsi()[pidx]; if(!per) return; if(!per.attivita) per.attivita=[]; while(per.attivita.length<3) per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); per.attivita.push({testo:'',link:'',lancio:'',sviluppo:'',conclusione:'',vBene:'',vMigl:'',vAgg:''}); saveDataDebounced(); renderValuation(); }
 function attDel(pidx,aidx){ const per=getAllPercorsi()[pidx]; if(!per||!per.attivita||aidx>=per.attivita.length) return; const a=per.attivita[aidx]; const has=a&&['testo','lancio','sviluppo','conclusione'].some(k=>(a[k]||'').trim());
@@ -8921,9 +8923,13 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611190045'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611190925'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
+  {d:'19 novembre 2026', t:'Word più ordinato, con i colori degli ambiti', i:[
+    '<b>Colori PEE</b>: nel Word, le tabelle e i titoli che parlano degli ambiti usano i colori del PEE (Personale ocra, Comunitario rosso, Spirituale blu); il resto resta nel colore della Branca.',
+    '<b>Materiali</b>: nelle attività sono un elenco, con a fianco chi se ne occupa (prima la tabella si rompeva in Pages). Tra Lancio, Sviluppo e Conclusione c’è di nuovo uno stacco.',
+    '<b>Occasioni osservative</b>: le date sono nel formato gg/mm/aa e una nota lunga va su una riga a tutta larghezza, senza allungare la tabella.']},
   {d:'17 novembre 2026', t:'Nuova versione: account, progetti, Progetto Personale, 51 video', i:[
     '<b>Accesso e profilo</b>: si lavora con un account (il lavoro fatto senza account si porta nell’archivio con «Accedi»). «I tuoi progetti» mostra i progetti tuoi e quelli condivisi con te, con il tuo ruolo: Titolare, Co-titolare, Collaboratore, Lettore.',
     '<b>Progetto Personale</b> completo (Sezioni 1–5, check-list, invii) e <b>revisione</b> a turni con il Tutor o l’ICdF; <b>Programmazione di Unità</b> con dashboard, menu laterale e barra in basso su telefono.',
@@ -11676,7 +11682,7 @@ async function axDocx(p,j){ try{ showToast('Preparo la scheda…'); await needDo
     if(P) kvP.push(['Percorso',({P:'Personale',C:'Comunitario',S:'Spirituale'}[P.id[0]]||'')+' · '+P.id+' '+P.name]);
     if(X.o.length) kvP.push([X.o.length>1?'Obiettivi del percorso':'Obiettivo del percorso',X.o.map(o=>dPara([dTxt('Obiettivo '+(o.k+1)+' — ',{size:18,bold:true}),dTxt(plain(o.t),{size:18})],{after:40}))]);
     if((O.i||[]).length&&P) kvP.push(['Indicatori su cui insiste questa attività',(O.i||[]).map(k=>dPara(plain(idrTxt(P.id,k)),{size:18,after:40}))]);
-    if(kvP.length){ ch.push(dH3('Percorso, obiettivo e indicatori')); ch.push(dKV(kvP)); } }
+    if(kvP.length){ ch.push(dH3a('Percorso, obiettivo e indicatori', P?P.id[0]:'')); ch.push(dKVa(P?P.id[0]:'', kvP)); } }
   // Svolgimento
   const fasi=['lancio','sviluppo','conclusione'].filter(k=>T_(a[k])); if(fasi.length){ ch.push(dH3('Svolgimento')); fasi.forEach((k,q)=>{ ch.push(dPara(k[0].toUpperCase()+k.slice(1),{size:19,bold:true,color:GRTXT,before:q?0:20,after:30,keepNext:true})); ch.push(...dMulti(a[k])); if(q<fasi.length-1) ch.push(dPara('',{size:14,after:100})); }); }
   const S=(x.tt2||[]).filter(r=>(r.cosa||'').trim()||r.dur); if(S.length){ ch.push(dH3('Scaletta')); let t=axMin(((x.tt2||[])[0]||{}).start); const rows=[]; (x.tt2||[]).forEach(r=>{ if(!((r.cosa||'').trim()||r.dur)) return; rows.push([t!=null?axHM(t):'—', axDurTxt(r.dur)||'—', plain(r.cosa)||'—', r.chi||'—']); if(t!=null) t=Number(r.dur)?t+Number(r.dur):null; }); ch.push(dGridTable(['Ora','Durata','Cosa succede','Chi conduce'],rows,[1300,1200,4938,2200])); }
@@ -14250,6 +14256,11 @@ function dKV(rows){
   rows.forEach(([l, v]) => dSplitRows(l, v, w).forEach(r => out.push(r)));
   return dTable(out, w, true);
 }
+// 19/11: colori PEE degli ambiti (Personale ocra, Comunitario rosso, Spirituale blu) per le tabelle e i titoli che parlano di ambiti; il resto resta nel colore della Branca
+const AMB_PALE = {P:'FFF8E1', C:'FCECEC', S:'EAF1FC'}, AMB_BDR = {P:'E2C35C', C:'D98A8A', S:'86A9E8'}, AMB_ON = {P:'1A1800', C:'FFFFFF', S:'FFFFFF'};
+function dKVa(a, rows){ if(!AMB_HEX[a]) return dKV(rows); const w = [2400, CW-2400]; const out = [];
+  rows.forEach(([l, v]) => dSplitRows(l, v, w, {fill:AMB_PALE[a], border:AMB_BDR[a]}).forEach(r => out.push(r))); return dTable(out, w, true); }
+function dH3a(t, a, o={}){ return AMB_HEX[a] ? dH3(t, Object.assign({color:AMB_HEX[a], borderLeft:AMB_HEX[a]}, o)) : dH3(t, o); }
 // riga percorso con barra a 10 segmenti
 function dBarRows(items){
   const D = dxLib();
@@ -14606,8 +14617,14 @@ async function exportPPDocx(mode){
   ch.push(dH3('Osservazione con il KOS: occasioni osservative'));
   { const kr=occKosRows(); const man=(pp.occMan||[]).filter(r=>T_(r.att)||OCC_COLS.some(c=>T_(r[c[0]]))||(r.perc||[]).length);
     const pc=ids=>(ids||[]).slice().sort((a,b)=>'PCS'.indexOf(a[0])-'PCS'.indexOf(b[0])||(+a.slice(1))-(+b.slice(1))).join(', ');
-    const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', grDateTxt(o.data), o.ctx, occChiTxt(o.chi), o.note, pc(a.f)]; }).concat(man.map(r=>[r.att,grDateTxt(r.data),r.ctx,occChiTxt(r.chi),r.note,pc(r.perc)]));
-    if(rws.length){ const wo=[2300,950,1250,1400,1500]; wo.push(CW-wo.reduce((a,b)=>a+b,0)); ch.push(dGridTable(['Attività / incontro','Data','Contesto','Chi ha osservato','Note','Percorsi osservati'], rws, wo, 17)); }
+    const rws=kr.map(a=>{ const o=(pp.occKos||{})[a.key]||{}; return [a.n+' (KOS 2.0, '+a.incT.split(' · ')[0]+')', grDateShort(o.data), o.ctx, occChiTxt(o.chi), o.note, pc(a.f)]; }).concat(man.map(r=>[r.att,grDateShort(r.data),r.ctx,occChiTxt(r.chi),r.note,pc(r.perc)]));
+    if(rws.length){ const wo=[2300,1150,1300,1400,1500]; wo.push(CW-wo.reduce((a,b)=>a+b,0));
+      // 19/11: una nota lunga allungava tutta la riga a colonne strette: sotto la riga compare una riga a tutta larghezza (come per gli adulti in staff); le note brevi restano nella colonna
+      const Dx=dxLib(), hd=['Attività / incontro','Data','Contesto','Chi ha osservato','Note','Percorsi osservati'], NL=80, bodyO=[];
+      rws.forEach(r=>{ const lg=plain(r[4]||'').trim().length>NL;
+        bodyO.push(r.map((v,i)=>dCell(lg&&i===4?dPara([dTxt('vedi sotto',{size:17,italics:true,color:'777777'})],{after:0}):dMulti(v,{size:17}),{w:wo[i],vAlign:Dx.VerticalAlign.TOP})));
+        if(lg) bodyO.push([dCell([dPara([dTxt('Note: ',{size:17,bold:true,color:GRTXT})],{after:20}), ...dMulti(r[4],{size:17})],{w:CW,span:6,fill:PALE,vAlign:Dx.VerticalAlign.TOP})]); });
+      ch.push(dTable([hd.map((h,i)=>dCell(dPara(h,{size:17,bold:true,color:ONG,after:0}),{w:wo[i],fill:GREEN,border:GREEN})), ...bodyO], wo, true)); }
     else if(T_(pp.occasioni)) ch.push(...dMulti(pp.occasioni));
     else ch.push(dNote('Nessuna occasione osservativa indicata.')); }
   { const kd=(typeof kosActs==='function')?kosActs().filter(a=>(pp.kosDone||{})[a.key]):[];
@@ -14631,10 +14648,10 @@ async function exportPPDocx(mode){
   ]];
   ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
     rows1.push([
-      dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,color:AMB_HEX[a],after:0}),{w:w1[0],vAlign:dxLib().VerticalAlign.TOP}),
-      dCell(dMulti(o.positivi,{size:18}),{w:w1[1],vAlign:dxLib().VerticalAlign.TOP}),
-      dCell(dMulti(o.necessita,{size:18}),{w:w1[2],vAlign:dxLib().VerticalAlign.TOP}),
-      dCell(dMulti(o.singoli,{size:18}),{w:w1[3],vAlign:dxLib().VerticalAlign.TOP})
+      dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,after:0}),{w:w1[0],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP}),
+      dCell(dMulti(o.positivi,{size:18}),{w:w1[1],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP}),
+      dCell(dMulti(o.necessita,{size:18}),{w:w1[2],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP}),
+      dCell(dMulti(o.singoli,{size:18}),{w:w1[3],fill:AMB_PALE[a],border:AMB_BDR[a],vAlign:dxLib().VerticalAlign.TOP})
     ]);
   });
   // 10/11: con testi lunghi le tre colonne strette diventano torri di righe corte (in Pages e Google Documenti si spezzano male): ogni ambito diventa un blocco a tutta larghezza (etichetta + testo)
@@ -14642,9 +14659,9 @@ async function exportPPDocx(mode){
   if(longTxt){
     const w2 = [2400, CW-2400]; const rows2 = [];
     ['P','C','S'].forEach(a => { const o = scheda.osservazione[a] || {};
-      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,color:ONG,after:0}),{w:CW,span:2,fill:GREEN,border:GREEN})]);
+      rows2.push([dCell(dPara('Sviluppo '+AMB_LABEL[a],{size:18,bold:true,after:0}),{w:CW,span:2,fill:AMB_PALE[a],border:AMB_BDR[a]})]);
       [['Aspetti positivi emersi',o.positivi],['Necessità educative',o.necessita],['Necessità educative specifiche del singolo/gruppetto',o.singoli]].forEach(([l,v]) => {
-        dSplitRows(l, dMulti(v,{size:18}), w2).forEach(r => rows2.push(r)); }); });
+        dSplitRows(l, dMulti(v,{size:18}), w2, {fill:AMB_PALE[a], border:AMB_BDR[a]}).forEach(r => rows2.push(r)); }); });
     ch.push(dTable(rows2, w2));
   } else ch.push(dTable(rows1, w1));
   ch.push(dH3('Priorizzazione delle necessità educative'));
@@ -14663,8 +14680,8 @@ async function exportPPDocx(mode){
     const a = id[0]; const pr = scheda.priorita[i] || {};
     const ob = (pr.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const idr = (pr.idr||[]).map(j=>idrTxtTag(id,j)).filter(Boolean);
-    ch.push(dH3(`Priorità ${i+1}`));
-    ch.push(dKV([
+    ch.push(dH3a(`Priorità ${i+1}`, a));
+    ch.push(dKVa(a, [
       ['Ambito di Sviluppo', AMB_LABEL[a]],
       ['Necessità educativa', dMulti(pr.necessita)],
       ['Percorso', `${a}${DB[a].findIndex(x=>x.id===id)+1} — ${p.name}`],
@@ -14679,8 +14696,8 @@ async function exportPPDocx(mode){
     const p = allP.find(x=>x.id===per.percorsoId); if(!p) return; const a = per.percorsoId[0];
     const ob = (per.obiettiviExtra||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const idr = (per.idrSelezionati||[]).map(j=>idrTxtTag(per.percorsoId,j)).filter(Boolean);
-    ch.push(dH3(`Priorità aggiuntiva ${k+1}`));
-    ch.push(dKV([
+    ch.push(dH3a(`Priorità aggiuntiva ${k+1}`, a));
+    ch.push(dKVa(a, [
       ['Ambito di Sviluppo', AMB_LABEL[a]],
       ['Necessità educativa', dMulti(per.necessita)],
       ['Percorso', `${a}${DB[a].findIndex(x=>x.id===per.percorsoId)+1} — ${p.name}`],
@@ -14700,7 +14717,7 @@ async function exportPPDocx(mode){
     const mainP = perc.filter(x=>x.percorsoId===chPid), rest = perc.filter(x=>x.percorsoId!==chPid).sort((x,y)=>'PCS'.indexOf(x.percorsoId[0])-'PCS'.indexOf(y.percorsoId[0]));
     perc = mainP.concat(rest); if(mainP.length && rest.length) altriDa = mainP.length;
     const pC = allP.find(x=>x.id===chPid); const ciP = sez3Chosen(priSel().slice(0,3).length);
-    if(pC) ch.push(dTable([[dCell(dPara([dTxt('Percorso sviluppato: ',{size:19,bold:true,color:GRTXT}), dTxt(`Priorità ${ciP+1} · ${AMB_LABEL[chPid[0]]} · ${chPid[0]}${DB[chPid[0]].findIndex(x=>x.id===chPid)+1} ${pC.name}`,{size:19,bold:true})],{after:0}),{w:CW,fill:PALE,border:GREEN})]],[CW],true));
+    if(pC) ch.push(dTable([[dCell(dPara([dTxt('Percorso sviluppato: ',{size:19,bold:true,color:AMB_HEX[chPid[0]]||GRTXT}), dTxt(`Priorità ${ciP+1} · ${AMB_LABEL[chPid[0]]} · ${chPid[0]}${DB[chPid[0]].findIndex(x=>x.id===chPid)+1} ${pC.name}`,{size:19,bold:true})],{after:0}),{w:CW,fill:AMB_PALE[chPid[0]]||PALE,border:AMB_HEX[chPid[0]]||GREEN})]],[CW],true));
     ch.push(dPara('',{size:4,after:60}));
   }
   const clKeys = ['nuova','stimolante','progressiva','costruita','rielaborativa','esperienziale','educativa'];
@@ -14719,8 +14736,8 @@ async function exportPPDocx(mode){
       ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[]),
     ]) : '—';
     if(i===altriDa){ ch.push(dH3('Altri percorsi (accennati)')); ch.push(dPara('Le Linee Guida chiedono di sviluppare un solo percorso: questi sono gli altri, solo accennati.',{size:17,italics:true,color:'777777',after:80})); }
-    ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${PPm&&chPid&&pid===chPid?' (percorso sviluppato)':''}`, i>=altriDa&&altriDa>=0?{size:20}:{}));
-    ch.push(dKV([
+    ch.push(dH3a(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}${PPm&&chPid&&pid===chPid?' (percorso sviluppato)':''}`, a, i>=altriDa&&altriDa>=0?{size:20}:{}));
+    ch.push(dKVa(a, [
       ['Obiettivo/i', ob.length ? ob.map(o=>dPara(plain(o),{size:19,after:40})) : '—'],
       ['Strumenti del metodo', (()=>{ const l=strumList(per); const out=l.map(o=>dPara(o.s,{size:18,after:30,bullet:true})); if(T_(per.strumenti)) out.push(dPara(plain(per.strumenti),{size:18,after:30})); return out.length?out:'—'; })()],
       ['Tempistiche', percTempoTxt(per)],
@@ -14728,7 +14745,7 @@ async function exportPPDocx(mode){
       ...(acts.length ? acts.map(({x,j}) => [`Attività ${attNum(per,j)}`, [
         dPara([dTxt(`${plain(x.testo)||'Attività '+attNum(per,j)}`,{size:19,bold:true}), ...(attTipiLabel(x).length?[dTxt('  ·  '+attTipiLabel(x).join(', '),{size:17,italics:true,color:GRTXT})]:[])],{before:0,after:40}),
         ...attPreDoc(x),
-        ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap(k => rtParas(plain(x[k])).map(({l,gap},q,AA) => dPara(q===0?[dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(l,{size:18})]:dLinkRuns(l,{size:18}),{after:(gap && q<AA.length-1)?120:30,indent:240}))),
+        ...['lancio','sviluppo','conclusione'].filter(k=>T_(x[k])).flatMap((k,pi) => rtParas(plain(x[k])).map(({l,gap},q,AA) => dPara(q===0?[dTxt(k[0].toUpperCase()+k.slice(1)+': ',{size:18,bold:true,color:GRTXT}), ...dLinkRuns(l,{size:18})]:dLinkRuns(l,{size:18}),{before:(q===0&&pi>0)?160:0,after:(gap && q<AA.length-1)?120:30,indent:240}))),
         ...attPostDoc(x),
         ...(attLinks(x).some(l=>(l.u||'').trim())?[dPara([dTxt('Allegati e link:',{size:18,bold:true,color:GRTXT})],{after:20,indent:240}), ...attLinksDoc(x,{indent:480})]:[])
       ]]) : [['Attività', attCell]]),
@@ -14747,10 +14764,10 @@ async function exportPPDocx(mode){
       const p = allP.find(x=>x.id===per.percorsoId); if(!p) return; if(PPm && ppOptPid(per.percorsoId) && (scheda.ppOptHid||{})[per.percorsoId]) return;
       const acts = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j})).filter(o=>T_(o.x.vBene)||T_(o.x.vMigl)||T_(o.x.vAgg)||verParti(o.x).some(q=>T_((o.x.vRef||{})[q.k]))));
       if(!acts.length) return; any4 = true;
-      ch.push(dH3(`Percorso ${i+1} — ${p.name}`));
+      ch.push(dH3a(`Percorso ${i+1} — ${p.name}`, per.percorsoId[0]));
       acts.forEach(({x,j}) => {
         ch.push(dPara(`Attività ${attNum(per,j)}${T_(x.testo)?' — '+plain(x.testo):''}`,{size:19,bold:true,after:40,before:80,keepNext:true}));
-        ch.push(dKV([['Cosa è andato bene', dMulti(x.vBene)], ['Cosa è da migliorare', dMulti(x.vMigl)], ['Aggiustamenti necessari', dMulti(x.vAgg)]]));
+        ch.push(dKVa(per.percorsoId[0], [['Cosa è andato bene', dMulti(x.vBene)], ['Cosa è da migliorare', dMulti(x.vMigl)], ['Aggiustamenti necessari', dMulti(x.vAgg)]]));
       });
     });
     if(!any4) ch.push(dNote('Verifica delle attività non ancora compilata.'));
@@ -14765,14 +14782,14 @@ async function exportPPDocx(mode){
       const pid = per.percorsoId; if(seen.has(pid)) return; seen.add(pid);
       const p = allP.find(x=>x.id===pid); if(!p) return;
       const idrIdx = typeof per.prioritaIdx==='number' ? (scheda.priorita[per.prioritaIdx]?.idr||[]) : (per.idrSelezionati||[]);
-      ch.push(dH3(`${typeof per.prioritaIdx==='number'?'Priorità '+(per.prioritaIdx+1):'Percorso'} — ${AMB_LABEL[pid[0]]} · ${p.name}`));
+      ch.push(dH3a(`${typeof per.prioritaIdx==='number'?'Priorità '+(per.prioritaIdx+1):'Percorso'} — ${AMB_LABEL[pid[0]]} · ${p.name}`, pid[0]));
       if(idrIdx.length){
         any5 = true;
         const w5 = [CW-4400, 1500, 2900];
         const r5 = [[
-          dCell(dPara('Indicatore di risultato',{size:17,bold:true,color:ONG,after:0}),{w:w5[0],fill:GREEN,border:GREEN}),
-          dCell(dPara('Comportamento',{size:17,bold:true,color:ONG,after:0,align:'center'}),{w:w5[1],fill:GREEN,border:GREEN}),
-          dCell(dPara('Osservazioni qualitative',{size:17,bold:true,color:ONG,after:0}),{w:w5[2],fill:GREEN,border:GREEN})
+          dCell(dPara('Indicatore di risultato',{size:17,bold:true,color:AMB_ON[pid[0]]||ONG,after:0}),{w:w5[0],fill:AMB_HEX[pid[0]]||GREEN,border:AMB_HEX[pid[0]]||GREEN}),
+          dCell(dPara('Comportamento',{size:17,bold:true,color:AMB_ON[pid[0]]||ONG,after:0,align:'center'}),{w:w5[1],fill:AMB_HEX[pid[0]]||GREEN,border:AMB_HEX[pid[0]]||GREEN}),
+          dCell(dPara('Osservazioni qualitative',{size:17,bold:true,color:AMB_ON[pid[0]]||ONG,after:0}),{w:w5[2],fill:AMB_HEX[pid[0]]||GREEN,border:AMB_HEX[pid[0]]||GREEN})
         ]];
         idrIdx.forEach(j => { const c = (scheda.idrComp?.[pid]?.[j]) || {};
           r5.push([
@@ -14886,7 +14903,7 @@ async function exportSchedaDocxLegacy(){
     const o = scheda.osservazione?.[a] || {};
     if(o.positivi || o.necessita){
       ch.push(dPara('',{after:60}));
-      ch.push(dKV([[T.positivi, plain(o.positivi)||'—'], [T.necessitaAmb, plain(o.necessita)||'—']]));
+      ch.push(dKVa(a, [[T.positivi, plain(o.positivi)||'—'], [T.necessitaAmb, plain(o.necessita)||'—']]));
     }
   });
   ch.push(dPara(`Scala 1–10 · 1–2 Non ancora emerso · 3–4 Tracce iniziali · 5–6 In sviluppo · 7–8 Presente · 9–10 Consolidato`, {size:15, italics:true, color:'888888', before:100}));
@@ -14900,8 +14917,8 @@ async function exportSchedaDocxLegacy(){
     const a = id[0]; const pr = scheda.priorita[i] || {};
     const ob = (pr.obiettivi||[]).map(j=>p.obiettivi?.[j]).filter(Boolean);
     const idr = (pr.idr||[]).map(j=>p.idr?.[j]).filter(Boolean);
-    ch.push(dH3(`Priorità ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===id)+1} ${p.name}`));
-    ch.push(dKV([
+    ch.push(dH3a(`Priorità ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===id)+1} ${p.name}`, a));
+    ch.push(dKVa(a, [
       [T.necessita, plain(pr.necessita)||'—'],
       ['Obiettivi selezionati', ob.length ? ob.map((o,k)=>dPara(`${k+1}. ${plain(o)}`,{size:19,after:40})) : '—'],
       ['IDR da valutare', idr.length ? idr.map(r=>dPara(plain(r),{size:19,after:40,bullet:true})) : '—']
@@ -14919,8 +14936,8 @@ async function exportSchedaDocxLegacy(){
     const idr = per.idrSelezionati?.length ? per.idrSelezionati.map(j=>p.idr?.[j]).filter(Boolean) : (p.idr||[]);
     const cl = per.checklist || {};
     const att = attSorted(per,(per.attivita||[]).map((x,j)=>({x,j}))).map(o=>o.x).filter(x=>x.testo);
-    ch.push(dH3(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}`));
-    ch.push(dKV([
+    ch.push(dH3a(`Percorso ${i+1} — ${AMB_LABEL[a]} · ${a}${DB[a].findIndex(x=>x.id===pid)+1} ${p.name}`, a));
+    ch.push(dKVa(a, [
       [T.necessita, plain(per.necessita)||'—'],
       ['Obiettivo', plain(per.obiettivo)||'—'],
       ['Indicatori di risultato', idr.length ? idr.map(r=>dPara(plain(r),{size:19,after:40,bullet:true})) : '—'],
@@ -20837,7 +20854,7 @@ function annoSum(it){
   Object.keys(ic).forEach(pid => Object.keys(ic[pid] || {}).forEach(j => { const c = (ic[pid][j] || {}).c; if(c && idr[c] !== undefined) idr[c]++; }));
   const DBx = (() => { try{ return Object.values(DB).flat(); }catch(e){ return []; } })();
   const obs0 = it.data.obs || {}, ri = sc.riobs || {};
-  const pv = per.map(p => { const a = Number(obs0[p.pid]) || 0, b = Number(ri[p.pid]) || 0; return {nm:p.nm, a, b, vc:String((sc.valCompl || {})[p.pid] || '').trim(), n:p.acts.length, ok:p.acts.filter(x => x.st === 'ok').length, da:p.acts.filter(x => x.st === 'ver').length}; });
+  const pv = per.map(p => { const a = Number(obs0[p.pid]) || 0, b = Number(ri[p.pid]) || 0; return {pid:p.pid, nm:p.nm, a, b, vc:String((sc.valCompl || {})[p.pid] || '').trim(), n:p.acts.length, ok:p.acts.filter(x => x.st === 'ok').length, da:p.acts.filter(x => x.st === 'ver').length}; });
   return {idr, pv};
 }
 // salvataggio degli strumenti dell'anno: controlla l'ora dell'ultima versione letta; se un altro dispositivo ha salvato nel frattempo, unisce le due versioni invece di sovrascrivere
@@ -20887,7 +20904,7 @@ window.exportAnnoDocx = async function(){
   const ch = dTitleBlock('Verifica dell’anno scout', 'Anno scout ' + (scheda.annoScout || '') + ' · ' + items.length + (items.length === 1 ? ' ciclo' : ' cicli'));
   items.forEach(it => { const sm = annoSum(it); ch.push(dPara(it.ci.nome + (it.ci.txt ? ' · ' + it.ci.txt : ''), {heading:2, size:26, bold:true, color:GRTXT, before:240, after:100, keepNext:true}));
     if(!sm.pv.length) ch.push(dPara('Nessun percorso in questo ciclo.', {size:19, color:'777777'}));
-    sm.pv.forEach(p => { ch.push(dH3(p.nm)); ch.push(dKV([['Dal punto di partenza a oggi', (p.a || '—') + ' → ' + (p.b || '—')], ['Attività', p.n + ' · ' + p.ok + ' verificate'], ['Valutazione complessiva', p.vc || '—']])); });
+    sm.pv.forEach(p => { const pa = String(p.pid || '')[0]; ch.push(dH3a(p.nm, pa)); ch.push(dKVa(pa, [['Dal punto di partenza a oggi', (p.a || '—') + ' → ' + (p.b || '—')], ['Attività', p.n + ' · ' + p.ok + ' verificate'], ['Valutazione complessiva', p.vc || '—']])); });
     const tot = sm.idr.spontaneo + sm.idr.stimolato + sm.idr.no; ch.push(dPara(tot ? 'Indicatori di Risultato: ' + sm.idr.spontaneo + ' spontanei, ' + sm.idr.stimolato + ' stimolati, ' + sm.idr.no + ' non adottati.' : 'Indicatori di Risultato: non ancora valutati.', {size:18, italics:true, color:'555555'})); });
   ch.push(dPara('La riflessione dell’anno', {heading:2, size:26, bold:true, color:GRTXT, before:300, after:100, keepNext:true}));
   VER_Q.forEach(([k, t]) => { ch.push(dH3(t)); dMulti((R.data.ver || {})[k] || '').forEach(p => ch.push(p)); });
