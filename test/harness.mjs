@@ -111,7 +111,7 @@ export class FakeDB {
     const q = req.q, T = this.t[q.table]; if(!T) return this.err('42P01', 'relation "' + q.table + '" does not exist');
     if(!u && q.table !== 'pee_gruppi') return this.err('42501', 'permission denied');
     const vis = r => this.canSee(uid, q.table, r);
-    const cols = c => { if(q.table === 'pee_membri' && /ruolo|visto_il/.test(c||'') && this.noRoles) return 'x'; if(q.table === 'pee_membri' && /email_prima/.test(c||'') && !this.sql13) return 'x'; return null; };
+    const cols = c => { if(q.table === 'pee_membri' && /ruolo|visto_il/.test(c||'') && this.noRoles) return 'x'; if(q.table === 'pee_membri' && /email_prima/.test(c||'') && !this.sql13) return 'x'; if(q.table === 'pee_suggerimenti' && /risposta/.test(c||'') && this.sqlRisp === false) return 'x'; return null; };
     if(q.op === 'select'){
       if(cols(q.cols)) return this.err('42703', 'column does not exist');
       let rows = T.filter(r => vis(r) && this.match(r, q.filters));
@@ -175,7 +175,15 @@ export class FakeDB {
         if(q.table === 'pee_membri' && q.vals.ruolo && !this.ruoloAmmesso(q.vals.ruolo)) return this.err('23514', 'new row for relation "pee_membri" violates check constraint "pee_membri_ruolo_check"');
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare' && (!q.vals.ruolo || ['lettore','collaboratore'].includes(q.vals.ruolo)));
         if(q.table === 'pee_giri_rev'){ const ow = this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid); ok = (r.user_id === uid && !('recepita' in q.vals)) || (ow && Object.keys(q.vals).every(k => k === 'recepita' || k === 'recepita_il')); }
-        if(q.table === 'pee_suggerimenti') ok = this.isOwner(uid, r.archivio_id) || (this.sql13 && r.dest && r.dest === u.email && Object.keys(q.vals).every(k => k === 'stato'));
+        if(q.table === 'pee_suggerimenti'){ ok = this.isOwner(uid, r.archivio_id) || (this.sql13 && r.dest && r.dest === u.email && Object.keys(q.vals).every(k => k === 'stato'));
+          const kk = Object.keys(q.vals), rk = kk.some(k => /^risposta/.test(k));
+          if(rk && this.sqlRisp === false) return this.err('42703', 'column "risposta" of relation "pee_suggerimenti" does not exist');
+          if(!ok && rk && this.isCot(uid, r.archivio_id) && kk.every(k => ['stato','risposta','risposta_da'].includes(k))) ok = true;
+          if(ok && rk){
+            if(kk.some(k => ['risposta_il'].includes(k))) return this.err('P0001', 'La risposta si cambia scrivendo il testo della risposta');
+            if(q.vals.risposta != null && (String(q.vals.risposta).length < 1 || String(q.vals.risposta).length > 2000)) return this.err('23514', 'new row violates check constraint "pee_sugg_risposta_check"');
+            if('risposta' in q.vals){ q.vals = Object.assign({}, q.vals, {risposta_il: q.vals.risposta == null ? null : now()}); if(q.vals.risposta == null) q.vals.risposta_da = null; }
+            else return this.err('P0001', 'La risposta si cambia scrivendo il testo della risposta'); } }
         if(q.table === 'pee_archivio_nazionale') ok = u.email === 'luca.bartolomei@cngei.it';
         if(!ok) continue;
         const old = Object.assign({}, r);

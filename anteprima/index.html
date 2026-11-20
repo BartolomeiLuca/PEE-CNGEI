@@ -144,7 +144,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);f
 .fonti-g>summary{cursor:pointer;padding:9px 12px;font-size:12.5px;font-weight:800;color:var(--ink);list-style:none;display:flex;align-items:center}.fonti-g>summary::after{content:'▸';margin-left:auto;transition:transform .2s}.fonti-g[open]>summary::after{transform:rotate(90deg)}
 .fonti-d{margin:0 12px 6px;font-size:12px;color:var(--ink-mid)}.fonti-g ul{margin:0 0 10px;padding:0 12px 0 28px}.fonti-g li{margin:7px 0;font-size:12px;line-height:1.5;color:var(--ink)}.fonti-g li span{color:var(--ink-mid);font-size:12px}
 .modal-overlay>div:has(.sch){max-width:660px!important}
-.att-how{font-style:normal;font-weight:700;color:var(--green);text-decoration:none;white-space:nowrap}.att-how:hover{text-decoration:underline}
+.att-how{font-style:normal;font-weight:700;color:var(--green);text-decoration:none;white-space:nowrap}.att-how:hover{text-decoration:underline}.st-note .att-how{white-space:normal;text-align:left;overflow-wrap:anywhere}
 .sch{font-size:13px;line-height:1.6;color:var(--ink)}.sch-t{font-size:17px;font-weight:800;margin:0 24px 2px 0}.sch-m{font-size:12px;color:var(--ink-mid);margin-bottom:10px}
 .sch-s{margin:14px 0 4px;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}.sch p{margin:0 0 6px}.sch ul,.sch ol{margin:0 0 4px;padding-left:20px}.sch li{margin:4px 0}
 .sch-box{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.sch-box>div{background:var(--bg);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:9px 11px;font-size:12px}@media(max-width:560px){.sch-box{grid-template-columns:1fr}}
@@ -1060,6 +1060,11 @@ body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .sg-box textarea{min-height:70px;resize:vertical}
 .sg-note{font-size:12px;color:var(--ink);margin:8px 0 0;font-weight:600}
 .sg-st{font-size:12px;color:var(--ink-light);font-weight:600}
+.sg-r{margin-top:9px;padding:9px 11px;background:var(--green-pale);border-left:3px solid var(--green);border-radius:0 8px 8px 0}
+.sgp{margin:22px auto 90px;max-width:900px;padding:14px 16px;background:#fff;border:1.5px solid var(--green);border-radius:12px;font-family:'Montserrat',sans-serif}
+.sgp-t{font:800 15px 'Montserrat',sans-serif;color:var(--green);margin:0 0 3px}
+.sgp-s{font-size:12.5px;color:var(--ink);margin:0 0 6px;line-height:1.5}
+@media print{.sgp{display:none!important}}
 #ro-bar{background:none;border:0;border-top:1px solid var(--border-light);padding:14px 16px 24px;margin-top:24px;font:500 12px 'Montserrat',sans-serif;color:var(--ink-faint);text-align:center;line-height:1.5}
 #ro-bar .grow{flex:1;min-width:220px;line-height:1.5}
 #ro-bar button{font:700 12px 'Montserrat',sans-serif;border:1.5px solid #26364f;background:#fff;color:#26364f;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
@@ -9040,7 +9045,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611201735'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611201910'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -16079,8 +16084,20 @@ async function dbShared(){
   return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id&&!(x.meta&&x.meta.cest)); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email, ruolo:(roles && (clEditRole(r.ruolo) || r.ruolo === 'commissario')) ? r.ruolo : 'lettore', nuovo:!!(roles && !r.visto_il)} : null; }).filter(Boolean);
 }
 async function dbSgList(id){
-  const {data, error} = await CL.sb.from('pee_suggerimenti').select('id,percorso,autore_nome,testo,stato,created_at,user_id').eq('archivio_id', id).order('created_at');
+  const base = 'id,percorso,autore_nome,testo,stato,created_at,user_id';
+  if(CL._sgRep !== false){
+    const r = await CL.sb.from('pee_suggerimenti').select(base + ',risposta,risposta_da,risposta_il').eq('archivio_id', id).order('created_at');
+    if(!r.error){ CL._sgRep = true; return r.data||[]; }
+    // colonne della risposta non ancora aggiunte (SQL del 20 novembre, secondo script): si lavora come prima, senza risposte
+    if(!(r.error.code === '42703' || /risposta/i.test(String(r.error.message||'')))) throw r.error;
+    CL._sgRep = false;
+  }
+  const {data, error} = await CL.sb.from('pee_suggerimenti').select(base).eq('archivio_id', id).order('created_at');
   if(error) throw error; return data||[];
+}
+async function dbSgReply(id, testo, nome){
+  const o = testo ? {risposta:testo, risposta_da:nome, stato:'letto'} : {risposta:null};
+  const {error} = await CL.sb.from('pee_suggerimenti').update(o).eq('id', id); if(error) throw error;
 }
 async function dbSgAdd(id, percorso, nome, testo){
   const {error} = await CL.sb.from('pee_suggerimenti').insert({archivio_id:id, percorso, autore_nome:nome, testo});
@@ -16144,7 +16161,7 @@ function roInit(){
   }
   if(!app._rol){
     app._rol = true; let t;
-    const lock = () => app.querySelectorAll('select,input,textarea').forEach(e => { if(!e.closest('.sg-wrap') && !e.closest('.sg13')) e.disabled = true; });
+    const lock = () => app.querySelectorAll('select,input,textarea').forEach(e => { if(!e.closest('.sg-wrap') && !e.closest('.sg13') && !e.closest('.sgp')) e.disabled = true; });
     new MutationObserver(() => { clearTimeout(t); t = setTimeout(lock, 100); }).observe(app, {childList:true, subtree:true});
     lock();
   }
@@ -16777,7 +16794,7 @@ function edLock(){
     edBanner(self, show);
   });
   const allowCollab = chain => chain.some(x => x.who && affIsMe(x.who));
-  const special = e => e.closest('.sg-wrap,.sg13,#cl-ov,#ed-bar,.ed-aff,#g-modal,#oss-panel,.mv-mine-w,.tip-grid,.tip-leg,.cap-dets,.cap-passi,.cap-amb') || /^(tipSet|tipPop|capSet|shGrpPage|shTip)\b/.test(e.getAttribute('onclick') || '') || e.classList.contains('mv-mine') || !!e.closest('.gr-box') || (e.tagName === 'TEXTAREA' && e.closest('.gr-f') && /grSet\('[^']*','[^']*','(pos|mig|note)'/.test(e.getAttribute('oninput') || ''));
+  const special = e => e.closest('.sg-wrap,.sg13,.sgp,#cl-ov,#ed-bar,.ed-aff,#g-modal,#oss-panel,.mv-mine-w,.tip-grid,.tip-leg,.cap-dets,.cap-passi,.cap-amb') || /^(tipSet|tipPop|capSet|shGrpPage|shTip)\b/.test(e.getAttribute('onclick') || '') || e.classList.contains('mv-mine') || !!e.closest('.gr-box') || (e.tagName === 'TEXTAREA' && e.closest('.gr-f') && /grSet\('[^']*','[^']*','(pos|mig|note)'/.test(e.getAttribute('oninput') || ''));
   app.querySelectorAll('select,input,textarea,button').forEach(e => {
     if(special(e)) return;
     const isBtn = e.tagName === 'BUTTON';
@@ -16888,11 +16905,17 @@ function clInvOpen(id){ document.querySelectorAll('.cl-invstrip').forEach(e => e
 window.edInit = edInit;
 
 // ── suggerimenti dei colleghi (solo testo, con il nome di chi li scrive) ──
-const SG = {list:[], open:{}, form:null, draft:{}, announced:0};
+const SG = {list:[], open:{}, form:null, draft:{}, announced:0, rep:null};
 async function sgLoad(quiet){
   if(!CL.sb || !CL.user || !CL.ctx || MODE_NOT_GIOVANI()) return;
   try{
     SG.list = await dbSgList(CL.ctx.id); sgRender();
+    // il Commissario viene avvisato (una volta sola per risposta) quando il Capo Gruppo risponde a un suo parere
+    if(window.BRO && clIsComm() && CL._sgRep){ try{
+      const key = 'bussola_sgrep:' + clLc(CL.user.email) + ':' + CL.ctx.id, seen = JSON.parse(localStorage.getItem(key) || '{}'); let n = 0;
+      SG.list.forEach(x => { if(x.risposta && seen[x.id] !== x.risposta_il){ n++; seen[x.id] = x.risposta_il; } });
+      if(n){ localStorage.setItem(key, JSON.stringify(seen)); clToast(n === 1 ? 'Il Capo Gruppo ha risposto a un tuo parere' : `Il Capo Gruppo ha risposto a ${n} tuoi pareri`); }
+    }catch(e){} }
     if(!window.BRO && sg13Owner()){
       const n = SG.list.filter(s => s.stato === 'nuovo').length;
       if(n > SG.announced && !quiet) clToast(n === 1 ? 'Hai 1 suggerimento nuovo da leggere' : `Hai ${n} suggerimenti nuovi da leggere`);
@@ -16903,13 +16926,31 @@ async function sgLoad(quiet){
 }
 function MODE_NOT_GIOVANI(){ try{ return MODE !== 'giovani' && MODE !== 'staff'; }catch(e){ return true; } }
 function sgWatch(){
+  try{ sgpWatch(); }catch(e){}
   const p = document.getElementById('panel1'); if(!p || p._sgw) return; p._sgw = true; let t;
   new MutationObserver(() => { clearTimeout(t); t = setTimeout(sgRender, 120); }).observe(p, {childList:true, subtree:true});
   sgRender();
 }
+window.sgpWatch = sgpWatch;
 // la firma di un parere del Commissario porta anche la carica; il nome ricordato per la volta dopo resta quello semplice
 const sgFirma = nome => clIsComm() && !/Commissario/i.test(nome) ? nome + ' · Commissario di Sezione' : nome;
 const sgFmt = ts => new Date(ts).toLocaleDateString('it-IT', {day:'numeric', month:'short'});
+const sgNl = t => clEsc(t).replace(/\n/g, '<br>');
+// risposta di chi ha il progetto a un suggerimento o a un parere: la legge solo chi l'ha scritto; la scrivono chi ha il progetto e i co-titolari
+function sgRepH(x, own){
+  if(CL._sgRep === false) return '';
+  let h = '';
+  if(x.risposta) h += `<div class="sg-r"><div class="sg-n">Risposta di ${clEsc(x.risposta_da || 'chi ha il progetto')}${x.risposta_il ? ' · ' + sgFmt(x.risposta_il) : ''}</div><div>${sgNl(x.risposta)}</div></div>`;
+  if(!own) return h;
+  if(SG.rep === x.id){
+    const dr = SG.draft['R' + x.id];
+    h += `<div class="sg-box"><label class="sg-n">Il tuo nome</label><input id="sg-rn-${x.id}" maxlength="40" value="${clEsc(x.risposta_da || sgMyName())}" placeholder="Es. Marco">
+      <label class="sg-n" style="display:block;margin-top:8px">La tua risposta</label><textarea id="sg-rt-${x.id}" maxlength="2000" oninput="SG.draft['R${x.id}']=this.value" placeholder="Scrivi la risposta: la leggerà solo ${clEsc(x.autore_nome || 'chi ha scritto')}.">${clEsc(dr != null ? dr : (x.risposta || ''))}</textarea>
+      <div class="sg-a"><button class="ok" onclick="sg13RepOk('${x.id}')">Invia la risposta</button><button onclick="sg13Rep(null)">Annulla</button></div></div>`;
+  } else h += `<div class="sg-a"><button onclick="sg13Rep('${x.id}')">${x.risposta ? 'Modifica la risposta' : 'Rispondi'}</button>${x.risposta ? `<button onclick="sg13RepDel('${x.id}')">Togli la risposta</button>` : ''}</div>`;
+  return h;
+}
+const sgRepSig = x => (x.risposta_il || '') + (SG.rep === x.id ? 'r' : '') + (CL._sgRep === false ? 'n' : '');
 const sgEnc = p => btoa(unescape(encodeURIComponent(p))).replace(/=+$/,'');
 const sgDec = t => decodeURIComponent(escape(atob(t)));
 function sgRender(){
@@ -16927,14 +16968,15 @@ function sgRender(){
     const items = SG.list.filter(x => x.percorso === pid);
     let w = pc.querySelector(':scope > .sg-wrap');
     if(!items.length && !ro){ if(w) w.remove(); return; }
-    const sig = [ro?(cm?'c':'r'):'o', SG.open[tk]?1:0, SG.form===tk?1:0, items.map(x => x.id+x.stato).join(',')].join('|');
+    const sig = [ro?(cm?'c':'r'):'o', SG.open[tk]?1:0, SG.form===tk?1:0, items.map(x => x.id+x.stato+sgRepSig(x)).join(',')].join('|');
     if(w && w.dataset.sig === sig) return;
     const unread = items.filter(x => x.stato === 'nuovo').length;
     let h = '';
     if(items.length){
       const label = ro ? (cm ? (items.length === 1 ? 'Il tuo parere' : `I tuoi ${items.length} pareri`) : (items.length === 1 ? 'Il tuo suggerimento' : `I tuoi ${items.length} suggerimenti`))
         : (items.length === 1 ? `1 suggerimento di ${clEsc(items[0].autore_nome||'un’altra persona')}` : `${items.length} suggerimenti` + (unread ? ` · ${unread} da leggere` : ''));
-      h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▾':'▸'}</button>`;
+      const nr = (ro && CL._sgRep !== false) ? items.filter(x => x.risposta).length : 0;
+      h += `<button class="sg-pill ${((!ro && unread) || nr)?'new':''}" onclick="sgToggle('${tk}')">${label}${nr ? (nr === 1 ? ' · 1 risposta' : ` · ${nr} risposte`) : ''} ${SG.open[tk]?'▾':'▸'}</button>`;
     }
     if(ro && SG.form !== tk) h += `<button class="sg-add" onclick="sgForm('${tk}')">${cm ? '+ Lascia un parere' : '+ Suggerisci'}</button>`;
     if(items.length && SG.open[tk]){
@@ -16942,7 +16984,7 @@ function sgRender(){
         h += `<div class="sg-b"><div class="sg-n">${clEsc(x.autore_nome||'Collega')} · ${sgFmt(x.created_at)}</div><div>${clEsc(x.testo).replace(/\n/g,'<br>')}</div><div class="sg-a">`;
         if(ro) h += `<button onclick="sgDel('${x.id}')">Elimina</button>`;
         else h += x.stato === 'nuovo' ? `<button class="ok" onclick="sgMark('${x.id}','letto')">✓ Segna come letto</button>` : `<span class="sg-st">✓ Letto</span><button onclick="sgMark('${x.id}','nuovo')">Da rileggere</button>`;
-        h += `</div></div>`;
+        h += `</div>${sgRepH(x, !ro && sg13Owner())}</div>`;
       });
     }
     if(ro && SG.form === tk){
@@ -16973,15 +17015,16 @@ function sgMyName(){
 function sg13Can(){ try{ return !!(window.BRO || (CL.ctx && CL.ctx.ruolo === 'collaboratore')); }catch(e){ return false; } }
 function sg13Owner(){ try{ return !!(CL.ctx && !window.BRO && (!CL.ctx.ruolo || CL.ctx.ruolo === 'cotitolare')); }catch(e){ return false; } }
 function sg13Render(){
+  try{ sgpSync(); }catch(e){}
   const W = document.querySelectorAll('.sg13'); if(!W.length) return;
   const on = typeof CL !== 'undefined' && CL.user && CL.ctx;
   W.forEach(w => {
     const k = w.dataset.k; if(!on){ if(w.innerHTML) w.innerHTML = ''; return; }
     const items = SG.list.filter(x => x.percorso === k), can = sg13Can(), own = sg13Owner();
-    const cm = clIsComm(), sig = [can?(cm?2:1):0, own?1:0, SG.form === k ? 1 : 0, items.map(x => x.id + x.stato).join(',')].join('|');
+    const cm = clIsComm(), sig = [can?(cm?2:1):0, own?1:0, SG.form === k ? 1 : 0, items.map(x => x.id + x.stato + sgRepSig(x)).join(',')].join('|');
     if(w.dataset.sig === sig) return;
     let h = '';
-    items.forEach(x => { h += `<div class="sg-b"><div class="sg-n">${clEsc(x.autore_nome||'Collega')} · ${sgFmt(x.created_at)}${own && x.stato === 'nuovo' ? ' · <b style="color:#B26A00">da leggere</b>' : ''}</div><div>${clEsc(x.testo).replace(/\n/g,'<br>')}</div><div class="sg-a">${can ? `<button onclick="sgDel('${x.id}')">Elimina</button>` : (own ? (x.stato === 'nuovo' ? `<button class="ok" onclick="sgMark('${x.id}','letto')">✓ Segna come letto</button>` : `<span class="sg-st">✓ Letto</span><button onclick="sgMark('${x.id}','nuovo')">Da rileggere</button>`) : '')}</div></div>`; });
+    items.forEach(x => { h += `<div class="sg-b"><div class="sg-n">${clEsc(x.autore_nome||'Collega')} · ${sgFmt(x.created_at)}${own && x.stato === 'nuovo' ? ' · <b style="color:#B26A00">da leggere</b>' : ''}</div><div>${clEsc(x.testo).replace(/\n/g,'<br>')}</div><div class="sg-a">${can ? `<button onclick="sgDel('${x.id}')">Elimina</button>` : (own ? (x.stato === 'nuovo' ? `<button class="ok" onclick="sgMark('${x.id}','letto')">✓ Segna come letto</button>` : `<span class="sg-st">✓ Letto</span><button onclick="sgMark('${x.id}','nuovo')">Da rileggere</button>`) : '')}</div>${sgRepH(x, own && !can)}</div>`; });
     if(can){
       if(SG.form === k) h += `<div class="sg-box"><label class="sg-n">Il tuo nome</label><input id="sg-nm-${k}" maxlength="40" value="${clEsc(sgMyName())}" placeholder="Es. Marco">
         <label class="sg-n" style="display:block;margin-top:8px">${cm ? 'Il tuo parere' : 'Il tuo suggerimento'}</label><textarea id="sg-ta-${k}" maxlength="2000" oninput="SG.draft['${k}']=this.value" placeholder="Cosa aggiungeresti o cambieresti? Descrivi comportamenti concreti, senza giudicare le persone.">${clEsc(SG.draft[k]||'')}</textarea>
@@ -16998,6 +17041,66 @@ async function sg13Send(k){
   try{ await dbSgAdd(CL.ctx.id, k, sgFirma(nome), testo); try{ localStorage.setItem('bussola_nome:' + clLc(CL.user && CL.user.email), nome); }catch(e){}
     SG.form = null; SG.draft[k] = ''; await sgLoad(true); sg13Render(); clToast(clIsComm() ? 'Parere inviato' : 'Suggerimento inviato'); }
   catch(e){ clToast('Non riesco a inviare: ' + clErr(e)); } }
+function sg13Rep(id){ SG.rep = id; sgRender(); if(id) setTimeout(() => { const t = document.getElementById('sg-rt-' + id); if(t) t.focus(); }, 50); }
+async function sg13RepOk(id){
+  const t = ((document.getElementById('sg-rt-' + id) || {}).value || '').trim(), n = ((document.getElementById('sg-rn-' + id) || {}).value || '').trim();
+  const x = SG.list.find(y => y.id === id);
+  if(!t){ clToast('Scrivi la risposta'); return; } if(!n){ clToast('Scrivi il tuo nome'); return; }
+  if(x && t === x.risposta){ SG.rep = null; sgRender(); return; }
+  try{ await dbSgReply(id, t, n); try{ localStorage.setItem('bussola_nome:' + clLc(CL.user && CL.user.email), n); }catch(e){}
+    SG.rep = null; delete SG.draft['R' + id]; await sgLoad(true); clPerTe(); clToast('Risposta inviata'); }
+  catch(e){ clToast('Non riesco a inviare: ' + clErr(e)); }
+}
+async function sg13RepDel(id){ if(!confirm('Togliere la tua risposta?')) return; try{ await dbSgReply(id, null); await sgLoad(true); }catch(e){ clToast('Errore: ' + clErr(e)); } }
+// ── «Parere sul progetto»: un box in fondo a ognuna delle 5 pagine del progetto Capo Gruppo e a ogni evento ──
+// lo scrive solo il Commissario di Sezione; chi ha il progetto lo legge (e risponde) qui, senza nulla da cercare
+const SGP_PAG = {osservazione:'Osservazione', lettura:'Lettura dei Capi Unità', percorso:'Percorso formativo', eventi:'Eventi per gli adulti', check:'Check degli adulti'};
+function sgpKey(){
+  try{
+    if(!CL.ctx || !CL.user || !window.vidCtx) return null;
+    const vc = window.vidCtx(); if(!vc || vc.aud !== 'C') return null;   // solo il progetto Capo Gruppo
+    const a = vc.id; let k = null;
+    if(a === 'st1') k = 'PAG:osservazione'; else if(a === 'st2') k = 'PAG:lettura'; else if(a === 'p-pf') k = 'PAG:percorso'; else if(a === 'r-chk') k = 'PAG:check';
+    else if(a === 'usc') k = (USC_CUR && uscCur()) ? 'EVT:' + USC_CUR : 'PAG:eventi';
+    return (k && /^[\w:\-]+$/.test(k)) ? k : null;
+  }catch(e){ return null; }
+}
+function sgpSync(){
+  const app = document.getElementById('main-app'); if(!app) return;
+  let host = document.getElementById('sgp-host');
+  const k = sgpKey(), cm = !!window.BRO && clIsComm(), own = sg13Owner();
+  const items = k ? SG.list.filter(x => x.percorso === k) : [];
+  if(!k || !(cm || (own && items.length)) || MODE_NOT_GIOVANI()){ if(host){ host.style.display = 'none'; host.dataset.sig = ''; } return; }
+  if(!host){ host = document.createElement('section'); host.id = 'sgp-host'; host.className = 'sgp'; app.appendChild(host); }
+  const sig = [k, cm ? 1 : 0, own ? 1 : 0, SG.form === k ? 1 : 0, items.map(x => x.id + x.stato + sgRepSig(x)).join(',')].join('|');
+  if(host.dataset.sig === sig && host.style.display !== 'none') return;
+  host.style.display = ''; host.dataset.k = k;
+  let nome = SGP_PAG[k.slice(4)] || '';
+  if(k.indexOf('EVT:') === 0){ try{ nome = (uscTit(uscCur()) || '').trim(); }catch(e){} }
+  const isE = k.indexOf('EVT:') === 0;
+  host.setAttribute('aria-label', cm ? 'Parere sul progetto' : 'Pareri del Commissario di Sezione');
+  let h = `<h2 class="sgp-t">${cm ? (isE ? 'Parere su questo evento' : 'Parere sul progetto') : 'Pareri del Commissario di Sezione'}</h2><div class="sgp-s">${cm ? (isE ? 'Evento' : 'Pagina') + ': ' + clEsc(nome || '—') + '. Lo legge il Capo Gruppo, con il tuo nome e «Commissario di Sezione».' : (isE ? 'Su questo evento' : 'Su questa pagina') + (nome ? ' (' + clEsc(nome) + ')' : '') + '. Li vedi solo tu e i co-titolari.'}</div>`;
+  items.forEach(x => {
+    h += `<div class="sg-b"><div class="sg-n">${clEsc(x.autore_nome || 'Collega')} · ${sgFmt(x.created_at)}${own && x.stato === 'nuovo' ? ' · <b style="color:#B26A00">da leggere</b>' : ''}</div><div>${sgNl(x.testo)}</div><div class="sg-a">${cm ? `<button onclick="sgDel('${x.id}')">Elimina</button>` : (x.stato === 'nuovo' ? `<button class="ok" onclick="sgMark('${x.id}','letto')">✓ Segna come letto</button>` : `<span class="sg-st">✓ Letto</span><button onclick="sgMark('${x.id}','nuovo')">Da rileggere</button>`)}</div>${sgRepH(x, own && !cm)}</div>`;
+  });
+  if(cm){
+    if(SG.form === k) h += `<div class="sg-box"><label class="sg-n">Il tuo nome</label><input id="sg-nm-${k}" maxlength="40" value="${clEsc(sgMyName())}" placeholder="Es. Marco">
+      <label class="sg-n" style="display:block;margin-top:8px">Il tuo parere</label><textarea id="sg-ta-${k}" maxlength="2000" oninput="SG.draft['${k}']=this.value" placeholder="Che cosa hai notato? Che cosa cambieresti o rafforzeresti? Resta su fatti concreti.">${clEsc(SG.draft[k] || '')}</textarea>
+      <p class="sg-note">Non cambia nulla nel progetto: lo legge solo chi lo cura.</p>
+      <div class="sg-a"><button class="ok" onclick="sg13Send('${k}')">Invia parere</button><button onclick="SG.form=null;sgpSync()">Annulla</button></div></div>`;
+    else h += `<div class="sg-a"><button class="sg-add" onclick="SG.form='${k}';sgpSync();setTimeout(()=>{const t=document.getElementById('sg-ta-${k}');if(t)t.focus();},50)">+ Lascia un parere${isE ? ' su questo evento' : ' su questa pagina'}</button></div>`;
+  }
+  host.dataset.sig = sig; host.innerHTML = h;
+}
+// il box segue il cambio di pagina e l'apertura di un evento: si ridisegna quando cambiano i pannelli del progetto
+function sgpWatch(){
+  ['panel1', 'panel2', 'panel4', 'panel-pp'].forEach(id => {
+    const el = document.getElementById(id); if(!el || el._sgpw) return; el._sgpw = true; let t;
+    const go = () => { clearTimeout(t); t = setTimeout(() => { try{ sgpSync(); }catch(e){} }, 120); };
+    new MutationObserver(go).observe(el, {childList:true, subtree:true, attributes:true, attributeFilter:['class']});
+  });
+  try{ sgpSync(); }catch(e){}
+}
 function sgToggle(tk){ SG.open[tk] = !SG.open[tk]; sgRender(); }
 function sgForm(tk){ SG.form = tk; sgRender(); setTimeout(() => { const t = document.getElementById('sg-ta-'+tk); if(t) t.focus(); }, 50); }
 function sgCancel(){ SG.form = null; sgRender(); }
@@ -19021,6 +19124,7 @@ function active(){
 window.shViewSave = function(){ try{ const id = active(); const it = navItems().find(i => i.id === id); return (it && it.go) ? {id:id, go:it.go} : null; }catch(e){ return null; } };
 window.shViewGo = function(v){ try{ if(!v || !v.go) return false; (new Function(v.go))(); return true; }catch(e){ return false; } };
 window.shSync = function(){ const a = active(); const k = a + '|' + ((a === 'pp1' || a === 's1') ? subCur() : ''); try{ ctxObserve(); tagCtx(); applyCtx(); applyAmb(); applyPca(); guideApply(); lgInstr(); ppProfDefaults(); prevEnsure(); prevBar(); gFootFix(); }catch(e){} if(a !== cur || k !== SH._pk){ SH._pk = k; if(a !== cur){ const g = groupOf(a); if(g && !isPP() && !isST() && g !== SH._cg){ SH._gt = {}; SH._cg = g; } } cur = a; paint(); } try{ setTimeout(() => window.vidPageSync && vidPageSync(), 60); }catch(e){} };
+{ const _ss = window.shSync; window.shSync = function(){ const r = _ss.apply(this, arguments); try{ sgpWatch(); }catch(e){} return r; }; }
 function gFootFix(){
   try{
     if(MODE !== 'giovani') return;
