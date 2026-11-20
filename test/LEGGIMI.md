@@ -54,3 +54,7 @@ I campi `<input type=text>` diventano `<textarea data-conv>` (stessa grafica, va
 Test aggiunti il 24 ottobre (riscrittura di uscite, cassa, testo formattato):
 - t_loss (protezione da salvataggi molto più scarni), t_nac (promemoria «non sei collegato/a»), t_nl (a capo nel Word), t_grow2 (campi che restano aperti), t_ret (ritorno in un altro giorno, Unità e staff), t_pb (Piano B delle attività),
   t_cassa (moduli Trasporti/Locazioni/Quota, categorie e incidenze, da attribuire cliccabile, materiali richiudibili ed Excel, diete per pasto, time table a blocchi e trascinabile, Excel del time table), t_rich (barra di formattazione, segni nel testo, anteprima, Word).
+
+## 20 novembre — tendina «Formazione» a scelta multipla (solo anteprima)
+- t_form (28 controlli): colonna Formazione della tabella staff con elenco a spunta (Unità, ruoli, brevetti, percorsi precedenti, Nessuna), livello calcolato (Nessuna / Iniziale / Intermedia / Avanzata / Wood Badge), Wood Badge 3-4 a cascata, «Nessuna» esclusiva, testo vecchio mai cancellato (nota «Scritto prima»), testo cambiato altrove che rivince, profili collegati e a mano, esportazione.
+- t_staff aggiornato: i vecchi codici `base` e `tdm` ora diventano i livelli `iniz` e `inter`.

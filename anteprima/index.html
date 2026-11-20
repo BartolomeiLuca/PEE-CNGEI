@@ -3337,6 +3337,118 @@ function modalShow(html){
 function modalClose(){ try{ if(window._svMom && !window._svDone && document.querySelector('#g-modal.show .sv-box')){ window._svDone = true; const n = parseInt(svGet(window._svMom) || '0', 10) || 0; if(svGet(window._svMom) !== 'fatto') svSet(window._svMom, String(n + 1)); } }catch(e){}
   const ov=document.getElementById('g-modal'); if(ov){ ov.querySelectorAll('video').forEach(v => { try{ v.pause(); }catch(e){} }); ov.classList.remove('show'); } }
 
+// ── Formazione degli adulti: voci a scelta multipla; il livello si CALCOLA dalle spunte ──
+// (21/11) Il vecchio campo testo «form» resta compilato con le etichette (doppia scrittura: Word, Excel e il sito principale continuano a leggerlo).
+// formc = codici scelti; formn = testo scritto prima e non riconosciuto (mai cancellato da solo); formt = testo che abbiamo scritto noi:
+// se «form» è diverso da «formt» qualcun altro (la versione principale) l'ha cambiato a mano e il testo rivince.
+const FORM_GRP = [
+  ['Per operare in Unità', [['for_in','FOR.IN'],['for_m_l','FOR.M Branca L'],['for_m_e','FOR.M Branca E'],['for_m_r','FOR.M Branca R'],['for_a','FOR.A']]],
+  ['Per i ruoli', [['for_g','FOR.G'],['for_c','FOR.C'],['for_s','FOR.S'],['pe_fad','Programmazione Educativa (FAD)']]],
+  ['Brevetti', [['wb','Wood Badge'],['wb3','Wood Badge 3'],['wb4','Wood Badge 4']]],
+  ['Percorsi precedenti', [['mod_ass','Modulo Associativo (ex «corso Base»)'],['mod_met','Modulo Metodologico (ex)'],['mora','MoRA'],['mod_wb','Modulo WB (ex)'],['tdm','Testa di Moro'],['senior','Percorso Senior']]],
+  ['', [['nessuna','Nessuna formazione']]]
+];
+const FORM_ORDER = FORM_GRP.flatMap(g => g[1].map(x => x[0]));
+// etichette scritte nel campo testo: semplici, così si rileggono senza ambiguità
+const FORM_TXT = {for_in:'FOR.IN', for_m_l:'FOR.M Branca L', for_m_e:'FOR.M Branca E', for_m_r:'FOR.M Branca R', for_a:'FOR.A', for_g:'FOR.G', for_c:'FOR.C', for_s:'FOR.S', pe_fad:'Programmazione Educativa (FAD)', wb:'Wood Badge', wb3:'Wood Badge 3', wb4:'Wood Badge 4', mod_ass:'Modulo Associativo', mod_met:'Modulo Metodologico', mora:'MoRA', mod_wb:'Modulo WB', tdm:'Testa di Moro', senior:'Percorso Senior', nessuna:'Nessuna'};
+const FORM_LIV = {nessuna:'Nessuna', iniz:'Iniziale', inter:'Intermedia', avanz:'Avanzata', wb:'Wood Badge'};
+function formLevel(c){ c = c || []; const h = x => c.includes(x);
+  if(h('wb') || h('wb3') || h('wb4')) return 'wb';
+  const m = h('for_m_l') || h('for_m_e') || h('for_m_r'), r = h('for_g') || h('for_c') || h('for_s');
+  if(h('for_a') || h('mod_wb') || (m && r)) return 'avanz';
+  if(m || r || h('mod_met') || h('mora') || h('pe_fad') || h('tdm')) return 'inter';
+  if(h('for_in') || h('mod_ass') || h('senior')) return 'iniz';
+  if(h('nessuna')) return 'nessuna';
+  return ''; }
+// vecchi codici salvati nei profili: base = Modulo Associativo (Iniziale), tdm = Testa di Moro (Intermedia)
+function stFormLvl(v){ return ({base:'iniz', tdm:'inter'})[v] || v || ''; }
+function formText(c, n){ return (c || []).map(x => FORM_TXT[x] || x).concat(n ? ['Scritto prima: ' + n] : []).join('; '); }
+function formParse(text){
+  let s = String(text == null ? '' : text), nota = '';
+  const mi = s.search(/scritto prima:\s*/i);
+  if(mi >= 0){ nota = s.slice(mi).replace(/^scritto prima:\s*/i, '').trim(); s = s.slice(0, mi); }
+  let w = ' ' + s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') + ' ';
+  const c = [], add = (...k) => k.forEach(x => { if(!c.includes(x)) c.push(x); });
+  const eat = (re, fn) => { w = w.replace(re, (...a) => { fn(...a); return ' '; }); };
+  eat(/modulo\s+(?:wb|wood\s*badge)\b/g, () => add('mod_wb'));
+  eat(/modulo\s+associativo/g, () => add('mod_ass'));
+  eat(/modulo\s+metodologico/g, () => add('mod_met'));
+  eat(/(?:wood\s*badge|\bwb)\s*4\b/g, () => add('wb', 'wb3', 'wb4'));
+  eat(/(?:wood\s*badge|\bwb)\s*3\b/g, () => add('wb', 'wb3'));
+  eat(/wood\s*badge|\bwb\b/g, () => add('wb'));
+  eat(/\bfor[.\-\s]m[.\s\-]*(?:branca\s*)?([ler])\b/g, (m0, b) => add('for_m_' + b));
+  eat(/\bfor[.\-\s]?in\b/g, () => add('for_in'));
+  eat(/\bfor[.\-\s]?a\b/g, () => add('for_a'));
+  eat(/\bfor[.\-\s]?g\b/g, () => add('for_g'));
+  eat(/\bfor[.\-\s]?c\b/g, () => add('for_c'));
+  eat(/\bfor[.\-\s]?s\b/g, () => add('for_s'));
+  eat(/programmazione\s+educativa|\bfad\b/g, () => add('pe_fad'));
+  eat(/\bmora\b/g, () => add('mora'));
+  eat(/testa\s+di\s+moro|\btdm\b/g, () => add('tdm'));
+  eat(/percorso\s+senior/g, () => add('senior'));
+  eat(/corso\s+base|\bbase\b/g, () => add('mod_ass'));
+  eat(/\bnessun[ao]?\b/g, () => add('nessuna'));
+  // se resta qualcosa che non so leggere, il testo originale si conserva intero nella nota
+  if(w.replace(/[\s.,;:\/\\\-–—()«»"'’]+/g, '')) nota = (s.trim() + (nota ? ' / ' + nota : '')).trim();
+  return {c: FORM_ORDER.filter(x => c.includes(x)), n: nota};
+}
+function formStateRow(r){ r = r || {};
+  if(Array.isArray(r.formc) && String(r.form || '') === String(r.formt || '')) return {c: r.formc.slice(), n: String(r.formn || '')};
+  return formParse(r.form); }
+function formStateProf(P){ P = P || {};
+  if(Array.isArray(P.formc)) return {c: P.formc.slice(), n: String(P.formn || '')};
+  const m = ({nessuna:['nessuna'], base:['mod_ass'], tdm:['tdm'], wb:['wb']})[P.formazione];
+  return {c: m ? m.slice() : [], n: ''}; }
+function stFormRow(r){ return formLevel(formStateRow(r).c); }
+function formProfTxt(P){ P = P || {}; const lv = FORM_LIV[stFormLvl(P.formazione)] || '';
+  const t = P.src ? String(P.src.form || '') : (() => { const st = formStateProf(P); return formText(st.c, st.n); })();
+  return t ? (lv ? t + ' — livello ' + lv : t) : lv; }
+function formTarget(ctx, idx){
+  if(ctx === 't'){ if(MODE === 'staff') return null; return staffTab()[idx] || null; }
+  if(ctx === 'a') return autoProfile;
+  if(ctx === 'm'){ const n = STAFF_MEMBERS[idx]; return n ? (staffProfiles[n] || (staffProfiles[n] = {})) : null; }
+  return null; }
+function formApply(ctx, o, c, n){
+  c = FORM_ORDER.filter(x => c.includes(x)); o.formc = c; o.formn = n || '';
+  if(ctx === 't'){ const t = formText(c, n); o.form = t; o.formt = t; } else o.formazione = formLevel(c);
+  saveDataDebounced(); }
+function formWidget(ctx, idx, st){
+  const key = ctx + ':' + idx, open = !!(window._formOpen && window._formOpen[key]), lvl = formLevel(st.c), sel = new Set(st.c);
+  const lb = st.c.length ? st.c.map(x => sEsc(FORM_TXT[x] || x)).join(', ') : '<span style="color:var(--ink-faint)">— nessuna scelta</span>';
+  let h = '<div class="fm-w" data-fm="' + key + '" style="font-size:12px"><div>' + lb + '</div>';
+  if(lvl) h += '<div style="color:var(--ink-mid);margin-top:2px">Livello: <b>' + FORM_LIV[lvl] + '</b></div>';
+  if(st.n) h += '<div style="color:var(--ink-mid);margin-top:2px">Scritto prima: ' + sEsc(st.n) + ' <button type="button" class="btn-ghost" style="padding:0 5px;font-size:11px" title="Cancella questo testo vecchio" aria-label="Cancella il testo scritto prima" onclick="formClearNote(\'' + ctx + '\',' + idx + ')">× togli</button></div>';
+  h += '<button type="button" class="btn-ghost" style="margin-top:4px;padding:2px 8px;font-size:12px" aria-expanded="' + open + '" onclick="formOpen(\'' + ctx + '\',' + idx + ')">' + (open ? 'Chiudi' : 'Scegli') + '</button>';
+  if(open){
+    h += '<div role="group" aria-label="Formazione" style="margin-top:4px;border-top:1px solid var(--border-light);padding-top:4px">';
+    FORM_GRP.forEach(([g, items]) => {
+      if(g) h += '<div style="font-weight:700;margin:5px 0 2px">' + g + '</div>';
+      h += items.map(([code, lab]) => '<label style="display:flex;gap:5px;align-items:flex-start;margin:1px 0;cursor:pointer"><input type="checkbox" data-fc="' + code + '"' + (sel.has(code) ? ' checked' : '') + ' onchange="formToggle(\'' + ctx + '\',' + idx + ',\'' + code + '\')" style="margin-top:2px"><span>' + sEsc(lab) + '</span></label>').join('');
+    });
+    h += '</div>'; }
+  return h + '</div>'; }
+function formRefresh(ctx, idx, focusCode){
+  const el = document.querySelector('[data-fm="' + ctx + ':' + idx + '"]'); if(!el) return;
+  const o = formTarget(ctx, idx); if(!o) return;
+  el.outerHTML = formWidget(ctx, idx, ctx === 't' ? formStateRow(o) : formStateProf(o));
+  try{ edLock(); }catch(e){}
+  if(focusCode){ const f = document.querySelector('[data-fm="' + ctx + ':' + idx + '"] input[data-fc="' + focusCode + '"]'); if(f) f.focus(); } }
+function formOpen(ctx, idx){ const O = window._formOpen = window._formOpen || {}, k = ctx + ':' + idx; O[k] = !O[k]; formRefresh(ctx, idx); }
+function formToggle(ctx, idx, code){
+  const o = formTarget(ctx, idx); if(!o) return;
+  const st = ctx === 't' ? formStateRow(o) : formStateProf(o); let c = st.c.slice(); const has = c.includes(code);
+  if(code === 'nessuna') c = has ? [] : ['nessuna'];
+  else {
+    c = c.filter(x => x !== 'nessuna');
+    if(has){ c = c.filter(x => x !== code); if(code === 'wb') c = c.filter(x => x !== 'wb3' && x !== 'wb4'); if(code === 'wb3') c = c.filter(x => x !== 'wb4'); }
+    else { c.push(code); if(code === 'wb4' && !c.includes('wb3')) c.push('wb3'); if((code === 'wb4' || code === 'wb3') && !c.includes('wb')) c.push('wb'); }
+  }
+  formApply(ctx, o, c, st.n); formRefresh(ctx, idx, code); }
+function formClearNote(ctx, idx){
+  const o = formTarget(ctx, idx); if(!o) return;
+  const st = ctx === 't' ? formStateRow(o) : formStateProf(o);
+  formApply(ctx, o, st.c, ''); formRefresh(ctx, idx); }
+
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, patto)']];
 const STAFF_CONTACT_COLS=[['mail','Email'],['tel','Telefono']];
@@ -3374,8 +3486,8 @@ function staffSelfRow(t){ try{
 }catch(e){} }
 function staffTabSet(i,k,v){ const t=staffTab(); if(t[i]){ t[i][k]=v; if(k==='mail'&&(window._stBad||{})[i]&&clEmailOk(String(v||'').trim().toLowerCase().split(/[\s,;]+/)[0])){ delete window._stBad[i]; const c=document.querySelector('#staff-tab .st-bad'); if(c){ c.parentElement.style.outline=''; c.parentElement.style.background=''; c.remove(); } } saveDataDebounced(); if(k==='nome'){ clearTimeout(window._occNT); window._occNT=setTimeout(()=>{ try{ const o=document.getElementById('occ-tab'); if(o&&!o.contains(document.activeElement)) o.innerHTML=occTableHTML(); }catch(e){} },600); } } }
 function staffTabAdd(){ staffTab().push({ruolo:''}); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
-function staffTabMove(i,d){ const j=i+d; if(MODE==='staff'){ const a=STAFF_MEMBERS; if(j<0||j>=a.length||!a[i]||!a[j]) return; const x=a[i]; a[i]=a[j]; a[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); try{ if(typeof renderStaffPhase1==='function') renderStaffPhase1(); }catch(e){} return; } const t=staffTab(); if(j<0||j>=t.length||!t[i]||!t[j]) return; const x=t[i]; t[i]=t[j]; t[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
-function staffTabDel(i){ staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
+function staffTabMove(i,d){ window._formOpen={}; const j=i+d; if(MODE==='staff'){ const a=STAFF_MEMBERS; if(j<0||j>=a.length||!a[i]||!a[j]) return; const x=a[i]; a[i]=a[j]; a[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); try{ if(typeof renderStaffPhase1==='function') renderStaffPhase1(); }catch(e){} return; } const t=staffTab(); if(j<0||j>=t.length||!t[i]||!t[j]) return; const x=t[i]; t[i]=t[j]; t[j]=x; window._stBad={}; saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
+function staffTabDel(i){ window._formOpen={}; staffTab().splice(i,1); saveDataDebounced(); const b=document.getElementById('staff-tab'); if(b) b.innerHTML=staffTabHTML(); }
 // ruolo ed età a tendina (nel Branco il ruolo decide i personaggi della Giungla tra cui scegliere)
 const staffRuoli=()=>(FASCIA==='R'?['CC','VCC','CG']:['CU','VCU','SiS','CG']);
 function stSelRuolo(i,v){ const cur=String(v||'').trim(); const O=staffRuoli(); if(cur&&!O.some(o=>o.toLowerCase()===cur.toLowerCase())) O.push(cur); const sel=O.find(o=>o.toLowerCase()===cur.toLowerCase())||'';
@@ -3388,10 +3500,10 @@ function staffTabHTML(){
   const t=staffTab(); const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
   const sh=MODE==='giovani'&&typeof progMode==='function'&&progMode()==='cond'&&progCan()&&!window.BRO; const bad=window._stBad||{};
   const inp=(i,k,v,w)=>`<textarea rows="2" data-maxh="190" aria-label="${({nome:'Nome',mail:'Email',tel:'Telefono',form:'Formazione',car:'Caratteristiche',prof:'Professione',ruoli:'Ruoli',disp:'Disponibilità',varie:'Varie',ruolo:'Ruolo'})[k]||k} (persona ${i+1})" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:12px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)"${k==='ruolo'&&FASCIA==='L'?` onchange="document.getElementById('staff-tab').innerHTML=staffTabHTML()"`:''}>${sEsc(v)}</textarea>`;
-  const w={ruolo:56,nome:110,giungla:90,mail:150,tel:100,eta:44,form:150,car:240,prof:200,ruoli:160,disp:150,varie:220};
+  const w={ruolo:56,nome:110,giungla:90,mail:150,tel:100,eta:44,form:200,car:240,prof:200,ruoli:160,disp:150,varie:220};
   const MV=34, OR=62;
   return `<div style="overflow-x:auto"><table style="border-collapse:collapse;table-layout:fixed;width:100%;min-width:${Math.round(staffCols().reduce((a,c)=>a+(w[c[0]]||100)+8,0)+(sh?74:0)+OR+MV)}px"><colgroup><col style="width:${OR}px">${sh?'<col style="width:74px">':''}${staffCols().map(c=>`<col style="width:${(w[c[0]]||100)+8}px">`).join('')}<col style="width:${MV}px"></colgroup><thead><tr><th style="padding:6px 4px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:center;width:${OR}px">Ordine</th>${sh?`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left;width:74px">Condividi</th>`:''}${staffCols().map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left">${c[0]==='chi'&&mvOn()?'Chi c’era':c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg)"></th></tr></thead><tbody>`+
-    t.map((r,i)=>`<tr><td style="${cell};text-align:center;white-space:nowrap;padding:5px 2px"><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="staffTabMove(${i},-1)">↑</button><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta giù" aria-label="Sposta giù" ${i===t.length-1?'disabled':''} onclick="staffTabMove(${i},1)">↓</button></td>${sh?`<td style="${cell};text-align:center;padding:5px 4px">${staffShareCell(i,r)}</td>`:''}${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}${c[0]==='mail'&&bad[i]?';outline:2px solid #c62828;outline-offset:-2px;background:#ffebee':''}">${c[0]==='giungla'?gjSel(i,r):c[0]==='ruolo'?stSelRuolo(i,r.ruolo):c[0]==='eta'?stSelEta(i,r.eta):inp(i,c[0],r[c[0]],w[c[0]])}${c[0]==='mail'&&bad[i]?'<div class="st-bad">Controlla l’email</div>':''}</td>`).join('')}<td style="${cell};text-align:center;white-space:nowrap"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
+    t.map((r,i)=>`<tr><td style="${cell};text-align:center;white-space:nowrap;padding:5px 2px"><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="staffTabMove(${i},-1)">↑</button><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta giù" aria-label="Sposta giù" ${i===t.length-1?'disabled':''} onclick="staffTabMove(${i},1)">↓</button></td>${sh?`<td style="${cell};text-align:center;padding:5px 4px">${staffShareCell(i,r)}</td>`:''}${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}${c[0]==='mail'&&bad[i]?';outline:2px solid #c62828;outline-offset:-2px;background:#ffebee':''}">${c[0]==='giungla'?gjSel(i,r):c[0]==='ruolo'?stSelRuolo(i,r.ruolo):c[0]==='eta'?stSelEta(i,r.eta):c[0]==='form'?formWidget('t',i,formStateRow(r)):inp(i,c[0],r[c[0]],w[c[0]])}${c[0]==='mail'&&bad[i]?'<div class="st-bad">Controlla l’email</div>':''}</td>`).join('')}<td style="${cell};text-align:center;white-space:nowrap"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
     `</tbody></table></div><button class="btn-ghost" style="margin-top:6px;font-size:12px" onclick="staffTabAdd()">+ Aggiungi riga</button>`;
 }
 
@@ -5692,8 +5804,8 @@ function stNorm(s){ return String(s==null?'':s).trim().toLowerCase(); }
 function stMail(r){ return stNorm(String((r&&r.mail)||'').split(/[\s,;]+/)[0]); }
 function stMyMail(){ try{ return (typeof CL!=='undefined' && CL.user) ? stNorm(CL.user.email) : ''; }catch(e){ return ''; } }
 function stRuoloCode(t){ const s=String(t||'').trim(); if(!s) return ''; const u=s.toUpperCase().replace(/[.\s]/g,''); if(u==='SIS') return 'SiS'; return ST_RUOLI[u] ? u : s; }
-function stFormCode(t){ const s=stNorm(t); if(!s) return ''; if(/wood|\bwb\b/.test(s)) return 'wb'; if(/testa di moro|\btdm\b/.test(s)) return 'tdm'; if(/\bbase\b/.test(s)) return 'base'; if(/nessun|^no$/.test(s)) return 'nessuna'; return ''; }
-function stSrcOf(r){ const o={}; ['nome','ruolo','eta','form','car','prof','ruoli','disp','varie','mail','tel'].forEach(k=>{ o[k]=String((r&&r[k])||'').trim(); }); o.mail=stMail(r); return o; }
+function stFormCode(t){ return formLevel(formParse(t).c); }   // (21/11) dal testo al livello: Nessuna / Iniziale / Intermedia / Avanzata / Wood Badge
+function stSrcOf(r){ const o={}; ['nome','ruolo','eta','form','car','prof','ruoli','disp','varie','mail','tel'].forEach(k=>{ o[k]=String((r&&r[k])||'').trim(); }); o.mail=stMail(r); if(r && Array.isArray(r.formc)){ o.formc=r.formc.slice(); o.formn=String(r.formn||''); o.formt=String(r.formt||''); } return o; }
 
 // ── lettura (sola lettura) della tabella staff dell'Unità dello stesso anno ──
 function stUnitKey(){ try{ return (CL.ctx && CL.ctx.id) ? 'c' + CL.ctx.id : 'local'; }catch(e){ return 'local'; } }
@@ -5762,7 +5874,7 @@ function stLinkApply(){
     if(p.link.gone){ delete p.link.gone; ch = true; }
     if(JSON.stringify(p.src) !== JSON.stringify(r)){ p.src = r; ch = true; }
     if(r.mail) set(p.link, 'mail', r.mail); if(r.nome) set(p.link, 'nome', r.nome);
-    set(p, 'eta', r.eta); set(p, 'ruolo', stRuoloCode(r.ruolo)); set(p, 'formazione', stFormCode(r.form));
+    set(p, 'eta', r.eta); set(p, 'ruolo', stRuoloCode(r.ruolo)); set(p, 'formazione', stFormRow(r));
     const nn = r.nome || r.mail;
     if(nn && nn !== name && stRename(name, nn)){ ch = true; name = nn; }
   });
@@ -5779,7 +5891,7 @@ function stLinkApply(){
       if(autoProfile.link.gone){ delete autoProfile.link.gone; ch = true; }
       if(JSON.stringify(autoProfile.src) !== JSON.stringify(ar)){ autoProfile.src = ar; ch = true; }
       if(ar.mail) set(autoProfile.link, 'mail', ar.mail); if(ar.nome) set(autoProfile.link, 'nome', ar.nome);
-      set(autoProfile, 'nome', ar.nome); set(autoProfile, 'eta', ar.eta); set(autoProfile, 'ruolo', stRuoloCode(ar.ruolo)); set(autoProfile, 'formazione', stFormCode(ar.form));
+      set(autoProfile, 'nome', ar.nome); set(autoProfile, 'eta', ar.eta); set(autoProfile, 'ruolo', stRuoloCode(ar.ruolo)); set(autoProfile, 'formazione', stFormRow(ar));
     }
   }
   return ch;
@@ -5862,7 +5974,7 @@ function stAddFromUnit(){
 function stAddRow(r){
   let name = r.nome || r.mail; if(!name) return null;
   if(STAFF_MEMBERS.includes(name)){ let k = 2; while(STAFF_MEMBERS.includes(name + ' (' + k + ')')) k++; name = name + ' (' + k + ')'; }
-  STAFF_MEMBERS.push(name); staffProfiles[name] = {link:{mail:r.mail, nome:r.nome}, src:r, eta:r.eta, ruolo:stRuoloCode(r.ruolo), formazione:stFormCode(r.form)};
+  STAFF_MEMBERS.push(name); staffProfiles[name] = {link:{mail:r.mail, nome:r.nome}, src:r, eta:r.eta, ruolo:stRuoloCode(r.ruolo), formazione:stFormRow(r)};
   return name;
 }
 function stAddAll(){ let last = null; stFreeRows().forEach(({r}) => { const n = stAddRow(r); if(n) last = n; }); if(last) stAddedGo(last); }
@@ -5877,7 +5989,7 @@ function stProfHTML(auto){
   const set = (k, v) => auto ? `autoProfile.${k}=${v};saveDataDebounced()` : `stProfSet(${i},'${k}',${v})`;
   const ruoli = Object.entries(ST_RUOLI).filter(([k]) => auto || k !== 'CG' || STAFF_RUOLO === 'CG');
   const selR = `<select onchange="${set('ruolo','this.value')}"><option value="">— scegli —</option>${ruoli.map(([k, v]) => `<option value="${k}"${P.ruolo === k ? ' selected' : ''}>${v}</option>`).join('')}${P.ruolo && !ST_RUOLI[P.ruolo] ? `<option selected>${sEsc(P.ruolo)}</option>` : ''}</select>`;
-  const selF = `<select onchange="${set('formazione','this.value')}"><option value="">— scegli —</option>${Object.entries(ST_FORM).map(([k, v]) => `<option value="${k}"${P.formazione === k ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
+  const selF = formWidget(auto ? 'a' : 'm', auto ? 0 : i, formStateProf(P));   // (21/11) scelta multipla; il livello si calcola
   const selE = `<select onchange="${set('esperienza','this.value')}"><option value="">— scegli —</option>${Object.entries(ST_ESP).map(([k, v]) => `<option value="${k}"${P.esperienza === k ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
   let h = `<div class="st-card"><div class="st-ct">${auto ? 'Il mio profilo' : 'Profilo · ' + sEsc(name)}</div>`;
   if(auto) h += `<div class="st-note priv">L’auto osservazione è privata: non compare nel Riepilogo dello staff né nei calcoli di insieme.</div>`;
@@ -5887,7 +5999,7 @@ function stProfHTML(auto){
     const more = [['Caratteristiche personali','car'],['Professioni, competenze esterne','prof'],['Ruoli passati','ruoli'],['Disponibilità','disp'],['Varie (dinamiche di staff, patto)','varie'],['Email','mail'],['Telefono','tel']].filter(([, k]) => src[k]);
     if(more.length) h += `<div class="st-grid">${more.map(([lb, k]) => stField(lb, stRO(src[k]), ['car','prof','ruoli','disp','varie'].includes(k))).join('')}</div>`;
   } else {
-    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `oninput="stNameLive(${i},this.value)" onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF)}</div>`;
+    h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `oninput="stNameLive(${i},this.value)" onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF, true)}</div>`;
   }
   h += `<div class="st-grid">${stField('Esperienza come educatore', selE)}</div>`;
   if(!auto && !linked){
@@ -6063,11 +6175,10 @@ function renderAutoOssPanel() {
 
   if(autoProfile.eta||autoProfile.ruolo||autoProfile.formazione) {
     const ruoloLabels = {CU:'Capo Unità',VCU:'Vice Capo Unità',SiS:'Senior in Servizio',CG:'Capo Gruppo'};
-    const formLabels = {nessuna:'Nessuna',base:'Base',tdm:'Testa di Moro',wb:'Wood Badge'};
-    html += `<div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px">
+        html += `<div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px">
       ${autoProfile.eta?`Età: ${autoProfile.eta} · `:''}
       ${autoProfile.ruolo?`Ruolo: ${ruoloLabels[autoProfile.ruolo]||autoProfile.ruolo} · `:''}
-      ${autoProfile.formazione?`Formazione: ${formLabels[autoProfile.formazione]||autoProfile.formazione}`:''}
+      ${autoProfile.formazione?`Formazione: ${sEsc(formProfTxt(autoProfile))}`:''}
     </div>`;
   }
 
@@ -6270,8 +6381,9 @@ function generateIndicazioneHTML(member) {
   const isGiovane = eta && eta < 26;
   const isMedio = eta && eta >= 26 && eta < 35;
   const ruoloLabel = {CU:'Capo Unità', VCU:'Vice Capo Unità', SiS:'Senior in Servizio'}[prof.ruolo] || 'educatore';
-  const formazioneLabel = {nessuna:'senza formazione pregressa', base:'con corso Base completato', tdm:'con Testa di Moro', wb:'con Wood Badge'}[prof.formazione] || '';
-  const isAlta_formazione = prof.formazione === 'wb' || prof.formazione === 'tdm';
+  const lvForm = stFormLvl(prof.formazione);
+  const formazioneLabel = {nessuna:'senza formazione pregressa', iniz:'con una formazione iniziale', inter:'con una formazione di livello intermedio', avanz:'con una formazione avanzata', wb:'con il Wood Badge'}[lvForm] || '';
+  const isAlta_formazione = lvForm === 'inter' || lvForm === 'avanz' || lvForm === 'wb';   // da Intermedia in su, stesso testo; non per l'Iniziale
   const nomeBreve = sEsc(member.split(' ')[0]);   // 11/11: finisce nell'HTML della pagina
   const pF=clusterForti.P.length, cF=clusterForti.C.length, sF=clusterForti.S.length;
   const pD=clusterDeboli.P.length, cD=clusterDeboli.C.length, sD=clusterDeboli.S.length;
@@ -6331,7 +6443,7 @@ function generateIndicazioneHTML(member) {
     });
   }
   // Nessuna formazione ma molta esperienza
-  if(prof.formazione === 'nessuna' && prof.esperienza === 'alto' && pF >= 4) {
+  if(lvForm === 'nessuna' && prof.esperienza === 'alto' && pF >= 4) {
     patterns.push({
       t:'Tanta esperienza, nessuna formazione: un patrimonio da rendere chiaro',
       b:nomeBreve+' ha imparato molto sul campo, senza passare da percorsi di formazione. Questo crea competenze che funzionano ma che sono difficili da spiegare agli altri. Il rischio è non riuscire a trasmettere ciò che si sa fare e non dare un ordine alla propria esperienza. '+(_cg?'Un percorso di formazione (anche il corso Base) potrebbe aiutare ' + nomeBreve + ' a dare un nome e una forma a ciò che già fa bene.':'Come CU, chiedi a ' + nomeBreve + ' di spiegare il suo modo di fare: «Come fai questo?» è la domanda più utile che puoi porre.')
@@ -8928,7 +9040,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611201337'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611201443'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -13932,7 +14044,7 @@ let GREEN = '1B5E42', PALE = 'E8F5E9', ONG = 'FFFFFF', GRTXT = '1B5E42';
 const BRANCA_HEX = {L:['F0E603','FFFCD6','1A1800','1A1800'], E:['1B5E42','F1F7F3'], R:['A31F1F','FCF1F1']};
 function exportTheme(){ const c=BRANCA_HEX[typeof FASCIA!=='undefined'?FASCIA:'']||BRANCA_HEX.E; GREEN=c[0]; PALE=c[1]; ONG=c[2]||'FFFFFF'; GRTXT=c[3]||c[0]; }
 const RUOLO_LBL = {CU:'Capo Unità', VCU:'Vice Capo Unità', SiS:'Senior in Servizio'};
-const FORM_LBL = {nessuna:'Nessuna', base:'Base', tdm:'Testa di Moro', wb:'Wood Badge'};
+const FORM_LBL = {nessuna:'Nessuna', iniz:'Iniziale', inter:'Intermedia', avanz:'Avanzata', base:'Base', tdm:'Testa di Moro', wb:'Wood Badge'};   // (21/11) vecchi e nuovi codici
 const ESP_LBL = {basso:'Bassa (0–2 anni)', medio:'Media (3–6 anni)', alto:'Alta (7+ anni)'};
 
 // termini: staff = linguaggio formativo, Unità = linguaggio educativo
@@ -14045,7 +14157,7 @@ async function exportExcel(){
       wm.getCell(5+i,1).value = m; wm.getCell(5+i,2).value = pr.eta ? (Number(pr.eta)||pr.eta) : '';
       wm.getCell(5+i,3).value = RUOLO_LBL[pr.ruolo] || pr.ruolo || '';
       wm.getCell(5+i,4).value = ESP_LBL[pr.esperienza] || pr.esperienza || '';
-      wm.getCell(5+i,5).value = FORM_LBL[pr.formazione] || pr.formazione || '';
+      wm.getCell(5+i,5).value = formProfTxt(pr);
       styleRow(wm, 5+i, 5);
     });
   } else {
@@ -15102,7 +15214,7 @@ async function exportMembersPDF(members, withAgg){
     if(prof.eta) info.push(['Età', String(prof.eta)]);
     if(prof.ruolo) info.push(['Ruolo formativo', RUOLO_LBL[prof.ruolo]||prof.ruolo]);
     if(prof.esperienza) info.push(['Esperienza come educatore', ESP_LBL[prof.esperienza]||prof.esperienza]);
-    if(prof.formazione) info.push(['Percorso formativo', FORM_LBL[prof.formazione]||prof.formazione]);
+    if(prof.formazione) info.push(['Percorso formativo', formProfTxt(prof)]);
     if(info.length) ch.push(dPara(info.map(([l,v],k)=>[dTxt(l+': ',{size:18,bold:true,color:'555555'}), dTxt(v+(k<info.length-1?'     ':''),{size:18,color:'555555'})]).flat(), {after:160}));
     ch.push(dH3('Profilo di sviluppo personale — osservazione percorsi PEE'));
     ['P','C','S'].forEach(a => {

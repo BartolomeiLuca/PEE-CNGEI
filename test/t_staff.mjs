@@ -40,7 +40,7 @@ ok(await ev(P, () => STAFF_MEMBERS.join('|')) === 'Paolo Riva', 'aggiunta una pe
 await ev(P, () => stAddToggle()); await sleep(500); await ev(P, () => stAddAll()); await sleep(500);
 ok(await ev(P, () => STAFF_MEMBERS.join('|')) === 'Paolo Riva|Elena Sarti', 'aggiungi tutte: nessun doppione');
 const pr = await ev(P, () => staffProfiles['Paolo Riva']);
-ok(pr.eta === '24' && pr.ruolo === 'VCU' && pr.formazione === 'base' && pr.src.tel === '3331112222', 'età, ruolo, formazione, telefono compilati ' + JSON.stringify(pr).slice(0, 120));
+ok(pr.eta === '24' && pr.ruolo === 'VCU' && pr.formazione === 'iniz' && pr.src.tel === '3331112222', 'età, ruolo, formazione, telefono compilati ' + JSON.stringify(pr).slice(0, 120));
 const prof = await ev(P, () => { stPick(0); stGo('prof'); return document.getElementById('st-main').textContent; });
 ok(/si modificano\s*lì/.test(prof) && /Creativo/.test(prof) && !(await ev(P, () => !!document.querySelector('#st-main .st-f :is(input,textarea)[type=number]'))), 'Profilo: campi collegati in sola lettura con la nota');
 // passaggi in alto
@@ -57,7 +57,7 @@ ok(/2 \/ 24/.test(await ev(P, () => document.getElementById('st-side').textConte
 const exRow = db.t.pee_archivi.find(r => r.id === ex.id); exRow.data.scheda.pp.staffTab[1] = {ruolo:'VCU', nome:'Paolo R. Riva', mail:'paolo@x.it', eta:'25', form:'Testa di Moro', tel:'3339998888'}; exRow.updated_at = new Date().toISOString();
 await ev(P, () => stUnitRefresh()); await sleep(1500);
 const ch = await ev(P, () => ({m: STAFF_MEMBERS.join('|'), p: staffProfiles['Paolo R. Riva'], v: (staffObs['Paolo R. Riva']||{}).P1, old: !!staffObs['Paolo Riva'], cur: CURRENT_MEMBER}));
-ok(ch.m === 'Paolo R. Riva|Elena Sarti' && ch.p.eta === '25' && ch.p.formazione === 'tdm' && ch.p.src.tel === '3339998888' && ch.v === 4 && !ch.old, 'cambi nell’Unità (nome, età, telefono) arrivano nello staff senza perdere le osservazioni ' + JSON.stringify(ch).slice(0, 160));
+ok(ch.m === 'Paolo R. Riva|Elena Sarti' && ch.p.eta === '25' && ch.p.formazione === 'inter' && ch.p.src.tel === '3339998888' && ch.v === 4 && !ch.old, 'cambi nell’Unità (nome, età, telefono) arrivano nello staff senza perdere le osservazioni ' + JSON.stringify(ch).slice(0, 160));
 // riga tolta dall'Unità: resta l'ultima copia
 exRow.data.scheda.pp.staffTab.splice(2, 1); exRow.updated_at = new Date().toISOString(); const unitMine = JSON.stringify(exRow.data);
 await ev(P, () => stUnitRefresh()); await sleep(1500);
