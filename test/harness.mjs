@@ -14,6 +14,7 @@ export async function serve(port = +(process.env.PORT||8080)){
     const f = path.join(ROOT, p);
     fs.readFile(f, (e, b) => { if(e){ res.writeHead(404); res.end(); return; }
       const t = f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.js') ? 'text/javascript' : f.endsWith('.png') ? 'image/png' : f.endsWith('.pdf') ? 'application/pdf' : f.endsWith('.docx') ? 'application/octet-stream' : 'application/octet-stream';
+      if(process.env.GUSCIO0 === '1' && /^\/index\.html$/.test(p)){ b = Buffer.from(b.toString('utf8').replace('<head>', "<head><script>if(!/guscio=/.test(location.search)) history.replaceState(null,'',location.pathname+(location.search?location.search+'&':'?')+'guscio=0'+location.hash);</script>")); }
       res.writeHead(200, {'content-type': t, 'cache-control': 'no-store'}); res.end(b); });
   });
   await new Promise(r => server.listen(port, '127.0.0.1', r));
