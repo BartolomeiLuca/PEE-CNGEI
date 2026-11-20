@@ -8923,7 +8923,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611191640'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611200825'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -17703,6 +17703,12 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 .sh-big:hover{border-color:var(--green)}
 .sh-big b{font-size:18px;font-weight:800}
 .sh-big span{font-size:13.5px;line-height:1.55;color:#3D3D38}
+.sh-long{background:#fff;border:2px solid #D8D8D0;border-radius:14px;padding:14px 22px;display:flex;align-items:center;flex-wrap:wrap;gap:4px 18px;text-align:left;cursor:pointer;font:inherit;color:inherit;width:100%;margin-top:16px}
+.sh-long:hover{border-color:var(--green)}
+.sh-long small{flex:0 0 100%;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f5f58}
+.sh-long b{font-size:16px;font-weight:800}
+.sh-long span{font-size:13.5px;line-height:1.5;color:#3D3D38;flex:1 1 200px}
+.sh-long em{font-style:normal;font-weight:700;color:var(--brand-ink);margin-left:auto}
 .sh-ov{position:fixed;inset:0;background:rgba(26,26,24,.5);display:none;align-items:flex-start;justify-content:center;padding:6vh 14px;overflow:auto;z-index:310}
 .sh-ov.show{display:flex}
 .sh-dlg{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
@@ -17737,6 +17743,8 @@ const BR_UNIT = {L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki', R:'Es. C
 const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
 const noBranca = r => r === 'cg' || r === 'cds';
 const noGruppo = r => r === 'cds';
+// Capo Gruppo e Commissario che sono anche Capi Unità: Branca e nome dell'Unità stanno nel profilo (campo `dashboard`, chiave `unita`: nessun cambio al database)
+const unitaOf = p => { p = p || SH.prof || {}; const u = p.dashboard && p.dashboard.unita; return (noBranca(p.ruolo) && u && ['L','E','R'].indexOf(u.branca) >= 0) ? {branca:u.branca, nome:String(u.nome || '').trim()} : null; };
 SH.RUOLI = RUOLI; SH.noBranca = noBranca; SH.esc = esc;
 
 document.body.classList.add('sh-on','sh-pend');
@@ -17928,6 +17936,10 @@ function profCard(p, mode, disabled){
       <div><label class="sh-lb" for="sh-nome">Nome e cognome</label><input class="sh-in" id="sh-nome" autocomplete="name" maxlength="120" value="${esc(nome)}"><div class="sh-hint">Compare nei tuoi progetti, nelle condivisioni e nell’oggetto delle mail del Progetto Personale.</div></div>
       <div><div class="sh-lb" id="sh-ruolo-l">Il tuo ruolo</div>${rrGroup('sh-ruolo', RUOLI, p.ruolo)}<div class="sh-hint">Lo potrai cambiare dal profilo quando cambia il tuo incarico.</div></div>
       <div id="sh-brw"><div class="sh-lb" id="sh-branca-l">Branca</div>${rrGroup('sh-branca', BRANCHE.map(b => [b,b]), p.branca)}<div class="sh-hint" id="sh-brh">L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover. Il colore dell’app segue la tua Branca; se non la indichi, o sei Capo Gruppo o Commissario di Sezione, è blu.</div></div>
+      <div id="sh-unw" hidden><label class="sh-rr${(p.dashboard && p.dashboard.unita && noBranca(p.ruolo)) ? ' on' : ''}" id="sh-hasun-l"><input type="checkbox" id="sh-hasun"${(p.dashboard && p.dashboard.unita && noBranca(p.ruolo)) ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked);shProfRole()">Ho anche un’Unità: sono anche Capo Unità</label>
+        <div id="sh-unf" style="margin-top:12px;display:none;flex-direction:column;gap:12px"><div><div class="sh-lb" id="sh-unbr-l">Branca della tua Unità</div>${rrGroup('sh-unbr', BRANCHE.map(b => [b,b]), ((p.dashboard || {}).unita || {}).branca)}</div>
+          <div><label class="sh-lb" for="sh-unn">Nome dell’Unità</label><input class="sh-in" id="sh-unn" maxlength="60" autocomplete="off" placeholder="Es. Reparto Kontiki" value="${esc(((p.dashboard || {}).unita || {}).nome || '')}"></div></div>
+        <div class="sh-hint">Così, quando apri un nuovo progetto, trovi già la Programmazione educativa della tua Unità con Branca e nome compilati.</div></div>
       <div class="sh-g2">
         <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" value="${esc(p.sezione || '')}" onchange="shProfSez()"><datalist id="sh-dl-sez">${sezOpts()}</datalist></div>
         <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
@@ -17971,6 +17983,8 @@ window.shProfRole = function(){
   const r = rv('sh-ruolo');
   const b = $('sh-brw'), g = $('sh-grw'); if(!b) return;
   b.style.display = noBranca(r) ? 'none' : ''; g.style.display = noGruppo(r) ? 'none' : '';
+  const uw = $('sh-unw'), uf = $('sh-unf'), hc = $('sh-hasun');
+  if(uw){ uw.hidden = !noBranca(r); if(uf) uf.style.display = (noBranca(r) && hc && hc.checked) ? 'flex' : 'none'; }
 };
 window.shProfSez = function(){
   const s = ($('sh-sez').value || '').trim(); const g = $('sh-grp');
@@ -17983,7 +17997,14 @@ window.shProfSubmit = async function(ev){
   const p = {nome:v('sh-nome'), ruolo:rv('sh-ruolo'), branca:rv('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:($('sh-area')?v('sh-area'):String((SH.prof&&SH.prof.area_rcdf)||''))};
   if(noBranca(p.ruolo)) p.branca = '';
   if(noGruppo(p.ruolo)) p.gruppo = '';
-  const miss = !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
+  // «Ho anche un'Unità»: solo per Capo Gruppo e Commissario. Se la casella è spenta si toglie; se il ruolo non è tra questi, il dato resta com'è
+  let unMiss = null;
+  if(noBranca(p.ruolo)){
+    const d0 = Object.assign({}, (SH.prof && SH.prof.dashboard) || {});
+    if($('sh-hasun') && $('sh-hasun').checked){ const ub = rv('sh-unbr'); if(!ub) unMiss = ['Scegli la Branca della tua Unità', 'sh-unf']; else { d0.unita = {branca:ub, nome:v('sh-unn').slice(0, 60)}; p.dashboard = d0; } }
+    else if(d0.unita){ delete d0.unita; p.dashboard = d0; }
+  }
+  const miss = unMiss ? unMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
   if(miss){ m.className = 'sh-msg err'; m.textContent = miss[0] + '.'; try{ $(miss[1]).focus(); }catch(e){} return false; }
   const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
   try{
@@ -18129,8 +18150,10 @@ async function homeHTML(){
     let h = top(true) + `<main class="sh-wrap">` + riga + `<div id="sh-perte"></div><div id="cl-rev"></div>`;
     if(!rows.length && !shr.length){
       if(noBranca(p.ruolo)){
-        h += `<h1>Da dove vuoi cominciare?</h1><p class="sh-sub">Come ${esc(RUOLO_TXT[p.ruolo] || 'responsabile')} lavori con gli adulti del Gruppo: osservi, programmi la loro formazione e organizzi gli eventi per loro. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
-      <div class="sh-two" style="margin-top:6px"><button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout, per gli adulti</small><b>Programmazione formativa annuale</b><span>La formazione degli adulti del Gruppo nel corso dell’anno scout, dall’osservazione alla verifica.</span><ul><li>Osservazione dei Capi Unità e lettura d’insieme</li><li>Percorso formativo: attività dal paniere o tue, in ordine di priorità</li><li>Eventi per gli adulti: riunioni, uscite, bivacchi, attività formative</li><li>Check degli adulti e Word del percorso formativo da scaricare</li></ul><em>Inizia la programmazione formativa</em></button></div><p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.</p>`;
+        const un = unitaOf(p);
+        h += `<h1>Da dove vuoi cominciare?</h1><p class="sh-sub">Come ${esc(RUOLO_TXT[p.ruolo] || 'responsabile')} lavori con gli adulti del Gruppo: osservi, programmi la loro formazione e organizzi gli eventi per loro. Puoi aprire anche il tuo Progetto Personale. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
+      <div class="sh-two" style="margin-top:6px"><button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout, per gli adulti</small><b>Programmazione formativa annuale</b><span>La formazione degli adulti del Gruppo nel corso dell’anno scout, dall’osservazione alla verifica.</span><ul><li>Osservazione dei Capi Unità e lettura d’insieme</li><li>Percorso formativo: attività dal paniere o tue, in ordine di priorità</li><li>Eventi per gli adulti: riunioni, uscite, bivacchi, attività formative</li><li>Check degli adulti e Word del percorso formativo da scaricare</li></ul><em>Inizia la programmazione formativa</em></button>
+        <button class="sh-big" type="button" onclick="shNew('PP')"><small>Per un adulto in formazione</small><b>Progetto Personale</b><span>Il Progetto Personale previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge). Chiunque voglia può aprirlo.</span><ul><li>Il tuo Progetto Personale passo passo, con la struttura indicata nelle Linee Guida</li><li>Osservazione del Gruppo di Pari con il KOS e la griglia osservativa</li><li>Un Percorso Educativo Esperienziale dettagliato, per l’obiettivo che scegli</li><li>Gli invii previsti (avvio, primo invio, invio finale) con i destinatari giusti</li><li>La checklist dei criteri, per controllare il lavoro prima di inviarlo</li></ul><em>Inizia il Progetto Personale</em></button></div>${un ? `<button class="sh-long" type="button" onclick="shNew('EDU')"><small>Sei anche Capo Unità</small><b>Programmazione Educativa Annuale</b><span>Per la tua Unità: ${esc(un.nome || 'Unità')} · ${BN[un.branca]}</span><em>Inizia la Programmazione Educativa</em></button>` : ''}<p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.${un ? '' : ' Sei anche Capo Unità? <a href="#" onclick="shProfileOpen();return false">Indicalo nel profilo</a>: qui comparirà anche la Programmazione Educativa della tua Unità.'}</p>`;
       } else
       h += `<h1>Che cosa vuoi progettare?</h1><p class="sh-sub">La scelta decide quali Sezioni vedi, le regole di compilazione e gli invii. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
       <div class="sh-two" style="margin-top:6px">
@@ -18242,29 +18265,50 @@ function dlgOpen(h){ $('sh-dlg').innerHTML = h; $('sh-ov').classList.add('show')
 window.shDlgClose = function(){ $('sh-ov').classList.remove('show'); };
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('sh-ov').classList.contains('show')) shDlgClose(); });
 window.shNew = function(tipo){
-  const p = SH.prof || {}; SH.tipo = tipo || SH.tipo || 'AN';
+  const p = SH.prof || {}; const nbp = noBranca(p.ruolo); const un = unitaOf(p);
+  // Capo Gruppo e Commissario: 'AN' = formativa, 'PP', 'EDU' = Programmazione Educativa come Capo Unità (solo con l'Unità indicata nel profilo)
+  SH.tipo = tipo || (nbp ? 'AN' : (SH.tipo || 'AN'));
+  if(nbp){ if(SH.tipo === 'EDU' && !un) SH.tipo = 'AN'; } else if(SH.tipo === 'EDU') SH.tipo = 'AN';
   const cur = annoScoutStart();
   const anni = [cur, cur - 1, cur + 1];
   const sezgr = [p.sezione, p.gruppo ? (/^\d+$/.test(p.gruppo) ? 'Gruppo ' + p.gruppo : (p.gruppo === 'unico' ? 'Monogruppo' : p.gruppo)) : ''].filter(Boolean).join(' · ');
-  const nb = noBranca(p.ruolo);
-  dlgOpen(`<h2 id="sh-dlg-t">Nuovo progetto</h2>
-    <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">Tipo</legend><div class="sh-g2">
+  const nb = nbp ? SH.tipo === 'AN' : noBranca(p.ruolo);   // «nb» = Branca e Nome Unità nascosti (programmazione formativa)
+  const brSel = nbp ? (un ? un.branca : '') : p.branca;
+  const tipi = nbp
+    ? `<div class="sh-g2">${[['AN','Programmazione formativa annuale (per gli adulti)'], ['PP','Progetto Personale']].concat(un ? [['EDU','Programmazione Educativa (come Capo Unità)']] : []).map(([v, t]) => `<label class="sh-rr${SH.tipo === v ? ' on' : ''}"><input type="radio" name="sh-tipo" value="${v}"${SH.tipo === v ? ' checked' : ''} onchange="shTipo()">${esc(t)}</label>`).join('')}</div>`
+    : `<div class="sh-g2">
       <label class="sh-rr${SH.tipo === 'PP' ? ' on' : ''}" id="sh-lbl-pp"><input type="radio" name="sh-tipo" value="PP"${SH.tipo === 'PP' ? ' checked' : ''} onchange="shTipo()">Progetto Personale</label>
-      <label class="sh-rr${SH.tipo === 'AN' ? ' on' : ''}" id="sh-lbl-an"><input type="radio" name="sh-tipo" value="AN"${SH.tipo === 'AN' ? ' checked' : ''} onchange="shTipo()"><span id="sh-lbl-ant">Programmazione Annuale</span></label></div></fieldset>
-    <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">In che veste lo crei?</legend><div class="sh-g2">
-      <div><label class="sh-lb" for="sh-nru">Ruolo</label><select class="sh-in" id="sh-nru" onchange="shVeste()">${RUOLI.map(([k, t]) => `<option value="${k}"${p.ruolo === k ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
-      <div id="sh-nbrw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nbr">Branca</label><select class="sh-in" id="sh-nbr" onchange="shVeste()">${BRANCHE.map(b => `<option value="${b}"${p.branca === b ? ' selected' : ''}>${b} · ${BN_FULL[b]}</option>`).join('')}</select></div></div></fieldset>
+      <label class="sh-rr${SH.tipo === 'AN' ? ' on' : ''}" id="sh-lbl-an"><input type="radio" name="sh-tipo" value="AN"${SH.tipo === 'AN' ? ' checked' : ''} onchange="shTipo()"><span id="sh-lbl-ant">Programmazione Annuale</span></label></div>`;
+  const ruoloSel = nbp ? '' : `<div><label class="sh-lb" for="sh-nru">Ruolo</label><select class="sh-in" id="sh-nru" onchange="shVeste()">${RUOLI.map(([k, t]) => `<option value="${k}"${p.ruolo === k ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>`;
+  dlgOpen(`<h2 id="sh-dlg-t">Nuovo progetto</h2>
+    <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">Tipo</legend>${tipi}</fieldset>
+    <fieldset style="border:0;padding:0;margin:0"><legend class="sh-lb">${nbp ? 'Per quale Unità?' : 'In che veste lo crei?'}</legend><div class="sh-g2">
+      ${ruoloSel}
+      <div id="sh-nbrw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nbr">Branca</label><select class="sh-in" id="sh-nbr" onchange="shVeste()">${nbp && !un ? '<option value="">Scegli la Branca</option>' : ''}${BRANCHE.map(b => `<option value="${b}"${brSel === b ? ' selected' : ''}>${b} · ${BN_FULL[b]}</option>`).join('')}</select></div></div></fieldset>
     <div><label class="sh-lb" for="sh-nas">Anno scout</label><select class="sh-in" id="sh-nas">${anni.map(y => `<option value="${y}">${annoScoutTxt(y)}</option>`).join('')}</select></div>
-    <div id="sh-nunw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nun">Nome Unità</label><input class="sh-in" id="sh-nun" maxlength="60" placeholder="${BR_UNIT[p.branca] || 'Es. Reparto Kontiki'}"></div>
-    <div class="sh-hint" id="sh-nhint">Sezione e Gruppo si compilano dal tuo profilo${sezgr ? ': ' + esc(sezgr) : ''}. La veste vale solo per questo progetto: il profilo non cambia.${nb ? ' Come ' + esc(RUOLO_TXT[p.ruolo]) + ' non scegli Branca né Nome Unità.' : ''}</div>
+    <div id="sh-nunw"${nb ? ' hidden' : ''}><label class="sh-lb" for="sh-nun">Nome Unità</label><input class="sh-in" id="sh-nun" maxlength="60" value="${esc(nbp && un ? un.nome : '')}" placeholder="${BR_UNIT[brSel] || 'Es. Reparto Kontiki'}"></div>
+    <div class="sh-hint" id="sh-nhint"></div>
     <div class="sh-msg" id="sh-nmsg" role="alert"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="sh-ncre" onclick="shCreateAsk()">Crea il progetto</button></div><div id="sh-nprev" hidden></div>`);
   try{ shVeste(); }catch(e){}
 };
+// veste effettiva del progetto che si sta creando. form = programmazione formativa (adulti); per Capo Gruppo/Commissario il Progetto Personale e la Programmazione Educativa
+// con l'Unità nel profilo si creano «come Capo Unità» (così Branca, colore e riga nella tabella dello staff sono quelli giusti)
+function shEff(){
+  const p = SH.prof || {}; const un = unitaOf(p);
+  if(noBranca(p.ruolo)){
+    if(SH.tipo === 'EDU' && un) return {form:false, tipo:'AN', ruolo:'cu'};
+    if(SH.tipo === 'PP') return {form:false, tipo:'PP', ruolo: un ? 'cu' : p.ruolo};
+    return {form:true, tipo:'AN', ruolo:p.ruolo};
+  }
+  const ruolo = ($('sh-nru') || {}).value || p.ruolo; const nb = noBranca(ruolo);
+  return {form:nb, tipo: nb ? 'AN' : SH.tipo, ruolo};
+}
 // 9/11: alla creazione si chiede sempre se riprendere qualcosa da un progetto che hai già (come in «Duplica»)
 const NEW_PREV = [['ctx','Unità, contesto e staff','dati dell’Unità, contesto, tabella dello staff'],['obs','Osservazione','griglia, livelli osservati, sintesi per Ambito'],['prior','Obiettivi, indicatori e priorità','senza le date di periodo'],['perc','Percorsi educativi e attività','le attività scritte nei percorsi'],['usc','Calendario','riunioni, uscite, bivacchi e campi (con un anno diverso le date si azzerano)'],['note','Appunti dalla verifica','le verifiche delle attività, le valutazioni dei percorsi e la verifica dell’anno: li ritrovi nel menu, sotto «Capire», alla voce «Appunti dalla programmazione precedente»']];
 window.shCreateAsk = async function(){
-  const msg = $('sh-nmsg'); const ruolo = ($('sh-nru') || {}).value; const nb = noBranca(ruolo); const tipo = SH.tipo;
+  const msg = $('sh-nmsg'); const E = shEff(); const nb = E.form; const tipo = E.tipo;
+  if(!nb && !($('sh-nbr') || {}).value){ msg.className = 'sh-msg err'; msg.textContent = 'Scegli la Branca.'; return; }
   let rows = []; try{ rows = await dbList(); }catch(e){ return shCreate(); }
   const cand = rows.filter(r => !/^Esempio/i.test(r.titolo || '') && ((r.meta || {}).mode === (nb ? 'staff' : 'giovani')) && !(tipo === 'AN' && !nb && ((r.meta || {}).tipo === 'PP')));
   if(!cand.length) return shCreate();
@@ -18289,17 +18333,20 @@ async function prevMergeInto(d, y, P){
   sc.daProgetto = {id:P.id, titolo:g.titolo, parti:P.keys};
 }
 window.shVeste = function(){
-  const r = ($('sh-nru') || {}).value, nb = noBranca(r), b = $('sh-nbr');
+  const p = SH.prof || {}; const nbp = noBranca(p.ruolo); const E = shEff(); const nb = E.form; const b = $('sh-nbr');
   ['sh-nbrw', 'sh-nunw'].forEach(i => { const e = $(i); if(e) e.hidden = nb; });
   const u = $('sh-nun'); if(u && b) u.placeholder = BR_UNIT[b.value] || 'Es. Reparto Kontiki';
-  const lp = $('sh-lbl-pp'), la = $('sh-lbl-an'), lt = $('sh-lbl-ant');
-  if(lp && la && lt){ lp.hidden = nb; lt.textContent = nb ? 'Programmazione formativa annuale (per gli adulti)' : 'Programmazione Annuale'; if(nb){ SH.tipo = 'AN'; const a = la.querySelector('input'); if(a){ a.checked = true; } la.classList.add('on'); } }
-  const pp0 = SH.prof || {}; const sg0 = [pp0.sezione, pp0.gruppo ? (/^\d+$/.test(pp0.gruppo) ? 'Gruppo ' + pp0.gruppo : (pp0.gruppo === 'unico' ? 'Monogruppo' : pp0.gruppo)) : ''].filter(Boolean).join(' · ');
-  const h = $('sh-nhint'); if(h) h.textContent = 'Sezione e Gruppo si compilano dal tuo profilo' + (sg0 ? ': ' + sg0 : '') + '. La veste vale solo per questo progetto: il profilo non cambia.' + (nb ? ' Come ' + RUOLO_TXT[r] + ' non scegli Branca né Nome Unità.' : '');
+  if(!nbp){
+    const lp = $('sh-lbl-pp'), la = $('sh-lbl-an'), lt = $('sh-lbl-ant');
+    if(lp && la && lt){ lp.hidden = nb; lt.textContent = nb ? 'Programmazione formativa annuale (per gli adulti)' : 'Programmazione Annuale'; if(nb){ SH.tipo = 'AN'; const a = la.querySelector('input'); if(a){ a.checked = true; } la.classList.add('on'); } }
+  }
+  const sg0 = [p.sezione, p.gruppo ? (/^\d+$/.test(p.gruppo) ? 'Gruppo ' + p.gruppo : (p.gruppo === 'unico' ? 'Monogruppo' : p.gruppo)) : ''].filter(Boolean).join(' · ');
+  const h = $('sh-nhint'); if(h) h.textContent = 'Sezione e Gruppo si compilano dal tuo profilo' + (sg0 ? ': ' + sg0 : '') + '.' + (nbp ? (nb ? ' Come ' + RUOLO_TXT[p.ruolo] + ' non scegli Branca né Nome Unità.' : (unitaOf(p) ? ' Branca e Unità arrivano dal tuo profilo: qui puoi correggerle, il profilo non cambia.' : ' Il Progetto Personale ha bisogno della Branca del Gruppo di Pari che osservi.')) : ' La veste vale solo per questo progetto: il profilo non cambia.' + (nb ? ' Come ' + RUOLO_TXT[E.ruolo] + ' non scegli Branca né Nome Unità.' : ''));
 };
 window.shTipo = function(){
   const v = (document.querySelector('input[name="sh-tipo"]:checked') || {}).value; if(v) SH.tipo = v;
   document.querySelectorAll('#sh-dlg .sh-rr').forEach(l => l.classList.toggle('on', !!l.querySelector('input:checked')));
+  try{ shVeste(); }catch(e){}
 };
 async function uniqueTitle(rows, anno, base){
   let t = base, n = 2; const used = new Set(rows.filter(r => Number(r.anno) === Number(anno)).map(r => r.titolo));
@@ -18307,9 +18354,10 @@ async function uniqueTitle(rows, anno, base){
   return t;
 }
 window.shCreate = async function(){
-  const p = SH.prof || {}; const tipo = SH.tipo; const msg = $('sh-nmsg'); const btn = $('sh-ncre');
-  const y = +$('sh-nas').value; const ruolo = ($('sh-nru') || {}).value || p.ruolo; const nb = noBranca(ruolo);
+  const p = SH.prof || {}; const msg = $('sh-nmsg'); const btn = $('sh-ncre');
+  const y = +$('sh-nas').value; const E = shEff(); const ruolo = E.ruolo; const nb = E.form; const tipo = E.tipo;
   const br = nb ? '' : $('sh-nbr').value; const unit = nb ? '' : String(($('sh-nun') || {}).value || '').trim().slice(0, 60);
+  if(!nb && !br){ msg.className = 'sh-msg err'; msg.textContent = 'Scegli la Branca.'; return; }
   btn.disabled = true; msg.className = 'sh-msg'; msg.textContent = 'Creo il progetto…';
   try{
     const rows = await dbList();
