@@ -9040,7 +9040,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611201443'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611201735'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -10276,7 +10276,7 @@ function uscSN(t){ return (uscSt()&&USC_SN[t])||t; }
 function uscCan(){ return !window.BRO; }
 function uscFull(){ try{ if(window.BRO) return false; return typeof CL==='undefined'||!CL.ctx||!CL.ctx.ruolo||CL.ctx.ruolo==='cotitolare'; }catch(e){ return true; } }
 // uscite dello staff: chi non è titolare né co-titolare (collaboratore, lettore) vede solo i momenti che gli sono affidati, salvo che il titolare le «apra» (u.aperta). Nasconde l'interfaccia: il dato resta nel progetto condiviso
-function uscRes(u){ return !!(u&&(u.dest==='staff'||MODE==='staff')&&!u.aperta&&!uscFull()); }
+function uscRes(u){ return !!(u&&(u.dest==='staff'||MODE==='staff')&&!u.aperta&&!uscFull()&&!(clIsComm()&&MODE==='staff')); }   // il Commissario di Sezione vede tutto del progetto formativo del Capo Gruppo (non lo modifica: window.BRO)
 function uscHideBlk(u,m){ return uscRes(u)&&!(m&&m.aff&&affIsMe(m.aff)); }
 function uscSetRis(on){ const u=uscCur(); if(!u||!uscCan()||!uscFull()) return; u.aperta=!on; u.riservata=!!on; uscSave(); uscRe(); }
 function uscNewId(p){ return (p||'u')+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -16035,13 +16035,17 @@ const clLc = s => String(s||'').trim().toLowerCase();
 const clEmailOk = s => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 const clNoTable = e => /42P01|does not exist|schema cache|relation/i.test((e&&(e.code+' '+e.message))||'');
 // ruoli (attivi solo dopo l'aggiornamento del database: senza, tutto funziona come prima, in sola lettura)
-const CL_RUOLI = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
-const CL_RUOLI_TXT = {lettore:'vede il progetto in sola lettura e lascia suggerimenti', cotitolare:'modifica tutto il progetto insieme a te', collaboratore:'modifica il progetto, lavorando sulle parti che gli affidi'};
+const CL_RUOLI = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore', commissario:'Commissario di Sezione'};
+const CL_RUOLI_TXT = {lettore:'vede il progetto in sola lettura e lascia suggerimenti', cotitolare:'modifica tutto il progetto insieme a te', collaboratore:'modifica il progetto, lavorando sulle parti che gli affidi', commissario:'vede questo progetto, comprese le letture degli adulti e gli eventi formativi, e può lasciarti pareri firmati. Non modifica nulla. I tuoi altri progetti, compreso il Progetto Personale, non vengono condivisi'};
+// Commissario di Sezione: ruolo specifico, si offre solo nella finestra «Condividi» della Programmazione formativa annuale del Capo Gruppo (non del Commissario),
+// e solo a chi ha creato il progetto (le regole del database non lo lasciano nominare a un co-titolare). Apre il progetto in sola lettura, come il Lettore, ma senza i riservati
+const clIsComm = () => { try{ return !!(window.BRO && window.BRO.ruolo === 'commissario'); }catch(e){ return false; } };
+const clCommOffer = () => { try{ return !window.BRO && !!(CL.ctx && !CL.ctx.ruolo) && MODE === 'staff' && STAFF_RUOLO === 'CG' && !cgCds(); }catch(e){ return false; } };
 // co-titolare e collaboratore sono attivi per tutti (il vecchio ?ruoli=1 non serve più)
 try{ localStorage.removeItem('bussola_ruoli_test'); }catch(e){}
 const clEditOn = () => true;
 const clEditRole = r => clEditOn() && (r === 'cotitolare' || r === 'collaboratore');
-const clRoleOpts = sel => Object.keys(CL_RUOLI).filter(k => !(CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare' && sel !== 'cotitolare')).map(k => { const off = CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare'; return `<option value="${k}" ${k===sel?'selected':''} ${off?'disabled':''}>${CL_RUOLI[k]}</option>`; }).join('');
+const clRoleOpts = sel => Object.keys(CL_RUOLI).filter(k => !(CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare' && sel !== 'cotitolare') && (k !== 'commissario' || sel === 'commissario' || clCommOffer())).map(k => { const off = CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare'; return `<option value="${k}" ${k===sel?'selected':''} ${off?'disabled':''}>${CL_RUOLI[k]}</option>`; }).join('');
 async function clRolesOk(){
   if(CL.roles !== undefined) return CL.roles;
   // 11/11: «i ruoli non ci sono» si ricorda solo se lo dice il database (colonna mancante); un errore di rete non deve far passare tutti per lettori fino alla ricarica della pagina
@@ -16072,7 +16076,7 @@ async function dbShared(){
   if(error) throw error; const rows = data||[]; if(!rows.length) return [];
   const {data:ar, error:e2} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').in('id', rows.map(r=>r.archivio_id));
   if(e2) throw e2;
-  return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id&&!(x.meta&&x.meta.cest)); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email, ruolo:(roles && clEditRole(r.ruolo)) ? r.ruolo : 'lettore', nuovo:!!(roles && !r.visto_il)} : null; }).filter(Boolean);
+  return rows.map(r => { const a = (ar||[]).find(x=>x.id===r.archivio_id&&!(x.meta&&x.meta.cest)); return a ? {mid:r.id, id:a.id, anno:a.anno, titolo:a.titolo, meta:a.meta||{}, ts:clTs(a.updated_at), owner:r.owner_email, ruolo:(roles && (clEditRole(r.ruolo) || r.ruolo === 'commissario')) ? r.ruolo : 'lettore', nuovo:!!(roles && !r.visto_il)} : null; }).filter(Boolean);
 }
 async function dbSgList(id){
   const {data, error} = await CL.sb.from('pee_suggerimenti').select('id,percorso,autore_nome,testo,stato,created_at,user_id').eq('archivio_id', id).order('created_at');
@@ -16097,7 +16101,7 @@ async function clOpenShared(id){
     const r = await dbGet(id); if(!r){ clToast('Progetto non trovato'); return; }
     localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(r.data||{}));
     localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}));
-    sessionStorage.setItem('bussola_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}));
+    sessionStorage.setItem('bussola_ro', JSON.stringify(Object.assign({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}, it.ruolo === 'commissario' ? {ruolo:'commissario'} : {})));
     sessionStorage.setItem('bussola_autoresume','1');
     appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
@@ -16135,7 +16139,7 @@ function roInit(){
   }
   if(!window.BRO.giro && !document.getElementById('ro-bar')){
     const bar = document.createElement('div'); bar.id = 'ro-bar';
-    bar.innerHTML = window.BRO.giro ? `Copia del Giro ${clEsc(window.BRO.giro)} · «${clEsc(window.BRO.anno)} · ${clEsc(window.BRO.titolo)}»: com’era quando l’hai congelata, non cambia. <button type="button" class="btn-ghost" style="margin-left:8px;padding:2px 10px" onclick="roExit()">Torna al tuo progetto</button>` : `Sola lettura · «${clEsc(window.BRO.anno)} · ${clEsc(window.BRO.titolo)}»${window.BRO.owner?' di '+clEsc(String(window.BRO.owner).replace(/\s*\([^)]*\)\s*$/,'')):''}: puoi leggere tutto e lasciare suggerimenti.`;
+    bar.innerHTML = window.BRO.giro ? `Copia del Giro ${clEsc(window.BRO.giro)} · «${clEsc(window.BRO.anno)} · ${clEsc(window.BRO.titolo)}»: com’era quando l’hai congelata, non cambia. <button type="button" class="btn-ghost" style="margin-left:8px;padding:2px 10px" onclick="roExit()">Torna al tuo progetto</button>` : `${clIsComm() ? 'Commissario di Sezione · sola lettura' : 'Sola lettura'} · «${clEsc(window.BRO.anno)} · ${clEsc(window.BRO.titolo)}»${window.BRO.owner?' di '+clEsc(String(window.BRO.owner).replace(/\s*\([^)]*\)\s*$/,'')):''}: puoi leggere tutto e lasciare ${clIsComm() ? 'pareri firmati' : 'suggerimenti'}.`;
     app.insertAdjacentElement('beforeend', bar);
   }
   if(!app._rol){
@@ -16680,6 +16684,12 @@ async function clRoleCheck(){
       msg('Ora puoi modificare questo progetto come ' + CL_RUOLI[it.ruolo].toLowerCase() + '.');
       appReload(); return;
     }
+    if(ro && !window.BRO.giro && ((it.ruolo === 'commissario') !== (window.BRO.ruolo === 'commissario'))){
+      // da lettore a Commissario di Sezione (o il contrario): si riapre in sola lettura col ruolo nuovo
+      try{ sessionStorage.setItem('bussola_ro', JSON.stringify(Object.assign({}, window.BRO, {ruolo: it.ruolo === 'commissario' ? 'commissario' : undefined}))); }catch(e){}
+      msg('Il tuo ruolo è cambiato: ora sei ' + CL_RUOLI[it.ruolo === 'commissario' ? 'commissario' : 'lettore'].toLowerCase() + '.');
+      appReload(); return;
+    }
     if(!ro && !clEditRole(it.ruolo)){
       // passato a lettore: il progetto si riapre in sola lettura
       clearTimeout(CL.timer); CL.pending = false;
@@ -16687,7 +16697,7 @@ async function clRoleCheck(){
       const r = await dbGet(id); if(!r){ appReload(); return; }
       localStorage.setItem('bussola_pee_ro_v1', JSON.stringify(r.data||{}));
       localStorage.setItem('bussola_cloud_ctx_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts, dirty:false}));
-      sessionStorage.setItem('bussola_ro', JSON.stringify({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}));
+      sessionStorage.setItem('bussola_ro', JSON.stringify(Object.assign({id:r.id, anno:r.anno, titolo:r.titolo, owner:it.owner||''}, it.ruolo === 'commissario' ? {ruolo:'commissario'} : {})));
       sessionStorage.setItem('bussola_autoresume','1');
       msg('Il tuo ruolo è cambiato: ora vedi questo progetto in sola lettura.');
       appReload(); return;
@@ -16897,13 +16907,15 @@ function sgWatch(){
   new MutationObserver(() => { clearTimeout(t); t = setTimeout(sgRender, 120); }).observe(p, {childList:true, subtree:true});
   sgRender();
 }
+// la firma di un parere del Commissario porta anche la carica; il nome ricordato per la volta dopo resta quello semplice
+const sgFirma = nome => clIsComm() && !/Commissario/i.test(nome) ? nome + ' · Commissario di Sezione' : nome;
 const sgFmt = ts => new Date(ts).toLocaleDateString('it-IT', {day:'numeric', month:'short'});
 const sgEnc = p => btoa(unescape(encodeURIComponent(p))).replace(/=+$/,'');
 const sgDec = t => decodeURIComponent(escape(atob(t)));
 function sgRender(){
   const panel = document.getElementById('panel1');
   if(!panel || !CL.ctx || MODE_NOT_GIOVANI()){ try{ sg13Render(); }catch(e){} return; }
-  const ro = !!window.BRO;
+  const ro = !!window.BRO, cm = clIsComm();
   panel.querySelectorAll('.pc').forEach(pc => {
     const hd = pc.querySelector('.pc-hdr'); if(!hd) return;
     let pid = null;
@@ -16915,16 +16927,16 @@ function sgRender(){
     const items = SG.list.filter(x => x.percorso === pid);
     let w = pc.querySelector(':scope > .sg-wrap');
     if(!items.length && !ro){ if(w) w.remove(); return; }
-    const sig = [ro?'r':'o', SG.open[tk]?1:0, SG.form===tk?1:0, items.map(x => x.id+x.stato).join(',')].join('|');
+    const sig = [ro?(cm?'c':'r'):'o', SG.open[tk]?1:0, SG.form===tk?1:0, items.map(x => x.id+x.stato).join(',')].join('|');
     if(w && w.dataset.sig === sig) return;
     const unread = items.filter(x => x.stato === 'nuovo').length;
     let h = '';
     if(items.length){
-      const label = ro ? (items.length === 1 ? 'Il tuo suggerimento' : `I tuoi ${items.length} suggerimenti`)
+      const label = ro ? (cm ? (items.length === 1 ? 'Il tuo parere' : `I tuoi ${items.length} pareri`) : (items.length === 1 ? 'Il tuo suggerimento' : `I tuoi ${items.length} suggerimenti`))
         : (items.length === 1 ? `1 suggerimento di ${clEsc(items[0].autore_nome||'un’altra persona')}` : `${items.length} suggerimenti` + (unread ? ` · ${unread} da leggere` : ''));
       h += `<button class="sg-pill ${(!ro && unread)?'new':''}" onclick="sgToggle('${tk}')">${label} ${SG.open[tk]?'▾':'▸'}</button>`;
     }
-    if(ro && SG.form !== tk) h += `<button class="sg-add" onclick="sgForm('${tk}')">+ Suggerisci</button>`;
+    if(ro && SG.form !== tk) h += `<button class="sg-add" onclick="sgForm('${tk}')">${cm ? '+ Lascia un parere' : '+ Suggerisci'}</button>`;
     if(items.length && SG.open[tk]){
       items.forEach(x => {
         h += `<div class="sg-b"><div class="sg-n">${clEsc(x.autore_nome||'Collega')} · ${sgFmt(x.created_at)}</div><div>${clEsc(x.testo).replace(/\n/g,'<br>')}</div><div class="sg-a">`;
@@ -16935,10 +16947,10 @@ function sgRender(){
     }
     if(ro && SG.form === tk){
       const nm = sgMyName();
-      h += `<div class="sg-box"><label class="sg-n">Il tuo nome (lo vedrà il capo)</label><input id="sg-nm-${tk}" maxlength="40" value="${clEsc(nm)}" placeholder="Es. Marco">
-        <label class="sg-n" style="display:block;margin-top:8px">Il tuo suggerimento</label><textarea id="sg-ta-${tk}" maxlength="2000" oninput="SG.draft['${tk}']=this.value" placeholder="Cosa hai osservato? Descrivi il comportamento, senza dare voti alle persone.">${clEsc(SG.draft[tk]||'')}</textarea>
-        <p class="sg-note">Non cambia il punteggio. Lo vedrà solo il capo unità, con il tuo nome.</p>
-        <div class="sg-a"><button class="ok" onclick="sgSend('${tk}')">Invia suggerimento</button><button onclick="sgCancel()">Annulla</button></div></div>`;
+      h += `<div class="sg-box"><label class="sg-n">Il tuo nome (${cm ? 'lo vedrà il Capo Gruppo, con «Commissario di Sezione»' : 'lo vedrà il capo'})</label><input id="sg-nm-${tk}" maxlength="40" value="${clEsc(nm)}" placeholder="Es. Marco">
+        <label class="sg-n" style="display:block;margin-top:8px">${cm ? 'Il tuo parere' : 'Il tuo suggerimento'}</label><textarea id="sg-ta-${tk}" maxlength="2000" oninput="SG.draft['${tk}']=this.value" placeholder="Cosa hai osservato? Descrivi il comportamento, senza dare voti alle persone.">${clEsc(SG.draft[tk]||'')}</textarea>
+        <p class="sg-note">Non cambia il punteggio. Lo vedrà solo ${cm ? 'il Capo Gruppo' : 'il capo unità'}, con il tuo nome.</p>
+        <div class="sg-a"><button class="ok" onclick="sgSend('${tk}')">${cm ? 'Invia parere' : 'Invia suggerimento'}</button><button onclick="sgCancel()">Annulla</button></div></div>`;
     }
     if(!w){ w = document.createElement('div'); w.className = 'sg-wrap'; hd.insertAdjacentElement('afterend', w); }
     w.dataset.sig = sig; w.innerHTML = h;
@@ -16966,25 +16978,25 @@ function sg13Render(){
   W.forEach(w => {
     const k = w.dataset.k; if(!on){ if(w.innerHTML) w.innerHTML = ''; return; }
     const items = SG.list.filter(x => x.percorso === k), can = sg13Can(), own = sg13Owner();
-    const sig = [can?1:0, own?1:0, SG.form === k ? 1 : 0, items.map(x => x.id + x.stato).join(',')].join('|');
+    const cm = clIsComm(), sig = [can?(cm?2:1):0, own?1:0, SG.form === k ? 1 : 0, items.map(x => x.id + x.stato).join(',')].join('|');
     if(w.dataset.sig === sig) return;
     let h = '';
     items.forEach(x => { h += `<div class="sg-b"><div class="sg-n">${clEsc(x.autore_nome||'Collega')} · ${sgFmt(x.created_at)}${own && x.stato === 'nuovo' ? ' · <b style="color:#B26A00">da leggere</b>' : ''}</div><div>${clEsc(x.testo).replace(/\n/g,'<br>')}</div><div class="sg-a">${can ? `<button onclick="sgDel('${x.id}')">Elimina</button>` : (own ? (x.stato === 'nuovo' ? `<button class="ok" onclick="sgMark('${x.id}','letto')">✓ Segna come letto</button>` : `<span class="sg-st">✓ Letto</span><button onclick="sgMark('${x.id}','nuovo')">Da rileggere</button>`) : '')}</div></div>`; });
     if(can){
       if(SG.form === k) h += `<div class="sg-box"><label class="sg-n">Il tuo nome</label><input id="sg-nm-${k}" maxlength="40" value="${clEsc(sgMyName())}" placeholder="Es. Marco">
-        <label class="sg-n" style="display:block;margin-top:8px">Il tuo suggerimento</label><textarea id="sg-ta-${k}" maxlength="2000" oninput="SG.draft['${k}']=this.value" placeholder="Cosa aggiungeresti o cambieresti? Descrivi comportamenti concreti, senza giudicare le persone.">${clEsc(SG.draft[k]||'')}</textarea>
-        <p class="sg-note">Lo legge chi ha il progetto, con il tuo nome. Non cambia il testo della tabella.</p>
-        <div class="sg-a"><button class="ok" onclick="sg13Send('${k}')">Invia suggerimento</button><button onclick="SG.form=null;sg13Render()">Annulla</button></div></div>`;
-      else h += `<button class="sg-add" onclick="SG.form='${k}';sg13Render();setTimeout(()=>{const t=document.getElementById('sg-ta-${k}');if(t)t.focus();},50)">+ Suggerisci</button>`;
+        <label class="sg-n" style="display:block;margin-top:8px">${cm ? 'Il tuo parere' : 'Il tuo suggerimento'}</label><textarea id="sg-ta-${k}" maxlength="2000" oninput="SG.draft['${k}']=this.value" placeholder="Cosa aggiungeresti o cambieresti? Descrivi comportamenti concreti, senza giudicare le persone.">${clEsc(SG.draft[k]||'')}</textarea>
+        <p class="sg-note">Lo legge chi ha il progetto, con il tuo nome${cm ? ' e «Commissario di Sezione»' : ''}. Non cambia il testo della tabella.</p>
+        <div class="sg-a"><button class="ok" onclick="sg13Send('${k}')">${cm ? 'Invia parere' : 'Invia suggerimento'}</button><button onclick="SG.form=null;sg13Render()">Annulla</button></div></div>`;
+      else h += `<button class="sg-add" onclick="SG.form='${k}';sg13Render();setTimeout(()=>{const t=document.getElementById('sg-ta-${k}');if(t)t.focus();},50)">${cm ? '+ Lascia un parere' : '+ Suggerisci'}</button>`;
     }
     w.dataset.sig = sig; w.innerHTML = h;
   });
 }
 async function sg13Send(k){
   const nome = ((document.getElementById('sg-nm-'+k)||{}).value||'').trim(), testo = ((document.getElementById('sg-ta-'+k)||{}).value||'').trim();
-  if(!nome){ clToast('Scrivi il tuo nome'); return; } if(!testo){ clToast('Scrivi il suggerimento'); return; }
-  try{ await dbSgAdd(CL.ctx.id, k, nome, testo); try{ localStorage.setItem('bussola_nome:' + clLc(CL.user && CL.user.email), nome); }catch(e){}
-    SG.form = null; SG.draft[k] = ''; await sgLoad(true); sg13Render(); clToast('Suggerimento inviato'); }
+  if(!nome){ clToast('Scrivi il tuo nome'); return; } if(!testo){ clToast(clIsComm() ? 'Scrivi il parere' : 'Scrivi il suggerimento'); return; }
+  try{ await dbSgAdd(CL.ctx.id, k, sgFirma(nome), testo); try{ localStorage.setItem('bussola_nome:' + clLc(CL.user && CL.user.email), nome); }catch(e){}
+    SG.form = null; SG.draft[k] = ''; await sgLoad(true); sg13Render(); clToast(clIsComm() ? 'Parere inviato' : 'Suggerimento inviato'); }
   catch(e){ clToast('Non riesco a inviare: ' + clErr(e)); } }
 function sgToggle(tk){ SG.open[tk] = !SG.open[tk]; sgRender(); }
 function sgForm(tk){ SG.form = tk; sgRender(); setTimeout(() => { const t = document.getElementById('sg-ta-'+tk); if(t) t.focus(); }, 50); }
@@ -16994,12 +17006,12 @@ async function sgSend(tk){
   const nome = ((document.getElementById('sg-nm-'+tk)||{}).value||'').trim();
   const testo = ((document.getElementById('sg-ta-'+tk)||{}).value||'').trim();
   if(!nome){ clToast('Scrivi il tuo nome'); return; }
-  if(!testo){ clToast('Scrivi il suggerimento'); return; }
+  if(!testo){ clToast(clIsComm() ? 'Scrivi il parere' : 'Scrivi il suggerimento'); return; }
   try{
-    await dbSgAdd(CL.ctx.id, pid, nome, testo);
+    await dbSgAdd(CL.ctx.id, pid, sgFirma(nome), testo);
     try{ localStorage.setItem('bussola_nome:' + clLc(CL.user && CL.user.email), nome); }catch(e){}
     SG.form = null; SG.draft[tk] = ''; SG.open[tk] = true;
-    await sgLoad(true); clToast('Suggerimento inviato');
+    await sgLoad(true); clToast(clIsComm() ? 'Parere inviato' : 'Suggerimento inviato');
   }catch(e){ clToast(clNoTable(e) ? 'Il database non è aggiornato: chiedi di rieseguire lo script SQL' : 'Non riesco a inviare: '+clErr(e)); }
 }
 async function sgMark(id, stato){ try{ await dbSgSet(id, stato); await sgLoad(true); clPerTe(); }catch(e){ clToast('Errore: '+clErr(e)); } }
@@ -17017,7 +17029,7 @@ async function clLoadMem(){
     if(roles){
       const rb = $cl('cl-rolebox'); if(rb) rb.style.display = '';
       const it = $cl('cl-shintro'); if(it) it.innerHTML = `<p class="cl-note" style="margin:0 0 10px">Invita una persona su <strong>${clEsc(CL.ctx.anno)} · ${clEsc(CL.ctx.titolo)}</strong> e scegli come lavorerà:</p>
-        <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>: ${CL_RUOLI_TXT[k]}.</li>`).join('')}</ul>`;
+        <ul class="cl-note" style="margin:0 0 10px;padding-left:18px">${Object.keys(CL_RUOLI).filter(k => k !== 'commissario' || clCommOffer()).map(k=>`<li><strong>${CL_RUOLI[k]}</strong>${k === 'commissario' ? ' · ' : ': '}${CL_RUOLI_TXT[k]}.</li>`).join('')}</ul>`;
     }
     if(!rows.length){ box.innerHTML = '<p class="cl-note" style="margin:8px 0 0">Non hai ancora invitato nessuno.</p>'; return; }
     const me0 = clLc(CL.user && CL.user.email), om0 = CL.ctx.ruolo ? clOwnerMail() : '';
@@ -17206,7 +17218,7 @@ function clWaNum(tel){
   return /^\d{8,15}$/.test(s) ? s : '';
 }
 function clWaText(email, ruolo, affidato){
-  const r = (ruolo === 'cotitolare' || ruolo === 'collaboratore') && clEditOn() ? ruolo : 'lettore';
+  const r = ((ruolo === 'cotitolare' || ruolo === 'collaboratore') && clEditOn()) || ruolo === 'commissario' ? ruolo : 'lettore';
   const url = location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');
   const first = n => String(n||'').trim().split(/\s+/)[0] || '';
   const lui = first(clStaffName(email));
@@ -17216,7 +17228,8 @@ function clWaText(email, ruolo, affidato){
   const cosa = {
     lettore: `in sola lettura, così puoi lasciarmi suggerimenti sui percorsi educativi ${chi}`,
     cotitolare: `come co-titolare, così possiamo lavorare insieme sui percorsi educativi ${chi}: puoi modificare tutto il progetto`,
-    collaboratore: `come collaboratore, così puoi lavorare sulle parti che ci siamo divisi dei percorsi educativi ${chi}`
+    collaboratore: `come collaboratore, così puoi lavorare sulle parti che ci siamo divisi dei percorsi educativi ${chi}`,
+    commissario: `come Commissario di Sezione, così puoi leggere il progetto, compresi gli eventi formativi, e lasciarmi pareri firmati`
   }[r];
   return `Ciao${lui ? ' ' + lui : ''}!\n${io ? 'Sono ' + io + '. ' : ''}Ti ho invitato sul progetto «${CL.ctx.anno} · ${CL.ctx.titolo}» nell'app PEE CNGEI, ${cosa}.${affidato ? '\nTi ho affidato: ' + affidato + '.' : ''}\n\n` +
     `1. Apri ${url}\n2. Accedi (o crea l'account) con questa email: ${email} e inserisci la tua password (o creane una se è il primo accesso)\n3. Lo trovi in Archivio › Condivisi con me.`;
@@ -17233,7 +17246,7 @@ function clMailBtn(email, ruolo){
 }
 async function clSetRole(mid, ruolo){
   try{ await dbSetRole(mid, ruolo); clToast('Ruolo aggiornato: ' + CL_RUOLI[ruolo]); clLoadMem(); }
-  catch(e){ clToast('Errore: '+clErr(e)); clLoadMem(); }
+  catch(e){ clToast(ruolo === 'commissario' && /23514|ruolo_check|check constraint/i.test(String(e.code||'') + ' ' + String(e.message||'')) ? 'Per questo ruolo il database va aggiornato (script SQL del 20 novembre)' : 'Errore: '+clErr(e)); clLoadMem(); }
 }
 async function clInvite(){
   const inp = $cl('cl-inv'); const email = clLc(inp && inp.value);
@@ -17241,6 +17254,7 @@ async function clInvite(){
   if(email === clLc(CL.user.email)){ clMsg('Questo è il tuo indirizzo: il progetto è già tuo', 'err'); return; }
   if(CL.ctx && CL.ctx.ruolo && email === clOwnerMail()){ clMsg('È il titolare del progetto: ha già accesso e il suo ruolo non si cambia.', 'err'); return; }
   const ruolo = (($cl('cl-invr')||{}).value) || 'lettore';
+  if(ruolo === 'commissario' && !clCommOffer()){ clMsg('Il Commissario di Sezione si invita solo dalla Programmazione formativa annuale del Capo Gruppo.', 'err'); return; }
   try{
     await dbInvite(CL.ctx.id, email, ruolo); CL._nMem = undefined;
     CL._nMem = undefined; inp.value = ''; clMsg('Invitato. Il progetto gli comparirà in «Condivisi con me» quando accede con questa email.', 'ok');
@@ -17248,6 +17262,7 @@ async function clInvite(){
     clLoadMem();
   }catch(e){
     if(e.message === 'duplicate') clMsg('Questa persona è già stata invitata', 'err');
+    else if(ruolo === 'commissario' && /23514|ruolo_check|check constraint/i.test(String(e.code||'') + ' ' + String(e.message||''))) clMsg('Per questo ruolo il database va aggiornato (script SQL del 20 novembre): chiedi a chi cura l’app.', 'err');
     else clMsg(clNoTable(e) ? 'La condivisione richiede l\'aggiornamento del database (script SQL più recente).' : clErr(e), 'err');
   }
 }
@@ -17857,7 +17872,7 @@ const RUOLO_TXT = Object.fromEntries(RUOLI);
 const BRANCHE = ['L','E','R'];
 const BR_FULL = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
 const BR_UNIT = {L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki', R:'Es. Compagnia Aquila'};
-const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore'};
+const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore', commissario:'Commissario di Sezione'};
 const noBranca = r => r === 'cg' || r === 'cds';
 const noGruppo = r => r === 'cds';
 // Capo Gruppo e Commissario che sono anche Capi Unità: Branca e nome dell'Unità stanno nel profilo (campo `dashboard`, chiave `unita`: nessun cambio al database)

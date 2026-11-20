@@ -54,6 +54,8 @@ export class FakeDB {
   giroRuolo(uid, g){ const em = this.myEmail(uid); const d = this.t.pee_giri_dest.find(x => x.giro_id === g && x.email === em && (x.ruolo === 'copia' || this.revAbil(x.email))); return d ? d.ruolo : null; }
   isOwner(uid, a){ return this.t.pee_archivi.some(r => r.id === a && r.user_id === uid); }
   mem(uid, a){ const em = this.myEmail(uid); return this.t.pee_membri.find(m => m.archivio_id === a && m.email === em); }
+  // vincolo pee_membri_ruolo_check: dopo lo script del 20 novembre ammette anche «commissario» (db.sqlComm = false per provare il database non aggiornato)
+  ruoloAmmesso(r){ return ['lettore','cotitolare','collaboratore'].includes(r) || (r === 'commissario' && this.sqlComm !== false); }
   canEdit(uid, a){ const m = this.mem(uid, a); return !!(m && (m.ruolo === 'cotitolare' || m.ruolo === 'collaboratore')); }
   isCot(uid, a){ const m = this.mem(uid, a); return !!(m && m.ruolo === 'cotitolare'); }
   canSee(uid, table, r){
@@ -138,6 +140,7 @@ export class FakeDB {
         if(q.table === 'pee_archivi'){ r.user_id = uid; r.updated_at = r.created_at; r.meta = r.meta||{}; r.data = r.data||{};
           if(T.some(x => x.user_id === uid && x.anno === r.anno && x.titolo === r.titolo)) return this.err('23505', 'duplicate key value violates unique constraint'); }
         if(q.table === 'pee_membri'){ r.owner_id = uid; r.ruolo = r.ruolo || 'lettore'; r.visto_il = null; r.email_prima = null;
+          if(!this.ruoloAmmesso(r.ruolo)) return this.err('23514', 'new row for relation "pee_membri" violates check constraint "pee_membri_ruolo_check"');
           const ok = this.isOwner(uid, r.archivio_id) || (this.isCot(uid, r.archivio_id) && ['lettore','collaboratore'].includes(r.ruolo));
           if(!ok) return this.err('42501', 'new row violates row-level security policy');
           if(T.some(x => x.archivio_id === r.archivio_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
@@ -169,6 +172,7 @@ export class FakeDB {
         let ok = false;
         if(q.table === 'pee_archivi'){ ok = r.user_id === uid || this.canEdit(uid, r.id);
           if(ok && r.user_id !== uid && (('anno' in q.vals && q.vals.anno !== r.anno) || ('titolo' in q.vals && q.vals.titolo !== r.titolo))) return this.err('P0001', 'Solo chi ha creato il progetto può cambiarne anno, titolo o proprietario'); }
+        if(q.table === 'pee_membri' && q.vals.ruolo && !this.ruoloAmmesso(q.vals.ruolo)) return this.err('23514', 'new row for relation "pee_membri" violates check constraint "pee_membri_ruolo_check"');
         if(q.table === 'pee_membri') ok = this.isOwner(uid, r.archivio_id) || (this.isCot(uid, r.archivio_id) && r.ruolo !== 'cotitolare' && (!q.vals.ruolo || ['lettore','collaboratore'].includes(q.vals.ruolo)));
         if(q.table === 'pee_giri_rev'){ const ow = this.t.pee_giri.some(g => g.id === r.giro_id && g.owner_id === uid); ok = (r.user_id === uid && !('recepita' in q.vals)) || (ow && Object.keys(q.vals).every(k => k === 'recepita' || k === 'recepita_il')); }
         if(q.table === 'pee_suggerimenti') ok = this.isOwner(uid, r.archivio_id) || (this.sql13 && r.dest && r.dest === u.email && Object.keys(q.vals).every(k => k === 'stato'));
