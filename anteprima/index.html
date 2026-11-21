@@ -2155,6 +2155,41 @@ setTimeout(function(){ bootLd(false); }, 12000);
 window.BRO = (function(){ try{ return JSON.parse(sessionStorage.getItem('bussola_ro')||'null'); }catch(e){ return null; } })();
 try{ if(window.BRO && window.BRO.giro){ document.documentElement.classList.add('rv-pre'); setTimeout(() => document.documentElement.classList.remove('rv-pre'), 70000); } }catch(e){}
 window.LSK = window.BRO ? 'bussola_pee_ro_v1' : 'bussola_pee_v6';
+// ── Memoria del browser piena ──
+// Scrive nella memoria locale senza fallire in silenzio. Se manca spazio libera SOLO copie che si ricreano dal cloud (documenti di revisione già letti, registro degli errori,
+// copia in sola lettura, base di confronto quando non c'è nulla da inviare) e riprova. Mai toccati: il progetto aperto, le copie di separazione Unità/staff, le impostazioni.
+// Se non basta, il valore resta in memoria di pagina (il cloud lo legge da lì) e compare un avviso fisso con cosa fare.
+window._lsMem = window._lsMem || {};
+function lsKeys(){ const a = []; try{ for(let i = 0; i < localStorage.length; i++) a.push(localStorage.key(i)); }catch(e){} return a; }
+function lsPut(k, v){
+  const put = () => { try{ localStorage.setItem(k, v); delete window._lsMem[k]; return true; }catch(e){ return false; } };
+  if(put()) return true;
+  const quiet = (typeof CL === 'undefined' || !CL || (!CL.pending && !(CL.ctx && CL.ctx.dirty)));
+  const stages = [
+    () => lsKeys().filter(x => /^bussola_rvdoc2_/.test(x) || /^bussola_err_/.test(x)),
+    () => window.BRO ? [] : ['bussola_pee_ro_v1', 'bussola_cloud_ctx_ro', 'bussola_cloud_ctx_ro_base'],
+    () => (!window.BRO && quiet) ? ['bussola_cloud_ctx_base'] : []
+  ];
+  for(const st of stages){
+    let any = false; st().forEach(x => { if(x !== k){ try{ if(localStorage.getItem(x) !== null){ localStorage.removeItem(x); any = true; } }catch(e){} } });
+    if(any && put()) return true;
+  }
+  window._lsMem[k] = v; lsWarn(); return false;
+}
+// come lsPut, ma con un errore leggibile (per i punti in cui chi chiama gestisce già le eccezioni)
+function lsSet(k, v){ if(!lsPut(k, v)){ delete window._lsMem[k]; /* chi chiama considera fallita la scrittura: niente copia in memoria di pagina */ const e = new Error('la memoria di questo browser è piena'); e.quota = true; throw e; } }
+function lsWarn(){
+  try{
+    if(document.getElementById('ls-warn')) return;
+    const d = document.createElement('div'); d.id = 'ls-warn'; d.setAttribute('role', 'alert');
+    d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:100000;background:#fff3cd;color:#3b2f00;border:2px solid #b58900;border-radius:10px;padding:10px 12px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.25);max-width:640px;margin:0 auto';
+    d.innerHTML = '<b>La memoria di questo browser è piena.</b> Il progetto non si può salvare su questo dispositivo, ma le modifiche partono comunque verso il cloud finché la pagina resta aperta. '
+      + 'Per risolvere: apri PEE CNGEI in una finestra anonima o in un altro browser, oppure libera spazio dalle impostazioni del browser (dati del sito pee-app.it). '
+      + '<b>Non svuotare i dati del sito finché in alto non compare «Salvato».</b> '
+      + '<button type="button" style="margin-left:6px;padding:4px 10px;border:1px solid #b58900;background:#fff;border-radius:6px;cursor:pointer" onclick="this.parentNode.remove()">Ho capito</button>';
+    (document.body || document.documentElement).appendChild(d);
+  }catch(e){}
+}
 </script>
 <script>
 // ── Segnalazione automatica degli errori: solo dati tecnici (errore, versione, dispositivo), mai dati del progetto né nomi ──
@@ -4399,14 +4434,15 @@ function saveData(silent) {
   if(window.BRO){ if(!silent) showToast('Sola lettura: il progetto è di un’altra persona dello staff'); return; }
   if(typeof window.rvLocked === 'function' && window.rvLocked()){ rvLockRevert(); return; }   // tocca al revisore: qualunque modifica sfuggita ai campi bloccati non si salva e torna com'era
   try {
-    localStorage.setItem(LSK, JSON.stringify({
+    const _saved = lsPut(LSK, JSON.stringify({
       obs,pris,vals,scheda,MODE,FASCIA,STAFF_TYPE,STAFF_RUOLO,
       STAFF_MEMBERS,staffObs,staffProfiles,staffTimeline,autoObs,CURRENT_MEMBER,
       autoProfile,UNIT_NAME,
       v:1,
       ts:Date.now()
     }));
-    if(window.cloudQueuePush) cloudQueuePush();
+    if(window.cloudQueuePush) cloudQueuePush();   // il cloud legge da memoria di pagina se il browser non ha più spazio
+    if(!_saved){ try{ const si=document.getElementById('save-ind'); if(si) si.innerHTML='⚠<span class="save-w"> Solo nel cloud</span>'; }catch(e){} if(!silent) showToast('Memoria del browser piena: il lavoro parte solo verso il cloud'); return; }
     try{ window._saveAt=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); document.querySelectorAll('.save-mini').forEach(e=>{e.textContent='✓';}); document.querySelectorAll('.hdr .cl-hdrbtn').forEach(b=>{ b.title=(b.title||'').replace(/ · Salvato alle .*$/,'')+' · Salvato alle '+window._saveAt; }); }catch(e){}
     try{ const si=document.getElementById('save-ind'); if(si) si.innerHTML='✓<span class="save-w"> Salvato</span> <span class="save-time">'+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+'</span>'; }catch(e){}
     if(!silent) showToast('Dati salvati');
@@ -9077,7 +9113,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611211352'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611212053'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -15430,7 +15466,7 @@ let _sgCtx = null;
 function clSaveCtx(){ try{ setTimeout(pjBarUpdate,0); }catch(e){} try{ if(CL.ctx && CL.user && !CL.ctx.uid && !window.BRO) CL.ctx.uid = CL.user.id; }catch(e){} try{ CL.ctx ? localStorage.setItem(CL_CTX, JSON.stringify(CL.ctx)) : localStorage.removeItem(CL_CTX); }catch(e){}
   const id = CL.ctx ? CL.ctx.id : null;
   if(id !== _sgCtx){ try{ _sgCtx = id; SG.list = []; SG.open = {}; SG.form = null; SG.announced = 0; sgRender(); if(id && !window.BRO) setTimeout(() => sgLoad(false), 0); }catch(e){} } }
-function clSnapshot(){ try{ return JSON.parse(localStorage.getItem(CL_LS)||'{}'); }catch(e){ return {}; } }
+function clSnapshot(){ try{ return JSON.parse((window._lsMem && window._lsMem[CL_LS]) || localStorage.getItem(CL_LS) || '{}'); }catch(e){ return {}; } }
 function clHasLocal(){ const d = clSnapshot(); return !!(d.MODE || (d.STAFF_MEMBERS||[]).length || Object.values(d.obs||{}).some(v=>v&&v!=='n')); }
 function clMeta(d){
   return {nome:d.UNIT_NAME||'', mode:d.MODE||null, fascia:d.FASCIA||null, staff:(d.STAFF_MEMBERS||[]).length,
@@ -15900,7 +15936,7 @@ async function pjSwitch(){
       const titolo = await clUniqueTitle(rows, anno, (target==='staff' ? 'Staff ' : 'PEE ') + anno);
       if(target === 'staff'){ try{ const u = pjUnitPick(rows, anno); if(u){ const g = await dbGet(u.id); pjStaffSeed(fresh, (g||{}).data); } }catch(e){} }
       const r = await dbInsert(anno, titolo, fresh, clMeta(fresh));
-      localStorage.setItem(CL_LS, JSON.stringify(fresh)); clBaseSet(fresh);
+      lsSet(CL_LS, JSON.stringify(fresh)); clBaseSet(fresh);
       CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; clSaveCtx(); CL._arc = null;
       try{ sessionStorage.setItem('bussola_opened_msg', 'Nuovo progetto per ' + pjLabel(target) + ': ' + anno + ' · ' + titolo + '. ' + (t0 ? 'Quello per ' + pjLabel(t0) + ' resta in archivio.' : '')); sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
       appReload();
@@ -15912,7 +15948,7 @@ async function pjSwitch(){
     if(t0) localStorage.setItem('bussola_slot_' + t0, JSON.stringify(cur));
     const slot = localStorage.getItem('bussola_slot_' + target);
     if(!slot && target === 'staff'){ try{ pjStaffSeed(fresh, t0 === 'giovani' ? cur : JSON.parse(localStorage.getItem('bussola_slot_giovani') || 'null')); }catch(e){} }
-    localStorage.setItem(CL_LS, slot || JSON.stringify(fresh));
+    lsSet(CL_LS, slot || JSON.stringify(fresh));
     sessionStorage.setItem('bussola_opened_msg', 'Il lavoro per ' + pjLabel(t0) + ' resta su questo dispositivo: lo ritrovi scegliendo «' + (t0==='staff' ? 'Il mio staff' : 'La mia Unità') + '». Con un account li tieni nell’archivio.');
     sessionStorage.setItem('bussola_autoresume','1');
   }catch(e){}
@@ -15944,7 +15980,7 @@ async function pjSplitAll(){
       for(const o of all.filter(x => x.anno === r.anno && x.id !== r.id && (x.meta||{}).mode === other.MODE)){ const g = await dbGet(o.id); if(g && core(g.data||{}) === core(other)){ dup = true; break; } }
       if(!dup){ const titolo = await clUniqueTitle(all, r.anno, (prim === 'giovani' ? 'Staff ' : 'PEE ') + r.anno); await dbInsert(r.anno, titolo, other, clMeta(other)); made.push(titolo); }
       const ts = await dbUpdate(r.id, keep, clMeta(keep));
-      if(isCur){ localStorage.setItem(CL_LS, JSON.stringify(keep)); clBaseSet(keep); CL.ctx.ts = ts; CL.ctx.dirty = false; CL.pending = false; clSaveCtx(); changedCur = true; }
+      if(isCur){ lsSet(CL_LS, JSON.stringify(keep)); clBaseSet(keep); CL.ctx.ts = ts; CL.ctx.dirty = false; CL.pending = false; clSaveCtx(); changedCur = true; }
     }
     if(changedCur && !made.length){ appReload(); return; }
     if(made.length){ CL._arc = null;
@@ -16060,7 +16096,7 @@ async function clRestoreVersion(vid){
   try{
     const v = await dbVersionGet(vid); if(!v){ clToast('Versione non trovata'); return; }
     await dbSnap(CL.ctx.id, clSnapshot(), 'Prima del ripristino');
-    localStorage.setItem(CL_LS, JSON.stringify(v.data||{}));
+    lsSet(CL_LS, JSON.stringify(v.data||{}));
     CL.ctx.ts = await dbUpdate(CL.ctx.id, v.data||{}, clMeta(v.data||{})); CL.ctx.dirty = false; clSaveCtx(); clBaseSet(v.data||{});
     appReload();
   }catch(e){ clToast('Errore: '+clErr(e)); }
@@ -16367,7 +16403,7 @@ function clViewRestore(v){
 }
 function clApplyInPlace(d){
   const main = document.getElementById('main-app');
-  if(!main || main.style.display === 'none'){ localStorage.setItem(LSK, JSON.stringify(d || {})); return true; }  // pagina iniziale: basta salvare
+  if(!main || main.style.display === 'none'){ lsSet(LSK, JSON.stringify(d || {})); return true; }  // pagina iniziale: basta salvare
   const v = clViewSave();
   window._clApplying = true;   // durante l'aggiornamento nessuno scorrimento automatico (su Safari continuerebbe dopo)
   try{
@@ -16376,7 +16412,7 @@ function clApplyInPlace(d){
     STAFF_MEMBERS = []; staffObs = {}; staffProfiles = {}; staffTimeline = {}; autoObs = {};
     autoProfile = {nome:'', eta:'', ruolo:'', esperienza:'', formazione:''}; UNIT_NAME = '';
     scheda = JSON.parse(SCHEDA_DEFAULT);
-    localStorage.setItem(LSK, JSON.stringify(d || {}));
+    lsSet(LSK, JSON.stringify(d || {}));
     startTool();
     // ciò che riguarda solo questo schermo resta com'era (membro dello staff aperto, vista)
     if(v.member !== undefined) CURRENT_MEMBER = v.member;
@@ -16437,7 +16473,7 @@ async function clMergeNow(){
     catch(e){ if(e.message === 'stale'){ CL.pending = true; setTimeout(() => clWhenIdle(() => clPush()), 300); return; } throw e; }
     clAutoSnap(id, merged);
   }
-  localStorage.setItem(CL_LS, JSON.stringify(merged));
+  lsSet(CL_LS, JSON.stringify(merged));
   CL.ctx.ts = ts; CL.ctx.dirty = false; CL.ctx.udirty = false; CL.ctx.upExtra = false; CL.ctx.upaths = []; clSaveCtx(); clBaseSet(merged);
   if(clSameData(merged, local)){ CL.pending = false; clSetStatus('ok'); return 'same'; }
   // se cambiano solo testi che l'app ricalcola da sola, li aggiorno senza ricaricare la pagina
@@ -16459,7 +16495,7 @@ async function clAdoptRemote(){
   CL.ctx.ts = r.ts; CL.ctx.dirty = false; CL.ctx.udirty = false; clSaveCtx(); clBaseSet(remote); CL.pending = false;
   if(clSameData(remote, local)){ clSetStatus('ok'); return; }
   const dp = clDiffPaths(local, remote);
-  localStorage.setItem(CL_LS, JSON.stringify(remote));
+  lsSet(CL_LS, JSON.stringify(remote));
   if(dp.length && dp.every(x => CL_QUIET.test(x)) && clApplyQuiet(remote, dp)){ clSetStatus('ok'); return; }
   clSoftReload('Aggiornato con le modifiche arrivate ora');
 }
@@ -17508,13 +17544,13 @@ async function clOpenProject(id, extra){
     // progetto di un collega aperto in modifica: si conserva il ruolo (anche quando si ricarica la versione del cloud)
     const keep = extra || (CL.ctx && CL.ctx.id === id && CL.ctx.ruolo ? {ruolo:CL.ctx.ruolo, owner:CL.ctx.owner||''} : null);
     try{ sessionStorage.setItem('bussola_opened_msg', 'Aperto: '+r.anno+' · '+r.titolo+(keep ? ' (di '+(keep.owner||'un’altra persona')+')' : '. Il progetto precedente è salvato in archivio.') + ppMsg); }catch(e){}
-    localStorage.setItem(CL_LS, JSON.stringify(r.data||{})); clBaseSet(r.data||{});
+    lsSet(CL_LS, JSON.stringify(r.data||{})); clBaseSet(r.data||{});
     try{ if((r.data||{}).MODE === 'giovani' && !extra && !/^Esempio/i.test(r.titolo || '')) localStorage.setItem('bussola_last_unit', r.id); }catch(e){}
     CL.ctx = {id:r.id, anno:r.anno, titolo:r.titolo, ts:r.ts}; if(keep){ CL.ctx.ruolo = keep.ruolo; CL.ctx.owner = keep.owner; } clSaveCtx();
     try{ if((r.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
     try{ bootLd(true, 'Apro «' + r.titolo + '»…'); }catch(e){}
     appReload();
-  }catch(e){ clToast('Errore: '+clErr(e)); }
+  }catch(e){ try{ sessionStorage.removeItem('bussola_opened_msg'); }catch(_){} clToast(e && e.quota ? 'Non riesco ad aprire il progetto: la memoria di questo browser è piena. Il progetto è al sicuro nel cloud.' : 'Errore: '+clErr(e)); }
 }
 // «Duplica»: copia identica dei dati in un progetto nuovo («… (copia)»), nello stesso anno o nel successivo; inviti e condivisioni no
 function clDupAsk(id){ const box=document.getElementById('cl-dup-'+id); if(!box) return; if(!box.hidden){ box.hidden=true; return; }
@@ -17870,7 +17906,7 @@ async function clRestoreOne(i){
 function clOpenFromBundle(i){
   const p = CL.bundle && CL.bundle.progetti[i]; if(!p) return;
   if(!confirm('Il progetto scelto sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
-  localStorage.setItem(CL_LS, JSON.stringify(p.data||{}));
+  lsSet(CL_LS, JSON.stringify(p.data||{}));
   try{ if((p.data||{}).MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
   appReload();
 }
@@ -17892,7 +17928,7 @@ function clRestore(inp){
         CL.bundle = {app:'PEE CNGEI', esportato:j.esportato || null, progetti:[{anno:y, titolo:String(j.titolo || 'Progetto') + ' (caricato)', meta:j.meta || clMeta(d), data:d}]}; inp.value = ''; clShowBundle(); return;
       }
       if(!confirm('Il file sostituirà il lavoro attualmente presente su questo dispositivo. Continuare?')) return;
-      localStorage.setItem(CL_LS, JSON.stringify(d));
+      lsSet(CL_LS, JSON.stringify(d));
       try{ if(d.MODE) sessionStorage.setItem('bussola_autoresume','1'); }catch(e){}
       appReload();
     }catch(e){ clMsg('File non valido: '+clErr(e), 'err'); }
