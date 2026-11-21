@@ -9046,7 +9046,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611211130'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611211340'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -21718,8 +21718,56 @@ function sezCard(x){
     <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${blocco('Osservazione dei Capi Gruppo', 'fatta da te', mine)}${blocco('Osservazione degli Staff', 'fatta dal Capo Gruppo', so)}</div>
     ${nota}
     <p class="sh-hint" style="margin:6px 0 0">${mem.length ? `Staff del Gruppo: ${mem.length} ${mem.length === 1 ? 'persona' : 'persone'}, ${con} con almeno una osservazione.` : 'Il Capo Gruppo non ha ancora inserito persone nello staff.'}</p>
-    ${mem.length ? `<details style="margin-top:4px"><summary>Chi c’è nello staff</summary><p class="sh-sub" style="margin:4px 0 0">${mem.map(E).join(', ')}</p></details>` : ''}
+    <details style="margin-top:4px"><summary>Gli adulti del Gruppo e la loro formazione</summary><ul style="margin:6px 0 0;padding-left:18px">${sezAdulti(x).map(r => `<li style="margin:0 0 4px"><b>${E(r.nome)}</b>${r.ruolo ? ' <span class="sh-hint">' + E(r.ruolo) + '</span>' : ''} — Livello: <b>${E(sezLvLab(r.lv))}</b>${r.voci ? '<br><span class="sh-hint">' + E(r.voci) + '</span>' : ''}${r.nota ? '<br><span class="sh-hint">Scritto prima: ' + E(r.nota) + '</span>' : ''}</li>`).join('')}</ul></details>
     <div class="anv-act"><button type="button" class="btn-ghost" onclick="clOpenShared('${E(x.id)}')">Apri il progetto del Gruppo (sola lettura)</button></div></section>`;
+}
+// colore di una cella della mappa: scala a una sola tinta (più scuro = più presente); il testo della fascia è sempre scritto nella cella, il colore non è l'unico segnale
+const SEZ_COL = [['non emerge', '#f4f1ea', '#1a1a1a'], ['tracce iniziali', '#dcebd9', '#1a1a1a'], ['in sviluppo', '#b6d7b0', '#1a1a1a'], ['presente', '#6fb07a', '#1a1a1a'], ['consolidato', '#2f7d5b', '#ffffff']];
+const sezCol = m => SEZ_COL[m >= 9 ? 4 : m >= 7 ? 3 : m >= 5 ? 2 : m >= 3 ? 1 : 0];
+function sezMappa(tit, chi, righe, K){
+  const E = esc; const num = m => m.toString().replace('.', ',');
+  const body = righe.map(r => `<tr><th scope="row">${E(r.nome)}</th>${SEZ_AMB.map(k => { const a = r.map ? sezAvg(r.map, k) : null; if(!a) return '<td><span class="sh-hint">—</span></td>'; const c = sezCol(a.m); return `<td style="background:${c[1]};color:${c[2]}"><b>${num(a.m)}</b><br><small>${E(c[0])}</small></td>`; }).join('')}</tr>`).join('');
+  return `<div style="flex:1 1 300px;min-width:0"><h3 style="margin:0;font-size:15px">${E(tit)}</h3><p class="sh-hint" style="margin:0 0 4px">${E(chi)}</p><table class="bil-t sez-map" style="min-width:0;table-layout:fixed;font-size:13px"><thead><tr><th scope="col" style="width:25%">Gruppo</th>${SEZ_AMB.map(k => `<th scope="col" aria-label="${E(AMBITO_LABELS[k])}"><span class="sez-lg">${E(AMBITO_LABELS[k])}</span><span class="sez-sh" aria-hidden="true">${E(AMBITO_LABELS[k].slice(0, 4))}.</span></th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+// gli adulti di un Gruppo con il livello e le voci di Formazione: letti dal progetto del Capo Gruppo (sola lettura), con la stessa regola dello staff del Gruppo
+function sezAdRow(nome, ruolo, p){
+  p = (p && typeof p === 'object') ? p : {};
+  const st = p.src && typeof p.src === 'object' ? formStateRow(p.src) : formStateProf(p);
+  const lv = formLevel(st.c) || stFormLvl(p.formazione) || '';
+  const voci = st.c.map(x => FORM_TXT[x] || x).join(', ');
+  return {nome: String(nome || '').trim(), ruolo: String(ruolo || '').trim(), lv, voci, nota: st.n || ''};
+}
+function sezAdulti(x){
+  const c = SH._sez.cache[x.id]; const d = (c && c.d) || {};
+  const M = Array.isArray(d.STAFF_MEMBERS) ? d.STAFF_MEMBERS.filter(m => typeof m === 'string' && m.trim()) : [];
+  const P = (d.staffProfiles && typeof d.staffProfiles === 'object') ? d.staffProfiles : {};
+  const rows = [];
+  const ap = (d.autoProfile && typeof d.autoProfile === 'object') ? d.autoProfile : {};
+  const own = String(x.owner || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+  rows.push(sezAdRow(String(ap.nome || '').trim() || own || 'Capo Gruppo', 'CG', ap));
+  M.forEach(n => { const p = P[n]; rows.push(sezAdRow(n, p && p.ruolo, p)); });
+  return rows;
+}
+const SEZ_LV = ['nessuna', 'iniz', 'inter', 'avanz', 'wb', ''];
+const sezLvLab = k => k ? FORM_LIV[k] : 'Non indicata';
+function sezFormazione(lista){
+  const E = esc; const tot = {}; let n = 0;
+  const righe = lista.map(x => { const A = sezAdulti(x); const cnt = {}; A.forEach(r => { cnt[r.lv] = (cnt[r.lv] || 0) + 1; tot[r.lv] = (tot[r.lv] || 0) + 1; n++; });
+    const pill = SEZ_LV.filter(k => cnt[k]).map(k => `<span style="white-space:nowrap">${E(sezLvLab(k))} <b>${cnt[k]}</b></span>`).join(' · ');
+    return `<li style="margin:0 0 6px"><b>${E(sezNome(x))}</b> — ${A.length} ${A.length === 1 ? 'adulto' : 'adulti'}: ${pill || '—'}</li>`; }).join('');
+  const sez = SEZ_LV.filter(k => tot[k]).map(k => `<span style="white-space:nowrap">${E(sezLvLab(k))} <b>${tot[k]}</b></span>`).join(' · ');
+  return `<section class="sh-card2 wide" aria-label="Formazione degli adulti dei Gruppi"><h2 style="margin:0 0 2px;font-size:18px">Formazione degli adulti dei Gruppi</h2>
+    <p class="sh-sub" style="margin:0 0 8px;max-width:70ch">Per ogni Gruppo, quante persone adulte hanno quale livello di formazione, secondo quanto ha indicato il Capo Gruppo nel proprio staff (il Capo Gruppo è compreso). Il livello si ricava dalle voci scelte: l’elenco con i nomi è dentro ogni Gruppo qui sotto.</p>
+    <ul style="margin:0 0 6px;padding-left:18px">${righe}</ul>
+    <p style="margin:0"><b>Nella Sezione</b> — ${n} ${n === 1 ? 'adulto' : 'adulti'}: ${sez || '—'}</p></section>`;
+}
+function sezMappe(lista){
+  const so = x => { const d = (SH._sez.cache[x.id] || {}).d || {}; return (d.staffObs && typeof d.staffObs === 'object') ? d.staffObs : {}; };
+  const a = lista.map(x => ({nome: sezNome(x), map: so(x)}));
+  const b = lista.map(x => { const mio = sezMio(x); return {nome: sezNome(x), map: mio ? {[mio]: staffObs[mio]} : null}; });
+  return `<section class="sh-card2 wide" aria-label="Mappa dei Gruppi"><h2 style="margin:0 0 2px;font-size:18px">Mappa dei Gruppi</h2>
+    <p class="sh-sub" style="margin:0 0 8px;max-width:70ch">Le medie per Ambito, Gruppo per Gruppo, per vedere a colpo d’occhio dove conviene fermarsi a parlare. È uno spunto di discussione, non una diagnosi: il colore va dal chiaro (non emerge) allo scuro (consolidato) e la fascia è scritta in ogni cella; Gruppi diversi osservano con occhi diversi, quindi i punteggi tra Gruppi non sono davvero confrontabili.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${sezMappa('Osservazione degli Staff', 'fatta dal Capo Gruppo', a)}${sezMappa('Osservazione dei Capi Gruppo', 'fatta da te', b)}</div></section>`;
 }
 function sezHTML(){
   const S = SH._sez || {}; const E = esc; const y = Number(CL.ctx && CL.ctx.anno) || '';
@@ -21732,7 +21780,7 @@ function sezHTML(){
   const persi = Object.keys(V).filter(id => !ids.has(id) && V[id] && V[id].y === y).map(id => `<p class="sh-hint" role="status" style="margin:0 0 6px">Il Gruppo ${E(V[id].n)} non condivide più il progetto. <button type="button" class="btn-ghost" onclick="sezForget('${E(id)}')">Toglilo dall’elenco</button></p>`).join('');
   const vuoto = lista.length ? '' : '<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">Nessun Capo Gruppo ti ha ancora invitato per quest’anno. Quando un Capo Gruppo ti invita come Commissario di Sezione dalla sua Programmazione formativa annuale, il Gruppo compare qui, aggiornato ogni volta che apri la pagina.</p></section>';
   const altri = S.altri ? `<p class="sh-hint">Hai ${S.altri} ${S.altri === 1 ? 'invito' : 'inviti'} per altri anni scout: non compaiono qui, perché ogni anno il Capo Gruppo deve invitarti di nuovo.</p>` : '';
-  return head + persi + vuoto + lista.map(sezCard).join('') + altri;
+  return head + persi + vuoto + (lista.length ? sezMappe(lista) + sezFormazione(lista) : '') + lista.map(sezCard).join('') + altri;
 }
 window.shSez = function(){ ownOff(); ensurePanels(); SH.ppv = 'sez'; $('panel-pp').innerHTML = sezHTML(); own('panel-pp'); try{ window.scrollTo(0, 0); }catch(e){} sezLoad(); };
 window.sezLoad = sezLoad;
@@ -23098,6 +23146,8 @@ body.sh-in #hdr .hdr-inner>:not(.hd){display:none!important}
 .bil-dt{width:100%;margin-top:6px;font-size:12.5px}.bil-dt td{padding:3px 6px;border:0}.bil-tot th,.bil-tot td{font-weight:800;border-top:2px solid #111}
 @media(max-width:600px){.bil-v{display:none}.bil-ch{height:160px;gap:3px}.bil-m{font-size:9.5px;letter-spacing:-.2px}}
 .vis-lst:has(.bil-t){overflow-x:auto}.bil-t{min-width:560px}.bil-t th{white-space:nowrap}
+.bil-t.sez-map th,.bil-t.sez-map td{white-space:normal;overflow-wrap:anywhere;padding:6px 4px}.bil-t.sez-map th{font-size:12px}
+.bil-t.sez-map .sez-sh{display:none}@media(max-width:480px){.bil-t.sez-map .sez-lg{display:none}.bil-t.sez-map .sez-sh{display:inline}.bil-t.sez-map{font-size:12px!important}.bil-t.sez-map td small{font-size:10.5px}.bil-t.sez-map th,.bil-t.sez-map td{padding:6px 3px}}
 .chk-a .att-how{min-height:44px;padding:0 12px;border:1px solid currentColor;border-radius:8px;background:#fff;cursor:pointer;font:700 12.5px 'Montserrat',sans-serif}
 /* Verifica dell'anno */
 .anv-q{display:flex;flex-direction:column;gap:6px}

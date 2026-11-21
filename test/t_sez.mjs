@@ -23,17 +23,18 @@ const CO = mkU('comm@x.it', 'Marco Commissario', 'cds', null);
 const G1 = mkU('g1@x.it', 'Gina Uno', 'cg', '1'), G2 = mkU('g2@x.it', 'Dario Due', 'cg', '2'), G3 = mkU('g3@x.it', 'Tina Tre', 'cg', '3');
 
 // un Capo Gruppo crea il suo progetto formativo dall'interfaccia e lo riempie: n persone osservate con valori fissi per Ambito
-async function capoGruppo(u, nomeGruppo, persone, val){
+async function capoGruppo(u, nomeGruppo, persone, val, cgForm){
   const pa = await person(br, db, {ctx: dev0}), P = pa.page; await loginAs(P, base, u); await sleep(2500);
   await P.click('.sh-big >> nth=0'); await sleep(300); await P.click('#sh-ncre'); await sleep(3500);
-  await P.evaluate(([nome, ps, v]) => {
-    UNIT_NAME = nome; STAFF_MEMBERS = ps.map(p => p.n); STAFF_MEMBERS.forEach((n, k) => { staffProfiles[n] = {ruolo:'CU'}; staffObs[n] = {}; if(ps[k].obs) ['P', 'C', 'S'].forEach(a => DB[a].forEach(q => { staffObs[n][q.id] = v[a]; })); });
-    _clTouched = true; _clUserAt = Date.now(); saveData(true); }, [nomeGruppo, persone, val]);
+  await P.evaluate(([nome, ps, v, cf]) => {
+    UNIT_NAME = nome; STAFF_MEMBERS = ps.map(p => p.n); STAFF_MEMBERS.forEach((n, k) => { staffProfiles[n] = ps[k].f ? {ruolo:'CU', formc:ps[k].f, formazione:formLevel(ps[k].f)} : {ruolo:'CU'}; staffObs[n] = {}; if(ps[k].obs) ['P', 'C', 'S'].forEach(a => DB[a].forEach(q => { staffObs[n][q.id] = v[a]; })); });
+    if(cf) Object.assign(autoProfile, {nome:cf.n, formc:cf.f, formazione:formLevel(cf.f)});
+    _clTouched = true; _clUserAt = Date.now(); saveData(true); }, [nomeGruppo, persone, val, cgForm || null]);
   let row = null; await until(async () => { row = db.t.pee_archivi.find(r => r.user_id === u.id && r.data && r.data.STAFF_MEMBERS && r.data.STAFF_MEMBERS.length === persone.length && r.data.UNIT_NAME === nomeGruppo); return !!row; }, 15000);
   await pa.ctx.close(); return row;
 }
-const R1 = await capoGruppo(G1, 'CdG Alfa', [{n:'ZQ-G1-Anna', obs:1}, {n:'ZQ-G1-Piero', obs:1}, {n:'ZQ-G1-Rita', obs:1}], {P:8, C:4, S:2});
-const R2 = await capoGruppo(G2, 'CdG Beta', [{n:'ZQ-G2-Luca', obs:1}, {n:'ZQ-G2-Ines', obs:0}], {P:6, C:6, S:6});
+const R1 = await capoGruppo(G1, 'CdG Alfa', [{n:'ZQ-G1-Anna', obs:1, f:['for_in']}, {n:'ZQ-G1-Piero', obs:1, f:['for_m_e', 'for_g']}, {n:'ZQ-G1-Rita', obs:1, f:['for_in', 'for_m_e']}], {P:8, C:4, S:2}, {n:'Gina Uno', f:['wb']});
+const R2 = await capoGruppo(G2, 'CdG Beta', [{n:'ZQ-G2-Luca', obs:1, f:['nessuna']}, {n:'ZQ-G2-Ines', obs:0}], {P:6, C:6, S:6});
 const R3 = await capoGruppo(G3, 'CdG Gamma', [{n:'ZQ-G3-Zeno', obs:1}], {P:5, C:5, S:5});
 ok(!!R1 && !!R2 && !!R3, 'tre Capi Gruppo hanno creato e riempito il loro progetto formativo');
 // il Commissario: progetto proprio, con Gina già nella tabella «I miei Capi Gruppo» (osservata 9/7/5)
@@ -71,6 +72,28 @@ ok(/3 persone, 3 con almeno una osservazione/.test(T) && /2 persone, 1 con almen
 
 const fuori = await ev(() => { const W = document.documentElement.clientWidth; return [...document.querySelectorAll('#panel-pp section table')].filter(t => t.getBoundingClientRect().right > W + 1 || t.getBoundingClientRect().left < -1).length; });
 ok(fuori === 0, 'le due letture stanno dentro lo schermo (nessuna fuori vista)');
+// 2b) pezzo 2: gli adulti con il livello di formazione; pezzo 3: la mappa a colori
+const adulti = nome => ev(n => { const s = [...document.querySelectorAll('#panel-pp section')].find(x => x.getAttribute('aria-label') === n); if(!s) return null; const d = [...s.querySelectorAll('details')].find(x => /Gli adulti del Gruppo/.test(x.querySelector('summary').innerText)); return d ? [...d.querySelectorAll('li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()) : null; }, nome);
+const AD = await adulti('CdG Alfa'), BD = await adulti('CdG Beta');
+ok(AD && AD.length === 4, 'adulti Gruppo Alfa: il Capo Gruppo e le 3 persone dello staff · ' + JSON.stringify(AD));
+ok(/Gina Uno.*CG.*Livello: Wood Badge/.test(AD[0]), 'adulti Alfa: il Capo Gruppo c\'è, con il suo livello (Wood Badge)');
+ok(/ZQ-G1-Anna.*Livello: Iniziale.*FOR\.IN/.test(AD[1]) && /ZQ-G1-Piero.*Livello: Avanzata.*FOR\.M Branca E, FOR\.G/.test(AD[2]) && /ZQ-G1-Rita.*Livello: Intermedia/.test(AD[3]), 'adulti Alfa: livello e voci di ciascuna persona (Iniziale, Avanzata, Intermedia)');
+ok(AD.length === 4 && BD && BD.length === 3 && /ZQ-G2-Luca.*Livello: Nessuna/.test(BD[1]) && /ZQ-G2-Ines.*Livello: Non indicata/.test(BD[2]) && /Dario Due.*Livello: Non indicata/.test(BD[0]), 'adulti Beta: Nessuna, e «Non indicata» per chi non ha scelto nulla (anche il Capo Gruppo) · ' + JSON.stringify(BD));
+const RIE = await ev(() => { const s = [...document.querySelectorAll('#panel-pp section')].find(x => x.getAttribute('aria-label') === 'Formazione degli adulti dei Gruppi'); return s ? s.innerText.replace(/\s+/g, ' ') : null; });
+ok(RIE && /CdG Alfa — 4 adulti: Nessuna 0|CdG Alfa — 4 adulti: Iniziale 1 · Intermedia 1 · Avanzata 1 · Wood Badge 1/.test(RIE) && /CdG Beta — 3 adulti: Nessuna 1 · Non indicata 2/.test(RIE) && /Nella Sezione — 7 adulti: Nessuna 1 · Iniziale 1 · Intermedia 1 · Avanzata 1 · Wood Badge 1 · Non indicata 2/.test(RIE), 'riepilogo per livello: per Gruppo e per Sezione · ' + RIE);
+const MAPPA = await ev(() => { const s = [...document.querySelectorAll('#panel-pp section')].find(x => x.getAttribute('aria-label') === 'Mappa dei Gruppi'); if(!s) return null; return [...s.querySelectorAll('table')].map(t => [...t.querySelectorAll('tbody tr')].map(r => [...r.children].map(c => c.innerText.replace(/\s+/g, ' ').trim()))); });
+ok(MAPPA && MAPPA.length === 2, 'mappa: due letture etichettate, ciascuna con la sua tabella');
+ok(JSON.stringify(MAPPA[0]) === JSON.stringify([['CdG Alfa', '8 presente', '4 tracce iniziali', '2 non emerge'], ['CdG Beta', '6 in sviluppo', '6 in sviluppo', '6 in sviluppo']]), 'mappa «Osservazione degli Staff»: valori e fasce scritte · ' + JSON.stringify(MAPPA[0]));
+ok(JSON.stringify(MAPPA[1]) === JSON.stringify([['CdG Alfa', '9 consolidato', '7 presente', '5 in sviluppo'], ['CdG Beta', '—', '—', '—']]), 'mappa «Osservazione dei Capi Gruppo»: la tua lettura, «—» dove non osservato · ' + JSON.stringify(MAPPA[1]));
+const MT = await ev(() => document.querySelector('#panel-pp section[aria-label="Mappa dei Gruppi"]').innerText);
+ok(/spunto di discussione, non una diagnosi/.test(MT) && /non sono davvero confrontabili/.test(MT), 'mappa: dice che è uno spunto di discussione e che i punteggi tra Gruppi non sono confrontabili');
+const col = await ev(() => { const s = document.querySelector('#panel-pp section[aria-label="Mappa dei Gruppi"]'); return [...s.querySelectorAll('td')].filter(c => /\d/.test(c.innerText)).map(c => [c.innerText.replace(/\s+/g, ' ').trim(), getComputedStyle(c).backgroundColor]); });
+const cm = {}; col.forEach(([t, c]) => { const f = t.replace(/^\S+ /, ''); (cm[f] = cm[f] || new Set()).add(c); });
+ok(Object.values(cm).every(x => x.size === 1) && new Set(Object.values(cm).map(x => [...x][0])).size === Object.keys(cm).length, 'mappa: ogni fascia ha un solo colore e fasce diverse hanno colori diversi · ' + JSON.stringify(Object.fromEntries(Object.entries(cm).map(([k, v]) => [k, [...v]]))));
+// il Commissario non ha ancora aperto/chiuso nulla: la scheda mostra lo stesso numero di sezioni per Gruppo + mappa + riepilogo
+const nsez = await ev(() => document.querySelectorAll('#panel-pp section').length);
+ok(nsez === 4, 'la pagina ha mappa, riepilogo e una scheda per ognuno dei due Gruppi · sezioni: ' + nsez);
+
 // 3) nulla del Capo Gruppo viene copiato nel progetto del Commissario
 await sleep(1500);
 const mine = db.t.pee_archivi.find(r => r.id === me.id); const js = JSON.stringify(mine.data);
