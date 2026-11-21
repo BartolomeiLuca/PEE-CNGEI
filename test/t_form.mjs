@@ -28,6 +28,10 @@ ok(/nessuna scelta/.test(c3), 'riga vuota: nessuna scelta');
 const r2 = await row(2);
 ok(r2.form === LEG3 && !('formc' in r2), 'aprire la tabella non modifica i dati salvati (testo identico, nessun campo nuovo)');
 ok(await ev(P, () => document.querySelectorAll('#staff-tab textarea[aria-label^="Formazione"]').length) === 0, 'la colonna Formazione non è più un campo di testo libero');
+await ev(P, () => formOpen('t', 0)); await sleep(300);
+const grp = await ev(P, () => { const g = document.querySelector('#staff-tab [role="group"][aria-label="Formazione"]'); const o = {}; let cur = ''; [...g.children].forEach(e => { if(e.tagName === 'DIV') cur = e.innerText.trim(); else { const c = e.querySelector('input'); (o[cur] = o[cur] || []).push(c.getAttribute('data-fc')); } }); return o; });
+ok(JSON.stringify(grp['Per operare in Unità']) === JSON.stringify(['for_in', 'for_m_l', 'for_m_e', 'for_m_r', 'for_a', 'pe_fad']) && JSON.stringify(grp['Per i ruoli']) === JSON.stringify(['for_g', 'for_c', 'for_s']), 'tendina: «Programmazione Educativa (FAD)» sta sotto «Per operare in Unità», «Per i ruoli» ha FOR.G, FOR.C, FOR.S · ' + JSON.stringify(grp));
+await ev(P, () => formOpen('t', 0)); await sleep(200);
 
 // ── 2. scelta multipla su una riga con testo vecchio: il testo resta ──
 await ev(P, () => document.querySelector('[data-fm="t:2"] button[aria-expanded]').click()); await sleep(150);

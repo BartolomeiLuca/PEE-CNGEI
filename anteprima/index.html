@@ -3347,13 +3347,14 @@ function modalClose(){ try{ if(window._svMom && !window._svDone && document.quer
 // formc = codici scelti; formn = testo scritto prima e non riconosciuto (mai cancellato da solo); formt = testo che abbiamo scritto noi:
 // se «form» è diverso da «formt» qualcun altro (la versione principale) l'ha cambiato a mano e il testo rivince.
 const FORM_GRP = [
-  ['Per operare in Unità', [['for_in','FOR.IN'],['for_m_l','FOR.M Branca L'],['for_m_e','FOR.M Branca E'],['for_m_r','FOR.M Branca R'],['for_a','FOR.A']]],
-  ['Per i ruoli', [['for_g','FOR.G'],['for_c','FOR.C'],['for_s','FOR.S'],['pe_fad','Programmazione Educativa (FAD)']]],
+  ['Per operare in Unità', [['for_in','FOR.IN'],['for_m_l','FOR.M Branca L'],['for_m_e','FOR.M Branca E'],['for_m_r','FOR.M Branca R'],['for_a','FOR.A'],['pe_fad','Programmazione Educativa (FAD)']]],
+  ['Per i ruoli', [['for_g','FOR.G'],['for_c','FOR.C'],['for_s','FOR.S']]],
   ['Brevetti', [['wb','Wood Badge'],['wb3','Wood Badge 3'],['wb4','Wood Badge 4']]],
   ['Percorsi precedenti', [['mod_ass','Modulo Associativo (ex «corso Base»)'],['mod_met','Modulo Metodologico (ex)'],['mora','MoRA'],['mod_wb','Modulo WB (ex)'],['tdm','Testa di Moro'],['senior','Percorso Senior']]],
   ['', [['nessuna','Nessuna formazione']]]
 ];
-const FORM_ORDER = FORM_GRP.flatMap(g => g[1].map(x => x[0]));
+// (21/11) l'ordine dei codici nel testo resta quello di prima anche se «Programmazione Educativa (FAD)» ora è mostrata sotto «Per operare in Unità»: i testi già salvati non cambiano
+const FORM_ORDER = ['for_in','for_m_l','for_m_e','for_m_r','for_a','for_g','for_c','for_s','pe_fad','wb','wb3','wb4','mod_ass','mod_met','mora','mod_wb','tdm','senior','nessuna'];
 // etichette scritte nel campo testo: semplici, così si rileggono senza ambiguità
 const FORM_TXT = {for_in:'FOR.IN', for_m_l:'FOR.M Branca L', for_m_e:'FOR.M Branca E', for_m_r:'FOR.M Branca R', for_a:'FOR.A', for_g:'FOR.G', for_c:'FOR.C', for_s:'FOR.S', pe_fad:'Programmazione Educativa (FAD)', wb:'Wood Badge', wb3:'Wood Badge 3', wb4:'Wood Badge 4', mod_ass:'Modulo Associativo', mod_met:'Modulo Metodologico', mora:'MoRA', mod_wb:'Modulo WB', tdm:'Testa di Moro', senior:'Percorso Senior', nessuna:'Nessuna'};
 const FORM_LIV = {nessuna:'Nessuna', iniz:'Iniziale', inter:'Intermedia', avanz:'Avanzata', wb:'Wood Badge'};
@@ -9045,7 +9046,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611201910'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611210915'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -17456,6 +17457,7 @@ async function clDup(id, anno){
     while(rows.some(x=>Number(x.anno)===Number(anno)&&x.titolo===tit)) tit=String(r.titolo||'Progetto').replace(/\s*\(copia( \d+)?\)$/,'')+' (copia '+(n++)+')';
     let src=r.data||{}; if(CL.ctx&&CL.ctx.id===id){ try{ saveData(true); src=clSnapshot(); }catch(e){} }   // il progetto aperto: si copia anche l'ultimo lavoro non ancora salvato nel cloud
     const data=JSON.parse(JSON.stringify(src)); data.ts=Date.now();
+    if(data.scheda && Array.isArray(data.scheda.avvisi)) data.scheda.avvisi=[];   // gli avvisi sono messaggi a persone precise del progetto d'origine: la copia parte senza (altrimenti, condividendola, riapparirebbero in «Per te» come non letti)
     const nr=await dbInsert(anno, tit, data, meta);
     CL._arc=null; await clRenderArchive(); clToast('Copia creata: '+nr.anno+' · '+nr.titolo);
   }catch(e){ clToast('Non riesco a duplicare: '+clErr(e)); } }
@@ -19030,6 +19032,7 @@ const NAV_CG = [
   {g:'Progettare'},
   {id:'st1', t:'I miei Capi Unità', ic:'eye', go:'goPhase(1)'},
   {id:'st2', t:'Lettura dei Capi Unità', ic:'list', go:'goPhase(2)'},
+  {id:'p-sez', t:'Gruppi della Sezione', ic:'users', go:'shSez()', cond:'sez'},
   {id:'p-pf', t:'Percorso formativo', ic:'users', go:'shPF()'},
   {g:'Realizzare'},
   {id:'usc', t:'Eventi per gli adulti', ic:'tent', go:"shSec('usc')"},
@@ -19050,7 +19053,7 @@ function subHTML(inSheet){
   const sc = subCur();
   return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
-function navCond(i){ if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navCond(i){ if(i.cond === 'sez'){ try{ return cgCds() && !window.BRO && !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } } if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
 function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
 function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
 SH._gt = SH._gt || {};
@@ -19071,7 +19074,7 @@ function navHTML(){
 function bbHTML(){
   const pp = isPP();
   if(isST()){ const B2 = [['st1','Osservazione','eye','goPhase(1)'],['st2','Riepilogo','list','goPhase(2)'],['usc','Uscite','tent',"shSec('usc')"],['more','Altro','more',"shSheet('Altro')"]];
-    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
+    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk','p-sez'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-staff','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
@@ -19087,8 +19090,8 @@ window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on
 window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
-    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','sha','arc'] : ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk'];
-    h = it.filter(i => keep.includes(i.id)).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','p-sez','sha','arc'] : ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk'];
+    h = it.filter(i => keep.includes(i.id) && (i.id !== 'p-sez' || navCond(i))).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else if(!isPP() && !isST()){
     const names = g.split('|'); h = '';
@@ -19109,7 +19112,7 @@ function active(){
   if(window._stEmb) return 'o-staff';
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'cap' ? 'a-cap' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'share' ? ((isPP() || isST()) ? 'sha' : 'd-sha') : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'cap' ? 'a-cap' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'share' ? ((isPP() || isST()) ? 'sha' : 'd-sha') : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'sez' ? 'p-sez' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -21659,6 +21662,79 @@ window.capSet = function(k){ (SH._cap = SH._cap || {}).w = k; const p = $('panel
 
 window.shChk = function(){ ensurePanels(); SH.ppv = 'chk'; ownOff(); $('panel-pp').innerHTML = chkHTML(); own('panel-pp'); };
 window.chkNext = chkNext; window.chkList = chkList;
+
+// ── Progettare · «Gruppi della Sezione» (solo il Commissario, titolare del suo progetto) ──
+// I Capi Gruppo che lo hanno invitato compaiono qui. I loro progetti si leggono in sola lettura, solo all'apertura della pagina e una sola richiesta; non si copia nulla.
+// Due letture etichettate: «Osservazione dei Capi Gruppo» (fatta dal Commissario) e «Osservazione degli Staff» (fatta dal Capo Gruppo). Sono spunti di discussione, non giudizi.
+const SEZ_AMB = ['P', 'C', 'S'];
+const sezV = v => typeof v === 'number' ? (v > 0 ? v : null) : v === 'p' ? 8 : v === 'a' ? 2 : null;
+function sezAvg(obsMap, k){ let s = 0, n = 0; const ids = ((typeof DB !== 'undefined' && DB[k]) || []).map(p => p.id);
+  Object.values(obsMap || {}).forEach(ob => { if(!ob || typeof ob !== 'object') return; ids.forEach(id => { const v = sezV(ob[id]); if(v !== null){ s += v; n++; } }); });
+  return n ? {m:Math.round(s / n * 10) / 10, n} : null; }
+const sezBand = m => m >= 9 ? 'consolidato' : m >= 7 ? 'presente' : m >= 5 ? 'in sviluppo' : m >= 3 ? 'tracce iniziali' : 'non emerge';
+const sezIsGr = m => !!m && m.mode === 'staff' && m.sruolo === 'CG' && m.vruolo !== 'cds';
+const sezOwn = () => { try{ return cgCds() && !window.BRO && !(CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } };
+function sezVisti(mk){ const S = scheda.sez && typeof scheda.sez === 'object' ? scheda.sez : null; if(!S && !mk) return {}; if(mk){ if(!scheda.sez || typeof scheda.sez !== 'object') scheda.sez = {}; if(!scheda.sez.visti || typeof scheda.sez.visti !== 'object') scheda.sez.visti = {}; return scheda.sez.visti; } return (S.visti && typeof S.visti === 'object') ? S.visti : {}; }
+// i Gruppi visti almeno una volta si ricordano nel progetto del Commissario (solo nome e anno), per poter dire «non condivide più il progetto»
+function sezRemember(list){
+  if(!sezOwn()) return; let ch = false;
+  list.forEach(x => { const V = sezVisti(true); const nm = sezNome(x); const cur = V[x.id]; if(!cur || cur.n !== nm || cur.y !== Number(x.anno)){ V[x.id] = {n:nm, y:Number(x.anno)}; ch = true; } });
+  if(ch){ try{ ossTouch(); }catch(e){} }
+}
+function sezNome(x){ const c = (SH._sez && SH._sez.cache && SH._sez.cache[x.id]) || null; const d = c ? c.d : null; return String((d && (d.UNIT_NAME || (d.scheda && d.scheda.pp && d.scheda.pp.gruppo))) || (x.meta && x.meta.nome) || x.titolo || 'Gruppo').trim(); }
+window.sezForget = function(id){ if(!sezOwn()) return; const V = sezVisti(false); if(!V[id]) return; delete scheda.sez.visti[id]; try{ ossTouch(); }catch(e){} sezRe(); };
+function sezRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'sez' && p.classList.contains('active')) p.innerHTML = sezHTML(); }
+async function sezLoad(){
+  const S = SH._sez = SH._sez || {cache:{}};
+  if(!CL.sb || !CL.user){ S.st = 'off'; sezRe(); return; }
+  if(S.busy) return; S.busy = true; if(S.st !== 'ok'){ S.st = 'load'; sezRe(); }
+  try{
+    const all = (await dbShared()).filter(x => x.ruolo === 'commissario' && sezIsGr(x.meta));
+    const y = Number(CL.ctx.anno); const mine = all.filter(x => Number(x.anno) === y);
+    const need = mine.filter(x => !S.cache[x.id] || S.cache[x.id].ts !== x.ts).map(x => x.id);
+    if(need.length){ const {data, error} = await CL.sb.from('pee_archivi').select('id,data,updated_at').in('id', need); if(error) throw error; (data || []).forEach(r => { S.cache[r.id] = {ts:clTs(r.updated_at), d:(r.data && typeof r.data === 'object') ? r.data : {}}; }); }
+    S.list = mine.filter(x => S.cache[x.id]); S.altri = all.length - mine.length; S.st = 'ok'; S.err = '';
+    sezRemember(S.list);
+  }catch(e){ S.st = 'err'; S.err = clErr(e); }
+  S.busy = false; sezRe();
+}
+// la persona nella tabella «I miei Capi Gruppo» che corrisponde al Capo Gruppo che ha invitato (prima per e-mail, poi per nome)
+function sezMio(x){
+  const own = String(x.owner || ''); const mm = own.match(/\(([^)]+@[^)]+)\)\s*$/); const mail = (mm ? mm[1] : (/@/.test(own) ? own : '')).trim().toLowerCase(); const nm = affNorm(own);
+  const rows = stRowsOf({STAFF_MEMBERS, staffProfiles}); let r = mail ? rows.find(q => q.mail && q.mail === mail) : null; if(!r && nm) r = rows.find(q => affNorm(q.nome) === nm); return r ? r.nome : null;
+}
+function sezCard(x){
+  const E = esc; const c = SH._sez.cache[x.id]; const d = c.d || {}; const nome = sezNome(x);
+  const mem = Array.isArray(d.STAFF_MEMBERS) ? d.STAFF_MEMBERS.filter(m => typeof m === 'string') : []; const so = (d.staffObs && typeof d.staffObs === 'object') ? d.staffObs : {};
+  const con = mem.filter(m => so[m] && typeof so[m] === 'object' && Object.values(so[m]).some(v => sezV(v) !== null)).length;
+  const mio = sezMio(x); const mine = mio ? {[mio]: staffObs[mio]} : null;
+  const cell = (obsMap, k) => { const a = obsMap ? sezAvg(obsMap, k) : null; return a ? `<b>${a.m.toString().replace('.', ',')}</b> <small>${E(sezBand(a.m))}</small>` : '<span class="sh-hint">—</span>'; };
+  const blocco = (tit, chi, obsMap) => `<div style="flex:1 1 260px;min-width:0"><h3 style="margin:0;font-size:15px">${E(tit)}</h3><p class="sh-hint" style="margin:0 0 4px">${E(chi)}</p><table class="bil-t" style="min-width:0"><tbody>${SEZ_AMB.map(k => `<tr><th scope="row">${E(AMBITO_LABELS[k])}</th><td>${cell(obsMap, k)}</td></tr>`).join('')}</tbody></table></div>`;
+  const quando = c.ts ? new Date(c.ts).toLocaleDateString('it-IT', {day:'numeric', month:'long', year:'numeric'}) : '';
+  const nota = mio ? '' : `<p class="sh-hint" style="margin:6px 0 0">Non hai ancora osservato questo Capo Gruppo: lo aggiungi in «I miei Capi Gruppo».</p>`;
+  return `<section class="sh-card2 wide" aria-label="${E(nome)}"><h2 style="margin:0 0 2px;font-size:18px">${E(nome)}</h2>
+    <p class="sh-sub" style="margin:0 0 8px">Capo Gruppo: ${E(x.owner || '—')}${quando ? ' · progetto aggiornato il ' + E(quando) : ''}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${blocco('Osservazione dei Capi Gruppo', 'fatta da te', mine)}${blocco('Osservazione degli Staff', 'fatta dal Capo Gruppo', so)}</div>
+    ${nota}
+    <p class="sh-hint" style="margin:6px 0 0">${mem.length ? `Staff del Gruppo: ${mem.length} ${mem.length === 1 ? 'persona' : 'persone'}, ${con} con almeno una osservazione.` : 'Il Capo Gruppo non ha ancora inserito persone nello staff.'}</p>
+    ${mem.length ? `<details style="margin-top:4px"><summary>Chi c’è nello staff</summary><p class="sh-sub" style="margin:4px 0 0">${mem.map(E).join(', ')}</p></details>` : ''}
+    <div class="anv-act"><button type="button" class="btn-ghost" onclick="clOpenShared('${E(x.id)}')">Apri il progetto del Gruppo (sola lettura)</button></div></section>`;
+}
+function sezHTML(){
+  const S = SH._sez || {}; const E = esc; const y = Number(CL.ctx && CL.ctx.anno) || '';
+  const head = `<div class="sh-dh"><div><h1>Gruppi della Sezione</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">I Gruppi che ti hanno invitato come Commissario di Sezione per l’anno scout ${E(String(scheda.annoScout || y))}, con le due letture: la tua sui Capi Gruppo e quella che ogni Capo Gruppo ha fatto sul proprio staff. Sono medie dei punteggi da 1 a 10, da leggere come spunti di discussione e non come giudizi: tra Gruppi diversi i punteggi non sono davvero confrontabili.</p></div></div>`;
+  if(S.st === 'off') return head + '<p class="sh-sub" role="status">Per vedere i Gruppi serve essere collegati con il proprio account.</p>';
+  if(S.st === 'err') return head + `<p class="sh-sub" role="alert">Non riesco a leggere i Gruppi: ${E(S.err || 'riprova tra poco')}.</p><div class="anv-act"><button type="button" class="sh-btn" onclick="sezLoad()">Riprova</button></div>`;
+  if(S.st !== 'ok') return head + '<p class="sh-sub" role="status">Carico i Gruppi…</p>';
+  const lista = S.list || [];
+  const V = sezVisti(false); const ids = new Set(lista.map(x => x.id));
+  const persi = Object.keys(V).filter(id => !ids.has(id) && V[id] && V[id].y === y).map(id => `<p class="sh-hint" role="status" style="margin:0 0 6px">Il Gruppo ${E(V[id].n)} non condivide più il progetto. <button type="button" class="btn-ghost" onclick="sezForget('${E(id)}')">Toglilo dall’elenco</button></p>`).join('');
+  const vuoto = lista.length ? '' : '<section class="sh-card2 wide"><p class="sh-sub" style="margin:0">Nessun Capo Gruppo ti ha ancora invitato per quest’anno. Quando un Capo Gruppo ti invita come Commissario di Sezione dalla sua Programmazione formativa annuale, il Gruppo compare qui, aggiornato ogni volta che apri la pagina.</p></section>';
+  const altri = S.altri ? `<p class="sh-hint">Hai ${S.altri} ${S.altri === 1 ? 'invito' : 'inviti'} per altri anni scout: non compaiono qui, perché ogni anno il Capo Gruppo deve invitarti di nuovo.</p>` : '';
+  return head + persi + vuoto + lista.map(sezCard).join('') + altri;
+}
+window.shSez = function(){ ownOff(); ensurePanels(); SH.ppv = 'sez'; $('panel-pp').innerHTML = sezHTML(); own('panel-pp'); try{ window.scrollTo(0, 0); }catch(e){} sezLoad(); };
+window.sezLoad = sezLoad;
 
 // ── Realizzare · «Elenco dell'anno»: tutte le attività dell'anno scout (cicli dell'Unità + attività di staff) in ordine di data, numerate da 1 ──
 async function eleLoad(){

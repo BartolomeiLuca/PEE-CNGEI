@@ -388,14 +388,14 @@ console.log('\n── 11. duplicazione e ripresa di parti');
 const anno = rowOf(idU).anno; const before = new Set(db.t.pee_archivi.map(a => a.id)); SNAP = snap();
 await ev(P_('GI'), ([id, y]) => clDup(id, y), [idU, anno]).catch(() => {}); await sleep(2500);
 const dupRow = db.t.pee_archivi.find(a => !before.has(a.id)); ok(!!dupRow, 'la copia è stata creata nel cloud'); 
-const idD = dupRow && dupRow.id; if(idD){ NAMES[idD] = 'D'; IDS.D = idD; ALLOW.D = ['U', 'AVV']; }
+const idD = dupRow && dupRow.id; if(idD){ NAMES[idD] = 'D'; IDS.D = idD; ALLOW.D = ['U']; }
 if(idD){
   ok(dupRow.user_id === uidOf('GI'), 'la copia appartiene a Gina');
   onlyChanged('la duplicazione non tocca gli altri progetti', ['D:NUOVO'], []);
-  const a = zoneHash(rowOf(idU).data), b = zoneHash(dupRow.data); const diff = Object.keys(a).filter(k => a[k] !== b[k] && k !== 'schedaRest');
+  const a = zoneHash(rowOf(idU).data), b = zoneHash(dupRow.data); const diff = Object.keys(a).filter(k => a[k] !== b[k] && k !== 'schedaRest' && k !== 'avvisi');   // gli avvisi non si copiano (voluto)
   ok(!diff.length, 'la copia ha le stesse zone dell’originale' + (diff.length ? ' — differiscono: ' + diff.join(',') : ''));
   ok(!db.t.pee_membri.some(m => m.archivio_id === idD) && !db.t.pee_suggerimenti.some(r => r.archivio_id === idD), 'la copia non eredita membri né pareri');
-  const nA = (dupRow.data.scheda.avvisi || []).length; if(nA) console.log(`   NOTA: la copia contiene ${nA} avvisi dell’originale (indirizzati a persone); se la copia viene poi condivisa riappaiono in «Per te» come non letti`);
+  ok(!(dupRow.data.scheda.avvisi || []).length && !/ZQ-AVV/.test(JSON.stringify(dupRow.data)), 'la copia parte senza gli avvisi dell’originale');
   leakDb('dopo la duplicazione');
   for(const k of ['AL', 'BE', 'FE', 'DA', 'CO', 'ST']){ const l = await ev(P_(k), async id => { try{ return !!(await dbGet(id)); }catch(e){ return false; } }, idD); ok(!l, `${k} non vede la copia`); }
   await openOwn(P_('GI'), idD); await leakPage('Gina apre la copia', P_('GI'), ['U', 'AVV']); await openOwn(P_('GI'), idU); await leakPage('Gina riapre l’originale', P_('GI'), ['U', 'AVV']);
@@ -404,7 +404,7 @@ if(idD){
   await openOwn(P_('GI'), idD); await invite(P_('GI'), 'alex@x.it', 'collaboratore');
   const l = await pt('AL'); const sm = sumPt('AL', l); console.log('   «Per te» di Alex dopo aver condiviso la copia: ' + sm);
   ok(/inv:D/.test(sm), 'Alex riceve l’invito alla copia');
-  if(/av:D/.test(sm)) console.log('   NOTA: Alex vede in «Per te» gli avvisi ereditati dalla copia');
+  ok(!/av:D/.test(sm), 'Alex non vede in «Per te» avvisi ereditati dalla copia');
   await ev(P_('GI'), async () => { const m = await dbMembri(CL.ctx.id); for(const x of m) await dbRevoke(x.id); }).catch(() => {}); await sleep(500);
 }
 // «Riprendi da un progetto»: dall'interfaccia vera, solo le parti scelte
