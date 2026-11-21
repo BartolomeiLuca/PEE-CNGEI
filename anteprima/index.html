@@ -1064,7 +1064,17 @@ body[data-theme="L"] .sg-a button.ok{background:#f0e603;color:#1a1800}
 .sgp{margin:22px auto 90px;max-width:900px;padding:14px 16px;background:#fff;border:1.5px solid var(--green);border-radius:12px;font-family:'Montserrat',sans-serif}
 .sgp-t{font:800 15px 'Montserrat',sans-serif;color:var(--green);margin:0 0 3px}
 .sgp-s{font-size:12.5px;color:var(--ink);margin:0 0 6px;line-height:1.5}
-@media print{.sgp{display:none!important}}
+@media print{.sgp,#sgp-bar{display:none!important}}
+#sgp-bar{position:sticky;top:var(--sh-hh,61px);z-index:25;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;font:600 13.5px/1.45 'Montserrat',sans-serif}
+#sgp-bar.own{background:#FFF1CF;border-bottom:2px solid #B26A00;color:#3a2a00}
+#sgp-bar.cm{background:#E6F2EA;border-bottom:2px solid var(--green);color:#16402b}
+#sgp-bar b{font-weight:800}
+#sgp-bar .pbar-g{margin-left:auto;min-height:40px;padding:8px 16px;border-radius:20px;border:2px solid currentColor;background:#fff;color:inherit;font:800 13px 'Montserrat',sans-serif;cursor:pointer}
+@media(max-width:520px){#sgp-bar{padding:8px 12px}#sgp-bar.cm .pbar-l{display:none}#sgp-bar.cm .pbar-g{margin-left:0;width:100%}}
+#sgp-host,#sgp-host .sg-box{scroll-margin-top:calc(var(--sh-hh,61px) + var(--sgp-bh,84px) + 12px)}
+.sgp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sh-nb{margin-left:auto;background:#B26A00;color:#fff;border-radius:11px;min-width:22px;height:22px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font:800 12px 'Montserrat',sans-serif;position:relative}
+.sh-bbb{position:relative}.sh-bbb .sh-nb{position:absolute;top:2px;left:calc(50% + 6px);margin:0;min-width:18px;height:18px;font-size:11px;padding:0 4px}
 #ro-bar{background:none;border:0;border-top:1px solid var(--border-light);padding:14px 16px 24px;margin-top:24px;font:500 12px 'Montserrat',sans-serif;color:var(--ink-faint);text-align:center;line-height:1.5}
 #ro-bar .grow{flex:1;min-width:220px;line-height:1.5}
 #ro-bar button{font:700 12px 'Montserrat',sans-serif;border:1.5px solid #26364f;background:#fff;color:#26364f;border-radius:16px;padding:6px 13px;cursor:pointer;min-height:32px}
@@ -1181,6 +1191,9 @@ body[data-mode="staff"] #panel2 .foot-nav .btn-primary[onclick="goPhase(3)"]{dis
 .st-lnk{border:none;background:none;color:var(--green);font:700 12px 'Montserrat',sans-serif;cursor:pointer;text-decoration:underline;padding:0 0 0 4px}
 .st-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:10px}
 .st-f.w{grid-column:1/-1}
+.stg-w{display:flex;flex-wrap:wrap;gap:6px 16px;margin:2px 0 6px}
+.st-f .stg-c{display:flex;align-items:center;gap:7px;font-size:14px;cursor:pointer;min-height:30px}
+.st-f .stg-c input{width:auto;margin:0;padding:0;flex:none}
 .st-lb{display:block;font:700 12px 'Montserrat',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid);margin:0 0 4px}
 .st-f input,.st-f select,.st-row input,.st-row select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm,8px);font:inherit;font-size:13px;background:#fff;box-sizing:border-box}
 .st-ro{background:var(--green-pale);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}.st-dash{color:var(--ink-faint)}
@@ -4408,9 +4421,9 @@ function refreshUnitName(){
   else { lbl = 'Nome'; ph = ''; }
   l.textContent = lbl; i.placeholder = ph;
   if(document.activeElement !== i) i.value = UNIT_NAME || '';
-  i.parentElement.style.display = (MODE === 'personale' || MODE === 'giovani') ? 'none' : '';
+  i.parentElement.style.display = (MODE === 'personale' || MODE === 'giovani' || (MODE === 'staff' && cgCds())) ? 'none' : '';   // il Commissario ha solo la Sezione: niente «Nome del Gruppo»
   const sg=document.getElementById('staff-sezgrp');
-  if(sg){ if(MODE==='staff'){ const CG=STAFF_RUOLO==='CG'; if(!sg.contains(document.activeElement)){ sg.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">'+sezGrpHTML('display:block;font:700 12px Montserrat,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid)','display:block;margin-top:5px',false)+'</div>'; } sg.style.display='';
+  if(sg){ if(MODE==='staff'){ const CG=STAFF_RUOLO==='CG'; if(!sg.contains(document.activeElement)){ sg.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">'+sezGrpHTML('display:block;font:700 12px Montserrat,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mid)','display:block;margin-top:5px',cgCds())+'</div>'; } sg.style.display='';
       i.removeAttribute('list'); }
     else { sg.style.display='none'; sg.innerHTML=''; } }
 }
@@ -5948,7 +5961,7 @@ function stSideHTML(sel){
   const item = (on, click, nm, sub, done) => `<button type="button" class="st-item${on?' on':''}${done>=24?' done':''}" onclick="${click}"><span class="st-nm">${nm}</span>${sub?`<span class="st-sub">${sub}</span>`:''}<span class="st-pg"><i style="width:${Math.round(done/24*100)}%"></i></span><small>${done>=24?'✓ completa':done+' / 24'}</small></button>`;
   let h = item(sel.auto, `stPick('auto')`, 'Auto osservazione', 'privata', aD);
   h += `<div class="st-cap">${cg ? cgCU() : 'Staff'}</div>`;
-  STAFF_MEMBERS.forEach((m, i) => { const p = staffProfiles[m] || {}; h += item(!sel.auto && m === CURRENT_MEMBER, `stPick(${i})`, sEsc(m), sEsc(stRuoloTxt(p.ruolo)), stDone(staffObs[m])); });
+  STAFF_MEMBERS.forEach((m, i) => { const p = staffProfiles[m] || {}; const gl = stGrLab(m); h += item(!sel.auto && m === CURRENT_MEMBER, `stPick(${i})`, sEsc(m), sEsc(stRuoloTxt(p.ruolo)) + (gl ? (p.ruolo ? ' · ' : '') + sEsc(gl) : ''), stDone(staffObs[m])); });
   h += `<button type="button" class="st-add${_stAdd?' on':''}" onclick="stAddToggle()">+ Aggiungi persona</button>`;
   return h;
 }
@@ -6008,6 +6021,7 @@ function stProfHTML(auto){
     h += `<div class="st-grid">${stField('Nome', `<input type="text" value="${sEsc(auto ? autoProfile.nome : name)}" maxlength="60" placeholder="Nome e cognome" ${auto ? `oninput="autoProfile.nome=this.value;saveDataDebounced()"` : `oninput="stNameLive(${i},this.value)" onchange="stRen(${i},this.value)"`}>`)}${stField('Ruolo', selR)}${stField('Età', `<input type="number" min="14" max="99" placeholder="es. 24" value="${sEsc(P.eta || '')}" oninput="${set('eta','this.value')}">`)}${stField('Formazione', selF, true)}</div>`;
   }
   h += `<div class="st-grid">${stField('Esperienza come educatore', selE)}</div>`;
+  if(!auto && cgCds()) h += stGrHTML(i);
   if(!auto && !linked){
     const T = (lb, k) => stField(lb, `<textarea rows="2" data-maxh="190" oninput="stSrcSet(${i},'${k}',this.value)">${sEsc(src[k] || '')}</textarea>`, true);
     h += `<div class="st-note">Gli stessi dati della tabella <b>Adulti in staff</b> («Il mio staff»): qui li compili per questa persona anche se non è nella tabella dell’Unità. Con l’<b>email</b> può ricevere gli avvisi «Per te» e le condivisioni.</div>`;
@@ -6017,6 +6031,23 @@ function stProfHTML(auto){
   h += `<div class="st-actions">${auto ? '' : `<button class="btn-ghost danger" onclick="stDel(${i})">Rimuovi dallo staff</button>`}<button class="btn-primary" onclick="stGo('oss')">Avanti — Scheda di osservazione →</button></div></div>`;
   return h;
 }
+// «Gruppo di X»: l'etichetta per le pagine dell'osservazione (solo per il Commissario)
+function stGrLab(n){
+  try{ if(typeof window.sezGrList !== 'function' || !(MODE === 'staff' && cgCds())) return ''; const L = sezGrList(); const P = staffProfiles[n] || {}; const nomi = sezRowGr(n).map(id => { const g = L.find(q => q.id === id); return g ? g.nome : ''; }).filter(Boolean); const alt = String(P.gruppoAltro || '').trim(); if(alt) nomi.push(alt); return nomi.join(', '); }catch(e){ return ''; }
+}
+// (21/11) Commissario: di quale Gruppo è questo Capo Gruppo. Scelta esplicita (anche più Gruppi); se non l'ha ancora fatta, l'app propone quello che riconosce dalla mail o dal nome
+function stGrHTML(i){
+  if(typeof window.sezGrList !== 'function') return '';
+  const n = STAFF_MEMBERS[i]; const P = staffProfiles[n] || {}; const L = sezGrList(); const on = new Set(sezRowGr(n)); const ro = window.BRO ? ' disabled' : ''; const S = SH._sez;
+  if(sezOwn() && !S){ setTimeout(() => { try{ sezLoad(); }catch(e){} }, 0); }
+  const known = new Set(L.map(g => g.id));
+  const boxes = L.map(g => `<label class="stg-c"><input type="checkbox"${on.has(g.id) ? ' checked' : ''}${ro} onchange="stGrSet(${i},'${sEsc(g.id)}',this.checked)"> ${sEsc(g.nome)}</label>`).join('');
+  const auto = !Array.isArray(P.gruppi) && on.size ? '<div class="st-note" style="margin:4px 0 0">Gruppo riconosciuto dalla mail o dal nome: se non è giusto, cambialo qui.</div>' : '';
+  const stato = L.length ? '' : (S && S.st === 'err' ? '<div class="st-note">Non riesco a leggere i Gruppi ora: riprova tra poco.</div>' : (S && S.st === 'ok' ? '<div class="st-note">Nessun Capo Gruppo ti ha ancora invitato per quest’anno: puoi comunque scrivere sotto il nome del Gruppo.</div>' : '<div class="st-note">Carico i Gruppi…</div>'));
+  return `<div class="st-grid">${stField('Gruppo di provenienza', `<div class="stg-w" role="group" aria-label="Gruppo di provenienza di ${sEsc(n)}">${boxes}</div>${stato}${auto}<input type="text" maxlength="60" placeholder="Un altro Gruppo (non su PEE): scrivi il nome" value="${sEsc(P.gruppoAltro || '')}"${ro} oninput="stGrAltro(${i},this.value)" aria-label="Un altro Gruppo, non su PEE">`, true)}</div>`;
+}
+function stGrSet(i, id, on){ const n = STAFF_MEMBERS[i]; if(n === undefined || window.BRO) return; const P = staffProfiles[n] || (staffProfiles[n] = {}); const s = new Set(sezRowGr(n)); if(on) s.add(id); else s.delete(id); P.gruppi = [...s]; saveDataDebounced(); try{ stSideRefresh(); stSync(); }catch(e){} }
+function stGrAltro(i, v){ const n = STAFF_MEMBERS[i]; if(n === undefined || window.BRO) return; const P = staffProfiles[n] || (staffProfiles[n] = {}); P.gruppoAltro = String(v || ''); saveDataDebounced(); try{ stSideRefresh(); stSync(); }catch(e){} }
 function stSrcSet(i, k, v){ const n = STAFF_MEMBERS[i]; if(n === undefined) return; const P = staffProfiles[n] || (staffProfiles[n] = {}); if(!P.src) P.src = {}; P.src[k] = v; saveDataDebounced(); }
 function stProfSet(i, k, v){ const n = STAFF_MEMBERS[i]; if(n === undefined) return; (staffProfiles[n] || (staffProfiles[n] = {}))[k] = v; saveDataDebounced(); if(k === 'ruolo') stSideRefresh(); }
 function stNameLive(i, v){ try{ const it=document.querySelectorAll('#st-side .st-item')[i+1]; const nm=it&&it.querySelector('.st-nm'); if(nm) nm.textContent=String(v||'').trim()||STAFF_MEMBERS[i]||''; document.querySelectorAll('[data-stname="'+i+'"]').forEach(e=>{ e.textContent=String(v||'').trim()||STAFF_MEMBERS[i]||''; }); }catch(e){} }
@@ -6078,7 +6109,7 @@ function stSync(){
   const sel = stSel(), has = sel.auto || !!CURRENT_MEMBER;
   if(!on || !has){ sn.style.display = 'none'; sn.innerHTML = ''; return; }
   const steps = sel.auto ? ST_STEPS.filter(s => s[0] !== 'evo') : ST_STEPS, i = steps.findIndex(s => s[0] === sel.step);
-  const who = sel.auto ? 'Auto osservazione' : sEsc(CURRENT_MEMBER || '');
+  const who = sel.auto ? 'Auto osservazione' : sEsc(CURRENT_MEMBER || '') + (stGrLab(CURRENT_MEMBER) ? ' (' + sEsc(stGrLab(CURRENT_MEMBER)) + ')' : '');
   sn.style.display = '';
   sn.innerHTML = `<div class="gsn-wrap"><div class="gsn-title">Osservazione dello staff · ${who}</div><div class="gsn-steps">${steps.map(([k, n, l], j) => `<button class="gsn-step ${k === sel.step ? 'on' : ''} ${j < i ? 'done' : ''}" onclick="stGo('${k}')"><b>${n}</b>${l}</button>`).join('')}</div></div>`;
 }
@@ -9046,7 +9077,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611211340'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611211352'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -17066,11 +17097,53 @@ function sgpKey(){
     return (k && /^[\w:\-]+$/.test(k)) ? k : null;
   }catch(e){ return null; }
 }
+// ── I pareri del Commissario si vedono subito, senza cercarli in fondo alla pagina ──
+// Commissario: una barra sempre in vista sotto l'intestazione, con il pulsante «Lascia un parere». Capo Gruppo: la stessa barra avvisa che ci sono pareri su questa pagina,
+// e nel menu compare un numerino accanto alle voci che hanno pareri ancora da leggere.
+const SGP_NAV = {st1:['PAG:osservazione'], st2:['PAG:lettura'], 'p-pf':['PAG:percorso'], 'r-chk':['PAG:check'], usc:['PAG:eventi', 'EVT:']};
+function sgpNavN(id){
+  try{
+    if(typeof SG === 'undefined' || !Array.isArray(SG.list) || window.BRO || !sg13Owner() || MODE_NOT_GIOVANI()) return 0;
+    const vc = window.vidCtx && window.vidCtx(); if(!vc || vc.aud !== 'C') return 0;
+    const ks = SGP_NAV[id]; if(!ks) return 0;
+    return SG.list.filter(x => x.stato === 'nuovo' && ks.some(q => q.slice(-1) === ':' ? String(x.percorso).indexOf(q) === 0 : x.percorso === q)).length;
+  }catch(e){ return 0; } }
+window.sgpNb = function(id){ const n = sgpNavN(id); return n ? `<span class="sh-nb" title="${n} ${n === 1 ? 'parere da leggere' : 'pareri da leggere'}"><span aria-hidden="true">${n}</span><span class="sgp-sr">${n} ${n === 1 ? 'parere da leggere' : 'pareri da leggere'}</span></span>` : ''; };
+window.sgpNbSum = function(ids){ const n = ids.reduce((t, i) => t + sgpNavN(i), 0); return n ? `<span class="sh-nb" title="${n} ${n === 1 ? 'parere da leggere' : 'pareri da leggere'}"><span aria-hidden="true">${n}</span><span class="sgp-sr">${n} ${n === 1 ? 'parere da leggere' : 'pareri da leggere'}</span></span>` : ''; };
+// il menu si ridisegna solo se i numeri sono cambiati
+function sgpNavSync(){ const sig = Object.keys(SGP_NAV).map(i => sgpNavN(i)).join(','); if(SG._nbs === sig) return; SG._nbs = sig; try{ if(window.shPaint) window.shPaint(); }catch(e){} }
+function sgpBar(k, cm, own, items){
+  const app = document.getElementById('main-app'); if(!app) return;
+  let bar = document.getElementById('sgp-bar');
+  const show = !!k && !MODE_NOT_GIOVANI() && (cm || (own && items.length));
+  if(!show){ if(bar) bar.remove(); return; }
+  const isE = k.indexOf('EVT:') === 0; let nome = SGP_PAG[k.slice(4)] || '';
+  if(isE){ try{ nome = (uscTit(uscCur()) || '').trim(); }catch(e){} }
+  const nuovi = items.filter(x => x.stato === 'nuovo').length, ap = SG.form === k;
+  const sig = [k, cm ? 1 : 0, items.length, nuovi, ap ? 1 : 0, nome].join('|');
+  if(!bar){ bar = document.createElement('div'); bar.id = 'sgp-bar'; bar.setAttribute('role', 'region'); try{ const sz = () => document.documentElement.style.setProperty('--sgp-bh', bar.offsetHeight + 'px'); if(window.ResizeObserver) new ResizeObserver(sz).observe(bar); window.addEventListener('resize', sz); }catch(e){} }
+  if(app.firstChild !== bar) app.insertBefore(bar, app.firstChild);
+  if(bar.dataset.sig === sig) return; bar.dataset.sig = sig;
+  bar.className = cm ? 'cm' : 'own'; bar.setAttribute('aria-label', cm ? 'Il tuo parere' : 'Pareri del Commissario di Sezione');
+  const q = isE ? 'questo evento' : 'questa pagina', nn = items.length;
+  bar.innerHTML = cm
+    ? `<span class="pbar-i"><span class="pbar-l">Sei il <b>Commissario di Sezione</b> e leggi in sola lettura </span>«${clEsc(nome || '—')}».${nn ? ' Su ' + q + ' hai già scritto ' + nn + (nn === 1 ? ' parere.' : ' pareri.') : ''}</span><button type="button" class="pbar-g" onclick="sgpGo(true)">${ap ? 'Vai al tuo parere ↓' : '+ Lascia un parere su ' + q}</button>`
+    : `<span><b>Il Commissario di Sezione ha scritto ${nn} ${nn === 1 ? 'parere' : 'pareri'} su ${q}</b>${nuovi ? ' · ' + nuovi + (nuovi === 1 ? ' da leggere' : ' da leggere') : ' · tutti letti'}.</span><button type="button" class="pbar-g" onclick="sgpGo(false)">Leggi ↓</button>`;
+}
+window.sgpGo = function(open){
+  const k = sgpKey(); if(!k) return;
+  if(open && SG.form !== k){ SG.form = k; sgpSync(); }
+  const h0 = document.getElementById('sgp-host'); if(!h0) return; const h = (open && h0.querySelector('.sg-box')) || h0;
+  let rm = false; try{ rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+  h.scrollIntoView({behavior: rm ? 'auto' : 'smooth', block: 'start'});
+  if(open) setTimeout(() => { const t = document.getElementById('sg-ta-' + k); if(t) t.focus({preventScroll:true}); }, rm ? 50 : 450);
+};
 function sgpSync(){
   const app = document.getElementById('main-app'); if(!app) return;
   let host = document.getElementById('sgp-host');
   const k = sgpKey(), cm = !!window.BRO && clIsComm(), own = sg13Owner();
   const items = k ? SG.list.filter(x => x.percorso === k) : [];
+  try{ sgpBar(k, cm, own, items); sgpNavSync(); }catch(e){}
   if(!k || !(cm || (own && items.length)) || MODE_NOT_GIOVANI()){ if(host){ host.style.display = 'none'; host.dataset.sig = ''; } return; }
   if(!host){ host = document.createElement('section'); host.id = 'sgp-host'; host.className = 'sgp'; app.appendChild(host); }
   const sig = [k, cm ? 1 : 0, own ? 1 : 0, SG.form === k ? 1 : 0, items.map(x => x.id + x.stato + sgRepSig(x)).join(',')].join('|');
@@ -17889,6 +17962,29 @@ body[data-theme="L"] .sh-btn,body[data-theme="L"] .sh-top{color:#1A1A18}
 .sh-an{margin:10px 0 12px;padding:10px 12px 12px;border:1px solid #CFCDBE;border-left:4px solid #B9B59F;border-radius:14px;background:#ECEADD;display:grid;gap:8px}.sh-anh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}.sh-anh small{display:block;font-size:12px;color:#5f5f58;line-height:1.4;max-width:62ch}
 .sh-disc{background:#FFF8E6;border:1px solid #F0DFAF;border-radius:12px;padding:10px 14px;margin:0 0 14px}.sh-disc summary{cursor:pointer;font-weight:800;font-size:14px;display:flex;flex-direction:column;gap:2px}.sh-disc summary span{font-weight:500;font-size:12px;color:#5f5f58}.sh-disc-in h4{margin:12px 0 2px;font-size:13px}.sh-disc-in p{margin:0;font-size:13px;line-height:1.55}
 .st-ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.st-ins>div{border:1px solid #D8D8D0;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:#F6F6F1}.st-ins b{font-size:13px}.st-ins span{font-size:12.5px;color:#3D3D38}
+.sz-wrap{background:#fff;border:1px solid #D8D8D0;border-radius:14px;padding:12px 14px;margin:0 0 14px}
+.sz-h{margin:0 0 8px;font-size:17px}.sz-h2{margin:14px 0 4px;font-size:15px}
+.sz-sc{overflow-x:auto;padding-bottom:2px}.sz-in{min-width:640px}.sz-in.m{min-width:880px}.sz-in.n{min-width:0}.sz-in.n .sz-r{grid-template-columns:86px minmax(0,1fr);gap:0 6px}.sz-in.n .sz-l{gap:5px}.sz-in.n .sz-l b{font-size:11.5px}.sz-in.n .sz-l small{font-size:10px}.sz-in.n .sz-hd{font-size:9px}.sz-in.n .sz-b span{display:none}
+.sz-r{display:grid;grid-template-columns:122px minmax(0,1fr);gap:0 10px;align-items:stretch;border-top:1px solid #eef1ec}.sz-r.sz-rh{border-top:0}
+.sz-l{position:sticky;left:0;z-index:5;background:#fff;display:flex;align-items:center;gap:7px;padding:5px 4px 5px 0;min-width:0;line-height:1.25}.sz-l b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}.sz-l small{display:block;font-size:11px;color:#55554f}
+.sz-sw{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 3px;border-radius:6px;color:#fff;font:700 11px 'Montserrat',sans-serif;box-sizing:border-box}.sz-sw0{background:#fff;color:#1a1a1a;border:2px solid #1a1a1a}
+.sz-t{position:relative;min-width:0}
+.sz-g{position:absolute;inset:0;display:grid;pointer-events:none}.sz-g i{border-left:1px solid #e9ece7}.sz-g i:last-child{border-right:1px solid #e9ece7}.sz-g i.we{background:#f3f3ee}.sz-g i.al-gr{background:rgba(26,26,26,.1)}.sz-g i.al-tu{background:rgba(26,26,26,.22)}
+.sz-m{position:absolute;transform:translateX(-50%);z-index:2;line-height:0}
+.sz-b{position:absolute;height:20px;border-radius:6px;color:#fff;display:flex;align-items:center;padding:0 6px;font:700 11px 'Montserrat',sans-serif;overflow:hidden;white-space:nowrap;z-index:2;box-sizing:border-box}.sz-b span{overflow:hidden;text-overflow:ellipsis}.sz-b.ris{outline:2px dashed rgba(0,0,0,.6);outline-offset:-3px}
+.sz-m:focus-visible,.sz-b:focus-visible{outline:3px solid #1B5E42;outline-offset:2px}
+.sz-hd{display:grid;font:700 11px 'Montserrat',sans-serif;color:#55554f;text-align:center;text-transform:uppercase;height:30px;align-items:center}.sz-hd span.we{color:#1a1a1a}.sz-hd small{display:block;font-weight:500;font-size:9.5px}
+.sz-al{position:absolute;top:5px;height:20px;border-radius:5px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:800 12px 'Montserrat',sans-serif;z-index:2;min-width:8px}
+.sz-al.tu{background:#1a1a1a;color:#fff}.sz-al.gr{background:#fff;border:2px solid #1a1a1a;color:#1a1a1a}
+.sz-ov .sz-al,.sz-ovb .sz-al{position:static;height:auto;min-width:0;padding:2px 9px;font:700 11.5px 'Montserrat',sans-serif;display:inline-flex}
+.sz-mn{display:inline-flex;gap:6px;align-items:center}.sz-mn select{width:auto;min-width:150px}
+.sz-lg{display:flex;flex-wrap:wrap;gap:4px 16px;margin:8px 0 0;font-size:12px;color:#55554f;align-items:center}.sz-lg span{display:inline-flex;align-items:center;gap:5px}
+.sz-bx{display:inline-block;width:18px;height:9px;border-radius:3px;background:#37474f}.sz-bx.r{background:#fff;outline:2px dashed #37474f;outline-offset:-2px}
+.sz-ov{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}.sz-ov>li{border:1px solid #D8D8D0;border-radius:10px;padding:8px 10px}
+.sz-ovb{all:unset;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;min-width:0}.sz-ovb:focus-visible{outline:3px solid #1B5E42;outline-offset:2px;border-radius:6px}
+.sz-ov ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}.sz-ov ul li{display:flex;gap:8px;align-items:flex-start;font-size:13px}.sz-ov ul small{color:#55554f}
+.sz-rule{margin-top:8px}
+@media print{.sz-wrap{display:none}}
 .cal-mese{margin:0 0 14px}.cal-mese h3{margin:0 0 6px;font-size:15px;text-transform:none}
 .cal-row{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;background:#fff;border:1px solid #D8D8D0;border-left:5px solid var(--c);border-radius:10px;padding:8px 10px;margin:0 0 6px}
 .cal-row.cal-stf{background:repeating-linear-gradient(135deg,#F3F6FB 0 8px,#fff 8px 16px);border-style:dashed;border-left-style:solid}
@@ -19044,6 +19140,7 @@ const NAV_CG = [
 ];
 const navItems = () => isPP() ? NAV_PP : isCGp() ? (cgCds() ? NAV_CG.map(o => o.t ? Object.assign({}, o, {t: o.t.replace('Capi Unità', 'Capi Gruppo')}) : o) : NAV_CG) : isST() ? NAV_ST : NAV_AN;
 window.shNavItems = navItems;
+window.shPaint = function(){ try{ paint(); }catch(e){} };
 window.vidCtx = function(){ let id = active(); try{ if(id === 'r-cal' && !isPP() && !isST() && MODE === 'giovani' && schedaStep === 'usc'){ const pp = $('panel-pp'); if(!(pp && pp.classList.contains('active'))) id = 'r-usc'; } }catch(e){} return {id: id, grp: (SH.ppv === 'grp' ? (SH._grp || '') : ''), aud: isPP() ? 'P' : isCGp() ? 'C' : isST() ? 'S' : 'A'}; };
 let cur = null;
 
@@ -19070,12 +19167,12 @@ function navHTML(){
       return `<button type="button" class="sh-sg sh-gh${open ? ' open' : ''}" aria-expanded="${open}" onclick="shGrp('${G.g}')"><span class="sh-tri" aria-hidden="true"></span>${esc(G.g)}</button>` + (open ? `<div class="sh-gi">${vis.map(i => itemBtn(i)).join('')}</div>` : ''); }).join('');
   }
   // 11/11: anche nei menu staff e Progetto Personale si rispetta la condizione di visibilità (prima «← Programmazione di Unità» compariva sempre e dava un errore)
-  return navItems().filter(i => i.g || navCond(i)).map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
+  return navItems().filter(i => i.g || navCond(i)).map(i => i.g ? `<div class="sh-sg">${esc(i.g)}</div>` : `<button type="button" class="sh-si${cur === i.id ? ' on' : ''}" data-id="${i.id}" ${cur === i.id ? 'aria-current="page"' : ''} onclick="shDrawer(false);${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span>${window.sgpNb ? window.sgpNb(i.id) : ''}</button>` + ((i.sub && cur === i.id) ? subHTML(false) : '')).join('');
 }
 function bbHTML(){
   const pp = isPP();
   if(isST()){ const B2 = [['st1','Osservazione','eye','goPhase(1)'],['st2','Riepilogo','list','goPhase(2)'],['usc','Uscite','tent',"shSec('usc')"],['more','Altro','more',"shSheet('Altro')"]];
-    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk','p-sez','r-cal'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
+    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk','p-sez','r-cal'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}${window.sgpNb ? (b[0] === 'more' ? window.sgpNbSum(['r-chk']) : window.sgpNb(b[0])) : ''}</button>`; }).join(''); }
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-staff','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
@@ -19092,7 +19189,7 @@ window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
     const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-cal','r-chk','p-sez','sha','arc'] : ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk'];
-    h = it.filter(i => keep.includes(i.id) && (i.id !== 'p-sez' || navCond(i))).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
+    h = it.filter(i => keep.includes(i.id) && (i.id !== 'p-sez' || navCond(i))).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span>${window.sgpNb ? window.sgpNb(i.id) : ''}</button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else if(!isPP() && !isST()){
     const names = g.split('|'); h = '';
@@ -21672,7 +21769,9 @@ const sezV = v => typeof v === 'number' ? (v > 0 ? v : null) : v === 'p' ? 8 : v
 function sezAvg(obsMap, k){ let s = 0, n = 0; const ids = ((typeof DB !== 'undefined' && DB[k]) || []).map(p => p.id);
   Object.values(obsMap || {}).forEach(ob => { if(!ob || typeof ob !== 'object') return; ids.forEach(id => { const v = sezV(ob[id]); if(v !== null){ s += v; n++; } }); });
   return n ? {m:Math.round(s / n * 10) / 10, n} : null; }
-const sezBand = m => m >= 9 ? 'consolidato' : m >= 7 ? 'presente' : m >= 5 ? 'in sviluppo' : m >= 3 ? 'tracce iniziali' : 'non emerge';
+// fasce e colori della scala 1–10 dell'app (1–2 Non ancora emerso … 9–10 Consolidato): la media si arrotonda come un voto
+const sezT = m => obsToThreshold(Math.round(m));
+const sezBand = m => thresholdLabel(sezT(m));
 const sezIsGr = m => !!m && m.mode === 'staff' && m.sruolo === 'CG' && m.vruolo !== 'cds';
 const sezOwn = () => { try{ return cgCds() && !window.BRO && !(CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } };
 function sezVisti(mk){ const S = scheda.sez && typeof scheda.sez === 'object' ? scheda.sez : null; if(!S && !mk) return {}; if(mk){ if(!scheda.sez || typeof scheda.sez !== 'object') scheda.sez = {}; if(!scheda.sez.visti || typeof scheda.sez.visti !== 'object') scheda.sez.visti = {}; return scheda.sez.visti; } return (S.visti && typeof S.visti === 'object') ? S.visti : {}; }
@@ -21680,11 +21779,14 @@ function sezVisti(mk){ const S = scheda.sez && typeof scheda.sez === 'object' ? 
 function sezRemember(list){
   if(!sezOwn()) return; let ch = false;
   list.forEach(x => { const V = sezVisti(true); const nm = sezNome(x); const cur = V[x.id]; if(!cur || cur.n !== nm || cur.y !== Number(x.anno)){ V[x.id] = {n:nm, y:Number(x.anno)}; ch = true; } });
+  { const Cc = (scheda.sez.col && typeof scheda.sez.col === 'object') ? scheda.sez.col : null; const used = new Set(Cc ? Object.values(Cc) : []); list.forEach(x => { if(Cc && Number.isInteger(Cc[x.id])) return; let k = 0; while(used.has(k)) k++; used.add(k); if(!scheda.sez.col || typeof scheda.sez.col !== 'object') scheda.sez.col = {}; scheda.sez.col[x.id] = k; ch = true; }); }
   if(ch){ try{ ossTouch(); }catch(e){} }
 }
 function sezNome(x){ const c = (SH._sez && SH._sez.cache && SH._sez.cache[x.id]) || null; const d = c ? c.d : null; return String((d && (d.UNIT_NAME || (d.scheda && d.scheda.pp && d.scheda.pp.gruppo))) || (x.meta && x.meta.nome) || x.titolo || 'Gruppo').trim(); }
+window.sezOpenLet = function(i){ const n = STAFF_MEMBERS[i]; if(n === undefined) return; CURRENT_MEMBER = n; _stAdd = false; STAFF_VIEW = 'let'; try{ ownOff(); }catch(e){} renderStaffPhase1(); goPhaseInternal(1); };
 window.sezForget = function(id){ if(!sezOwn()) return; const V = sezVisti(false); if(!V[id]) return; delete scheda.sez.visti[id]; try{ ossTouch(); }catch(e){} sezRe(); };
-function sezRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'sez' && p.classList.contains('active')) p.innerHTML = sezHTML(); else if(p && SH.ppv === 'cal' && p.classList.contains('active')) calRe(); }
+function sezRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'sez' && p.classList.contains('active')) p.innerHTML = sezHTML(); else if(p && SH.ppv === 'cal' && p.classList.contains('active')) calRe();
+  else try{ const p1 = $('panel1'); if(MODE === 'staff' && p1 && p1.classList.contains('active') && stSel().step === 'prof' && !stSel().auto && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('#st-main') && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))) renderStaffPhase1(); else if(MODE === 'staff' && p1 && p1.classList.contains('active')){ stSideRefresh(); stSync(); } }catch(e){} }
 async function sezLoad(){
   const S = SH._sez = SH._sez || {cache:{}};
   if(!CL.sb || !CL.user){ S.st = 'off'; sezRe(); return; }
@@ -21699,34 +21801,45 @@ async function sezLoad(){
   }catch(e){ S.st = 'err'; S.err = clErr(e); }
   S.busy = false; sezRe();
 }
-// la persona nella tabella «I miei Capi Gruppo» che corrisponde al Capo Gruppo che ha invitato (prima per e-mail, poi per nome)
-function sezMio(x){
+// la persona nella tabella «I miei Capi Gruppo» che corrisponde al Capo Gruppo che ha invitato: riconoscimento automatico (prima per e-mail, poi per nome); è solo un suggerimento, vale la scelta fatta dal Commissario
+function sezAuto(x){
   const own = String(x.owner || ''); const mm = own.match(/\(([^)]+@[^)]+)\)\s*$/); const mail = (mm ? mm[1] : (/@/.test(own) ? own : '')).trim().toLowerCase(); const nm = affNorm(own);
   const rows = stRowsOf({STAFF_MEMBERS, staffProfiles}); let r = mail ? rows.find(q => q.mail && q.mail === mail) : null; if(!r && nm) r = rows.find(q => affNorm(q.nome) === nm); return r ? r.nome : null;
 }
+// i Gruppi di quest'anno: dall'ultima lettura, oppure da quelli già visti (senza rete)
+function sezGrList(){
+  const S = SH._sez; if(S && S.st === 'ok' && Array.isArray(S.list)) return S.list.map(x => ({id:x.id, nome:sezNome(x)}));
+  const V = sezVisti(false), y = Number(CL.ctx && CL.ctx.anno); return Object.keys(V).filter(id => V[id] && Number(V[id].y) === y).map(id => ({id, nome:String(V[id].n || 'Gruppo')}));
+}
+// i Gruppi a cui appartiene una persona della tabella: se il Commissario ha scelto (anche «nessuno») vale la sua scelta, altrimenti il riconoscimento automatico
+function sezRowGr(nome){
+  const P = staffProfiles[nome] || {}; if(Array.isArray(P.gruppi)) return P.gruppi.filter(v => typeof v === 'string');
+  const S = SH._sez; return (S && S.st === 'ok' && Array.isArray(S.list)) ? S.list.filter(x => sezAuto(x) === nome).map(x => x.id) : [];
+}
+// le persone osservate che sono del Gruppo x (di solito una; più d'una se il Gruppo ha più Capi Gruppo)
+const sezMios = x => STAFF_MEMBERS.filter(n => sezRowGr(n).includes(x.id));
 function sezCard(x){
   const E = esc; const c = SH._sez.cache[x.id]; const d = c.d || {}; const nome = sezNome(x);
   const mem = Array.isArray(d.STAFF_MEMBERS) ? d.STAFF_MEMBERS.filter(m => typeof m === 'string') : []; const so = (d.staffObs && typeof d.staffObs === 'object') ? d.staffObs : {};
   const con = mem.filter(m => so[m] && typeof so[m] === 'object' && Object.values(so[m]).some(v => sezV(v) !== null)).length;
-  const mio = sezMio(x); const mine = mio ? {[mio]: staffObs[mio]} : null;
+  const mios = sezMios(x); const mine = mios.length ? Object.fromEntries(mios.map(n => [n, staffObs[n]])) : null;
   const cell = (obsMap, k) => { const a = obsMap ? sezAvg(obsMap, k) : null; return a ? `<b>${a.m.toString().replace('.', ',')}</b> <small>${E(sezBand(a.m))}</small>` : '<span class="sh-hint">—</span>'; };
   const blocco = (tit, chi, obsMap) => `<div style="flex:1 1 260px;min-width:0"><h3 style="margin:0;font-size:15px">${E(tit)}</h3><p class="sh-hint" style="margin:0 0 4px">${E(chi)}</p><table class="bil-t" style="min-width:0"><tbody>${SEZ_AMB.map(k => `<tr><th scope="row">${E(AMBITO_LABELS[k])}</th><td>${cell(obsMap, k)}</td></tr>`).join('')}</tbody></table></div>`;
   const quando = c.ts ? new Date(c.ts).toLocaleDateString('it-IT', {day:'numeric', month:'long', year:'numeric'}) : '';
-  const nota = mio ? '' : `<p class="sh-hint" style="margin:6px 0 0">Non hai ancora osservato questo Capo Gruppo: lo aggiungi in «I miei Capi Gruppo».</p>`;
+  const nota = mios.length ? '' : `<p class="sh-hint" style="margin:6px 0 0">Non hai ancora collegato un Capo Gruppo a questo Gruppo: lo scegli o lo aggiungi in «I miei Capi Gruppo» e, nel suo Profilo, indichi «Gruppo di provenienza».</p>`;
   return `<section class="sh-card2 wide" aria-label="${E(nome)}"><h2 style="margin:0 0 2px;font-size:18px">${E(nome)}</h2>
     <p class="sh-sub" style="margin:0 0 8px">Capo Gruppo: ${E(x.owner || '—')}${quando ? ' · progetto aggiornato il ' + E(quando) : ''}</p>
-    <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${blocco('Osservazione dei Capi Gruppo', 'fatta da te', mine)}${blocco('Osservazione degli Staff', 'fatta dal Capo Gruppo', so)}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${blocco('Osservazione dei Capi Gruppo', mios.length ? 'fatta da te su ' + mios.join(', ') : 'fatta da te', mine)}${blocco('Osservazione degli Staff', 'fatta dal Capo Gruppo', so)}</div>
     ${nota}
     <p class="sh-hint" style="margin:6px 0 0">${mem.length ? `Staff del Gruppo: ${mem.length} ${mem.length === 1 ? 'persona' : 'persone'}, ${con} con almeno una osservazione.` : 'Il Capo Gruppo non ha ancora inserito persone nello staff.'}</p>
     <details style="margin-top:4px"><summary>Gli adulti del Gruppo e la loro formazione</summary><ul style="margin:6px 0 0;padding-left:18px">${sezAdulti(x).map(r => `<li style="margin:0 0 4px"><b>${E(r.nome)}</b>${r.ruolo ? ' <span class="sh-hint">' + E(r.ruolo) + '</span>' : ''} — Livello: <b>${E(sezLvLab(r.lv))}</b>${r.voci ? '<br><span class="sh-hint">' + E(r.voci) + '</span>' : ''}${r.nota ? '<br><span class="sh-hint">Scritto prima: ' + E(r.nota) + '</span>' : ''}</li>`).join('')}</ul></details>
-    <div class="anv-act"><button type="button" class="btn-ghost" onclick="clOpenShared('${E(x.id)}')">Apri il progetto del Gruppo (sola lettura)</button></div></section>`;
+    <div class="anv-act">${mios.map(n => { const i = STAFF_MEMBERS.indexOf(n); return `<button type="button" class="btn-ghost" onclick="sezOpenLet(${i})">Apri la tua lettura di ${E(n)}</button>`; }).join('')}<button type="button" class="btn-ghost" onclick="clOpenShared('${E(x.id)}')">Apri il progetto del Gruppo (sola lettura)</button></div></section>`;
 }
-// colore di una cella della mappa: scala a una sola tinta (più scuro = più presente); il testo della fascia è sempre scritto nella cella, il colore non è l'unico segnale
-const SEZ_COL = [['non emerge', '#f4f1ea', '#1a1a1a'], ['tracce iniziali', '#dcebd9', '#1a1a1a'], ['in sviluppo', '#b6d7b0', '#1a1a1a'], ['presente', '#6fb07a', '#1a1a1a'], ['consolidato', '#2f7d5b', '#ffffff']];
-const sezCol = m => SEZ_COL[m >= 9 ? 4 : m >= 7 ? 3 : m >= 5 ? 2 : m >= 3 ? 1 : 0];
+// colore di una cella della mappa: gli stessi colori del resto dell'app (sfondo chiaro della scala + bordo pieno di ogni fascia); la fascia è sempre scritta, il colore non è l'unico segnale
+const SEZ_TINT = ['', '#f6d5d5', '#fbe0cc', '#fdf0c8', '#d7ead8', '#c7e0d1'];
 function sezMappa(tit, chi, righe, K){
   const E = esc; const num = m => m.toString().replace('.', ',');
-  const body = righe.map(r => `<tr><th scope="row">${E(r.nome)}</th>${SEZ_AMB.map(k => { const a = r.map ? sezAvg(r.map, k) : null; if(!a) return '<td><span class="sh-hint">—</span></td>'; const c = sezCol(a.m); return `<td style="background:${c[1]};color:${c[2]}"><b>${num(a.m)}</b><br><small>${E(c[0])}</small></td>`; }).join('')}</tr>`).join('');
+  const body = righe.map(r => `<tr><th scope="row">${E(r.nome)}</th>${SEZ_AMB.map(k => { const a = r.map ? sezAvg(r.map, k) : null; if(!a) return '<td><span class="sh-hint">—</span></td>'; const t = sezT(a.m); return `<td style="background:${SEZ_TINT[t]};border-left:6px solid ${thresholdColor(t)};color:#1a1a1a"><b>${num(a.m)}</b><br><small>${E(thresholdLabel(t))}</small></td>`; }).join('')}</tr>`).join('');
   return `<div style="flex:1 1 300px;min-width:0"><h3 style="margin:0;font-size:15px">${E(tit)}</h3><p class="sh-hint" style="margin:0 0 4px">${E(chi)}</p><table class="bil-t sez-map" style="min-width:0;table-layout:fixed;font-size:13px"><thead><tr><th scope="col" style="width:25%">Gruppo</th>${SEZ_AMB.map(k => `<th scope="col" aria-label="${E(AMBITO_LABELS[k])}"><span class="sez-lg">${E(AMBITO_LABELS[k])}</span><span class="sez-sh" aria-hidden="true">${E(AMBITO_LABELS[k].slice(0, 4))}.</span></th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 // gli adulti di un Gruppo con il livello e le voci di Formazione: letti dal progetto del Capo Gruppo (sola lettura), con la stessa regola dello staff del Gruppo
@@ -21764,10 +21877,11 @@ function sezFormazione(lista){
 function sezMappe(lista){
   const so = x => { const d = (SH._sez.cache[x.id] || {}).d || {}; return (d.staffObs && typeof d.staffObs === 'object') ? d.staffObs : {}; };
   const a = lista.map(x => ({nome: sezNome(x), map: so(x)}));
-  const b = lista.map(x => { const mio = sezMio(x); return {nome: sezNome(x), map: mio ? {[mio]: staffObs[mio]} : null}; });
+  const b = lista.map(x => { const mm = sezMios(x); return {nome: sezNome(x), map: mm.length ? Object.fromEntries(mm.map(n => [n, staffObs[n]])) : null}; });
   return `<section class="sh-card2 wide" aria-label="Mappa dei Gruppi"><h2 style="margin:0 0 2px;font-size:18px">Mappa dei Gruppi</h2>
-    <p class="sh-sub" style="margin:0 0 8px;max-width:70ch">Le medie per Ambito, Gruppo per Gruppo, per vedere a colpo d’occhio dove conviene fermarsi a parlare. È uno spunto di discussione, non una diagnosi: il colore va dal chiaro (non emerge) allo scuro (consolidato) e la fascia è scritta in ogni cella; Gruppi diversi osservano con occhi diversi, quindi i punteggi tra Gruppi non sono davvero confrontabili.</p>
-    <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${sezMappa('Osservazione degli Staff', 'fatta dal Capo Gruppo', a)}${sezMappa('Osservazione dei Capi Gruppo', 'fatta da te', b)}</div></section>`;
+    <p class="sh-sub" style="margin:0 0 8px;max-width:70ch">Le medie per Ambito, Gruppo per Gruppo, per vedere a colpo d’occhio dove conviene fermarsi a parlare. È uno spunto di discussione, non una diagnosi: i colori sono quelli di tutta l’app, da «Non ancora emerso» a «Consolidato», e il nome della fascia è scritto in ogni cella; Gruppi diversi osservano con occhi diversi, quindi i punteggi tra Gruppi non sono davvero confrontabili.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 24px">${sezMappa('Osservazione degli Staff', 'fatta dal Capo Gruppo', a)}${sezMappa('Osservazione dei Capi Gruppo', 'fatta da te', b)}</div>
+    <p class="sh-hint" style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:4px 14px" aria-label="Legenda dei colori">${[5, 4, 3, 2, 1].map(t => `<span style="white-space:nowrap"><span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${thresholdColor(t)};margin-right:5px"></span>${esc(thresholdLabel(t))}</span>`).join('')}<span style="white-space:nowrap">— non osservato</span></p></section>`;
 }
 function sezHTML(){
   const S = SH._sez || {}; const E = esc; const y = Number(CL.ctx && CL.ctx.anno) || '';
@@ -21783,7 +21897,7 @@ function sezHTML(){
   return head + persi + vuoto + (lista.length ? sezMappe(lista) + sezFormazione(lista) : '') + lista.map(sezCard).join('') + altri;
 }
 window.shSez = function(){ ownOff(); ensurePanels(); SH.ppv = 'sez'; $('panel-pp').innerHTML = sezHTML(); own('panel-pp'); try{ window.scrollTo(0, 0); }catch(e){} sezLoad(); };
-window.sezLoad = sezLoad;
+window.sezLoad = sezLoad; window.sezGrList = sezGrList; window.sezRowGr = sezRowGr; window.sezOwn = sezOwn;   // usate dalla pagina del Profilo dello staff (primo script)
 // eventi dei Gruppi per il calendario del Commissario: dai progetti già letti per «Gruppi della Sezione», in sola lettura (il Commissario vede anche quelli riservati)
 function sezEventi(){
   if(!sezOwn()) return []; const S = SH._sez;
@@ -22159,12 +22273,12 @@ function calHTML(){
   const row = z => { const u = z.u, cy = z.cy;
     const md = uscModK(u); const T = CAL_T[md] || CAL_T.giorno; const stf = u.dest === 'staff' || stM; const d = String((u.ax || {}).data || '').slice(0, 10);
     const dd = /^\d{4}-\d{2}-\d{2}$/.test(d) ? `<b>${+d.slice(8)}</b><small>${esc(new Date(d + 'T12:00').toLocaleDateString('it-IT', {weekday:'short'}).replace(/\.$/, ''))}</small>` : '<b>—</b><small>senza data</small>';
-    if(z.gr){ const col = AN_COLC[z.gr.i % AN_COLC.length]; const ris = !u.aperta;
-      return `<section class="cal-c cal-row cal-stf cal-gr" style="--c:${T[1]}" aria-label="${esc(T[0] + ' ' + uscTit(u) + ' · ' + z.gr.nome)}"><div class="cal-rd" aria-hidden="true">${dd}</div><div class="cal-rm" role="group"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-cyb col" style="background:${col}">${esc(z.gr.nome)}</span>${ris ? '<span class="cal-fo stf" title="Evento riservato: il Capo Gruppo non lo ha ancora aperto ai Capi Unità">Riservato</span>' : ''}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span></div></section>`; }
+    if(z.gr){ const col = sezCol(z.gr.id); const ris = !u.aperta;
+      return `<section class="cal-c cal-row cal-stf cal-gr" style="--c:${col};background:${col}1c" aria-label="${esc(T[0] + ' ' + uscTit(u) + ' · ' + z.gr.nome)}"><div class="cal-rd" aria-hidden="true">${dd}</div><div class="cal-rm" role="group"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-cyb col" style="background:${col}">${sezNum(z.gr.id)} · ${esc(z.gr.nome)}</span>${ris ? '<span class="cal-fo stf" title="Evento riservato: il Capo Gruppo non lo ha ancora aperto ai Capi Unità">Riservato</span>' : ''}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span></div></section>`; }
     const opn = cy ? `calOpenCy('${esc(cy)}','${u.id}')` : `shSrUsc('${u.id}')`; const cyb = (scopeY && nCy) ? calCyPill(cy, z.cn) : '';
     return `<section class="cal-c cal-row${stf ? ' cal-stf' : ''}${cy ? ' cal-fx' : ''}" style="--c:${T[1]}" data-u="${u.id}" data-cy="${esc(cy)}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}','${esc(cy)}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
       <div class="cal-rd" aria-hidden="true">${dd}</div>
-      <button type="button" class="cal-rm" onclick="${opn}" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span>${stM ? '' : `<span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span>`}${cyb}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span>${calAttsHTML(z)}</button>
+      <button type="button" class="cal-rm" onclick="${opn}" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span>${stM ? (grAll.length ? '<span class="cal-cyb col" style="background:#1a1a1a">Tu</span>' : '') : `<span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span>`}${cyb}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span>${calAttsHTML(z)}</button>
       <div class="cal-ra"><button type="button" class="cal-bt2" onclick="${opn}">Apri</button>${can ? `<button type="button" class="cal-bt2" onclick="${cy ? `calDupX('${esc(cy)}','${u.id}')` : `calDup('${u.id}')`}" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button><button type="button" class="cal-bt2 cal-del" onclick="${cy ? `calDelX('${esc(cy)}','${u.id}')` : `calDel('${u.id}')`}" aria-label="Elimina ${esc(uscTit(u))}">Elimina</button>` : ''}</div></section>`;
   };
   let contH = ''; let curM = null;
@@ -22173,12 +22287,95 @@ function calHTML(){
   if(curM !== null) contH += '</div>';
   const leg = `<div class="cal-leg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}${stM ? '' : '<span><em class="cal-fo uni">Unità</em></span><span><em class="cal-fo stf">Staff</em></span>'}</div>`;
   return `<div class="sh-dh"><div><h1>${stM ? 'Calendario' : 'Calendario e attività'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${stM ? 'Qui trovi gli eventi per gli adulti dell’anno, mese per mese: riunioni, uscite, bivacchi e campi. Aprine uno per organizzarlo. I momenti del Percorso formativo ancora senza un posto stanno nel riquadro «Da collocare»: li metti in un evento con «Metti in…».' + (grAll.length ? ' Gli eventi dei Gruppi sono in sola lettura e portano il nome del Gruppo.' : '') : 'Qui trovi tutti gli eventi dell’anno, mese per mese: riunioni, uscite, bivacchi e campi, dell’Unità e dello staff. Aprine uno per organizzarlo. Le attività dei percorsi ancora senza un posto stanno nel riquadro «Da collocare»: trascinale su un evento dell’Unità, o usa «Sposta in…». La data dell’evento diventa la data dell’attività.'}</p></div></div>
-    <div class="vis-opt">${stM ? '' : `<div class="sh-seg sm" role="group" aria-label="Che cosa vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!scopeY}" onclick="calScopeSet('ciclo')">Questo ciclo</button><button type="button" aria-pressed="${scopeY}" onclick="calScopeSet('anno')">Tutto l’anno</button></div>${scopeY && !FX.ready ? '<span class="sh-hint" role="status">Carico gli altri cicli…</span>' : ''}`}${grChips}</div>
-    ${banner}${addB}${form}${calChkStrip(can)}
+    <div class="vis-opt">${stM ? '' : `<div class="sh-seg sm" role="group" aria-label="Che cosa vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!scopeY}" onclick="calScopeSet('ciclo')">Questo ciclo</button><button type="button" aria-pressed="${scopeY}" onclick="calScopeSet('anno')">Tutto l’anno</button></div>${scopeY && !FX.ready ? '<span class="sh-hint" role="status">Carico gli altri cicli…</span>' : ''}`}${grChips}${(stM && sezOwn()) ? `<div class="sh-seg sm" role="group" aria-label="Come vedi gli eventi"><span class="sh-seg-l">Vista</span><button type="button" aria-pressed="${SH._calV !== 'tl'}" onclick="calView('lista')">Elenco</button><button type="button" aria-pressed="${SH._calV === 'tl'}" onclick="calView('tl')">Timeline</button></div>` : ''}</div>
+    ${banner}${(stM && sezOwn() && SH._calV === 'tl') ? szHTML() : ''}${addB}${form}${calChkStrip(can)}
     <div class="cal-grid">
       <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${nEdu + poolF.length}</span></header><div class="cal-cb">${fltH}${(eduH || forH) ? eduH + forH : `<div class="cal-empty">${(acts.length || pfList().length) ? 'Tutto ha un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi» o nel percorso formativo dello staff.'}</div>`}</div></section>
       <div class="cal-cs">${leg}${contH || '<div class="cal-empty cal-empty2">Nessun evento: con i pulsanti qui sopra crei una riunione, un’uscita, un bivacco o un campo.</div>'}</div>
     </div>`;
+}
+// ── Calendario del Commissario · timeline della Sezione ──
+// Una corsia per ciascun Gruppo (colore proprio e numero), una per te e una per la tua Unità (se ne hai una): si vede a colpo d'occhio chi fa cosa e quando.
+// Il segno è la forma dell'evento (come nel resto dell'app), il colore è di chi lo fa. Le sovrapposizioni «da guardare» sono calcolate con una regola semplice, scritta nella pagina.
+const SZ_COL = ['#1f5fbf', '#c2185b', '#00838f', '#5e35b1', '#6b7d1f', '#37474f'];
+const SZ_MN = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const sezColI = id => { const C = (scheda.sez && scheda.sez.col) || {}; if(Number.isInteger(C[id])) return C[id]; const L = (SH._sez && SH._sez.list) || []; const i = L.findIndex(x => x.id === id); return i < 0 ? 0 : i; };
+const sezCol = id => SZ_COL[sezColI(id) % SZ_COL.length];
+const sezNum = id => sezColI(id) + 1;
+const szD = iso => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 864e5;
+const szKey = n => ((n + 4) % 7) === 0 ? n - 1 : n;   // sabato e domenica contano come un solo weekend
+// la tua Unità (se sei anche Capo Unità): gli eventi dei tuoi progetti di Unità dello stesso anno, letti solo quando apri la timeline
+async function sezULoad(){
+  const S = SH._sezU = SH._sezU || {}; if(S.busy || !CL.sb || !CL.user) return; S.busy = true; S.st = 'load';
+  try{
+    const rows = await dbList(); const y = Number(CL.ctx.anno); const by = {};
+    rows.filter(r => Number(r.anno) === y && isCiclo(r.meta) && !/^Esempio/i.test(r.titolo || '')).forEach(r => { const k = vesteKey(r.meta); (by[k] = by[k] || {v:vesteOf(r.meta), ids:[]}).ids.push(r.id); });
+    const lanes = [];
+    for(const k of Object.keys(by)){ const U = [];
+      for(const id of by[k].ids){ try{ const g = await dbGet(id); const Z = (((g && g.data) || {}).scheda || {}).uscite; if(Z && typeof Z === 'object' && !Array.isArray(Z)) Object.values(Z).forEach(u => { if(u && typeof u === 'object' && !u.del && u.id) U.push(u); }); }catch(e){} }
+      lanes.push({k:'u:' + k, lab:'Tu', sub:'Unità · ' + vesteNome(by[k].v), col:'#5f5f58', U}); }
+    S.lanes = lanes; S.st = 'ok';
+  }catch(e){ S.st = 'err'; S.lanes = S.lanes || []; }
+  S.busy = false; try{ calRe(); }catch(e){}
+}
+function szItems(){
+  const out = []; let nod = 0; const ok = d => /^\d{4}-\d{2}-\d{2}/.test(d || '');
+  const add = (src, u, ris) => { const x = u.ax || {}; if(!ok(x.data)){ nod++; return; } const a = String(x.data).slice(0, 10); let b = ok(x.dataFine) ? String(x.dataFine).slice(0, 10) : a; if(b < a) b = a;
+    out.push({src, id:u.id, t:uscTit(u), mk:uscModK(u), a, b, ris:!!ris, own:src === 'me' || src.charAt(0) === 'u'}); };
+  uscList().forEach(u => add('me', u, false));
+  ((SH._sezU && SH._sezU.lanes) || []).forEach(l => l.U.forEach(u => add(l.k, u, false)));
+  sezEventi().forEach(z => add('g:' + z.gr.id, z.u, !z.u.aperta));
+  out.sort((p, q) => p.a.localeCompare(q.a) || p.t.localeCompare(q.t)); out.nod = nod; return out;
+}
+// sovrapposizioni «da guardare»: (1) un tuo evento (della Sezione o della tua Unità) nello stesso giorno o weekend di un evento di un Gruppo, o dei tuoi eventi fra loro; (2) due Gruppi con uscita, bivacco o campo nello stesso weekend. Le riunioni di Gruppi diversi non contano.
+function szOverlaps(it){
+  const keys = it.map(o => { const s = new Set(); const a = szD(o.a), b = Math.min(szD(o.b), a + 40); for(let n = a; n <= b; n++) s.add(szKey(n)); return s; });
+  const par = it.map((_, i) => i); const f = i => par[i] === i ? i : (par[i] = f(par[i])); const inv = new Set(); const tu = new Set();
+  for(let i = 0; i < it.length; i++) for(let j = i + 1; j < it.length; j++){
+    if(it[i].src === it[j].src) continue; if(![...keys[i]].some(k => keys[j].has(k))) continue;
+    const own = it[i].own || it[j].own; if(!own && (it[i].mk === 'sede' || it[j].mk === 'sede')) continue;
+    inv.add(i); inv.add(j); par[f(i)] = f(j); if(own){ tu.add(i); tu.add(j); } }
+  const G = {}; inv.forEach(i => { (G[f(i)] = G[f(i)] || []).push(i); });
+  return Object.values(G).map(ix => { const L = ix.map(i => it[i]).sort((p, q) => p.a.localeCompare(q.a) || p.t.localeCompare(q.t)); return {a:L[0].a, b:L.reduce((m, o) => o.b > m ? o.b : m, L[0].b), lvl:ix.some(i => tu.has(i)) ? 'tu' : 'gr', it:L, n:new Set(L.map(o => o.src)).size}; }).sort((p, q) => p.a.localeCompare(q.a));
+}
+function szDate(a, b){ return a === b || !b ? fmtDL(a) : fmtDL(a) + ' → ' + fmtDL(b); }
+function szSw(src, S){ if(src.charAt(0) === 'g') return `<span class="sz-sw" style="background:${sezCol(src.slice(2))}" aria-hidden="true">${sezNum(src.slice(2))}</span>`; return `<span class="sz-sw" style="background:${src === 'me' ? '#1a1a1a' : '#5f5f58'}" aria-hidden="true">Tu</span>`; }
+function szWho(src, lanes){ const l = lanes.find(q => q.k === src); return l ? (l.k.charAt(0) === 'g' ? l.lab : (l.k === 'me' ? 'Tu (Sezione)' : 'Tu (' + l.sub.replace(/^Unità · /, 'Unità, ') + ')')) : ''; }
+window.sezTlM = function(m){ SH._tlM = m || ''; calRe(); };
+window.sezTlStep = function(d){ const y0 = visY0(); const L = []; for(let i = 0; i < 12; i++){ const mm = (8 + i) % 12; L.push((mm >= 8 ? y0 : y0 + 1) + '-' + String(mm + 1).padStart(2, '0')); } let i = L.indexOf(SH._tlM); i = Math.max(0, Math.min(11, (i < 0 ? 0 : i) + d)); SH._tlM = L[i]; calRe(); };
+window.calView = function(v){ SH._calV = v === 'tl' ? 'tl' : 'lista'; if(SH._calV === 'tl'){ try{ sezLoad(); sezULoad(); }catch(e){} } calRe(); };
+function szHTML(){
+  const E = esc; const y0 = visY0(); const S = SH._sez || {}; const U = SH._sezU || {};
+  const mons = []; for(let i = 0; i < 12; i++){ const mm = (8 + i) % 12; mons.push({v:(mm >= 8 ? y0 : y0 + 1) + '-' + String(mm + 1).padStart(2, '0'), t:SZ_MN[mm] + ' ' + (mm >= 8 ? y0 : y0 + 1)}); }
+  const M = mons.some(q => q.v === SH._tlM) ? SH._tlM : '';
+  const items = szItems(); const cl = szOverlaps(items);
+  const lanes = [{k:'me', lab:'Tu', sub:'Sezione', col:'#1a1a1a'}].concat((U.lanes || []).map(l => ({k:l.k, lab:l.lab, sub:l.sub, col:l.col}))).concat((S.list || []).map(x => ({k:'g:' + x.id, lab:sezNome(x), sub:'', col:sezCol(x.id), num:sezNum(x.id)}))).sort((p, q) => (p.k === 'me' ? -2 : p.k.charAt(0) === 'u' ? -1 : 0) - (q.k === 'me' ? -2 : q.k.charAt(0) === 'u' ? -1 : 0) || (p.num || 0) - (q.num || 0));
+  let w0, w1; if(M){ w0 = szD(M + '-01'); const yy = +M.slice(0, 4), mm = +M.slice(5); w1 = szD((mm === 12 ? yy + 1 : yy) + '-' + String(mm === 12 ? 1 : mm + 1).padStart(2, '0') + '-01'); } else { w0 = szD(y0 + '-09-01'); w1 = szD((y0 + 1) + '-09-01'); }
+  const W = w1 - w0; const pos = n => Math.max(0, Math.min(100, (n - w0) / W * 100)); const narrow = (document.documentElement.clientWidth || 1000) < 560; const minw = M ? 5 : (narrow ? 7.5 : 2.8); const nd = M ? W : 12;
+  const cur = td().slice(0, 7); const goM = M || (mons.some(q => q.v === cur) ? cur : mons[0].v);
+  // colonne: mesi, oppure giorni (sabato e domenica in grigio); i giorni delle sovrapposizioni sono evidenziati
+  const dayCls = {}; if(M) cl.forEach(c => { for(let n = szD(c.a); n <= szD(c.b); n++){ if(n >= w0 && n < w1 && dayCls[n] !== 'al-tu') dayCls[n] = c.lvl === 'tu' ? 'al-tu' : 'al-gr'; } });
+  const cols = []; for(let i = 0; i < nd; i++){ if(!M){ cols.push(''); continue; } const n = w0 + i; const w = (n + 4) % 7; cols.push(((w === 6 || w === 0) ? 'we ' : '') + (dayCls[n] || '')); }
+  const grid = `<div class="sz-g" style="grid-template-columns:repeat(${nd},1fr)" aria-hidden="true">${cols.map(c => `<i class="${c}"></i>`).join('')}</div>`;
+  const hd = M ? Array.from({length:nd}, (_, i) => { const n = w0 + i; const w = (n + 4) % 7; return `<span class="${(w === 6 || w === 0) ? 'we' : ''}">${i + 1}<small>${'DLMMGVS'[w]}</small></span>`; }).join('') : mons.map(q => `<span>${SZ_MN[+q.v.slice(5) - 1].slice(0, narrow ? 1 : 3)}</span>`).join('');
+  const lane = l => {
+    const arr = items.filter(o => o.src === l.k && szD(o.a) < w1 && szD(o.b) >= w0); const last = []; let h = '';
+    arr.forEach(o => { const a = szD(o.a), b = szD(o.b); const multi = b > a; const tt = E(o.t + ' · ' + szWho(o.src, lanes) + ' · ' + szDate(o.a, o.b) + ' · ' + (CAL_T[o.mk] || CAL_T.giorno)[0] + (o.ris ? ' · riservato' : ''));
+      const L0 = pos(a), R0 = pos(b + 1); const c = pos(a + 0.5); const s = multi ? L0 : Math.max(0, c - minw / 2), e = multi ? Math.max(R0, L0 + minw) : Math.min(100, c + minw / 2);
+      let r = 0; while(last[r] !== undefined && s < last[r] + 0.3) r++; last[r] = e; const top = 5 + r * 24;
+      h += multi ? `<div class="sz-b${o.ris ? ' ris' : ''}" tabindex="0" role="img" aria-label="${tt}" title="${tt}" style="left:${L0}%;width:${Math.max(R0 - L0, minw)}%;top:${top}px;background:${l.col}"><span>${E(o.t)}</span></div>` : `<span class="sz-m" tabindex="0" role="img" aria-label="${tt}" title="${tt}" style="left:${c}%;top:${top}px">${tlkShape(TLK_SH[o.mk] || 'usc', l.col, true, 18, o.ris)}</span>`; });
+    const tot = items.filter(o => o.src === l.k).length; const n = Math.max(1, last.length);
+    const sw = l.num ? `<span class="sz-sw" style="background:${l.col}" aria-hidden="true">${l.num}</span>` : `<span class="sz-sw" style="background:${l.col}" aria-hidden="true">Tu</span>`;
+    return `<div class="sz-r"><div class="sz-l">${sw}<span><b>${E(l.k === 'me' ? 'Tu · Sezione' : l.k.charAt(0) === 'u' ? 'Tu · Unità' : l.lab)}</b><small>${l.k.charAt(0) === 'u' ? E(l.sub.replace(/^Unità · /, '')) + ' · ' : ''}${tot ? tot + (tot === 1 ? ' evento' : ' eventi') : 'nessun evento'}</small></span></div><div class="sz-t" style="height:${n * 24 + 12}px">${grid}${h}</div></div>`; };
+  const alr = cl.filter(c => szD(c.a) < w1 && szD(c.b) >= w0).map(c => { const L0 = pos(szD(c.a)), R0 = pos(szD(c.b) + 1); const tx = c.lvl === 'tu' ? 'C’è anche un tuo evento' : c.n + ' Gruppi insieme'; return `<span class="sz-al ${c.lvl}" style="left:${L0}%;width:${Math.max(R0 - L0, minw)}%" title="${E(szDate(c.a, c.b) + ' · ' + tx)}" role="img" aria-label="${E(szDate(c.a, c.b) + ' · ' + tx)}">${M ? '!' : ''}</span>`; }).join('');
+  const rAl = `<div class="sz-r"><div class="sz-l"><span class="sz-sw sz-sw0" aria-hidden="true">!</span><span><b>Da guardare</b><small>${cl.length ? cl.length + (cl.length === 1 ? ' sovrapposizione' : ' sovrapposizioni') : 'nessuna'}</small></span></div><div class="sz-t" style="height:30px">${grid}${alr}</div></div>`;
+  const ctl = `<div class="vis-opt" style="margin:0 0 8px"><div class="sh-seg sm" role="group" aria-label="Quanto vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!M}" onclick="sezTlM('')">Tutto l’anno</button><button type="button" aria-pressed="${!!M}" onclick="sezTlM('${goM}')">Un mese</button></div>${M ? `<div class="sz-mn"><button type="button" class="sh-btn sm gh" onclick="sezTlStep(-1)" aria-label="Mese precedente">‹</button><select class="sh-in" aria-label="Mese" onchange="sezTlM(this.value)">${mons.map(q => `<option value="${q.v}"${q.v === M ? ' selected' : ''}>${E(q.t)}</option>`).join('')}</select><button type="button" class="sh-btn sm gh" onclick="sezTlStep(1)" aria-label="Mese successivo">›</button></div>` : ''}</div>`;
+  const att = (S.st !== 'ok' && S.st !== 'err' ? '<span class="sh-hint" role="status">Carico i Gruppi…</span> ' : '') + (U.st === 'load' ? '<span class="sh-hint" role="status">Cerco la tua Unità…</span>' : '');
+  const lg = `<div class="sz-lg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span>${tlkShape(TLK_SH[m], '#37474f', true, 14)} ${E(CAL_T[m][0])}</span>`).join('')}<span><i class="sz-bx"></i> Barra: più giorni</span><span><i class="sz-bx r"></i> Tratteggiato: riservato al Capo Gruppo</span><span>Il colore è di chi fa l’evento</span></div>`;
+  const ov = cl.length ? `<ul class="sz-ov">${cl.map(c => `<li><button type="button" class="sz-ovb" onclick="sezTlM('${c.a.slice(0, 7)}');setTimeout(function(){var e=document.querySelector('.sz-wrap');if(e)e.scrollIntoView({block:'start'});},30)"><b>${E(szDate(c.a, c.b))}</b><span class="sz-al ${c.lvl}">${c.lvl === 'tu' ? 'C’è anche un tuo evento' : c.n + ' Gruppi insieme'}</span></button><ul>${c.it.map(o => `<li>${szSw(o.src, S)}<span><b>${E(szWho(o.src, lanes))}</b> · ${E((CAL_T[o.mk] || CAL_T.giorno)[0])} · «${E(o.t)}»${o.ris ? ' <em class="cal-fo stf">Riservato</em>' : ''}<br><small>${E(szDate(o.a, o.b))}</small></span></li>`).join('')}</ul></li>`).join('')}</ul>` : '<p class="sh-sub" role="status" style="margin:8px 0 0">Nessuna sovrapposizione da guardare.</p>';
+  return `<section class="sz-wrap" aria-label="Timeline della Sezione"><h2 class="sz-h">Timeline della Sezione</h2>${ctl}${att}<div class="sz-sc"><div class="sz-in${M ? ' m' : ''}${narrow && !M ? ' n' : ''}"><div class="sz-r sz-rh"><div class="sz-l"></div><div class="sz-t sz-th"><div class="sz-hd" style="grid-template-columns:repeat(${nd},1fr)" aria-hidden="true">${hd}</div></div></div>${rAl}${lanes.map(lane).join('')}</div></div>${lg}${items.nod ? `<p class="sh-hint" style="margin:6px 0 0">${items.nod} ${items.nod === 1 ? 'evento senza data non compare' : 'eventi senza data non compaiono'} nella timeline.</p>` : ''}
+    <h3 class="sz-h2">Sovrapposizioni da guardare</h3>${ov}
+    <details class="sz-rule"><summary>Come conto le sovrapposizioni</summary><p class="sh-hint" style="margin:6px 0 0">Segnalo un tuo evento (della Sezione o della tua Unità) che cade nello stesso giorno, o nello stesso weekend, di un evento di un Gruppo; e due Gruppi con uscita, bivacco o campo nello stesso weekend. Le riunioni di Gruppi diversi nello stesso giorno non le segnalo. Sabato e domenica contano come un solo weekend.</p></details></section>`;
 }
 function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ shKeep(p, () => { const h = calHTML(); p._ph = h; p.innerHTML = h; }); } }
 window.calRe = calRe; window.calCan = calCan;   // 11/11: usate anche dal primo script (pit stop, caricamento da file, attività dei percorsi)

@@ -65,9 +65,9 @@ ok(!/CdG Gamma/.test(T), 'pagina: non compare il Gruppo che lo ha invitato solo 
 ok(/Osservazione dei Capi Gruppo/.test(T) && /fatta da te/.test(T) && /Osservazione degli Staff/.test(T) && /fatta dal Capo Gruppo/.test(T), 'pagina: le due letture sono etichettate');
 const rowsOf = nome => ev(n => { const s = [...document.querySelectorAll('#panel-pp section')].find(x => x.getAttribute('aria-label') === n); if(!s) return null; const bl = [...s.querySelectorAll('tbody')].map(t => [...t.querySelectorAll('tr')].map(r => [...r.children].map(c => c.innerText.replace(/\s+/g, ' ').trim()))); return bl[0].map((r, i) => [r[0], r[1], bl[1][i][1]]); }, nome);
 const A = await rowsOf('CdG Alfa'), B = await rowsOf('CdG Beta');
-ok(JSON.stringify(A) === JSON.stringify([['Personale', '9 consolidato', '8 presente'], ['Comunitario', '7 presente', '4 tracce iniziali'], ['Spirituale', '5 in sviluppo', '2 non emerge']]), 'valori del Gruppo Alfa: tua lettura 9/7/5, staff 8/4/2 · ' + JSON.stringify(A));
-ok(JSON.stringify(B) === JSON.stringify([['Personale', '—', '6 in sviluppo'], ['Comunitario', '—', '6 in sviluppo'], ['Spirituale', '—', '6 in sviluppo']]), 'valori del Gruppo Beta: nessuna tua lettura (non è nella tua tabella), staff 6/6/6 · ' + JSON.stringify(B));
-ok(/Non hai ancora osservato questo Capo Gruppo/.test(T), 'pagina: dice che il Capo Gruppo del Gruppo Beta non è ancora nella tabella');
+ok(JSON.stringify(A) === JSON.stringify([['Personale', '9 Consolidato', '8 Presente'], ['Comunitario', '7 Presente', '4 Tracce iniziali'], ['Spirituale', '5 In sviluppo', '2 Non ancora emerso']]), 'valori del Gruppo Alfa: tua lettura 9/7/5, staff 8/4/2 · ' + JSON.stringify(A));
+ok(JSON.stringify(B) === JSON.stringify([['Personale', '—', '6 In sviluppo'], ['Comunitario', '—', '6 In sviluppo'], ['Spirituale', '—', '6 In sviluppo']]), 'valori del Gruppo Beta: nessuna tua lettura (non è nella tua tabella), staff 6/6/6 · ' + JSON.stringify(B));
+ok(/Non hai ancora collegato un Capo Gruppo a questo Gruppo/.test(T), "pagina: dice che al Gruppo Beta non è ancora collegato un Capo Gruppo osservato");
 ok(/3 persone, 3 con almeno una osservazione/.test(T) && /2 persone, 1 con almeno una osservazione/.test(T), 'pagina: conteggio dello staff (3 su 3, 1 su 2)');
 
 const fuori = await ev(() => { const W = document.documentElement.clientWidth; return [...document.querySelectorAll('#panel-pp section table')].filter(t => t.getBoundingClientRect().right > W + 1 || t.getBoundingClientRect().left < -1).length; });
@@ -83,16 +83,21 @@ const RIE = await ev(() => { const s = [...document.querySelectorAll('#panel-pp 
 ok(RIE && /CdG Alfa — 4 adulti: Nessuna 0|CdG Alfa — 4 adulti: Iniziale 1 · Intermedia 1 · Avanzata 1 · Wood Badge 1/.test(RIE) && /CdG Beta — 3 adulti: Nessuna 1 · Non indicata 2/.test(RIE) && /Nella Sezione — 7 adulti: Nessuna 1 · Iniziale 1 · Intermedia 1 · Avanzata 1 · Wood Badge 1 · Non indicata 2/.test(RIE), 'riepilogo per livello: per Gruppo e per Sezione · ' + RIE);
 const MAPPA = await ev(() => { const s = [...document.querySelectorAll('#panel-pp section')].find(x => x.getAttribute('aria-label') === 'Mappa dei Gruppi'); if(!s) return null; return [...s.querySelectorAll('table')].map(t => [...t.querySelectorAll('tbody tr')].map(r => [...r.children].map(c => c.innerText.replace(/\s+/g, ' ').trim()))); });
 ok(MAPPA && MAPPA.length === 2, 'mappa: due letture etichettate, ciascuna con la sua tabella');
-ok(JSON.stringify(MAPPA[0]) === JSON.stringify([['CdG Alfa', '8 presente', '4 tracce iniziali', '2 non emerge'], ['CdG Beta', '6 in sviluppo', '6 in sviluppo', '6 in sviluppo']]), 'mappa «Osservazione degli Staff»: valori e fasce scritte · ' + JSON.stringify(MAPPA[0]));
-ok(JSON.stringify(MAPPA[1]) === JSON.stringify([['CdG Alfa', '9 consolidato', '7 presente', '5 in sviluppo'], ['CdG Beta', '—', '—', '—']]), 'mappa «Osservazione dei Capi Gruppo»: la tua lettura, «—» dove non osservato · ' + JSON.stringify(MAPPA[1]));
+ok(JSON.stringify(MAPPA[0]) === JSON.stringify([['CdG Alfa', '8 Presente', '4 Tracce iniziali', '2 Non ancora emerso'], ['CdG Beta', '6 In sviluppo', '6 In sviluppo', '6 In sviluppo']]), 'mappa «Osservazione degli Staff»: valori e fasce scritte · ' + JSON.stringify(MAPPA[0]));
+ok(JSON.stringify(MAPPA[1]) === JSON.stringify([['CdG Alfa', '9 Consolidato', '7 Presente', '5 In sviluppo'], ['CdG Beta', '—', '—', '—']]), 'mappa «Osservazione dei Capi Gruppo»: la tua lettura, «—» dove non osservato · ' + JSON.stringify(MAPPA[1]));
 const MT = await ev(() => document.querySelector('#panel-pp section[aria-label="Mappa dei Gruppi"]').innerText);
-ok(/spunto di discussione, non una diagnosi/.test(MT) && /non sono davvero confrontabili/.test(MT), 'mappa: dice che è uno spunto di discussione e che i punteggi tra Gruppi non sono confrontabili');
+ok(/spunto di discussione, non una diagnosi/.test(MT) && /non sono davvero confrontabili/.test(MT) && /Non ancora emerso/.test(MT), 'mappa: dice che è uno spunto di discussione e che i punteggi tra Gruppi non sono confrontabili');
 const col = await ev(() => { const s = document.querySelector('#panel-pp section[aria-label="Mappa dei Gruppi"]'); return [...s.querySelectorAll('td')].filter(c => /\d/.test(c.innerText)).map(c => [c.innerText.replace(/\s+/g, ' ').trim(), getComputedStyle(c).backgroundColor]); });
 const cm = {}; col.forEach(([t, c]) => { const f = t.replace(/^\S+ /, ''); (cm[f] = cm[f] || new Set()).add(c); });
 ok(Object.values(cm).every(x => x.size === 1) && new Set(Object.values(cm).map(x => [...x][0])).size === Object.keys(cm).length, 'mappa: ogni fascia ha un solo colore e fasce diverse hanno colori diversi · ' + JSON.stringify(Object.fromEntries(Object.entries(cm).map(([k, v]) => [k, [...v]]))));
 // il Commissario non ha ancora aperto/chiuso nulla: la scheda mostra lo stesso numero di sezioni per Gruppo + mappa + riepilogo
 const nsez = await ev(() => document.querySelectorAll('#panel-pp section').length);
 ok(nsez === 4, 'la pagina ha mappa, riepilogo e una scheda per ognuno dei due Gruppi · sezioni: ' + nsez);
+
+// 2c) il Commissario ha solo la Sezione: niente «Nome del Gruppo» né «Gruppo»
+await ev(() => { STAFF_VIEW = 'osservazione'; goPhase(1); }); await sleep(1800);
+const hdrC = await ev(() => { const u = document.getElementById('unit-name-in'), g = document.getElementById('staff-sezgrp'); const vis = e => !!e && e.offsetParent !== null && e.getBoundingClientRect().height > 0; return {unit: vis(u), sez: vis(g) && /sezione/i.test(g.innerText), grp: !!(g && g.querySelector('select.grp-sel')) && vis(g.querySelector('select.grp-sel'))}; });
+ok(!hdrC.unit && hdrC.sez && !hdrC.grp, 'Commissario: in «Osservazione dei Capi Gruppo» c\'è solo la Sezione (niente nome del Gruppo, niente Gruppo) · ' + JSON.stringify(hdrC));
 
 // 3) nulla del Capo Gruppo viene copiato nel progetto del Commissario
 await sleep(1500);
@@ -108,7 +113,7 @@ ok(await ev(([i]) => SH._sez.cache[i].__m === 1, [R1.id]), 'riapertura senza nov
 { const r = db.t.pee_archivi.find(x => x.id === R1.id); r.data.staffObs['ZQ-G1-Anna']['P1'] = 10; ['P', 'C', 'S'].forEach(a => 0); r.updated_at = new Date(Date.now() + 5000).toISOString(); }
 await ev(() => shSez()); await sleep(2500);
 ok(await ev(([i]) => SH._sez.cache[i].__m === undefined, [R1.id]), 'il Gruppo ha aggiornato il progetto: alla riapertura viene riletto');
-{ const A2 = await rowsOf('CdG Alfa'); ok(/^8,\d presente$/.test(A2[0][2]) && A2[0][2] !== '8 presente', 'il valore nuovo del Gruppo si vede (Personale, staff: ' + A2[0][2] + ')'); }
+{ const A2 = await rowsOf('CdG Alfa'); ok(/^8,\d Presente$/.test(A2[0][2]) && A2[0][2] !== '8 Presente', 'il valore nuovo del Gruppo si vede (Personale, staff: ' + A2[0][2] + ')'); }
 const g1Snap = JSON.stringify(db.t.pee_archivi.find(r => r.id === R1.id)), g2Snap = JSON.stringify(db.t.pee_archivi.find(r => r.id === R2.id)), g3Snap = JSON.stringify(db.t.pee_archivi.find(r => r.id === R3.id));
 
 // 5) invito di un altro anno: non compare, ma si dice
@@ -135,5 +140,8 @@ ok(JSON.stringify(db.t.pee_archivi.find(r => r.id === R1.id)) === g1Snap && JSON
 const pg = await person(br, db, {ctx: dev0}), Gp = pg.page; await loginAs(Gp, base, G1); await sleep(2500);
 await Gp.evaluate(id => clOpenProject(id), R1.id); await sleep(3500);
 ok(!/Gruppi della Sezione/.test(await Gp.evaluate(() => document.getElementById('sh-side').innerText)), 'un Capo Gruppo non vede «Gruppi della Sezione» nel suo menu');
+await Gp.evaluate(() => { STAFF_VIEW = 'osservazione'; goPhase(1); }); await sleep(1800);
+{ const h = await Gp.evaluate(() => { const u = document.getElementById('unit-name-in'), g = document.getElementById('staff-sezgrp'); const vis = e => !!e && e.offsetParent !== null && e.getBoundingClientRect().height > 0; return {unit: vis(u), sez: vis(g) && /sezione/i.test(g.innerText), grp: !!(g && g.querySelector('select.grp-sel')) && vis(g.querySelector('select.grp-sel'))}; });
+  ok(h.unit && h.sez && h.grp, 'Capo Gruppo: restano nome del Gruppo, Sezione e Gruppo come prima · ' + JSON.stringify(h)); }
 const errs = await ev(() => window.__errs || []); ok(!errs.length, 'nessun errore nella pagina del Commissario ' + JSON.stringify(errs).slice(0, 200));
 await br.close(); process.exit(summary() ? 1 : 0);
