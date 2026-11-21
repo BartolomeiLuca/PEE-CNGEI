@@ -9046,7 +9046,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611210915'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611211130'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -19035,6 +19035,7 @@ const NAV_CG = [
   {id:'p-sez', t:'Gruppi della Sezione', ic:'users', go:'shSez()', cond:'sez'},
   {id:'p-pf', t:'Percorso formativo', ic:'users', go:'shPF()'},
   {g:'Realizzare'},
+  {id:'r-cal', t:'Calendario', ic:'cal', go:'shCal()'},
   {id:'usc', t:'Eventi per gli adulti', ic:'tent', go:"shSec('usc')"},
   {id:'r-chk', t:'Check degli adulti', ic:'users', go:'shChk()'},
   {g:'Misurare e conservare'},
@@ -19074,7 +19075,7 @@ function navHTML(){
 function bbHTML(){
   const pp = isPP();
   if(isST()){ const B2 = [['st1','Osservazione','eye','goPhase(1)'],['st2','Riepilogo','list','goPhase(2)'],['usc','Uscite','tent',"shSec('usc')"],['more','Altro','more',"shSheet('Altro')"]];
-    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk','p-sez'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
+    return B2.map(b => { const on = b[0] === 'more' ? ['sha','arc','r-chk','p-sez','r-cal'].includes(cur) : cur === b[0]; return `<button type="button" class="sh-bbb${on ? ' on' : ''}" ${on ? 'aria-current="page"' : ''} onclick="${b[3]}">${ico(b[2])}${b[1]}</button>`; }).join(''); }
   const B = pp ? [['pp0','Stato','clock',"shPP('0')"],['sec','Sezioni','list',"shSheet('Progettare')"],['ppi','Invii','mail',"shPP('i')"],['more','Altro','more',"shSheet('Altro')"]]
                : [['dash','Dashboard','dash','shDash()'],['sec','Osservare','eye',"shSheet('Capire|Osservare')"],['usc','Progettare','list',"shSheet('Progettare|Realizzare')"],['more','Altro','more',"shSheet('Altro')"]];
   const secIds = pp ? ['pp1','pp2','pp3','pp4','pp5'] : ['a-unit','a-ctx','a-staff','o-occ','o-staff','o-P','o-C','o-S','o-conf','o-1c','o-1d'];
@@ -19090,7 +19091,7 @@ window.shDrawer = function(on){ document.body.classList.toggle('sh-drawer', !!on
 window.shSheet = function(g){
   const it = navItems(); let h = '';
   if(g === 'Altro'){
-    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-chk','p-sez','sha','arc'] : ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk'];
+    const keep = isPP() ? ['ppc','ppa'] : isST() ? ['r-cal','r-chk','p-sez','sha','arc'] : ['m-4','m-5','m-num','r-bil','m-anno','k-arc','d-sha','d-chk'];
     h = it.filter(i => keep.includes(i.id) && (i.id !== 'p-sez' || navCond(i))).map(i => `<button type="button" class="sh-si" onclick="shSheetClose();${i.go}">${ico(i.ic)}<span>${esc(i.t)}</span></button>`).join('')
       + `<div class="sh-sg">Altro</div><button type="button" class="sh-si" onclick="shSheetClose();shGoHome()">${ico('proj')}<span>I tuoi progetti</span></button><button type="button" class="sh-si" onclick="shSheetClose();shGuide()">${ico('help')}<span>Guida e video</span></button><button type="button" class="sh-si" onclick="shSheetClose();fbOpen()">${ico('help')}<span>Suggerimenti?</span></button><button type="button" class="sh-si" onclick="shSheetClose();shProfileOpen()">${ico('user')}<span>Profilo</span></button>`;
   }else if(!isPP() && !isST()){
@@ -21683,7 +21684,7 @@ function sezRemember(list){
 }
 function sezNome(x){ const c = (SH._sez && SH._sez.cache && SH._sez.cache[x.id]) || null; const d = c ? c.d : null; return String((d && (d.UNIT_NAME || (d.scheda && d.scheda.pp && d.scheda.pp.gruppo))) || (x.meta && x.meta.nome) || x.titolo || 'Gruppo').trim(); }
 window.sezForget = function(id){ if(!sezOwn()) return; const V = sezVisti(false); if(!V[id]) return; delete scheda.sez.visti[id]; try{ ossTouch(); }catch(e){} sezRe(); };
-function sezRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'sez' && p.classList.contains('active')) p.innerHTML = sezHTML(); }
+function sezRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'sez' && p.classList.contains('active')) p.innerHTML = sezHTML(); else if(p && SH.ppv === 'cal' && p.classList.contains('active')) calRe(); }
 async function sezLoad(){
   const S = SH._sez = SH._sez || {cache:{}};
   if(!CL.sb || !CL.user){ S.st = 'off'; sezRe(); return; }
@@ -21735,6 +21736,22 @@ function sezHTML(){
 }
 window.shSez = function(){ ownOff(); ensurePanels(); SH.ppv = 'sez'; $('panel-pp').innerHTML = sezHTML(); own('panel-pp'); try{ window.scrollTo(0, 0); }catch(e){} sezLoad(); };
 window.sezLoad = sezLoad;
+// eventi dei Gruppi per il calendario del Commissario: dai progetti già letti per «Gruppi della Sezione», in sola lettura (il Commissario vede anche quelli riservati)
+function sezEventi(){
+  if(!sezOwn()) return []; const S = SH._sez;
+  if(!S){ setTimeout(() => { try{ sezLoad(); }catch(e){} }, 0); return []; }
+  if(S.st !== 'ok') return [];
+  const out = [];
+  (S.list || []).forEach((x, i) => { const c = S.cache[x.id]; const U = c && c.d && c.d.scheda && c.d.scheda.uscite; if(!U || typeof U !== 'object' || Array.isArray(U)) return; const gr = {id:x.id, nome:sezNome(x), i};
+    Object.values(U).forEach(u => { if(u && typeof u === 'object' && !u.del && u.id) out.push({u, cy:'', cn:'', gr}); }); });
+  return out;
+}
+function sezChips(grAll, sel){
+  const seen = new Map(); grAll.forEach(z => { if(!seen.has(z.gr.id)) seen.set(z.gr.id, z.gr.nome); });
+  const b = (k, t) => `<button type="button" aria-pressed="${sel === k}" onclick="calGr('${esc(k)}')">${esc(t)}</button>`;
+  return `<div class="sh-seg sm" role="group" aria-label="Di chi sono gli eventi"><span class="sh-seg-l">Eventi</span>${b('all', 'Tutti')}${b('mine', 'Solo i miei')}${[...seen].map(([id, n]) => b(id, n)).join('')}</div>`;
+}
+window.calGr = function(k){ SH._calGr = k; calRe(); };
 
 // ── Realizzare · «Elenco dell'anno»: tutte le attività dell'anno scout (cicli dell'Unità + attività di staff) in ordine di data, numerate da 1 ──
 async function eleLoad(){
@@ -22060,8 +22077,13 @@ function calPfBlock(x){
 window.calPfSel = function(el, id){ const v = el && el.value; if(!v || !calCan()) return; pfSet(id, 'ev', v, false); calRe(); };
 window.calPoolF = function(v){ SH._calPoolF = (v === 'edu' || v === 'for') ? v : 'all'; calRe(); };
 function calHTML(){
-  const can = calCan(); const acts = calActs(); const pl = calPlaced(); const conts = uscList();
-  const scopeY = (SH.calScope || 'anno') === 'anno'; const FX = scopeY ? calFX() : {items:[], ready:true}; calFXc = FX; const nCy = FX.items.length; const curCn = (scheda.ciclo || {}).nome || 'Questo ciclo';
+  const stM = MODE === 'staff';
+  const can = calCan(); const acts = stM ? [] : calActs(); const pl = stM ? {} : calPlaced(); const conts = uscList();
+  // 21/11: anche il Capo Gruppo e il Commissario hanno il calendario (solo eventi per gli adulti; niente cicli, percorsi dei ragazzi, pit stop)
+  const grAll = (stM && sezOwn()) ? sezEventi() : []; const grSel0 = SH._calGr || 'all';
+  const grSel = (grSel0 === 'all' || grSel0 === 'mine' || grAll.some(z => z.gr.id === grSel0)) ? grSel0 : 'all'; const mineOn = grSel === 'all' || grSel === 'mine';
+  const grVis = grSel === 'mine' ? [] : grAll.filter(z => grSel === 'all' || z.gr.id === grSel); const grChips = grAll.length ? sezChips(grAll, grSel) : '';
+  const scopeY = !stM && (SH.calScope || 'anno') === 'anno'; const FX = scopeY ? calFX() : {items:[], ready:true}; calFXc = FX; const nCy = FX.items.length; const curCn = (scheda.ciclo || {}).nome || 'Questo ciclo';
   const pool = acts.filter(r => !(pl[r.idx + '-' + r.j] || []).length);
   const poolX = FX.items.reduce((A, f) => A.concat(calPoolX(f)), []);
   // momenti formativi del percorso formativo dello staff non ancora messi in un evento
@@ -22073,9 +22095,9 @@ function calHTML(){
   const byK = {}; acts.forEach(r => { byK[r.idx + '-' + r.j] = r; });
   const conf = calConf(acts);
   const banner = conf.map(c => `<div class="cal-warn" role="status"><b>L’ordine ipotizzato del percorso «${esc(c.nm)}» sta cambiando.</b> Con le date scelte l’attività «${esc(c.inv[0].titolo)}» (la ${c.inv[0].num}ª, ${esc(fmtDL(c.inv[0].date))}) viene prima di «${esc(c.inv[1].titolo)}» (la ${c.inv[1].num}ª, ${esc(fmtDL(c.inv[1].date))}). Non riordino niente da solo.<div class="cal-wa"><button type="button" class="sh-btn" onclick="calReorder(${c.idx})">Aggiorna l’ordine del percorso</button><button type="button" class="sh-btn gh" onclick="calKeep('${esc(c.key).replace(/'/g, '')}')">Lascio com’è</button></div></div>`).join('');
-  const dr = SH._calDraft || {}; const dst = SH._calDest === 'staff' ? 'staff' : 'unita';
+  const dr = SH._calDraft || {}; const dst = (SH._calDest === 'staff' || stM) ? 'staff' : 'unita';
   const form = (can && SH._calNew) ? `<div class="cal-new" role="group" aria-label="${esc(CAL_NEW[SH._calNew])}"><b>${esc(CAL_NEW[SH._calNew])}</b>
-    <fieldset class="cal-for-f"><legend class="sh-lb">Per chi</legend><label><input type="radio" name="cal-dest" value="unita"${dst === 'unita' ? ' checked' : ''} onchange="calDest(this.value)"> Per l’Unità</label><label><input type="radio" name="cal-dest" value="staff"${dst === 'staff' ? ' checked' : ''} onchange="calDest(this.value)"> Solo per lo staff</label></fieldset>
+    ${stM ? '' : `<fieldset class="cal-for-f"><legend class="sh-lb">Per chi</legend><label><input type="radio" name="cal-dest" value="unita"${dst === 'unita' ? ' checked' : ''} onchange="calDest(this.value)"> Per l’Unità</label><label><input type="radio" name="cal-dest" value="staff"${dst === 'staff' ? ' checked' : ''} onchange="calDest(this.value)"> Solo per lo staff</label></fieldset>`}
     <label>Nome <input id="cal-nt" class="sh-in" maxlength="80" placeholder="${esc(CAL_T[SH._calNew][0])}" value="${esc(dr.nt || '')}"></label>
     <label>Data${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? ' di inizio' : ''} <input id="cal-d1" type="date" class="sh-in" value="${esc(dr.d1 || '')}" oninput="calCyHint()" onchange="calCyHint()"></label>
     ${(SH._calNew === 'bivacco' || SH._calNew === 'campo') ? `<label>Data di fine <input id="cal-d2" type="date" class="sh-in" value="${esc(dr.d2 || '')}"></label>` : ''}
@@ -22084,24 +22106,26 @@ function calHTML(){
   const addB = can ? `<div class="cal-add" role="group" aria-label="Aggiungi un contenitore">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<button type="button" class="sh-btn gh" onclick="calNew('${m}')">+ ${esc(CAL_T[m][0])}</button>`).join('')}<button type="button" class="sh-btn gh" onclick="calJsonIn()" title="Carica un evento salvato in .json (si crea una copia)">⤒ Carica da file</button></div>` : '';
   const MN = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
   const dk = u => { const d = String((u.ax || {}).data || ''); return /^\d{4}-\d{2}/.test(d) ? d.slice(0, 7) : ''; };
-  const allE = conts.map(u => ({u, cy:'', cn:curCn})).concat(FX.items.reduce((A, f) => A.concat(f.U.map(u => ({u, cy:f.id, cn:f.nome, sc:f.sc}))), []));
+  const allE = (mineOn ? conts.map(u => ({u, cy:'', cn:curCn})) : []).concat(grVis).concat(FX.items.reduce((A, f) => A.concat(f.U.map(u => ({u, cy:f.id, cn:f.nome, sc:f.sc}))), []));
   const srt = allE.sort((A, B) => { const a = A.u, b = B.u; return (dk(a) || '9999').localeCompare(dk(b) || '9999') || String((a.ax || {}).data || '').localeCompare(String((b.ax || {}).data || '')) || (a.cr || 0) - (b.cr || 0); });
   const row = z => { const u = z.u, cy = z.cy;
-    const md = uscModK(u); const T = CAL_T[md] || CAL_T.giorno; const stf = u.dest === 'staff'; const d = String((u.ax || {}).data || '').slice(0, 10);
+    const md = uscModK(u); const T = CAL_T[md] || CAL_T.giorno; const stf = u.dest === 'staff' || stM; const d = String((u.ax || {}).data || '').slice(0, 10);
     const dd = /^\d{4}-\d{2}-\d{2}$/.test(d) ? `<b>${+d.slice(8)}</b><small>${esc(new Date(d + 'T12:00').toLocaleDateString('it-IT', {weekday:'short'}).replace(/\.$/, ''))}</small>` : '<b>—</b><small>senza data</small>';
+    if(z.gr){ const col = AN_COLC[z.gr.i % AN_COLC.length]; const ris = !u.aperta;
+      return `<section class="cal-c cal-row cal-stf cal-gr" style="--c:${T[1]}" aria-label="${esc(T[0] + ' ' + uscTit(u) + ' · ' + z.gr.nome)}"><div class="cal-rd" aria-hidden="true">${dd}</div><div class="cal-rm" role="group"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-cyb col" style="background:${col}">${esc(z.gr.nome)}</span>${ris ? '<span class="cal-fo stf" title="Evento riservato: il Capo Gruppo non lo ha ancora aperto ai Capi Unità">Riservato</span>' : ''}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span></div></section>`; }
     const opn = cy ? `calOpenCy('${esc(cy)}','${u.id}')` : `shSrUsc('${u.id}')`; const cyb = (scopeY && nCy) ? calCyPill(cy, z.cn) : '';
     return `<section class="cal-c cal-row${stf ? ' cal-stf' : ''}${cy ? ' cal-fx' : ''}" style="--c:${T[1]}" data-u="${u.id}" data-cy="${esc(cy)}" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'${u.id}','${esc(cy)}')" aria-label="${esc(T[0] + ' ' + uscTit(u))}">
       <div class="cal-rd" aria-hidden="true">${dd}</div>
-      <button type="button" class="cal-rm" onclick="${opn}" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span><span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span>${cyb}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span>${calAttsHTML(z)}</button>
+      <button type="button" class="cal-rm" onclick="${opn}" aria-label="Apri ${esc(uscTit(u))}"><span class="cal-chs"><span class="cal-ty" style="background:${T[1]}">${esc(T[0])}</span>${stM ? '' : `<span class="cal-fo ${stf ? 'stf' : 'uni'}">${stf ? 'Staff' : 'Unità'}</span>`}${cyb}</span><b>${esc(uscTit(u))}</b><span class="cal-meta">${uscTipoLab(u) ? esc(uscTipoLab(u)) + ' · ' : ''}${esc(calDateTxt(u))}</span>${calAttsHTML(z)}</button>
       <div class="cal-ra"><button type="button" class="cal-bt2" onclick="${opn}">Apri</button>${can ? `<button type="button" class="cal-bt2" onclick="${cy ? `calDupX('${esc(cy)}','${u.id}')` : `calDup('${u.id}')`}" aria-label="Duplica ${esc(uscTit(u))}">Duplica</button><button type="button" class="cal-bt2 cal-del" onclick="${cy ? `calDelX('${esc(cy)}','${u.id}')` : `calDel('${u.id}')`}" aria-label="Elimina ${esc(uscTit(u))}">Elimina</button>` : ''}</div></section>`;
   };
   let contH = ''; let curM = null;
   const srtP = srt.slice(); try{ const cyR = (!scopeY && scheda.ciclo && scheda.ciclo.dal && scheda.ciclo.al) ? [String(scheda.ciclo.dal).slice(0, 7), String(scheda.ciclo.al).slice(0, 7)] : null; pitList().filter(P => !P.fixed && (!cyR || (P.win[0].slice(0, 7) <= cyR[1] && P.win[1].slice(0, 7) >= cyR[0]))).forEach(P => { let at = srtP.findIndex(z => !z._pit && (!dk(z.u) || dk(z.u) > P.mese)); if(at < 0) at = srtP.length; srtP.splice(at, 0, {_pit:P}); }); }catch(e){}
   srtP.forEach(z => { const m = z._pit ? z._pit.mese : dk(z.u); if(m !== curM){ if(curM !== null) contH += '</div>'; curM = m; contH += `<div class="cal-mese"><h3>${m ? esc(MN[+m.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4)) : 'Senza data'}</h3>`; } contH += z._pit ? pitRowHTML(z._pit) : row(z); });
   if(curM !== null) contH += '</div>';
-  const leg = `<div class="cal-leg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}<span><em class="cal-fo uni">Unità</em></span><span><em class="cal-fo stf">Staff</em></span></div>`;
-  return `<div class="sh-dh"><div><h1>Calendario e attività</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Qui trovi tutti gli eventi dell’anno, mese per mese: riunioni, uscite, bivacchi e campi, dell’Unità e dello staff. Aprine uno per organizzarlo. Le attività dei percorsi ancora senza un posto stanno nel riquadro «Da collocare»: trascinale su un evento dell’Unità, o usa «Sposta in…». La data dell’evento diventa la data dell’attività.</p></div></div>
-    <div class="vis-opt"><div class="sh-seg sm" role="group" aria-label="Che cosa vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!scopeY}" onclick="calScopeSet('ciclo')">Questo ciclo</button><button type="button" aria-pressed="${scopeY}" onclick="calScopeSet('anno')">Tutto l’anno</button></div>${scopeY && !FX.ready ? '<span class="sh-hint" role="status">Carico gli altri cicli…</span>' : ''}</div>
+  const leg = `<div class="cal-leg" aria-label="Legenda">${['sede', 'giorno', 'bivacco', 'campo'].map(m => `<span><i style="background:${CAL_T[m][1]}"></i>${esc(CAL_T[m][0])}</span>`).join('')}${stM ? '' : '<span><em class="cal-fo uni">Unità</em></span><span><em class="cal-fo stf">Staff</em></span>'}</div>`;
+  return `<div class="sh-dh"><div><h1>${stM ? 'Calendario' : 'Calendario e attività'}</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">${stM ? 'Qui trovi gli eventi per gli adulti dell’anno, mese per mese: riunioni, uscite, bivacchi e campi. Aprine uno per organizzarlo. I momenti del Percorso formativo ancora senza un posto stanno nel riquadro «Da collocare»: li metti in un evento con «Metti in…».' + (grAll.length ? ' Gli eventi dei Gruppi sono in sola lettura e portano il nome del Gruppo.' : '') : 'Qui trovi tutti gli eventi dell’anno, mese per mese: riunioni, uscite, bivacchi e campi, dell’Unità e dello staff. Aprine uno per organizzarlo. Le attività dei percorsi ancora senza un posto stanno nel riquadro «Da collocare»: trascinale su un evento dell’Unità, o usa «Sposta in…». La data dell’evento diventa la data dell’attività.'}</p></div></div>
+    <div class="vis-opt">${stM ? '' : `<div class="sh-seg sm" role="group" aria-label="Che cosa vedi"><span class="sh-seg-l">Vedi</span><button type="button" aria-pressed="${!scopeY}" onclick="calScopeSet('ciclo')">Questo ciclo</button><button type="button" aria-pressed="${scopeY}" onclick="calScopeSet('anno')">Tutto l’anno</button></div>${scopeY && !FX.ready ? '<span class="sh-hint" role="status">Carico gli altri cicli…</span>' : ''}`}${grChips}</div>
     ${banner}${addB}${form}${calChkStrip(can)}
     <div class="cal-grid">
       <section class="cal-pool" ondragover="calOver(event)" ondragleave="calLeave(event)" ondrop="calDrop(event,'')" aria-label="Attività da collocare"><header><b>Da collocare</b><span class="cal-n">${nEdu + poolF.length}</span></header><div class="cal-cb">${fltH}${(eduH || forH) ? eduH + forH : `<div class="cal-empty">${(acts.length || pfList().length) ? 'Tutto ha un posto.' : 'Non ci sono ancora attività: le scrivi in «Percorsi educativi» o nel percorso formativo dello staff.'}</div>`}</div></section>
@@ -22110,7 +22134,7 @@ function calHTML(){
 }
 function calRe(){ const p = $('panel-pp'); if(p && SH.ppv === 'cal' && p.classList.contains('active')){ shKeep(p, () => { const h = calHTML(); p._ph = h; p.innerHTML = h; }); } }
 window.calRe = calRe; window.calCan = calCan;   // 11/11: usate anche dal primo script (pit stop, caricamento da file, attività dei percorsi)
-window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); { const h = calHTML(); $('panel-pp')._ph = h; $('panel-pp').innerHTML = h; } own('panel-pp'); };
+window.shCal = function(){ ensurePanels(); SH.ppv = 'cal'; ownOff(); try{ if(MODE === 'staff' && sezOwn()) sezLoad(); }catch(e){} { const h = calHTML(); $('panel-pp')._ph = h; $('panel-pp').innerHTML = h; } own('panel-pp'); };
 // duplica un contenitore (persone, luogo, spese, programma) una settimana dopo; le attività dei percorsi non si copiano: restano dove sono
 window.calDup = function(id){
   if(!calCan()) return; const u = uscGet(id); if(!u) return; const c = JSON.parse(JSON.stringify(u)); const nid = uscNewId('u');
@@ -22127,9 +22151,9 @@ window.calDel = function(id){
   u.del = true; saveData(true); try{ if(typeof USC_CUR !== 'undefined' && USC_CUR === id) USC_CUR = null; }catch(e){} try{ uscNavSync(); }catch(e){} showToast('Evento eliminato'); calRe();
 };
 window.calTpAltro = function(sel){ const l = $('cal-tpa'); if(l) l.hidden = sel.value !== '__altro'; };
-window.calNew = function(m, keep){ SH._calNew = m; SH._calDraft = null; if(!keep) SH._calDest = null; calRe(); setTimeout(() => { const e = $('cal-nt'); if(e) e.focus(); }, 40); };
+window.calNew = function(m, keep){ SH._calNew = m; SH._calDraft = null; if(!keep) SH._calDest = (MODE === 'staff') ? 'staff' : null; calRe(); setTimeout(() => { const e = $('cal-nt'); if(e) e.focus(); }, 40); };
 window.calMake = function(){
-  if(!calCan()) return; const md = SH._calNew || 'giorno'; const t = String(($('cal-nt') || {}).value || '').trim(); const d1 = ($('cal-d1') || {}).value || '', d2 = ($('cal-d2') || {}).value || '';
+  if(!calCan()) return; if(MODE === 'staff') SH._calDest = 'staff'; const md = SH._calNew || 'giorno'; const t = String(($('cal-nt') || {}).value || '').trim(); const d1 = ($('cal-d1') || {}).value || '', d2 = ($('cal-d2') || {}).value || '';
   if(!d1){ showToast('Scegli la data'); const e = $('cal-d1'); if(e) e.focus(); return; }
   const id = uscNewId('u'); const pp = scheda.pp || {}; const ad = []; const _gs0 = (SH._calDest === 'staff') ? (md === 'sede' ? '21:00' : (md === 'giorno' ? '09:00' : '')) : (md === 'sede' ? '15:00' : (md === 'giorno' ? '09:00' : ''));
   try{ (staffTab() || []).forEach(r => { const n = (r.nome || '').trim(); if(n) ad.push(n + (r.ruolo ? ' (' + r.ruolo + ')' : '')); }); }catch(e){}
