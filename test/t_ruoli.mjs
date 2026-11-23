@@ -12,7 +12,7 @@ await loginAs(P, base, A); await ev(P, () => exStart()); await sleep(3000);
 const LEG = 'Aiuto in Reparto per due anni, poi Capo Sezione Rover';
 await ev(P, L => { scheda.pp.staffTab = [
   {ruolo:'CU', nome:'Anna Rossi', mail:'anna@x.it', eta:'34', ruoli:'VCB, CB'},
-  {ruolo:'VCU', nome:'Paolo Riva', mail:'paolo@x.it', eta:'24', ruoli:'SiSB, Membro di CoS'},
+  {ruolo:'VCU', nome:'Paolo Riva', mail:'paolo@x.it', eta:'24', ruoli:'SiSB, Membro di CoS, Coordinatore Senior'},
   {ruolo:'SiS', nome:'Elena Sarti', mail:'elena@x.it', eta:'19', ruoli:L},
   {ruolo:'CG', nome:'Gigi Neri', mail:'gigi@x.it', eta:'50', ruoli:'', car:'Persona solare e disponibile.\n\nCOSA OFFRO', prof:'Operaio'}];
   document.body.insertAdjacentHTML('beforeend', '<div id="staff-tab" style="position:fixed;left:0;top:0;width:1300px;z-index:99999;background:#fff"></div>');
@@ -22,7 +22,7 @@ const cell = i => ev(P, i => { const e = document.querySelector('[data-rm="t:' +
 const row = i => ev(P, i => JSON.parse(JSON.stringify(scheda.pp.staffTab[i])), i);
 const c0 = await cell(0), c1 = await cell(1), c2 = await cell(2), c3 = await cell(3);
 ok(/^CB, VCB/.test(c0) && !/Scritto prima/.test(c0), '«VCB, CB» scritto a mano: letto, mostrato nell’ordine dell’elenco · ' + c0);
-ok(/SiSB, Membro di CoS/.test(c1) && !/Scritto prima/.test(c1), '«Membro di CoS» riconosciuto · ' + c1);
+ok(/SiSB, Coordinatore Senior, Membro di CoS/.test(c1) && !/Scritto prima/.test(c1), '«Membro di CoS» e «Coordinatore Senior» riconosciuti (anche con «Senior» da solo) · ' + c1);
 ok(c2.includes(LEG) && /nessuna scelta/.test(c2), 'testo non riconoscibile: resta intero come «Scritto prima»');
 ok(/nessuna scelta/.test(c3), 'riga vuota: nessuna scelta');
 const r0 = await row(0);
@@ -30,7 +30,7 @@ ok(r0.ruoli === 'VCB, CB' && !('ruolic' in r0), 'aprire la tabella non modifica 
 ok(await ev(P, () => document.querySelectorAll('#staff-tab textarea[aria-label^="Ruoli"]').length) === 0, 'la colonna Ruoli passati non è più un campo libero');
 // scelta
 await ev(P, () => ruoliOpen('t',3)); await sleep(200);
-ok(await ev(P, () => document.querySelectorAll('[data-rm="t:3"] input[data-rc]').length) === 19, '19 voci: CU…VCR, CG, SiSB…Senior, Commissario, Presidente, Tesoriere, Membro di CoS, Nessuno');
+ok(await ev(P, () => document.querySelectorAll('[data-rm="t:3"] input[data-rc]').length) === 20, '20 voci: CU…VCR, CG, SiSB…Senior, Commissario, Presidente, Tesoriere, Coordinatore Senior, Membro di CoS, Nessuno');
 await ev(P, () => { [...document.body.children].forEach(e => { if(e.id !== 'staff-tab') e.style.display = 'none'; }); document.body.style.background = '#fff'; });
 await P.screenshot({path:'/tmp/ruoli_aperto.png', clip:{x:0, y:0, width:1300, height:520}});
 await ev(P, () => { [...document.body.children].forEach(e => { if(e.id !== 'staff-tab') e.style.display = ''; }); });

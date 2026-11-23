@@ -3508,7 +3508,7 @@ const RUOLI_GRP = [
   ['Unità', [['cu','CU'],['vcu','VCU'],['cb','CB'],['vcb','VCB'],['cc','CC'],['vcc','VCC'],['cr','CR'],['vcr','VCR']]],
   ['Gruppo', [['cg','CG']]],
   ['SiS e Senior', [['sisb','SiSB'],['sisr','SiSR'],['sisc','SiSC'],['sis','SiS'],['senior','Senior']]],
-  ['Sezione', [['comm','Commissario'],['pres','Presidente'],['tes','Tesoriere'],['cos','Membro di CoS']]],
+  ['Sezione', [['comm','Commissario'],['pres','Presidente'],['tes','Tesoriere'],['coordsen','Coordinatore Senior'],['cos','Membro di CoS']]],
   ['', [['nessuno','Nessuno']]]
 ];
 const RUOLI_ORDER = RUOLI_GRP.flatMap(g => g[1].map(x => x[0]));
@@ -3523,6 +3523,7 @@ function ruoliParse(text){
   const eat = (re, k) => { w = w.replace(re, () => { add(k); return ' '; }); };
   eat(/\bmembr[oi]\s+(?:di\s+|del\s+|dal\s+)?(?:co\.?s\.?|comitato(?:\s+di\s+sezione)?)(?=[\s.,;:\/)]|$)/g, 'cos');
   eat(/\bco\.?s\.?(?=[\s.,;:\/)]|$)/g, 'cos');
+  eat(/\bcoordinator[ei]\s+senior\b/g, 'coordsen');
   eat(/\bcommissari[oae]\b/g, 'comm'); eat(/\bpresident[ei]\b/g, 'pres'); eat(/\btesorier[ei]\b/g, 'tes');
   eat(/\bvice\s+capo\s+unita\b/g, 'vcu'); eat(/\bvice\s+capo\s+branco\b/g, 'vcb'); eat(/\bvice\s+capo\s+compagnia\b/g, 'vcc'); eat(/\bvice\s+capo\s+reparto\b/g, 'vcr');
   eat(/\bcapo\s+unita\b/g, 'cu'); eat(/\bcapo\s+branco\b/g, 'cb'); eat(/\bcapo\s+compagnia\b/g, 'cc'); eat(/\bcapo\s+reparto\b/g, 'cr'); eat(/\bcapo\s+gruppo\b/g, 'cg');
@@ -9184,7 +9185,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611230902'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611230933'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
