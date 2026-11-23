@@ -3502,6 +3502,77 @@ function formClearNote(ctx, idx){
   const o = formTarget(ctx, idx); if(!o) return;
   const st = ctx === 't' ? formStateRow(o) : formStateProf(o);
   formApply(ctx, o, st.c, ''); formRefresh(ctx, idx); }
+// ── Ruoli passati: scelta multipla (23/11), come la Formazione. ruolic = codici scelti; ruolin = testo scritto prima e non riconosciuto (mai cancellato da solo);
+// ruolit = testo che abbiamo scritto noi: se «ruoli» è diverso, qualcuno l'ha cambiato a mano (altra versione o altro punto) e il testo rivince. Il testo «ruoli» resta la fonte per Word, Excel e profili.
+const RUOLI_GRP = [
+  ['Unità', [['cu','CU'],['vcu','VCU'],['cb','CB'],['vcb','VCB'],['cc','CC'],['vcc','VCC'],['cr','CR'],['vcr','VCR']]],
+  ['Gruppo', [['cg','CG']]],
+  ['SiS e Senior', [['sisb','SiSB'],['sisr','SiSR'],['sisc','SiSC'],['sis','SiS'],['senior','Senior']]],
+  ['Sezione', [['comm','Commissario'],['pres','Presidente'],['tes','Tesoriere'],['cos','Membro di CoS']]],
+  ['', [['nessuno','Nessuno']]]
+];
+const RUOLI_ORDER = RUOLI_GRP.flatMap(g => g[1].map(x => x[0]));
+const RUOLI_TXT = {}; RUOLI_GRP.forEach(g => g[1].forEach(x => { RUOLI_TXT[x[0]] = x[1]; }));
+function ruoliText(c, n){ return (c || []).map(x => RUOLI_TXT[x] || x).concat(n ? ['Scritto prima: ' + n] : []).join(', '); }
+function ruoliParse(text){
+  let s = String(text == null ? '' : text), nota = '';
+  const mi = s.search(/scritto prima:\s*/i);
+  if(mi >= 0){ nota = s.slice(mi).replace(/^scritto prima:\s*/i, '').trim(); s = s.slice(0, mi); }
+  let w = ' ' + s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') + ' ';
+  const c = [], add = k => { if(!c.includes(k)) c.push(k); };
+  const eat = (re, k) => { w = w.replace(re, () => { add(k); return ' '; }); };
+  eat(/\bmembr[oi]\s+(?:di\s+|del\s+|dal\s+)?(?:co\.?s\.?|comitato(?:\s+di\s+sezione)?)(?=[\s.,;:\/)]|$)/g, 'cos');
+  eat(/\bco\.?s\.?(?=[\s.,;:\/)]|$)/g, 'cos');
+  eat(/\bcommissari[oae]\b/g, 'comm'); eat(/\bpresident[ei]\b/g, 'pres'); eat(/\btesorier[ei]\b/g, 'tes');
+  eat(/\bvice\s+capo\s+unita\b/g, 'vcu'); eat(/\bvice\s+capo\s+branco\b/g, 'vcb'); eat(/\bvice\s+capo\s+compagnia\b/g, 'vcc'); eat(/\bvice\s+capo\s+reparto\b/g, 'vcr');
+  eat(/\bcapo\s+unita\b/g, 'cu'); eat(/\bcapo\s+branco\b/g, 'cb'); eat(/\bcapo\s+compagnia\b/g, 'cc'); eat(/\bcapo\s+reparto\b/g, 'cr'); eat(/\bcapo\s+gruppo\b/g, 'cg');
+  ['vcu','vcb','vcc','vcr','cu','cb','cc','cr','cg','sisb','sisr','sisc','sis','senior'].forEach(k => eat(new RegExp('\\b' + k + '\\b', 'g'), k));
+  eat(/\bnessun[oa]?\b/g, 'nessuno');
+  // se resta qualcosa che non so leggere, il testo originale si conserva intero nella nota
+  if(w.replace(/[\s.,;:\/\\\-–—()«»"'’]+/g, '')) nota = (s.trim() + (nota ? ' / ' + nota : '')).trim();
+  return {c: RUOLI_ORDER.filter(x => c.includes(x)), n: nota};
+}
+function ruoliStateRow(r){ r = r || {};
+  if(Array.isArray(r.ruolic) && String(r.ruoli || '') === String(r.ruolit || '')) return {c: r.ruolic.slice(), n: String(r.ruolin || '')};
+  return ruoliParse(r.ruoli); }
+function ruoliApply(o, c, n){
+  c = RUOLI_ORDER.filter(x => c.includes(x)); o.ruolic = c; o.ruolin = n || '';
+  const t = ruoliText(c, n); o.ruoli = t; o.ruolit = t; saveDataDebounced(); }
+// ctx: 't' = riga della tabella «Adulti in staff»; 'm' = scheda di una persona dello staff non presente nella tabella (dati in src)
+function ruoliTarget(ctx, idx){
+  if(ctx === 't'){ if(MODE === 'staff') return null; return staffTab()[idx] || null; }
+  if(ctx === 'm'){ const n = STAFF_MEMBERS[idx]; if(n === undefined) return null; const P = staffProfiles[n] || (staffProfiles[n] = {}); return P.src || (P.src = {}); }
+  return null; }
+function ruoliWidget(ctx, idx, st){
+  const key = 'r' + ctx + ':' + idx, open = !!(window._formOpen && window._formOpen[key]), sel = new Set(st.c), A = "'" + ctx + "'," + idx;
+  const lb = st.c.length ? st.c.map(x => sEsc(RUOLI_TXT[x] || x)).join(', ') : '<span style="color:var(--ink-faint)">— nessuna scelta</span>';
+  let h = '<div class="fm-w" data-rm="' + ctx + ':' + idx + '" style="font-size:12px"><div>' + lb + '</div>';
+  if(st.n) h += '<div style="color:var(--ink-mid);margin-top:2px">Scritto prima: ' + sEsc(st.n) + ' <button type="button" class="btn-ghost" style="padding:0 5px;font-size:11px" title="Cancella questo testo vecchio" aria-label="Cancella il testo scritto prima" onclick="ruoliClearNote(' + A + ')">× togli</button></div>';
+  h += '<button type="button" class="btn-ghost" style="margin-top:4px;padding:2px 8px;font-size:12px" aria-expanded="' + open + '" onclick="ruoliOpen(' + A + ')">' + (open ? 'Chiudi' : 'Scegli') + '</button>';
+  if(open){
+    h += '<div role="group" aria-label="Ruoli passati" style="margin-top:4px;border-top:1px solid var(--border-light);padding-top:4px">';
+    RUOLI_GRP.forEach(([g, items]) => {
+      if(g) h += '<div style="font-weight:700;margin:5px 0 2px">' + g + '</div>';
+      h += '<div style="display:flex;flex-wrap:wrap;gap:1px 12px">' + items.map(([code, lab]) => '<label style="display:flex;gap:5px;align-items:flex-start;margin:1px 0;cursor:pointer"><input type="checkbox" data-rc="' + code + '"' + (sel.has(code) ? ' checked' : '') + ' onchange="ruoliToggle(' + A + ',\'' + code + '\')" style="margin-top:2px"><span>' + sEsc(lab) + '</span></label>').join('') + '</div>';
+    });
+    h += '</div>'; }
+  return h + '</div>'; }
+function ruoliRefresh(ctx, idx, focusCode){
+  const sl = '[data-rm="' + ctx + ':' + idx + '"]', el = document.querySelector(sl); if(!el) return;
+  const o = ruoliTarget(ctx, idx); if(!o) return;
+  el.outerHTML = ruoliWidget(ctx, idx, ruoliStateRow(o));
+  try{ edLock(); }catch(e){}
+  if(focusCode){ const f = document.querySelector(sl + ' input[data-rc="' + focusCode + '"]'); if(f) f.focus(); } }
+function ruoliOpen(ctx, idx){ const O = window._formOpen = window._formOpen || {}, k = 'r' + ctx + ':' + idx; O[k] = !O[k]; ruoliRefresh(ctx, idx); }
+function ruoliToggle(ctx, idx, code){
+  const o = ruoliTarget(ctx, idx); if(!o) return;
+  const st = ruoliStateRow(o); let c = st.c.slice(); const has = c.includes(code);
+  if(code === 'nessuno') c = has ? [] : ['nessuno'];
+  else { c = c.filter(x => x !== 'nessuno'); if(has) c = c.filter(x => x !== code); else c.push(code); }
+  ruoliApply(o, c, st.n); ruoliRefresh(ctx, idx, code); }
+function ruoliClearNote(ctx, idx){
+  const o = ruoliTarget(ctx, idx); if(!o) return;
+  ruoliApply(o, ruoliStateRow(o).c, ''); ruoliRefresh(ctx, idx); }
 
 // ── Tabella adulti in staff (Contesto Sezione e Gruppo) ──
 const STAFF_TAB_COLS=[['ruolo','Ruolo'],['nome','Nome'],['eta','Età'],['form','Formazione'],['car','Caratteristiche personali'],['prof','Professioni, competenze esterne'],['ruoli','Ruoli passati'],['disp','Disponibilità'],['varie','Varie (dinamiche di staff, patto)']];
@@ -3554,10 +3625,10 @@ function staffTabHTML(){
   const t=staffTab(); const cell='padding:3px;border:1px solid var(--border-light);vertical-align:top';
   const sh=MODE==='giovani'&&typeof progMode==='function'&&progMode()==='cond'&&progCan()&&!window.BRO; const bad=window._stBad||{};
   const inp=(i,k,v,w)=>`<textarea rows="2" data-maxh="190" aria-label="${({nome:'Nome',mail:'Email',tel:'Telefono',form:'Formazione',car:'Caratteristiche',prof:'Professione',ruoli:'Ruoli',disp:'Disponibilità',varie:'Varie',ruolo:'Ruolo'})[k]||k} (persona ${i+1})" style="width:100%;min-width:${w}px;border:none;resize:vertical;font:inherit;font-size:12px;padding:4px;box-sizing:border-box;background:transparent" oninput="staffTabSet(${i},'${k}',this.value)"${k==='ruolo'&&FASCIA==='L'?` onchange="document.getElementById('staff-tab').innerHTML=staffTabHTML()"`:''}>${sEsc(v)}</textarea>`;
-  const w={ruolo:56,nome:110,giungla:90,mail:150,tel:100,eta:44,form:200,car:240,prof:200,ruoli:160,disp:150,varie:220};
+  const w={ruolo:56,nome:110,giungla:90,mail:150,tel:100,eta:44,form:200,car:240,prof:200,ruoli:190,disp:150,varie:220};
   const MV=34, OR=62;
   return `<div style="overflow-x:auto"><table style="border-collapse:collapse;table-layout:fixed;width:100%;min-width:${Math.round(staffCols().reduce((a,c)=>a+(w[c[0]]||100)+8,0)+(sh?74:0)+OR+MV)}px"><colgroup><col style="width:${OR}px">${sh?'<col style="width:74px">':''}${staffCols().map(c=>`<col style="width:${(w[c[0]]||100)+8}px">`).join('')}<col style="width:${MV}px"></colgroup><thead><tr><th style="padding:6px 4px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:center;width:${OR}px">Ordine</th>${sh?`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left;width:74px">Condividi</th>`:''}${staffCols().map(c=>`<th style="padding:6px 8px;background:var(--bg);border:1px solid var(--border-light);font-size:12px;text-align:left">${c[0]==='chi'&&mvOn()?'Chi c’era':c[1]}</th>`).join('')}<th style="border:1px solid var(--border-light);background:var(--bg)"></th></tr></thead><tbody>`+
-    t.map((r,i)=>`<tr><td style="${cell};text-align:center;white-space:nowrap;padding:5px 2px"><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="staffTabMove(${i},-1)">↑</button><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta giù" aria-label="Sposta giù" ${i===t.length-1?'disabled':''} onclick="staffTabMove(${i},1)">↓</button></td>${sh?`<td style="${cell};text-align:center;padding:5px 4px">${staffShareCell(i,r)}</td>`:''}${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}${c[0]==='mail'&&bad[i]?';outline:2px solid #c62828;outline-offset:-2px;background:#ffebee':''}">${c[0]==='giungla'?gjSel(i,r):c[0]==='ruolo'?stSelRuolo(i,r.ruolo):c[0]==='eta'?stSelEta(i,r.eta):c[0]==='form'?formWidget('t',i,formStateRow(r)):inp(i,c[0],r[c[0]],w[c[0]])}${c[0]==='mail'&&bad[i]?'<div class="st-bad">Controlla l’email</div>':''}</td>`).join('')}<td style="${cell};text-align:center;white-space:nowrap"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
+    t.map((r,i)=>`<tr><td style="${cell};text-align:center;white-space:nowrap;padding:5px 2px"><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta su" aria-label="Sposta su" ${i===0?'disabled':''} onclick="staffTabMove(${i},-1)">↑</button><button type="button" class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Sposta giù" aria-label="Sposta giù" ${i===t.length-1?'disabled':''} onclick="staffTabMove(${i},1)">↓</button></td>${sh?`<td style="${cell};text-align:center;padding:5px 4px">${staffShareCell(i,r)}</td>`:''}${staffCols().map(c=>`<td style="${cell}${c[0]==='ruolo'?';font-weight:700':''}${c[0]==='mail'&&bad[i]?';outline:2px solid #c62828;outline-offset:-2px;background:#ffebee':''}">${c[0]==='giungla'?gjSel(i,r):c[0]==='ruolo'?stSelRuolo(i,r.ruolo):c[0]==='eta'?stSelEta(i,r.eta):c[0]==='form'?formWidget('t',i,formStateRow(r)):c[0]==='ruoli'?ruoliWidget('t',i,ruoliStateRow(r)):inp(i,c[0],r[c[0]],w[c[0]])}${c[0]==='mail'&&bad[i]?'<div class="st-bad">Controlla l’email</div>':''}</td>`).join('')}<td style="${cell};text-align:center;white-space:nowrap"><button class="btn-ghost" style="padding:2px 7px;font-size:12px" title="Togli la riga" onclick="staffTabDel(${i})">×</button></td></tr>`).join('')+
     `</tbody></table></div><button class="btn-ghost" style="margin-top:6px;font-size:12px" onclick="staffTabAdd()">+ Aggiungi riga</button>`;
 }
 
@@ -6062,7 +6133,7 @@ function stProfHTML(auto){
     const T = (lb, k) => stField(lb, `<textarea rows="2" data-maxh="190" oninput="stSrcSet(${i},'${k}',this.value)">${sEsc(src[k] || '')}</textarea>`, true);
     h += `<div class="st-note">Gli stessi dati della tabella <b>Adulti in staff</b> («Il mio staff»): qui li compili per questa persona anche se non è nella tabella dell’Unità. Con l’<b>email</b> può ricevere gli avvisi «Per te» e le condivisioni.</div>`;
     h += `<div class="st-grid">${stField('Email', `<input type="email" inputmode="email" maxlength="80" placeholder="nome@esempio.it" value="${sEsc(src.mail || '')}" oninput="stSrcSet(${i},'mail',this.value)">`)}${stField('Telefono', `<input type="tel" maxlength="30" placeholder="es. 333 1234567" value="${sEsc(src.tel || '')}" oninput="stSrcSet(${i},'tel',this.value)">`)}</div>`;
-    h += `<div class="st-grid">${T('Caratteristiche personali','car')}${T('Professioni, competenze esterne','prof')}${T('Ruoli passati','ruoli')}${T('Disponibilità','disp')}${T('Varie (dinamiche di staff, patto)','varie')}</div>`;
+    h += `<div class="st-grid">${T('Caratteristiche personali','car')}${T('Professioni, competenze esterne','prof')}${stField('Ruoli passati', ruoliWidget('m', i, ruoliStateRow(src)), true)}${T('Disponibilità','disp')}${T('Varie (dinamiche di staff, patto)','varie')}</div>`;
   }
   h += `<div class="st-actions">${auto ? '' : `<button class="btn-ghost danger" onclick="stDel(${i})">Rimuovi dallo staff</button>`}<button class="btn-primary" onclick="stGo('oss')">Avanti — Scheda di osservazione →</button></div></div>`;
   return h;
@@ -9113,7 +9184,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611230801'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611230902'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
