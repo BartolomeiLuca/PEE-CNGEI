@@ -9185,7 +9185,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611230933'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611231703'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -18177,16 +18177,25 @@ if(!on) return;
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RUOLI = [['cu','Capo Unità'],['vcu','Vice Capo Unità'],['cg','Capo Gruppo'],['cds','Commissario di Sezione'],['senior','Senior in Servizio'],['volontario','Adulto in formazione']];
-const RUOLO_TXT = Object.fromEntries(RUOLI);
+// 23/11: figure nuove, solo nel profilo (non entrano nella «veste» di un nuovo progetto: RUOLI resta com'era). Comitato di Sezione ha più incarichi (dashboard.cos.incarichi)
+const RUOLI_NUOVI = [['cos','Comitato di Sezione'],['coords','Coordinatore Senior'],['vcg','Vice Capo Gruppo'],['vcds','Vice Commissario di Sezione']];
+const RUOLI_PROFILO = [RUOLI[0], RUOLI[1], RUOLI[2], RUOLI_NUOVI[2], RUOLI[3], RUOLI_NUOVI[3], RUOLI_NUOVI[0], RUOLI_NUOVI[1], RUOLI[4], RUOLI[5]];
+const RUOLO_TXT = Object.fromEntries(RUOLI_PROFILO);
+const COS_INC = [['presidente','Presidente'],['commissario','Commissario'],['tesoriere','Tesoriere'],['membro','Membro']];
+const cosInc = p => { const c = p && p.dashboard && p.dashboard.cos; return (c && Array.isArray(c.incarichi) ? c.incarichi : []).filter(k => COS_INC.some(x => x[0] === k)); };
+const ruoloLab = p => { p = p || {}; const base = RUOLO_TXT[p.ruolo] || ''; if(p.ruolo !== 'cos') return base; const L = cosInc(p).map(k => (COS_INC.find(x => x[0] === k) || [])[1]).filter(Boolean); return L.length ? base + ' (' + L.join(', ') + ')' : base; };
 const BRANCHE = ['L','E','R'];
 const BR_FULL = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
 const BR_UNIT = {L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki', R:'Es. Compagnia Aquila'};
 const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore', commissario:'Commissario di Sezione'};
 const noBranca = r => r === 'cg' || r === 'cds';
 const noGruppo = r => r === 'cds';
+// nel profilo le figure nuove non scelgono la Branca; Gruppo solo il Vice Capo Gruppo
+const senzaBranca = r => noBranca(r) || r === 'cos' || r === 'coords' || r === 'vcg' || r === 'vcds';
+const senzaGruppo = r => noGruppo(r) || r === 'cos' || r === 'coords' || r === 'vcds';
 // Capo Gruppo e Commissario che sono anche Capi Unità: Branca e nome dell'Unità stanno nel profilo (campo `dashboard`, chiave `unita`: nessun cambio al database)
 const unitaOf = p => { p = p || SH.prof || {}; const u = p.dashboard && p.dashboard.unita; return (noBranca(p.ruolo) && u && ['L','E','R'].indexOf(u.branca) >= 0) ? {branca:u.branca, nome:String(u.nome || '').trim()} : null; };
-SH.RUOLI = RUOLI; SH.noBranca = noBranca; SH.esc = esc;
+SH.RUOLI = RUOLI; SH.RUOLI_PROFILO = RUOLI_PROFILO; SH.noBranca = noBranca; SH.esc = esc;
 
 document.body.classList.add('sh-on','sh-pend');
 try{ const w = $('welcome-screen'); if(w) w.style.display = 'none'; }catch(e){}
@@ -18237,7 +18246,7 @@ SH.profSave = profSave;
 function profOk(p){
   p = p || SH.prof || {};
   if(!String(p.nome||'').trim() || !p.ruolo || !String(p.sezione||'').trim()) return false;
-  if(!noGruppo(p.ruolo) && !String(p.gruppo||'').trim()) return false;
+  if(!senzaGruppo(p.ruolo) && !String(p.gruppo||'').trim()) return false;
   if((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) return false;
   return true;
 }
@@ -18375,7 +18384,8 @@ function profCard(p, mode, disabled){
       <h2 class="sh-h2">${first ? '2 · Il tuo profilo' : 'Il tuo profilo'}</h2>
       ${first ? '' : '<p class="sh-sub">Puoi cambiarlo quando cambia il tuo incarico. I progetti già creati non cambiano.</p>'}
       <div><label class="sh-lb" for="sh-nome">Nome e cognome</label><input class="sh-in" id="sh-nome" autocomplete="name" maxlength="120" value="${esc(nome)}"><div class="sh-hint">Compare nei tuoi progetti, nelle condivisioni e nell’oggetto delle mail del Progetto Personale.</div></div>
-      <div><div class="sh-lb" id="sh-ruolo-l">Il tuo ruolo</div>${rrGroup('sh-ruolo', RUOLI, p.ruolo)}<div class="sh-hint">Lo potrai cambiare dal profilo quando cambia il tuo incarico.</div></div>
+      <div><div class="sh-lb" id="sh-ruolo-l">Il tuo ruolo</div>${rrGroup('sh-ruolo', RUOLI_PROFILO, p.ruolo)}<div class="sh-hint">Lo potrai cambiare dal profilo quando cambia il tuo incarico.</div></div>
+      <div id="sh-cosw" hidden><div class="sh-lb" id="sh-cos-l">Il tuo incarico nel Comitato di Sezione</div><div class="sh-rrs" role="group" aria-labelledby="sh-cos-l">${COS_INC.map(([k, t], i) => `<label class="sh-rr${cosInc(p).indexOf(k) >= 0 ? ' on' : ''}"><input type="checkbox" name="sh-cosinc" id="sh-cosinc${i}" value="${k}"${cosInc(p).indexOf(k) >= 0 ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked)">${t}</label>`).join('')}</div><div class="sh-hint">Puoi sceglierne più d’uno. Se sei Commissario e vuoi gli strumenti del Commissario, scegli «Commissario di Sezione» come ruolo.</div></div>
       <div id="sh-brw"><div class="sh-lb" id="sh-branca-l">Branca</div>${rrGroup('sh-branca', BRANCHE.map(b => [b,b]), p.branca)}<div class="sh-hint" id="sh-brh">L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover. Il colore dell’app segue la tua Branca; se non la indichi, o sei Capo Gruppo o Commissario di Sezione, è blu.</div></div>
       <div id="sh-unw" hidden><label class="sh-rr${(p.dashboard && p.dashboard.unita && noBranca(p.ruolo)) ? ' on' : ''}" id="sh-hasun-l"><input type="checkbox" id="sh-hasun"${(p.dashboard && p.dashboard.unita && noBranca(p.ruolo)) ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked);shProfRole()">Ho anche un’Unità: sono anche Capo Unità</label>
         <div id="sh-unf" style="margin-top:12px;display:none;flex-direction:column;gap:12px"><div><div class="sh-lb" id="sh-unbr-l">Branca della tua Unità</div>${rrGroup('sh-unbr', BRANCHE.map(b => [b,b]), ((p.dashboard || {}).unita || {}).branca)}</div>
@@ -18423,7 +18433,8 @@ function profileHTML(mode){
 window.shProfRole = function(){
   const r = rv('sh-ruolo');
   const b = $('sh-brw'), g = $('sh-grw'); if(!b) return;
-  b.style.display = noBranca(r) ? 'none' : ''; g.style.display = noGruppo(r) ? 'none' : '';
+  b.style.display = senzaBranca(r) ? 'none' : ''; g.style.display = senzaGruppo(r) ? 'none' : '';
+  const cw = $('sh-cosw'); if(cw) cw.hidden = r !== 'cos';
   const uw = $('sh-unw'), uf = $('sh-unf'), hc = $('sh-hasun');
   if(uw){ uw.hidden = !noBranca(r); if(uf) uf.style.display = (noBranca(r) && hc && hc.checked) ? 'flex' : 'none'; }
 };
@@ -18436,8 +18447,8 @@ window.shProfSubmit = async function(ev){
   if(ev) ev.preventDefault();
   const m = $('sh-pmsg'); const v = id => String(($(id) || {}).value || '').trim();
   const p = {nome:v('sh-nome'), ruolo:rv('sh-ruolo'), branca:rv('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:($('sh-area')?v('sh-area'):String((SH.prof&&SH.prof.area_rcdf)||''))};
-  if(noBranca(p.ruolo)) p.branca = '';
-  if(noGruppo(p.ruolo)) p.gruppo = '';
+  if(senzaBranca(p.ruolo)) p.branca = '';
+  if(senzaGruppo(p.ruolo)) p.gruppo = '';
   // «Ho anche un'Unità»: solo per Capo Gruppo e Commissario. Se la casella è spenta si toglie; se il ruolo non è tra questi, il dato resta com'è
   let unMiss = null;
   if(noBranca(p.ruolo)){
@@ -18445,7 +18456,14 @@ window.shProfSubmit = async function(ev){
     if($('sh-hasun') && $('sh-hasun').checked){ const ub = rv('sh-unbr'); if(!ub) unMiss = ['Scegli la Branca della tua Unità', 'sh-unf']; else { d0.unita = {branca:ub, nome:v('sh-unn').slice(0, 60)}; p.dashboard = d0; } }
     else if(d0.unita){ delete d0.unita; p.dashboard = d0; }
   }
-  const miss = unMiss ? unMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!noGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
+  // Comitato di Sezione: gli incarichi stanno nel profilo (campo `dashboard`, chiave `cos`: nessun cambio al database); cambiando ruolo il dato resta com'è
+  let cosMiss = null;
+  if(p.ruolo === 'cos'){
+    const inc = [...document.querySelectorAll('input[name="sh-cosinc"]:checked')].map(i => i.value);
+    if(!inc.length) cosMiss = ['Scegli almeno un incarico nel Comitato di Sezione', 'sh-cosinc0'];
+    else { const d1 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {}); d1.cos = {incarichi: inc}; p.dashboard = d1; }
+  }
+  const miss = unMiss ? unMiss : cosMiss ? cosMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!senzaGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
   if(miss){ m.className = 'sh-msg err'; m.textContent = miss[0] + '.'; try{ $(miss[1]).focus(); }catch(e){} return false; }
   const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
   try{
@@ -18457,7 +18475,8 @@ window.shProfSubmit = async function(ev){
     if(edit){ SH.rows = null; show('home'); } else await route(true);
   }catch(e){
     btn.disabled = false; m.className = 'sh-msg err';
-    m.textContent = /relation|does not exist|42P01|PGRST205/i.test(String(e && (e.message||e.code))) ? 'Il database non ha ancora la tabella dei profili: serve lo script SQL del profilo.' : 'Non sono riuscito a salvare: ' + ((e && e.message) || 'riprova tra poco') + '.';
+    const _es = String((e && (e.code + ' ' + e.message)) || '');
+    m.textContent = (/23514|ruolo_check|check constraint/i.test(_es) && RUOLI_NUOVI.some(x => x[0] === p.ruolo)) ? 'Per questo ruolo il database va aggiornato (script SQL del 23 novembre): chiedi a chi cura l’app. Il profilo non è stato cambiato.' : /42P01|PGRST205|does not exist|relation "?public\.pee_profili"? does not exist/i.test(_es) ? 'Il database non ha ancora la tabella dei profili: serve lo script SQL del profilo.' : 'Non sono riuscito a salvare: ' + ((e && e.message) || 'riprova tra poco') + '.';
   }
   return false;
 };
@@ -18581,13 +18600,24 @@ window.shTrashEmpty = async function(){
   let n = 0; for(const r of rows){ try{ await dbDelete(r.id); n++; }catch(e){} }
   clToast(n + (n === 1 ? ' elemento cancellato' : ' elementi cancellati')); shLoadTrash();
 };
+// 23/11: le figure nuove (Comitato di Sezione, Coordinatore Senior, Vice) hanno già il profilo; i loro strumenti arrivano a pezzi: intanto un avviso chiaro, poi le scelte di sempre
+function figuraNuovaHome(p){
+  const T = {
+    cos:'Gli strumenti per il Comitato di Sezione (Progetto di Sezione, calendario condiviso) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
+    coords:'Gli strumenti per il Coordinatore Senior (Progetto di Clan, calendario, Percorso Senior) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
+    vcg:'Lavori con il Capo Gruppo: quando ti invita nel suo progetto lo trovi in «Condivisi con te». Gli strumenti per il Piano di Gruppo sono in preparazione.',
+    vcds:'Lavori con il Commissario di Sezione: quando ti invita nel suo progetto lo trovi in «Condivisi con te». Gli strumenti per il Progetto di Sezione sono in preparazione.'
+  };
+  if(!T[p.ruolo]) return '';
+  return `<section class="sh-card2 wide" style="margin-bottom:14px"><h2 style="margin:0 0 4px;font-size:18px">${esc(ruoloLab(p))}</h2><p class="sh-sub" style="margin:0">${esc(T[p.ruolo])}</p></section>`;
+}
 async function homeHTML(){
   const r = $('sh-root');
   const draw = () => {
     const rows = SH.rows || [], shr = SH.shared || [];
     const p = SH.prof || {};
-    const RN = Object.fromEntries(RUOLI); const BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
-    const riga = `<div class="sh-prof-line"><span>${esc([RN[p.ruolo] || '', p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
+    const BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
+    const riga = `<div class="sh-prof-line"><span>${esc([ruoloLab(p), p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
     let h = top(true) + `<main class="sh-wrap">` + riga + `<div id="sh-perte"></div><div id="cl-rev"></div>`;
     if(!rows.length && !shr.length){
       if(noBranca(p.ruolo)){
@@ -18596,7 +18626,7 @@ async function homeHTML(){
       <div class="sh-two" style="margin-top:6px"><button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout, per gli adulti</small><b>Programmazione formativa annuale</b><span>La formazione degli adulti del Gruppo nel corso dell’anno scout, dall’osservazione alla verifica.</span><ul><li>Osservazione dei Capi Unità e lettura d’insieme</li><li>Percorso formativo: attività dal paniere o tue, in ordine di priorità</li><li>Eventi per gli adulti: riunioni, uscite, bivacchi, attività formative</li><li>Check degli adulti e Word del percorso formativo da scaricare</li></ul><em>Inizia la programmazione formativa</em></button>
         <button class="sh-big" type="button" onclick="shNew('PP')"><small>Per un adulto in formazione</small><b>Progetto Personale</b><span>Il Progetto Personale previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge). Chiunque voglia può aprirlo.</span><ul><li>Il tuo Progetto Personale passo passo, con la struttura indicata nelle Linee Guida</li><li>Osservazione del Gruppo di Pari con il KOS e la griglia osservativa</li><li>Un Percorso Educativo Esperienziale dettagliato, per l’obiettivo che scegli</li><li>Gli invii previsti (avvio, primo invio, invio finale) con i destinatari giusti</li><li>La checklist dei criteri, per controllare il lavoro prima di inviarlo</li></ul><em>Inizia il Progetto Personale</em></button></div>${un ? `<button class="sh-long" type="button" onclick="shNew('EDU')"><small>Sei anche Capo Unità</small><b>Programmazione Educativa Annuale</b><span>Per la tua Unità: ${esc(un.nome || 'Unità')} · ${BN[un.branca]}</span><em>Inizia la Programmazione Educativa</em></button>` : ''}<p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.${un ? '' : ' Sei anche Capo Unità? <a href="#" onclick="shProfileOpen();return false">Indicalo nel profilo</a>: qui comparirà anche la Programmazione Educativa della tua Unità.'}</p>`;
       } else
-      h += `<h1>Che cosa vuoi progettare?</h1><p class="sh-sub">La scelta decide quali Sezioni vedi, le regole di compilazione e gli invii. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
+      h += figuraNuovaHome(p) + `<h1>Che cosa vuoi progettare?</h1><p class="sh-sub">La scelta decide quali Sezioni vedi, le regole di compilazione e gli invii. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
       <div class="sh-two" style="margin-top:6px">
         <button class="sh-big" type="button" onclick="shNew('PP')"><small>Per un adulto in formazione</small><b>Progetto Personale</b><span>Il Progetto Personale previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge). Chiunque voglia può aprirlo.</span><ul><li>Il tuo Progetto Personale passo passo, con la struttura indicata nelle Linee Guida</li><li>Osservazione del Gruppo di Pari con il KOS e la griglia osservativa</li><li>Un Percorso Educativo Esperienziale dettagliato, per l’obiettivo che scegli</li><li>Gli invii previsti (avvio, primo invio, invio finale) con i destinatari giusti</li><li>La checklist dei criteri, per controllare il lavoro prima di inviarlo</li></ul><em>Inizia il Progetto Personale</em></button>
         <button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout</small><b>Programmazione Educativa Annuale</b><span>La programmazione dell’anno scout, da costruire con lo staff e da accompagnare fino alla verifica finale.</span><ul><li>Tre priorità, una per Ambito (Personale, Comunitario, Spirituale), ciascuna con i suoi percorsi</li><li>Osservazione condivisa con lo staff, con confronto e sintesi</li><li>Pit-stop di verifica a gennaio-febbraio e ad aprile-maggio</li><li>Attività dell’anno, numeri e cassa nello stesso posto</li><li>Chiusura dell’anno scout e appunti per l’anno dopo</li></ul><em>Inizia la Programmazione Annuale</em></button>

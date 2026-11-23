@@ -55,6 +55,8 @@ export class FakeDB {
   isOwner(uid, a){ return this.t.pee_archivi.some(r => r.id === a && r.user_id === uid); }
   mem(uid, a){ const em = this.myEmail(uid); return this.t.pee_membri.find(m => m.archivio_id === a && m.email === em); }
   // vincolo pee_membri_ruolo_check: dopo lo script del 20 novembre ammette anche «commissario» (db.sqlComm = false per provare il database non aggiornato)
+  // vincolo reale di pee_profili.ruolo (verificato in Supabase il 23/11); con sqlFigure = true vale quello allargato dallo script del 23 novembre
+  ruoloProfiloAmmesso(r){ return !r || ['cu','vcu','cg','cds','senior','volontario'].includes(r) || (this.sqlFigure !== false && ['cos','coords','vcg','vcds'].includes(r)); }
   ruoloAmmesso(r){ return ['lettore','cotitolare','collaboratore'].includes(r) || (r === 'commissario' && this.sqlComm !== false); }
   canEdit(uid, a){ const m = this.mem(uid, a); return !!(m && (m.ruolo === 'cotitolare' || m.ruolo === 'collaboratore')); }
   isCot(uid, a){ const m = this.mem(uid, a); return !!(m && m.ruolo === 'cotitolare'); }
@@ -126,6 +128,7 @@ export class FakeDB {
       for(const v0 of list){
         if(q.table === 'pee_profili'){
           const v = Object.assign({}, v0, {user_id: uid}); let r = T.find(x => x.user_id === uid);
+          if(!this.ruoloProfiloAmmesso(v.ruolo)) return this.err('23514', 'new row for relation "pee_profili" violates check constraint "pee_profili_ruolo_check"');
           if(!r){ r = Object.assign({created_at:now(), dashboard:{}}, v); T.push(r); } else Object.assign(r, v); r.updated_at = now();
         } else if(q.table === 'pee_gruppi'){
           if(!T.some(x => x.sezione === v0.sezione && x.gruppo === v0.gruppo)) T.push(Object.assign({}, v0));
