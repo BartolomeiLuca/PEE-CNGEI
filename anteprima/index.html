@@ -9185,7 +9185,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611231703'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611231810'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -16215,6 +16215,97 @@ async function dbSeen(mid){ try{ await CL.sb.rpc('pee_segna_visto', {m:mid}); }c
 // l'invito risulta «visto» comunque si apra il progetto condiviso (elenco, «Continua qui», riapertura automatica)
 async function clMarkSeen(id, force){ try{ if(!CL.sb || !CL.user || !id) return; CL._seenSent = CL._seenSent || {}; if(CL._seenSent[id] && !force) return; const it = (await dbShared()).find(x => x.id === id); if(!it) return; CL._seenSent[id] = 1; if(it.nuovo) await dbSeen(it.mid); }catch(e){} }
 async function dbRevoke(mid){ const {error} = await CL.sb.from('pee_membri').delete().eq('id', mid); if(error) throw error; }
+
+// ══ Piani: Piano di Gruppo, Progetto di Clan, Progetto di Sezione — livello dati (23/11) ══
+// Tre tabelle proprie (SQL del 23 novembre): pee_piani (un documento per piano), pee_piani_membri (inviti al PIANO, separati da quelli al progetto),
+// pee_piani_versioni (storico immutabile). Chi è invitato a un piano vede solo il piano. Ogni salvataggio porta la versione letta (rev):
+// se un'altra persona ha salvato nel frattempo il database rifiuta (40001) e nessuno cancella il lavoro di un altro.
+const PIANI_TIPI = {gruppo:'Piano di Gruppo', clan:'Progetto di Clan', sezione:'Progetto di Sezione'};
+const PIANI_RUOLI = [['lettore','Lettore'], ['collaboratore','Collaboratore'], ['cotitolare','Co-titolare']];
+const PIANI_COLS = 'id,owner_id,owner_email,tipo,titolo,anno_inizio,durata,stato,archivio_id,rev,updated_at,updated_by_nome,created_at';
+const pianoRuoloNome = r => r === 'titolare' ? 'Titolare' : (PIANI_RUOLI.find(x => x[0] === r) || [0, r || ''])[1];
+// messaggio comprensibile per gli errori dei piani
+function pianoErr(e){
+  const m = String(e && (e.message || e.code) || e), c = String(e && e.code || '');
+  if(c === '40001' || /modificato da un.altra persona/i.test(m)) return 'Il piano è stato modificato da un’altra persona: ho ricaricato l’ultima versione, rifai la modifica.';
+  if(c === '42P01' || c === 'PGRST205' || /pee_piani.*(does not exist|schema cache)|does not exist.*pee_piani/i.test(m)) return 'Per i piani serve aggiornare il database (script SQL del 23 novembre): chiedi a chi cura l’app.';
+  if(c === '42501' || /row-level security|permission denied/i.test(m)) return 'Non hai il permesso di fare questa modifica al piano.';
+  if(/pee_piani_data_check|2000000/i.test(m)) return 'Il piano è troppo grande per essere salvato.';
+  if(c === '23505' || /duplicate/i.test(m)) return 'Questa persona ha già accesso al piano.';
+  if(/collaboratore non può/i.test(m)) return m.replace(/^.*?(Un collaboratore non può[^"]*).*$/i, '$1') + '.';
+  return clErr(e);
+}
+const PIANI = {
+  ok: undefined,   // true: tabelle presenti; false: SQL non ancora eseguito; undefined: non so
+  async pronto(force){
+    if(this.ok !== undefined && !force) return this.ok;
+    if(!CL.sb || !CL.user) return false;
+    try{ const {error} = await CL.sb.from('pee_piani').select('id').limit(1);
+      if(!error) this.ok = true;
+      else if(error.code === '42P01' || error.code === 'PGRST205' || /does not exist|schema cache/i.test(error.message || '')) this.ok = false;
+      else return false;   // errore di rete o altro: non ricordo nulla
+    }catch(e){ return false; }
+    return this.ok;
+  },
+  // tutti i piani che vedo (i miei e quelli a cui sono invitato), senza il contenuto
+  async elenco(tipo){
+    let q = CL.sb.from('pee_piani').select(PIANI_COLS).order('updated_at', {ascending:false});
+    if(tipo) q = q.eq('tipo', tipo);
+    const {data, error} = await q; if(error) throw error; return data || [];
+  },
+  // un piano completo; ruolo = 'titolare' | 'cotitolare' | 'collaboratore' | 'lettore'
+  async apri(id){
+    const {data, error} = await CL.sb.from('pee_piani').select('*').eq('id', id).maybeSingle(); if(error) throw error; if(!data) return null;
+    data.ruolo = await this.ruolo(data); return data;
+  },
+  async ruolo(p){
+    if(p.owner_id === (CL.user && CL.user.id)) return 'titolare';
+    const {data, error} = await CL.sb.from('pee_piani_membri').select('ruolo').eq('piano_id', p.id).eq('email', clLc(CL.user.email)).maybeSingle();
+    if(error) throw error; return data ? data.ruolo : 'lettore';
+  },
+  puoScrivere: r => r === 'titolare' || r === 'cotitolare' || r === 'collaboratore',
+  async crea(o){
+    const row = {tipo:o.tipo, titolo:String(o.titolo || '').slice(0, 160), anno_inizio:o.anno_inizio, durata:o.durata || 3, data:o.data || {}};
+    if(o.stato) row.stato = o.stato; if(o.archivio_id) row.archivio_id = o.archivio_id;
+    const {data, error} = await CL.sb.from('pee_piani').insert(row).select('*').single(); if(error) throw error;
+    data.ruolo = 'titolare'; return data;
+  },
+  // salva modifiche (patch: titolo, anno_inizio, durata, stato, archivio_id, data); p = il piano com'è stato letto
+  // restituisce il piano aggiornato; se un'altra persona ha salvato prima lancia un errore con .conflitto = true
+  async salva(p, patch){
+    if(patch && patch.data !== undefined && JSON.stringify(patch.data).length > 2000000){ const e = new Error('pee_piani_data_check 2000000'); throw e; }
+    const {data, error} = await CL.sb.from('pee_piani').update(Object.assign({}, patch, {rev:p.rev})).eq('id', p.id).select('*').maybeSingle();
+    if(error){ if(error.code === '40001' || /modificato da un.altra persona/i.test(error.message || '')){ const e = new Error(error.message); e.code = '40001'; e.conflitto = true; throw e; } throw error; }
+    if(!data) throw Object.assign(new Error('row-level security'), {code:'42501'});
+    data.ruolo = p.ruolo; return data;
+  },
+  async elimina(id){ const {error} = await CL.sb.from('pee_piani').delete().eq('id', id); if(error) throw error; const c = await CL.sb.from('pee_piani').select('id').eq('id', id).maybeSingle(); if(c.data) throw Object.assign(new Error('row-level security'), {code:'42501'}); },
+  // storico (mai modificato): motivo = manuale | stato | verifica | aggiornamento | staffetta | auto
+  async versione(p, o){
+    const row = {piano_id:p.id, motivo:o.motivo || 'manuale', nota:String(o.nota || '').slice(0, 500), stato:o.stato || p.stato || 'bozza', data:o.data || p.data || {}};
+    const {data, error} = await CL.sb.from('pee_piani_versioni').insert(row).select('id,n,motivo,nota,stato,autore_nome,created_at').single(); if(error) throw error; return data;
+  },
+  async versioni(id, conDati){
+    const {data, error} = await CL.sb.from('pee_piani_versioni').select('id,n,motivo,nota,stato,autore_nome,created_at' + (conDati ? ',data' : '')).eq('piano_id', id).order('n', {ascending:false}); if(error) throw error; return data || [];
+  },
+  async versioneDati(vid){ const {data, error} = await CL.sb.from('pee_piani_versioni').select('id,n,motivo,nota,stato,autore_nome,created_at,data').eq('id', vid).maybeSingle(); if(error) throw error; return data; },
+  // inviti al piano
+  async membri(id){ const {data, error} = await CL.sb.from('pee_piani_membri').select('id,email,ruolo,etichetta,nome,visto_il,created_at').eq('piano_id', id).order('created_at'); if(error) throw error; return data || []; },
+  async invita(id, email, ruolo, etichetta, nome){
+    const row = {piano_id:id, email:clLc(email), ruolo:ruolo || 'lettore', etichetta:String(etichetta || '').slice(0, 60), nome:String(nome || '').slice(0, 120)};
+    const {error} = await CL.sb.from('pee_piani_membri').insert(row); if(error) throw error;
+  },
+  async cambiaRuolo(mid, ruolo){ const {error} = await CL.sb.from('pee_piani_membri').update({ruolo, visto_il:null}).eq('id', mid); if(error) throw error; },
+  async revoca(mid){ const {error} = await CL.sb.from('pee_piani_membri').delete().eq('id', mid); if(error) throw error; },
+  // i piani a cui sono stato invitato (con «nuovo» = invito non ancora visto)
+  async inviti(){
+    const {data, error} = await CL.sb.from('pee_piani_membri').select('id,piano_id,ruolo,etichetta,visto_il,created_at').eq('email', clLc(CL.user.email)); if(error) throw error;
+    const rows = data || []; if(!rows.length) return [];
+    const {data:pi, error:e2} = await CL.sb.from('pee_piani').select(PIANI_COLS).in('id', rows.map(r => r.piano_id)); if(e2) throw e2;
+    return rows.map(r => { const p = (pi || []).find(x => x.id === r.piano_id); return p ? Object.assign({}, p, {mid:r.id, ruolo:r.ruolo, etichetta:r.etichetta, nuovo:!r.visto_il}) : null; }).filter(Boolean);
+  },
+  async visto(mid){ try{ await CL.sb.rpc('pee_piano_segna_visto', {m:mid}); }catch(e){} }
+};
 async function dbShared(){
   const roles = await clRolesOk();
   const {data, error} = await CL.sb.from('pee_membri').select('id,archivio_id,owner_email' + (roles ? ',ruolo,visto_il' : '')).eq('email', clLc(CL.user.email));

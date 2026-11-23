@@ -27,7 +27,7 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[], pee_revisioni:[], pee_revisioni_punto:[]}; this.sql14 = false; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[], pee_revisioni:[], pee_revisioni_punto:[], pee_piani:[], pee_piani_membri:[], pee_piani_versioni:[]}; this.sql14 = false; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
   revRuolo(uid, rid){ const v = this.t.pee_revisioni.find(x => x.id === rid); if(!v) return null; if(v.owner_id === uid) return 'titolare'; return this.t.pee_giri.some(g => g.archivio_id === v.archivio_id && this.giroRuolo(uid, g.id) === 'revisore') ? 'revisore' : null; }
   revAfterGiro(g){ if(!this.sql14) return; const a = this.t.pee_revisioni.find(x => x.archivio_id === g.archivio_id && x.stato === 'aperta'); if(a){ a.ultimo_giro_id = g.id; } else this.t.pee_revisioni.push({id:'rev' + Math.random().toString(36).slice(2), archivio_id:g.archivio_id, owner_id:g.owner_id, revisore_email:null, stato:'aperta', fase:'revisore', esito:null, primo_giro_id:g.id, ultimo_giro_id:g.id, nota_chiusura:'', aperta_il:now(), chiusa_il:null}); }
   revAfterNota(r, old){ if(!this.sql14 || r.tipo !== 'nota' || r.autore_ruolo === 'titolare' || !r.testo) return; const g = this.t.pee_giri.find(x => x.id === r.giro_id); const v = g && this.t.pee_revisioni.find(x => x.archivio_id === g.archivio_id && x.stato === 'aperta'); if(!v) return;
@@ -58,6 +58,9 @@ export class FakeDB {
   // vincolo reale di pee_profili.ruolo (verificato in Supabase il 23/11); con sqlFigure = true vale quello allargato dallo script del 23 novembre
   ruoloProfiloAmmesso(r){ return !r || ['cu','vcu','cg','cds','senior','volontario'].includes(r) || (this.sqlFigure !== false && ['cos','coords','vcg','vcds'].includes(r)); }
   ruoloAmmesso(r){ return ['lettore','cotitolare','collaboratore'].includes(r) || (r === 'commissario' && this.sqlComm !== false); }
+  // piani (SQL del 23 novembre): db.sqlPiani = false per provare il database non aggiornato
+  pRuolo(uid, p){ const pi = this.t.pee_piani.find(x => x.id === p); if(!pi) return null; if(pi.owner_id === uid) return 'titolare'; const m = this.t.pee_piani_membri.find(x => x.piano_id === p && x.email === this.myEmail(uid)); return m ? m.ruolo : null; }
+  pEdit(uid, p){ return ['titolare','cotitolare','collaboratore'].includes(this.pRuolo(uid, p)); }
   canEdit(uid, a){ const m = this.mem(uid, a); return !!(m && (m.ruolo === 'cotitolare' || m.ruolo === 'collaboratore')); }
   isCot(uid, a){ const m = this.mem(uid, a); return !!(m && m.ruolo === 'cotitolare'); }
   canSee(uid, table, r){
@@ -73,6 +76,9 @@ export class FakeDB {
       case 'pee_giri_msg': return this.isOwner(uid, r.archivio_id) || r.rev_id === uid;
       case 'pee_revisioni': return this.revRuolo(uid, r.id) !== null;
       case 'pee_revisioni_punto': return this.revRuolo(uid, r.revisione_id) !== null;
+      case 'pee_piani': return r.owner_id === uid || this.pRuolo(uid, r.id) !== null;
+      case 'pee_piani_membri': return r.email === em || ['titolare','cotitolare'].includes(this.pRuolo(uid, r.piano_id));
+      case 'pee_piani_versioni': return this.pRuolo(uid, r.piano_id) !== null;
       case 'pee_gruppi': return true;
       case 'pee_profili': return r.user_id === uid;
       case 'pee_archivio_nazionale': return r.stato === 'approvata' || r.autore_id === uid || em === 'luca.bartolomei@cngei.it';
@@ -102,6 +108,7 @@ export class FakeDB {
       if(!u) return this.err('42501', 'not logged');
       if(/^pee_rev_(punto|ho_finito|rimanda|approva|riapri|ritira)$/.test(req.name)) return this.revRpc(req.name, req.args, uid);
       if(req.name === 'revisore_abilitato') return {data:this.revAbil(req.args.em), error:null};
+      if(req.name === 'pee_piano_segna_visto'){ if(this.sqlPiani === false) return this.err('PGRST202', 'Could not find the function'); const m = this.t.pee_piani_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_piani_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -110,7 +117,7 @@ export class FakeDB {
       return this.err('PGRST202', 'Could not find the function ' + req.name);
     }
     if(req.kind !== 'query') return {error:{message:'?'}};
-    const q = req.q, T = this.t[q.table]; if(!T) return this.err('42P01', 'relation "' + q.table + '" does not exist');
+    const q = req.q, T = this.t[q.table]; if(!T || (/^pee_piani/.test(q.table) && this.sqlPiani === false)) return this.err('42P01', 'relation "public.' + q.table + '" does not exist');
     if(!u && q.table !== 'pee_gruppi') return this.err('42501', 'permission denied');
     const vis = r => this.canSee(uid, q.table, r);
     const cols = c => { if(q.table === 'pee_membri' && /ruolo|visto_il/.test(c||'') && this.noRoles) return 'x'; if(q.table === 'pee_membri' && /email_prima/.test(c||'') && !this.sql13) return 'x'; if(q.table === 'pee_suggerimenti' && /risposta/.test(c||'') && this.sqlRisp === false) return 'x'; return null; };
@@ -164,6 +171,20 @@ export class FakeDB {
           if(!ok) return this.err('42501', 'new row violates row-level security policy');
           if(r.dest && !this.sql13) return this.err('42703', 'column "dest" does not exist'); }
         if(q.table === 'pee_archivio_nazionale'){ r.autore_id = uid; r.stato = v0.stato || 'in_attesa'; if(r.stato !== 'in_attesa') return this.err('42501', 'new row violates row-level security policy'); r.approvata_il = null; r.approvata_da = null; if(!r.titolo || r.titolo.length < 3 || r.titolo.length > 140) return this.err('23514', 'check constraint'); }
+        if(q.table === 'pee_piani'){ r.owner_id = uid; r.owner_email = u.email; r.rev = 1; r.updated_at = r.created_at; r.updated_by = uid; r.updated_by_nome = (u.meta && u.meta.nome) || '';
+          r.titolo = r.titolo || ''; r.durata = r.durata || 3; r.stato = r.stato || 'bozza'; r.data = r.data || {}; r.archivio_id = r.archivio_id || null;
+          if(!['gruppo','clan','sezione'].includes(r.tipo) || ![3,4].includes(r.durata) || !(r.anno_inizio >= 2020 && r.anno_inizio <= 2100) || !['bozza','deliberato','approvato'].includes(r.stato) || r.titolo.length > 160) return this.err('23514', 'new row for relation "pee_piani" violates check constraint');
+          if(JSON.stringify(r.data).length > 2000000) return this.err('23514', 'new row for relation "pee_piani" violates check constraint "pee_piani_data_check"');
+          if(r.archivio_id && !this.isOwner(uid, r.archivio_id)) return this.err('P0001', 'Il piano si può collegare solo a un tuo progetto'); }
+        if(q.table === 'pee_piani_membri'){ r.invitato_da = uid; r.ruolo = r.ruolo || 'lettore'; r.visto_il = null; r.etichetta = r.etichetta || ''; r.nome = r.nome || '';
+          if(!['lettore','collaboratore','cotitolare'].includes(r.ruolo) || r.email !== String(r.email).toLowerCase()) return this.err('23514', 'new row for relation "pee_piani_membri" violates check constraint');
+          const pr = this.pRuolo(uid, r.piano_id); const okm = pr === 'titolare' || (pr === 'cotitolare' && r.ruolo !== 'cotitolare');
+          if(!okm) return this.err('42501', 'new row violates row-level security policy');
+          if(T.some(x => x.piano_id === r.piano_id && x.email === r.email)) return this.err('23505', 'duplicate key value violates unique constraint'); }
+        if(q.table === 'pee_piani_versioni'){ r.autore_id = uid; r.autore_nome = (u.meta && u.meta.nome) || ''; r.nota = r.nota || ''; r.stato = r.stato || 'bozza'; r.motivo = r.motivo || 'manuale';
+          if(!this.pEdit(uid, r.piano_id)) return this.err('42501', 'new row violates row-level security policy');
+          if(!['manuale','stato','verifica','aggiornamento','staffetta','auto'].includes(r.motivo)) return this.err('23514', 'new row for relation "pee_piani_versioni" violates check constraint');
+          r.n = T.filter(x => x.piano_id === r.piano_id).reduce((m, x) => Math.max(m, x.n), 0) + 1; }
         T.push(r); out.push(r); if(q.table === 'pee_giri') this.revAfterGiro(r); if(q.table === 'pee_giri_rev') this.revAfterNota(r, null); this.emit(q.table, 'INSERT', r);
       }
       const rows = out.map(r => this.pick(r, q.ret || '*'));
@@ -188,6 +209,19 @@ export class FakeDB {
             if('risposta' in q.vals){ q.vals = Object.assign({}, q.vals, {risposta_il: q.vals.risposta == null ? null : now()}); if(q.vals.risposta == null) q.vals.risposta_da = null; }
             else return this.err('P0001', 'La risposta si cambia scrivendo il testo della risposta'); } }
         if(q.table === 'pee_archivio_nazionale') ok = u.email === 'luca.bartolomei@cngei.it';
+        if(q.table === 'pee_piani'){ ok = this.pEdit(uid, r.id); if(ok){
+          if('rev' in q.vals && q.vals.rev !== r.rev) return this.err('40001', 'Il piano è stato modificato da un\'altra persona: ricarica prima di salvare');
+          if('tipo' in q.vals && q.vals.tipo !== r.tipo) return this.err('P0001', 'Il tipo di piano non si cambia');
+          if('owner_id' in q.vals && q.vals.owner_id !== r.owner_id) return this.err('P0001', 'Il piano ha un solo titolare: non si cambia da qui');
+          if('archivio_id' in q.vals && q.vals.archivio_id !== r.archivio_id && r.owner_id !== uid) return this.err('P0001', 'Solo il titolare collega il piano a un progetto');
+          if(this.pRuolo(uid, r.id) === 'collaboratore'){
+            if(['titolo','anno_inizio','durata','stato'].some(k => k in q.vals && q.vals[k] !== r[k])) return this.err('P0001', 'Un collaboratore non può cambiare titolo, periodo o stato del piano');
+            if('data' in q.vals && Object.keys(r.data).some(k => !(k in (q.vals.data || {})))) return this.err('P0001', 'Un collaboratore non può eliminare parti del piano'); }
+          if('data' in q.vals && JSON.stringify(q.vals.data).length > 2000000) return this.err('23514', 'new row for relation "pee_piani" violates check constraint "pee_piani_data_check"');
+          q.vals = Object.assign({}, q.vals, {rev: r.rev + 1, updated_at: now(), updated_by: uid, updated_by_nome: (u.meta && u.meta.nome) || ''}); } }
+        if(q.table === 'pee_piani_membri'){ const pr = this.pRuolo(uid, r.piano_id); ok = pr === 'titolare' || (pr === 'cotitolare' && r.ruolo !== 'cotitolare' && (!q.vals.ruolo || ['lettore','collaboratore'].includes(q.vals.ruolo)));
+          if(q.vals.ruolo && !['lettore','collaboratore','cotitolare'].includes(q.vals.ruolo)) return this.err('23514', 'new row for relation "pee_piani_membri" violates check constraint'); }
+        if(q.table === 'pee_piani_versioni') return this.err('P0001', 'Una versione dello storico non si modifica');
         if(!ok) continue;
         const old = Object.assign({}, r);
         const changed = q.table === 'pee_archivi' && 'data' in q.vals && JSON.stringify(q.vals.data) !== JSON.stringify(r.data);
@@ -196,7 +230,8 @@ export class FakeDB {
         if(changed) r.updated_at = now();
         out.push(r); this.emit(q.table, 'UPDATE', r, old);
       }
-      return {data: out.map(r => this.pick(r, q.ret || '*')), error:null};
+      const outRows = out.map(r => this.pick(r, q.ret || '*'));
+      return {data: q.single ? (outRows[0] || null) : outRows, error:null};
     }
     if(q.op === 'delete'){
       const rows = T.filter(r => vis(r) && this.match(r, q.filters));
@@ -209,7 +244,11 @@ export class FakeDB {
         if(q.table === 'pee_giri_rev') ok = r.user_id === uid;
         if(q.table === 'pee_suggerimenti') ok = r.user_id === uid || this.isOwner(uid, r.archivio_id);
         if(q.table === 'pee_archivio_nazionale') ok = (r.autore_id === uid && r.stato !== 'approvata') || u.email === 'luca.bartolomei@cngei.it';
+        if(q.table === 'pee_piani') ok = r.owner_id === uid;
+        if(q.table === 'pee_piani_membri'){ const pr = this.pRuolo(uid, r.piano_id); ok = pr === 'titolare' || r.email === u.email || (pr === 'cotitolare' && r.ruolo !== 'cotitolare'); }
+        if(q.table === 'pee_piani_versioni') ok = this.pRuolo(uid, r.piano_id) === 'titolare';
         if(!ok) continue;
+        if(q.table === 'pee_piani'){ this.t.pee_piani_membri = this.t.pee_piani_membri.filter(x => x.piano_id !== r.id); this.t.pee_piani_versioni = this.t.pee_piani_versioni.filter(x => x.piano_id !== r.id); }
         T.splice(T.indexOf(r), 1); this.emit(q.table, 'DELETE', r, r);
       }
       return {data:null, error:null};
