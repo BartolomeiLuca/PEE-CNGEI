@@ -20,7 +20,10 @@ const [dl] = await Promise.all([P.waitForEvent('download', {timeout: 30000}), ev
 const path = '/tmp/g12.docx'; await dl.saveAs(path);
 const x = execSync('unzip -p ' + path + ' word/document.xml').toString();
 ok(!/Griglia nel formato CNGEI/.test(x), 'Word: frase sulla griglia tolta');
-ok(/Caratteristiche personali: Persona empatica/.test(x) && /Professioni, competenze esterne: Cameriera/.test(x), 'Word: staff su due livelli (testi lunghi a tutta larghezza)');
+{ const pars = (x.match(/<w:p>[\s\S]*?<\/w:p>/g) || []).map(q => ({b: /<w:b\/>/.test(q), t: (q.match(/<w:t[^>]*>[^<]*<\/w:t>/g) || []).map(m => m.replace(/<[^>]+>/g, '')).join('')}));
+  const after = lab => { const i = pars.findIndex(q => q.t === lab); return i < 0 ? null : {lab: pars[i], next: pars[i + 1]}; };
+  const c = after('Caratteristiche personali'), pr = after('Professioni, competenze esterne');
+  ok(!!c && c.lab.b && /^Persona empatica/.test(c.next.t) && !c.next.b && !!pr && pr.lab.b && /^Cameriera/.test(pr.next.t), 'Word: staff su due livelli; etichette dei testi lunghi in grassetto su una riga, testo sotto'); }
 ok(/w:fill="F0E603"/.test(x) && !/9A6700/.test(x), 'Word: intestazioni giallo vivo (niente marrone)');
 ok(!pa.errors.length, 'nessun errore JS' + (pa.errors.length ? ': ' + pa.errors.slice(0, 3).join(' | ') : ''));
 const f = summary(); await br.close(); process.exit(f ? 1 : 0);

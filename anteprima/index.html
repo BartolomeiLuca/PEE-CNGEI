@@ -9113,7 +9113,7 @@ function ppSetObs(a,field,val){ scheda.osservazione[a][field]=val; if(field==='p
 // (Unità di giovani): schede e Word seguono l'ordine delle Linee Guida
 // ══════════════════════════════════════════════════════════════════
 const APP_VERSION = '2026-11-17 · beta';
-const APP_BUILD = '202611212053'; // sostituito a ogni pubblicazione
+const APP_BUILD = '202611230801'; // sostituito a ogni pubblicazione
 // ── Novità: cosa è cambiato, in parole semplici (le più recenti in alto) ──
 const NOVITA = [
   {d:'19 novembre 2026', t:'La Scheda anche in PDF, video senza sottotitoli automatici', i:[
@@ -14854,7 +14854,7 @@ async function exportPPDocx(mode){
       const rowsS=[hr];
       st.forEach(r=>{
         rowsS.push(SH.map((c,i)=>dCell(dPara(String((c[0]==='giungla'?staffGiungla(r):r[c[0]])||'—'),{size:17,bold:true,after:0}),{w:ws[i],fill:PALE,vAlign:D.VerticalAlign.TOP})));
-        const lp=LG.filter(c=>T_(r[c[0]])).map(c=>dPara(c[1]+': '+plain(r[c[0]]),{size:17,after:40}));
+        const lp=LG.filter(c=>T_(r[c[0]])).flatMap((c,k)=>[dPara(c[1],{size:17,bold:true,after:0,before:k?80:0,keepNext:true}),dPara(plain(r[c[0]]).trim(),{size:17,after:40})]);   // 23/11: etichetta in grassetto su una riga sua, testo sotto
         rowsS.push([dCell(lp.length?lp:[dPara('—',{size:17,after:0})],{w:CW,span:SH.length})]); });
       ch.push(dTable(rowsS, ws, true)); } }
   if(T_(pp.appPdg)){ ch.push(dH3('Appunti dal Piano di Gruppo e dal Progetto di Sezione')); ch.push(...dMulti(pp.appPdg)); }
