@@ -16228,6 +16228,8 @@ const pianoRuoloNome = r => r === 'titolare' ? 'Titolare' : (PIANI_RUOLI.find(x 
 function pianoErr(e){
   const m = String(e && (e.message || e.code) || e), c = String(e && e.code || '');
   if(c === '40001' || /modificato da un.altra persona/i.test(m)) return 'Il piano è stato modificato da un’altra persona: ho ricaricato l’ultima versione, rifai la modifica.';
+  if(c === 'PGRST202' || /pee_piano_giro|pee_piani_(giri|contributi|voci)/i.test(m)) return 'Per i giri serve aggiornare il database (script SQL del 24 novembre): chiedi a chi cura l’app.';
+  if(c === 'P0001' && /giro|risposte anonime|già risposto|titolare o un co-titolare/i.test(m)) return m;
   if(c === '42P01' || c === 'PGRST205' || /pee_piani.*(does not exist|schema cache)|does not exist.*pee_piani/i.test(m)) return 'Per i piani serve aggiornare il database (script SQL del 23 novembre): chiedi a chi cura l’app.';
   if(c === '42501' || /row-level security|permission denied/i.test(m)) return 'Non hai il permesso di fare questa modifica al piano.';
   if(/pee_piani_data_check|2000000/i.test(m)) return 'Il piano è troppo grande per essere salvato.';
@@ -16304,7 +16306,41 @@ const PIANI = {
     const {data:pi, error:e2} = await CL.sb.from('pee_piani').select(PIANI_COLS).in('id', rows.map(r => r.piano_id)); if(e2) throw e2;
     return rows.map(r => { const p = (pi || []).find(x => x.id === r.piano_id); return p ? Object.assign({}, p, {mid:r.id, ruolo:r.ruolo, etichetta:r.etichetta, nuovo:!r.visto_il}) : null; }).filter(Boolean);
   },
-  async visto(mid){ try{ await CL.sb.rpc('pee_piano_segna_visto', {m:mid}); }catch(e){} }
+  async visto(mid){ try{ await CL.sb.rpc('pee_piano_segna_visto', {m:mid}); }catch(e){} },
+  // ── giri (SQL del 24 novembre): un giro raccoglie contributi con il nome (carte di ambito, Carta di Unità) e le risposte anonime del Mazzo persona.
+  // Si apre, si sposta la scadenza e si chiude solo con le funzioni del database; le risposte anonime si leggono solo a giro chiuso e con almeno 4 persone.
+  giriOk: undefined,   // true: tabelle dei giri presenti; false: SQL del 24 novembre non ancora eseguito
+  async giriPronti(force){
+    if(this.giriOk !== undefined && !force) return this.giriOk;
+    if(!CL.sb || !CL.user) return false;
+    try{ const {error} = await CL.sb.from('pee_piani_giri').select('id').limit(1);
+      if(!error) this.giriOk = true;
+      else if(error.code === '42P01' || error.code === 'PGRST205' || /does not exist|schema cache/i.test(error.message || '')) this.giriOk = false;
+      else return false;
+    }catch(e){ return false; }
+    return this.giriOk;
+  },
+  async giri(id){ const {data, error} = await CL.sb.from('pee_piani_giri').select('id,piano_id,n,ritmo,fase,stato,scadenza,aperto_il,chiuso_il,chiusura_tipo').eq('piano_id', id).order('n', {ascending:false}); if(error) throw error; return data || []; },
+  async giroApri(id, o){ o = o || {}; const {data, error} = await CL.sb.rpc('pee_piano_giro_apri', {p:id, ritmo_:o.ritmo || 'standard', fase_:o.fase || 'giro1', scadenza_:o.scadenza || null}); if(error) throw error; return data; },
+  async giroScadenza(g, d){ const {error} = await CL.sb.rpc('pee_piano_giro_scadenza', {g, scadenza_:d || null}); if(error) throw error; },
+  async giroStato(g){ const {data, error} = await CL.sb.rpc('pee_piano_giro_stato', {g}); if(error) throw error; return data || []; },
+  async giroChiudi(g, tipo){ const {error} = await CL.sb.rpc('pee_piano_giro_chiudi', {g, tipo_:tipo || 'anticipata'}); if(error) throw error; },
+  // contributi con il nome: i miei sempre; quelli delle altre persone solo se consegnati e dopo aver consegnato le mie carte (o a giro chiuso)
+  async contributi(g){ const {data, error} = await CL.sb.from('pee_piani_contributi').select('id,giro_id,autore_id,autore_nome,tipo,data,consegnato,consegnato_il,updated_at').eq('giro_id', g).order('created_at'); if(error) throw error; return data || []; },
+  async contributoSalva(g, tipo, dati, consegnato){
+    const me = CL.user.id;
+    const una = async () => { const r = await CL.sb.from('pee_piani_contributi').select('id,consegnato').eq('giro_id', g).eq('autore_id', me).eq('tipo', tipo).maybeSingle(); if(r.error) throw r.error; return r.data; };
+    let ex = await una();
+    if(!ex){ const {error} = await CL.sb.from('pee_piani_contributi').insert({giro_id:g, tipo, data:dati, consegnato:!!consegnato}); if(!error) return; if(error.code !== '23505') throw error; ex = await una(); }
+    if(ex){ const {data, error} = await CL.sb.from('pee_piani_contributi').update({data:dati, consegnato:!!consegnato}).eq('id', ex.id).select('id').maybeSingle(); if(error) throw error; if(!data) throw Object.assign(new Error('row-level security'), {code:'42501'}); }
+  },
+  async contributoTogli(id){ const {error} = await CL.sb.from('pee_piani_contributi').delete().eq('id', id); if(error) throw error; },
+  // Mazzo persona: voci = [{q:'p1', scelta:[…], testo:'…'}]; una sola volta, senza autore
+  async personaInvia(g, voci){ const {error} = await CL.sb.rpc('pee_piano_giro_persona', {g, voci}); if(error) throw error; },
+  async personaMia(g){ const {data, error} = await CL.sb.from('pee_piani_giri_persona').select('id,giorno').eq('giro_id', g).eq('user_id', CL.user.id).maybeSingle(); if(error) throw error; return data; },
+  async personaVoci(g){ const {data, error} = await CL.sb.from('pee_piani_voci_anonime').select('q,scelta,testo,giorno').eq('giro_id', g); if(error) throw error; return data || []; },
+  async personaN(g){ const {data, error} = await CL.sb.from('pee_piani_giri_persona').select('id').eq('giro_id', g); if(error) throw error; return (data || []).length; },
+  async registro(g){ const {data, error} = await CL.sb.from('pee_piani_giri_registro').select('data').eq('giro_id', g).maybeSingle(); if(error) throw error; return data ? data.data : null; }
 };
 async function dbShared(){
   const roles = await clRolesOk();
@@ -18821,14 +18857,14 @@ async function pnPage(id){
     if(SH.view !== 'piano') return;
     if(!p){ r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano non trovato</h1><p class="sh-sub">Il piano non esiste più o non hai più accesso.</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`; return; }
     pnCarica(p);
-    pnRender(); pnLiveStart();
+    pnRender(); pnLiveStart(); giCarica(true);
     if(p.ruolo !== 'titolare'){ try{ const mi = (await PIANI.inviti()).find(x => x.id === p.id); if(mi && mi.nuovo) PIANI.visto(mi.mid); }catch(e){} }
   }catch(e){
     if(SH.view === 'piano') r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano</h1><p class="sh-sub">${esc(pianoErr(e))}</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`;
   }
 }
 function pnCarica(p){
-  clearTimeout(PN.timer);
+  clearTimeout(PN.timer); if(GI.pid !== p.id) giReset(p.id);
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
   ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
@@ -18842,7 +18878,7 @@ function pnStato(){
   e.textContent = PN.ruolo === 'lettore' ? 'Sola lettura' : PN.saving ? 'Salvo…' : PN.st ? PN.st : PN.dirty ? 'Modifiche non ancora salvate' : 'Salvato';
   e.className = 'pn-st' + (PN.st && /^Non/.test(PN.st) ? ' err' : '');
 }
-async function pnFlush(){ clearTimeout(PN.timer); if(PN.dirty && PN.p) await pnSave(); }
+async function pnFlush(){ clearTimeout(PN.timer); if(PN.dirty && PN.p) await pnSave(); await giFlush(); }
 async function pnSave(){
   clearTimeout(PN.timer); if(!PN.p || !PN.dirty || PN.ruolo === 'lettore') return;
   if(PN.saving){ PN.again = true; return; }
@@ -18883,7 +18919,7 @@ function pnLiveStart(){
       const n = ev && ev.new; if(!n || !PN.p || n.id !== PN.p.id || n.rev === PN.p.rev) return;
       if(PN.dirty || PN.saving) return;   // al prossimo salvataggio le modifiche si uniscono
       pnRicarica(true);
-    }).subscribe();
+    }).on('postgres_changes', {event:'*', schema:'public', table:'pee_piani_giri', filter:'piano_id=eq.' + id}, () => { if(PN.p && PN.p.id === id) giCarica(true); }).subscribe();
   }catch(e){}
 }
 function pnLiveStop(){ try{ if(PN.live && CL.sb) CL.sb.removeChannel(PN.live); }catch(e){} PN.live = null; }
@@ -18891,6 +18927,264 @@ async function pnRicarica(silenzioso){
   if(!PN.p) return; try{ const p = await PIANI.apri(PN.p.id); if(!p || SH.view !== 'piano' || PN.dirty || PN.saving) return; if(p.rev === PN.p.rev) return; pnCarica(p); pnRender(); if(silenzioso) clToast('Il piano è stato aggiornato da un’altra persona.'); }catch(e){}
 }
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden' && SH.view === 'piano') pnFlush(); else if(document.visibilityState === 'visible' && SH.view === 'piano') pnRicarica(false); });
+
+// ══ Il giro del Piano di Gruppo (24/11) ══
+// Un giro raccoglie, prima della riunione, le carte di ambito (con il nome) e il Mazzo persona (anonimo).
+// L'app prepara, la decisione resta in presenza. Le carte degli altri si leggono dopo aver consegnato le proprie, o a giro chiuso.
+const GI_RITMI = [['rapido', 'Rapido', 'Per un Consiglio affiatato: quattro giorni, poi la riunione.', 4], ['standard', 'Standard', 'La prima stesura: sette giorni, poi due riunioni (60-75 minuti la prima, 45 la seconda).', 7], ['bivacco', 'Bivacco', 'Per un Consiglio nuovo o con molti cambi: sette giorni di carte, poi una giornata insieme.', 7]];
+const GI_CARTE = {
+  educativa:'Continuità tra le tre Unità, passaggi di branca, uso del PEE per leggere la situazione e non solo per scegliere gli obiettivi.',
+  formativa:'La formazione che manca al Gruppo, gli eventi di Sezione, regionali o nazionali che ci perdiamo, i Progetti Personali in corso.',
+  gestionale:'Soldi, materiali e sede, carichi da redistribuire.',
+  sviluppo:'Crescita e perdite di ragazzi e ragazze, successione dei Capi Unità, iniziative per far crescere la qualità.',
+  territorio:'Chi sa chi siamo, con chi collaboriamo, con chi vorremmo collaborare.'
+};
+const GI_CAMPI = [['v', 'Cosa ho visto', 'Nella mia esperienza, in questo ambito.'], ['c', 'Cosa mi ha colpito o mi preoccupa', 'Anche una cosa sola.'], ['p', 'Propongo', 'Una cosa, anche piccola.']];
+// Mazzo persona: otto domande per chi è in servizio nel Gruppo, anche da poco. «Non lo so ancora» è sempre una risposta valida.
+const GI_MAZZO = [
+  {q:'p1', t:'Il servizio', dom:'Il servizio che fai è ciò che ti aspettavi?', op:[['piu', 'Più di quanto mi aspettassi'], ['come', 'Come me lo aspettavo'], ['meno', 'Meno di quanto mi aspettassi'], ['nonso', 'Non lo so ancora']], lib:'Cosa ti ha sorpreso?'},
+  {q:'p2', t:'L’accoglienza', dom:'Come hai vissuto l’accoglienza nel tuo staff e nel Gruppo?', op:[['molto', 'Molto bene'], ['abb', 'Abbastanza bene'], ['cosi', 'Così così'], ['poco', 'Poco o per niente']], lib:'Cosa ha fatto la differenza?'},
+  {q:'p3', t:'Il Tutor', dom:'Hai una persona di riferimento o un Tutor?', op:[['si', 'Sì'], ['no', 'No'], ['nonso', 'Non so cos’è un Tutor']], lib:'Ti è utile? Cosa ti servirebbe?'},
+  {q:'p4', t:'A chi chiedi aiuto', dom:'Quando hai un dubbio sul servizio, a chi ti rivolgi? Puoi scegliere più risposte.', multi:true, op:[['tutor', 'Al mio Tutor'], ['cu', 'Al Capo Unità'], ['cg', 'Al Capo Gruppo'], ['comm', 'Al Commissario'], ['adulto', 'A un’altra persona adulta'], ['nessuno', 'A nessuno'], ['nonso', 'Non so a chi']], lib:'Altro, se vuoi.'},
+  {q:'p5', t:'Il tempo', dom:'Il tempo che dai oggi al servizio è sostenibile?', op:[['si', 'Sì'], ['fatica', 'A fatica'], ['no', 'No']], lib:'Cosa lo renderebbe più leggero?'},
+  {q:'p6', t:'La formazione', dom:'Cosa vorresti capire o imparare meglio? Puoi scegliere più risposte.', multi:true, op:[['metodo', 'Il metodo'], ['ragazzi', 'Il rapporto con ragazzi e ragazze'], ['famiglie', 'Il rapporto con le famiglie'], ['org', 'L’organizzazione'], ['sic', 'Sicurezza e Safe from Harm'], ['assoc', 'La vita associativa'], ['altro', 'Altro']], lib:'Se vuoi, dicci di più.'},
+  {q:'p7', t:'Come stai', dom:'In generale, come stai nel Gruppo?', op:[['agio', 'A mio agio'], ['voglia', 'A mio agio e con voglia di fare'], ['tratti', 'A tratti faccio fatica'], ['fatica', 'Faccio fatica']], lib:'Vuoi aggiungere qualcosa?', nota:'La risposta è anonima: se hai bisogno che qualcuno ti ascolti, puoi sempre parlarne con una persona di cui ti fidi.'},
+  {q:'p8', t:'Le ultime due cose', dom:'Due cose che vale la pena dire.', lib2:[['Una cosa che il Gruppo dovrebbe sapere e che nessuno dice', 'Da sapere'], ['Una cosa che funziona e che non vorresti perdere', 'Funziona']]}
+];
+const GI_PRIVACY = 'Nessuno vedrà che sei stato o stata tu. La risposta è anonima per le persone del Consiglio, non per chi amministra il database. Una volta inviata non si modifica, e il Capo Gruppo la leggerà solo a giro chiuso e se hanno risposto almeno 4 persone.';
+const GI = {pid:null, ok:undefined, vista:'piano', giri:[], g:null, contr:[], stato:[], dr:null, drG:null, drDirty:false, drSt:'', timer:null, saving:false, pers:null, pDr:{}, nPers:0, voci:[], reg:null, err:'', busy:false};
+function giReset(pid){ clearTimeout(GI.timer); Object.assign(GI, {pid, ok:undefined, vista:'piano', giri:[], g:null, contr:[], stato:[], dr:null, drG:null, drDirty:false, drSt:'', saving:false, again:false, busy:false, pers:null, pDr:{}, nPers:0, voci:[], reg:null, err:''}); }
+const giVuoteCarte = () => ({v:1, a:Object.fromEntries(PN_AREE.map(([k]) => [k, {v:'', c:'', p:'', b:false}]))});
+const giData = s => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; };
+const giOggi = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const giPiu = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const giAperto = () => !!(GI.g && GI.g.stato === 'aperto');
+const giVista = () => GI.vista === 'giro' && GI.ok === true && PN.p && PN.p.tipo === 'gruppo';
+const giMio = tipo => GI.contr.find(c => c.tipo === tipo && c.autore_id === (CL.user && CL.user.id)) || null;
+// (ri)carica tutto quello che serve a mostrare il giro
+async function giCarica(silenzioso){
+  if(!PN.p || PN.p.tipo !== 'gruppo') return;
+  const pid = PN.p.id; if(GI.pid !== pid) giReset(pid);
+  try{
+    GI.ok = await PIANI.giriPronti();
+    if(!GI.ok){ if(SH.view === 'piano' && PN.p && PN.p.id === pid) pnRender(); return; }
+    const giri = await PIANI.giri(pid); if(!PN.p || PN.p.id !== pid) return;
+    GI.giri = giri; GI.g = giri.find(x => x.stato === 'aperto') || giri[0] || null;
+    GI.contr = []; GI.stato = []; GI.pers = null; GI.nPers = 0; GI.voci = []; GI.reg = null;
+    if(GI.g){
+      const g = GI.g.id, coord = pnTutto();
+      const [contr, pers] = await Promise.all([PIANI.contributi(g), PIANI.personaMia(g)]);
+      GI.contr = contr; GI.pers = pers;
+      if(coord){
+        const [st, n] = await Promise.all([PIANI.giroStato(g), PIANI.personaN(g)]); GI.stato = st; GI.nPers = n;
+        if(GI.g.stato === 'chiuso'){ GI.reg = await PIANI.registro(g).catch(() => null); GI.voci = await PIANI.personaVoci(g).catch(() => []); }
+      }
+      if(GI.drG !== g || !GI.drDirty){ const m = giMio('carte'); const v = giVuoteCarte(); if(m && m.data && m.data.a) PN_AREE.forEach(([k]) => { if(m.data.a[k]) Object.assign(v.a[k], m.data.a[k]); }); GI.dr = v; GI.drG = g; GI.drDirty = false; }
+    }
+    GI.err = '';
+  }catch(e){ GI.err = pianoErr(e); }
+  if(SH.view === 'piano' && PN.p && PN.p.id === pid){ if(silenzioso && GI.vista === 'giro' && document.activeElement && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName) && $('sh-root').contains(document.activeElement)) { GI.rinvia = true; return; } pnRender(); }
+}
+async function giFlush(){ clearTimeout(GI.timer); if(GI.drDirty && GI.g && giAperto()) await giSalvaCarte(); }
+function giTabs(){
+  if(!PN.p || PN.p.tipo !== 'gruppo' || GI.ok !== true) return '';
+  const n = GI.g && GI.g.stato === 'aperto' ? 'Giro ' + GI.g.n + ' aperto' : 'Giro del Piano';
+  return `<nav class="pn-tabs" aria-label="Parti della pagina"><button type="button" class="pn-tabb${GI.vista === 'piano' ? ' on' : ''}" aria-current="${GI.vista === 'piano' ? 'page' : 'false'}" onclick="giVai('piano')">Il Piano</button><button type="button" class="pn-tabb${GI.vista === 'giro' ? ' on' : ''}" aria-current="${GI.vista === 'giro' ? 'page' : 'false'}" onclick="giVai('giro')">${esc(n)}</button></nav>`;
+}
+window.giVai = async function(v){ if(v === GI.vista) return; await giFlush(); GI.vista = v; pnRender(); if(v === 'giro') giCarica(true); const r = $('sh-root'); if(r) r.scrollTop = 0; };
+
+// ── la pagina del giro ──
+function giHTML(){
+  const E = esc, g = GI.g, coord = pnTutto();
+  let h = '';
+  if(GI.err) h += `<div class="sh-msg err" role="alert">${E(GI.err)}</div>`;
+  if(!g){
+    h += `<section class="pn-card" aria-labelledby="gi-t"><h2 class="pn-h" id="gi-t">Il giro del Piano</h2>
+      <p class="sh-sub" style="margin:0">Prima di parlarne, ognuna e ognuno scrive la sua. Poi si mettono le carte in tavola.</p>`;
+    h += coord ? giApriHTML() : `<p class="sh-sub" style="margin:0">Non c’è ancora nessun giro aperto. Quando il Capo Gruppo lo apre, qui trovi le tue carte.</p>`;
+    return h + `</section>`;
+  }
+  const chiuso = g.stato === 'chiuso', rit = GI_RITMI.find(x => x[0] === g.ritmo) || GI_RITMI[1];
+  h += `<section class="pn-card" aria-labelledby="gi-t"><h2 class="pn-h" id="gi-t">Giro ${g.n} · ritmo ${E(rit[1].toLowerCase())}</h2>
+    <p class="sh-sub" style="margin:0">${chiuso ? 'Il giro è chiuso. Ora le carte sono scoperte.' : 'Prima di parlarne, ognuna e ognuno scrive la sua. Poi si mettono le carte in tavola.'}</p>
+    <p class="sh-hint" style="margin:0">${chiuso ? `Chiuso il ${E(giData(g.chiuso_il))}${g.chiusura_tipo === 'scadenza' ? ' alla scadenza' : g.chiusura_tipo === 'completa' ? ' perché tutte le carte erano arrivate' : ' in anticipo dal Capo Gruppo'}.` : g.scadenza ? `Scadenza: <b>${E(giData(g.scadenza))}</b>.` : 'Nessuna scadenza fissata.'}${g.ritmo === 'bivacco' && !chiuso ? ' La giornata di bivacco si prepara dal calendario: arriverà con il calendario del Gruppo.' : ''}</p>
+    ${GI.giri.length > 1 ? `<div class="sh-hint" style="margin:0">Giri precedenti: ${GI.giri.filter(x => x.id !== g.id).map(x => `<a href="#" onclick="giMostra('${E(x.id)}');return false">Giro ${x.n}</a>`).join(' · ')}</div>` : ''}
+  </section>`;
+  if(coord) h += giCoordHTML();
+  h += giCarteHTML();
+  h += giPersonaHTML();
+  return h;
+}
+function giApriHTML(){
+  const E = esc;
+  return `<details class="pn-det"><summary>Prima di aprire il giro</summary><ul class="pn-ul">
+    <li><b>Il vostro ruolo.</b> Coordinare, ascoltare, sintetizzare, scrivere la bozza. Non scrivere da soli il Piano.</li>
+    <li><b>Durante il giro.</b> Non anticipare le tue risposte. Un messaggio personale a chi tace vale più di un promemoria.</li>
+    <li><b>Dopo la scadenza.</b> Puoi chiudere il giro: è previsto. I nomi di chi non ha consegnato li vedi tu.</li>
+    <li><b>Sulle risposte anonime.</b> Le leggi solo a giro chiuso e se sono almeno 4. Non cercare di capire chi le ha scritte.</li>
+    <li><b>In presenza.</b> Si decide per consenso; il dissenso va a verbale.</li></ul></details>
+    <fieldset class="pn-fs"><legend class="sh-lb">Ritmo</legend>${GI_RITMI.map(([k, t, d, gg], i) => `<label class="gi-rit"><input type="radio" name="gi-rit" value="${k}"${i === 1 ? ' checked' : ''} onchange="giRitmo(${gg})"><span><b>${E(t)}</b><span class="sh-hint" style="display:block;margin:0">${E(d)}</span></span></label>`).join('')}</fieldset>
+    <div><label class="sh-lb" for="gi-sc">Scadenza del giro</label><input class="sh-in" type="date" id="gi-sc" value="${giPiu(7)}" min="${giOggi()}" style="max-width:220px"></div>
+    <div><button class="sh-btn" type="button" id="gi-apri" onclick="giApri()"${GI.busy ? ' disabled' : ''}>Apri il giro</button></div>
+    <p class="sh-hint" style="margin:0">Il giro si apre per le persone che hai invitato al piano: se manca qualcuno, invitalo prima da «Chi ha accesso».</p>`;
+}
+window.giRitmo = function(gg){ const e = $('gi-sc'); if(e) e.value = giPiu(gg); };
+window.giApri = async function(){
+  if(GI.busy) return; const r = document.querySelector('input[name="gi-rit"]:checked'); const sc = ($('gi-sc') || {}).value || null;
+  GI.busy = true; const b = $('gi-apri'); if(b) b.disabled = true;
+  try{ await PIANI.giroApri(PN.p.id, {ritmo:r ? r.value : 'standard', fase:'giro1', scadenza:sc}); GI.busy = false; await giCarica(); clToast('Giro aperto.'); }
+  catch(e){ GI.busy = false; GI.err = pianoErr(e); pnRender(); }
+};
+window.giMostra = async function(id){ const g = GI.giri.find(x => x.id === id); if(!g) return; await giFlush(); GI.g = g; GI.drDirty = false; GI.contr = []; GI.stato = []; GI.voci = []; GI.reg = null;
+  try{ GI.contr = await PIANI.contributi(id); GI.pers = await PIANI.personaMia(id); if(pnTutto()){ GI.stato = await PIANI.giroStato(id); GI.nPers = await PIANI.personaN(id); if(g.stato === 'chiuso'){ GI.reg = await PIANI.registro(id).catch(() => null); GI.voci = await PIANI.personaVoci(id).catch(() => []); } } }catch(e){ GI.err = pianoErr(e); }
+  const m = giMio('carte'); const v = giVuoteCarte(); if(m && m.data && m.data.a) PN_AREE.forEach(([k]) => { if(m.data.a[k]) Object.assign(v.a[k], m.data.a[k]); }); GI.dr = v; GI.drG = id; pnRender(); };
+
+// ── chi coordina: chi ha consegnato, scadenza, chiusura, registro ──
+function giCoordHTML(){
+  const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', S = GI.stato;
+  const si = '<span aria-label="sì">●</span>', no = '<span class="pn-no" aria-label="no">·</span>';
+  let h = `<section class="pn-card" aria-labelledby="gi-co-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="gi-co-t" style="margin:0">Chi ha consegnato</h2>${chiuso ? '' : `<button class="sh-btn sm gh" type="button" style="margin-left:auto" onclick="giCarica()">Aggiorna</button>`}</div>
+    <p class="sh-hint" style="margin:0">Qui vedi chi ha consegnato, non cosa ha scritto. Per il Mazzo persona vedi solo chi ha risposto: le risposte non hanno nome.</p>`;
+  h += `<div class="pn-tw"><table class="pn-tab" aria-label="Consegne del giro"><thead><tr><th scope="col" style="text-align:left">Persona</th><th scope="col">Carte</th><th scope="col">Carta di Unità</th><th scope="col">Mazzo persona</th></tr></thead><tbody>${S.map(x => `<tr><th scope="row" style="text-align:left">${E(x.nome || x.email)}<span class="sh-hint" style="display:block;margin:0">${E([x.ruolo === 'titolare' ? 'Capo Gruppo' : '', x.etichetta].filter(Boolean).join(' · '))}</span></th><td>${x.carte ? si : no}</td><td>${x.unita ? si : no}</td><td>${x.persona ? si : no}</td></tr>`).join('')}</tbody></table></div>`;
+  const nC = S.filter(x => x.carte).length, nP = S.filter(x => x.persona).length;
+  h += `<p class="sh-hint" style="margin:0">${nC} su ${S.length} hanno consegnato le carte · ${nP} su ${S.length} hanno risposto al Mazzo persona.</p>`;
+  if(!chiuso){
+    h += `<div class="sh-g2"><div><label class="sh-lb" for="gi-sc2">Scadenza</label><input class="sh-in" type="date" id="gi-sc2" value="${E(g.scadenza || '')}"></div><div style="align-self:end"><button class="sh-btn sm gh" type="button" onclick="giScadenza()">Sposta la scadenza</button></div></div>
+      <div><button class="sh-btn" type="button" onclick="giChiudiDlg()">Chiudi il giro</button></div>`;
+  } else if(GI.reg){
+    const sc = GI.reg.senza_carte || [], sp = GI.reg.senza_persona || [];
+    h += `<div class="pn-avv" role="note"><b>Chi non ha consegnato le carte</b>${sc.length ? `<ul>${sc.map(x => `<li>${E(x.nome || x.email)}${x.etichetta ? ' · ' + E(x.etichetta) : ''}</li>`).join('')}</ul><p class="sh-hint" style="margin:6px 0 0">In riunione una domanda sola: «cosa non hai visto?».</p>` : '<p class="sh-hint" style="margin:6px 0 0">Tutte le persone hanno consegnato.</p>'}</div>
+      <div class="pn-avv" role="note"><b>Chi non ha risposto al Mazzo persona</b>${sp.length ? `<ul>${sp.map(x => `<li>${E(x.nome || x.email)}${x.etichetta ? ' · ' + E(x.etichetta) : ''}</li>`).join('')}</ul>` : '<p class="sh-hint" style="margin:6px 0 0">Hanno risposto tutte le persone.</p>'}<p class="sh-hint" style="margin:6px 0 0">Partecipazione e contenuto sono separati: sapere chi non ha risposto non permette di sapere chi ha scritto cosa.</p></div>`;
+  }
+  return h + `</section>`;
+}
+window.giScadenza = async function(){ const v = ($('gi-sc2') || {}).value || null; try{ await PIANI.giroScadenza(GI.g.id, v); GI.g.scadenza = v; clToast('Scadenza spostata.'); pnRender(); }catch(e){ clToast(pianoErr(e)); } };
+window.giChiudiDlg = function(){
+  const S = GI.stato, mancano = S.filter(x => !x.carte).length;
+  dlgOpen(`<h2 id="sh-dlg-t">Chiudere il giro?</h2>
+    <p class="sh-sub" style="margin:0">${mancano ? `Mancano le carte di ${mancano} ${mancano === 1 ? 'persona' : 'persone'}. Chi non ha fatto in tempo può portare la sua carta in riunione.` : 'Tutte le persone hanno consegnato le carte.'}</p>
+    <p class="sh-hint" style="margin:0">Dopo la chiusura le carte sono scoperte per tutte le persone del piano, nessuno può più cambiarle e le risposte anonime del Mazzo persona si leggono solo se hanno risposto almeno 4 persone.</p>
+    <div class="sh-msg" id="gi-ch-msg" role="alert"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="gi-ch-ok" onclick="giChiudi()">Chiudi il giro</button></div>`);
+};
+window.giChiudi = async function(){
+  const b = $('gi-ch-ok'), m = $('gi-ch-msg'); if(!b || !GI.g) return; b.disabled = true;
+  const S = GI.stato, g = GI.g; const tipo = S.length && S.every(x => x.carte) ? 'completa' : (g.scadenza && g.scadenza < giOggi() ? 'scadenza' : 'anticipata');
+  try{ await giFlush(); await PIANI.giroChiudi(g.id, tipo); shDlgClose(); await giCarica(); clToast('Il giro è chiuso. Ora le carte sono scoperte.'); }
+  catch(e){ b.disabled = false; if(m){ m.className = 'sh-msg err'; m.textContent = pianoErr(e); } }
+};
+
+// ── le carte di ambito ──
+function giCarteHTML(){
+  const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', dr = GI.dr || giVuoteCarte(), mia = giMio('carte'), cons = !!(mia && mia.consegnato);
+  const ro = chiuso;
+  let h = `<section class="pn-card" aria-labelledby="gi-ca-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="gi-ca-t" style="margin:0">Le tue carte</h2><span class="pn-st" id="gi-st" role="status" aria-live="polite" style="margin-left:auto">${E(giStatoTxt())}</span></div>`;
+  if(ro && !mia){ h += `<p class="sh-sub" style="margin:0">Non hai consegnato le tue carte in questo giro.</p>`; }
+  else {
+    h += `<p class="sh-hint" style="margin:0">${ro ? 'Le tue carte, come le avevi consegnate.' : cons ? 'Hai consegnato le tue carte: ora puoi leggere quelle delle altre persone. Puoi ancora cambiare le tue fino alla chiusura.' : 'Cinque carte, tre righe ciascuna. Scrivi quello che hai visto: non serve conoscere tutto. Una carta può restare in bianco. Niente nomi di ragazzi e ragazze né di persone.'}</p>`;
+    PN_AREE.forEach(([k, t]) => { const c = dr.a[k];
+      h += `<fieldset class="gi-carta"><legend><b>${E(t)}</b></legend><p class="sh-hint" style="margin:0">${E(GI_CARTE[k])}</p>`;
+      GI_CAMPI.forEach(([f, lab, ph]) => { h += `<div><label class="sh-lb" for="gi-c-${k}-${f}">${E(lab)}</label><textarea class="sh-in pn-ta" id="gi-c-${k}-${f}" rows="2" maxlength="1500" placeholder="${E(ph)}" oninput="giC('${k}','${f}',this.value);pnGrow(this)"${ro ? ' disabled' : ''}>${E(c[f])}</textarea></div>`; });
+      h += `<label class="pn-chk"><input type="checkbox" id="gi-c-${k}-b" ${c.b ? 'checked' : ''} onchange="giC('${k}','b',this.checked)"${ro ? ' disabled' : ''}> Lascio questa carta in bianco: non so o non mi tocca. Va bene: se ne parla in riunione.</label></fieldset>`; });
+    if(!ro) h += `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="sh-btn" type="button" onclick="giConsegna()"${GI.busy ? ' disabled' : ''}>${cons ? 'Aggiorna la consegna' : 'Consegna le carte'}</button>${cons ? '' : `<span class="sh-hint" style="margin:0">Si salva da sola come bozza; consegnando le leggono anche le altre persone.</span>`}</div>`;
+  }
+  h += `</section>`;
+  // le carte delle altre persone: dopo la consegna delle mie, o a giro chiuso
+  const altre = GI.contr.filter(c => c.tipo === 'carte' && c.consegnato && c.autore_id !== (CL.user && CL.user.id));
+  if(chiuso || cons){
+    h += `<section class="pn-card" aria-labelledby="gi-al-t"><h2 class="pn-h" id="gi-al-t">Le carte delle altre persone</h2>`;
+    if(!altre.length) h += `<p class="sh-sub" style="margin:0">Ancora nessuna carta consegnata da altre persone.</p>`;
+    else {
+      h += `<p class="sh-hint" style="margin:0">${altre.length} ${altre.length === 1 ? 'persona ha consegnato' : 'persone hanno consegnato'} le carte. Ogni carta porta il nome di chi l’ha scritta.</p>`;
+      PN_AREE.forEach(([k, t]) => {
+        const voci = altre.map(c => ({n:c.autore_nome || 'Senza nome', x:(c.data && c.data.a && c.data.a[k]) || {}})); const scritte = voci.filter(v => (v.x.v || v.x.c || v.x.p || '').trim());
+        const prop = voci.filter(v => (v.x.p || '').trim()).length;
+        h += `<details class="pn-det" ${scritte.length ? 'open' : ''}><summary>${E(t)} <span class="sh-hint" style="margin:0">· ${scritte.length} ${scritte.length === 1 ? 'carta scritta' : 'carte scritte'}${prop ? ', ' + prop + ' ' + (prop === 1 ? 'proposta' : 'proposte') : ''}</span></summary>`;
+        h += scritte.length ? scritte.map(v => `<div class="gi-voce"><b>${E(v.n)}</b>${GI_CAMPI.map(([f, lab]) => (v.x[f] || '').trim() ? `<div><span class="sh-hint" style="margin:0">${E(lab)}</span><div class="gi-tx">${E(v.x[f])}</div></div>` : '').join('')}</div>`).join('') : `<p class="sh-hint" style="margin:6px 0 0">Nessuna carta scritta per questo ambito.</p>`;
+        h += `</details>`; });
+    }
+    h += `</section>`;
+  }
+  return h;
+}
+function giStatoTxt(){ return GI.saving ? 'Salvo…' : GI.drSt ? GI.drSt : GI.drDirty ? 'Modifiche non ancora salvate' : (giMio('carte') ? (giMio('carte').consegnato ? 'Consegnate' : 'Bozza salvata') : ''); }
+function giStatoShow(){ const e = $('gi-st'); if(e) e.textContent = giStatoTxt(); }
+window.giC = function(k, f, v){ if(!GI.dr || !giAperto()) return; GI.dr.a[k][f] = v; GI.drDirty = true; GI.drSt = ''; giStatoShow(); clearTimeout(GI.timer); GI.timer = setTimeout(giSalvaCarte, 1500); };
+async function giSalvaCarte(consegna){
+  clearTimeout(GI.timer); if(!GI.g || !giAperto() || !GI.dr) return;
+  if(GI.saving){ GI.again = true; return; }
+  const mia = giMio('carte'); const cons = consegna === true ? true : !!(mia && mia.consegnato);
+  GI.saving = true; GI.drSt = ''; giStatoShow(); const inv = pnClone(GI.dr);
+  try{
+    await PIANI.contributoSalva(GI.g.id, 'carte', inv, cons);
+    GI.contr = await PIANI.contributi(GI.g.id);
+    GI.drDirty = !pnEq(GI.dr, inv); GI.saving = false;
+    if(GI.drDirty || GI.again){ GI.again = false; GI.timer = setTimeout(giSalvaCarte, 400); }
+  }catch(e){ GI.saving = false; GI.drSt = 'Non salvato: ' + pianoErr(e); GI.timer = setTimeout(giSalvaCarte, 8000); }
+  giStatoShow();
+}
+window.giConsegna = async function(){
+  if(!GI.dr || !giAperto() || GI.busy) return;
+  const vuota = PN_AREE.every(([k]) => { const c = GI.dr.a[k]; return !c.b && !(c.v || c.c || c.p || '').trim(); });
+  if(vuota){ clToast('Hai lasciato tutto vuoto: scrivi qualcosa, oppure segna le carte che lasci in bianco.'); return; }
+  GI.busy = true; await giSalvaCarte(true); GI.busy = false;
+  if(!GI.drSt){ GI.drDirty = false; try{ await giCarica(); }catch(e){} clToast('Carte consegnate. Ora puoi leggere quelle delle altre persone.'); } else pnRender();
+};
+
+// ── Mazzo persona (anonimo) ──
+function giPersonaHTML(){
+  const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', coord = pnTutto();
+  let h = `<section class="pn-card" aria-labelledby="gi-pe-t"><h2 class="pn-h" id="gi-pe-t">Mazzo persona <span class="sh-pill sh-pill-no">anonimo</span></h2>`;
+  if(GI.pers){ h += `<p class="sh-sub" style="margin:0">Hai risposto il ${E(giData(GI.pers.giorno))}. Grazie: la tua risposta non si modifica e non ha il tuo nome.</p>`; }
+  else if(chiuso){ h += `<p class="sh-sub" style="margin:0">Il giro è chiuso: non si può più rispondere.</p>`; }
+  else {
+    h += `<p class="sh-sub" style="margin:0">Otto domande per chi è in servizio nel Gruppo, anche da poco. «Non lo so ancora» è sempre una risposta valida.</p><p class="sh-hint" style="margin:0">${E(GI_PRIVACY)}</p>`;
+    GI_MAZZO.forEach(m => { const d = GI.pDr[m.q] || {s:[], t:'', t2:''};
+      h += `<fieldset class="gi-carta"><legend><b>${E(m.t)}</b></legend><p style="margin:0">${E(m.dom)}</p>`;
+      if(m.op) h += `<div class="pn-chips">${m.op.map(([k, t]) => `<label class="pn-chip${d.s.includes(k) ? ' on' : ''}"><input type="${m.multi ? 'checkbox' : 'radio'}" name="gi-${m.q}" value="${k}" ${d.s.includes(k) ? 'checked' : ''} onchange="giP('${m.q}','${k}',this.checked,${m.multi ? 1 : 0})">${E(t)}</label>`).join('')}</div>`;
+      if(m.lib) h += `<div><label class="sh-lb" for="gi-${m.q}-t">${E(m.lib)}</label><textarea class="sh-in pn-ta" id="gi-${m.q}-t" rows="2" maxlength="1400" oninput="giPT('${m.q}','t',this.value);pnGrow(this)">${E(d.t)}</textarea></div>`;
+      if(m.lib2) h += m.lib2.map(([lab], i) => `<div><label class="sh-lb" for="gi-${m.q}-t${i ? '2' : ''}">${E(lab)}</label><textarea class="sh-in pn-ta" id="gi-${m.q}-t${i ? '2' : ''}" rows="2" maxlength="700" oninput="giPT('${m.q}','${i ? 't2' : 't'}',this.value);pnGrow(this)">${E(i ? d.t2 : d.t)}</textarea></div>`).join('');
+      if(m.nota) h += `<p class="sh-hint" style="margin:0">${E(m.nota)}</p>`;
+      h += `</fieldset>`; });
+    h += `<div><button class="sh-btn" type="button" id="gi-pe-ok" onclick="giPInvia()"${GI.busy ? ' disabled' : ''}>Invia le risposte</button> <span class="sh-hint">Dopo l’invio non si modificano.</span></div>`;
+  }
+  if(coord) h += giRisultatiHTML();
+  return h + `</section>`;
+}
+window.giP = function(q, k, on, multi){ const d = GI.pDr[q] || (GI.pDr[q] = {s:[], t:'', t2:''});
+  if(multi){ const s = new Set(d.s); on ? s.add(k) : s.delete(k); d.s = [...s]; } else d.s = on ? [k] : [];
+  const lab = document.querySelectorAll(`input[name="gi-${q}"]`); lab.forEach(i => i.parentNode.classList.toggle('on', i.checked)); };
+window.giPT = function(q, f, v){ const d = GI.pDr[q] || (GI.pDr[q] = {s:[], t:'', t2:''}); d[f] = v; };
+function giPVoci(){
+  return GI_MAZZO.map(m => { const d = GI.pDr[m.q]; if(!d) return null;
+    const scelta = (d.s || []).slice(0, 8); let testo = '';
+    if(m.lib2){ const a = (d.t || '').trim(), b = (d.t2 || '').trim(); testo = [a ? m.lib2[0][1] + ': ' + a : '', b ? m.lib2[1][1] + ': ' + b : ''].filter(Boolean).join('\n'); } else testo = (d.t || '').trim();
+    return scelta.length || testo ? {q:m.q, scelta, testo:testo.slice(0, 1500)} : null; }).filter(Boolean);
+}
+window.giPInvia = async function(){
+  if(GI.busy || !giAperto()) return; const voci = giPVoci();
+  if(!voci.length){ clToast('Non hai risposto a nessuna domanda: rispondi ad almeno una, oppure lascia perdere.'); return; }
+  if(!confirm('Inviare le risposte? Dopo l’invio non si modificano e non hanno il tuo nome.')) return;
+  GI.busy = true; const b = $('gi-pe-ok'); if(b) b.disabled = true;
+  try{ await PIANI.personaInvia(GI.g.id, voci); GI.busy = false; GI.pDr = {}; await giCarica(); clToast('Risposte inviate. Grazie.'); }
+  catch(e){ GI.busy = false; GI.err = pianoErr(e); pnRender(); }
+};
+// risultati aggregati: solo a giro chiuso e con almeno 4 persone che hanno risposto (lo garantisce anche il database)
+function giRisultatiHTML(){
+  const E = esc, g = GI.g, n = GI.nPers; let h = '';
+  if(g.stato !== 'chiuso') return `<div class="pn-avv" role="note"><b>Per chi coordina</b><p class="sh-hint" style="margin:6px 0 0">${n} ${n === 1 ? 'persona ha risposto' : 'persone hanno risposto'}. Le risposte si leggono solo a giro chiuso e se hanno risposto almeno 4 persone.</p></div>`;
+  if(n < 4 || !GI.voci.length) return `<div class="pn-avv" role="note"><b>Per chi coordina</b><p class="sh-hint" style="margin:6px 0 0">Hanno risposto ${n} ${n === 1 ? 'persona' : 'persone'} su ${GI.stato.length}: sotto le 4 le risposte restano nascoste, per non far riconoscere nessuno.</p></div>`;
+  h += `<div class="pn-avv" role="note"><b>Le risposte, mescolate</b><p class="sh-hint" style="margin:6px 0 0">Hanno risposto ${n} persone su ${GI.stato.length}. Non cercare di capire chi ha scritto cosa. Se compare un segnale di disagio serio non c’è una persona a cui rispondere: le vie sono i canali previsti (Safe from Harm).</p></div>`;
+  GI_MAZZO.forEach(m => { const V = GI.voci.filter(v => v.q === m.q); if(!V.length) return;
+    h += `<fieldset class="gi-carta"><legend><b>${E(m.t)}</b></legend><p class="sh-hint" style="margin:0">${E(m.dom || '')}</p>`;
+    if(m.op){ const cnt = m.op.map(([k, t]) => [t, V.filter(v => (v.scelta || []).includes(k)).length]);
+      h += `<ul class="pn-ul">${cnt.map(([t, c]) => `<li>${E(t)}: <b>${c}</b></li>`).join('')}</ul>`; }
+    const tx = V.map(v => (v.testo || '').trim()).filter(Boolean); const mesc = tx.map(t => [Math.random(), t]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+    if(mesc.length) h += `<div class="sh-hint" style="margin:0">Risposte libere, in ordine casuale</div>` + mesc.map(t => `<div class="gi-tx gi-anon">${E(t)}</div>`).join('');
+    if(m.q === 'p7' && V.some(v => (v.scelta || []).some(s => s === 'tratti' || s === 'fatica'))) h += `<p class="sh-hint" style="margin:0"><b>C’è chi fa fatica.</b> Non si può sapere chi: meglio un invito al colloquio per tutte e tutti che una persona sola.</p>`;
+    h += `</fieldset>`; });
+  return h;
+}
 
 // ── la pagina ──
 function pnRender(){
@@ -18911,6 +19205,8 @@ function pnRender(){
       <button class="sh-btn sm gh" type="button" onclick="pnShare()">Chi ha accesso</button><button class="sh-btn sm gh" type="button" onclick="pnStorico()">Storico</button></div>
     ${ro ? '<p class="sh-hint" style="margin:0">Puoi leggere il piano. I pareri si raccolgono in presenza: qui non si modifica.</p>' : ''}
   </section>`;
+  h += giTabs();
+  if(giVista()){ h += giHTML() + `</main>`; r.innerHTML = h; pnStato(); r.querySelectorAll('.pn-ta').forEach(pnGrow); r.scrollTop = sc; if(fid){ const n = $(fid); if(n){ try{ n.focus({preventScroll:true}); }catch(e){} } } return; }
   // quadro sinottico sempre in vista
   h += `<section class="pn-card" aria-labelledby="pn-sin-t"><h2 class="pn-h" id="pn-sin-t">Quadro sinottico</h2><div id="pn-sin"></div><div id="pn-avv"></div></section>`;
   // dove siamo
@@ -19103,7 +19399,7 @@ window.pnRipristina = async function(vid){
 };
 
 window.addEventListener('pagehide', () => { try{ if(SH.view === 'piano' && PN.dirty) pnSave(); }catch(e){} });
-Object.assign(window, {PN, pnMerge, pnTouch, pnSave, pnRicarica, pnAnnoTxt, pnRender, pnGrow});
+Object.assign(window, {PN, pnMerge, pnTouch, pnSave, pnRicarica, pnAnnoTxt, pnRender, pnGrow, pnVuoto, GI, giCarica, giFlush});
 
 async function homeHTML(){
   const r = $('sh-root');
@@ -19491,6 +19787,20 @@ body.sh-in .toast{pointer-events:none}
 .pn-sel{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 .pn-ta{resize:vertical;min-height:60px;line-height:1.45}
 .pn-fs{border:0;padding:0;margin:0;min-width:0}
+.pn-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.pn-tabb{min-height:44px;padding:0 18px;border:1px solid #8a8a82;border-radius:999px;background:#fff;font:inherit;font-weight:700;font-size:14px;cursor:pointer;color:#2b2b27}
+.pn-tabb.on{background:#1b5e42;border-color:#1b5e42;color:#fff}
+.pn-tabb:focus-visible{outline:3px solid #1d4f8f;outline-offset:2px}
+.gi-carta{border:1px solid #D8D8D0;border-radius:12px;padding:12px 14px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.gi-carta legend{padding:0 6px;font-size:15px}
+.gi-rit{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 0}
+.gi-rit input{width:20px;height:20px;margin-top:2px;flex:none}
+.gi-voce{border-top:1px solid #ECECE4;padding:10px 0;display:flex;flex-direction:column;gap:6px}
+.gi-tx{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.5}
+.gi-anon{background:#f6f6f0;border-radius:10px;padding:8px 10px}
+.pn-det{border:1px solid #D8D8D0;border-radius:12px;padding:8px 12px}
+.pn-det>summary{cursor:pointer;min-height:36px;display:flex;align-items:center;gap:6px;font-weight:700}
+.pn-ul{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .pn-chips{display:flex;gap:8px;flex-wrap:wrap}
 .pn-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border:1px solid #8a8a82;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;background:#fff}
 .pn-chip.sm{min-height:40px;padding:0 12px;font-size:12.5px}
@@ -19498,6 +19808,7 @@ body.sh-in .toast{pointer-events:none}
 .pn-chip input{width:18px;height:18px}
 .pn-sug{min-height:44px;padding:0 14px;border:1px dashed #8a8a82;border-radius:999px;background:#fff;font:700 13px 'Montserrat',sans-serif;cursor:pointer}
 .pn-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45;min-height:44px}
+.pn-chk input{width:20px;height:20px;flex:none;margin:0}
 .pn-az-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .pn-azh{display:flex;gap:8px;align-items:baseline}
 .pn-tw{overflow-x:auto}
