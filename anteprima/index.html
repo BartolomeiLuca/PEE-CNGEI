@@ -18952,8 +18952,8 @@ const GI_MAZZO = [
   {q:'p8', t:'Le ultime due cose', dom:'Due cose che vale la pena dire.', lib2:[['Una cosa che il Gruppo dovrebbe sapere e che nessuno dice', 'Da sapere'], ['Una cosa che funziona e che non vorresti perdere', 'Funziona']]}
 ];
 const GI_PRIVACY = 'Nessuno vedrà che sei stato o stata tu. La risposta è anonima per le persone del Consiglio, non per chi amministra il database. Una volta inviata non si modifica, e il Capo Gruppo la leggerà solo a giro chiuso e se hanno risposto almeno 4 persone.';
-const GI = {pid:null, ok:undefined, vista:'piano', giri:[], g:null, contr:[], stato:[], dr:null, drG:null, drDirty:false, drSt:'', timer:null, saving:false, pers:null, pDr:{}, nPers:0, voci:[], reg:null, err:'', busy:false};
-function giReset(pid){ clearTimeout(GI.timer); Object.assign(GI, {pid, ok:undefined, vista:'piano', giri:[], g:null, contr:[], stato:[], dr:null, drG:null, drDirty:false, drSt:'', saving:false, again:false, busy:false, pers:null, pDr:{}, nPers:0, voci:[], reg:null, err:''}); }
+const GI = {cdu:null, cduDirty:false, cduT:null, cduSt:'', pid:null, ok:undefined, vista:'piano', giri:[], g:null, contr:[], stato:[], dr:null, drG:null, drDirty:false, drSt:'', timer:null, saving:false, pers:null, pDr:{}, nPers:0, voci:[], reg:null, err:'', busy:false};
+function giReset(pid){ clearTimeout(GI.timer); Object.assign(GI, {pid, ok:undefined, vista:'piano', giri:[], g:null, contr:[], stato:[], dr:null, drG:null, drDirty:false, drSt:'', cdu:null, cduDirty:false, cduSt:'', saving:false, again:false, busy:false, pers:null, pDr:{}, nPers:0, voci:[], reg:null, err:''}); }
 const giVuoteCarte = () => ({v:1, a:Object.fromEntries(PN_AREE.map(([k]) => [k, {v:'', c:'', p:'', b:false}]))});
 const giData = s => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; };
 const giOggi = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -18979,13 +18979,14 @@ async function giCarica(silenzioso){
         const [st, n] = await Promise.all([PIANI.giroStato(g), PIANI.personaN(g)]); GI.stato = st; GI.nPers = n;
         if(GI.g.stato === 'chiuso'){ GI.reg = await PIANI.registro(g).catch(() => null); GI.voci = await PIANI.personaVoci(g).catch(() => []); }
       }
+      if(GI.drG !== g || !GI.cduDirty){ const u = giMio('unita'); const d = (u && u.data) || {}; GI.cdu = {v:1, b:Object.assign({}, d.b), s:Object.assign({}, d.s), n:Object.assign({}, d.fonte === 'libera' && d.n ? {tot:d.n.tot || '', m:d.n.m || '', f:d.n.f || '', staff:d.n.staff || '', nome:d.unita || ''} : {})}; }
       if(GI.drG !== g || !GI.drDirty){ const m = giMio('carte'); const v = giVuoteCarte(); if(m && m.data && m.data.a) PN_AREE.forEach(([k]) => { if(m.data.a[k]) Object.assign(v.a[k], m.data.a[k]); }); GI.dr = v; GI.drG = g; GI.drDirty = false; }
     }
     GI.err = '';
   }catch(e){ GI.err = pianoErr(e); }
   if(SH.view === 'piano' && PN.p && PN.p.id === pid){ if(silenzioso && GI.vista === 'giro' && document.activeElement && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName) && $('sh-root').contains(document.activeElement)) { GI.rinvia = true; return; } pnRender(); }
 }
-async function giFlush(){ clearTimeout(GI.timer); if(GI.drDirty && GI.g && giAperto()) await giSalvaCarte(); }
+async function giFlush(){ clearTimeout(GI.timer); if(GI.drDirty && GI.g && giAperto()) await giSalvaCarte(); clearTimeout(GI.cduT); if(GI.cduDirty && GI.g && giAperto()) await giCduSalva(false); }
 function giTabs(){
   if(!PN.p || PN.p.tipo !== 'gruppo' || GI.ok !== true) return '';
   const n = GI.g && GI.g.stato === 'aperto' ? 'Giro ' + GI.g.n + ' aperto' : 'Giro del Piano';
@@ -19012,6 +19013,8 @@ function giHTML(){
   </section>`;
   if(coord) h += giCoordHTML();
   h += giCarteHTML();
+  h += giCduHTML();
+  if(coord) h += giCduCoordHTML();
   h += giPersonaHTML();
   return h;
 }
@@ -19037,7 +19040,7 @@ window.giApri = async function(){
 };
 window.giMostra = async function(id){ const g = GI.giri.find(x => x.id === id); if(!g) return; await giFlush(); GI.g = g; GI.drDirty = false; GI.contr = []; GI.stato = []; GI.voci = []; GI.reg = null;
   try{ GI.contr = await PIANI.contributi(id); GI.pers = await PIANI.personaMia(id); if(pnTutto()){ GI.stato = await PIANI.giroStato(id); GI.nPers = await PIANI.personaN(id); if(g.stato === 'chiuso'){ GI.reg = await PIANI.registro(id).catch(() => null); GI.voci = await PIANI.personaVoci(id).catch(() => []); } } }catch(e){ GI.err = pianoErr(e); }
-  const m = giMio('carte'); const v = giVuoteCarte(); if(m && m.data && m.data.a) PN_AREE.forEach(([k]) => { if(m.data.a[k]) Object.assign(v.a[k], m.data.a[k]); }); GI.dr = v; GI.drG = id; pnRender(); };
+  const m = giMio('carte'); const v = giVuoteCarte(); if(m && m.data && m.data.a) PN_AREE.forEach(([k]) => { if(m.data.a[k]) Object.assign(v.a[k], m.data.a[k]); }); GI.dr = v; GI.drG = id; { const u = giMio('unita'); const d = (u && u.data) || {}; GI.cdu = {v:1, b:Object.assign({}, d.b), s:Object.assign({}, d.s), n:{}}; GI.cduDirty = false; } pnRender(); };
 
 // ── chi coordina: chi ha consegnato, scadenza, chiusura, registro ──
 function giCoordHTML(){
@@ -19184,6 +19187,126 @@ function giRisultatiHTML(){
     if(m.q === 'p7' && V.some(v => (v.scelta || []).some(s => s === 'tratti' || s === 'fatica'))) h += `<p class="sh-hint" style="margin:0"><b>C’è chi fa fatica.</b> Non si può sapere chi: meglio un invito al colloquio per tutte e tutti che una persona sola.</p>`;
     h += `</fieldset>`; });
   return h;
+}
+
+// ══ Carta di Unità (24/11): una pagina per Unità, sette blocchi, da portare al giro del Piano di Gruppo ══
+// Si compila dopo il Momento di Unità. Ciò che la programmazione dell'Unità già dice non si chiede due volte: numeri, staff e parte educativa arrivano da lì.
+// Nessun nome di ragazzi e ragazze, nessun giudizio sulle persone dello staff.
+const CDU_BLOCCHI = [
+  {k:'b1', n:1, t:'Chi siamo oggi', dom:'Cosa è cambiato di più rispetto all’anno scorso?', perche:'Serve a chi legge per capire da dove partite.'},
+  {k:'b2', n:2, t:'Educativa', dom:'Quali passaggi di branca vi preoccupano?', perche:'La parte educativa arriva dalla vostra programmazione: qui aggiungete solo ciò che lì non c’è.'},
+  {k:'b3', n:3, t:'Staff e formazione', dom:'Di cosa avete bisogno come staff: formazione, persone, tempo?', perche:'Per capire dove il Gruppo può aiutare gli staff.', sem:true},
+  {k:'b4', n:4, t:'Famiglie', dom:'Com’è la partecipazione delle famiglie? Cosa vi aiuterebbe?', perche:'Il rapporto con le famiglie è una delle cinque aree del Piano.', sem:true},
+  {k:'b5', n:5, t:'Risorse', dom:'Cosa manca o va sistemato tra materiali, sede e soldi?', perche:'Per distribuire bene le risorse comuni.', sem:true},
+  {k:'b6', n:6, t:'Sviluppo e territorio', dom:'Chi perdiamo o è in attesa, e con chi collaboriamo?', perche:'Per vedere crescita, attese e rapporti con il territorio.', sem:true}
+];
+const CDU_SEM = [['v', 'Va bene'], ['g', 'Da seguire'], ['r', 'Serve aiuto']];
+const CDU_GUIDA = ['Si compila dopo il Momento di Unità, in circa 20 minuti.', 'Si fa con lo staff, comprese le persone appena arrivate.', 'Per ogni blocco: si legge la domanda, ci si scambia due minuti, si scrive una riga.', 'Niente nomi di ragazzi e ragazze, niente giudizi sulle persone dello staff.', 'Il Capo Gruppo la legge accanto alle carte delle altre Unità: non è una classifica, serve a capire dove serve aiuto.'];
+const CDU_MOMENTO = [['5’', 'Perché lo facciamo: una Carta per il Gruppo, non un voto'], ['25’', 'Giro sui blocchi, 2-3 minuti ciascuno'], ['10’', 'Una richiesta e un’offerta al Gruppo'], ['5’', 'Chi scrive la Carta']];
+const cduVuota = () => ({v:1, b:{}, s:{}, n:{}});
+function cduGuidaHTML(){
+  const E = esc;
+  return `<details class="pn-det"><summary>Come si compila</summary><ol class="pn-ul">${CDU_GUIDA.map(x => `<li>${E(x)}</li>`).join('')}</ol>
+    <p style="margin:10px 0 4px"><b>Il Momento di Unità</b> <span class="sh-hint">(45 minuti dentro una normale riunione di staff, condotto da chi è Capo Unità)</span></p>
+    <ul class="pn-ul">${CDU_MOMENTO.map(([m, t]) => `<li><b>${E(m)}</b> ${E(t)}</li>`).join('')}</ul></details>`;
+}
+// st = {b:{…}, s:{…}, n:{tot,m,f,staff}}; pre = dati letti dalla programmazione dell'Unità (o null); fn = nome della funzione che riceve le modifiche; px = prefisso degli id
+function cduFormHTML(o){
+  const E = esc, st = o.st || cduVuota(), pre = o.pre || null, fn = o.fn, px = o.px || 'cdu', ro = !!o.ro, dis = ro ? ' disabled' : '';
+  const ta = (k, lab, ph, rows) => `<div><label class="sh-lb" for="${px}-${k}">${E(lab)}</label><textarea class="sh-in pn-ta" id="${px}-${k}" rows="${rows || 2}" maxlength="1200" placeholder="${E(ph || '')}" oninput="${fn}('b','${k}',this.value);pnGrow(this)"${dis}>${E((st.b || {})[k] || '')}</textarea></div>`;
+  const num = (k, lab) => `<div><label class="sh-lb" for="${px}-n-${k}">${E(lab)}</label><input class="sh-in" type="number" inputmode="numeric" min="0" max="99" id="${px}-n-${k}" value="${E((st.n || {})[k] == null ? '' : (st.n || {})[k])}" oninput="${fn}('n','${k}',this.value)" style="max-width:120px"${dis}></div>`;
+  const sem = k => `<fieldset class="pn-fs"><legend class="sh-lb">Come la sentite?</legend><div class="pn-chips">${CDU_SEM.map(([v, t]) => `<label class="pn-chip${(st.s || {})[k] === v ? ' on' : ''}"><input type="radio" name="${px}-s-${k}" value="${v}" ${(st.s || {})[k] === v ? 'checked' : ''} onchange="${fn}('s','${k}','${v}');document.querySelectorAll('input[name=&quot;${px}-s-${k}&quot;]').forEach(i=>i.parentNode.classList.toggle('on',i.checked))"${dis}>${E(t)}</label>`).join('')}</div></fieldset>`;
+  let h = '';
+  CDU_BLOCCHI.forEach(b => {
+    h += `<fieldset class="gi-carta"><legend><b>${b.n} · ${E(b.t)}</b></legend><p class="sh-hint" style="margin:0">${E(b.perche)}</p>`;
+    if(b.k === 'b1'){
+      if(pre && pre.num){ const x = pre.num; h += `<div class="cdu-pre"><span class="sh-hint" style="margin:0">Dalla vostra programmazione</span><div>${x.tot ? `<b>${x.tot}</b> tra ragazzi e ragazze` : 'Totale non indicato'}${x.m || x.f ? ` (${x.m || 0} maschi, ${x.f || 0} femmine)` : ''}${(x.ann || []).some(v => v) ? `. Per anno: ${(x.ann || []).map((v, i) => (i + 1) + '° ' + (v || 0)).join(', ')}` : ''}.${pre.staff && pre.staff.n ? ` Staff: <b>${pre.staff.n}</b> ${pre.staff.n === 1 ? 'persona' : 'persone'}${pre.staff.ruoli && pre.staff.ruoli.length ? ' (' + E(pre.staff.ruoli.join(', ')) + ')' : ''}.` : ''}</div></div>`; }
+      else h += `<div><label class="sh-lb" for="${px}-n-nome">Nome dell’Unità</label><input class="sh-in" id="${px}-n-nome" maxlength="80" value="${E((st.n || {}).nome || '')}" oninput="${fn}('n','nome',this.value)"${dis}></div><div class="sh-g2">${num('tot', 'Quanti ragazzi e ragazze')}${num('staff', 'Quante persone di staff')}</div><div class="sh-g2">${num('m', 'di cui maschi')}${num('f', 'di cui femmine')}</div>`;
+      h += ta('b1', b.dom, 'Una riga basta');
+    } else if(b.k === 'b2'){
+      if(pre && pre.edu && pre.edu.length){ h += `<div class="cdu-pre"><span class="sh-hint" style="margin:0">Dalla vostra programmazione (sola lettura)</span>${pre.edu.map(x => `<div class="cdu-ed"><b>${E(x.amb)}</b> · ${E(x.pri)}${x.nec ? `<div class="gi-tx">${E(x.nec)}</div>` : ''}${(x.ob || []).length ? `<ul class="pn-ul">${x.ob.map(t => `<li>${E(t)}</li>`).join('')}</ul>` : ''}</div>`).join('')}<p class="sh-hint" style="margin:6px 0 0">Controlla che non ci siano nomi di ragazzi e ragazze: se ci sono, correggi la programmazione prima di consegnare.</p></div>`; }
+      else {
+        h += `<p class="sh-hint" style="margin:0">${pre && pre.prev ? 'Non avete ancora scelto le priorità di quest’anno: rileggete gli appunti della programmazione precedente (nel menu, sotto «Capire») e rispondete.' : 'Qui non c’è una programmazione da cui leggere: rispondete con le vostre parole.'}</p>`;
+        h += ta('b2a', 'Su cosa lavoriamo', 'Le due o tre cose che occupano di più l’Unità', 2) + ta('b2b', 'Di cosa hanno più bisogno ora ragazzi e ragazze', 'In generale, senza nomi', 2);
+      }
+      h += ta('b2', b.dom, 'Una riga basta');
+    } else {
+      h += ta(b.k, b.dom, 'Una riga basta'); if(b.sem) h += sem(b.k);
+    }
+    h += `</fieldset>`;
+  });
+  h += `<fieldset class="gi-carta"><legend><b>7 · Una richiesta e un’offerta al Gruppo</b></legend><p class="sh-hint" style="margin:0">La cosa che chiedereste al Gruppo e una che portereste volentieri al Gruppo.</p>${ta('b7r', 'Chiediamo al Gruppo', 'Una cosa sola')}${ta('b7o', 'Portiamo al Gruppo', 'Una cosa sola')}</fieldset>`;
+  return h;
+}
+// applica una modifica allo stato; restituisce true se è cambiato qualcosa
+function cduApplica(st, kind, k, v){
+  const sec = kind === 'b' ? 'b' : kind === 's' ? 's' : 'n'; st[sec] = st[sec] || {};
+  if(sec === 'n' && k === 'nome') st.n.nome = String(v).slice(0, 80);
+  else if(sec === 'n'){ const t = String(v).trim(); st.n[k] = t === '' ? '' : Math.max(0, Math.min(99, parseInt(t, 10) || 0)); } else st[sec][k] = String(v).slice(0, 1200);
+  return true;
+}
+// il contenuto consegnato al giro: numeri e parte educativa (letti dalla programmazione o scritti a mano) più le risposte dei blocchi
+function cduPayload(st, pre, nome){
+  const o = {v:1, unita:String(nome || ((st.n || {}).nome) || '').slice(0, 80), b:Object.assign({}, st.b || {}), s:Object.assign({}, st.s || {})};
+  if(pre && pre.num){ o.n = {tot:pre.num.tot || 0, m:pre.num.m || 0, f:pre.num.f || 0, ann:(pre.num.ann || []).map(x => parseInt(x, 10) || 0), staff:(pre.staff && pre.staff.n) || 0, ruoli:(pre.staff && pre.staff.ruoli) || []}; }
+  else { const n = st.n || {}; o.n = {tot:parseInt(n.tot, 10) || 0, m:parseInt(n.m, 10) || 0, f:parseInt(n.f, 10) || 0, ann:[], staff:parseInt(n.staff, 10) || 0, ruoli:[]}; }
+  if(pre && pre.edu && pre.edu.length){ o.fonte = 'pee'; o.edu = pre.edu.map(x => ({amb:x.amb, pri:x.pri, nec:String(x.nec || '').slice(0, 400), ob:(x.ob || []).slice(0, 4).map(t => String(t).slice(0, 300))})); } else o.fonte = 'libera';
+  return o;
+}
+function cduVuotaDel(st){ const b = st.b || {}; return !Object.keys(b).some(k => String(b[k] || '').trim()); }
+Object.assign(window, {cduFormHTML, cduApplica, cduPayload, cduGuidaHTML, cduVuota, cduVuotaDel, CDU_BLOCCHI, CDU_SEM});
+
+// ── Carta di Unità nella pagina del giro: per chi non ha una programmazione, o per vederla consegnata ──
+const giSonoCU = () => /^(cu|vcu)$/.test((SH.prof || {}).ruolo || '');
+function giCduHTML(){
+  const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', coord = pnTutto(), mia = giMio('unita');
+  const cons = !!(mia && mia.consegnato), daProg = !!(mia && mia.data && mia.data.fonte === 'pee');
+  let h = '';
+  if(giSonoCU() || mia){
+    h += `<section class="pn-card" aria-labelledby="gi-cu-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="gi-cu-t" style="margin:0">Carta di Unità</h2><span class="pn-st" id="gi-cdu-st" role="status" aria-live="polite" style="margin-left:auto">${E(GI.cduSt || (cons ? 'Consegnata' : mia ? 'Bozza salvata' : ''))}</span></div>`;
+    if(chiuso && !mia) h += `<p class="sh-sub" style="margin:0">Non hai consegnato la Carta di Unità in questo giro.</p>`;
+    else if(daProg) h += `<p class="sh-sub" style="margin:0">Hai consegnato la Carta di «${E(mia.data.unita || 'la tua Unità')}» dalla programmazione dell’Unità, il ${E(giData(mia.consegnato_il))}. ${chiuso ? '' : 'Per cambiarla riapri la programmazione, voce «Carta di Unità», e consegna di nuovo.'}</p>`;
+    else {
+      h += `<p class="sh-hint" style="margin:0">${chiuso ? 'La Carta, come l’avevate consegnata.' : 'Una pagina per tutto lo staff: sette blocchi, una riga ciascuno. Se hai la programmazione dell’Unità su questa app, apri la voce «Carta di Unità» nel suo menu: numeri e parte educativa arrivano da soli.'}</p>`;
+      if(!chiuso) h += cduGuidaHTML();
+      h += cduFormHTML({st:GI.cdu || cduVuota(), pre:null, fn:'giCduSet', px:'gcu', ro:chiuso});
+      if(!chiuso) h += `<div><button class="sh-btn" type="button" onclick="giCduConsegna()"${GI.busy ? ' disabled' : ''}>${cons ? 'Aggiorna la consegna' : 'Consegna la Carta di Unità'}</button></div>`;
+    }
+    h += `</section>`;
+  }
+  return h;
+}
+window.giCduSet = function(kind, k, v){ if(!GI.cdu || !giAperto()) return; cduApplica(GI.cdu, kind, k, v); GI.cduDirty = true; GI.cduSt = ''; const e = $('gi-cdu-st'); if(e) e.textContent = 'Modifiche non ancora salvate'; clearTimeout(GI.cduT); GI.cduT = setTimeout(() => giCduSalva(false), 1500); };
+async function giCduSalva(consegna){
+  clearTimeout(GI.cduT); if(!GI.g || !giAperto() || !GI.cdu) return;
+  const mia = giMio('unita'); const cons = consegna === true ? true : !!(mia && mia.consegnato); const inv = pnClone(GI.cdu);
+  try{ await PIANI.contributoSalva(GI.g.id, 'unita', cduPayload(inv, null, ''), cons); GI.contr = await PIANI.contributi(GI.g.id); GI.cduDirty = !pnEq(GI.cdu, inv); GI.cduSt = ''; }
+  catch(e){ GI.cduSt = 'Non salvato: ' + pianoErr(e); }
+  const e = $('gi-cdu-st'); if(e) e.textContent = GI.cduSt || (giMio('unita') && giMio('unita').consegnato ? 'Consegnata' : 'Bozza salvata');
+}
+window.giCduConsegna = async function(){
+  if(!GI.cdu || !giAperto() || GI.busy) return;
+  if(cduVuotaDel(GI.cdu)){ clToast('La Carta è vuota: scrivi almeno una riga prima di consegnare.'); return; }
+  GI.busy = true; await giCduSalva(true); GI.busy = false;
+  if(!GI.cduSt){ GI.cduDirty = false; try{ await giCarica(); }catch(e){} clToast('Carta di Unità consegnata.'); } else pnRender();
+};
+// chi coordina: tabella delle Unità (semafori) e richieste/offerte, quando le carte delle altre persone sono leggibili
+function giCduCoordHTML(){
+  const E = esc, g = GI.g, chiuso = g.stato === 'chiuso';
+  const U = GI.contr.filter(c => c.tipo === 'unita' && c.consegnato);
+  let h = `<section class="pn-card" aria-labelledby="gi-cc-t"><h2 class="pn-h" id="gi-cc-t">Le Carte di Unità</h2>`;
+  const mieCarte = giMio('carte'); const leggibile = chiuso || (mieCarte && mieCarte.consegnato);
+  if(!U.length){ h += `<p class="sh-sub" style="margin:0">${leggibile ? 'Nessuna Unità ha ancora consegnato la sua Carta.' : 'Consegna prima le tue carte: poi potrai leggere le Carte di Unità.'}</p></section>`; return h; }
+  const SEM = {v:['●', 'va bene'], g:['▲', 'da seguire'], r:['■', 'serve aiuto']};
+  h += `<p class="sh-hint" style="margin:0">Non è una classifica: i segnali dicono dove serve aiuto. Il segno è accompagnato dalla parola.</p>
+    <div class="pn-tw"><table class="pn-tab" aria-label="Carte di Unità"><thead><tr><th scope="col" style="text-align:left">Unità</th>${CDU_BLOCCHI.filter(b => b.sem).map(b => `<th scope="col">${E(b.t)}</th>`).join('')}</tr></thead><tbody>
+    ${U.map(c => { const d = c.data || {}, s = d.s || {}; return `<tr><th scope="row" style="text-align:left">${E(d.unita || c.autore_nome)}<span class="sh-hint" style="display:block;margin:0">${E(c.autore_nome)}${d.n && d.n.tot ? ' · ' + d.n.tot + ' tra ragazzi e ragazze' : ''}</span></th>${CDU_BLOCCHI.filter(b => b.sem).map(b => s[b.k] && SEM[s[b.k]] ? `<td><span aria-hidden="true">${SEM[s[b.k]][0]}</span> ${E(SEM[s[b.k]][1])}</td>` : '<td><span class="pn-no">·</span></td>').join('')}</tr>`; }).join('')}</tbody></table></div>`;
+  h += U.map(c => { const d = c.data || {}, b = d.b || {};
+    return `<details class="pn-det"><summary>${E(d.unita || c.autore_nome)}${(b.b7r || b.b7o) ? ' <span class="sh-hint" style="margin:0">· ha una richiesta o un’offerta</span>' : ''}</summary>
+      ${(d.edu || []).length ? `<div class="gi-voce"><span class="sh-hint" style="margin:0">Dalla programmazione</span>${d.edu.map(x => `<div><b>${E(x.amb)}</b> · ${E(x.pri)}${x.nec ? `<div class="gi-tx">${E(x.nec)}</div>` : ''}${(x.ob || []).length ? `<ul class="pn-ul">${x.ob.map(t => `<li>${E(t)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</div>` : (b.b2a || b.b2b) ? `<div class="gi-voce">${b.b2a ? `<div><span class="sh-hint" style="margin:0">Su cosa lavoriamo</span><div class="gi-tx">${E(b.b2a)}</div></div>` : ''}${b.b2b ? `<div><span class="sh-hint" style="margin:0">Di cosa hanno più bisogno ora ragazzi e ragazze</span><div class="gi-tx">${E(b.b2b)}</div></div>` : ''}</div>` : ''}
+      ${CDU_BLOCCHI.map(x => (b[x.k] || '').trim() ? `<div class="gi-voce"><span class="sh-hint" style="margin:0">${x.n} · ${E(x.t)}</span><div class="gi-tx">${E(b[x.k])}</div></div>` : '').join('')}
+      ${b.b7r ? `<div class="gi-voce"><span class="sh-hint" style="margin:0">Chiede al Gruppo</span><div class="gi-tx">${E(b.b7r)}</div></div>` : ''}${b.b7o ? `<div class="gi-voce"><span class="sh-hint" style="margin:0">Porta al Gruppo</span><div class="gi-tx">${E(b.b7o)}</div></div>` : ''}</details>`; }).join('');
+  return h + `</section>`;
 }
 
 // ── la pagina ──
@@ -19497,6 +19620,7 @@ function dupBuild(src, anno, keys){
     (sc.priorita || []).forEach(p => { p.tDal = ''; p.tAl = ''; });
     delete sc.ciclo; delete sc.cicloDa; delete sc.calOk; delete sc.ered;
   }
+  delete sc.cdu;   // la Carta di Unità è di un giro: non passa alla programmazione dell'anno dopo
   delete sc.ppImp; sc.annoScout = annoScoutTxt(Number(anno)); data.ts = Date.now();
   return data;
 }
@@ -19793,6 +19917,8 @@ body.sh-in .toast{pointer-events:none}
 .pn-tabb:focus-visible{outline:3px solid #1d4f8f;outline-offset:2px}
 .gi-carta{border:1px solid #D8D8D0;border-radius:12px;padding:12px 14px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
 .gi-carta legend{padding:0 6px;font-size:15px}
+.cdu-pre{background:#f6f6f0;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.5}
+.cdu-ed{border-top:1px solid #ECECE4;padding-top:6px}
 .gi-rit{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 0}
 .gi-rit input{width:20px;height:20px;margin-top:2px;flex:none}
 .gi-voce{border-top:1px solid #ECECE4;padding:10px 0;display:flex;flex-direction:column;gap:6px}
@@ -20083,6 +20209,7 @@ const NAV_AN = [
   {g:'Conservare'},
   {id:'k-arc', t:'Archivio degli anni', ic:'arch', go:'shGoHome()'},
   {g:'Condividere'},
+  {id:'d-cdu', t:'Carta di Unità', ic:'users', go:'shCdU()', cond:'cdu'},
   {id:'d-sha', t:'Condividi con lo staff', ic:'users', go:'shShare()'},
   {id:'d-chk', k:'chk', t:'Controllo e invio', ic:'doc', go:"shSec('chk')"}
 ];
@@ -20141,7 +20268,7 @@ function subHTML(inSheet){
   const sc = subCur();
   return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
-function navCond(i){ if(i.cond === 'sez'){ try{ return cgCds() && !window.BRO && !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } } if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navCond(i){ if(i.cond === 'sez'){ try{ return cgCds() && !window.BRO && !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } } if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'cdu'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo) && !window.BRO && MODE === 'giovani' && !isPP() && /^(cu|vcu)$/.test((SH.prof || {}).ruolo || ''); }catch(e){ return false; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
 function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
 function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
 SH._gt = SH._gt || {};
@@ -20200,7 +20327,7 @@ function active(){
   if(window._stEmb) return 'o-staff';
   const ptab = $('panel-dash'), ppp = $('panel-pp');
   if(ptab && ptab.classList.contains('active')) return 'dash';
-  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'cap' ? 'a-cap' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'share' ? ((isPP() || isST()) ? 'sha' : 'd-sha') : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'sez' ? 'p-sez' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
+  if(ppp && ppp.classList.contains('active')) return SH.ppv === 'cal' ? 'r-cal' : SH.ppv === 'tip' ? 'r-tip' : SH.ppv === 'cap' ? 'a-cap' : SH.ppv === 'vis' ? 'p-vis' : SH.ppv === 'annov' ? 'm-anno' : SH.ppv === 'num' ? 'm-num' : SH.ppv === 'cdu' ? 'd-cdu' : SH.ppv === 'share' ? ((isPP() || isST()) ? 'sha' : 'd-sha') : SH.ppv === 'bil' ? 'r-bil' : SH.ppv === 'ele' ? 'r-ele' : SH.ppv === 'stp' ? 'r-stp' : SH.ppv === 'chk' ? 'r-chk' : SH.ppv === 'pf' ? 'p-pf' : SH.ppv === 'sez' ? 'p-sez' : SH.ppv === 'staffobs' ? 'o-staff' : (SH.ppv === 'conf' ? (isPP() ? 'pp1' : 'o-conf') : 'pp' + (SH.ppv || '0'));
   const p = n => { const e = $('panel' + n); return e && e.classList.contains('active'); };
   if(isST()){ if(p(4)) return 'usc'; if(p(2)) return 'st2'; return 'st1'; }
   if(!isPP()){
@@ -23010,6 +23137,62 @@ window.shNumAnno = async function(){
   if(SH.ppv === 'num') $('panel-pp').innerHTML = numHTML();
 };
 window.numCalc = numCalc;
+
+// ══ Carta di Unità (24/11): voce del menu della programmazione di Unità, da consegnare al giro del Piano di Gruppo ══
+// La parte educativa e i numeri si leggono dalla programmazione (mai i dati dei singoli); il resto si scrive qui, dopo il Momento di Unità.
+const CDU_AMB = {P:'Personale', C:'Comunitario', S:'Spirituale'};
+function cduPre(){
+  const pp = scheda.pp || {}; const nA = FASCIA === 'R' ? 3 : 4;
+  const num = {tot:parseInt(pp.numTot, 10) || 0, m:parseInt(pp.numM, 10) || 0, f:parseInt(pp.numF, 10) || 0, ann:(pp.numAnn || []).slice(0, nA).map(v => parseInt(v, 10) || 0)};
+  if(!num.tot) num.tot = num.m + num.f;
+  const hasNum = !!(num.tot || num.ann.some(v => v));
+  let staff = {n:0, ruoli:[]}; try{ const t = (staffTab() || []).filter(r => String(r.nome || '').trim()); staff = {n:t.length, ruoli:t.map(r => String(r.ruolo || '').trim()).filter(Boolean)}; }catch(e){}
+  const edu = []; try{ priSel().forEach((id, k) => { const a = id[0], P = (DB[a] || []).find(x => x.id === id), pr = (scheda.priorita || [])[k] || {};
+    edu.push({amb:CDU_AMB[a] || a, pri:priLabel(id), nec:String(pr.necessita || '').trim(), ob:(pr.obiettivi || []).map(j => P && P.obiettivi && P.obiettivi[j]).filter(Boolean)}); }); }catch(e){}
+  return {num:hasNum ? num : null, staff, edu:edu.length ? edu : null, prev:!!SH._prev};
+}
+function cduUnitaNome(){ const n = String(typeof UNIT_NAME !== 'undefined' ? UNIT_NAME : '').trim(); return n || (FASCIA === 'L' ? 'Branco' : FASCIA === 'R' ? 'Compagnia' : 'Reparto'); }
+function cduPageHTML(){
+  const E = esc, c = scheda.cdu || cduVuota(), ro = !!window.BRO, cons = c.cons;
+  const mod = cons && c.mod && c.mod > cons.ts;
+  return `<div class="sh-dh"><div><h1>Carta di Unità</h1><p class="sh-sub" style="margin:4px 0 0;max-width:70ch">Una pagina per dire al Gruppo come sta la vostra Unità, perché il Capo Gruppo possa scrivere il Piano di Gruppo partendo da voi. Non è una classifica.</p></div></div>
+    <section class="sh-card2 wide" aria-labelledby="cdu-h"><h3 id="cdu-h">Compilala con lo staff</h3>${cduGuidaHTML()}
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">${cduFormHTML({st:c, pre:cduPre(), fn:'cduSet', px:'cdu', ro})}</div>
+    <p class="sh-hint" id="cdu-st" role="status" aria-live="polite" style="margin:10px 0 0">${cons ? E('Consegnata il ' + cons.il.split('-').reverse().join('/') + ' al giro ' + cons.g + ' di «' + (cons.t || 'Piano di Gruppo') + '».') + (mod ? ' Hai cambiato la Carta dopo la consegna: consegnala di nuovo.' : '') : ''}</p>
+    ${ro ? '' : `<div id="cdu-dest" style="margin-top:8px"></div>`}</section>`;
+}
+window.shCdU = function(){ ensurePanels(); SH.ppv = 'cdu'; ownOff(); $('panel-pp').innerHTML = cduPageHTML(); own('panel-pp'); if(!window.BRO) cduLoadDest(); };
+window.cduSet = function(kind, k, v){
+  if(window.BRO) return; const c = scheda.cdu || (scheda.cdu = cduVuota()); cduApplica(c, kind, k, v); c.mod = Date.now(); saveDataDebounced();
+  const e = $('cdu-st'); if(e && c.cons) e.textContent = 'Hai cambiato la Carta dopo la consegna: consegnala di nuovo.';
+};
+async function cduLoadDest(){
+  const box = $('cdu-dest'); if(!box) return; SH._cduG = null;
+  box.innerHTML = '<p class="sh-hint" role="status">Cerco il giro del Piano di Gruppo…</p>';
+  try{
+    if(!CL.sb || !CL.user){ box.innerHTML = '<p class="sh-hint">Per consegnare la Carta al Gruppo devi aver fatto l’accesso.</p>'; return; }
+    if(!(await PIANI.giriPronti())){ if(SH.ppv === 'cdu' && $('cdu-dest')) $('cdu-dest').innerHTML = '<p class="sh-hint">La consegna al Piano di Gruppo sarà disponibile dopo l’aggiornamento del database.</p>'; return; }
+    const piani = await PIANI.elenco('gruppo'); const out = [];
+    for(const p of piani){ const g = (await PIANI.giri(p.id)).find(x => x.stato === 'aperto'); if(g) out.push({p, g}); }
+    SH._cduG = out; const b2 = $('cdu-dest'); if(SH.ppv !== 'cdu' || !b2) return;
+    if(!out.length){ b2.innerHTML = `<p class="sh-hint">${piani.length ? 'Il Capo Gruppo non ha ancora aperto il giro. Quando lo apre, consegni la Carta da qui.' : 'Non vedi ancora nessun Piano di Gruppo: chiedi al Capo Gruppo di invitarti con la tua email.'}</p>`; return; }
+    b2.innerHTML = `${out.length > 1 ? `<label class="sh-lb" for="cdu-dsel">A quale Piano la consegni?</label><select class="sh-in" id="cdu-dsel" style="max-width:420px">${out.map(x => `<option value="${esc(x.g.id)}">${esc((x.p.titolo || 'Piano di Gruppo') + ' · giro ' + x.g.n)}</option>`).join('')}</select>` : `<p class="sh-hint" style="margin:0 0 6px">Giro ${out[0].g.n} di «${esc(out[0].p.titolo || 'Piano di Gruppo')}»${out[0].g.scadenza ? ', scadenza ' + esc(out[0].g.scadenza.split('-').reverse().join('/')) : ''}.</p>`}
+      <div class="anv-act"><button type="button" class="sh-btn" id="cdu-go" onclick="cduDeliver()">Consegna al giro del Piano di Gruppo</button></div>`;
+  }catch(e){ const b3 = $('cdu-dest'); if(b3) b3.innerHTML = '<p class="sh-hint">' + esc(typeof pianoErr === 'function' ? pianoErr(e) : clErr(e)) + '</p>'; }
+}
+window.cduDeliver = async function(){
+  if(window.BRO) return; const c = scheda.cdu || cduVuota();
+  if(cduVuotaDel(c)){ showToast('La Carta è vuota: scrivi almeno una riga prima di consegnare.'); return; }
+  const L = SH._cduG || []; if(!L.length){ showToast('Non c’è un giro aperto a cui consegnarla.'); return; }
+  const sel = $('cdu-dsel'); const it = (sel && L.find(x => x.g.id === sel.value)) || L[0];
+  if(!confirm('Consegni la Carta di Unità al giro ' + it.g.n + ' di «' + (it.p.titolo || 'Piano di Gruppo') + '»?\n\nControlla che non ci siano nomi di ragazzi e ragazze né giudizi sulle persone. Puoi consegnarla di nuovo fino alla chiusura del giro.')) return;
+  const b = $('cdu-go'); if(b) b.disabled = true;
+  try{
+    await PIANI.contributoSalva(it.g.id, 'unita', cduPayload(c, cduPre(), cduUnitaNome()), true);
+    c.cons = {gid:it.g.id, pid:it.p.id, g:it.g.n, t:it.p.titolo || '', il:isoOggi(), ts:Date.now()}; scheda.cdu = c; saveData(true);
+    showToast('Carta di Unità consegnata.'); if(SH.ppv === 'cdu') shCdU();
+  }catch(e){ if(b) b.disabled = false; showToast(typeof pianoErr === 'function' ? pianoErr(e) : clErr(e)); }
+};
 
 // ── Registro delle spese: spese libere e voci recuperate dalle attività, con importo effettivo, giustificativo e report ──
 const SP_PAG = [['', '—'], ['contanti', 'Contanti'], ['carta', 'Carta'], ['bonifico', 'Bonifico'], ['altro', 'Altro']];
