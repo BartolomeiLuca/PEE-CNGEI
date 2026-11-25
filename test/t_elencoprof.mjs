@@ -36,5 +36,8 @@ ok(db.t.pee_piani_membri.filter(m => m.piano_id === 'p1').length === 2, 'si invi
 await ev(() => shDlgClose()); await ev(() => shGoHome()); await sleep(600); await ev(() => shProfileOpen()); await sleep(800);
 const pv = await ev(() => { const e = document.getElementById('sh-privel'); if(!e) return null; const r = e.getBoundingClientRect(); return {t:e.textContent.length, ok:r.right <= window.innerWidth + 1 && r.left >= -1, dsw:document.documentElement.scrollWidth - window.innerWidth}; });
 ok(pv && pv.ok && pv.dsw <= 1, 'la frase di privacy nel profilo sta nello schermo');
+await P.fill('#sh-sez', 'Pesaro CNGEI'); await P.dispatchEvent('#sh-sez', 'input'); await sleep(200);
+const sz = await ev(() => { const l = document.getElementById('sh-sezlw').getBoundingClientRect(), h = document.getElementById('sh-sezh').getBoundingClientRect(); return {l:l.right <= window.innerWidth + 1 && l.left >= -1 && l.height >= 36, h:h.right <= window.innerWidth + 1 && h.left >= -1 && h.height > 0, dsw:document.documentElement.scrollWidth - window.innerWidth}; });
+ok(sz.l && sz.h && sz.dsw <= 1, 'Sezione: suggerimento e casella «non è in elenco» stanno nello schermo e si toccano bene');
 ok(pa.errors.length === 0, 'nessun errore di pagina (' + pa.errors.length + ')');
 await br.close(); process.exit(0);

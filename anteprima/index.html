@@ -18500,6 +18500,9 @@ function gateHTML(why){
   shProfRole();
 }
 
+// Sezione nel profilo: si sceglie dall'elenco ufficiale (scrivi e scegli); se non c'è si spunta «La mia Sezione non è in elenco» (dashboard.sezioneLibera).
+function sezNorm(t){ return String(t || '').trim().replace(/\s+/g, ' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function sezCanon(v){ const n = sezNorm(v); if(!n) return ''; return (typeof SEZIONI !== 'undefined' ? SEZIONI : []).find(x => sezNorm(x) === n) || ''; }
 function sezOpts(){ return (typeof SEZIONI !== 'undefined' ? SEZIONI : []).map(s => `<option value="${esc(s)}">`).join(''); }
 function grpOpts(sez, cur){
   let known = []; try{ known = new Set(grpKnown(sez)); }catch(e){ known = new Set(); }
@@ -18531,7 +18534,9 @@ function profCard(p, mode, disabled){
           <div><label class="sh-lb" for="sh-unn">Nome dell’Unità</label><input class="sh-in" id="sh-unn" maxlength="60" autocomplete="off" placeholder="Es. Reparto Kontiki" value="${esc(((p.dashboard || {}).unita || {}).nome || '')}"></div></div>
         <div class="sh-hint">Così, quando apri un nuovo progetto, trovi già la Programmazione educativa della tua Unità con Branca e nome compilati.</div></div>
       <div class="sh-g2">
-        <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" value="${esc(p.sezione || '')}" onchange="shProfSez()"><datalist id="sh-dl-sez">${sezOpts()}</datalist></div>
+        <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" placeholder="Scrivi le prime lettere e scegli" value="${esc(p.sezione || '')}" oninput="shProfSezHint()" onchange="shProfSez()" aria-describedby="sh-sezh"><datalist id="sh-dl-sez">${sezOpts()}</datalist>
+          <div class="sh-hint" id="sh-sezh" role="status" style="margin:4px 0 0"></div>
+          <label class="pn-chk" id="sh-sezlw" style="margin-top:6px"><input type="checkbox" id="sh-sezlib"${(p.dashboard || {}).sezioneLibera ? ' checked' : ''} onchange="shProfSezHint()"> <span>La mia Sezione non è in elenco</span></label></div>
         <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
       </div>
       <p class="sh-hint" id="sh-privel" style="margin:0">Il tuo nome, ruolo ed e-mail compaiono nell’elenco di chi coordina il tuo Gruppo o la tua Sezione, per poterti invitare ai piani. Nessun’altra persona li vede.</p>
@@ -18568,6 +18573,7 @@ function profileHTML(mode){
     ${first ? '<h1>Ancora il profilo, poi cominci</h1><p class="sh-sub">Poche informazioni, una volta sola: servono a precompilare i progetti e a sapere a chi mandare le comunicazioni.</p>' : '<h1>Il tuo profilo</h1>'}
     ${acc}${profCard(p, mode, false)}</main>`;
   shProfRole();
+  try{ shProfSezHint(); }catch(e){}
   if(p.sezione) try{ grpFetch(p.sezione).then(() => { const g = $('sh-grp'); if(g && document.activeElement !== g) g.innerHTML = grpOpts($('sh-sez').value, g.value); }); }catch(e){}
 }
 window.shProfRole = function(){
@@ -18578,7 +18584,18 @@ window.shProfRole = function(){
   const uw = $('sh-unw'), uf = $('sh-unf'), hc = $('sh-hasun');
   if(uw){ uw.hidden = !noBranca(r); if(uf) uf.style.display = (noBranca(r) && hc && hc.checked) ? 'flex' : 'none'; }
 };
+window.shProfSezHint = function(){
+  const i = $('sh-sez'), h = $('sh-sezh'), lib = $('sh-sezlib'); if(!i || !h) return;
+  const v = (i.value || '').trim(), c = sezCanon(v), saved = SH.prof && sezNorm(SH.prof.sezione) === sezNorm(v) && v;
+  h.className = 'sh-hint'; h.style.color = '';
+  if(!v) h.textContent = '';
+  else if(c) h.textContent = '';
+  else if(lib && lib.checked) h.textContent = 'Va bene: la tua Sezione non è in elenco. Finché non viene aggiunta, non compari negli elenchi di Gruppo e di Sezione.';
+  else if(saved) h.textContent = 'La Sezione che avevi scritto non è nell’elenco: scegline una scrivendo le prime lettere, oppure spunta «La mia Sezione non è in elenco».';
+  else h.textContent = 'Scegli la Sezione dall’elenco che compare mentre scrivi. Se non c’è, spunta «La mia Sezione non è in elenco».';
+};
 window.shProfSez = function(){
+  const i = $('sh-sez'); if(i){ const c = sezCanon(i.value); if(c && c !== i.value) i.value = c; } try{ shProfSezHint(); }catch(e){}
   const s = ($('sh-sez').value || '').trim(); const g = $('sh-grp');
   if(g) g.innerHTML = grpOpts(s, g.value);
   try{ grpFetch(s).then(() => { const g2 = $('sh-grp'); if(g2 && document.activeElement !== g2) g2.innerHTML = grpOpts($('sh-sez').value, g2.value); }); }catch(e){}
@@ -18603,7 +18620,16 @@ window.shProfSubmit = async function(ev){
     if(!inc.length) cosMiss = ['Scegli almeno un incarico nel Comitato di Sezione', 'sh-cosinc0'];
     else { const d1 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {}); d1.cos = {incarichi: inc}; p.dashboard = d1; }
   }
-  const miss = unMiss ? unMiss : cosMiss ? cosMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!senzaGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
+  // Sezione: dall'elenco ufficiale; se non c'è, la casella «non è in elenco»; un valore vecchio non in elenco, se non lo cambi, si conserva
+  let sezMiss = null;
+  if(p.sezione){
+    const canon = sezCanon(p.sezione), lib = !!($('sh-sezlib') && $('sh-sezlib').checked), salvata = !!(SH.prof && sezNorm(SH.prof.sezione) === sezNorm(p.sezione));
+    const eraLibera = !!((SH.prof && SH.prof.dashboard) || {}).sezioneLibera;
+    if(canon){ p.sezione = canon; if(eraLibera){ const d2 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {}); delete d2.sezioneLibera; p.dashboard = d2; } }
+    else if(lib){ if(!eraLibera){ const d2 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {}); d2.sezioneLibera = true; p.dashboard = d2; } }
+    else if(!salvata) sezMiss = ['Scegli la Sezione dall’elenco (scrivi le prime lettere). Se non c’è, spunta «La mia Sezione non è in elenco»', 'sh-sez'];
+  }
+  const miss = sezMiss ? sezMiss : unMiss ? unMiss : cosMiss ? cosMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!senzaGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
   if(miss){ m.className = 'sh-msg err'; m.textContent = miss[0] + '.'; try{ $(miss[1]).focus(); }catch(e){} return false; }
   const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
   try{
