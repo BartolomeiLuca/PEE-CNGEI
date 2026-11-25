@@ -120,6 +120,7 @@ export class FakeDB {
       if(req.name === 'revisore_abilitato') return {data:this.revAbil(req.args.em), error:null};
       if(req.name === 'pee_piano_segna_visto'){ if(this.sqlPiani === false) return this.err('PGRST202', 'Could not find the function'); const m = this.t.pee_piani_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_piani_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(/^pee_piano_giro_(apri|scadenza|stato|chiudi|persona)$/.test(req.name)) return this.giroRpc(req.name, req.args, uid, u);
+      if(req.name === 'pee_persone_elenco') return this.personeElenco(req.args.p_tipo, uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -276,6 +277,24 @@ export class FakeDB {
       }
       return {data:null, error:null};
     }
+  }
+  // elenco persone iscritte (SQL del 25 novembre): stesse regole e stessi messaggi della funzione; db.sqlPersone = false per provare il database non aggiornato
+  personeElenco(tipo, uid){
+    if(this.sqlPersone === false) return this.err('PGRST202', 'Could not find the function public.pee_persone_elenco');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase().replace(/[àáâä]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i').replace(/[òóôö]/g, 'o').replace(/[ùúûü]/g, 'u');
+    if(!['gruppo', 'sezione', 'clan'].includes(tipo)) return this.err('P0001', 'Elenco non valido.');
+    const me = this.t.pee_profili.find(x => x.user_id === uid); if(!me) return this.err('P0001', 'Completa prima il tuo profilo.');
+    const sez = norm(me.sezione), gr = norm(me.gruppo); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const inc = ((me.dashboard || {}).cos || {}).incarichi || [];
+    const comm = me.ruolo === 'cds' || (me.ruolo === 'cos' && inc.some(x => norm(x) === 'commissario'));
+    if(tipo === 'gruppo'){ if(!['cg', 'vcg'].includes(me.ruolo)) return this.err('P0001', 'Solo chi guida il Gruppo vede questo elenco.'); if(!gr) return this.err('P0001', 'Nel tuo profilo manca il Gruppo.'); }
+    else if(tipo === 'sezione'){ if(!(comm || me.ruolo === 'vcds')) return this.err('P0001', 'Solo chi guida la Sezione vede questo elenco.'); }
+    else if(me.ruolo !== 'coords') return this.err('P0001', 'Solo il Coordinatore Senior vede questo elenco.');
+    const rows = this.t.pee_profili.filter(pr => pr.user_id !== uid && norm(pr.sezione) === sez && (
+      (tipo === 'gruppo' && ((norm(pr.gruppo) === gr && ['cu', 'vcu', 'cg', 'vcg'].includes(pr.ruolo)) || ['cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo))) ||
+      (tipo === 'sezione' && ['cg', 'vcg', 'cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo)) ||
+      (tipo === 'clan' && ['cg', 'vcg', 'cds', 'vcds', 'cos'].includes(pr.ruolo)))).map(pr => { const u = this.user(pr.user_id); return u ? {persona_id:pr.user_id, nome:pr.nome, ruolo:pr.ruolo, branca:pr.branca || null, gruppo:pr.gruppo || null, sezione:pr.sezione, incarichi:((pr.dashboard || {}).cos || {}).incarichi || [], email:u.email} : null; }).filter(Boolean);
+    return {data:rows.sort((a, b) => String(a.nome).localeCompare(b.nome)), error:null};
   }
   // funzioni del giro (SQL del 24 novembre): db.sqlGiri = false per provare il database non aggiornato
   giroStato(g){ const gi = this.giroRec(g), p = gi.piano_id, pi = this.t.pee_piani.find(x => x.id === p), P = [];

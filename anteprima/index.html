@@ -16297,6 +16297,16 @@ const PIANI = {
     const row = {piano_id:id, email:clLc(email), ruolo:ruolo || 'lettore', etichetta:String(etichetta || '').slice(0, 60), nome:String(nome || '').slice(0, 120)};
     const {error} = await CL.sb.from('pee_piani_membri').insert(row); if(error) throw error;
   },
+  // elenco delle persone iscritte (SQL del 25 novembre): chi guida Gruppo/Sezione/Clan vede nome, ruolo ed email di chi ha il profilo nella sua stessa Sezione/Gruppo.
+  // Restituisce {ok:true, righe} · {ok:false, manca:true} se l'SQL non è stato eseguito · {ok:false, vietato:true} se il ruolo non ha l'elenco · {ok:false, msg}
+  async persone(tipo){
+    const {data, error} = await CL.sb.rpc('pee_persone_elenco', {p_tipo:tipo});
+    if(error){ const t = String(error.code || '') + ' ' + String(error.message || '');
+      if(/42883|PGRST202|does not exist|Could not find the function/i.test(t)) return {ok:false, manca:true};
+      if(/Solo chi guida|profilo|Sezione|Gruppo/i.test(t)) return {ok:false, vietato:true, msg:String(error.message || '')};
+      return {ok:false, msg:String(error.message || 'errore')}; }
+    return {ok:true, righe:data || []};
+  },
   async cambiaRuolo(mid, ruolo){ const {error} = await CL.sb.from('pee_piani_membri').update({ruolo, visto_il:null}).eq('id', mid); if(error) throw error; },
   async revoca(mid){ const {error} = await CL.sb.from('pee_piani_membri').delete().eq('id', mid); if(error) throw error; },
   // i piani a cui sono stato invitato (con «nuovo» = invito non ancora visto)
@@ -18524,6 +18534,7 @@ function profCard(p, mode, disabled){
         <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" value="${esc(p.sezione || '')}" onchange="shProfSez()"><datalist id="sh-dl-sez">${sezOpts()}</datalist></div>
         <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
       </div>
+      <p class="sh-hint" id="sh-privel" style="margin:0">Il tuo nome, ruolo ed e-mail compaiono nell’elenco di chi coordina il tuo Gruppo o la tua Sezione, per poterti invitare ai piani. Nessun’altra persona li vede.</p>
       <!-- Area RCdF/ICdF: campo nascosto finché non attiviamo l'invio delle mail dall'app. Il valore già salvato si conserva (vedi shProfSubmit). -->
       <div class="sh-msg" id="sh-pmsg" role="alert"></div>
       ${SH.profErr ? `<div class="sh-hint">Il profilo non si è potuto leggere dal cloud (${esc(SH.profErr)}): ti mostro la copia di questo dispositivo.</div>` : ''}
@@ -19478,6 +19489,7 @@ window.pnShare = async function(){
     h += rows.map(m => `<div class="pn-sh-r"><div style="min-width:0"><b>${E(m.nome || m.email)}</b><div class="sh-hint" style="margin:0">${E(m.email)}${m.etichetta ? ' · ' + E(m.etichetta) : ''}${m.visto_il ? '' : ' · invito non ancora visto'}</div></div>
       <select class="sh-in" aria-label="Ruolo di ${E(m.email)}" style="max-width:170px" onchange="pnShRuolo('${E(m.id)}',this.value)"${(m.ruolo === 'cotitolare' && !me) ? ' disabled' : ''}>${PIANI_RUOLI.filter(([k]) => me || k !== 'cotitolare' || m.ruolo === 'cotitolare').map(([k, t]) => `<option value="${k}"${m.ruolo === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select>
       <button class="sh-btn sm gh" type="button"${(m.ruolo === 'cotitolare' && !me) ? ' disabled' : ''} onclick="pnShTogli('${E(m.id)}')">Togli</button></div>`).join('');
+    if(gestisce) h += await pnShElenco(rows);
     if(gestisce) h += `<h3 style="margin:10px 0 0;font-size:14px">Invita una persona</h3>
       <div class="sh-g2"><div><label class="sh-lb" for="pn-i-m">E-mail</label><input class="sh-in" id="pn-i-m" type="email" maxlength="200" autocomplete="off"></div><div><label class="sh-lb" for="pn-i-n">Nome (facoltativo)</label><input class="sh-in" id="pn-i-n" maxlength="120"></div>
       <div><label class="sh-lb" for="pn-i-e">Chi è</label><select class="sh-in" id="pn-i-e" onchange="pnShEt()">${PN_ETICHETTE.map(([t]) => `<option>${E(t)}</option>`).join('')}</select></div>
@@ -19486,6 +19498,54 @@ window.pnShare = async function(){
     h += `<div class="sh-msg" id="pn-sh-msg" role="alert"></div><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Chiudi</button>${gestisce ? `<button class="sh-btn" type="button" id="pn-i-ok" onclick="pnShInvita()">Invita</button>` : ''}</div>`;
     $('pn-sh').innerHTML = h; try{ pnShEt(); }catch(e){}
   }catch(e){ $('pn-sh').innerHTML = `<p class="sh-msg err">${E(pianoErr(e))}</p>`; }
+};
+// persone iscritte tra cui scegliere (elenco spuntabile). Il Progetto di Clan si legge soltanto e va alla Sezione: avviso specifico.
+const PN_TIPO_ELENCO = {gruppo:'gruppo', sezione:'sezione', clan:'clan'};
+const PN_ELENCO_TIT = {gruppo:'Persone iscritte nel tuo Gruppo e in Sezione', sezione:'Persone iscritte nella tua Sezione', clan:'Persone di Sezione e Capi Gruppo iscritti'};
+function pnEtichettaDa(r){
+  const inc = (Array.isArray(r.incarichi) ? r.incarichi : []).map(x => String(x).toLowerCase());
+  if(r.ruolo === 'cu' || r.ruolo === 'vcu') return 'Capo Unità'; if(r.ruolo === 'vcg') return 'Vice Capo Gruppo';
+  if(r.ruolo === 'cds' || (r.ruolo === 'cos' && inc.includes('commissario'))) return 'Commissario di Sezione';
+  if(r.ruolo === 'cos' && inc.includes('presidente')) return 'Presidente'; if(r.ruolo === 'coords') return 'Coordinatore Senior'; return 'Altro';
+}
+function pnRuoloEt(r){
+  const base = ([...RUOLI, ...RUOLI_NUOVI].find(x => x[0] === r.ruolo) || [0, r.ruolo || ''])[1];
+  const inc = (Array.isArray(r.incarichi) ? r.incarichi : []).filter(Boolean);
+  return base + (r.ruolo === 'cos' && inc.length ? ' (' + inc.join(', ') + ')' : '');
+}
+async function pnShElenco(membri){
+  const E = esc, tipo = PN_TIPO_ELENCO[PN.p.tipo]; if(!tipo) return '';
+  let r; try{ r = await PIANI.persone(tipo); }catch(e){ r = {ok:false, msg:pianoErr(e)}; }
+  if(r.vietato) return '';
+  const titolo = `<h3 style="margin:10px 0 0;font-size:14px">${E(PN_ELENCO_TIT[tipo])}</h3>`;
+  if(r.manca) return titolo + `<p class="sh-hint" style="margin:0">L’elenco non è ancora disponibile: serve l’aggiornamento del database del 25 novembre. Intanto puoi invitare per e-mail.</p>`;
+  if(!r.ok) return titolo + `<p class="sh-msg err" style="margin:0">${E(r.msg || 'Non riesco a caricare l’elenco.')}</p>`;
+  const gia = new Set([clLc(PN.p.owner_email || ''), ...membri.map(m => clLc(m.email))]);
+  const lista = r.righe.filter(x => x.email && !gia.has(clLc(x.email)));
+  const clan = PN.p.tipo === 'clan', me = PN.ruolo === 'titolare';
+  let h = titolo + `<p class="sh-hint" style="margin:0">Compaiono le persone iscritte all’app con il profilo nella tua Sezione. Nome, ruolo ed e-mail di chi è iscritto sono visibili a chi coordina Gruppo e Sezione, solo per invitare ai piani.</p>`;
+  if(clan) h += `<div class="sh-msg err" role="note" style="display:block;margin:0"><b>Attenzione:</b> il Progetto di Clan contiene le valutazioni sul Clan. Chi spunti lo legge soltanto, per intero. Spunta solo chi deve davvero vederlo.</div>`;
+  if(!lista.length) return h + `<p class="sh-hint" style="margin:0">${r.righe.length ? 'Hai già invitato tutte le persone iscritte.' : 'Nessuna persona iscritta con il profilo nella tua Sezione, per ora. Si possono invitare per e-mail qui sotto.'}</p>`;
+  h += `<div id="pn-el" role="group" aria-label="${E(PN_ELENCO_TIT[tipo])}">` + lista.map((x, i) => {
+    const et = pnEtichettaDa(x), rd = (PN_ETICHETTE.find(q => q[0] === et) || [0, 'lettore'])[1];
+    return `<div class="pn-sh-r"><label class="pn-chk" style="flex:1 1 220px;min-width:0"><input type="checkbox" data-i="${i}" data-m="${E(x.email)}" data-n="${E(x.nome || '')}" data-e="${E(et)}"> <span><b>${E(x.nome || x.email)}</b><span class="sh-hint" style="display:block;margin:0">${E(pnRuoloEt(x))}${x.gruppo ? ' · ' + E(x.gruppo) : ''}</span></span></label>
+      ${clan ? `<span class="sh-hint" style="margin:0">Legge soltanto</span><input type="hidden" id="pn-el-r-${i}" value="lettore">` : `<select class="sh-in" id="pn-el-r-${i}" aria-label="Cosa può fare ${E(x.nome || x.email)}" style="max-width:170px">${PIANI_RUOLI.filter(([k]) => me || k !== 'cotitolare').map(([k, t]) => `<option value="${k}"${rd === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select>`}</div>`; }).join('') + `</div>
+    <div style="display:flex;justify-content:flex-end"><button class="sh-btn sm" type="button" id="pn-el-ok" onclick="pnShInvitaElenco()">Invita le persone spuntate</button></div>`;
+  return h;
+}
+window.pnShInvitaElenco = async function(){
+  const m = $('pn-sh-msg'); m.className = 'sh-msg'; m.textContent = '';
+  const sel = [...document.querySelectorAll('#pn-el input[type=checkbox]:checked')];
+  if(!sel.length){ m.className = 'sh-msg err'; m.textContent = 'Spunta almeno una persona.'; return; }
+  if(PN.p.tipo === 'clan' && !confirm('Stai per condividere il Progetto di Clan con ' + sel.length + (sel.length === 1 ? ' persona' : ' persone') + ': lo leggerà per intero. Continuare?')) return;
+  const b = $('pn-el-ok'); b.disabled = true; let n = 0; const err = [];
+  for(const c of sel){
+    try{ await PIANI.invita(PN.p.id, c.dataset.m, PN.p.tipo === 'clan' ? 'lettore' : ($('pn-el-r-' + c.dataset.i).value || 'lettore'), c.dataset.e === 'Altro' ? '' : c.dataset.e, c.dataset.n); n++; }
+    catch(e){ err.push((c.dataset.n || c.dataset.m) + ': ' + pianoErr(e)); }
+  }
+  await pnShare(); const mm = $('pn-sh-msg'); if(!mm) return;
+  if(err.length){ mm.className = 'sh-msg err'; mm.textContent = (n ? n + ' invitate. ' : '') + 'Non invitate: ' + err.join(' · '); }
+  else { mm.className = 'sh-msg ok'; mm.textContent = n === 1 ? 'Invitata. Alla prossima apertura dell’app trova il piano tra i suoi.' : n + ' persone invitate. Alla prossima apertura dell’app trovano il piano tra i loro.'; }
 };
 window.pnShEt = function(){ const e = $('pn-i-e'), r = $('pn-i-r'); if(!e || !r) return; const x = PN_ETICHETTE.find(q => q[0] === e.value); if(x && [...r.options].some(o => o.value === x[1])) r.value = x[1]; };
 window.pnShInvita = async function(){
