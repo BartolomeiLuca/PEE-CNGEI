@@ -13,7 +13,7 @@ db.t.pee_piani.push({id:'p1', owner_id:luca.id, owner_email:'luca@x.it', tipo:'g
 db.t.pee_piani_membri.push({id:'m1', piano_id:'p1', email:'vera@x.it', ruolo:'collaboratore', etichetta:'Vice Capo Gruppo', nome:'Vera Vice', visto_il:null, invitato_da:luca.id, created_at:'2026-11-24T10:00:00Z'});
 const pa = await person(br, db); const P = pa.page, ev = (f, a) => P.evaluate(f, a);
 await loginAs(P, base, luca); await sleep(1800);
-await ev(() => pnOpen('p1')); await sleep(2000);
+await ev(() => pnOpen('p1')); await sleep(2000); await ev(() => pnSez('obi')); await sleep(400);
 // referente
 const opts = () => ev(() => [...document.querySelectorAll('#pn-azr-a1 option')].map(o => o.textContent));
 let o = await opts();
@@ -26,9 +26,10 @@ await P.selectOption('#pn-azr-a1', '__altro'); await P.fill('#pn-azrx-a1', 'Zio 
 ok(db.t.pee_piani[0].data.azioni[0].ref === 'Zio Tom', '«Altro…»: nome scritto a mano');
 ok(db.t.pee_piani[0].data.titolareNome === 'Luca Titolare', 'il nome del titolare resta nel piano, per chi non lo vede nell’elenco');
 // chi è collaboratore: il referente non si cambia, ma si legge
-const V = await person(br, db); await loginAs(V.page, base, vera); await sleep(1800); await V.page.evaluate(() => pnOpen('p1')); await sleep(2000);
+const V = await person(br, db); await loginAs(V.page, base, vera); await sleep(1800); await V.page.evaluate(() => pnOpen('p1')); await sleep(2000); await V.page.evaluate(() => pnSez('obi')); await sleep(400);
 ok(await V.page.evaluate(() => { const e = document.getElementById('pn-azr-a1'); return e.tagName !== 'SELECT' && e.disabled && e.value === 'Zio Tom'; }), 'il collaboratore vede il referente ma non lo cambia');
 // delibera
+await ev(() => pnSez('pan')); await sleep(400);
 ok(await ev(() => document.getElementById('pn-delD').type) === 'date' && await ev(() => document.getElementById('pn-delD').value) === '2026-10-15', 'la data di delibera è un vero campo data e il vecchio «15/10/2026» è stato letto');
 await P.fill('#pn-delD', '2026-11-30'); await sleep(1700);
 ok(db.t.pee_piani[0].data.delibera.data === '2026-11-30' && db.t.pee_piani[0].data.delibera.luogo === 'Sede', 'nuova data salvata, il luogo resta');

@@ -22,6 +22,7 @@ const salvato = async (w, ms = 6000) => { const t0 = Date.now(); while(Date.now(
 const txt = (w, sel) => w.ev((s) => { const e = document.querySelector(s); return e ? e.textContent.replace(/\s+/g, ' ').trim() : null; }, sel);
 const cnt = (w, sel) => w.ev((s) => document.querySelectorAll(s).length, sel);
 const fill = async (w, sel, v) => { await w.P.fill(sel, v); };
+const sez = async (w, id) => { await w.ev(i => pnSez(i), id); await sleep(300); };
 
 // ── 1. home ──
 ok(await cnt(luca, '#sh-piani button[onclick="pnNuovo()"]') === 1, 'il Capo Gruppo vede «+ Nuovo Piano di Gruppo» in home');
@@ -37,10 +38,13 @@ await luca.P.click('#pn-n-ok'); await sleep(1200);
 ok(await luca.ev(() => SH.view) === 'piano' && !!dbPiano() && dbPiano().tipo === 'gruppo' && dbPiano().durata === 3, 'il piano è creato e si apre la pagina');
 const pid = dbPiano().id;
 ok((await txt(luca, '.pn-card .sh-sub')) .includes('anno 1 di 3') || /anno 1 di 3|inizia nell/.test(await txt(luca, '.pn-card .sh-sub')), 'la testata dice a che anno siamo');
+await sez(luca, 'ana');
 ok(await cnt(luca, '.pn-sug') >= 6, 'ci sono i suggerimenti per i titoli di «Dove siamo»');
+await sez(luca, 'pan');
 ok(await cnt(luca, '#pn-sin table') === 0 && /compare quando scrivi/.test(await txt(luca, '#pn-sin')), 'il quadro sinottico è in vista, con la spiegazione quando è vuoto');
 
 // ── 3. dove siamo ──
+await sez(luca, 'ana');
 await luca.P.click('.pn-sug >> text=Punti di forza e di debolezza'); await sleep(200);
 ok(await cnt(luca, '.pn-an') === 1, 'un suggerimento aggiunge un titolo');
 await luca.P.fill('.pn-an .pn-ta', 'Tanti Capi giovani, sede piccola'); await sleep(200);
@@ -48,6 +52,7 @@ const sv = await salvato(luca); ok(sv && dbPiano().data.analisi[0].testo === 'Ta
 ok(!(await luca.ev(() => [...document.querySelectorAll('.pn-sug')].some(b => /Punti di forza/.test(b.textContent)))), 'il titolo già usato non è più suggerito');
 
 // ── 4. obiettivi e azioni ──
+await sez(luca, 'obi');
 await luca.P.click('text=+ Obiettivo'); await sleep(250);
 await luca.P.fill('.pn-ob .pn-ta >> nth=0', 'Più tempo con le famiglie'); await sleep(150);
 await luca.P.click('.pn-ob .pn-chip >> text=Educativa'); await luca.P.click('.pn-ob .pn-chip >> text=Territorio'); await sleep(200);
@@ -61,12 +66,14 @@ ok(await salvato(luca), 'tutto salvato');
 const dd = dbPiano().data;
 ok(dd.obiettivi.length === 1 && dd.obiettivi[0].aree.join() === 'educativa,territorio' && dd.azioni.length === 1 && dd.azioni[0].ob === dd.obiettivi[0].id, 'obiettivo con due aree (in ordine) e un\'azione collegata');
 ok(dd.azioni[0].ref === 'Anna Rossi' && dd.azioni[0].chi.join() === 'cdg' && dd.azioni[0].stato === 'in_corso' && dd.azioni[0].indicatore === 'Abbiamo fatto due serate?', 'referente, chi, stato e indicatore salvati');
+await sez(luca, 'pan');
 ok(await cnt(luca, '#pn-sin table tbody tr') === 1 && /1 azioni: 0 fatte, 1 in corso, 0 da iniziare/.test(await txt(luca, '#pn-sin')), 'il quadro sinottico mostra l\'obiettivo e il conto delle azioni');
 const tot = await luca.ev(() => [...document.querySelectorAll('#pn-sin tfoot td')].map(x => x.textContent.trim()));
 ok(tot.join() === '1,0,0,0,1,0', 'totali per area: educativa 1, territorio 1 («' + tot.join() + '»)');
 ok(await cnt(luca, '.pn-avv') === 0, 'con un piano in ordine non compaiono consigli');
 
 // ── 5. avvisi ──
+await sez(luca, 'obi');
 await luca.P.click('text=+ Obiettivo'); await sleep(200);
 let av = await txt(luca, '.pn-avv');
 ok(av && /Senza azioni: obiettivo 2/.test(av) && /Senza etichetta di area: obiettivo 2/.test(av), 'un obiettivo senza azioni e senza area fa comparire il consiglio');
@@ -88,10 +95,12 @@ await luca.P.fill('#pn-u-t', 'Famiglie protagoniste del Gruppo'); await luca.P.c
 const du = await luca.ev(() => PN.d);
 ok(du.obiettivi.length === 2 && du.obiettivi[0].testo === 'Famiglie protagoniste del Gruppo' && du.obiettivi[0].aree.join() === 'educativa,territorio', 'due obiettivi diventano uno, con le aree sommate');
 ok(du.uniti.length === 2 && du.azioni.every(a => a.ob === du.obiettivi[0].id) && du.azioni.length === 1, 'gli originali restano come nota e l\'azione passa al nuovo obiettivo');
+await sez(luca, 'uni');
 ok(await cnt(luca, '.pn-un') === 2, 'gli obiettivi uniti si leggono in fondo alla pagina');
 ok(await salvato(luca), 'salvato dopo l\'unione');
 
 // ── 7. spunti ──
+await sez(luca, 'spu');
 await luca.P.click('text=+ Uno spunto'); await sleep(150);
 await luca.P.fill('.pn-sp [id^="pn-spd-"]', 'Lupetti'); await luca.P.fill('.pn-sp [id^="pn-spx-"]', 'Servono più giochi di squadra tra le Unità'); await sleep(100);
 await luca.P.click('.pn-sp button >> text=→ Obiettivo'); await sleep(300);
@@ -99,6 +108,7 @@ const d7 = await luca.ev(() => PN.d);
 ok(d7.spunti.length === 0 && d7.obiettivi.length === 3 && d7.obiettivi[2].origine === 'unita' && d7.obiettivi[2].ricadute === true && /Lupetti/.test(d7.obiettivi[2].rif), 'lo spunto diventa obiettivo con origine «Unità» e ricadute');
 
 // ── 8. stato e delibera ──
+await sez(luca, 'pan');
 ok(await luca.ev(() => document.getElementById('pn-delw').hidden) === true, 'in bozza la delibera è nascosta');
 await luca.P.selectOption('#pn-stato', 'deliberato'); await sleep(300);
 ok(await luca.ev(() => !document.getElementById('pn-delw').hidden), 'deliberato: compaiono data e luogo');
@@ -125,6 +135,7 @@ await luca.P.click('#sh-dlg >> text=Chiudi'); await sleep(200);
 await lett.ev(() => { shGoHome(); }); await sleep(1200);
 ok(await cnt(lett, '#sh-piani .pn-row') === 1 && /nuovo/.test(await txt(lett, '#sh-piani')), 'il Commissario trova il piano tra i condivisi, segnato «nuovo»');
 await lett.P.click('#sh-piani .pn-row button'); await sleep(1200);
+await sez(lett, 'obi');
 ok(await lett.ev(() => PN.ruolo) === 'lettore' && await cnt(lett, 'button[onclick="pnObAdd()"]') === 0 && await cnt(lett, '.pn-ob .pn-ta:not([disabled])') === 0, 'il lettore vede il piano ma non può scrivere nulla');
 ok(/Sola lettura/.test(await txt(lett, '#pn-st')) && await lett.ev(() => !db_visto()).catch(() => true), 'la pagina dice «Sola lettura»');
 await sleep(500);
@@ -140,6 +151,7 @@ ok(await salvato(luca), 'il titolare affida un\'azione al collaboratore');
 await coll.ev(() => { shGoHome(); }); await sleep(1000);
 await coll.P.click('#sh-piani .pn-row button'); await sleep(1200);
 ok(await coll.ev(() => PN.ruolo) === 'collaboratore', 'il collaboratore apre il piano');
+await sez(coll, 'obi');
 const dis = await coll.ev(() => [...document.querySelectorAll('.pn-az')].map(a => [a.querySelector('.pn-ta').disabled, a.querySelector('select').disabled]));
 ok(dis.length === 2 && dis[0][0] === false && dis[0][1] === false && dis[1][0] === true && dis[1][1] === true, 'può modificare solo l\'azione di cui è referente');
 ok(await cnt(coll, 'button[onclick="pnObAdd()"]') === 0 && await cnt(coll, '.pn-tit:not([disabled])') === 0, 'non aggiunge obiettivi né cambia il titolo');

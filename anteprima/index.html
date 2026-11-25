@@ -18281,8 +18281,10 @@ body.sh-in[data-pca="S"] .pcx[data-a]:not([data-a="S"]):not([data-a=""]){display
 .sh-big:hover{border-color:var(--green)}
 .sh-big b{font-size:18px;font-weight:800}
 .sh-big span{font-size:13.5px;line-height:1.55;color:#3D3D38}
+.sh-bigd{background:#fff;border:2px solid #D8D8D0;border-radius:16px;padding:22px 26px;display:flex;flex-direction:column;gap:10px;min-width:0}.sh-bigd[hidden]{display:none}.sh-bigd small{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f5f58}.sh-bigd h2{margin:0;font-size:18px;font-weight:800;letter-spacing:0;text-transform:none;color:inherit}
 .sh-long{background:#fff;border:2px solid #D8D8D0;border-radius:14px;padding:14px 22px;display:flex;align-items:center;flex-wrap:wrap;gap:4px 18px;text-align:left;cursor:pointer;font:inherit;color:inherit;width:100%;margin-top:16px}
 .sh-long:hover{border-color:var(--green)}
+.sh-big.sh-wide{padding:14px 22px;flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px 18px;min-height:0;border-radius:14px}.sh-big.sh-wide small{flex:0 0 100%}.sh-big.sh-wide b{font-size:16px}.sh-big.sh-wide span{flex:1 1 200px}.sh-big.sh-wide em{font-style:normal;font-weight:700;color:var(--brand-ink);margin-left:auto}
 .sh-long small{flex:0 0 100%;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f5f58}
 .sh-long b{font-size:16px;font-weight:800}
 .sh-long span{font-size:13.5px;line-height:1.5;color:#3D3D38;flex:1 1 200px}
@@ -18786,7 +18788,7 @@ function figuraNuovaHome(p){
 // Un documento per piano (PIANI, tabelle proprie). Si salva da solo; se due persone modificano insieme, le modifiche si UNISCONO
 // (per obiettivo e per azione) e prima di sovrascrivere un punto toccato da entrambe si conserva la versione dell'altra persona nello storico.
 const PN_AREE = [['educativa', 'Educativa'], ['formativa', 'Formativa'], ['gestionale', 'Gestionale'], ['sviluppo', 'Sviluppo'], ['territorio', 'Territorio']];
-const PN_ORIGINI = [['sezione', 'Progetto di Sezione'], ['clan', 'Progetto di Clan'], ['unita', 'Bisogni di un’Unità'], ['formazione', 'Piano di formazione adulti'], ['strategico', 'Piano Strategico'], ['proprio', 'Nostro, del Gruppo']];
+const PN_ORIGINI = [['sezione', 'Progetto di Sezione'], ['clan', 'Progetto di Clan'], ['unita', 'Bisogni di un’Unità'], ['formazione', 'Piano di formazione adulti'], ['strategico', 'Piano Strategico'], ['giro', 'Giro del Piano'], ['proprio', 'Nostro, del Gruppo']];
 const PN_CHI = [['cdg', 'Consiglio di Gruppo'], ['cg', 'Capo Gruppo'], ['unita', 'Unità'], ['clan', 'Clan'], ['sezione', 'Sezione']];
 const PN_STATI_AZ = [['da_iniziare', 'Da iniziare'], ['in_corso', 'In corso'], ['fatta', 'Fatta']];
 const PN_STATI = [['bozza', 'Bozza'], ['deliberato', 'Deliberato'], ['approvato', 'Approvato']];
@@ -18797,7 +18799,7 @@ const PN_TITOLI = ['Punti di forza e di debolezza', 'Le Unità e i ragazzi e le 
 const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
 const pnUid = () => 'x' + Math.random().toString(36).slice(2, 9);
 const pnClone = o => JSON.parse(JSON.stringify(o == null ? null : o));
-const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], delibera:{data:'', luogo:''}});
+const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}});
 const pnEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // ── unione delle modifiche di due persone (base = ultima versione sincronizzata, loc = la mia, rem = quella sul database) ──
@@ -18854,19 +18856,20 @@ async function pnHomeFill(){
   const ruolo = (SH.prof || {}).ruolo; const crea = ruolo === 'cg' || ruolo === 'vcg';
   let ok = false; try{ ok = await PIANI.pronto(); }catch(e){}
   if(SH.view !== 'home' || !$('sh-piani')) return;
-  if(!ok){ box.innerHTML = (crea && PIANI.ok === false) ? `<h2>Piano di Gruppo</h2><p class="sh-hint">Il Piano di Gruppo sarà disponibile dopo l’aggiornamento del database (script SQL del 23 novembre).</p>` : ''; return; }
+  const cardIn = (x) => { box.innerHTML = x; if(box.dataset.card) box.hidden = !x; };
+  if(!ok){ cardIn((crea && PIANI.ok === false) ? `<small>Per il Gruppo</small><h2>Piano di Gruppo</h2><p class="sh-hint" style="margin:0">Il Piano di Gruppo sarà disponibile dopo l’aggiornamento del database (script SQL del 23 novembre).</p>` : ''); return; }
   let list = [], inv = [];
   try{ list = await PIANI.elenco(); inv = await PIANI.inviti(); }catch(e){ return; }
   if(SH.view !== 'home' || !$('sh-piani')) return;
-  if(!list.length && !crea){ box.innerHTML = ''; return; }
+  if(!list.length && !crea){ cardIn(''); return; }
   const me = CL.user.id; const mie = list.filter(x => x.owner_id === me), altri = list.filter(x => x.owner_id !== me);
   const riga = x => { const i = inv.find(q => q.id === x.id);
     return `<div class="pn-row"><div style="min-width:0"><b>${esc(x.titolo || PIANI_TIPI[x.tipo])}</b>${i && i.nuovo ? ' <span class="sh-pill sh-pill-wait">nuovo</span>' : ''}<div class="sh-hint" style="margin:2px 0 0">${esc(PIANI_TIPI[x.tipo])} · ${esc(pnPeriodo(x))} · ${esc(pnAnnoTxt(x))} · ${esc(pnLab(PN_STATI, x.stato).toLowerCase())}${x.owner_id === me ? '' : ' · di ' + esc(x.owner_email || '') + (i ? ' · ' + esc(i.etichetta || pianoRuoloNome(i.ruolo)) : '')}</div></div><button class="sh-btn sm" type="button" onclick="pnOpen('${esc(x.id)}')">Apri</button></div>`; };
-  let h = '';
-  if(crea || mie.length){ h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:14px 0 0">${mie.length ? 'I tuoi piani' : 'Piano di Gruppo'}</h2>${crea ? `<button class="sh-btn sm gh" type="button" style="margin-left:auto" onclick="pnNuovo()">+ Nuovo Piano di Gruppo</button>` : ''}</div>`;
-    h += mie.length ? mie.map(riga).join('') : `<p class="sh-sub">Il Piano di Gruppo riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Qui lo scrivi con il Consiglio di Gruppo.</p>`; }
+  let h = box.dataset.card ? '<small>Per il Gruppo, su tre anni</small>' : '';
+  if(crea || mie.length){ h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:${box.dataset.card ? '0' : '14px 0 0'}">${mie.length ? 'I tuoi piani' : 'Piano di Gruppo'}</h2>${crea ? `<button class="sh-btn sm gh" type="button" style="margin-left:auto" onclick="pnNuovo()">+ Nuovo Piano di Gruppo</button>` : ''}</div>`;
+    h += mie.length ? mie.map(riga).join('') : `<p class="sh-sub" style="margin:0">Il Piano di Gruppo riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Qui lo scrivi con il Consiglio di Gruppo.</p>`; }
   if(altri.length) h += `<h2>Piani condivisi con te</h2>` + altri.map(riga).join('');
-  box.innerHTML = h;
+  cardIn(h);
 }
 window.pnNuovo = function(){
   const p = SH.prof || {}; const cur = annoScoutStart();
@@ -18913,9 +18916,9 @@ async function pnMembriCarica(id){
 function pnCarica(p){
   clearTimeout(PN.timer); if(GI.pid !== p.id) giReset(p.id);
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
-  ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
+  ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
-  if(!PN.p || PN.p.id !== p.id) PN.membri = null;
+  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; }
   Object.assign(PN, {p, d:v, base:pnClone(v), meta:{titolo:p.titolo, stato:p.stato}, baseMeta:{titolo:p.titolo, stato:p.stato}, ruolo:p.ruolo || 'lettore', dirty:false, saving:false, again:false, st:'', sel:{}});
 }
 
@@ -19044,7 +19047,7 @@ function giTabs(){
 window.giVai = async function(v){ if(v === GI.vista) return; await giFlush(); GI.vista = v; pnRender(); if(v === 'giro') giCarica(true); const r = $('sh-root'); if(r) r.scrollTop = 0; };
 
 // ── la pagina del giro ──
-function giHTML(){
+function giPaneHTML(id){
   const E = esc, g = GI.g, coord = pnTutto();
   let h = '';
   if(GI.err) h += `<div class="sh-msg err" role="alert">${E(GI.err)}</div>`;
@@ -19055,16 +19058,18 @@ function giHTML(){
     return h + `</section>`;
   }
   const chiuso = g.stato === 'chiuso', rit = GI_RITMI.find(x => x[0] === g.ritmo) || GI_RITMI[1];
-  h += `<section class="pn-card" aria-labelledby="gi-t"><h2 class="pn-h" id="gi-t">Giro ${g.n} · ritmo ${E(rit[1].toLowerCase())}</h2>
+  if(id === 'g-giro') h += `<section class="pn-card" aria-labelledby="gi-t"><h2 class="pn-h" id="gi-t">Giro ${g.n} · ritmo ${E(rit[1].toLowerCase())}</h2>
     <p class="sh-sub" style="margin:0">${chiuso ? 'Il giro è chiuso. Ora le carte sono scoperte.' : 'Prima di parlarne, ognuna e ognuno scrive la sua. Poi si mettono le carte in tavola.'}</p>
     <p class="sh-hint" style="margin:0">${chiuso ? `Chiuso il ${E(giData(g.chiuso_il))}${g.chiusura_tipo === 'scadenza' ? ' alla scadenza' : g.chiusura_tipo === 'completa' ? ' perché tutte le carte erano arrivate' : ' in anticipo dal Capo Gruppo'}.` : g.scadenza ? `Scadenza: <b>${E(giData(g.scadenza))}</b>.` : 'Nessuna scadenza fissata.'}${g.ritmo === 'bivacco' && !chiuso ? ' La giornata di bivacco si prepara dal calendario: arriverà con il calendario del Gruppo.' : ''}</p>
     ${GI.giri.length > 1 ? `<div class="sh-hint" style="margin:0">Giri precedenti: ${GI.giri.filter(x => x.id !== g.id).map(x => `<a href="#" onclick="giMostra('${E(x.id)}');return false">Giro ${x.n}</a>`).join(' · ')}</div>` : ''}
   </section>`;
-  if(coord) h += giCoordHTML();
-  h += giCarteHTML();
-  h += giCduHTML();
-  if(coord) h += giCduCoordHTML();
-  h += giPersonaHTML();
+  if(id === 'g-giro'){ h += giPassiHTML(); if(coord) h += giCoordHTML(); }
+  else if(id === 'g-spu'){ if(coord) h += spgHTML(); }
+  else if(id === 'g-carte') h += giCarteMieHTML();
+  else if(id === 'g-altre') h += giCarteAltreHTML();
+  else if(id === 'g-cdu') h += giCduHTML();
+  else if(id === 'g-cdus') h += giCduCoordHTML();
+  else if(id === 'g-pers') h += giPersonaHTML();
   return h;
 }
 function giApriHTML(){
@@ -19127,7 +19132,7 @@ window.giChiudi = async function(){
 };
 
 // ── le carte di ambito ──
-function giCarteHTML(){
+function giCarteMieHTML(){
   const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', dr = GI.dr || giVuoteCarte(), mia = giMio('carte'), cons = !!(mia && mia.consegnato);
   const ro = chiuso;
   let h = `<section class="pn-card" aria-labelledby="gi-ca-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="gi-ca-t" style="margin:0">Le tue carte</h2><span class="pn-st" id="gi-st" role="status" aria-live="polite" style="margin-left:auto">${E(giStatoTxt())}</span></div>`;
@@ -19141,7 +19146,11 @@ function giCarteHTML(){
     if(!ro) h += `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="sh-btn" type="button" onclick="giConsegna()"${GI.busy ? ' disabled' : ''}>${cons ? 'Aggiorna la consegna' : 'Consegna le carte'}</button>${cons ? '' : `<span class="sh-hint" style="margin:0">Si salva da sola come bozza; consegnando le leggono anche le altre persone.</span>`}</div>`;
   }
   h += `</section>`;
+  return h;
+}
+function giCarteAltreHTML(){
   // le carte delle altre persone: dopo la consegna delle mie, o a giro chiuso
+  const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', mia = giMio('carte'), cons = !!(mia && mia.consegnato); let h = '';
   const altre = GI.contr.filter(c => c.tipo === 'carte' && c.consegnato && c.autore_id !== (CL.user && CL.user.id));
   if(chiuso || cons){
     h += `<section class="pn-card" aria-labelledby="gi-al-t"><h2 class="pn-h" id="gi-al-t">Le carte delle altre persone</h2>`;
@@ -19249,7 +19258,7 @@ const CDU_BLOCCHI = [
   {k:'b5', n:5, t:'Risorse', dom:'Cosa manca o va sistemato tra materiali, sede e soldi?', perche:'Per distribuire bene le risorse comuni.', sem:true},
   {k:'b6', n:6, t:'Sviluppo e territorio', dom:'Chi perdiamo o è in attesa, e con chi collaboriamo?', perche:'Per vedere crescita, attese e rapporti con il territorio.', sem:true}
 ];
-const CDU_SEM = [['v', 'Va bene'], ['g', 'Da seguire'], ['r', 'Serve aiuto']];
+const CDU_SEM = [['v', 'Tutto a posto'], ['g', 'Ci pensiamo'], ['r', 'Ci serve una mano']];
 const CDU_GUIDA = ['Si compila dopo il Momento di Unità, in circa 20 minuti.', 'Si fa con lo staff, comprese le persone appena arrivate.', 'Per ogni blocco: si legge la domanda, ci si scambia due minuti, si scrive una riga.', 'Niente nomi di ragazzi e ragazze, niente giudizi sulle persone dello staff.', 'Il Capo Gruppo la legge accanto alle carte delle altre Unità: non è una classifica, serve a capire dove serve aiuto.'];
 const CDU_MOMENTO = [['5’', 'Perché lo facciamo: una Carta per il Gruppo, non un voto'], ['25’', 'Giro sui blocchi, 2-3 minuti ciascuno'], ['10’', 'Una richiesta e un’offerta al Gruppo'], ['5’', 'Chi scrive la Carta']];
 const cduVuota = () => ({v:1, b:{}, s:{}, n:{}});
@@ -19306,7 +19315,7 @@ function cduVuotaDel(st){ const b = st.b || {}; return !Object.keys(b).some(k =>
 Object.assign(window, {cduFormHTML, cduApplica, cduPayload, cduGuidaHTML, cduVuota, cduVuotaDel, CDU_BLOCCHI, CDU_SEM});
 
 // ── Carta di Unità nella pagina del giro: per chi non ha una programmazione, o per vederla consegnata ──
-const giSonoCU = () => /^(cu|vcu)$/.test((SH.prof || {}).ruolo || '');
+const giSonoCU = () => /^(cu|vcu)$/.test((SH.prof || {}).ruolo || '') || !!unitaOf();
 function giCduHTML(){
   const E = esc, g = GI.g, chiuso = g.stato === 'chiuso', coord = pnTutto(), mia = giMio('unita');
   const cons = !!(mia && mia.consegnato), daProg = !!(mia && mia.data && mia.data.fonte === 'pee');
@@ -19346,7 +19355,7 @@ function giCduCoordHTML(){
   let h = `<section class="pn-card" aria-labelledby="gi-cc-t"><h2 class="pn-h" id="gi-cc-t">Le Carte di Unità</h2>`;
   const mieCarte = giMio('carte'); const leggibile = chiuso || (mieCarte && mieCarte.consegnato);
   if(!U.length){ h += `<p class="sh-sub" style="margin:0">${leggibile ? 'Nessuna Unità ha ancora consegnato la sua Carta.' : 'Consegna prima le tue carte: poi potrai leggere le Carte di Unità.'}</p></section>`; return h; }
-  const SEM = {v:['●', 'va bene'], g:['▲', 'da seguire'], r:['■', 'serve aiuto']};
+  const SEM = {v:['●', 'tutto a posto'], g:['▲', 'ci pensiamo'], r:['■', 'ci serve una mano']};
   h += `<p class="sh-hint" style="margin:0">Non è una classifica: i segnali dicono dove serve aiuto. Il segno è accompagnato dalla parola.</p>
     <div class="pn-tw"><table class="pn-tab" aria-label="Carte di Unità"><thead><tr><th scope="col" style="text-align:left">Unità</th>${CDU_BLOCCHI.filter(b => b.sem).map(b => `<th scope="col">${E(b.t)}</th>`).join('')}</tr></thead><tbody>
     ${U.map(c => { const d = c.data || {}, s = d.s || {}; return `<tr><th scope="row" style="text-align:left">${E(d.unita || c.autore_nome)}<span class="sh-hint" style="display:block;margin:0">${E(c.autore_nome)}${d.n && d.n.tot ? ' · ' + d.n.tot + ' tra ragazzi e ragazze' : ''}</span></th>${CDU_BLOCCHI.filter(b => b.sem).map(b => s[b.k] && SEM[s[b.k]] ? `<td><span aria-hidden="true">${SEM[s[b.k]][0]}</span> ${E(SEM[s[b.k]][1])}</td>` : '<td><span class="pn-no">·</span></td>').join('')}</tr>`; }).join('')}</tbody></table></div>`;
@@ -19358,6 +19367,172 @@ function giCduCoordHTML(){
   return h + `</section>`;
 }
 
+// ── «I tuoi passi»: cosa ti resta da fare in questo giro ──
+function giPassiHTML(){
+  const E = esc, g = GI.g; if(!g) return '';
+  const chiuso = g.stato === 'chiuso', mia = giMio('carte'), uni = giMio('unita'), cu = giSonoCU() || !!uni, coord = pnTutto();
+  const passo = (ok, t, d, vai, lab) => `<li class="gi-pas${ok ? ' ok' : ''}"><span class="gi-pm" aria-hidden="true">${ok ? '●' : '○'}</span><span style="flex:1;min-width:0"><b>${E(t)}</b> <span class="sh-hint" style="margin:0">· ${ok ? 'fatto' : 'da fare'}</span><span class="sh-hint" style="display:block;margin:0">${E(d)}</span></span>${vai ? `<button class="sh-btn sm gh" type="button" onclick="pnSez('${vai}')">${E(lab)}</button>` : ''}</li>`;
+  let l = '';
+  if(!chiuso){
+    l += passo(!!(mia && mia.consegnato), 'Scrivi le tue carte', 'Cinque ambiti, anche poche righe. Una proposta basta.', 'g-carte', mia && mia.consegnato ? 'Rivedi' : 'Scrivi');
+    if(cu) l += passo(!!(uni && uni.consegnato), 'Consegna la Carta della tua Unità', 'Come sta l’Unità, cosa chiede e cosa porta al Gruppo.', 'g-cdu', uni && uni.consegnato ? 'Rivedi' : 'Compila');
+    l += passo(!!GI.pers, 'Rispondi al Mazzo persona', 'Pochi minuti, senza nome.', 'g-pers', GI.pers ? 'Guarda' : 'Rispondi');
+  } else {
+    l += passo(true, 'Il giro è chiuso', 'Le carte sono scoperte: ora si leggono e si decide cosa tenere.', 'g-altre', 'Leggi le carte');
+    if(coord) l += passo(false, 'Porta gli spunti nel Piano', 'Ogni spunto ha un posto: tavolo, Piano, panchina o via.', 'g-spu', 'Apri la bacheca');
+  }
+  return `<section class="pn-card" aria-labelledby="gi-pas-t"><h2 class="pn-h" id="gi-pas-t">I tuoi passi</h2><ul class="gi-pasl">${l}</ul></section>`;
+}
+
+// ── la bacheca «Dal giro al Piano» (solo chi coordina) ──
+// Gli spunti non si copiano: si leggono sempre dalle carte del giro. In d.spg si segna solo dove li hai messi.
+const SPG_STATI = [['tavolo', 'Sul tavolo'], ['piano', 'Nel Piano'], ['panchina', 'In panchina'], ['via', 'Lasciati andare']];
+const SPG_TIPI = [['p', 'Propongo'], ['c', 'Mi preoccupa'], ['v', 'Ho visto'], ['ur', 'L’Unità chiede'], ['uo', 'L’Unità porta']];
+const SPG_VISTE = [['dec', 'Da decidere', ['p', 'c', 'ur', 'uo']], ['oss', 'Osservazioni', ['v']], ['tut', 'Tutto', ['p', 'c', 'v', 'ur', 'uo']]];
+GI.spf = GI.spf || {st:'tavolo', vi:'dec', ar:''};
+function spgItems(){
+  const g = GI.g; if(!g) return []; const out = [];
+  GI.contr.forEach(c => {
+    if(!c.consegnato) return;
+    if(c.tipo === 'carte'){
+      PN_AREE.forEach(([k]) => { const x = (c.data && c.data.a && c.data.a[k]) || {};
+        ['p', 'c', 'v'].forEach(f => { const tx = (x[f] || '').trim(); if(tx) out.push({key:[g.id, c.autore_id, k, f].join('|'), tp:f, ar:k, da:c.autore_nome || 'Senza nome', tx}); }); });
+    } else if(c.tipo === 'unita'){
+      const b = (c.data && c.data.b) || {}, un = (c.data && c.data.unita) || c.autore_nome || 'Unità';
+      [['b7r', 'ur'], ['b7o', 'uo']].forEach(([f, tp]) => { const tx = (b[f] || '').trim(); if(tx) out.push({key:[g.id, c.autore_id, 'u', f].join('|'), tp, ar:'', da:un, tx}); });
+    }
+  });
+  return out;
+}
+const spgDi = key => (PN.d.spg || []).find(x => x.id === key) || null;
+const spgSt = key => { const e = spgDi(key); return e ? e.s : 'tavolo'; };
+function spgDestTxt(e){
+  if(!e || e.s !== 'piano') return '';
+  const d = PN.d;
+  if(e.dest === 'ob'){ const o = d.obiettivi.find(x => x.id === e.ref); return o ? `Obiettivo «${(o.testo || 'senza testo').slice(0, 70)}»` : 'Un obiettivo che poi è stato tolto'; }
+  if(e.dest === 'az'){ const a = d.azioni.find(x => x.id === e.ref); return a ? `Azione «${(a.testo || 'senza testo').slice(0, 70)}»` : 'Un’azione che poi è stata tolta'; }
+  if(e.dest === 'an'){ const a = d.analisi.find(x => x.id === e.ref); return a ? `Dove siamo · «${a.titolo || 'senza titolo'}»` : 'Dove siamo'; }
+  return '';
+}
+function spgHTML(){
+  const E = esc, g = GI.g, f = GI.spf, items = spgItems(), vi = SPG_VISTE.find(x => x[0] === f.vi) || SPG_VISTE[0];
+  const inVista = items.filter(x => vi[2].includes(x.tp));
+  const cnt = k => inVista.filter(x => spgSt(x.key) === k).length;
+  const lista = inVista.filter(x => spgSt(x.key) === f.st && (!f.ar || x.ar === f.ar));
+  let h = `<section class="pn-card" aria-labelledby="spg-t"><h2 class="pn-h" id="spg-t">Dal giro al Piano</h2>
+    <p class="sh-sub" style="margin:0">Le carte del giro diventano decisioni. Ogni spunto ha un posto: <b>sul tavolo</b> (se ne parla), <b>nel Piano</b>, <b>in panchina</b> (non ora, ma non si butta) o <b>lasciato andare</b>.</p>
+    <p class="sh-hint" style="margin:0">Giro ${g.n}${g.stato === 'chiuso' ? '' : ' (ancora aperto: arrivano altre carte)'}. Gli spunti restano nelle carte: qui si segna solo dove li metti.</p>`;
+  if(!items.length) return h + `<p class="sh-sub" style="margin:0">Ancora nessuno spunto: servono carte consegnate con almeno una riga scritta.</p></section>`;
+  h += `<div class="spg-fr" role="group" aria-label="Cosa guardare">${SPG_VISTE.map(([k, t]) => `<button type="button" class="spg-f${f.vi === k ? ' on' : ''}" aria-pressed="${f.vi === k}" onclick="spgFiltro('vi','${k}')">${E(t)}</button>`).join('')}</div>
+    <div class="spg-fr" role="group" aria-label="Dove sono">${SPG_STATI.map(([k, t]) => `<button type="button" class="spg-f${f.st === k ? ' on' : ''}" aria-pressed="${f.st === k}" onclick="spgFiltro('st','${k}')">${E(t)} · ${cnt(k)}</button>`).join('')}</div>
+    <div class="spg-fr" role="group" aria-label="Ambito">${[['', 'Tutti gli ambiti'], ...PN_AREE].map(([k, t]) => `<button type="button" class="spg-f sm${f.ar === k ? ' on' : ''}" aria-pressed="${f.ar === k}" onclick="spgFiltro('ar','${k}')">${E(t)}</button>`).join('')}</div>`;
+  if(!lista.length){
+    h += `<p class="sh-sub" style="margin:6px 0 0">${f.st === 'tavolo' ? (inVista.length ? 'Il tavolo è libero: ogni spunto ha trovato il suo posto.' : 'Niente da decidere qui.') : 'Qui non c’è ancora nulla.'}</p>`;
+  } else {
+    const gruppi = [...PN_AREE.map(([k, t]) => [k, t]), ['', 'Dalle Unità']];
+    gruppi.forEach(([k, t]) => {
+      const L = lista.filter(x => x.ar === k); if(!L.length) return;
+      h += `<h3 class="spg-h">${E(t)} <span class="sh-hint" style="margin:0">· ${L.length}</span></h3>`;
+      L.forEach(x => { const e = spgDi(x.key), st = spgSt(x.key), K = E(x.key).replace(/'/g, '&#39;');
+        h += `<article class="spg-c" id="spg-${E(x.key.replace(/[^a-zA-Z0-9_-]/g, '_'))}"><div class="sh-hint" style="margin:0">${E(pnLab(SPG_TIPI, x.tp))} · <b>${E(x.da)}</b></div><div class="gi-tx">${E(x.tx)}</div>`;
+        if(st === 'piano' && e) h += `<div class="sh-hint" style="margin:0">Messo qui: ${E(spgDestTxt(e))}</div>`;
+        h += `<div class="spg-b">`;
+        if(st !== 'piano') h += `<button class="sh-btn sm" type="button" onclick="spgDlg('${K}')">Nel Piano…</button>`;
+        if(st === 'tavolo') h += `<button class="sh-btn sm gh" type="button" onclick="spgSposta('${K}','panchina')">In panchina</button><button class="sh-btn sm gh" type="button" onclick="spgSposta('${K}','via')">Lascia andare</button>`;
+        else h += `<button class="sh-btn sm gh" type="button" onclick="spgSposta('${K}','tavolo')">Rimetti sul tavolo</button>`;
+        if(st === 'panchina') h += `<button class="sh-btn sm gh" type="button" onclick="spgSposta('${K}','via')">Lascia andare</button>`;
+        h += `</div></article>`; });
+    });
+  }
+  return h + `</section>`;
+}
+window.spgFiltro = function(k, v){ GI.spf[k] = v; pnRender(); };
+function spgSet(key, s, dest, ref){
+  const a = PN.d.spg = (PN.d.spg || []).filter(x => x.id !== key);
+  if(s !== 'tavolo'){ const e = {id:key, s}; if(dest){ e.dest = dest; e.ref = ref; } a.push(e); }
+  pnTouch();
+}
+window.spgSposta = function(key, s){
+  if(!pnTutto() || !spgItems().some(x => x.key === key)) return;
+  spgSet(key, s); pnRender();
+  clToast(s === 'tavolo' ? 'Rimesso sul tavolo.' : s === 'panchina' ? 'In panchina: non ora, ma non si butta.' : 'Lasciato andare.');
+};
+window.spgDlg = function(key){
+  if(!pnTutto()) return; const x = spgItems().find(i => i.key === key); if(!x) return; const E = esc, d = PN.d;
+  const K = E(key).replace(/'/g, '&#39;');
+  dlgOpen(`<h2 id="sh-dlg-t">Dove lo porti?</h2>
+    <p class="sh-hint" style="margin:0">«${E(x.tx.length > 160 ? x.tx.slice(0, 160) + '…' : x.tx)}» · ${E(x.da)}</p>
+    <fieldset class="pn-fs"><legend class="sh-lb">Nel Piano come</legend>
+      <label class="gi-rit"><input type="radio" name="spg-d" value="ob" checked><span><b>Un nuovo obiettivo</b><span class="sh-hint" style="display:block;margin:0">Il testo passa com’è: lo sistemi poi nella pagina degli obiettivi.</span></span></label>
+      <label class="gi-rit"><input type="radio" name="spg-d" value="az"${d.obiettivi.length ? '' : ' disabled'}><span><b>Un’azione di un obiettivo che c’è già</b>${d.obiettivi.length ? `<select class="sh-in" id="spg-ob" aria-label="Obiettivo a cui aggiungere l’azione" style="margin-top:6px" onfocus="document.querySelector('input[name=spg-d][value=az]').checked=true">${d.obiettivi.map((o, i) => `<option value="${E(o.id)}">${i + 1}. ${E((o.testo || 'senza testo').slice(0, 70))}</option>`).join('')}</select>` : `<span class="sh-hint" style="display:block;margin:0">Non ci sono ancora obiettivi.</span>`}</span></label>
+      <label class="gi-rit"><input type="radio" name="spg-d" value="an"><span><b>Una nota in «Dove siamo»</b><span class="sh-hint" style="display:block;margin:0">Se è più una fotografia che un impegno.</span></span></label></fieldset>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="spg-ok" onclick="spgPorta('${K}')">Portalo nel Piano</button></div>`);
+};
+window.spgPorta = function(key){
+  if(!pnTutto()) return; const x = spgItems().find(i => i.key === key); if(!x){ shDlgClose(); return; }
+  const r = document.querySelector('input[name="spg-d"]:checked'); const dest = r ? r.value : 'ob'; const d = PN.d; const rif = `Giro ${GI.g.n} · ${x.da}`; let ref = '', msg = '';
+  if(dest === 'az'){
+    const ob = ($('spg-ob') || {}).value; if(!d.obiettivi.some(o => o.id === ob)) return;
+    const a = {id:pnUid(), ob, testo:x.tx, inizio:1, verifica:'ogni', indicatore:'', chi:[], ref:'', stato:'da_iniziare', genitori:false}; d.azioni.push(a); ref = a.id; msg = 'Aggiunto come azione.';
+  } else if(dest === 'an'){
+    const tit = 'Dal giro ' + GI.g.n; let a = d.analisi.find(y => y.titolo === tit);
+    if(!a){ a = {id:pnUid(), titolo:tit, testo:''}; d.analisi.push(a); }
+    a.testo = (a.testo ? a.testo.replace(/\s+$/, '') + '\n\n' : '') + x.tx + ' (' + x.da + ')'; ref = a.id; msg = 'Aggiunto a «Dove siamo».';
+  } else {
+    const o = {id:pnUid(), testo:x.tx, aree:x.ar ? [x.ar] : [], ricadute:false, origine:'giro', rif}; d.obiettivi.push(o); ref = o.id; msg = 'Diventato un obiettivo.';
+  }
+  spgSet(key, 'piano', dest, ref); shDlgClose(); pnRender(); clToast(msg);
+};
+
+// ── Verifiche (25/11): oltre alla verifica annuale, una a metà anno e un punto a ogni Consiglio di Gruppo (Manuale del Capo Gruppo, p. 51) ──
+const PN_TAPPE = [['meta', 'Verifica di metà anno', 'Consigliata dal Manuale del Capo Gruppo: a metà anno, per correggere il tiro prima delle attività estive.'], ['fine', 'Verifica di fine anno', 'Si fa ogni anno, con le azioni che si verificano in quell’anno.'], ['altra', 'Un’altra verifica', 'Quando serve: dopo un evento, o al bisogno.']];
+const PN_STEP = [['', 'Solo alla verifica annuale'], ['meta', 'Anche a metà anno'], ['cdg', 'A ogni Consiglio di Gruppo']];
+function pnAnnoCur(p){ return Math.min(p.durata, Math.max(1, pnAnnoCorr(p))); }
+function pnTappeOrd(){ const T = PN.d.tappe || [], o = {meta:0, fine:2, altra:1}; return T.slice().sort((a, b) => (a.anno - b.anno) || ((o[a.tipo] || 0) - (o[b.tipo] || 0))); }
+function pnProssima(){
+  const T = pnTappeOrd().filter(t => !t.fatta); if(!T.length) return null; const oggi = giOggi();
+  const conData = T.filter(t => t.data && t.data >= oggi).sort((a, b) => a.data < b.data ? -1 : 1);
+  return conData[0] || T[0];
+}
+function pnTappaNome(t){ return pnLab(PN_TAPPE, t.tipo) + ' · anno ' + t.anno + (t.data ? ' · ' + giData(t.data) : ' · data da fissare'); }
+function pnAzioniDa(anno, quale){
+  const d = PN.d;
+  return d.azioni.filter(a => (a.inizio || 1) <= anno && a.stato !== 'fatta' && (quale === 'fine' ? (a.verifica === 'ogni' || !a.verifica || String(a.verifica) === String(anno)) : quale === 'meta' ? (a.step === 'meta' || a.step === 'cdg') : a.step === 'cdg'));
+}
+function pnVerHTML(){
+  const p = PN.p, d = PN.d, E = esc, tutto = pnTutto(), dis = tutto ? '' : ' disabled', cur = pnAnnoCur(p);
+  let h = `<section class="pn-card" aria-labelledby="pn-ve-t"><h2 class="pn-h" id="pn-ve-t">Verifiche</h2>
+    <p class="sh-sub" style="margin:0">Un Piano che si verifica solo a fine anno arriva tardi. Qui segni le tappe di controllo e cosa ne è venuto fuori.</p>
+    <p class="sh-hint" style="margin:0">Il Manuale del Capo Gruppo (p. 51) consiglia una verifica a metà anno, prima delle attività estive, e un punto sullo stato di avanzamento a ogni Consiglio di Gruppo. L’aggiornamento del Piano lo cura il Capo Gruppo ogni volta che si verifica.</p>
+    ${tutto ? `<div><button class="sh-btn sm" type="button" onclick="pnTappeProponi()">Proponi le tappe</button></div>` : ''}</section>`;
+  if(!(d.tappe || []).length) return h + `<section class="pn-card"><p class="sh-sub" style="margin:0">Ancora nessuna tappa. ${tutto ? '«Proponi le tappe» prepara, per ogni anno, la verifica di metà anno e quella di fine anno: le date le scegli tu.' : ''}</p></section>`;
+  for(let k = 1; k <= p.durata; k++){
+    const T = pnTappeOrd().filter(t => t.anno === k);
+    h += `<section class="pn-card" aria-labelledby="pn-ve-a${k}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h3 class="pn-h" id="pn-ve-a${k}" style="margin:0">Anno ${k} · ${E(annoScoutTxt(p.anno_inizio + k - 1))}${k === cur ? ' <span class="sh-hint" style="margin:0">· quest’anno</span>' : ''}</h3>${tutto ? `<button class="sh-btn sm gh" style="margin-left:auto" type="button" onclick="pnTappaAdd(${k})">+ Un’altra verifica</button>` : ''}</div>`;
+    if(!T.length) h += `<p class="sh-hint" style="margin:0">Nessuna tappa in questo anno.</p>`;
+    T.forEach(t => {
+      const lista = t.tipo === 'altra' ? [] : pnAzioniDa(k, t.tipo);
+      h += `<div class="pn-ve${t.fatta ? ' ok' : ''}" id="pn-ve-${E(t.id)}"><div class="pn-ve-h"><b>${E(pnLab(PN_TAPPE, t.tipo))}</b>${tutto ? `<button class="pn-ib" type="button" aria-label="Elimina la tappa" onclick="pnTappaDel('${E(t.id)}')">✕</button>` : ''}</div>
+        <div class="sh-hint" style="margin:0">${E((PN_TAPPE.find(x => x[0] === t.tipo) || [0, 0, ''])[2])}</div>
+        <div class="sh-g2"><div><label class="sh-lb" for="pn-vd-${E(t.id)}">Data</label><input class="sh-in" type="date" id="pn-vd-${E(t.id)}" value="${E(t.data || '')}" oninput="pnTappa('${E(t.id)}','data',this.value)"${dis}></div>
+        <label class="pn-chip${t.fatta ? ' on' : ''}" style="align-self:end"><input type="checkbox" ${t.fatta ? 'checked' : ''} onchange="pnTappa('${E(t.id)}','fatta',this.checked);this.parentNode.classList.toggle('on',this.checked);this.closest('.pn-ve').classList.toggle('ok',this.checked)"${dis}>Fatta</label></div>
+        ${lista.length ? `<details class="pn-det"><summary>Azioni da guardare · ${lista.length}</summary><ul class="pn-ul">${lista.map(a => { const i = d.obiettivi.findIndex(o => o.id === a.ob); return `<li>${i >= 0 ? `<b>Ob. ${i + 1}</b> · ` : ''}${E(a.testo || '(senza testo)')}${a.indicatore ? `<span class="sh-hint" style="display:block;margin:0">Indicatore: ${E(a.indicatore)}</span>` : ''}</li>`; }).join('')}</ul></details>` : (t.tipo === 'meta' ? '<p class="sh-hint" style="margin:0">Per far comparire qui le azioni, in «Obiettivi e azioni» scegli «Anche a metà anno» nel controllo intermedio.</p>' : '')}
+        <div><label class="sh-lb" for="pn-vn-${E(t.id)}">Cosa è emerso e cosa cambiamo</label><textarea class="sh-in pn-ta" id="pn-vn-${E(t.id)}" rows="3" placeholder="Anche poche righe: cosa va, cosa no, cosa si cambia nel Piano." oninput="pnTappa('${E(t.id)}','note',this.value);pnGrow(this)"${dis}>${E(t.note || '')}</textarea></div></div>`;
+    });
+    h += `</section>`;
+  }
+  return h;
+}
+window.pnTappeProponi = function(){
+  if(!pnTutto()) return; const p = PN.p, d = PN.d; let n = 0;
+  for(let k = 1; k <= p.durata; k++) ['meta', 'fine'].forEach(tipo => { if(!d.tappe.some(t => t.anno === k && t.tipo === tipo)){ d.tappe.push({id:pnUid(), anno:k, tipo, data:'', fatta:false, note:''}); n++; } });
+  if(!n){ clToast('Le tappe ci sono già tutte.'); return; }
+  pnTouch(); pnRender(); clToast(n === 1 ? 'Ho aggiunto una tappa.' : 'Ho aggiunto ' + n + ' tappe.');
+};
+window.pnTappaAdd = function(anno){ if(!pnTutto()) return; const t = {id:pnUid(), anno, tipo:'altra', data:'', fatta:false, note:''}; PN.d.tappe.push(t); pnTouch(); pnRender(); const e = $('pn-vd-' + t.id); if(e) e.focus(); };
+window.pnTappa = function(id, k, v){ const t = PN.d.tappe.find(x => x.id === id); if(!t || !pnTutto()) return; t[k] = v; pnTouch(); };
+window.pnTappaDel = function(id){ if(!pnTutto()) return; const t = PN.d.tappe.find(x => x.id === id); if(t && (t.note || '').trim() && !confirm('Eliminare questa tappa e le sue note?')) return; PN.d.tappe = PN.d.tappe.filter(x => x.id !== id); pnTouch(); pnRender(); };
+
 // ── la pagina ──
 function pnRender(){
   const r = $('sh-root'); if(!r || SH.view !== 'piano' || !PN.p) return;
@@ -19365,23 +19540,111 @@ function pnRender(){
   const p = PN.p, d = PN.d, E = esc, tutto = pnTutto(), ro = PN.ruolo === 'lettore';
   const dis = tutto ? '' : ' disabled';
   const rolo = PN.ruolo === 'titolare' ? 'Sei il titolare del piano' : 'Il tuo ruolo: ' + pianoRuoloNome(PN.ruolo).toLowerCase();
-  let h = top(true) + `<main class="sh-wrap pn">`;
+  const sez = pnSezOk();
+  let h = top(true) + `<main class="sh-wrap pn pn-w">`;
   h += `<div><a href="#" onclick="pnBack();return false" class="pn-back">← Piani</a></div>`;
-  // testata
-  h += `<section class="pn-card" aria-label="Testata del piano">
+  // testata: sempre in vista, compatta
+  h += `<section class="pn-card pn-head" aria-label="Testata del piano">
     <div class="pn-t"><label class="sh-lb" for="pn-tit">${E(PIANI_TIPI[p.tipo])}</label><input class="sh-in pn-tit" id="pn-tit" maxlength="160" value="${E(PN.meta.titolo)}" oninput="pnMeta('titolo',this.value)"${dis}></div>
     <p class="sh-sub" style="margin:0">${E(pnPeriodo(p))} · <b>${E(pnAnnoTxt(p))}</b> · ${E(rolo)}</p>
-    <div class="sh-g2"><div><label class="sh-lb" for="pn-stato">Stato</label><select class="sh-in" id="pn-stato" onchange="pnMeta('stato',this.value)"${dis}>${PN_STATI.map(([k, t]) => `<option value="${k}"${PN.meta.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
-    <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" type="date" aria-label="Data della delibera" value="${E(pnDataIso(d.delibera.data))}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" aria-label="Luogo della delibera" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div>${d.delibera.data && !pnDataIso(d.delibera.data) ? `<p class="sh-hint" id="pn-delOld" style="margin:4px 0 0">Avevi scritto «${E(d.delibera.data)}»: scegli la data dal calendario.</p>` : ''}</div></div>
     <div class="pn-bar"><span class="pn-st" id="pn-st" role="status" aria-live="polite"></span>
-      <button class="sh-btn sm gh" type="button" onclick="pnShare()">Chi ha accesso</button><button class="sh-btn sm gh" type="button" onclick="pnStorico()">Storico</button></div>
+      <button class="sh-btn sm gh" type="button" onclick="pnShare()">Chi ha accesso</button><button class="sh-btn sm gh" type="button" onclick="pnStorico()">Storico</button><button class="sh-btn sm gh" type="button" onclick="pnScarica()">Scarica il piano</button></div>
     ${ro ? '<p class="sh-hint" style="margin:0">Puoi leggere il piano. I pareri si raccolgono in presenza: qui non si modifica.</p>' : ''}
   </section>`;
-  h += giTabs();
-  if(giVista()){ h += giHTML() + `</main>`; r.innerHTML = h; pnStato(); r.querySelectorAll('.pn-ta').forEach(pnGrow); r.scrollTop = sc; if(fid){ const n = $(fid); if(n){ try{ n.focus({preventScroll:true}); }catch(e){} } } return; }
-  // quadro sinottico sempre in vista
+  h += `<div class="pn-lay">${pnSideHTML(sez)}<div class="pn-pane" id="pn-pane" tabindex="-1">${pnPaneHTML(sez)}</div></div></main>`;
+  r.innerHTML = h;
+  pnRefresh(); pnStato(); r.querySelectorAll('.pn-ta').forEach(pnGrow); pnSelBtn();
+  { const sd = r.querySelector('.pn-side'), on = sd && sd.querySelector('.sh-si.on'); if(sd && on && sd.scrollWidth > sd.clientWidth + 4) sd.scrollLeft = Math.max(0, on.offsetLeft - 24); }   // sul telefono il menu scorre di lato: la voce attiva resta in vista
+  r.scrollTop = sc; if(fid){ const n = $(fid); if(n){ try{ n.focus({preventScroll:true}); }catch(e){} } }
+}
+// ── menu a sinistra della pagina del piano: stesse classi del menu dell'app (.sh-sg, .sh-si) ──
+function pnMenu(){
+  const d = PN.d, g = PN.p && PN.p.tipo === 'gruppo' && GI.ok === true, coord = pnTutto();
+  const G = [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock'], ['spu', 'Spunti dalle Unità', 'list']]}];
+  if(g){
+    const it = [['g-giro', GI.g && GI.g.stato === 'aperto' ? 'Il giro · aperto' : 'Il giro', 'users']];
+    if(GI.g){
+      const mia = giMio('carte'), chiuso = GI.g.stato === 'chiuso';
+      it.push(['g-carte', 'Le tue carte', 'doc']);
+      if(chiuso || (mia && mia.consegnato)) it.push(['g-altre', 'Carte delle altre persone', 'users']);
+      if(giSonoCU() || giMio('unita')) it.push(['g-cdu', 'La tua Carta di Unità', 'tent']);
+      if(coord) it.push(['g-cdus', 'Carte delle Unità', 'tent']);
+      if(coord && (chiuso || (mia && mia.consegnato))) it.push(['g-spu', 'Dal giro al Piano', 'up']);
+      it.push(['g-pers', 'Mazzo persona', 'help']);
+    }
+    G.push({g:'Il giro', it});
+  }
+  if(d.uniti && d.uniti.length) G.push({g:'Archivio', it:[['uni', 'Obiettivi uniti', 'arch']]});
+  return G;
+}
+function pnSezOk(){ const ok = pnMenu().some(G => G.it.some(x => x[0] === PN.sez)); const s = ok ? PN.sez : 'pan'; if(s !== PN.sez) PN.sez = s; GI.vista = s.indexOf('g-') === 0 ? 'giro' : 'piano'; return s; }
+function pnSideHTML(cur){
+  const E = esc;
+  return `<nav class="pn-side" aria-label="Sezioni del piano">` + pnMenu().map(G => `<div class="sh-sg">${E(G.g)}</div>` + G.it.map(([id, t, ic]) => `<button type="button" id="pn-sb-${id}" class="sh-si${cur === id ? ' on' : ''}" ${cur === id ? 'aria-current="page"' : ''} onclick="pnSez('${id}')">${ico(ic)}<span>${E(t)}</span></button>`).join('')).join('') + `</nav>`;
+}
+window.pnSez = async function(id){
+  if(id === PN.sez) return; await giFlush();
+  PN.sez = id; pnRender(); if(id.indexOf('g-') === 0) giCarica(true);
+  const r = $('sh-root'); if(r) r.scrollTop = 0;
+};
+// ── il piano in Word (25/11): senza le carte del giro (hanno i nomi e non sono parte del Piano) ──
+window.pnScarica = async function(){
+  if(!PN.p) return; const p = PN.p;
+  try{ clToast('Preparo il Word del piano…'); await pnFlush(); await needDocx(); }catch(e){ clToast('Impossibile preparare il Word: ' + (e && e.message || e)); return; }
+  const d = PN.d, tit = PN.meta.titolo || PIANI_TIPI[p.tipo], T = x => (x == null ? '' : String(x)), X = x => T(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');   // dMulti toglie i «<…>» come fosse HTML: qui il testo è del piano e va com’è
+  const ch = []; const un = UNIT_NAME, fo = window._dFootOverride;
+  try{
+    UNIT_NAME = ''; window._dFootOverride = tit + ' · PEE CNGEI';
+    ch.push(...dTitleBlock(tit, PIANI_TIPI[p.tipo] + ' · ' + pnPeriodo(p) + ' · ' + pnAnnoTxt(p)));
+    const kv = [['Stato', pnLab(PN_STATI, PN.meta.stato)]];
+    if(d.titolareNome) kv.push(['Titolare', d.titolareNome]);
+    if(PN.meta.stato !== 'bozza' && (d.delibera.data || d.delibera.luogo)) kv.push(['Delibera in presenza', [giData(pnDataIso(d.delibera.data)) || T(d.delibera.data), T(d.delibera.luogo)].filter(Boolean).join(' · ')]);
+    ch.push(dKV(kv.map(([l, v]) => [l, dMulti(X(v))])));
+    if(d.analisi.length){ ch.push(dH3('Dove siamo')); d.analisi.forEach(a => { ch.push(dPara(a.titolo || 'Senza titolo', {size:20, bold:true, after:20, keepNext:true})); ch.push(...dMulti(X(a.testo))); }); }
+    ch.push(dH3('Obiettivi e azioni'));
+    if(!d.obiettivi.length) ch.push(dPara('Ancora nessun obiettivo.', {size:19, color:'999999'}));
+    d.obiettivi.forEach((o, i) => {
+      ch.push(dPara('Obiettivo ' + (i + 1), {size:19, bold:true, color:GRTXT, before:120, after:20, keepNext:true}));
+      ch.push(...dMulti(X(o.testo)));
+      const aree = (o.aree || []).map(k => pnLab(PN_AREE, k)).join(', ');
+      const meta = [aree ? 'Aree: ' + aree : '', o.ricadute ? 'Con ricadute educative' : '', o.origine ? 'Da dove viene: ' + pnLab(PN_ORIGINI, o.origine) + (o.rif ? ' (' + o.rif + ')' : '') : ''].filter(Boolean).join(' · ');
+      if(meta) ch.push(dPara(meta, {size:17, color:'666666', after:60}));
+      const az = d.azioni.filter(a => a.ob === o.id);
+      if(az.length){
+        const W = [2500, 800, 1150, 1850, 1000, 2338];
+        ch.push(dGridTable(['Azione', 'Inizia', 'Si verifica', 'Chi e referente', 'Stato', 'Indicatore'], az.map(a => [
+          X(a.testo), 'Anno ' + (a.inizio || 1), (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? '\n' + (a.step === 'meta' ? 'Anche a metà anno' : 'A ogni Consiglio di Gruppo') : ''),
+          [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.genitori ? 'Con i genitori' : '', a.ref ? 'Referente: ' + X(a.ref) : ''].filter(Boolean).join('\n'), pnLab(PN_STATI_AZ, a.stato || 'da_iniziare'), X(a.indicatore)]), W, 16));
+      }
+    });
+    if(d.obiettivi.length){
+      ch.push(dH3('Quadro sinottico'));
+      ch.push(dGridTable(['Obiettivo', ...PN_AREE.map(x => x[1]), 'Ricadute educative'], d.obiettivi.map((o, i) => [(i + 1) + '. ' + X(o.testo.slice ? o.testo.slice(0, 90) : o.testo), ...PN_AREE.map(([k]) => (o.aree || []).includes(k) ? '●' : ''), o.ricadute ? '●' : '']), [3038, 1000, 1000, 1000, 1000, 1000, 1600], 16));
+    }
+    if((d.tappe || []).length){
+      ch.push(dH3('Verifiche'));
+      ch.push(dGridTable(['Anno', 'Tappa', 'Data', 'Fatta', 'Cosa è emerso e cosa cambiamo'], pnTappeOrd().map(t => ['Anno ' + t.anno, pnLab(PN_TAPPE, t.tipo), giData(t.data), t.fatta ? 'Sì' : 'No', X(t.note)]), [900, 2300, 1300, 800, 4338], 16));
+    }
+    if(d.spunti.length){ ch.push(dH3('Spunti dalle Unità')); d.spunti.forEach(s => ch.push(dPara((s.da ? s.da + ': ' : '') + T(s.testo), {size:19, bullet:true, after:40}))); }
+    if(d.uniti.length){ ch.push(dH3('Obiettivi uniti (note)')); d.uniti.forEach(u => ch.push(dPara(T(u.testo) || '—', {size:19, bullet:true, after:40}))); }
+    await dSave(dDocument(ch, tit), (tit.toLowerCase().indexOf(PIANI_TIPI[p.tipo].toLowerCase()) === 0 ? '' : PIANI_TIPI[p.tipo].replace(/[^\w]+/g, '_') + '_') + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.docx');
+  }catch(e){ clToast('Impossibile creare il Word: ' + (e && e.message || e)); }
+  finally{ UNIT_NAME = un; window._dFootOverride = fo; }
+};
+window.giVai = function(v){ return pnSez(v === 'giro' ? 'g-giro' : 'pan'); };
+function pnPaneHTML(id){
+  const p = PN.p, d = PN.d, E = esc, tutto = pnTutto(), dis = tutto ? '' : ' disabled';
+  let h = '';
+  if(id.indexOf('g-') === 0) return giPaneHTML(id);
+  if(id === 'pan'){
+    h += `<section class="pn-card" aria-labelledby="pn-st-t"><h2 class="pn-h" id="pn-st-t">Stato del piano</h2>
+    <div class="sh-g2"><div><label class="sh-lb" for="pn-stato">Stato</label><select class="sh-in" id="pn-stato" onchange="pnMeta('stato',this.value)"${dis}>${PN_STATI.map(([k, t]) => `<option value="${k}"${PN.meta.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
+    <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" type="date" aria-label="Data della delibera" value="${E(pnDataIso(d.delibera.data))}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" aria-label="Luogo della delibera" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div>${d.delibera.data && !pnDataIso(d.delibera.data) ? `<p class="sh-hint" id="pn-delOld" style="margin:4px 0 0">Avevi scritto «${E(d.delibera.data)}»: scegli la data dal calendario.</p>` : ''}</div></div>
+    </section>`;
+  { const pr = pnProssima(); h += `<section class="pn-card" aria-labelledby="pn-pv-t"><h2 class="pn-h" id="pn-pv-t">Prossima verifica</h2><p class="sh-sub" style="margin:0" id="pn-prox">${pr ? E(pnTappaNome(pr)) : (d.tappe.length ? 'Tutte le tappe sono fatte.' : 'Nessuna tappa segnata.')}</p><div><button class="sh-btn sm gh" type="button" onclick="pnSez('ver')">Vai alle verifiche</button></div></section>`; }
   h += `<section class="pn-card" aria-labelledby="pn-sin-t"><h2 class="pn-h" id="pn-sin-t">Quadro sinottico</h2><div id="pn-sin"></div><div id="pn-avv"></div></section>`;
-  // dove siamo
+  }
+  else if(id === 'ana'){
   h += `<section class="pn-card" aria-labelledby="pn-an-t"><h2 class="pn-h" id="pn-an-t">Dove siamo</h2>
     <p class="sh-hint" style="margin:0">L’analisi della situazione, con i titoli che servono a voi. Non c’è uno schema obbligatorio.</p>`;
   d.analisi.forEach((a, i) => { h += `<div class="pn-an"><div class="pn-an-h"><input class="sh-in" id="pn-ant-${E(a.id)}" aria-label="Titolo ${i + 1}" maxlength="120" value="${E(a.titolo)}" oninput="pnAn('${E(a.id)}','titolo',this.value)"${dis}>${tutto ? `<button class="pn-ib" type="button" aria-label="Sposta su" onclick="pnAnMove('${E(a.id)}',-1)">↑</button><button class="pn-ib" type="button" aria-label="Sposta giù" onclick="pnAnMove('${E(a.id)}',1)">↓</button><button class="pn-ib" type="button" aria-label="Elimina il titolo" onclick="pnAnDel('${E(a.id)}')">✕</button>` : ''}</div>
@@ -19389,25 +19652,29 @@ function pnRender(){
   if(!d.analisi.length) h += `<p class="sh-sub" style="margin:0">Ancora nessun titolo. Aggiungine uno, o parti da un suggerimento.</p>`;
   if(tutto) h += `<div class="pn-chips">${PN_TITOLI.filter(t => !d.analisi.some(a => a.titolo === t)).map(t => `<button class="pn-sug" type="button" onclick="pnAnAdd(${E(JSON.stringify(t)).replace(/&quot;/g, '&#34;')})">+ ${E(t)}</button>`).join('')}<button class="pn-sug" type="button" onclick="pnAnAdd('')">+ Un altro titolo</button></div>`;
   h += `</section>`;
-  // obiettivi
+  }
+  else if(id === 'obi'){
+    h += `<div id="pn-avv-o"></div>`;
   h += `<section class="pn-card" aria-labelledby="pn-ob-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="pn-ob-t" style="margin:0">Obiettivi e azioni</h2>
     ${tutto ? `<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap"><button class="sh-btn sm gh" type="button" id="pn-unisci" onclick="pnUnisciDlg()" disabled>Unisci i selezionati</button><button class="sh-btn sm" type="button" onclick="pnObAdd()">+ Obiettivo</button></span>` : ''}</div>
     <p class="sh-hint" style="margin:0">Pochi obiettivi, ognuno con una o più etichette di area. Se due obiettivi si assomigliano, selezionali e uniscili.</p>`;
   d.obiettivi.forEach((o, i) => { h += pnObHTML(o, i); });
   if(!d.obiettivi.length) h += `<p class="sh-sub" style="margin:0">Ancora nessun obiettivo.</p>`;
   h += `</section>`;
-  // spunti
+  }
+  else if(id === 'spu'){
   h += `<section class="pn-card" aria-labelledby="pn-sp-t"><h2 class="pn-h" id="pn-sp-t">Spunti dalle Unità</h2>
     <p class="sh-hint" style="margin:0">Cose emerse dalle programmazioni delle Unità o dalle riunioni dei Capi Unità. Quelli che servono si trasformano in obiettivo.</p>`;
   d.spunti.forEach(s => { h += `<div class="pn-sp"><div style="flex:1;min-width:0"><input class="sh-in" id="pn-spd-${E(s.id)}" aria-label="Da quale Unità" placeholder="Da quale Unità" maxlength="60" value="${E(s.da)}" oninput="pnSp('${E(s.id)}','da',this.value)"${dis}><textarea class="sh-in pn-ta" id="pn-spx-${E(s.id)}" aria-label="Spunto" rows="2" oninput="pnSp('${E(s.id)}','testo',this.value);pnGrow(this)"${dis}>${E(s.testo)}</textarea></div>${tutto ? `<div class="pn-col"><button class="sh-btn sm gh" type="button" onclick="pnSpOb('${E(s.id)}')">→ Obiettivo</button><button class="pn-ib" type="button" aria-label="Elimina lo spunto" onclick="pnSpDel('${E(s.id)}')">✕</button></div>` : ''}</div>`; });
   if(tutto) h += `<div><button class="sh-btn sm gh" type="button" onclick="pnSpAdd()">+ Uno spunto</button></div>`;
   else if(!d.spunti.length) h += `<p class="sh-sub" style="margin:0">Nessuno spunto.</p>`;
   h += `</section>`;
+  }
+  else if(id === 'ver'){ h += pnVerHTML(); }
+  else if(id === 'uni'){
   if(d.uniti.length) h += `<section class="pn-card" aria-labelledby="pn-un-t"><h2 class="pn-h" id="pn-un-t">Obiettivi uniti</h2><p class="sh-hint" style="margin:0">Gli obiettivi originali, tenuti come nota.</p>${d.uniti.map(u => `<div class="pn-un"><b>${E(u.testo || '—')}</b><div class="sh-hint" style="margin:2px 0 0">${(u.aree || []).map(a => E(pnLab(PN_AREE, a))).join(', ')}${u.nota ? ' · ' + E(u.nota) : ''}</div></div>`).join('')}</section>`;
-  h += `</main>`;
-  r.innerHTML = h;
-  pnRefresh(); pnStato(); r.querySelectorAll('.pn-ta').forEach(pnGrow); pnSelBtn();
-  r.scrollTop = sc; if(fid){ const n = $(fid); if(n){ try{ n.focus({preventScroll:true}); }catch(e){} } }
+  }
+  return h;
 }
 function pnGrow(t){ try{ t.style.height = 'auto'; t.style.height = Math.max(t.scrollHeight + 2, 60) + 'px'; }catch(e){} }
 function pnObHTML(o, i){
@@ -19451,6 +19718,7 @@ function pnAzHTML(a, j, p){
     <div class="pn-az-g"><div><label class="sh-lb" for="pn-azi-${E(a.id)}">Inizia</label><select class="sh-in" id="pn-azi-${E(a.id)}" onchange="pnAz('${E(a.id)}','inizio',Number(this.value))"${dis}>${anni.map(k => `<option value="${k}"${a.inizio === k ? ' selected' : ''}>Anno ${k}</option>`).join('')}</select></div>
     <div><label class="sh-lb" for="pn-azv-${E(a.id)}">Si verifica</label><select class="sh-in" id="pn-azv-${E(a.id)}" onchange="pnAz('${E(a.id)}','verifica',this.value)"${dis}><option value="ogni"${a.verifica === 'ogni' || !a.verifica ? ' selected' : ''}>Ogni anno</option>${anni.map(k => `<option value="${k}"${String(a.verifica) === String(k) ? ' selected' : ''}>Alla fine dell’anno ${k}</option>`).join('')}</select></div>
     <div><label class="sh-lb" for="pn-azs-${E(a.id)}">Stato</label><select class="sh-in" id="pn-azs-${E(a.id)}" onchange="pnAz('${E(a.id)}','stato',this.value)"${dis}>${PN_STATI_AZ.map(([k, t]) => `<option value="${k}"${(a.stato || 'da_iniziare') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div></div>
+    <div><label class="sh-lb" for="pn-azk-${E(a.id)}">Controllo intermedio</label><select class="sh-in" id="pn-azk-${E(a.id)}" onchange="pnAz('${E(a.id)}','step',this.value)"${dis}>${PN_STEP.map(([k, t]) => `<option value="${k}"${(a.step || '') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
     <div><label class="sh-lb" for="pn-azd-${E(a.id)}">Indicatore: una domanda a cui si risponde sì o no</label><input class="sh-in" id="pn-azd-${E(a.id)}" maxlength="200" placeholder="Es. Abbiamo fatto almeno due incontri con le famiglie?" value="${E(a.indicatore)}" oninput="pnAz('${E(a.id)}','indicatore',this.value)"${dis}></div>
     <fieldset class="pn-fs"><legend class="sh-lb">Chi</legend><div class="pn-chips">${PN_CHI.map(([k, t]) => `<label class="pn-chip sm${(a.chi || []).includes(k) ? ' on' : ''}"><input type="checkbox" ${(a.chi || []).includes(k) ? 'checked' : ''} onchange="pnChi('${E(a.id)}','${k}',this.checked);this.parentNode.classList.toggle('on',this.checked)"${disT}>${E(t)}</label>`).join('')}<label class="pn-chip sm${a.genitori ? ' on' : ''}"><input type="checkbox" ${a.genitori ? 'checked' : ''} onchange="pnAz('${E(a.id)}','genitori',this.checked);this.parentNode.classList.toggle('on',this.checked)"${disT}>Con i genitori</label></div></fieldset>
     ${pnRefHTML(a, tutto)}</div>`;
@@ -19458,8 +19726,8 @@ function pnAzHTML(a, j, p){
 
 // ── quadro sinottico e avvisi gentili ──
 function pnRefresh(){
-  const s = $('pn-sin'), av = $('pn-avv'); if(!s || !PN.p) return; const d = PN.d, E = esc;
-  if(!d.obiettivi.length){ s.innerHTML = `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo: righe gli obiettivi, colonne le aree.</p>`; }
+  const s = $('pn-sin'), av = $('pn-avv'), avo = $('pn-avv-o'); if(!PN.p || (!s && !av && !avo)) return; const d = PN.d, E = esc;
+  if(s){ if(!d.obiettivi.length){ s.innerHTML = `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo: righe gli obiettivi, colonne le aree.</p>`; }
   else {
     const tot = Object.fromEntries(PN_AREE.map(([k]) => [k, 0]));
     const rows = d.obiettivi.map((o, i) => { (o.aree || []).forEach(a => { if(a in tot) tot[a]++; });
@@ -19467,7 +19735,8 @@ function pnRefresh(){
     s.innerHTML = `<div class="pn-tw"><table class="pn-tab" aria-describedby="pn-sin-t"><thead><tr><th scope="col">Obiettivo</th>${PN_AREE.map(([k, t]) => `<th scope="col">${E(t)}</th>`).join('')}<th scope="col">Ricadute educative</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th scope="row">Totale</th>${PN_AREE.map(([k]) => `<td><b>${tot[k]}</b></td>`).join('')}<td><b>${d.obiettivi.filter(o => o.ricadute).length}</b></td></tr></tfoot></table></div>`
       + `<p class="sh-hint" style="margin:6px 0 0">${(() => { const az = d.azioni, n = az.length; const f = az.filter(a => a.stato === 'fatta').length, c = az.filter(a => a.stato === 'in_corso').length; return n ? `${n} azioni: ${f} fatte, ${c} in corso, ${n - f - c} da iniziare.` : 'Ancora nessuna azione.'; })()}</p>`;
   }
-  const w = pnAvvisi(); av.innerHTML = w.length ? `<div class="pn-avv" role="note"><b>Un consiglio</b><ul>${w.map(x => `<li>${E(x)}</li>`).join('')}</ul></div>` : '';
+  }
+  const w = pnAvvisi(), ah = w.length ? `<div class="pn-avv" role="note"><b>Un consiglio</b><ul>${w.map(x => `<li>${E(x)}</li>`).join('')}</ul></div>` : ''; if(av) av.innerHTML = ah; if(avo) avo.innerHTML = ah;
 }
 function pnAvvisi(){
   const d = PN.d, so = pnSoglia(PN.p), w = [];
@@ -19481,7 +19750,7 @@ function pnAvvisi(){
   if(senzaAr.length) w.push(`Senza etichetta di area: obiettivo ${senzaAr.join(', ')}.`);
   return w.slice(0, 5);
 }
-window.pnVai = function(id){ const e = $('pn-ob-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'start'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); } };
+window.pnVai = function(id){ if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } const e = $('pn-ob-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'start'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); } };
 
 // ── modifiche ──
 window.pnMeta = function(k, v){ if(!pnTutto()) return; PN.meta[k] = v;
@@ -19635,7 +19904,7 @@ window.pnRipristina = async function(vid){
   try{
     await pnFlush(); const v = await PIANI.versioneDati(vid); if(!v) throw new Error('Versione non trovata');
     await PIANI.versione(PN.p, {motivo:'auto', nota:'Copia prima di ripristinare la versione ' + v.n, data:PN.d, stato:PN.meta.stato});
-    PN.d = Object.assign(pnVuoto(), pnClone(v.data)); ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti'].forEach(k => { if(!Array.isArray(PN.d[k])) PN.d[k] = []; }); PN.sel = {};
+    PN.d = Object.assign(pnVuoto(), pnClone(v.data)); ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(PN.d[k])) PN.d[k] = []; }); PN.sel = {};
     PN.dirty = true; shDlgClose(); pnRender(); await pnSave(); clToast('Versione ' + v.n + ' ripristinata.');
   }catch(e){ const m = $('pn-sv-msg'); if(m){ m.className = 'sh-msg err'; m.textContent = pianoErr(e); } }
 };
@@ -19651,12 +19920,13 @@ async function homeHTML(){
     const BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
     const riga = `<div class="sh-prof-line"><span>${esc([ruoloLab(p), p.branca ? BN[p.branca] : ''].filter(Boolean).join(' · '))}</span><a href="#" onclick="shProfileOpen();return false">Modifica il profilo</a></div>`;
     let h = top(true) + `<main class="sh-wrap">` + riga + `<div id="sh-perte"></div><div id="cl-rev"></div>`;
+    const pnInTop = !rows.length && !shr.length && noBranca(p.ruolo);
+    if(!pnInTop) h += `<div id="sh-piani" class="sh-bigd" data-card="1" hidden></div>`;
     if(!rows.length && !shr.length){
       if(noBranca(p.ruolo)){
         const un = unitaOf(p);
         h += `<h1>Da dove vuoi cominciare?</h1><p class="sh-sub">Come ${esc(RUOLO_TXT[p.ruolo] || 'responsabile')} lavori con gli adulti del Gruppo: osservi, programmi la loro formazione e organizzi gli eventi per loro. Puoi aprire anche il tuo Progetto Personale. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
-      <div class="sh-two" style="margin-top:6px"><button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout, per gli adulti</small><b>Programmazione formativa annuale</b><span>La formazione degli adulti del Gruppo nel corso dell’anno scout, dall’osservazione alla verifica.</span><ul><li>Osservazione dei Capi Unità e lettura d’insieme</li><li>Percorso formativo: attività dal paniere o tue, in ordine di priorità</li><li>Eventi per gli adulti: riunioni, uscite, bivacchi, attività formative</li><li>Check degli adulti e Word del percorso formativo da scaricare</li></ul><em>Inizia la programmazione formativa</em></button>
-        <button class="sh-big" type="button" onclick="shNew('PP')"><small>Per un adulto in formazione</small><b>Progetto Personale</b><span>Il Progetto Personale previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge). Chiunque voglia può aprirlo.</span><ul><li>Il tuo Progetto Personale passo passo, con la struttura indicata nelle Linee Guida</li><li>Osservazione del Gruppo di Pari con il KOS e la griglia osservativa</li><li>Un Percorso Educativo Esperienziale dettagliato, per l’obiettivo che scegli</li><li>Gli invii previsti (avvio, primo invio, invio finale) con i destinatari giusti</li><li>La checklist dei criteri, per controllare il lavoro prima di inviarlo</li></ul><em>Inizia il Progetto Personale</em></button></div>${un ? `<button class="sh-long" type="button" onclick="shNew('EDU')"><small>Sei anche Capo Unità</small><b>Programmazione Educativa Annuale</b><span>Per la tua Unità: ${esc(un.nome || 'Unità')} · ${BN[un.branca]}</span><em>Inizia la Programmazione Educativa</em></button>` : ''}<p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.${un ? '' : ' Sei anche Capo Unità? <a href="#" onclick="shProfileOpen();return false">Indicalo nel profilo</a>: qui comparirà anche la Programmazione Educativa della tua Unità.'}</p>`;
+      <div class="sh-two" style="margin-top:6px"><button class="sh-big" type="button" onclick="shNew('AN')"><small>Per l’anno scout, per gli adulti</small><b>Programmazione formativa annuale</b><span>La formazione degli adulti del Gruppo nel corso dell’anno scout, dall’osservazione alla verifica.</span><ul><li>Osservazione dei Capi Unità e lettura d’insieme</li><li>Percorso formativo: attività dal paniere o tue, in ordine di priorità</li><li>Eventi per gli adulti: riunioni, uscite, bivacchi, attività formative</li><li>Check degli adulti e Word del percorso formativo da scaricare</li></ul><em>Inizia la programmazione formativa</em></button><div id="sh-piani" class="sh-bigd" data-card="1" hidden></div></div><button class="sh-big sh-wide" type="button" onclick="shNew('PP')"><small>Per un adulto in formazione</small><b>Progetto Personale</b><span>Quello previsto dalle Linee Guida dopo il Modulo FOR-A (o ex Modulo Wood Badge): passo passo, con osservazione del Gruppo di Pari, percorso educativo, invii e checklist. Chiunque voglia può aprirlo.</span><em>Inizia il Progetto Personale</em></button>${un ? `<button class="sh-long" type="button" onclick="shNew('EDU')"><small>Sei anche Capo Unità</small><b>Programmazione Educativa Annuale</b><span>Per la tua Unità: ${esc(un.nome || 'Unità')} · ${BN[un.branca]}</span><em>Inizia la Programmazione Educativa</em></button>` : ''}<p class="sh-hint">Anno scout dal 1° settembre al 31 agosto.${un ? '' : ' Sei anche Capo Unità? <a href="#" onclick="shProfileOpen();return false">Indicalo nel profilo</a>: qui comparirà anche la Programmazione Educativa della tua Unità.'}</p>`;
       } else
       h += figuraNuovaHome(p) + `<h1>Che cosa vuoi progettare?</h1><p class="sh-sub">La scelta decide quali Sezioni vedi, le regole di compilazione e gli invii. Potrai aprire altri progetti in ogni momento da «Nuovo progetto».</p>
       <div class="sh-two" style="margin-top:6px">
@@ -19669,7 +19939,7 @@ async function homeHTML(){
       if(shr.length) h += `<h2>Condivisi con te</h2>` + shr.map(x => rowHTML(x, true)).join('');
     }
     if(rows.length || shr.length) h += exLinksHTML();
-    h += vidHomeBox(!(rows.length || shr.length)) + `<div id="sh-piani"></div><div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ pnHomeFill(); }catch(e){} try{ shPerTeRe(); clPerTe(); }catch(e){} try{ window.shRevRows && window.shRevRows(); }catch(e){} try{ window.rvListPaint && window.rvListPaint(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
+    h += vidHomeBox(!(rows.length || shr.length)) + `<div id="sh-export"></div><div id="sh-trash"></div></main>`; r.innerHTML = h; try{ pnHomeFill(); }catch(e){} try{ shPerTeRe(); clPerTe(); }catch(e){} try{ window.shRevRows && window.shRevRows(); }catch(e){} try{ window.rvListPaint && window.rvListPaint(); }catch(e){} try{ shExportBtn(); }catch(e){} try{ shLoadTrash(); }catch(e){}
   };
   if(SH.rows) draw(); else r.innerHTML = top(true) + '<div class="sh-wrap"><p class="sh-sub" role="status">Carico i tuoi progetti…</p></div>';
   try{
@@ -20030,6 +20300,14 @@ body.sh-in .toast{pointer-events:none}
 .pn-sel{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 .pn-ta{resize:vertical;min-height:60px;line-height:1.45}
 .pn-fs{border:0;padding:0;margin:0;min-width:0}
+.pn-w{max-width:1180px}
+.pn-lay{display:grid;grid-template-columns:244px minmax(0,1fr);gap:20px;align-items:start}
+.pn-side{position:sticky;top:78px;max-height:calc(100vh - 96px);overflow:auto;display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid #D8D8D0;border-radius:14px;padding:8px}
+.pn-side .sh-sg:first-child{padding-top:6px}
+.pn-pane{display:flex;flex-direction:column;gap:16px;min-width:0;outline:none}
+.pn-head{gap:8px}
+#pn-avv:empty,#pn-avv-o:empty{display:none}
+@media(max-width:899px){.pn-lay{grid-template-columns:minmax(0,1fr);gap:12px}.pn-side{position:sticky;top:62px;z-index:40;max-height:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px;gap:6px;border-radius:12px;scrollbar-width:thin}.pn-side .sh-sg{display:none}.pn-side .sh-si{width:auto;flex:none;white-space:nowrap}}
 .pn-tabs{display:flex;gap:8px;flex-wrap:wrap}
 .pn-tabb{min-height:44px;padding:0 18px;border:1px solid #8a8a82;border-radius:999px;background:#fff;font:inherit;font-weight:700;font-size:14px;cursor:pointer;color:#2b2b27}
 .pn-tabb.on{background:#1b5e42;border-color:#1b5e42;color:#fff}
@@ -20067,6 +20345,11 @@ body.sh-in .toast{pointer-events:none}
 .pn-avv ul{margin:4px 0 0 18px;padding:0}
 .pn-sh-r{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #ECECE4;flex-wrap:wrap}
 .pn-sh-r>div:first-child{flex:1;min-width:140px}
+.gi-pasl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.gi-pas{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #ECECE4}.gi-pas:first-child{border-top:0}.gi-pm{font-size:18px;line-height:1}.gi-pas.ok .gi-pm{color:#1B5E42}
+.spg-fr{display:flex;flex-wrap:wrap;gap:6px}.spg-f{font:inherit;font-size:14px;min-height:40px;padding:6px 12px;border:1px solid #CFCFC4;border-radius:20px;background:#fff;cursor:pointer}.spg-f.sm{font-size:13px;min-height:36px}.spg-f.on{background:#1B5E42;color:#fff;border-color:#1B5E42}
+.spg-h{font-size:16px;margin:14px 0 2px}.spg-c{border:1px solid #E4E4DA;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#FCFCF8}.spg-b{display:flex;flex-wrap:wrap;gap:8px}
+.pn-w .sh-sub{display:block;margin:0;padding:0;border:0}
+.pn-ve{border:1px solid #E4E4DA;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:#FCFCF8}.pn-ve.ok{background:#F1F8F4;border-color:#BFDCCB}.pn-ve-h{display:flex;align-items:center;gap:8px}.pn-ve-h b{flex:1}
 @media(max-width:640px){.pn-az-g{grid-template-columns:1fr}.pn-sp{flex-direction:column}.pn-col{flex-direction:row;align-items:center}}
 .sh-pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap}.sh-pill-ok{background:#d9ecdf;color:#1d5a3a}.sh-pill-wait{background:#fff3cf;color:#6b4e00}.sh-pill-no{background:#efefe8;color:#55554f}
 .sh-st{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #D8D8D0;border-radius:12px;padding:12px 14px}
@@ -20289,6 +20572,7 @@ const IC = {
   chk:'<path d="M9 11l3 3 8-8M20 12v7H4V5h10"/>', cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', num:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
 };
 const ico = k => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[k] || ''}</svg>`;
+window.ico = ico;
 
 // ── voci del menu ──
 const NAV_AN = [
@@ -20387,7 +20671,7 @@ function subHTML(inSheet){
   const sc = subCur();
   return `<div class="sh-sub" role="group" aria-label="Sezione 1">` + SUB1.map(x => `<button type="button" class="sh-si sh-ss${sc === x[0] ? ' on' : ''}" data-sub="${x[0]}" ${sc === x[0] ? 'aria-current="page"' : ''} onclick="${inSheet ? 'shSheetClose();' : 'shDrawer(false);'}shSub('${x[0].split(':')[0]}','${x[0].split(':')[0] === '1b' ? (x[0].split(':')[1] || '') : ''}','${x[0].split(':')[0] === '1a' ? (x[0].split(':')[1] || '') : ''}')"><span>${esc(x[1])}</span></button>`).join('') + `</div>`;
 }
-function navCond(i){ if(i.cond === 'sez'){ try{ return cgCds() && !window.BRO && !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } } if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'cdu'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo) && !window.BRO && MODE === 'giovani' && !isPP() && /^(cu|vcu)$/.test((SH.prof || {}).ruolo || ''); }catch(e){ return false; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
+function navCond(i){ if(i.cond === 'sez'){ try{ return cgCds() && !window.BRO && !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return false; } } if(i.cond === 'owner'){ try{ return !(CL && CL.ctx && CL.ctx.ruolo); }catch(e){ return true; } } if(i.cond === 'cdu'){ try{ const rl = CL && CL.ctx && CL.ctx.ruolo; return (!rl || rl === 'cotitolare') && !window.BRO && MODE === 'giovani' && !isPP() && (rl === 'cotitolare' || /^(cu|vcu)$/.test((SH.prof || {}).ruolo || '') || !!unitaOf()); }catch(e){ return false; } } if(i.cond === 'back'){ try{ return !!(scheda && scheda.staffDi); }catch(e){ return false; } } if(i.cond === 'prev'){ try{ return !!SH._prev; }catch(e){ return false; } } if(i.cond === 'conf'){ try{ return gSteps().some(x => x[0] === '1s'); }catch(e){ return false; } } return true; }
 function navGroups(){ const gs = []; navItems().forEach(i => { if(i.g) gs.push({g:i.g, items:[]}); else { if(!gs.length) gs.push({g:null, items:[]}); gs[gs.length - 1].items.push(i); } }); return gs; }
 function groupOf(id){ const G = navGroups().find(x => x.items.some(i => i.id === id)); return G ? G.g : null; }
 SH._gt = SH._gt || {};
@@ -23304,11 +23588,12 @@ window.cduDeliver = async function(){
   if(cduVuotaDel(c)){ showToast('La Carta è vuota: scrivi almeno una riga prima di consegnare.'); return; }
   const L = SH._cduG || []; if(!L.length){ showToast('Non c’è un giro aperto a cui consegnarla.'); return; }
   const sel = $('cdu-dsel'); const it = (sel && L.find(x => x.g.id === sel.value)) || L[0];
+  if(c.cons && c.cons.gid === it.g.id && c.cons.uid && CL.user && c.cons.uid !== CL.user.id){ showToast('La Carta è già stata consegnata da ' + (c.cons.dn || 'un’altra persona dello staff') + ': per cambiarla deve riconsegnarla lei o lui.'); return; }
   if(!confirm('Consegni la Carta di Unità al giro ' + it.g.n + ' di «' + (it.p.titolo || 'Piano di Gruppo') + '»?\n\nControlla che non ci siano nomi di ragazzi e ragazze né giudizi sulle persone. Puoi consegnarla di nuovo fino alla chiusura del giro.')) return;
   const b = $('cdu-go'); if(b) b.disabled = true;
   try{
     await PIANI.contributoSalva(it.g.id, 'unita', cduPayload(c, cduPre(), cduUnitaNome()), true);
-    c.cons = {gid:it.g.id, pid:it.p.id, g:it.g.n, t:it.p.titolo || '', il:isoOggi(), ts:Date.now()}; scheda.cdu = c; saveData(true);
+    c.cons = {gid:it.g.id, pid:it.p.id, g:it.g.n, t:it.p.titolo || '', il:isoOggi(), ts:Date.now(), uid:(CL.user && CL.user.id) || '', dn:clMyName() || ''}; scheda.cdu = c; saveData(true);
     showToast('Carta di Unità consegnata.'); if(SH.ppv === 'cdu') shCdU();
   }catch(e){ if(b) b.disabled = false; showToast(typeof pianoErr === 'function' ? pianoErr(e) : clErr(e)); }
 };

@@ -66,7 +66,7 @@ cu = db.t.pee_piani_contributi.filter(c => c.tipo === 'unita');
 ok(cu.length === 1 && cu[0].data.b.b5 === 'La sede ha bisogno di una pittura', 'la nuova consegna sostituisce la precedente (una sola riga)');
 
 // ── 3. modulo di ripiego nella pagina del giro (nessuna programmazione) ──
-await bruno.ev(id => pnOpen(id), pid); await sleep(1200); await bruno.ev(() => giVai('giro')); await sleep(900);
+await bruno.ev(id => pnOpen(id), pid); await sleep(1200); await bruno.ev(() => pnSez('g-cdu')); await sleep(900);
 ok(await cnt(bruno, '#gcu-b1') === 1 && await cnt(bruno, '#gcu-n-nome') === 1 && await cnt(bruno, '#gcu-b2a') === 1, 'senza programmazione la pagina del giro ha il modulo completo, con le due domande libere');
 ok(await cnt(luca, '#gi-cu-t') === 0, 'chi non è Capo Unità non vede il modulo');
 await bruno.P.fill('#gcu-n-nome', 'Branco Popolo Libero'); await bruno.P.fill('#gcu-n-tot', '18'); await bruno.P.fill('#gcu-n-staff', '4'); await bruno.P.fill('#gcu-b2a', 'Il lavoro di squadra'); await bruno.P.fill('#gcu-b4', 'Poche famiglie vengono alle riunioni');
@@ -78,13 +78,13 @@ bu = db.t.pee_piani_contributi.find(c => c.tipo === 'unita' && c.autore_id === b
 ok(bu.consegnato && bu.data.unita === 'Branco Popolo Libero' && bu.data.n.tot === 18 && bu.data.n.staff === 4 && bu.data.b.b2a === 'Il lavoro di squadra', 'consegnata dal modulo di ripiego');
 
 // ── 4. chi coordina ──
-await luca.ev(id => pnOpen(id), pid); await sleep(1200); await luca.ev(() => giVai('giro')); await sleep(900);
+await luca.ev(id => pnOpen(id), pid); await sleep(1200); await luca.ev(() => pnSez('g-cdus')); await sleep(900);
 ok(/Consegna prima le tue carte/.test(await txt(luca, '#gi-cc-t ~ .sh-sub')), 'prima di consegnare le proprie carte il Capo Gruppo non legge le Carte di Unità (regola di tutti)');
 await luca.ev(async g => { await PIANI.contributoSalva(g, 'carte', {v:1, a:{educativa:{v:'x', c:'', p:'', b:false}}}, true); await giCarica(false); }, db.t.pee_piani_giri[0].id); await sleep(900);
 const tab = await luca.ev(() => [...document.querySelectorAll('table[aria-label="Carte di Unità"] tbody tr')].map(r => [...r.children].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
 ok(tab.length === 2, 'tabella con le due Unità');
 const ra = tab.find(r => r[0].includes('Reparto Aquile')), rb = tab.find(r => r[0].includes('Branco Popolo Libero'));
-ok(ra && /da seguire/.test(ra[1]) && rb && /serve aiuto/.test(rb[2]), 'semafori con il segno e la parola (' + JSON.stringify(ra) + ')');
+ok(ra && /ci pensiamo/.test(ra[1]) && rb && /ci serve una mano/.test(rb[2]), 'semafori con il segno e la parola (' + JSON.stringify(ra) + ')');
 const ric = await luca.ev(() => [...document.querySelectorAll('#gi-cc-t ~ details')].map(x => x.textContent.replace(/\s+/g, ' ')).join(' | '));
 ok(/Un aiuto con i trasporti/.test(ric) && /Un’uscita aperta a tutto il Gruppo/.test(ric) && /Lavorare in squadra senza litigare/.test(ric), 'richieste, offerte e parte educativa si leggono');
 ok(/Anna Verdi/.test(tab[0].concat(tab[1]).join(' ')) , 'accanto all’Unità c’è chi ha consegnato');

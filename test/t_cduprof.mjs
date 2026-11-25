@@ -48,12 +48,12 @@ else ok(false, 'pulsante di consegna non trovato');
 await sw('Carta dopo la consegna');
 // 3. modulo di ripiego nella pagina del giro (senza programmazione): rimuovo la programmazione e riapro
 db.t.pee_archivi.length = 0; db.t.pee_piani_contributi.length = 0;
-await ev(() => shGoHome()); await sleep(1500); await ev(id => pnOpen(id), 'p1'); await sleep(1500); await ev(() => giVai('giro')); await sleep(1000);
+await ev(() => shGoHome()); await sleep(1500); await ev(id => pnOpen(id), 'p1'); await sleep(1500); await ev(() => pnSez('g-cdu')); await sleep(1000);
 ok(await ev(() => !!document.getElementById('gcu-b1')), 'modulo di ripiego nella pagina del giro');
 await P.fill('#gcu-n-nome', 'Reparto con un nome molto molto molto lungo ' + lungo); await P.fill('#gcu-b1', lungo + ' ' + lungo); await P.fill('#gcu-b5', lungo);
 await sleep(400); await sw('giro: modulo di ripiego');
 if(process.env.SHOT) await P.screenshot({path:process.env.SHOT + '/giro_ripiego_' + name + '.png', fullPage:true});
-const pg = await piccoli('.gi-rit, .pn-tabb, .sh-btn, .pn-chk');
+const pg = await piccoli('.gi-rit, .pn-side .sh-si, .sh-btn, .pn-chk');
 ok(!pg.length, 'giro: pulsanti e scelte abbastanza grandi da toccare' + (pg.length ? ' («' + pg.join(', ') + '»)' : ''));
 const fg = await ev(() => [...document.querySelectorAll('.pn-card .gi-carta, .pn-card .gi-carta textarea, .pn-card .gi-carta input')].filter(e => { const cc = e.closest('.pn-card'); if(!cc) return true; const r = e.getBoundingClientRect(), c = cc.getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).map(e => e.tagName + '.' + e.className + '#' + e.id).slice(0, 4));
 ok(fg.length === 0, 'giro: nessun elemento esce dalla sua scheda');

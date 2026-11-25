@@ -244,7 +244,7 @@ export class FakeDB {
         if(q.table === 'pee_piani_contributi'){ ok = r.autore_id === uid && this.giroAperto(r.giro_id);
           if(ok){ if('data' in q.vals && JSON.stringify(q.vals.data).length > 100000) return this.err('23514', 'new row for relation "pee_piani_contributi" violates check constraint');
             const nv = Object.assign({}, q.vals); ['giro_id','autore_id','autore_nome','tipo','piano_id'].forEach(k => delete nv[k]);
-            const cons = 'consegnato' in nv ? !!nv.consegnato : r.consegnato; nv.consegnato = cons; nv.consegnato_il = cons ? (r.consegnato ? r.consegnato_il : now()) : null; nv.updated_at = now(); q.vals = nv; } }
+            const cons = 'consegnato' in nv ? !!nv.consegnato : r.consegnato; nv.consegnato = cons; nv.consegnato_il = cons ? (r.consegnato ? r.consegnato_il : now()) : null; nv.updated_at = now(); { const au = this.user(uid); const nn = au && au.meta && au.meta.nome; if(this.sqlNomeAutore !== false && nn) nv.autore_nome = nn; } q.vals = nv; } }
         if(!ok) continue;
         const old = Object.assign({}, r);
         const changed = q.table === 'pee_archivi' && 'data' in q.vals && JSON.stringify(q.vals.data) !== JSON.stringify(r.data);

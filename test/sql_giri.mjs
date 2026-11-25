@@ -64,6 +64,18 @@ ok(!(await ins('c', 'carte', false)).err, 'un lettore scrive e tiene una bozza')
 ok((await ins('a', 'carte', true)).err !== undefined, 'una sola scheda per persona e tipo');
 const nomeA = await db.query(`select autore_nome, consegnato_il is not null as dt from pee_piani_contributi where autore_id = $1`, [U.a]);
 ok(nomeA.rows[0].autore_nome === 'Nome a' && nomeA.rows[0].dt, 'nome e ora di consegna messi dal database');
+// 25/11: il nome sulle carte segue il profilo finché il giro è aperto
+const sql3 = fs.readFileSync(new URL('../supabase_aggiornamento_25novembre_nome_autore.sql', import.meta.url), 'utf8');
+{ let e3 = null, e4 = null; try { await db.exec(sql3); } catch(e){ e3 = e; } ok(!e3, 'lo script del nome autore gira' + (e3 ? ': ' + e3.message : '')); try { await db.exec(sql3); } catch(e){ e4 = e; } ok(!e4, 'e si può rieseguire');
+  await db.query(`update auth.users set raw_user_meta_data = $2 where id = $1`, [U.a, JSON.stringify({nome: 'Nome nuovo'})]);
+  await db.exec(sql3);
+  const n1 = await db.query(`select autore_nome from pee_piani_contributi where autore_id = $1`, [U.a]); ok(n1.rows[0].autore_nome === 'Nome nuovo', 'lo script allinea i nomi dei giri aperti');
+  await db.query(`update auth.users set raw_user_meta_data = $2 where id = $1`, [U.a, JSON.stringify({nome: 'Terzo nome'})]);
+  await as('a', `update pee_piani_contributi set data = '{"x":2}' where autore_id = $1`, [U.a]);
+  const n2 = await db.query(`select autore_nome from pee_piani_contributi where autore_id = $1`, [U.a]); ok(n2.rows[0].autore_nome === 'Terzo nome', 'se la persona risalva la carta il nome si aggiorna');
+  await as('luca', `update pee_piani_contributi set data = '{"x":3}' where autore_id = $1`, [U.a]);
+  const n3 = await db.query(`select autore_nome from pee_piani_contributi where autore_id = $1`, [U.a]); ok(n3.rows[0].autore_nome === 'Terzo nome', 'un\'altra persona non cambia il nome di chi ha scritto');
+}
 ok(await nrows('b', `select id from pee_piani_contributi`) === 0, 'chi non ha ancora consegnato non vede le carte degli altri');
 ok(await nrows('luca', `select id from pee_piani_contributi`) === 0, 'neanche il titolare, finché non consegna');
 ok(await nrows('c', `select id from pee_piani_contributi`) === 1, 'una bozza propria resta visibile a chi la scrive');

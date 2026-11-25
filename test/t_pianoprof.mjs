@@ -26,13 +26,16 @@ await ev(() => shGoHome()); await sleep(1500);
 const sw = async (etichetta) => { const w = await ev(() => ({sw: document.documentElement.scrollWidth, iw: window.innerWidth, rw: document.getElementById('sh-root').scrollWidth, rc: document.getElementById('sh-root').clientWidth})); ok(w.sw - w.iw <= 1 && w.rw - w.rc <= 1, etichetta + ': niente scorrimento orizzontale della pagina (' + w.sw + '/' + w.iw + ')'); };
 await sw('home con un piano');
 await P.click('#sh-piani .pn-row button'); await sleep(1500);
-ok(await ev(() => SH.view) === 'piano' && await ev(() => document.querySelectorAll('.pn-ob').length) === 8, 'il piano con 8 obiettivi si apre');
+ok(await ev(() => SH.view) === 'piano' && await ev(() => PN.d.obiettivi.length) === 8, 'il piano con 8 obiettivi si apre');
 await sw('pagina del piano');
 // il quadro sinottico può scorrere dentro il suo riquadro, la pagina no
 const sin = await ev(() => { const w = document.querySelector('.pn-tw'); const r = w.getBoundingClientRect(); return {vis: r.width > 0 && r.right <= window.innerWidth + 1, rows: document.querySelectorAll('#pn-sin tbody tr').length}; });
 ok(sin.vis && sin.rows === 8, 'il quadro sinottico sta nello schermo (8 righe)');
+await ev(() => pnSez('obi')); await sleep(500);
+ok(await ev(() => document.querySelectorAll('.pn-ob').length) === 8, 'in «Obiettivi e azioni» ci sono tutti gli 8 obiettivi');
+await sw('obiettivi e azioni');
 // bersagli da toccare: almeno 40 px (44 dove possibile) per pulsanti, caselle e selezioni
-const piccoli = await ev(() => [...document.querySelectorAll('.pn-ib, .pn-chip, .pn-sug, .sh-btn, .pn-sel, .pn-back')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 40 || r.width < 40); }).map(e => (e.className + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height))).slice(0, 5));
+const piccoli = await ev(() => [...document.querySelectorAll('.pn-ib, .pn-chip, .pn-sug, .sh-btn, .pn-sel, .pn-back, .pn-side .sh-si')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 40 || r.width < 40); }).map(e => (e.className + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height))).slice(0, 5));
 ok(!piccoli.length, 'pulsanti e caselle abbastanza grandi da toccare' + (piccoli.length ? ' («' + piccoli.join(', ') + '»)' : ''));
 // nessun testo tagliato fuori: ogni campo sta dentro la larghezza della scheda
 const fuori = await ev(() => [...document.querySelectorAll('.pn .sh-in, .pn select, .pn-chip, .pn-ob, .pn-az')].filter(e => { const r = e.getBoundingClientRect(), c = e.closest('.pn-card').getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).length);
@@ -54,26 +57,32 @@ const f2 = await ev(() => { const dl = document.getElementById('sh-dlg').getBoun
 ok(f2, 'finestra «Unisci» dentro lo schermo');
 await P.click('#sh-dlg >> text=Annulla'); await sleep(200);
 // giro del Piano: schede, apertura, carte, Mazzo persona, tabella di chi coordina
-await P.click('.pn-tabb >> nth=1'); await sleep(700);
+await ev(() => pnSez('g-giro')); await sleep(700);
 ok(await ev(() => document.querySelectorAll('.gi-rit').length) === 3, 'giro: i tre ritmi si vedono');
 await sw('giro: apertura');
 await P.click('#gi-apri'); await sleep(1500);
+await ev(() => pnSez('g-carte')); await sleep(500);
 await P.fill('#gi-c-educativa-v', lungo + ' ' + lungo); await P.fill('#gi-c-sviluppo-p', lungo); await P.check('#gi-c-gestionale-b');
+await sw('giro: carte');
+await ev(() => pnSez('g-pers')); await sleep(500);
 await P.click('input[name="gi-p1"][value="meno"]'); await P.click('input[name="gi-p4"][value="adulto"]'); await P.fill('#gi-p8-t', lungo + ' ' + lungo); await sleep(300);
 await sw('giro: carte e Mazzo persona');
-const piccoliG = await ev(() => [...document.querySelectorAll('.pn-tabb, .gi-rit, .pn-chip, .sh-btn, .pn-chk, .pn-det > summary')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 36 || r.width < 36); }).map(e => (e.className || e.tagName) + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height)).slice(0, 4));
+const piccoliG = await ev(() => [...document.querySelectorAll('.pn-side .sh-si, .gi-rit, .pn-chip, .sh-btn, .pn-chk, .pn-det > summary')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 36 || r.width < 36); }).map(e => (e.className || e.tagName) + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height)).slice(0, 4));
 ok(!piccoliG.length, 'giro: pulsanti, caselle e schede abbastanza grandi da toccare' + (piccoliG.length ? ' («' + piccoliG.join(', ') + '»)' : ''));
 const fuoriG = await ev(() => [...document.querySelectorAll('.gi-carta, .gi-carta .sh-in, .pn-chip, .pn-tw, .pn-det')].filter(e => { const r = e.getBoundingClientRect(), c = e.closest('.pn-card').getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).length);
 ok(fuoriG === 0, 'giro: nessun elemento esce dalla sua scheda');
+await ev(() => pnSez('g-carte')); await sleep(400);
 await P.click('button >> text=Consegna le carte'); await sleep(1200);
+await ev(() => pnSez('g-pers')); await sleep(400);
 ok(db.t.pee_piani_contributi.some(c => c.consegnato), 'giro: le carte si consegnano dal dispositivo');
 await P.click('#gi-pe-ok'); await sleep(1200);
 ok(db.t.pee_piani_voci_anonime.length === 3, 'giro: il Mazzo persona si invia dal dispositivo');
 await ev(async () => { await PIANI.giroChiudi(GI.g.id, 'anticipata'); await giCarica(false); }); await sleep(800);
+await ev(() => pnSez('g-giro')); await sleep(500);
 await sw('giro: chiuso, con il registro');
 const fuoriC = await ev(() => [...document.querySelectorAll('.pn-tw, .pn-avv, .gi-anon')].filter(e => { const r = e.getBoundingClientRect(), c = e.closest('.pn-card').getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).length);
 ok(fuoriC === 0, 'giro: tabella e registro dentro la scheda');
-await P.click('.pn-tabb >> nth=0'); await sleep(500);
+await ev(() => pnSez('obi')); await sleep(500);
 ok(await ev(() => document.querySelectorAll('.pn-ob').length) === 8, 'si torna al piano con tutti gli obiettivi');
 await P.click('.pn-back'); await sleep(1200);
 ok(await ev(() => SH.view) === 'home', 'si torna alla home');
