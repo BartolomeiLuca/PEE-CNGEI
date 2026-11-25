@@ -18536,7 +18536,8 @@ function profCard(p, mode, disabled){
       <div class="sh-g2">
         <div><label class="sh-lb" for="sh-sez">Sezione</label><input class="sh-in" id="sh-sez" list="sh-dl-sez" autocomplete="off" maxlength="80" placeholder="Scrivi le prime lettere e scegli" value="${esc(p.sezione || '')}" oninput="shProfSezHint()" onchange="shProfSez()" aria-describedby="sh-sezh"><datalist id="sh-dl-sez">${sezOpts()}</datalist>
           <div class="sh-hint" id="sh-sezh" role="status" style="margin:4px 0 0"></div>
-          <label class="pn-chk" id="sh-sezlw" style="margin-top:6px"><input type="checkbox" id="sh-sezlib"${(p.dashboard || {}).sezioneLibera ? ' checked' : ''} onchange="shProfSezHint()"> <span>La mia Sezione non è in elenco</span></label></div>
+          <label class="pn-chk" id="sh-sezlw" style="margin-top:6px"><input type="checkbox" id="sh-sezlib"${(p.dashboard || {}).sezioneLibera ? ' checked' : ''} onchange="shProfSezHint()"> <span>La mia Sezione non è in elenco</span></label>
+          <div class="sh-hint" style="margin:2px 0 0"><a href="#" onclick="shSegnalaSezione();return false">Segnalalo</a>: così la aggiungiamo all’elenco.</div></div>
         <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
       </div>
       <p class="sh-hint" id="sh-privel" style="margin:0">Il tuo nome, ruolo ed e-mail compaiono nell’elenco di chi coordina il tuo Gruppo o la tua Sezione, per poterti invitare ai piani. Nessun’altra persona li vede.</p>
@@ -18583,6 +18584,10 @@ window.shProfRole = function(){
   const cw = $('sh-cosw'); if(cw) cw.hidden = r !== 'cos';
   const uw = $('sh-unw'), uf = $('sh-unf'), hc = $('sh-hasun');
   if(uw){ uw.hidden = !noBranca(r); if(uf) uf.style.display = (noBranca(r) && hc && hc.checked) ? 'flex' : 'none'; }
+};
+window.shSegnalaSezione = function(){
+  try{ fbOpen(); const v = ($('sh-sez') ? $('sh-sez').value : '').trim(), t = $('fb-tipo'), x = $('fb-txt') || document.querySelector('#fb-ov textarea');
+    if(t) t.value = 'Un\'idea o un miglioramento'; if(x && !x.value) x.value = 'La mia Sezione non è nell’elenco del profilo: ' + (v || '(scrivi qui il nome)'); }catch(e){}
 };
 window.shProfSezHint = function(){
   const i = $('sh-sez'), h = $('sh-sezh'), lib = $('sh-sezlib'); if(!i || !h) return;
@@ -18878,7 +18883,7 @@ window.pnCrea = async function(){
   const b = $('pn-n-ok'), m = $('pn-n-msg'); if(!b) return; b.disabled = true; m.className = 'sh-msg'; m.textContent = '';
   try{
     const anno = Number($('pn-n-anno').value), dur = Number($('pn-n-dur').value), tit = ($('pn-n-tit').value || '').trim() || 'Piano di Gruppo';
-    const p = await PIANI.crea({tipo:'gruppo', titolo:tit, anno_inizio:anno, durata:dur, data:pnVuoto()});
+    const p = await PIANI.crea({tipo:'gruppo', titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || ''})});
     shDlgClose(); pnOpen(p.id);
   }catch(e){ b.disabled = false; m.className = 'sh-msg err'; m.textContent = pianoErr(e); }
 };
@@ -18894,17 +18899,23 @@ async function pnPage(id){
     if(SH.view !== 'piano') return;
     if(!p){ r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano non trovato</h1><p class="sh-sub">Il piano non esiste più o non hai più accesso.</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`; return; }
     pnCarica(p);
-    pnRender(); pnLiveStart(); giCarica(true);
+    pnRender(); pnLiveStart(); giCarica(true); pnMembriCarica(p.id);
     if(p.ruolo !== 'titolare'){ try{ const mi = (await PIANI.inviti()).find(x => x.id === p.id); if(mi && mi.nuovo) PIANI.visto(mi.mid); }catch(e){} }
   }catch(e){
     if(SH.view === 'piano') r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano</h1><p class="sh-sub">${esc(pianoErr(e))}</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`;
   }
+}
+async function pnMembriCarica(id){
+  if(!pnTutto()) return; let rows; try{ rows = await PIANI.membri(id); }catch(e){ return; }
+  if(!PN.p || PN.p.id !== id) return; const prima = JSON.stringify((PN.membri || []).map(m => m.nome)); PN.membri = rows;
+  if(JSON.stringify(rows.map(m => m.nome)) !== prima && !document.activeElement.closest('.pn-az')) { try{ pnRender(); }catch(e){} }
 }
 function pnCarica(p){
   clearTimeout(PN.timer); if(GI.pid !== p.id) giReset(p.id);
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
   ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
+  if(!PN.p || PN.p.id !== p.id) PN.membri = null;
   Object.assign(PN, {p, d:v, base:pnClone(v), meta:{titolo:p.titolo, stato:p.stato}, baseMeta:{titolo:p.titolo, stato:p.stato}, ruolo:p.ruolo || 'lettore', dirty:false, saving:false, again:false, st:'', sel:{}});
 }
 
@@ -18920,6 +18931,7 @@ async function pnSave(){
   clearTimeout(PN.timer); if(!PN.p || !PN.dirty || PN.ruolo === 'lettore') return;
   if(PN.saving){ PN.again = true; return; }
   PN.saving = true; PN.st = ''; pnStato();
+  if(PN.ruolo === 'titolare'){ const nn = clMyName(); if(nn && PN.d.titolareNome !== nn) PN.d.titolareNome = nn; }
   const inviata = pnClone(PN.d), metaInv = pnClone(PN.meta);
   try{
     const patch = {data:inviata}; if(pnTutto()){ patch.titolo = metaInv.titolo; patch.stato = metaInv.stato; }
@@ -19360,7 +19372,7 @@ function pnRender(){
     <div class="pn-t"><label class="sh-lb" for="pn-tit">${E(PIANI_TIPI[p.tipo])}</label><input class="sh-in pn-tit" id="pn-tit" maxlength="160" value="${E(PN.meta.titolo)}" oninput="pnMeta('titolo',this.value)"${dis}></div>
     <p class="sh-sub" style="margin:0">${E(pnPeriodo(p))} · <b>${E(pnAnnoTxt(p))}</b> · ${E(rolo)}</p>
     <div class="sh-g2"><div><label class="sh-lb" for="pn-stato">Stato</label><select class="sh-in" id="pn-stato" onchange="pnMeta('stato',this.value)"${dis}>${PN_STATI.map(([k, t]) => `<option value="${k}"${PN.meta.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
-    <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" placeholder="gg/mm/aaaa" maxlength="20" value="${E(d.delibera.data)}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div></div></div>
+    <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" type="date" aria-label="Data della delibera" value="${E(pnDataIso(d.delibera.data))}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" aria-label="Luogo della delibera" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div>${d.delibera.data && !pnDataIso(d.delibera.data) ? `<p class="sh-hint" id="pn-delOld" style="margin:4px 0 0">Avevi scritto «${E(d.delibera.data)}»: scegli la data dal calendario.</p>` : ''}</div></div>
     <div class="pn-bar"><span class="pn-st" id="pn-st" role="status" aria-live="polite"></span>
       <button class="sh-btn sm gh" type="button" onclick="pnShare()">Chi ha accesso</button><button class="sh-btn sm gh" type="button" onclick="pnStorico()">Storico</button></div>
     ${ro ? '<p class="sh-hint" style="margin:0">Puoi leggere il piano. I pareri si raccolgono in presenza: qui non si modifica.</p>' : ''}
@@ -19413,6 +19425,25 @@ function pnObHTML(o, i){
   if(tutto) h += `<div><button class="sh-btn sm gh" type="button" onclick="pnAzAdd('${E(o.id)}')">+ Azione</button></div>`;
   return h + `</div></article>`;
 }
+// Referente: si sceglie tra chi partecipa alla stesura (titolare e persone invitate) oppure «Altro…» con nome scritto a mano. Il dato resta il nome, come prima.
+function pnRefPersone(){
+  const v = []; const add = n => { n = String(n || '').trim(); if(n && !v.some(x => affNorm(x) === affNorm(n))) v.push(n); };
+  const io = clMyName() || ''; if(PN.ruolo === 'titolare') add(io); else add(PN.d.titolareNome || '');
+  (PN.membri || []).forEach(m => add(m.nome)); if(PN.ruolo !== 'titolare') add(io);
+  return v;
+}
+function pnRefHTML(a, tutto){
+  const E = esc, id = E(a.id), ref = String(a.ref || '').trim();
+  if(!tutto) return `<div><label class="sh-lb" for="pn-azr-${id}">Referente</label><input class="sh-in" id="pn-azr-${id}" value="${E(ref)}" disabled></div>`;
+  const pers = pnRefPersone(), inLista = ref && pers.some(x => affNorm(x) === affNorm(ref)), altro = ref && !inLista;
+  return `<div><label class="sh-lb" for="pn-azr-${id}">Referente (una persona)</label><select class="sh-in" id="pn-azr-${id}" onchange="pnRefSel('${id}',this.value)"><option value=""${!ref ? ' selected' : ''}>— scegli —</option>${pers.map(n => `<option value="${E(n)}"${inLista && affNorm(n) === affNorm(ref) ? ' selected' : ''}>${E(n)}</option>`).join('')}<option value="__altro"${altro ? ' selected' : ''}>Altro…</option></select>
+    <input class="sh-in" id="pn-azrx-${id}" maxlength="80" placeholder="Nome e cognome" aria-label="Nome del referente" value="${altro ? E(ref) : ''}" oninput="pnAz('${id}','ref',this.value)" style="margin-top:6px${altro ? '' : ';display:none'}"></div>`;
+}
+window.pnRefSel = function(id, v){
+  const x = $('pn-azrx-' + id); if(!x) return;
+  if(v === '__altro'){ x.style.display = ''; x.focus(); pnAz(id, 'ref', x.value); }
+  else { x.style.display = 'none'; pnAz(id, 'ref', v); }
+};
 function pnAzHTML(a, j, p){
   const E = esc, ok = pnCanAz(a), tutto = pnTutto(), dis = ok ? '' : ' disabled', disT = tutto ? '' : ' disabled';
   const anni = Array.from({length:p.durata}, (_, k) => k + 1);
@@ -19422,7 +19453,7 @@ function pnAzHTML(a, j, p){
     <div><label class="sh-lb" for="pn-azs-${E(a.id)}">Stato</label><select class="sh-in" id="pn-azs-${E(a.id)}" onchange="pnAz('${E(a.id)}','stato',this.value)"${dis}>${PN_STATI_AZ.map(([k, t]) => `<option value="${k}"${(a.stato || 'da_iniziare') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div></div>
     <div><label class="sh-lb" for="pn-azd-${E(a.id)}">Indicatore: una domanda a cui si risponde sì o no</label><input class="sh-in" id="pn-azd-${E(a.id)}" maxlength="200" placeholder="Es. Abbiamo fatto almeno due incontri con le famiglie?" value="${E(a.indicatore)}" oninput="pnAz('${E(a.id)}','indicatore',this.value)"${dis}></div>
     <fieldset class="pn-fs"><legend class="sh-lb">Chi</legend><div class="pn-chips">${PN_CHI.map(([k, t]) => `<label class="pn-chip sm${(a.chi || []).includes(k) ? ' on' : ''}"><input type="checkbox" ${(a.chi || []).includes(k) ? 'checked' : ''} onchange="pnChi('${E(a.id)}','${k}',this.checked);this.parentNode.classList.toggle('on',this.checked)"${disT}>${E(t)}</label>`).join('')}<label class="pn-chip sm${a.genitori ? ' on' : ''}"><input type="checkbox" ${a.genitori ? 'checked' : ''} onchange="pnAz('${E(a.id)}','genitori',this.checked);this.parentNode.classList.toggle('on',this.checked)"${disT}>Con i genitori</label></div></fieldset>
-    <div><label class="sh-lb" for="pn-azr-${E(a.id)}">Referente (una persona)</label><input class="sh-in" id="pn-azr-${E(a.id)}" maxlength="80" placeholder="Nome e cognome" value="${E(a.ref)}" oninput="pnAz('${E(a.id)}','ref',this.value)"${disT}></div></div>`;
+    ${pnRefHTML(a, tutto)}</div>`;
 }
 
 // ── quadro sinottico e avvisi gentili ──
@@ -19460,7 +19491,9 @@ async function pnVersioneStato(){ // quando cambia lo stato (deliberato, approva
   const v = PN.versioneStato; PN.versioneStato = null; if(!v || !PN.p) return;
   await pnFlush(); try{ await PIANI.versione(PN.p, {motivo:'stato', nota:'Stato: ' + pnLab(PN_STATI, v.stato), data:PN.d, stato:v.stato}); }catch(e){}
 }
-window.pnDel = function(k, v){ if(!pnTutto()) return; PN.d.delibera[k] = v; pnTouch(); };
+// la data della delibera è una vera data (aaaa-mm-gg); i valori scritti prima a mano come gg/mm/aaaa si leggono e si convertono quando serve, senza perdere nulla
+function pnDataIso(t){ t = String(t || '').trim(); if(/^\d{4}-\d{2}-\d{2}$/.test(t)) return t; const m = t.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/); if(!m) return ''; const g = +m[1], me = +m[2]; if(g < 1 || g > 31 || me < 1 || me > 12) return ''; return m[3] + '-' + String(me).padStart(2, '0') + '-' + String(g).padStart(2, '0'); }
+window.pnDel = function(k, v){ if(!pnTutto()) return; PN.d.delibera[k] = v; if(k === 'data'){ const o = $('pn-delOld'); if(o) o.remove(); } pnTouch(); };
 window.pnAn = function(id, k, v){ const a = PN.d.analisi.find(x => x.id === id); if(!a || !pnTutto()) return; a[k] = v; pnTouch(); };
 window.pnAnAdd = function(t){ if(!pnTutto()) return; const a = {id:pnUid(), titolo:t || '', testo:''}; PN.d.analisi.push(a); pnTouch(); pnRender(); const f = $(t ? 'pn-anx-' + a.id : 'pn-ant-' + a.id); if(f) f.focus(); };
 window.pnAnDel = function(id){ if(!pnTutto()) return; const a = PN.d.analisi.find(x => x.id === id); if(a && (a.testo || '').trim() && !confirm('Eliminare questo titolo e il suo testo?')) return; PN.d.analisi = PN.d.analisi.filter(x => x.id !== id); pnTouch(); pnRender(); };
@@ -19508,7 +19541,7 @@ window.pnShare = async function(){
   if(!PN.p) return; const E = esc; const gestisce = pnTutto();
   dlgOpen(`<h2 id="sh-dlg-t">Chi ha accesso al piano</h2><div id="pn-sh"><p class="sh-hint">Carico…</p></div>`);
   try{
-    const rows = gestisce ? await PIANI.membri(PN.p.id) : [];
+    const rows = gestisce ? await PIANI.membri(PN.p.id) : []; if(gestisce) PN.membri = rows;
     const me = PN.ruolo === 'titolare';
     let h = `<p class="sh-hint" style="margin:0">Il piano si condivide solo su invito. Chi è invitato al piano vede <b>solo</b> il piano, non i tuoi progetti.</p>`;
     h += `<div class="pn-sh-r"><div><b>${E(PN.p.owner_email || 'Titolare')}</b><div class="sh-hint" style="margin:0">Titolare</div></div></div>`;

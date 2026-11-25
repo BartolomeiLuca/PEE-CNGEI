@@ -54,7 +54,7 @@ await luca.P.click('.pn-ob .pn-chip >> text=Educativa'); await luca.P.click('.pn
 await luca.P.click('.pn-ob button >> text=+ Azione'); await sleep(250);
 await luca.P.fill('.pn-az .pn-ta >> nth=0', 'Due serate con i genitori'); await sleep(100);
 await luca.P.fill('.pn-az [id^="pn-azd-"]', 'Abbiamo fatto due serate?');
-await luca.P.fill('.pn-az [id^="pn-azr-"]', 'Anna Rossi'); await sleep(100);
+await luca.P.selectOption('.pn-az select[id^="pn-azr-"]', '__altro'); await luca.P.fill('.pn-az [id^="pn-azrx-"]', 'Anna Rossi'); await sleep(100);
 await luca.P.click('.pn-az .pn-chip >> text=Consiglio di Gruppo');
 await luca.P.selectOption('.pn-az select[id^="pn-azs-"]', 'in_corso');
 ok(await salvato(luca), 'tutto salvato');
@@ -102,8 +102,8 @@ ok(d7.spunti.length === 0 && d7.obiettivi.length === 3 && d7.obiettivi[2].origin
 ok(await luca.ev(() => document.getElementById('pn-delw').hidden) === true, 'in bozza la delibera è nascosta');
 await luca.P.selectOption('#pn-stato', 'deliberato'); await sleep(300);
 ok(await luca.ev(() => !document.getElementById('pn-delw').hidden), 'deliberato: compaiono data e luogo');
-await luca.P.fill('#pn-delD', '15/10/2026'); await luca.P.fill('#pn-delL', 'Sede del Gruppo');
-ok(await salvato(luca) && dbPiano().stato === 'deliberato' && dbPiano().data.delibera.data === '15/10/2026', 'stato e delibera salvati');
+await luca.P.fill('#pn-delD', '2026-10-15'); await luca.P.fill('#pn-delL', 'Sede del Gruppo');
+ok(await salvato(luca) && dbPiano().stato === 'deliberato' && dbPiano().data.delibera.data === '2026-10-15', 'stato e delibera salvati');
 await sleep(600);
 ok(db.t.pee_piani_versioni.some(v => v.motivo === 'stato' && v.stato === 'deliberato'), 'il cambio di stato lascia una versione nello storico');
 
