@@ -18793,6 +18793,18 @@ const PN_AREE = [['educativa', 'Educativa'], ['formativa', 'Formativa'], ['gesti
 const PN_ORIGINI = [['sezione', 'Progetto di Sezione'], ['clan', 'Progetto di Clan'], ['unita', 'Bisogni di un’Unità'], ['formazione', 'Piano di formazione adulti'], ['strategico', 'Piano Strategico'], ['giro', 'Ascolto del Piano'], ['proprio', 'Nostro, del Gruppo']];
 const PN_CHI = [['cdg', 'Consiglio di Gruppo'], ['cg', 'Capo Gruppo'], ['unita', 'Unità'], ['clan', 'Clan'], ['sezione', 'Sezione']];
 const PN_STATI_AZ = [['da_iniziare', 'Da iniziare'], ['in_corso', 'In corso'], ['fatta', 'Fatta']];
+// ── quando si fa (27/11): mese di inizio, azione una tantum o continuativa, fine. L’anno scout va da settembre ad agosto ──
+const PN_MESI_N = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+const PN_TIPI_AZ = [['una', 'Una volta sola'], ['cont', 'Continuativa']];
+function pnMesi(p){ const o = []; for(let k = 1; k <= p.durata; k++){ const y = Number(p.anno_inizio) + k - 1; for(let m = 9; m <= 20; m++){ const yy = m > 12 ? y + 1 : y, mm = m > 12 ? m - 12 : m; o.push({k:yy + '-' + String(mm).padStart(2, '0'), anno:k, lab:PN_MESI_N[mm - 1] + ' ' + yy}); } } return o; }
+const pnMeseLab = (p, k) => { const m = pnMesi(p).find(x => x.k === k); return m ? m.lab : ''; };
+// «quando» di un’azione, a parole: serve alla tabella, al Word e (poi) al Quadro
+function pnQuando(a, p){
+  if(!a.mese || !pnMeseLab(p, a.mese)) return 'Anno ' + (a.inizio || 1) + (a.mese ? '' : ' · mese da scegliere');
+  if(a.tipo !== 'cont') return pnMeseLab(p, a.mese);
+  if(a.fine === 'piano') return 'da ' + pnMeseLab(p, a.mese) + ' a fine piano';
+  return a.fine && pnMeseLab(p, a.fine) ? 'da ' + pnMeseLab(p, a.mese) + ' a ' + pnMeseLab(p, a.fine) : 'da ' + pnMeseLab(p, a.mese);
+}
 const PN_STATI = [['bozza', 'Bozza'], ['deliberato', 'Deliberato'], ['approvato', 'Approvato']];
 // quanti obiettivi sono «pochi»: cambiare solo qui (Gruppo 6-8, avviso sopra 10; confermato da Luca il 23/11)
 const PN_SOGLIE = {gruppo:{ideale:'6-8', avviso:10}, clan:{ideale:'4-6', avviso:8}, sezione:{ideale:'10-12', avviso:15}};
@@ -19635,8 +19647,8 @@ window.pnScarica = async function(){
       const az = d.azioni.filter(a => a.ob === o.id);
       if(az.length){
         const W = [2500, 800, 1150, 1850, 1000, 2338];
-        ch.push(dGridTable(['Azione', 'Inizia', 'Si verifica', 'Chi e referente', 'Stato', 'Indicatore'], az.map(a => [
-          X(a.testo), 'Anno ' + (a.inizio || 1), (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? '\n' + (a.step === 'meta' ? 'Anche a metà anno' : 'A ogni Consiglio di Gruppo') : ''),
+        ch.push(dGridTable(['Azione', 'Quando', 'Si verifica', 'Chi e referente', 'Stato', 'Indicatore'], az.map(a => [
+          X(a.testo), pnQuando(a, PN.p) + (a.urgente ? '\nUrgente' : ''), (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? '\n' + (a.step === 'meta' ? 'Anche a metà anno' : 'A ogni Consiglio di Gruppo') : ''),
           [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.genitori ? 'Con i genitori' : '', a.ref ? 'Referente: ' + X(a.ref) : ''].filter(Boolean).join('\n'), pnLab(PN_STATI_AZ, a.stato || 'da_iniziare'), X(a.indicatore)]), W, 16));
       }
     });
@@ -19753,7 +19765,10 @@ function pnAzHTML(a, j, p){
   const E = esc, ok = pnCanAz(a), tutto = pnTutto(), dis = ok ? '' : ' disabled', disT = tutto ? '' : ' disabled';
   const anni = Array.from({length:p.durata}, (_, k) => k + 1);
   return `<div class="pn-az" id="pn-az-${E(a.id)}"><div class="pn-az-h"><b>${j + 1}.</b><textarea class="sh-in pn-ta" id="pn-azt-${E(a.id)}" aria-label="Azione ${j + 1}" rows="2" placeholder="Che cosa si fa" oninput="pnAz('${E(a.id)}','testo',this.value);pnGrow(this)"${dis}>${E(a.testo)}</textarea>${tutto ? `<button class="pn-ib" type="button" aria-label="Elimina l’azione" onclick="pnAzDel('${E(a.id)}')">✕</button>` : ''}</div>
-    <div class="pn-az-g"><div><label class="sh-lb" for="pn-azi-${E(a.id)}">Inizia</label><select class="sh-in" id="pn-azi-${E(a.id)}" onchange="pnAz('${E(a.id)}','inizio',Number(this.value))"${dis}>${anni.map(k => `<option value="${k}"${a.inizio === k ? ' selected' : ''}>Anno ${k}</option>`).join('')}</select></div>
+    <div class="pn-az-g"><div><label class="sh-lb" for="pn-azi-${E(a.id)}">Inizia (mese)</label><select class="sh-in${a.mese ? '' : ' pn-mancante'}" id="pn-azi-${E(a.id)}" onchange="pnAzQuando('${E(a.id)}','mese',this.value)"${dis}><option value=""${a.mese ? '' : ' selected'}>${E(a.mese ? '— nessun mese —' : (a.inizio ? 'Anno ' + a.inizio + ' · scegli il mese' : 'Scegli il mese'))}</option>${anni.map(k => `<optgroup label="Anno ${k} · ${E(annoScoutTxt(Number(p.anno_inizio) + k - 1))}">${pnMesi(p).filter(m => m.anno === k).map(m => `<option value="${m.k}"${a.mese === m.k ? ' selected' : ''}>${E(m.lab)}</option>`).join('')}</optgroup>`).join('')}</select></div>
+    <div><label class="sh-lb" for="pn-azq-${E(a.id)}">Com’è nel tempo</label><select class="sh-in" id="pn-azq-${E(a.id)}" onchange="pnAzQuando('${E(a.id)}','tipo',this.value)"${dis}><option value=""${a.tipo ? '' : ' selected'}>Da scegliere</option>${PN_TIPI_AZ.map(([k, t]) => `<option value="${k}"${a.tipo === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
+    ${a.tipo === 'cont' ? `<div><label class="sh-lb" for="pn-azf-${E(a.id)}">Fino a</label><select class="sh-in" id="pn-azf-${E(a.id)}" onchange="pnAzQuando('${E(a.id)}','fine',this.value)"${dis}><option value=""${a.fine ? '' : ' selected'}>Da scegliere</option><option value="piano"${a.fine === 'piano' ? ' selected' : ''}>Fino a fine piano</option>${pnMesi(p).filter(m => !a.mese || m.k >= a.mese).map(m => `<option value="${m.k}"${a.fine === m.k ? ' selected' : ''}>${E(m.lab)}</option>`).join('')}</select></div>` : ''}
+    <div><span class="sh-lb">Urgenza</span><label class="pn-chip sm${a.urgente ? ' on' : ''}" style="margin-top:4px"><input type="checkbox" ${a.urgente ? 'checked' : ''} onchange="pnAz('${E(a.id)}','urgente',this.checked);this.parentNode.classList.toggle('on',this.checked)"${dis}>Urgente</label></div>
     <div><label class="sh-lb" for="pn-azv-${E(a.id)}">Si verifica</label><select class="sh-in" id="pn-azv-${E(a.id)}" onchange="pnAz('${E(a.id)}','verifica',this.value)"${dis}><option value="ogni"${a.verifica === 'ogni' || !a.verifica ? ' selected' : ''}>Ogni anno</option>${anni.map(k => `<option value="${k}"${String(a.verifica) === String(k) ? ' selected' : ''}>Alla fine dell’anno ${k}</option>`).join('')}</select></div>
     <div><label class="sh-lb" for="pn-azs-${E(a.id)}">Stato</label><select class="sh-in" id="pn-azs-${E(a.id)}" onchange="pnAz('${E(a.id)}','stato',this.value)"${dis}>${PN_STATI_AZ.map(([k, t]) => `<option value="${k}"${(a.stato || 'da_iniziare') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div></div>
     <div><label class="sh-lb" for="pn-azk-${E(a.id)}">Controllo intermedio</label><select class="sh-in" id="pn-azk-${E(a.id)}" onchange="pnAz('${E(a.id)}','step',this.value)"${dis}>${PN_STEP.map(([k, t]) => `<option value="${k}"${(a.step || '') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
@@ -19783,6 +19798,7 @@ function pnAvvisi(){
   if(senzaAz.length) w.push(`Senza azioni: obiettivo ${senzaAz.join(', ')}. Un obiettivo senza azioni resta scritto e non usato.`);
   const tante = d.obiettivi.map((o, i) => [d.azioni.filter(a => a.ob === o.id).length, i + 1]).filter(([n]) => n > PN_MAX_AZIONI).map(([, i]) => i);
   if(tante.length) w.push(`L’obiettivo ${tante.join(', ')} ha più di ${PN_MAX_AZIONI} azioni: sono tante da seguire.`);
+  const senzaMese = d.azioni.filter(a => !a.mese).length; if(senzaMese) w.push(`Manca il mese di inizio in ${senzaMese} ${senzaMese === 1 ? 'azione' : 'azioni'}: serve per metterle nel calendario e nel quadro del Piano.`);
   const senzaInd = d.azioni.filter(a => !(a.indicatore || '').trim()).length; if(senzaInd) w.push(`Manca l’indicatore in ${senzaInd} ${senzaInd === 1 ? 'azione' : 'azioni'}: come capirete a fine anno se è andata bene?`);
   const senzaAr = d.obiettivi.map((o, i) => [o, i + 1]).filter(([o]) => !(o.aree || []).length).map(([, n]) => n);
   if(senzaAr.length) w.push(`Senza etichetta di area: obiettivo ${senzaAr.join(', ')}.`);
@@ -19813,6 +19829,15 @@ window.pnObDel = function(id){ if(!pnTutto()) return; const n = PN.d.azioni.filt
   PN.d.obiettivi = PN.d.obiettivi.filter(x => x.id !== id); PN.d.azioni = PN.d.azioni.filter(a => a.ob !== id); delete PN.sel[id]; pnTouch(); pnRender(); };
 window.pnObMove = function(id, dir){ if(!pnTutto()) return; const a = PN.d.obiettivi, i = a.findIndex(x => x.id === id), j = i + dir; if(i < 0 || j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; pnTouch(); pnRender(); const e = $('pn-obt-' + id); if(e) e.focus(); };
 window.pnAzAdd = function(ob){ if(!pnTutto()) return; const a = {id:pnUid(), ob, testo:'', inizio:1, verifica:'ogni', indicatore:'', chi:[], ref:'', stato:'da_iniziare', genitori:false}; PN.d.azioni.push(a); pnTouch(); pnRender(); const f = $('pn-azt-' + a.id); if(f){ f.focus(); f.scrollIntoView({block:'center'}); } };
+window.pnAzQuando = function(id, k, v){
+  const a = PN.d.azioni.find(x => x.id === id); if(!a || !pnCanAz(a) || !PN.p) return;
+  if(k === 'mese'){ a.mese = v || ''; const m = v ? pnMesi(PN.p).find(x => x.k === v) : null; if(m) a.inizio = m.anno; if(v && a.fine && a.fine !== 'piano' && a.fine < v) a.fine = ''; }
+  else if(k === 'tipo'){ a.tipo = v || ''; if(a.tipo !== 'cont') a.fine = ''; }
+  else if(k === 'fine'){ a.fine = v || ''; }
+  pnTouch();
+  const el = $('pn-az-' + id); if(el){ const o = PN.d.obiettivi.find(x => x.id === a.ob); const lista = PN.d.azioni.filter(x => x.ob === a.ob); el.outerHTML = pnAzHTML(a, Math.max(0, lista.indexOf(a)), PN.p); const f = $('pn-az' + (k === 'mese' ? 'i' : k === 'tipo' ? 'q' : 'f') + '-' + id); if(f) try{ f.focus({preventScroll:true}); }catch(e){} }
+  pnRefresh();
+};
 window.pnAz = function(id, k, v){ const a = PN.d.azioni.find(x => x.id === id); if(!a || !pnCanAz(a)) return; a[k] = v; pnTouch(); pnRefresh(); };
 window.pnChi = function(id, k, on){ const a = PN.d.azioni.find(x => x.id === id); if(!a || !pnTutto()) return; const s = new Set(a.chi || []); on ? s.add(k) : s.delete(k); a.chi = PN_CHI.map(x => x[0]).filter(x => s.has(x)); pnTouch(); };
 window.pnAzDel = function(id){ if(!pnTutto()) return; const a = PN.d.azioni.find(x => x.id === id); if(a && (a.testo || '').trim() && !confirm('Eliminare questa azione?')) return; PN.d.azioni = PN.d.azioni.filter(x => x.id !== id); pnTouch(); pnRender(); };
@@ -19948,7 +19973,7 @@ window.pnRipristina = async function(vid){
 };
 
 window.addEventListener('pagehide', () => { try{ if(SH.view === 'piano' && PN.dirty) pnSave(); }catch(e){} });
-Object.assign(window, {PN, pnMerge, pnTouch, pnSave, pnRicarica, pnAnnoTxt, pnRender, pnGrow, pnVuoto, GI, giCarica, giFlush});
+Object.assign(window, {pnQuando, pnMesi, pnMeseLab, PN, pnMerge, pnTouch, pnSave, pnRicarica, pnAnnoTxt, pnRender, pnGrow, pnVuoto, GI, giCarica, giFlush});
 
 async function homeHTML(){
   const r = $('sh-root');
@@ -20384,6 +20409,7 @@ body.sh-in .toast{pointer-events:none}
 .pn-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45;min-height:44px}
 .pn-chk input{width:20px;height:20px;flex:none;margin:0}
 .pn-az-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pn-mancante{border-style:dashed!important;border-color:var(--amber)!important}
 .pn-azh{display:flex;gap:8px;align-items:baseline}
 .pn-tw{overflow-x:auto}
 .pn-tab{width:100%;border-collapse:collapse;font-size:13px}

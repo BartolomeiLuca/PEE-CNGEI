@@ -13,7 +13,7 @@ const az = (id, o, t, ex) => Object.assign({id, ob:o, testo:t, inizio:1, verific
 db.t.pee_piani.push({id:'p1', owner_id:luca.id, owner_email:'luca@x.it', tipo:'gruppo', titolo:'Piano di Gruppo «Pesaro 1» 2026-29', anno_inizio:2026, durata:3, stato:'deliberato', archivio_id:null, rev:1, updated_at:new Date().toISOString(), created_at:new Date().toISOString(),
   data:{v:1, titolareNome:'Luca Titolare', analisi:[{id:'n1', titolo:'Le famiglie', testo:'Poche famiglie partecipano.\n\nVorremmo più serate insieme.'}], swot:null,
     obiettivi:[ob('o1', 'Più famiglie nel Gruppo & più serate <insieme>', ['educativa', 'territorio'], {ricadute:true, origine:'giro', rif:'Giro 1 · Anna Verdi'}), ob('o2', 'Una sede più grande', ['gestionale'])],
-    azioni:[az('a1', 'o1', 'Due serate con le famiglie', {step:'meta'}), az('a2', 'o1', 'Un bivacco di Gruppo', {verifica:2}), az('a3', 'o2', 'Cercare un locale', {chi:[], ref:'', genitori:false, stato:'da_iniziare'})],
+    azioni:[az('a1', 'o1', 'Due serate con le famiglie', {step:'meta', mese:'2026-10', tipo:'cont', fine:'2027-05', urgente:true}), az('a2', 'o1', 'Un bivacco di Gruppo', {verifica:2, mese:'2027-06', tipo:'una'}), az('a3', 'o2', 'Cercare un locale', {chi:[], ref:'', genitori:false, stato:'da_iniziare'})],
     uniti:[{id:'u1', testo:'Vecchio obiettivo', aree:['sviluppo']}], spunti:[{id:'s1', da:'Reparto Aquile', testo:'Una giornata insieme'}],
     tappe:[{id:'t1', anno:1, tipo:'meta', data:'2027-02-20', fatta:true, note:'Le serate non partono'}, {id:'t2', anno:1, tipo:'fine', data:'', fatta:false, note:''}],
     delibera:{data:'2026-10-15', luogo:'Sede'}}});
@@ -31,6 +31,7 @@ ok(/Piano di Gruppo «Pesaro 1» 2026-29/.test(t) && /Deliberato/.test(t) && /Lu
 ok(/Le famiglie/.test(t) && /Poche famiglie partecipano/.test(t) && /Vorremmo più serate insieme/.test(t), 'dove siamo');
 ok(/Obiettivo 1/.test(t) && /Più famiglie nel Gruppo & più serate <insieme>/.test(t) && /Aree: Educativa, Territorio/.test(t) && /Con ricadute educative/.test(t) && /Ascolto del Piano \(Ascolto 1 · Anna Verdi\)/.test(t), 'obiettivi con aree, ricadute e provenienza (caratteri speciali compresi)');
 ok(/Due serate con le famiglie/.test(t) && /Anche a metà anno/.test(t) && /Fine anno 2/.test(t) && /Referente: Vera Vice/.test(t) && /Con i genitori/.test(t) && /Consiglio di Gruppo, Unità/.test(t) && /In corso/.test(t), 'azioni con inizio, verifica, chi, referente, stato');
+ok(/da ottobre 2026 a maggio 2027/.test(t) && /giugno 2027/.test(t) && /Urgente/.test(t) && /Anno 1 · mese da scegliere/.test(t), 'Word: «quando» a parole, urgente, e «mese da scegliere» per le azioni vecchie');
 ok(/Quadro sinottico/.test(t) && /Verifiche/.test(t) && /20\/02\/2027/.test(t) && /Le serate non partono/.test(t), 'quadro sinottico e verifiche');
 ok(/Una giornata insieme/.test(t) && /Vecchio obiettivo/.test(t), 'spunti dalle Unità e obiettivi uniti');
 ok(!/SEGRETO-DELLE-CARTE/.test(t) && !/Anna Verdi\b.*SEGRETO/.test(t), 'le carte del giro non finiscono nel Word');

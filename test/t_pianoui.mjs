@@ -62,6 +62,7 @@ await luca.P.fill('.pn-az [id^="pn-azd-"]', 'Abbiamo fatto due serate?');
 await luca.P.selectOption('.pn-az select[id^="pn-azr-"]', '__altro'); await luca.P.fill('.pn-az [id^="pn-azrx-"]', 'Anna Rossi'); await sleep(100);
 await luca.P.click('.pn-az .pn-chip >> text=Consiglio di Gruppo');
 await luca.P.selectOption('.pn-az select[id^="pn-azs-"]', 'in_corso');
+await luca.P.selectOption('.pn-az select[id^="pn-azi-"]', await luca.ev(() => document.querySelector('.pn-az select[id^="pn-azi-"] option[value^="20"]').value));   // 27/11: il mese di inizio
 ok(await salvato(luca), 'tutto salvato');
 const dd = dbPiano().data;
 ok(dd.obiettivi.length === 1 && dd.obiettivi[0].aree.join() === 'educativa,territorio' && dd.azioni.length === 1 && dd.azioni[0].ob === dd.obiettivi[0].id, 'obiettivo con due aree (in ordine) e un\'azione collegata');
