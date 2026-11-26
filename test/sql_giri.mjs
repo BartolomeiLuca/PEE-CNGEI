@@ -76,6 +76,30 @@ const sql3 = fs.readFileSync(new URL('../supabase_aggiornamento_25novembre_nome_
   await as('luca', `update pee_piani_contributi set data = '{"x":3}' where autore_id = $1`, [U.a]);
   const n3 = await db.query(`select autore_nome from pee_piani_contributi where autore_id = $1`, [U.a]); ok(n3.rows[0].autore_nome === 'Terzo nome', 'un\'altra persona non cambia il nome di chi ha scritto');
 }
+// 26/11: ruolo e Branca sulle carte, e i Senior in Servizio nell'elenco del Gruppo
+{
+  await db.exec(`create table if not exists public.pee_profili (user_id uuid primary key references auth.users(id), nome text, ruolo text, branca text, sezione text, gruppo text, area_rcdf text, dashboard jsonb default '{}'::jsonb); grant all on public.pee_profili to authenticated;`);
+  const PR = (k, ruolo, br, gr, dash) => db.query(`insert into pee_profili(user_id, nome, ruolo, branca, sezione, gruppo, dashboard) values ($1,$2,$3,$4,'Pesaro',$5,$6) on conflict (user_id) do update set ruolo = excluded.ruolo, branca = excluded.branca`, [U[k], 'Nome ' + k, ruolo, br, gr, JSON.stringify(dash || {})]);
+  await PR('a', 'cu', 'E', 'Pesaro 1'); await PR('b', 'senior', 'R', 'Pesaro 1'); await PR('luca', 'cg', '', 'Pesaro 1');
+  const sqlE = fs.readFileSync(new URL('../supabase_aggiornamento_25novembre_elenco_persone.sql', import.meta.url), 'utf8');
+  const sql4 = fs.readFileSync(new URL('../supabase_aggiornamento_26novembre_senior_e_ruolo_carte.sql', import.meta.url), 'utf8');
+  await db.exec(sqlE);
+  let e5 = null, e6 = null; try { await db.exec(sql4); } catch(e){ e5 = e; } ok(!e5, 'lo script del 26 novembre gira' + (e5 ? ': ' + e5.message : '')); try { await db.exec(sql4); } catch(e){ e6 = e; } ok(!e6, 'e si può rieseguire');
+  const r0 = await db.query(`select autore_etichetta e, autore_branca b from pee_piani_contributi where autore_id = $1 and tipo = 'carte'`, [U.a]);
+  ok(r0.rows[0].e === 'Capo Unità' && r0.rows[0].b === 'E', 'lo script mette ruolo e Branca sulle carte già scritte');
+  await db.query(`update pee_profili set ruolo = 'vcu', branca = 'R' where user_id = $1`, [U.a]);
+  await as('luca', `update pee_piani_contributi set data = '{"x":9}' where autore_id = $1`, [U.a]);
+  const r1 = await db.query(`select autore_etichetta e, autore_branca b from pee_piani_contributi where autore_id = $1 and tipo = 'carte'`, [U.a]);
+  ok(r1.rows[0].e === 'Capo Unità' && r1.rows[0].b === 'E', 'un’altra persona non cambia ruolo e Branca di chi ha scritto');
+  await as('a', `update pee_piani_contributi set data = '{"x":8}' where autore_id = $1`, [U.a]);
+  const r2 = await db.query(`select autore_etichetta e, autore_branca b from pee_piani_contributi where autore_id = $1 and tipo = 'carte'`, [U.a]);
+  ok(r2.rows[0].e === 'Vice Capo Unità' && r2.rows[0].b === 'R', 'se chi ha scritto risalva, ruolo e Branca seguono il profilo');
+  await db.query(`update pee_profili set ruolo = 'cu', branca = 'E' where user_id = $1`, [U.a]);
+  const f = await db.query(`select public.pee_etichetta_profilo('cos', '["Presidente"]'::jsonb) p, public.pee_etichetta_profilo('cos', '["commissario"]'::jsonb) c, public.pee_etichetta_profilo('cds', null) d, public.pee_etichetta_profilo('senior', null) s, public.pee_etichetta_profilo(null, null) n`);
+  ok(f.rows[0].p === 'Presidente' && f.rows[0].c === 'Commissario di Sezione' && f.rows[0].d === 'Commissario di Sezione' && f.rows[0].s === 'Senior in Servizio' && f.rows[0].n === '', 'le etichette dei ruoli');
+  const el = await as('luca', `select nome from pee_persone_elenco('gruppo')`);
+  ok(!el.err && el.rows.some(x => x.nome === 'Nome b'), 'un Senior in Servizio compare nell’elenco del Gruppo' + (el.err ? ': ' + el.err : ''));
+}
 ok(await nrows('b', `select id from pee_piani_contributi`) === 0, 'chi non ha ancora consegnato non vede le carte degli altri');
 ok(await nrows('luca', `select id from pee_piani_contributi`) === 0, 'neanche il titolare, finché non consegna');
 ok(await nrows('c', `select id from pee_piani_contributi`) === 1, 'una bozza propria resta visibile a chi la scrive');

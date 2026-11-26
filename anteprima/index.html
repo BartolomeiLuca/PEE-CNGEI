@@ -16336,7 +16336,7 @@ const PIANI = {
   async giroStato(g){ const {data, error} = await CL.sb.rpc('pee_piano_giro_stato', {g}); if(error) throw error; return data || []; },
   async giroChiudi(g, tipo){ const {error} = await CL.sb.rpc('pee_piano_giro_chiudi', {g, tipo_:tipo || 'anticipata'}); if(error) throw error; },
   // contributi con il nome: i miei sempre; quelli delle altre persone solo se consegnati e dopo aver consegnato le mie carte (o a giro chiuso)
-  async contributi(g){ const {data, error} = await CL.sb.from('pee_piani_contributi').select('id,giro_id,autore_id,autore_nome,tipo,data,consegnato,consegnato_il,updated_at').eq('giro_id', g).order('created_at'); if(error) throw error; return data || []; },
+  async contributi(g){ const col = 'id,giro_id,autore_id,autore_nome,tipo,data,consegnato,consegnato_il,updated_at'; let q = await CL.sb.from('pee_piani_contributi').select(col + ',autore_etichetta,autore_branca').eq('giro_id', g).order('created_at'); if(q.error && /autore_etichetta|autore_branca|column/i.test(String(q.error.message || ''))) q = await CL.sb.from('pee_piani_contributi').select(col).eq('giro_id', g).order('created_at'); const {data, error} = q; if(error) throw error; return data || []; },
   async contributoSalva(g, tipo, dati, consegnato){
     const me = CL.user.id;
     const una = async () => { const r = await CL.sb.from('pee_piani_contributi').select('id,consegnato').eq('giro_id', g).eq('autore_id', me).eq('tipo', tipo).maybeSingle(); if(r.error) throw r.error; return r.data; };
@@ -18796,7 +18796,7 @@ const PN_STATI = [['bozza', 'Bozza'], ['deliberato', 'Deliberato'], ['approvato'
 const PN_SOGLIE = {gruppo:{ideale:'6-8', avviso:10}, clan:{ideale:'4-6', avviso:8}, sezione:{ideale:'10-12', avviso:15}};
 const PN_MAX_AZIONI = 3;
 const PN_TITOLI = ['Punti di forza e di debolezza', 'Le Unità e i ragazzi e le ragazze', 'Gli adulti del Gruppo', 'Le famiglie', 'Sede, materiali e risorse economiche', 'Il territorio'];
-const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
+const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Senior in Servizio', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
 const pnUid = () => 'x' + Math.random().toString(36).slice(2, 9);
 const pnClone = o => JSON.parse(JSON.stringify(o == null ? null : o));
 const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}});
@@ -18836,7 +18836,7 @@ function pnMerge(base, loc, rem){
 }
 
 // ── stato della pagina ──
-const PN = {p:null, d:null, base:null, meta:null, baseMeta:null, ruolo:'lettore', dirty:false, saving:false, again:false, timer:null, st:'', live:null, sel:{}};
+const PN = {p:null, d:null, base:null, meta:null, baseMeta:null, ruolo:'lettore', dirty:false, saving:false, again:false, timer:null, st:'', live:null, sel:{}, open:{}};
 const pnTutto = () => PN.ruolo === 'titolare' || PN.ruolo === 'cotitolare';
 const pnCanAz = a => pnTutto() || (PN.ruolo === 'collaboratore' && a && a.ref && affNorm(a.ref) === affNorm(clMyName()));
 const pnAnnoCorr = p => annoScoutStart() - Number(p.anno_inizio) + 1;
@@ -19158,15 +19158,23 @@ function giCarteAltreHTML(){
     else {
       h += `<p class="sh-hint" style="margin:0">${altre.length} ${altre.length === 1 ? 'persona ha consegnato' : 'persone hanno consegnato'} le carte. Ogni carta porta il nome di chi l’ha scritta.</p>`;
       PN_AREE.forEach(([k, t]) => {
-        const voci = altre.map(c => ({n:c.autore_nome || 'Senza nome', x:(c.data && c.data.a && c.data.a[k]) || {}})); const scritte = voci.filter(v => (v.x.v || v.x.c || v.x.p || '').trim());
+        const voci = altre.map(c => ({n:c.autore_nome || 'Senza nome', ch:giChip(c), x:(c.data && c.data.a && c.data.a[k]) || {}})); const scritte = voci.filter(v => (v.x.v || v.x.c || v.x.p || '').trim());
         const prop = voci.filter(v => (v.x.p || '').trim()).length;
         h += `<details class="pn-det" ${scritte.length ? 'open' : ''}><summary>${E(t)} <span class="sh-hint" style="margin:0">· ${scritte.length} ${scritte.length === 1 ? 'carta scritta' : 'carte scritte'}${prop ? ', ' + prop + ' ' + (prop === 1 ? 'proposta' : 'proposte') : ''}</span></summary>`;
-        h += scritte.length ? scritte.map(v => `<div class="gi-voce"><b>${E(v.n)}</b>${GI_CAMPI.map(([f, lab]) => (v.x[f] || '').trim() ? `<div><span class="sh-hint" style="margin:0">${E(lab)}</span><div class="gi-tx">${E(v.x[f])}</div></div>` : '').join('')}</div>`).join('') : `<p class="sh-hint" style="margin:6px 0 0">Nessuna carta scritta per questo ambito.</p>`;
+        h += scritte.length ? scritte.map(v => `<div class="gi-voce"><b>${E(v.n)}</b> ${v.ch}${GI_CAMPI.map(([f, lab]) => (v.x[f] || '').trim() ? `<div><span class="sh-hint" style="margin:0">${E(lab)}</span><div class="gi-tx">${E(v.x[f])}</div></div>` : '').join('')}</div>`).join('') : `<p class="sh-hint" style="margin:6px 0 0">Nessuna carta scritta per questo ambito.</p>`;
         h += `</details>`; });
     }
     h += `</section>`;
   }
   return h;
+}
+// «Nome · ruolo · Branca» di chi ha scritto: blu per Capo Gruppo e Commissario, colore di Branca per chi è in Unità, neutro per gli altri. Sempre con la parola, mai solo il colore.
+const GI_BR_NOME = {L:'Branco', E:'Reparto', R:'Compagnia'};
+function giChip(c){
+  const et = String((c && c.autore_etichetta) || '').trim(), br = String((c && c.autore_branca) || '').trim(); if(!et && !br) return '';
+  const blu = /^(vice )?(capo gruppo|commissario)/i.test(et), cl = blu ? ' gi-blu' : (GI_BR_NOME[br] && /unit|senior/i.test(et) ? ' gi-br-' + br : '');
+  const t = [et, GI_BR_NOME[br] && !/gruppo|commissario|presidente|comitato|coordinatore/i.test(et) ? GI_BR_NOME[br] : ''].filter(Boolean).join(' · ');
+  return `<span class="gi-ch${cl}">${esc(t)}</span>`;
 }
 function giStatoTxt(){ return GI.saving ? 'Salvo…' : GI.drSt ? GI.drSt : GI.drDirty ? 'Modifiche non ancora salvate' : (giMio('carte') ? (giMio('carte').consegnato ? 'Consegnate' : 'Bozza salvata') : ''); }
 function giStatoShow(){ const e = $('gi-st'); if(e) e.textContent = giStatoTxt(); }
@@ -19358,7 +19366,7 @@ function giCduCoordHTML(){
   const SEM = {v:['●', 'tutto a posto'], g:['▲', 'ci pensiamo'], r:['■', 'ci serve una mano']};
   h += `<p class="sh-hint" style="margin:0">Non è una classifica: i segnali dicono dove serve aiuto. Il segno è accompagnato dalla parola.</p>
     <div class="pn-tw"><table class="pn-tab" aria-label="Carte di Unità"><thead><tr><th scope="col" style="text-align:left">Unità</th>${CDU_BLOCCHI.filter(b => b.sem).map(b => `<th scope="col">${E(b.t)}</th>`).join('')}</tr></thead><tbody>
-    ${U.map(c => { const d = c.data || {}, s = d.s || {}; return `<tr><th scope="row" style="text-align:left">${E(d.unita || c.autore_nome)}<span class="sh-hint" style="display:block;margin:0">${E(c.autore_nome)}${d.n && d.n.tot ? ' · ' + d.n.tot + ' tra ragazzi e ragazze' : ''}</span></th>${CDU_BLOCCHI.filter(b => b.sem).map(b => s[b.k] && SEM[s[b.k]] ? `<td><span aria-hidden="true">${SEM[s[b.k]][0]}</span> ${E(SEM[s[b.k]][1])}</td>` : '<td><span class="pn-no">·</span></td>').join('')}</tr>`; }).join('')}</tbody></table></div>`;
+    ${U.map(c => { const d = c.data || {}, s = d.s || {}; return `<tr><th scope="row" style="text-align:left">${E(d.unita || c.autore_nome)}<span class="sh-hint" style="display:block;margin:0">${E(c.autore_nome)} ${giChip(c)}${d.n && d.n.tot ? ' · ' + d.n.tot + ' tra ragazzi e ragazze' : ''}</span></th>${CDU_BLOCCHI.filter(b => b.sem).map(b => s[b.k] && SEM[s[b.k]] ? `<td><span aria-hidden="true">${SEM[s[b.k]][0]}</span> ${E(SEM[s[b.k]][1])}</td>` : '<td><span class="pn-no">·</span></td>').join('')}</tr>`; }).join('')}</tbody></table></div>`;
   h += U.map(c => { const d = c.data || {}, b = d.b || {};
     return `<details class="pn-det"><summary>${E(d.unita || c.autore_nome)}${(b.b7r || b.b7o) ? ' <span class="sh-hint" style="margin:0">· ha una richiesta o un’offerta</span>' : ''}</summary>
       ${(d.edu || []).length ? `<div class="gi-voce"><span class="sh-hint" style="margin:0">Dalla programmazione</span>${d.edu.map(x => `<div><b>${E(x.amb)}</b> · ${E(x.pri)}${x.nec ? `<div class="gi-tx">${E(x.nec)}</div>` : ''}${(x.ob || []).length ? `<ul class="pn-ul">${x.ob.map(t => `<li>${E(t)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</div>` : (b.b2a || b.b2b) ? `<div class="gi-voce">${b.b2a ? `<div><span class="sh-hint" style="margin:0">Su cosa lavoriamo</span><div class="gi-tx">${E(b.b2a)}</div></div>` : ''}${b.b2b ? `<div><span class="sh-hint" style="margin:0">Di cosa hanno più bisogno ora ragazzi e ragazze</span><div class="gi-tx">${E(b.b2b)}</div></div>` : ''}</div>` : ''}
@@ -19396,10 +19404,10 @@ function spgItems(){
     if(!c.consegnato) return;
     if(c.tipo === 'carte'){
       PN_AREE.forEach(([k]) => { const x = (c.data && c.data.a && c.data.a[k]) || {};
-        ['p', 'c', 'v'].forEach(f => { const tx = (x[f] || '').trim(); if(tx) out.push({key:[g.id, c.autore_id, k, f].join('|'), tp:f, ar:k, da:c.autore_nome || 'Senza nome', tx}); }); });
+        ['p', 'c', 'v'].forEach(f => { const tx = (x[f] || '').trim(); if(tx) out.push({key:[g.id, c.autore_id, k, f].join('|'), tp:f, ar:k, da:c.autore_nome || 'Senza nome', ch:giChip(c), tx}); }); });
     } else if(c.tipo === 'unita'){
       const b = (c.data && c.data.b) || {}, un = (c.data && c.data.unita) || c.autore_nome || 'Unità';
-      [['b7r', 'ur'], ['b7o', 'uo']].forEach(([f, tp]) => { const tx = (b[f] || '').trim(); if(tx) out.push({key:[g.id, c.autore_id, 'u', f].join('|'), tp, ar:'', da:un, tx}); });
+      [['b7r', 'ur'], ['b7o', 'uo']].forEach(([f, tp]) => { const tx = (b[f] || '').trim(); if(tx) out.push({key:[g.id, c.autore_id, 'u', f].join('|'), tp, ar:'', da:un, ch:giChip(c), tx}); });
     }
   });
   return out;
@@ -19434,7 +19442,7 @@ function spgHTML(){
       const L = lista.filter(x => x.ar === k); if(!L.length) return;
       h += `<h3 class="spg-h">${E(t)} <span class="sh-hint" style="margin:0">· ${L.length}</span></h3>`;
       L.forEach(x => { const e = spgDi(x.key), st = spgSt(x.key), K = E(x.key).replace(/'/g, '&#39;');
-        h += `<article class="spg-c" id="spg-${E(x.key.replace(/[^a-zA-Z0-9_-]/g, '_'))}"><div class="sh-hint" style="margin:0">${E(pnLab(SPG_TIPI, x.tp))} · <b>${E(x.da)}</b></div><div class="gi-tx">${E(x.tx)}</div>`;
+        h += `<article class="spg-c" id="spg-${E(x.key.replace(/[^a-zA-Z0-9_-]/g, '_'))}"><div class="sh-hint" style="margin:0">${E(pnLab(SPG_TIPI, x.tp))} · <b>${E(x.da)}</b> ${x.ch || ''}</div><div class="gi-tx">${E(x.tx)}</div>`;
         if(st === 'piano' && e) h += `<div class="sh-hint" style="margin:0">Messo qui: ${E(spgDestTxt(e))}</div>`;
         h += `<div class="spg-b">`;
         if(st !== 'piano') h += `<button class="sh-btn sm" type="button" onclick="spgDlg('${K}')">Nel Piano…</button>`;
@@ -19592,9 +19600,10 @@ window.pnScarica = async function(){
   if(!PN.p) return; const p = PN.p;
   try{ clToast('Preparo il Word del piano…'); await pnFlush(); await needDocx(); }catch(e){ clToast('Impossibile preparare il Word: ' + (e && e.message || e)); return; }
   const d = PN.d, tit = PN.meta.titolo || PIANI_TIPI[p.tipo], T = x => (x == null ? '' : String(x)), X = x => T(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');   // dMulti toglie i «<…>» come fosse HTML: qui il testo è del piano e va com’è
-  const ch = []; const un = UNIT_NAME, fo = window._dFootOverride;
+  const ch = []; const un = UNIT_NAME, fo = window._dFootOverride, tema = [GREEN, PALE, ONG, GRTXT];
   try{
     UNIT_NAME = ''; window._dFootOverride = tit + ' · PEE CNGEI';
+    GREEN = '2C3E7A'; PALE = 'EEF0FB'; ONG = 'FFFFFF'; GRTXT = '2C3E7A';   // 26/11: il Word del piano è blu (blu dell'app), non verde di Branca
     ch.push(...dTitleBlock(tit, PIANI_TIPI[p.tipo] + ' · ' + pnPeriodo(p) + ' · ' + pnAnnoTxt(p)));
     const kv = [['Stato', pnLab(PN_STATI, PN.meta.stato)]];
     if(d.titolareNome) kv.push(['Titolare', d.titolareNome]);
@@ -19629,7 +19638,7 @@ window.pnScarica = async function(){
     if(d.uniti.length){ ch.push(dH3('Obiettivi uniti (note)')); d.uniti.forEach(u => ch.push(dPara(T(u.testo) || '—', {size:19, bullet:true, after:40}))); }
     await dSave(dDocument(ch, tit), (tit.toLowerCase().indexOf(PIANI_TIPI[p.tipo].toLowerCase()) === 0 ? '' : PIANI_TIPI[p.tipo].replace(/[^\w]+/g, '_') + '_') + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.docx');
   }catch(e){ clToast('Impossibile creare il Word: ' + (e && e.message || e)); }
-  finally{ UNIT_NAME = un; window._dFootOverride = fo; }
+  finally{ UNIT_NAME = un; window._dFootOverride = fo; [GREEN, PALE, ONG, GRTXT] = tema; }
 };
 window.giVai = function(v){ return pnSez(v === 'giro' ? 'g-giro' : 'pan'); };
 function pnPaneHTML(id){
@@ -19656,7 +19665,7 @@ function pnPaneHTML(id){
   else if(id === 'obi'){
     h += `<div id="pn-avv-o"></div>`;
   h += `<section class="pn-card" aria-labelledby="pn-ob-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="pn-ob-t" style="margin:0">Obiettivi e azioni</h2>
-    ${tutto ? `<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap"><button class="sh-btn sm gh" type="button" id="pn-unisci" onclick="pnUnisciDlg()" disabled>Unisci i selezionati</button><button class="sh-btn sm" type="button" onclick="pnObAdd()">+ Obiettivo</button></span>` : ''}</div>
+    <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${d.obiettivi.length > 1 ? `<button class="sh-btn sm gh" type="button" onclick="pnObTutti(true)">Apri tutti</button><button class="sh-btn sm gh" type="button" onclick="pnObTutti(false)">Chiudi tutti</button>` : ''}${tutto ? `<button class="sh-btn sm gh" type="button" id="pn-unisci" onclick="pnUnisciDlg()" disabled>Unisci i selezionati</button><button class="sh-btn sm" type="button" onclick="pnObAdd()">+ Obiettivo</button>` : ''}</span></div>
     <p class="sh-hint" style="margin:0">Pochi obiettivi, ognuno con una o più etichette di area. Se due obiettivi si assomigliano, selezionali e uniscili.</p>`;
   d.obiettivi.forEach((o, i) => { h += pnObHTML(o, i); });
   if(!d.obiettivi.length) h += `<p class="sh-sub" style="margin:0">Ancora nessun obiettivo.</p>`;
@@ -19680,8 +19689,11 @@ function pnGrow(t){ try{ t.style.height = 'auto'; t.style.height = Math.max(t.sc
 function pnObHTML(o, i){
   const E = esc, tutto = pnTutto(), dis = tutto ? '' : ' disabled'; const d = PN.d, p = PN.p;
   const az = d.azioni.filter(a => a.ob === o.id);
-  let h = `<article class="pn-ob" id="pn-ob-${E(o.id)}" aria-label="Obiettivo ${i + 1}"><div class="pn-ob-h">${tutto ? `<label class="pn-sel"><input type="checkbox" aria-label="Seleziona l’obiettivo ${i + 1} per unirlo"${PN.sel[o.id] ? ' checked' : ''} onchange="pnSelTog('${E(o.id)}',this.checked)"></label>` : ''}<b>Obiettivo ${i + 1}</b>
+  if(PN.open[o.id] === undefined) PN.open[o.id] = !String(o.testo || '').trim() || (!tutto && az.some(x => pnCanAz(x)));   // vuoto: aperto; con testo: chiuso, salvo per chi ha una propria azione da compilare (poi resta come lo lasci)
+  const aperto = !!PN.open[o.id];
+  let h = `<article class="pn-ob${aperto ? ' open' : ''}" id="pn-ob-${E(o.id)}" aria-label="Obiettivo ${i + 1}"><div class="pn-ob-h">${tutto ? `<label class="pn-sel"><input type="checkbox" aria-label="Seleziona l’obiettivo ${i + 1} per unirlo"${PN.sel[o.id] ? ' checked' : ''} onchange="pnSelTog('${E(o.id)}',this.checked)"></label>` : ''}${pnObTg(o, i, az, aperto)}
     ${tutto ? `<span class="pn-tools"><button class="pn-ib" type="button" aria-label="Sposta su" onclick="pnObMove('${E(o.id)}',-1)">↑</button><button class="pn-ib" type="button" aria-label="Sposta giù" onclick="pnObMove('${E(o.id)}',1)">↓</button><button class="pn-ib" type="button" aria-label="Elimina l’obiettivo" onclick="pnObDel('${E(o.id)}')">✕</button></span>` : ''}</div>
+    <div class="pn-ob-b" id="pn-obb-${E(o.id)}"${aperto ? '' : ' hidden'}>
     <textarea class="sh-in pn-ta" id="pn-obt-${E(o.id)}" aria-label="Testo dell’obiettivo ${i + 1}" rows="2" oninput="pnOb('${E(o.id)}','testo',this.value);pnGrow(this)"${dis}>${E(o.testo)}</textarea>
     <fieldset class="pn-fs"><legend class="sh-lb">Aree</legend><div class="pn-chips">${PN_AREE.map(([k, t]) => `<label class="pn-chip${(o.aree || []).includes(k) ? ' on' : ''}"><input type="checkbox" ${(o.aree || []).includes(k) ? 'checked' : ''} onchange="pnArea('${E(o.id)}','${k}',this.checked);this.parentNode.classList.toggle('on',this.checked)"${dis}>${E(t)}</label>`).join('')}</div></fieldset>
     <div class="sh-g2"><div><label class="sh-lb" for="pn-obo-${E(o.id)}">Da dove viene</label><select class="sh-in" id="pn-obo-${E(o.id)}" onchange="pnOb('${E(o.id)}','origine',this.value)"${dis}><option value="">—</option>${PN_ORIGINI.map(([k, t]) => `<option value="${k}"${o.origine === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
@@ -19690,8 +19702,20 @@ function pnObHTML(o, i){
     <div class="pn-azs"><div class="pn-azh"><b>Azioni</b> <span class="sh-hint">${az.length ? az.length : 'nessuna'}</span></div>`;
   az.forEach((a, j) => { h += pnAzHTML(a, j, p); });
   if(tutto) h += `<div><button class="sh-btn sm gh" type="button" onclick="pnAzAdd('${E(o.id)}')">+ Azione</button></div>`;
-  return h + `</div></article>`;
+  return h + `</div></div></article>`;
 }
+// riga di apertura/chiusura dell'obiettivo: titolo in breve, aree, azioni fatte
+function pnObTg(o, i, az, aperto){
+  const E = esc, id = E(o.id), t = String(o.testo || '').replace(/\s+/g, ' ').trim(), n = az.length, f = az.filter(a => a.stato === 'fatta').length;
+  const ar = (o.aree || []).map(k => pnLab(PN_AREE, k)).filter(Boolean).join(', ');
+  return `<button type="button" class="pn-ob-tg" id="pn-obg-${id}" aria-expanded="${aperto ? 'true' : 'false'}" aria-controls="pn-obb-${id}" onclick="pnObTog('${id}')"><span class="pn-tri" aria-hidden="true"></span><span class="pn-ob-tx"><b>Obiettivo ${i + 1}</b><span class="pn-ob-sm">${t ? E(t.length > 110 ? t.slice(0, 107) + '…' : t) : 'Senza testo'}</span><span class="sh-hint pn-ob-mt">${ar ? E(ar) + ' · ' : ''}${n ? n + (n === 1 ? ' azione' : ' azioni') + (f ? ' · ' + f + ' fatte' : '') : 'nessuna azione'}</span></span></button>`;
+}
+function pnObSet(id, on){
+  PN.open[id] = !!on; const b = $('pn-obb-' + id), g = $('pn-obg-' + id), a = $('pn-ob-' + id);
+  if(b) b.hidden = !on; if(g) g.setAttribute('aria-expanded', on ? 'true' : 'false'); if(a) a.classList.toggle('open', !!on);
+}
+window.pnObTog = function(id){ pnObSet(id, !PN.open[id]); };
+window.pnObTutti = function(on){ ((PN.d && PN.d.obiettivi) || []).forEach(o => pnObSet(o.id, on)); };
 // Referente: si sceglie tra chi partecipa alla stesura (titolare e persone invitate) oppure «Altro…» con nome scritto a mano. Il dato resta il nome, come prima.
 function pnRefPersone(){
   const v = []; const add = n => { n = String(n || '').trim(); if(n && !v.some(x => affNorm(x) === affNorm(n))) v.push(n); };
@@ -19750,7 +19774,7 @@ function pnAvvisi(){
   if(senzaAr.length) w.push(`Senza etichetta di area: obiettivo ${senzaAr.join(', ')}.`);
   return w.slice(0, 5);
 }
-window.pnVai = function(id){ if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } const e = $('pn-ob-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'start'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); } };
+window.pnVai = function(id){ PN.open[id] = true; if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } else pnObSet(id, true); const e = $('pn-ob-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'start'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); } };
 
 // ── modifiche ──
 window.pnMeta = function(k, v){ if(!pnTutto()) return; PN.meta[k] = v;
@@ -19832,7 +19856,7 @@ const PN_TIPO_ELENCO = {gruppo:'gruppo', sezione:'sezione', clan:'clan'};
 const PN_ELENCO_TIT = {gruppo:'Persone iscritte nel tuo Gruppo e in Sezione', sezione:'Persone iscritte nella tua Sezione', clan:'Persone di Sezione e Capi Gruppo iscritti'};
 function pnEtichettaDa(r){
   const inc = (Array.isArray(r.incarichi) ? r.incarichi : []).map(x => String(x).toLowerCase());
-  if(r.ruolo === 'cu' || r.ruolo === 'vcu') return 'Capo Unità'; if(r.ruolo === 'vcg') return 'Vice Capo Gruppo';
+  if(r.ruolo === 'cu' || r.ruolo === 'vcu') return 'Capo Unità'; if(r.ruolo === 'senior') return 'Senior in Servizio'; if(r.ruolo === 'vcg') return 'Vice Capo Gruppo';
   if(r.ruolo === 'cds' || (r.ruolo === 'cos' && inc.includes('commissario'))) return 'Commissario di Sezione';
   if(r.ruolo === 'cos' && inc.includes('presidente')) return 'Presidente'; if(r.ruolo === 'coords') return 'Coordinatore Senior'; return 'Altro';
 }
@@ -20290,7 +20314,20 @@ body.sh-in .toast{pointer-events:none}
 .pn-an,.pn-ob,.pn-az,.pn-sp,.pn-un{border:1px solid #E2E2DA;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .pn-az{background:#FAFAF6}
 .pn-an-h,.pn-az-h,.pn-ob-h{display:flex;align-items:flex-start;gap:8px}
+.gi-ch{display:inline-block;font-size:12px;line-height:1.3;padding:1px 8px;border-radius:10px;border:1px solid #8a8a8a;background:#f3f3f3;color:#333;vertical-align:middle;font-weight:600}
+.gi-ch.gi-blu{background:#EEF0FB;border-color:#2C3E7A;color:#2C3E7A}
+.gi-ch.gi-br-L{background:#FFFCD6;border-color:#B8AE00;color:#1A1800}
+.gi-ch.gi-br-E{background:#F1F7F3;border-color:#1B5E42;color:#1B5E42}
+.gi-ch.gi-br-R{background:#FCF1F1;border-color:#A31F1F;color:#A31F1F}
 .pn-ob-h b{flex:1;padding-top:10px}
+.pn-ob-h{flex-wrap:wrap}.pn-ob-h .pn-tools{margin-left:auto}
+.pn-ob-tg{flex:1 1 150px;min-width:150px;display:flex;align-items:flex-start;gap:10px;text-align:left;background:none;border:0;padding:8px 4px;cursor:pointer;font:inherit;color:inherit;min-height:44px}
+.pn-ob-tg .pn-tri{flex:none;width:0;height:0;margin-top:7px;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--blue);transition:transform .15s}
+.pn-ob.open .pn-ob-tg .pn-tri{transform:rotate(90deg)}
+.pn-ob-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.pn-ob-tx b{flex:none;padding:0}
+.pn-ob-sm{font-size:14px;line-height:1.4;overflow-wrap:anywhere}.pn-ob-mt{margin:0}
+.pn-ob.open .pn-ob-sm{display:none}
+.pn-ob-b[hidden]{display:none}
 .pn-az-h .pn-ta{flex:1}.pn-an-h .sh-in{flex:1}
 .pn-sp{flex-direction:row;align-items:flex-start}
 .pn-col{display:flex;flex-direction:column;gap:6px;align-items:flex-end}

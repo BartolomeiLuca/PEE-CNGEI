@@ -48,7 +48,7 @@ await P.click('button[onclick="pnTappaAdd(2)"]'); await sleep(300);
 ok(await ev(() => PN.d.tappe.length) === 7 && await ev(() => PN.d.tappe[6].tipo) === 'altra', 'si aggiunge «Un’altra verifica»');
 await ev(() => { window.confirm = () => true; }); await P.click('.pn-ve:last-of-type .pn-ib >> nth=0').catch(() => {}); await sleep(200);
 // controllo intermedio nell’azione
-await ev(() => pnSez('obi')); await sleep(400);
+await ev(() => { pnSez('obi'); pnObTutti(true); }); await sleep(400);
 ok(await cnt('#pn-azk-a1') === 1 && await ev(() => document.getElementById('pn-azk-a1').value) === 'meta' && await ev(() => document.getElementById('pn-azk-a3').value) === '', 'ogni azione ha il «Controllo intermedio»');
 await P.selectOption('#pn-azk-a3', 'cdg'); await sleep(300);
 ok(await salvato() && db.t.pee_piani[0].data.azioni.find(a => a.id === 'a3').step === 'cdg', 'si sceglie e si salva');

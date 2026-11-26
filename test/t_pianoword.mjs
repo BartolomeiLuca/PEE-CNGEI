@@ -36,6 +36,9 @@ ok(/Una giornata insieme/.test(t) && /Vecchio obiettivo/.test(t), 'spunti dalle 
 ok(!/SEGRETO-DELLE-CARTE/.test(t) && !/Anna Verdi\b.*SEGRETO/.test(t), 'le carte del giro non finiscono nel Word');
 ok(await z.file('word/header1.xml') ? /Piano di Gruppo/.test(await z.file('word/header1.xml').async('string')) : true, 'intestazione del documento');
 ok(!(await ev(() => UNIT_NAME)) && !(await ev(() => window._dFootOverride)), 'dopo l’esportazione i valori globali tornano com’erano');
+// 26/11: il Word del piano è blu (blu dell'app), non verde di Branca; dopo l'esportazione il tema torna com'era
+ok(/2C3E7A/i.test(x) && !/1B5E42/i.test(x), 'il Word del piano è blu');
+ok(await ev(() => GREEN) !== '2C3E7A', 'dopo l’esportazione i colori tornano quelli di prima');
 // un lettore scarica il suo Word
 const nerr = pa.errors.length; ok(nerr === 0, 'nessun errore di pagina (' + nerr + ')'); if(nerr) console.log(pa.errors.slice(0, 2).join(' | ').slice(0, 300));
 await br.close(); process.exit(summary() ? 1 : 0);

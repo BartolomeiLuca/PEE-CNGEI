@@ -35,11 +35,16 @@ await ev(() => pnSez('obi')); await sleep(500);
 ok(await ev(() => document.querySelectorAll('.pn-ob').length) === 8, 'in «Obiettivi e azioni» ci sono tutti gli 8 obiettivi');
 await sw('obiettivi e azioni');
 // bersagli da toccare: almeno 40 px (44 dove possibile) per pulsanti, caselle e selezioni
-const piccoli = await ev(() => [...document.querySelectorAll('.pn-ib, .pn-chip, .pn-sug, .sh-btn, .pn-sel, .pn-back, .pn-side .sh-si')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 40 || r.width < 40); }).map(e => (e.className + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height))).slice(0, 5));
+const piccoli = await ev(() => [...document.querySelectorAll('.pn-ib, .pn-chip, .pn-sug, .sh-btn, .pn-sel, .pn-back, .pn-side .sh-si, .pn-ob-tg')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 40 || r.width < 40); }).map(e => (e.className + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height))).slice(0, 5));
 ok(!piccoli.length, 'pulsanti e caselle abbastanza grandi da toccare' + (piccoli.length ? ' («' + piccoli.join(', ') + '»)' : ''));
 // nessun testo tagliato fuori: ogni campo sta dentro la larghezza della scheda
 const fuori = await ev(() => [...document.querySelectorAll('.pn .sh-in, .pn select, .pn-chip, .pn-ob, .pn-az')].filter(e => { const r = e.getBoundingClientRect(), c = e.closest('.pn-card').getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).length);
 ok(fuori === 0, 'nessun campo esce dalla sua scheda');
+// stesso controllo con gli obiettivi aperti
+await ev(() => pnObTutti(true)); await sleep(500);
+const piccoli2 = await ev(() => [...document.querySelectorAll('.pn-ib, .pn-chip, .pn-sug, .sh-btn, .pn-sel, .pn-ob-tg')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 40 || r.width < 40); }).length);
+const fuori2 = await ev(() => [...document.querySelectorAll('.pn .sh-in, .pn select, .pn-chip, .pn-ob, .pn-az')].filter(e => { const r = e.getBoundingClientRect(), c = e.closest('.pn-card').getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).length);
+ok(piccoli2 === 0 && fuori2 === 0, 'con gli obiettivi aperti: bersagli grandi abbastanza e nessun campo fuori scheda (' + piccoli2 + '/' + fuori2 + ')');
 // scrivere e salvare
 await P.fill('#pn-obt-o0', 'Famiglie coinvolte, aggiornato dal telefono'); await sleep(2800);
 ok(await ev(() => !PN.dirty) && db.t.pee_piani[0].data.obiettivi[0].testo === 'Famiglie coinvolte, aggiornato dal telefono', 'una modifica si salva da sola');

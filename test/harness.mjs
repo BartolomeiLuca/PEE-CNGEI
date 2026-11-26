@@ -56,6 +56,12 @@ export class FakeDB {
   mem(uid, a){ const em = this.myEmail(uid); return this.t.pee_membri.find(m => m.archivio_id === a && m.email === em); }
   // vincolo pee_membri_ruolo_check: dopo lo script del 20 novembre ammette anche «commissario» (db.sqlComm = false per provare il database non aggiornato)
   // vincolo reale di pee_profili.ruolo (verificato in Supabase il 23/11); con sqlFigure = true vale quello allargato dallo script del 23 novembre
+  // 26/11: ruolo e Branca di chi scrive la carta (dal profilo), come fa il trigger del database; con sqlRuoloCarte = false il database è quello di prima
+  etichProf(uid){ if(this.sqlRuoloCarte === false) return {}; const pr = (this.t.pee_profili || []).find(x => x.user_id === uid); if(!pr) return {autore_etichetta:'', autore_branca:''};
+    const inc = ((pr.dashboard && pr.dashboard.cos && pr.dashboard.cos.incarichi) || []).map(x => String(x).toLowerCase());
+    const M = {cu:'Capo Unità', vcu:'Vice Capo Unità', senior:'Senior in Servizio', cg:'Capo Gruppo', vcg:'Vice Capo Gruppo', cds:'Commissario di Sezione', vcds:'Vice Commissario di Sezione', coords:'Coordinatore Senior', volontario:'Adulto in formazione'};
+    const et = pr.ruolo === 'cos' ? (inc.includes('commissario') ? 'Commissario di Sezione' : inc.includes('presidente') ? 'Presidente' : 'Comitato di Sezione') : (M[pr.ruolo] || '');
+    return {autore_etichetta:et, autore_branca:['L','E','R'].includes(pr.branca) ? pr.branca : ''}; }
   ruoloProfiloAmmesso(r){ return !r || ['cu','vcu','cg','cds','senior','volontario'].includes(r) || (this.sqlFigure !== false && ['cos','coords','vcg','vcds'].includes(r)); }
   ruoloAmmesso(r){ return ['lettore','cotitolare','collaboratore'].includes(r) || (r === 'commissario' && this.sqlComm !== false); }
   // piani (SQL del 23 novembre): db.sqlPiani = false per provare il database non aggiornato
@@ -199,7 +205,7 @@ export class FakeDB {
           r.n = T.filter(x => x.piano_id === r.piano_id).reduce((m, x) => Math.max(m, x.n), 0) + 1; }
         if(q.table === 'pee_piani_giri' || q.table === 'pee_piani_giri_persona' || q.table === 'pee_piani_voci_anonime' || q.table === 'pee_piani_giri_registro') return this.err('42501', 'new row violates row-level security policy');
         if(q.table === 'pee_piani_contributi'){ const gp = this.giroRec(r.giro_id); if(!gp) return this.err('P0001', 'Giro non trovato');
-          r.piano_id = gp.piano_id; r.autore_id = uid; r.autore_nome = (u.meta && u.meta.nome) || ''; r.updated_at = r.created_at; r.data = r.data || {}; r.consegnato = !!r.consegnato; r.consegnato_il = r.consegnato ? now() : null;
+          r.piano_id = gp.piano_id; r.autore_id = uid; r.autore_nome = (u.meta && u.meta.nome) || ''; Object.assign(r, this.etichProf(uid)); r.updated_at = r.created_at; r.data = r.data || {}; r.consegnato = !!r.consegnato; r.consegnato_il = r.consegnato ? now() : null;
           if(this.pRuolo(uid, gp.piano_id) === null || gp.stato !== 'aperto') return this.err('42501', 'new row violates row-level security policy');
           if(!['carte','unita'].includes(r.tipo) || JSON.stringify(r.data).length > 100000) return this.err('23514', 'new row for relation "pee_piani_contributi" violates check constraint');
           if(T.some(x => x.giro_id === r.giro_id && x.autore_id === uid && x.tipo === r.tipo)) return this.err('23505', 'duplicate key value violates unique constraint'); }
@@ -244,7 +250,7 @@ export class FakeDB {
         if(q.table === 'pee_piani_contributi'){ ok = r.autore_id === uid && this.giroAperto(r.giro_id);
           if(ok){ if('data' in q.vals && JSON.stringify(q.vals.data).length > 100000) return this.err('23514', 'new row for relation "pee_piani_contributi" violates check constraint');
             const nv = Object.assign({}, q.vals); ['giro_id','autore_id','autore_nome','tipo','piano_id'].forEach(k => delete nv[k]);
-            const cons = 'consegnato' in nv ? !!nv.consegnato : r.consegnato; nv.consegnato = cons; nv.consegnato_il = cons ? (r.consegnato ? r.consegnato_il : now()) : null; nv.updated_at = now(); { const au = this.user(uid); const nn = au && au.meta && au.meta.nome; if(this.sqlNomeAutore !== false && nn) nv.autore_nome = nn; } q.vals = nv; } }
+            const cons = 'consegnato' in nv ? !!nv.consegnato : r.consegnato; nv.consegnato = cons; nv.consegnato_il = cons ? (r.consegnato ? r.consegnato_il : now()) : null; nv.updated_at = now(); { const au = this.user(uid); const nn = au && au.meta && au.meta.nome; if(this.sqlNomeAutore !== false && nn) nv.autore_nome = nn; if(this.sqlRuoloCarte !== false && uid === r.autore_id){ const ep = this.etichProf(uid); if(ep.autore_etichetta) Object.assign(nv, ep); } } q.vals = nv; } }
         if(!ok) continue;
         const old = Object.assign({}, r);
         const changed = q.table === 'pee_archivi' && 'data' in q.vals && JSON.stringify(q.vals.data) !== JSON.stringify(r.data);
@@ -291,7 +297,7 @@ export class FakeDB {
     else if(tipo === 'sezione'){ if(!(comm || me.ruolo === 'vcds')) return this.err('P0001', 'Solo chi guida la Sezione vede questo elenco.'); }
     else if(me.ruolo !== 'coords') return this.err('P0001', 'Solo il Coordinatore Senior vede questo elenco.');
     const rows = this.t.pee_profili.filter(pr => pr.user_id !== uid && norm(pr.sezione) === sez && (
-      (tipo === 'gruppo' && ((norm(pr.gruppo) === gr && ['cu', 'vcu', 'cg', 'vcg'].includes(pr.ruolo)) || ['cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo))) ||
+      (tipo === 'gruppo' && ((norm(pr.gruppo) === gr && ['cu', 'vcu', 'cg', 'vcg'].concat(this.sqlRuoloCarte === false ? [] : ['senior']).includes(pr.ruolo)) || ['cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo))) ||
       (tipo === 'sezione' && ['cg', 'vcg', 'cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo)) ||
       (tipo === 'clan' && ['cg', 'vcg', 'cds', 'vcds', 'cos'].includes(pr.ruolo)))).map(pr => { const u = this.user(pr.user_id); return u ? {persona_id:pr.user_id, nome:pr.nome, ruolo:pr.ruolo, branca:pr.branca || null, gruppo:pr.gruppo || null, sezione:pr.sezione, incarichi:((pr.dashboard || {}).cos || {}).incarichi || [], email:u.email} : null; }).filter(Boolean);
     return {data:rows.sort((a, b) => String(a.nome).localeCompare(b.nome)), error:null};
