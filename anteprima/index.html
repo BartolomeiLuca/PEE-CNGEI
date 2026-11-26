@@ -18825,7 +18825,9 @@ const PN_TITOLI = ['Punti di forza e di debolezza', 'Le Unità e i ragazzi e le 
 const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Senior in Servizio', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
 const pnUid = () => 'x' + Math.random().toString(36).slice(2, 9);
 const pnClone = o => JSON.parse(JSON.stringify(o == null ? null : o));
-const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}});
+const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}, sezione:''});
+// la Sezione del piano (carta intestata del Word): quella scritta nel piano, altrimenti quella del profilo di chi lo guarda
+const pnSezPiano = () => String((PN.d && PN.d.sezione) || (SH.prof || {}).sezione || '').trim();
 const pnEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // ── unione delle modifiche di due persone (base = ultima versione sincronizzata, loc = la mia, rem = quella sul database) ──
@@ -18912,7 +18914,7 @@ window.pnCrea = async function(){
   const b = $('pn-n-ok'), m = $('pn-n-msg'); if(!b) return; b.disabled = true; m.className = 'sh-msg'; m.textContent = '';
   try{
     const anno = Number($('pn-n-anno').value), dur = Number($('pn-n-dur').value), tit = ($('pn-n-tit').value || '').trim() || 'Piano di Gruppo';
-    const p = await PIANI.crea({tipo:'gruppo', titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || ''})});
+    const p = await PIANI.crea({tipo:'gruppo', titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || '', sezione:String((SH.prof || {}).sezione || '').trim()})});
     shDlgClose(); pnOpen(p.id);
   }catch(e){ b.disabled = false; m.className = 'sh-msg err'; m.textContent = pianoErr(e); }
 };
@@ -18960,7 +18962,7 @@ async function pnSave(){
   clearTimeout(PN.timer); if(!PN.p || !PN.dirty || PN.ruolo === 'lettore') return;
   if(PN.saving){ PN.again = true; return; }
   PN.saving = true; PN.st = ''; pnStato();
-  if(PN.ruolo === 'titolare'){ const nn = clMyName(); if(nn && PN.d.titolareNome !== nn) PN.d.titolareNome = nn; }
+  if(PN.ruolo === 'titolare'){ const nn = clMyName(); if(nn && PN.d.titolareNome !== nn) PN.d.titolareNome = nn; const sz = String((SH.prof || {}).sezione || '').trim(); if(sz && !PN.d.sezione) PN.d.sezione = sz; }
   const inviata = pnClone(PN.d), metaInv = pnClone(PN.meta);
   try{
     const patch = {data:inviata}; if(pnTutto()){ patch.titolo = metaInv.titolo; patch.stato = metaInv.stato; }
@@ -19526,12 +19528,12 @@ window.spgPorta = function(key){
 };
 
 // ── Verifiche (25/11): oltre alla verifica annuale, una a metà anno e un punto a ogni Consiglio di Gruppo (Manuale del Capo Gruppo, p. 51) ──
-const PN_TAPPE = [['meta', 'Verifica di metà anno', 'Consigliata dal Manuale del Capo Gruppo: a metà anno, per correggere il tiro prima delle attività estive.'], ['fine', 'Verifica di fine anno', 'Si fa ogni anno, con le azioni che si verificano in quell’anno.'], ['altra', 'Un’altra verifica', 'Quando serve: dopo un evento, o al bisogno.']];
+const PN_TAPPE = [['meta', 'Verifica di metà anno', 'Consigliata dal Manuale del Capo Gruppo: a metà anno, per correggere il tiro prima delle attività estive.'], ['fine', 'Verifica di fine anno', 'Si fa ogni anno, con le azioni che si verificano in quell’anno.'], ['altra', 'Un’altra verifica', 'Quando serve: dopo un evento, o al bisogno.'], ['cdg', 'Consiglio di Gruppo', 'Almeno ogni due mesi (Regolamento, art. ConsG1). Segna le date che già conosci, è facoltativo: a ogni Consiglio si guarda lo stato del Piano.']];
 const PN_STEP = [['', 'Solo alla verifica annuale'], ['meta', 'Anche a metà anno'], ['cdg', 'A ogni Consiglio di Gruppo']];
 function pnAnnoCur(p){ return Math.min(p.durata, Math.max(1, pnAnnoCorr(p))); }
-function pnTappeOrd(){ const T = PN.d.tappe || [], o = {meta:0, fine:2, altra:1}; return T.slice().sort((a, b) => (a.anno - b.anno) || ((o[a.tipo] || 0) - (o[b.tipo] || 0))); }
+function pnTappeOrd(){ const T = PN.d.tappe || [], o = {meta:0, fine:2, altra:1, cdg:1}; return T.slice().sort((a, b) => (a.anno - b.anno) || ((o[a.tipo] || 0) - (o[b.tipo] || 0)) || ((a.data || '9') < (b.data || '9') ? -1 : (a.data || '9') > (b.data || '9') ? 1 : 0)); }
 function pnProssima(){
-  const T = pnTappeOrd().filter(t => !t.fatta); if(!T.length) return null; const oggi = giOggi();
+  const T = pnTappeOrd().filter(t => !t.fatta && t.tipo !== 'cdg'); if(!T.length) return null; const oggi = giOggi();
   const conData = T.filter(t => t.data && t.data >= oggi).sort((a, b) => a.data < b.data ? -1 : 1);
   return conData[0] || T[0];
 }
@@ -19549,7 +19551,7 @@ function pnVerHTML(){
   if(!(d.tappe || []).length) return h + `<section class="pn-card"><p class="sh-sub" style="margin:0">Ancora nessuna tappa. ${tutto ? '«Proponi le tappe» prepara, per ogni anno, la verifica di metà anno e quella di fine anno: le date le scegli tu.' : ''}</p></section>`;
   for(let k = 1; k <= p.durata; k++){
     const T = pnTappeOrd().filter(t => t.anno === k);
-    h += `<section class="pn-card" aria-labelledby="pn-ve-a${k}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h3 class="pn-h" id="pn-ve-a${k}" style="margin:0">Anno ${k} · ${E(annoScoutTxt(p.anno_inizio + k - 1))}${k === cur ? ' <span class="sh-hint" style="margin:0">· quest’anno</span>' : ''}</h3>${tutto ? `<button class="sh-btn sm gh" style="margin-left:auto" type="button" onclick="pnTappaAdd(${k})">+ Un’altra verifica</button>` : ''}</div>`;
+    h += `<section class="pn-card" aria-labelledby="pn-ve-a${k}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h3 class="pn-h" id="pn-ve-a${k}" style="margin:0">Anno ${k} · ${E(annoScoutTxt(p.anno_inizio + k - 1))}${k === cur ? ' <span class="sh-hint" style="margin:0">· quest’anno</span>' : ''}</h3>${tutto ? `<button class="sh-btn sm gh" style="margin-left:auto" type="button" onclick="pnTappaAdd(${k})">+ Un’altra verifica</button><button class="sh-btn sm gh" type="button" onclick="pnTappaAdd(${k},'cdg')">+ Consiglio di Gruppo</button>` : ''}</div>`;
     if(!T.length) h += `<p class="sh-hint" style="margin:0">Nessuna tappa in questo anno.</p>`;
     T.forEach(t => {
       const lista = t.tipo === 'altra' ? [] : pnAzioniDa(k, t.tipo);
@@ -19558,7 +19560,7 @@ function pnVerHTML(){
         <div class="sh-g2"><div><label class="sh-lb" for="pn-vd-${E(t.id)}">Data</label><input class="sh-in" type="date" id="pn-vd-${E(t.id)}" value="${E(t.data || '')}" oninput="pnTappa('${E(t.id)}','data',this.value)"${dis}></div>
         <label class="pn-chip${t.fatta ? ' on' : ''}" style="align-self:end"><input type="checkbox" ${t.fatta ? 'checked' : ''} onchange="pnTappa('${E(t.id)}','fatta',this.checked);this.parentNode.classList.toggle('on',this.checked);this.closest('.pn-ve').classList.toggle('ok',this.checked)"${dis}>Fatta</label></div>
         ${lista.length ? `<details class="pn-det"><summary>Azioni da guardare · ${lista.length}</summary><ul class="pn-ul">${lista.map(a => { const i = d.obiettivi.findIndex(o => o.id === a.ob); return `<li>${i >= 0 ? `<b>Ob. ${i + 1}</b> · ` : ''}${E(a.testo || '(senza testo)')}${a.indicatore ? `<span class="sh-hint" style="display:block;margin:0">Indicatore: ${E(a.indicatore)}</span>` : ''}</li>`; }).join('')}</ul></details>` : (t.tipo === 'meta' ? '<p class="sh-hint" style="margin:0">Per far comparire qui le azioni, in «Obiettivi e azioni» scegli «Anche a metà anno» nel controllo intermedio.</p>' : '')}
-        <div><label class="sh-lb" for="pn-vn-${E(t.id)}">Cosa è emerso e cosa cambiamo</label><textarea class="sh-in pn-ta" id="pn-vn-${E(t.id)}" rows="3" placeholder="Anche poche righe: cosa va, cosa no, cosa si cambia nel Piano." oninput="pnTappa('${E(t.id)}','note',this.value);pnGrow(this)"${dis}>${E(t.note || '')}</textarea></div></div>`;
+        <div><label class="sh-lb" for="pn-vn-${E(t.id)}">${t.tipo === 'cdg' ? 'Cosa si è detto del Piano' : 'Cosa è emerso e cosa cambiamo'}</label><textarea class="sh-in pn-ta" id="pn-vn-${E(t.id)}" rows="3" placeholder="${t.tipo === 'cdg' ? 'Anche poche righe: a che punto siamo, cosa si decide.' : 'Anche poche righe: cosa va, cosa no, cosa si cambia nel Piano.'}" oninput="pnTappa('${E(t.id)}','note',this.value);pnGrow(this)"${dis}>${E(t.note || '')}</textarea></div></div>`;
     });
     h += `</section>`;
   }
@@ -19570,7 +19572,7 @@ window.pnTappeProponi = function(){
   if(!n){ clToast('Le tappe ci sono già tutte.'); return; }
   pnTouch(); pnRender(); clToast(n === 1 ? 'Ho aggiunto una tappa.' : 'Ho aggiunto ' + n + ' tappe.');
 };
-window.pnTappaAdd = function(anno){ if(!pnTutto()) return; const t = {id:pnUid(), anno, tipo:'altra', data:'', fatta:false, note:''}; PN.d.tappe.push(t); pnTouch(); pnRender(); const e = $('pn-vd-' + t.id); if(e) e.focus(); };
+window.pnTappaAdd = function(anno, tipo){ if(!pnTutto()) return; const t = {id:pnUid(), anno, tipo:tipo === 'cdg' ? 'cdg' : 'altra', data:'', fatta:false, note:''}; PN.d.tappe.push(t); pnTouch(); pnRender(); const e = $('pn-vd-' + t.id); if(e) e.focus(); };
 window.pnTappa = function(id, k, v){ const t = PN.d.tappe.find(x => x.id === id); if(!t || !pnTutto()) return; t[k] = v; pnTouch(); };
 window.pnTappaDel = function(id){ if(!pnTutto()) return; const t = PN.d.tappe.find(x => x.id === id); if(t && (t.note || '').trim() && !confirm('Eliminare questa tappa e le sue note?')) return; PN.d.tappe = PN.d.tappe.filter(x => x.id !== id); pnTouch(); pnRender(); };
 
@@ -19642,7 +19644,7 @@ const pnQOrgano = a => [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.g
 // la sezione orizzontale del Word: tabella colorata (chi fa cosa e quando) e timeline a celle colorate
 function pnQWordSez(){
   const D = dxLib(), p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), oggi = giOggi().slice(0, 7), W = 14570, BLU = '2C3E7A';
-  const kids = [dH3('Quadro del Piano'), dPara('Chi fa cosa e quando. Il colore è quello dell’area dell’obiettivo; nella timeline la barra è chiara se l’azione è da iniziare, media se è in corso, piena se è fatta. ◆ = azione una volta sola · ◇ = verifica.', {size:16, color:'555555', after:80})];
+  const kids = [dH3('Quadro del Piano'), dPara('Chi fa cosa e quando. Il colore è quello dell’area dell’obiettivo; nella timeline la barra è chiara se l’azione è da iniziare, media se è in corso, piena se è fatta. ◆ = azione una volta sola · ◇ = verifica · ▲ = Consiglio di Gruppo (se hai segnato le date).', {size:16, color:'555555', after:80})];
   kids.push(dPara(PN_AREE.filter(([k]) => R.some(r => (r.o.aree || [])[0] === k)).map(([k, t]) => new D.TextRun({text:'■ ' + t + '   ', font:MF, size:17, bold:true, color:pnHx(PN_COL[k][0])})), {after:120}));
   const W1 = [4300, 2000, 2300, 2200, 2200, 1570], TOP = D.VerticalAlign.TOP;
   const rows = [['Obiettivo e azioni', 'Referente', 'Organo', 'Quando', 'Si verifica', 'Stato'].map((h, i) => dCell(dPara(h, {size:16, bold:true, color:'FFFFFF', after:0}), {w:W1[i], fill:BLU, border:BLU}))];
@@ -19664,7 +19666,9 @@ function pnQWordSez(){
   trs.push(TR([tc('', {w:LW, nob:true})].concat(Array.from({length:p.durata}, (_, k) => tc('Anno ' + (k + 1) + ' · ' + (Number(p.anno_inizio) + k) + '-' + String(Number(p.anno_inizio) + k + 1).slice(2), {w:mw * 12, span:12, fill:BLU, color:'FFFFFF', b:true, sz:15, nob:true}))), true));
   trs.push(TR([tc('', {w:LW, nob:true})].concat(M.map(m => tc(PN_MESI_N[Number(m.k.slice(5, 7)) - 1].slice(0, 1).toUpperCase(), {w:mw, fill:m.k === oggi ? 'FADBD8' : 'EEF0FB', sz:13, b:m.k === oggi, color:m.k === oggi ? 'B03A2E' : '444444'}))), true));
   const vm = {}; T.forEach(x => { (vm[x.s] = vm[x.s] || []).push(x); });
+  const C = pnQCdg(M), cm = {}; C.forEach(x => { (cm[x.s] = cm[x.s] || []).push(x); });
   trs.push(TR([tc('Verifiche', {w:LW, al:'l', b:true, sz:15, fill:'F5F5F0'})].concat(M.map((m, k) => { const x = vm[k]; return tc(x ? (x.some(y => y.t.fatta) ? '◆' : '◇') : '', {w:mw, sz:15, b:true, color:x && x.every(y => y.sug) ? 'AAAAAA' : '1A1A18'}); }))));
+  if(C.length) trs.push(TR([tc('Consigli di Gruppo', {w:LW, al:'l', b:true, sz:15, fill:'F5F5F0'})].concat(M.map((m, k) => tc(cm[k] ? '▲' : '', {w:mw, sz:13, b:true, color:cm[k] && cm[k].every(y => y.t.fatta) ? '1A1A18' : '777777'})))));
   R.forEach(({o, i, az}) => {
     const c = pnColOb(o), dk = pnHx(c[0]), pl = pnHx(c[1]);
     trs.push(TR([tc((i + 1) + ' · ' + (o.testo || '(senza testo)'), {w:LW, al:'l', b:true, sz:15, fill:pl, color:dk}), tc('', {w:mw * N, span:N, fill:pl})]));
@@ -19681,7 +19685,7 @@ function pnQWordSez(){
 }
 // carta intestata: logo della Sezione (circolare/sezioni) + nome della Sezione; senza logo resta il nome
 async function pnLetter(){
-  const sez = ((SH.prof || {}).sezione || '').trim(); if(!sez) return null;
+  const sez = pnSezPiano(); if(!sez) return null;
   const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, ''); let logo = null;
   try{ const r = await fetch(base + 'circolare/sezioni/' + encodeURIComponent(axSezFile(sez)) + '.png'); if(r.ok) logo = new Uint8Array(await r.arrayBuffer()); }catch(e){}
   return {sez:axSezFile(sez), logo};
@@ -19690,7 +19694,7 @@ async function pnQExcel(){
   if(!PN.p) return;
   try{ clToast('Preparo l’Excel del Quadro…'); await pnFlush(); await needExcel(); }catch(e){ clToast('Impossibile preparare l’Excel: ' + (e && e.message || e)); return; }
   try{
-    const p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), tit = PN.meta.titolo || PIANI_TIPI[p.tipo], sez = ((SH.prof || {}).sezione || '').trim(), oggi = giOggi().slice(0, 7), BLU = '2C3E7A';
+    const p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), tit = PN.meta.titolo || PIANI_TIPI[p.tipo], sez = pnSezPiano(), oggi = giOggi().slice(0, 7), BLU = '2C3E7A';
     const wb = new ExcelJS.Workbook(); wb.creator = 'PEE CNGEI';
     const F = (o = {}) => Object.assign({name:'Montserrat', size:10}, o), fill = h => ({type:'pattern', pattern:'solid', fgColor:{argb:'FF' + h}});
     const thin = {style:'thin', color:{argb:'FFD9D9D9'}}, box = {top:thin, left:thin, bottom:thin, right:thin};
@@ -19714,11 +19718,12 @@ async function pnQExcel(){
     // foglio 2: la timeline a celle colorate
     const wt = wb.addWorksheet('Timeline'); setup(wt);
     wt.columns = [{width:46}].concat(M.map(() => ({width:3.6})));
-    intest(wt, N + 1, 'Timeline · barra chiara = da iniziare, media = in corso, piena = fatta · ◆ una volta sola · ◇ verifica');
+    intest(wt, N + 1, 'Timeline · barra chiara = da iniziare, media = in corso, piena = fatta · ◆ una volta sola · ◇ verifica · ▲ Consiglio di Gruppo');
     p.durata && Array.from({length:p.durata}, (_, k) => k).forEach(k => { wt.mergeCells(4, 2 + k * 12, 4, 13 + k * 12); const c = wt.getCell(4, 2 + k * 12); c.value = 'Anno ' + (k + 1) + ' · ' + (Number(p.anno_inizio) + k) + '-' + String(Number(p.anno_inizio) + k + 1).slice(2); c.font = F({bold:true, size:9, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.alignment = {horizontal:'center'}; });
     M.forEach((m, k) => { const c = wt.getCell(5, 2 + k); c.value = PN_MESI_N[Number(m.k.slice(5, 7)) - 1].slice(0, 1).toUpperCase(); c.font = F({size:8, bold:m.k === oggi, color:{argb:m.k === oggi ? 'FFB03A2E' : 'FF444444'}}); c.fill = fill(m.k === oggi ? 'FADBD8' : 'EEF0FB'); c.alignment = {horizontal:'center'}; c.border = box; });
     let q = 6; const vm = {}; T.forEach(x => { (vm[x.s] = vm[x.s] || []).push(x); });
     wt.getCell(q, 1).value = 'Verifiche'; wt.getCell(q, 1).font = F({bold:true}); M.forEach((m, k) => { const x = vm[k], c = wt.getCell(q, 2 + k); c.border = box; if(x){ c.value = x.some(y => y.t.fatta) ? '◆' : '◇'; c.font = F({size:10, bold:true, color:{argb:x.every(y => y.sug) ? 'FFAAAAAA' : 'FF1A1A18'}}); c.alignment = {horizontal:'center'}; c.note = x.map(pnQTappaTxt).join('\n'); } }); q++;
+    { const C = pnQCdg(M), cm = {}; C.forEach(x => { (cm[x.s] = cm[x.s] || []).push(x); }); if(C.length){ wt.getCell(q, 1).value = 'Consigli di Gruppo'; wt.getCell(q, 1).font = F({bold:true}); M.forEach((m, k) => { const x = cm[k], c = wt.getCell(q, 2 + k); c.border = box; if(x){ c.value = '▲'; c.font = F({size:9, bold:true, color:{argb:x.every(y => y.t.fatta) ? 'FF1A1A18' : 'FF777777'}}); c.alignment = {horizontal:'center'}; c.note = x.map(pnQTappaTxt).join('\n'); } }); q++; } }
     R.forEach(({o, i, az}) => { const c = pnColOb(o), dk = pnHx(c[0]), pl = pnHx(c[1]);
       for(let k = 1; k <= N + 1; k++) wt.getCell(q, k).fill = fill(pl); const oc = wt.getCell(q, 1); oc.value = (i + 1) + ' · ' + (o.testo || '(senza testo)'); oc.font = F({bold:true, color:{argb:'FF' + dk}}); q++;
       az.forEach(a => { const x = ev.find(y => y.a === a), st = a.stato || 'da_iniziare', fl = st === 'fatta' ? dk : st === 'in_corso' ? pnMix(dk, .45) : pnMix(dk, .78);
@@ -19789,6 +19794,7 @@ function pnPaneHTML(id){
   if(id === 'pan'){
     h += `<section class="pn-card" aria-labelledby="pn-st-t"><h2 class="pn-h" id="pn-st-t">Stato del piano</h2>
     <div class="sh-g2"><div><label class="sh-lb" for="pn-stato">Stato</label><select class="sh-in" id="pn-stato" onchange="pnMeta('stato',this.value)"${dis}>${PN_STATI.map(([k, t]) => `<option value="${k}"${PN.meta.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
+    <div><label class="sh-lb" for="pn-sez">Sezione</label><input class="sh-in" id="pn-sez" list="pn-dl-sez" autocomplete="off" maxlength="80" placeholder="Scrivi le prime lettere e scegli" value="${E(d.sezione || '')}" oninput="pnSezione(this.value)" aria-describedby="pn-sezh"${dis}><datalist id="pn-dl-sez">${sezOpts()}</datalist><p class="sh-hint" id="pn-sezh" style="margin:4px 0 0">Compare sulla carta intestata del Word e dell’Excel.${d.sezione ? '' : ' Se la lasci vuota si usa quella del tuo profilo.'}</p></div>
     <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" type="date" aria-label="Data della delibera" value="${E(pnDataIso(d.delibera.data))}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" aria-label="Luogo della delibera" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div>${d.delibera.data && !pnDataIso(d.delibera.data) ? `<p class="sh-hint" id="pn-delOld" style="margin:4px 0 0">Avevi scritto «${E(d.delibera.data)}»: scegli la data dal calendario.</p>` : ''}</div></div>
     </section>`;
   { const pr = pnProssima(); h += `<section class="pn-card" aria-labelledby="pn-pv-t"><h2 class="pn-h" id="pn-pv-t">Prossima verifica</h2><p class="sh-sub" style="margin:0" id="pn-prox">${pr ? E(pnTappaNome(pr)) : (d.tappe.length ? 'Tutte le tappe sono fatte.' : 'Nessuna tappa segnata.')}</p><div><button class="sh-btn sm gh" type="button" onclick="pnSez('ver')">Vai alle verifiche</button></div></section>`; }
@@ -19957,6 +19963,7 @@ function pnQEv(R){
 function pnQTappe(M, N){
   const p = PN.p, out = [], T = PN.d.tappe || [], ix = k => M.findIndex(m => m.k === k), dd = ['', ''];
   T.forEach(t => {
+    if(t.tipo === 'cdg') return;
     const k = /^\d{4}-\d{2}/.test(t.data || '') ? t.data.slice(0, 7) : '', s = k ? ix(k) : -1;
     if(s < 0) return;
     const gg = /^\d{4}-\d{2}-(\d{2})$/.test(t.data) ? Number(t.data.slice(8, 10)) : 0;
@@ -19969,9 +19976,15 @@ function pnQTappe(M, N){
   }
   return out.sort((a, b) => a.s - b.s);
 }
+// i Consigli di Gruppo con una data (facoltativi): sono tappe di tipo «cdg», a parte dalle verifiche
+function pnQCdg(M){
+  const out = [], ix = k => M.findIndex(m => m.k === k);
+  (PN.d.tappe || []).forEach(t => { if(t.tipo !== 'cdg' || !/^\d{4}-\d{2}-\d{2}$/.test(t.data || '')) return; const s = ix(t.data.slice(0, 7)); if(s < 0) return; out.push({t, s, gg:Number(t.data.slice(8, 10)), lab:'Consiglio di Gruppo', sug:false}); });
+  return out.sort((a, b) => a.s - b.s || a.gg - b.gg);
+}
 const pnQTappaTxt = x => x.lab + (x.gg ? ' · ' + x.gg + ' ' + PN_MESI_N[Number(PN.p ? pnMesi(PN.p)[x.s].k.slice(5, 7) : 1) - 1] : '') + (x.sug ? ' (suggerita: entro marzo)' : '') + (x.t.fatta ? ' · fatta' : '');
 function pnQTimeline(R){
-  const E = esc, p = PN.p, {ev, sciolte, M, N} = pnQEv(R), T = pnQTappe(M, N), pct = x => (x / N * 100).toFixed(3) + '%';
+  const E = esc, p = PN.p, {ev, sciolte, M, N} = pnQEv(R), T = pnQTappe(M, N), C = pnQCdg(M), pct = x => (x / N * 100).toFixed(3) + '%';
   const oggi = giOggi(), im = M.findIndex(m => m.k === oggi.slice(0, 7));
   let frac = -1; if(im >= 0){ const d = Number(oggi.slice(8, 10)), dim = new Date(Number(oggi.slice(0, 4)), Number(oggi.slice(5, 7)), 0).getDate(); frac = (im + (d - 1) / dim) / N; }
   const anni = Array.from({length:p.durata}, (_, k) => k + 1);
@@ -19979,7 +19992,7 @@ function pnQTimeline(R){
   let h = `<div class="pn-tl-box" role="figure" aria-label="Timeline del piano: la stessa informazione è nella Tabella e nel Calendario"><div class="pn-tw"><div class="pn-tl" style="--n:${N};--y:${p.durata}">
     <div class="pn-tl-r pn-tl-h"><div class="pn-tl-l"></div><div class="pn-tl-g">${anni.map(k => `<span>Anno ${k} · ${Number(p.anno_inizio) + k - 1}-${String(Number(p.anno_inizio) + k).slice(2)}</span>`).join('')}</div></div>
     <div class="pn-tl-r pn-tl-m"><div class="pn-tl-l"></div><div class="pn-tl-g">${mesiRow}</div></div>
-    <div class="pn-tl-r pn-tl-v"><div class="pn-tl-l"><b>Verifiche</b></div><div class="pn-tl-g">${T.map(x => `<span class="pn-tv${x.t.fatta ? ' fatta' : ''}${x.sug ? ' sug' : ''}" style="left:${(((x.s + (x.gg ? (x.gg - 1) / 30 : .5)) / N) * 100).toFixed(3)}%" title="${E(pnQTappaTxt(x))}" role="img" aria-label="${E(pnQTappaTxt(x))}"></span>`).join('')}</div></div>`;
+    <div class="pn-tl-r pn-tl-v"><div class="pn-tl-l"><b>Verifiche</b></div><div class="pn-tl-g">${T.map(x => `<span class="pn-tv${x.t.fatta ? ' fatta' : ''}${x.sug ? ' sug' : ''}" style="left:${(((x.s + (x.gg ? (x.gg - 1) / 30 : .5)) / N) * 100).toFixed(3)}%" title="${E(pnQTappaTxt(x))}" role="img" aria-label="${E(pnQTappaTxt(x))}"></span>`).join('')}</div></div>${C.length ? `<div class="pn-tl-r pn-tl-v"><div class="pn-tl-l"><b>Consigli di Gruppo</b></div><div class="pn-tl-g">${C.map(x => `<span class="pn-tc${x.t.fatta ? ' fatta' : ''}" style="left:${(((x.s + (x.gg - 1) / 30) / N) * 100).toFixed(3)}%" title="${E(pnQTappaTxt(x))}" role="img" aria-label="${E(pnQTappaTxt(x))}"></span>`).join('')}</div></div>` : ''}`;
   R.forEach(({o, i, az}) => {
     const c = pnColOb(o);
     h += `<div class="pn-tl-r pn-tl-o" style="--c:${c[0]};--p:${c[1]}"><div class="pn-tl-l"><span class="pn-qn">${i + 1}</span><a href="#pn-ob-${E(o.id)}" onclick="pnVai('${E(o.id)}');return false">${E(o.testo || '(senza testo)')}</a></div><div class="pn-tl-g"></div></div>`;
@@ -19996,20 +20009,22 @@ function pnQTimeline(R){
   });
   if(frac >= 0) h += `<div class="pn-tl-oggi" style="--f:${frac.toFixed(4)}" aria-hidden="true"><span>oggi</span></div>`;
   h += `</div></div>
-    <p class="sh-hint pn-tl-leg" style="margin:6px 0 0"><span class="pn-lg b"></span> azione continuativa · <span class="pn-lg d"></span> azione una volta sola · <span class="pn-lg v"></span> verifica (<span class="pn-lg v sug"></span> sfumata: suggerita, senza data) · pieno = fatta, a righe = in corso, chiaro = da iniziare · la linea rossa è oggi</p></div>`;
-  return h + pnQLista(ev, sciolte, T);
+    <p class="sh-hint pn-tl-leg" style="margin:6px 0 0"><span class="pn-lg b"></span> azione continuativa · <span class="pn-lg d"></span> azione una volta sola · <span class="pn-lg v"></span> verifica (<span class="pn-lg v sug"></span> sfumata: suggerita, senza data)${C.length ? ' · <span class="pn-lg c"></span> Consiglio di Gruppo' : ''} · pieno = fatta, a righe = in corso, chiaro = da iniziare · la linea rossa è oggi</p></div>`;
+  return h + pnQLista(ev, sciolte, T, C);
 }
 // l’elenco per scadenza: è la timeline sul telefono (sotto i 700 px la barra non si legge)
-function pnQLista(ev, sciolte, T){
+function pnQLista(ev, sciolte, T, C){
   const E = esc, p = PN.p, M = pnMesi(p), righe = [];
   ev.forEach(x => righe.push({k:x.e, t:'a', x}));
   T.forEach(x => righe.push({k:x.s, t:'v', x}));
+  (C || []).forEach(x => righe.push({k:x.s, t:'w', x}));
   righe.sort((a, b) => (a.k - b.k) || (a.t < b.t ? -1 : 1));
   let h = `<div class="pn-tl-ls" aria-label="Elenco per scadenza">`;
   let cur = -2;
   righe.forEach(r => {
     if(r.k !== cur){ if(cur !== -2) h += `</ul>`; cur = r.k; h += `<h3 class="pn-tl-mh">${E(M[r.k].lab)}</h3><ul class="pn-tl-ul">`; }
     if(r.t === 'v') h += `<li class="v"><span aria-hidden="true">◇</span> ${E(pnQTappaTxt(r.x))}</li>`;
+    else if(r.t === 'w') h += `<li class="v"><span aria-hidden="true">▲</span> ${E(pnQTappaTxt(r.x))}</li>`;
     else { const a = r.x.a, c = pnColOb(r.x.o), st = PN_ST_SEG[a.stato || 'da_iniziare'] || PN_ST_SEG.da_iniziare;
       h += `<li class="a" style="--c:${c[0]}"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}<small>${E(pnQuando(a, p))}${(a.ref || '').trim() ? ' · ' + E(a.ref) : ''} · <span aria-hidden="true">${st[0]}</span> ${E(st[1])}</small></li>`; }
   });
@@ -20018,7 +20033,7 @@ function pnQLista(ev, sciolte, T){
   return h + `</div>`;
 }
 function pnQCal(R){
-  const E = esc, p = PN.p, {ev, sciolte, M, N} = pnQEv(R), T = pnQTappe(M, N), anno = Math.min(p.durata, Math.max(1, Number((PN.qf || {}).anno) || pnAnnoCur(p))), oggi = giOggi();
+  const E = esc, p = PN.p, {ev, sciolte, M, N} = pnQEv(R), T = pnQTappe(M, N), C = pnQCdg(M), anno = Math.min(p.durata, Math.max(1, Number((PN.qf || {}).anno) || pnAnnoCur(p))), oggi = giOggi();
   const giro = (typeof GI !== 'undefined' && GI && GI.g && GI.g.piano_id === p.id && /^\d{4}-\d{2}-\d{2}/.test(GI.g.scadenza || '')) ? GI.g.scadenza.slice(0, 10) : '';
   let h = `<div class="pn-cal-nav" role="group" aria-label="Anno del piano">${Array.from({length:p.durata}, (_, k) => k + 1).map(k => `<button type="button" class="pn-segb${k === anno ? ' on' : ''}" aria-pressed="${k === anno}" onclick="pnQf('anno',${k})">Anno ${k} · ${Number(p.anno_inizio) + k - 1}-${String(Number(p.anno_inizio) + k).slice(2)}</button>`).join('')}</div>
     <div class="pn-cal">`;
@@ -20030,6 +20045,7 @@ function pnQCal(R){
       else { if(x.s === gi) li.push(L('▶', 'Inizia: ')); if(x.fineMese && x.e === gi && x.e !== x.s) li.push(L('■', 'Finisce: ')); } });
     const corso = ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e > gi).length + ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e === gi && !x.fineMese).length;
     T.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">◇</span> ${E(pnQTappaTxt(x))}</li>`));
+    C.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">▲</span> ${E(pnQTappaTxt(x))}</li>`));
     if(giro && giro.slice(0, 7) === m.k) li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">○</span> Ascolto: scadenza ${E(giro.slice(8, 10))} ${E(PN_MESI_N[Number(m.k.slice(5, 7)) - 1])}</li>`);
     h += `<section class="pn-cm${oggi.slice(0, 7) === m.k ? ' cur' : ''}" aria-label="${E(m.lab)}"><h3>${E(m.lab)}${oggi.slice(0, 7) === m.k ? ' <small>· questo mese</small>' : ''}</h3>${li.length ? `<ul>${li.join('')}</ul>` : '<p class="pn-no" style="margin:0">Niente in programma.</p>'}${corso ? `<p class="pn-cc">${corso === 1 ? '+ 1 azione in corso' : '+ ' + corso + ' azioni in corso'}</p>` : ''}</section>`;
   });
@@ -20094,6 +20110,7 @@ async function pnVersioneStato(){ // quando cambia lo stato (deliberato, approva
 }
 // la data della delibera è una vera data (aaaa-mm-gg); i valori scritti prima a mano come gg/mm/aaaa si leggono e si convertono quando serve, senza perdere nulla
 function pnDataIso(t){ t = String(t || '').trim(); if(/^\d{4}-\d{2}-\d{2}$/.test(t)) return t; const m = t.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/); if(!m) return ''; const g = +m[1], me = +m[2]; if(g < 1 || g > 31 || me < 1 || me > 12) return ''; return m[3] + '-' + String(me).padStart(2, '0') + '-' + String(g).padStart(2, '0'); }
+window.pnSezione = function(v){ if(!pnTutto()) return; PN.d.sezione = String(v || '').slice(0, 80); pnTouch(); };
 window.pnDel = function(k, v){ if(!pnTutto()) return; PN.d.delibera[k] = v; if(k === 'data'){ const o = $('pn-delOld'); if(o) o.remove(); } pnTouch(); };
 window.pnAn = function(id, k, v){ const a = PN.d.analisi.find(x => x.id === id); if(!a || !pnTutto()) return; a[k] = v; pnTouch(); };
 window.pnAnAdd = function(t){ if(!pnTutto()) return; const a = {id:pnUid(), titolo:t || '', testo:''}; PN.d.analisi.push(a); pnTouch(); pnRender(); const f = $(t ? 'pn-anx-' + a.id : 'pn-ant-' + a.id); if(f) f.focus(); };
@@ -20721,6 +20738,8 @@ body.sh-in .toast{pointer-events:none}
 .pn-tb.open{border-right-style:dashed;border-radius:9px 0 0 9px}
 .pn-td,.pn-tv{position:absolute;top:6px;width:18px;height:18px;margin-left:-9px;transform:rotate(45deg) scale(.78);border:2px solid var(--c,#1A1A18);background:var(--p,#fff);box-sizing:border-box}
 .pn-td.s-in_corso{background:repeating-linear-gradient(45deg,var(--c) 0 4px,var(--p) 4px 8px)}.pn-td.s-fatta{background:var(--c)}
+.pn-tc{position:absolute;top:7px;width:16px;height:14px;margin-left:-8px;background:#6B6B63;clip-path:polygon(50% 0,100% 100%,0 100%)}.pn-tc.fatta{background:#1A1A18}
+.pn-lg.c{width:13px;height:11px;border:0;border-radius:0;background:#6B6B63;clip-path:polygon(50% 0,100% 100%,0 100%);margin:0 4px}
 .pn-tv{border-color:#1A1A18;background:#fff}.pn-tv.fatta{background:#1A1A18}.pn-tv.sug{opacity:.45}
 .pn-tb:focus-visible,.pn-td:focus-visible,.pn-tl-l a:focus-visible{outline:2px solid #1A1A18;outline-offset:2px}
 .pn-tl-oggi{position:absolute;top:0;bottom:0;left:calc(var(--lw) + (100% - var(--lw)) * var(--f));width:2px;background:#C0392B;pointer-events:none;z-index:3}
