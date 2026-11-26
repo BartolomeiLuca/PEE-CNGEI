@@ -71,7 +71,7 @@ export class FakeDB {
   brUnita(pr){ return pr ? (pr.ruolo === 'cu' ? pr.branca : ((pr.dashboard || {}).unita || {}).branca) : ''; }
   vcuStessaUnita(uid, aut){ const me = (this.t.pee_profili || []).find(x => x.user_id === uid), au = (this.t.pee_profili || []).find(x => x.user_id === aut);
     const nn = v => String(v || '').trim().toLowerCase();
-    return !!(me && au && me.ruolo === 'vcu' && ['L','E','R'].includes(me.branca) && ['cu','cg','cds'].includes(au.ruolo) && me.branca === this.brUnita(au) && nn(me.gruppo) && nn(me.gruppo) === nn(au.gruppo) && nn(me.sezione) === nn(au.sezione)); }
+    return !!(me && au && (me.ruolo === 'vcu' || (me.ruolo === 'senior' && this.sqlSis27 !== false)) && ['L','E','R'].includes(me.branca) && ['cu','cg','cds'].includes(au.ruolo) && me.branca === this.brUnita(au) && nn(me.gruppo) && nn(me.gruppo) === nn(au.gruppo) && nn(me.sezione) === nn(au.sezione)); }
   giroRec(g){ return this.t.pee_piani_giri.find(x => x.id === g) || null; }
   giroAperto(g){ const x = this.giroRec(g); return !!x && x.stato === 'aperto'; }
   giroVedoAltri(uid, g){ const x = this.giroRec(g); return !!(x && x.stato === 'chiuso') || this.t.pee_piani_contributi.some(c => c.giro_id === g && c.autore_id === uid && c.tipo === 'carte' && c.consegnato); }

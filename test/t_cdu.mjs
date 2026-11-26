@@ -109,6 +109,20 @@ ok(letta.length === 2, 'il VCU della stessa Branca, Gruppo e Sezione legge le Ca
 const pv = db.t.pee_profili.find(x => x.user_id === vera.u.id); pv.gruppo = '2';
 const letta2 = await vera.ev(async g => (await PIANI.contributi(g)).filter(c => c.tipo === 'unita').length, db.t.pee_piani_giri[0].id);
 ok(letta2 === 0, 'un VCU di un altro Gruppo non le legge (' + letta2 + ')'); pv.gruppo = '1';
+// 27/11 sera: il Senior in Servizio della stessa Unità legge la Carta come il VCU, e per lui la Branca è obbligatoria
+const sandro = await entra('sandro', 'Sandro Senior', 'senior');
+const ps = db.t.pee_profili.find(x => x.user_id === sandro.u.id); ps.branca = 'E';
+db.t.pee_piani_membri.push({id:'m-' + sandro.u.email, piano_id:pid, email:sandro.u.email, ruolo:'lettore', etichetta:'Senior in Servizio', nome:'Sandro Senior', visto_il:null, invitato_da:luca.u.id, created_at:'2026-11-24T10:00:00Z'});
+await sandro.ev(async g => { await PIANI.contributoSalva(g, 'carte', {v:1, a:{educativa:{v:'x', c:'', p:'', b:false}}}, true); }, db.t.pee_piani_giri[0].id);
+await sandro.ev(id => pnOpen(id), pid); await sleep(1200); await sandro.ev(() => pnSez('g-cdu')); await sleep(1000);
+const ss = await sandro.ev(() => [...document.querySelectorAll('.pn-card')].map(x => x.textContent.replace(/\s+/g, ' ')).join(' | '));
+ok(/consegna il Capo Unità/.test(ss) && !/Apri le mie programmazioni/.test(ss) && /Un aiuto con i trasporti|Lavorare in squadra|Un’uscita aperta/.test(ss), 'il Senior in Servizio della stessa Unità legge le Carte e non ha i pulsanti per consegnare');
+const lettaS = await sandro.ev(async g => (await PIANI.contributi(g)).filter(c => c.tipo === 'unita').length, db.t.pee_piani_giri[0].id);
+ok(lettaS === 2, 'il database gliele dà (' + lettaS + ')');
+ps.branca = 'R';
+ok(await sandro.ev(async g => (await PIANI.contributi(g)).filter(c => c.tipo === 'unita').length, db.t.pee_piani_giri[0].id) === 0, 'con un’altra Branca no'); ps.branca = '';
+ok(await sandro.ev(async g => (await PIANI.contributi(g)).filter(c => c.tipo === 'unita').length, db.t.pee_piani_giri[0].id) === 0, 'senza Branca nel profilo no');
+ok(await sandro.ev(() => [SH.profOk({nome:'S', ruolo:'senior', sezione:'Pesaro', gruppo:'1'}), SH.profOk({nome:'S', ruolo:'senior', branca:'E', sezione:'Pesaro', gruppo:'1'}), SH.profOk({nome:'S', ruolo:'cg', sezione:'Pesaro', gruppo:'1'})].join()) === 'false,true,true', 'nel profilo la Branca è obbligatoria per il Senior in Servizio (non per il Capo Gruppo)'); ps.branca = 'E';
 
 // ── 5. chiuso il giro non si consegna più ──
 await luca.ev(async g => { await PIANI.giroChiudi(g, 'anticipata'); }, db.t.pee_piani_giri[0].id); await sleep(400);

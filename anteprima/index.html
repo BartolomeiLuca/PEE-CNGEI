@@ -18388,7 +18388,7 @@ function profOk(p){
   p = p || SH.prof || {};
   if(!String(p.nome||'').trim() || !p.ruolo || !String(p.sezione||'').trim()) return false;
   if(!senzaGruppo(p.ruolo) && !String(p.gruppo||'').trim()) return false;
-  if((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) return false;
+  if(['cu', 'vcu', 'senior'].includes(p.ruolo) && !p.branca) return false;
   return true;
 }
 SH.profOk = profOk;
@@ -18638,7 +18638,7 @@ window.shProfSubmit = async function(ev){
     else if(lib){ if(!eraLibera){ const d2 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {}); d2.sezioneLibera = true; p.dashboard = d2; } }
     else if(!salvata) sezMiss = ['Scegli la Sezione dall’elenco (scrivi le prime lettere). Se non c’è, spunta «La mia Sezione non è in elenco»', 'sh-sez'];
   }
-  const miss = sezMiss ? sezMiss : unMiss ? unMiss : cosMiss ? cosMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : ((p.ruolo === 'cu' || p.ruolo === 'vcu') && !p.branca) ? ['Scegli la Branca','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!senzaGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
+  const miss = sezMiss ? sezMiss : unMiss ? unMiss : cosMiss ? cosMiss : !p.nome ? ['Scrivi il tuo nome e cognome','sh-nome'] : !p.ruolo ? ['Scegli il tuo ruolo','sh-nome'] : (['cu', 'vcu', 'senior'].includes(p.ruolo) && !p.branca) ? ['Scegli la Branca dell’Unità in cui presti servizio','sh-sez'] : !p.sezione ? ['Scrivi o scegli la tua Sezione','sh-sez'] : (!senzaGruppo(p.ruolo) && !p.gruppo) ? ['Scegli il tuo Gruppo','sh-grp'] : null;
   if(miss){ m.className = 'sh-msg err'; m.textContent = miss[0] + '.'; try{ $(miss[1]).focus(); }catch(e){} return false; }
   const btn = $('sh-psave'); btn.disabled = true; m.className = 'sh-msg'; m.textContent = 'Salvo…';
   try{
@@ -19340,7 +19340,7 @@ function cduVuotaDel(st){ const b = st.b || {}; return !Object.keys(b).some(k =>
 Object.assign(window, {cduFormHTML, cduApplica, cduPayload, cduGuidaHTML, cduVuota, cduVuotaDel, CDU_BLOCCHI, CDU_SEM});
 
 // ── Carta di Unità nella pagina dell’Ascolto (27/11): qui si legge soltanto. La si scrive e si consegna dalla programmazione dell’Unità ──
-const giSonoCU = () => /^(cu|vcu)$/.test((SH.prof || {}).ruolo || '') || !!unitaOf();
+const giSonoCU = () => /^(cu|vcu|senior)$/.test((SH.prof || {}).ruolo || '') || !!unitaOf();
 const giPuoConsegnareCU = () => (SH.prof || {}).ruolo === 'cu' || !!unitaOf();
 window.giPuoConsegnareCU = giPuoConsegnareCU;
 function giCduHTML(){

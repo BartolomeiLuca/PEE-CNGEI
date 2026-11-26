@@ -132,6 +132,25 @@ ok(await nrows('c', `select id from pee_piani_contributi where tipo = 'unita'`) 
 await db.query(`update pee_profili set gruppo = 'Pesaro 2' where user_id = $1`, [U.c]);
 ok(await nrows('c', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'non se è di un altro Gruppo');
 await db.query(`update pee_profili set gruppo = 'Pesaro 1' where user_id = $1`, [U.c]);
+// 27/11 sera: anche il Senior in Servizio della stessa Unità legge la Carta (sola lettura)
+{
+  await db.query(`update pee_profili set branca = 'E' where user_id = $1`, [U.b]);
+  ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'prima dello script del 27 sera il Senior in Servizio non la legge');
+  const sql6 = fs.readFileSync(new URL('../supabase_aggiornamento_27novembre_sis_legge_carta.sql', import.meta.url), 'utf8');
+  let e9 = null, e10 = null; try { await db.exec(sql6); } catch(e){ e9 = e; } ok(!e9, 'lo script del Senior in Servizio gira' + (e9 ? ': ' + e9.message : '')); try { await db.exec(sql6); } catch(e){ e10 = e; } ok(!e10, 'e si può rieseguire');
+  ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 1, 'il Senior in Servizio della stessa Unità legge la Carta');
+  ok(await nrows('c', `select id from pee_piani_contributi where tipo = 'unita'`) === 1, 'e il Vice Capo Unità la legge ancora');
+  await db.query(`update pee_profili set branca = 'R' where user_id = $1`, [U.b]);
+  ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'il Senior in Servizio di un’altra Branca no');
+  await db.query(`update pee_profili set branca = '' where user_id = $1`, [U.b]);
+  ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'senza Branca nel profilo no');
+  await db.query(`update pee_profili set branca = 'E', gruppo = 'Pesaro 2' where user_id = $1`, [U.b]);
+  ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'd’altro Gruppo no');
+  await db.query(`update pee_profili set branca = 'E', gruppo = 'Pesaro 1' where user_id = $1`, [U.b]);
+  const w = await as('b', `update pee_piani_contributi set data = '{"v":1,"fonte":"pee","hack":1}'::jsonb where tipo = 'unita' returning 1`);
+  ok(!w.err && w.rows.length === 0, 'in sola lettura: non la modifica');
+  await db.query(`update pee_profili set branca = 'R' where user_id = $1`, [U.b]);
+}
 ok(await nrows('d', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'chi non ha consegnato non vede la Carta di Unità');
 ok((await as('b', `update pee_piani_contributi set data = '{"hack":1}' where autore_id = $1`, [U.a])).rows?.length === 0 || (await db.query(`select data from pee_piani_contributi where autore_id=$1 and tipo='carte'`, [U.a])).rows[0].data.x === 1, 'nessuno modifica le carte altrui');
 ok((await as('a', `delete from pee_piani_contributi where autore_id = $1 and tipo='carte' returning 1`, [U.a])).rows.length === 0, 'una carta consegnata non si cancella');
