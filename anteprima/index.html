@@ -18932,7 +18932,7 @@ function pnCarica(p){
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
   ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
-  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; }
+  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; PN.qf = {}; }
   Object.assign(PN, {p, d:v, base:pnClone(v), meta:{titolo:p.titolo, stato:p.stato}, baseMeta:{titolo:p.titolo, stato:p.stato}, ruolo:p.ruolo || 'lettore', dirty:false, saving:false, again:false, st:'', sel:{}});
 }
 
@@ -19592,7 +19592,7 @@ function pnMenu(){
   const d = PN.d, g = PN.p && PN.p.tipo === 'gruppo' && GI.ok === true, coord = pnTutto();
   const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock'], ['spu', 'Spunti dalle Unità', 'list']];
   // ordine di lavoro (27/11): Panoramica, Ascolto, Dove siamo, Obiettivi, Verifiche
-  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash']].concat(lavoro)}];
+  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']].concat(lavoro)}];
   if(g){
     const it = [['g-giro', GI.g && GI.g.stato === 'aperto' ? 'Ascolto · aperto' : 'Ascolto', 'users']];
     if(GI.g){
@@ -19706,6 +19706,7 @@ function pnPaneHTML(id){
   h += `</section>`;
   }
   else if(id === 'ver'){ h += pnVerHTML(); }
+  else if(id === 'qua'){ h += pnQuadroHTML(); }
   else if(id === 'uni'){
   if(d.uniti.length) h += `<section class="pn-card" aria-labelledby="pn-un-t"><h2 class="pn-h" id="pn-un-t">Obiettivi uniti</h2><p class="sh-hint" style="margin:0">Gli obiettivi originali, tenuti come nota.</p>${d.uniti.map(u => `<div class="pn-un"><b>${E(u.testo || '—')}</b><div class="sh-hint" style="margin:2px 0 0">${(u.aree || []).map(a => E(pnLab(PN_AREE, a))).join(', ')}${u.nota ? ' · ' + E(u.nota) : ''}</div></div>`).join('')}</section>`;
   }
@@ -19776,6 +19777,65 @@ function pnAzHTML(a, j, p){
     <fieldset class="pn-fs"><legend class="sh-lb">Chi</legend><div class="pn-chips">${PN_CHI.map(([k, t]) => `<label class="pn-chip sm${(a.chi || []).includes(k) ? ' on' : ''}"><input type="checkbox" ${(a.chi || []).includes(k) ? 'checked' : ''} onchange="pnChi('${E(a.id)}','${k}',this.checked);this.parentNode.classList.toggle('on',this.checked)"${disT}>${E(t)}</label>`).join('')}<label class="pn-chip sm${a.genitori ? ' on' : ''}"><input type="checkbox" ${a.genitori ? 'checked' : ''} onchange="pnAz('${E(a.id)}','genitori',this.checked);this.parentNode.classList.toggle('on',this.checked)"${disT}>Con i genitori</label></div></fieldset>
     ${pnRefHTML(a, tutto)}</div>`;
 }
+
+
+// ══ Quadro (27/11): il piano da guardare. Si legge qui, si scrive in «Obiettivi e azioni» (un clic su una riga porta a modificarla) ══
+const PN_COL = {educativa:['#2E7D5A', '#E3F1EA'], formativa:['#B06A00', '#FFF3E0'], gestionale:['#2C3E7A', '#E8ECFA'], sviluppo:['#7A2C6B', '#F4E6F1'], territorio:['#0F7C8A', '#DDF1F3']};
+const PN_ST_SEG = {da_iniziare:['○', 'Da iniziare'], in_corso:['◐', 'In corso'], fatta:['●', 'Fatta']};
+const pnColOb = o => (PN_COL[(o.aree || [])[0]] || ['#6B6B64', '#F0F0EA']);
+const pnAreaChip = k => { const c = PN_COL[k] || ['#6B6B64', '#F0F0EA']; return `<span class="pn-ac" style="--c:${c[0]};--p:${c[1]}">${esc(pnLab(PN_AREE, k))}</span>`; };
+function pnVerTxt(a){ return (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? ' · ' + (a.step === 'meta' ? 'anche a metà anno' : 'a ogni Consiglio di Gruppo') : ''); }
+// le azioni di ogni obiettivo, nell’ordine del tempo (prima quelle col mese più vicino, in coda quelle senza mese), con i filtri scelti
+function pnQRighe(){
+  const d = PN.d, f = PN.qf || {};
+  const ok = a => (!f.ref || (f.ref === '__no' ? !(a.ref || '').trim() : affNorm(a.ref || '') === affNorm(f.ref))) && (!f.chi || (a.chi || []).includes(f.chi)) && (!f.stato || (a.stato || 'da_iniziare') === f.stato) && (!f.urg || a.urgente);
+  const sulleAzioni = !!(f.ref || f.chi || f.stato || f.urg);
+  return d.obiettivi.map((o, i) => {
+    if(f.area && !(o.aree || []).includes(f.area)) return null;
+    const az = d.azioni.filter(a => a.ob === o.id).map((a, k) => [a, k]).filter(([a]) => ok(a)).sort(([a, x], [b, y]) => ((a.mese || '9999') < (b.mese || '9999') ? -1 : (a.mese || '9999') > (b.mese || '9999') ? 1 : x - y)).map(([a]) => a);
+    return (sulleAzioni && !az.length) ? null : {o, i, az};
+  }).filter(Boolean);
+}
+function pnQCorpo(){
+  const E = esc, d = PN.d, p = PN.p, R = pnQRighe(), f = PN.qf || {};
+  const tutte = d.azioni, nU = tutte.filter(a => a.urgente).length, nM = tutte.filter(a => !a.mese).length, nR = tutte.filter(a => !(a.ref || '').trim()).length;
+  let h = `<p class="sh-hint" style="margin:0" id="pn-q-conta">${d.obiettivi.length} ${d.obiettivi.length === 1 ? 'obiettivo' : 'obiettivi'} · ${tutte.length} ${tutte.length === 1 ? 'azione' : 'azioni'}${nU ? ` · ${nU} urgent${nU === 1 ? 'e' : 'i'}` : ''}${nM ? ` · ${nM} senza mese` : ''}${nR ? ` · ${nR} senza referente` : ''}</p>`;
+  if(!d.obiettivi.length) return h + `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo, in «Obiettivi e azioni».</p>`;
+  if(!R.length) return h + `<p class="sh-sub" style="margin:0">Nessuna azione con questi filtri.</p>`;
+  h += `<div class="pn-tw"><table class="pn-qt" aria-label="Quadro degli obiettivi e delle azioni"><thead><tr><th scope="col">Obiettivo e azioni</th><th scope="col">Referente</th><th scope="col">Organo</th><th scope="col">Quando</th><th scope="col">Si verifica</th><th scope="col">Stato</th></tr></thead>`;
+  R.forEach(({o, i, az}) => {
+    const c = pnColOb(o);
+    h += `<tbody class="pn-qo" style="--c:${c[0]};--p:${c[1]}"><tr class="pn-qoh"><th scope="colgroup" colspan="6"><span class="pn-qn">${i + 1}</span><a href="#pn-ob-${E(o.id)}" onclick="pnVai('${E(o.id)}');return false">${E(o.testo || '(senza testo)')}</a><span class="pn-qar">${(o.aree || []).map(pnAreaChip).join('')}${o.ricadute ? '<span class="pn-ac" style="--c:#6B6B64;--p:#F0F0EA">Ricadute educative</span>' : ''}</span></th></tr>`;
+    if(!az.length) h += `<tr class="pn-qa"><td colspan="6"><span class="pn-no">Nessuna azione ancora.</span></td></tr>`;
+    az.forEach(a => {
+      const st = PN_ST_SEG[a.stato || 'da_iniziare'] || PN_ST_SEG.da_iniziare, organo = [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.genitori ? 'con i genitori' : ''].filter(Boolean).join(' · ');
+      h += `<tr class="pn-qa${a.stato === 'fatta' ? ' fatta' : ''}"><td data-l="Azione"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}</td>
+        <td data-l="Referente">${(a.ref || '').trim() ? E(a.ref) : '<span class="pn-no">—</span>'}</td>
+        <td data-l="Organo">${organo ? E(organo) : '<span class="pn-no">—</span>'}</td>
+        <td data-l="Quando">${a.mese ? E(pnQuando(a, p)) : `<span class="pn-manca">${E(pnQuando(a, p))}</span>`}</td>
+        <td data-l="Si verifica">${E(pnVerTxt(a))}</td>
+        <td data-l="Stato"><span class="pn-stc s-${E(a.stato || 'da_iniziare')}"><span aria-hidden="true">${st[0]}</span> ${E(st[1])}</span></td></tr>`;
+    });
+    h += `</tbody>`;
+  });
+  return h + `</table></div>`;
+}
+function pnQuadroHTML(){
+  const E = esc, d = PN.d, f = PN.qf || (PN.qf = {});
+  const refs = [...new Set(d.azioni.map(a => (a.ref || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
+  const sel = (k, lab, opts) => `<div><label class="sh-lb" for="pn-qf-${k}">${lab}</label><select class="sh-in" id="pn-qf-${k}" onchange="pnQf('${k}',this.value)">${opts.map(([v, t]) => `<option value="${E(v)}"${(f[k] || '') === v ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>`;
+  return `<section class="pn-card" aria-labelledby="pn-q-t"><h2 class="pn-h" id="pn-q-t">Quadro del Piano</h2>
+    <p class="sh-hint" style="margin:0">Il piano da guardare: chi fa cosa, quando, come si verifica. Si scrive in «Obiettivi e azioni»: un clic su una riga porta lì.</p>
+    <div class="pn-qf">${sel('ref', 'Referente', [['', 'Tutti']].concat(refs.map(r => [r, r]), [['__no', 'Senza referente']]))}${sel('chi', 'Organo', [['', 'Tutti']].concat(PN_CHI))}${sel('area', 'Area', [['', 'Tutte']].concat(PN_AREE))}${sel('stato', 'Stato', [['', 'Tutti']].concat(PN_STATI_AZ))}
+    <label class="pn-chip sm${f.urg ? ' on' : ''}" style="align-self:end"><input type="checkbox" id="pn-qf-urg" ${f.urg ? 'checked' : ''} onchange="pnQf('urg',this.checked);this.parentNode.classList.toggle('on',this.checked)">Solo urgenti</label></div>
+    <div id="pn-qb">${pnQCorpo()}</div></section>`;
+}
+window.pnQf = function(k, v){ (PN.qf || (PN.qf = {}))[k] = v; const b = $('pn-qb'); if(b) b.innerHTML = pnQCorpo(); };
+window.pnVaiAz = function(id){
+  const a = PN.d.azioni.find(x => x.id === id); if(!a) return;
+  PN.open[a.ob] = true; if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } else pnObSet(a.ob, true);
+  const e = $('pn-az-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'center'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); }
+};
 
 // ── quadro sinottico e avvisi gentili ──
 function pnRefresh(){
@@ -20410,6 +20470,26 @@ body.sh-in .toast{pointer-events:none}
 .pn-chk input{width:20px;height:20px;flex:none;margin:0}
 .pn-az-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .pn-mancante{border-style:dashed!important;border-color:var(--amber)!important}
+.pn-qf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.pn-qt{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.pn-qt thead th{position:sticky;top:0;background:#fff;text-align:left;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#3D3D38;padding:8px 8px;border-bottom:2px solid #D8D8D0}
+.pn-qo{border-left:6px solid var(--c)}
+.pn-qoh th{background:var(--p);text-align:left;padding:9px 10px;border-top:1px solid var(--c);font-size:14px;font-weight:700;color:#1A1A18}
+.pn-qoh a{color:inherit;text-decoration:none}.pn-qoh a:hover,.pn-qa a:hover{text-decoration:underline}
+.pn-qn{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font-size:12px;font-weight:800;margin-right:8px;vertical-align:1px}
+.pn-qar{display:inline-flex;flex-wrap:wrap;gap:5px;margin-left:10px;vertical-align:middle}
+.pn-ac{display:inline-flex;align-items:center;gap:6px;background:var(--p);border:1px solid var(--c);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;color:#1A1A18}
+.pn-ac:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.pn-qa td{padding:8px 8px;border-bottom:1px solid #ECECE4;vertical-align:top;text-align:left}
+.pn-qa a{color:#1A1A18;text-decoration:none;font-weight:600}
+@media(pointer:coarse),(max-width:700px){.pn-qa td[data-l="Azione"] a,.pn-qoh a{display:inline-block;min-height:40px;padding:9px 0;box-sizing:border-box}}
+.pn-qa.fatta td{color:#6B6B64}
+.pn-urg{display:inline-block;font-size:11.5px;font-weight:800;color:#8A4B00;background:#FFF3E0;border:1px solid #E2B36B;border-radius:999px;padding:0 8px;white-space:nowrap}
+.pn-manca{color:#8A4B00;font-weight:600}
+.pn-stc{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap;border:1px solid #D8D8D0;background:#F7F7F2}
+.pn-stc.s-in_corso{background:#E8ECFA;border-color:#2C3E7A;color:#2C3E7A}.pn-stc.s-fatta{background:#E3F1EA;border-color:#2E7D5A;color:#1F5C41}
+@media(max-width:700px){.pn-qt thead{position:absolute;left:-9999px}.pn-qt,.pn-qt tbody,.pn-qt tr,.pn-qt td,.pn-qt th{display:block;width:100%}.pn-qa td{border-bottom:0;padding:4px 10px}.pn-qa td:last-child{border-bottom:1px solid #ECECE4;padding-bottom:10px}.pn-qa td[data-l]:before{content:attr(data-l);display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6B6B64}.pn-qar{display:flex;margin:6px 0 0}}
+
 .pn-azh{display:flex;gap:8px;align-items:baseline}
 .pn-tw{overflow-x:auto}
 .pn-tab{width:100%;border-collapse:collapse;font-size:13px}
