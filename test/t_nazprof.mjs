@@ -50,5 +50,18 @@ ok(selOk, 'la scelta «Dal Progetto di Sezione» sull’obiettivo sta nella sche
 await sw('obiettivo con la scelta dal Progetto di Sezione');
 await P.click('#pn-pds-so0 button'); await sleep(2800);
 ok(db.t.pee_piani.find(p => p.id === 'g1').data.obiettivi.length === 2, 'si porta un obiettivo nel piano anche da questo dispositivo, e si salva');
+// Progetto di Sezione: «Dai Gruppi della Sezione» (il titolare diventa Commissario)
+db.t.pee_profili.find(x => x.user_id === u.id).ruolo = 'cds';
+const mkG = (k, gr) => { const g = db.addUser(k + '@x.it', 'password123', 'Capo ' + k); db.t.pee_profili.push({user_id:g.id, nome:'Capo ' + k, ruolo:'cg', branca:'', sezione:'Pesaro', gruppo:gr, area_rcdf:'altoadriatico', dashboard:{}}); return g; };
+[['ga', '1'], ['gb', '2'], ['gc', '3']].forEach(([k, gr]) => { const g = mkG(k, gr); db.t.pee_piani.push({id:'pg' + k, owner_id:g.id, owner_email:k + '@x.it', tipo:'gruppo', titolo:'Piano di Gruppo', anno_inizio:2026, durata:3, stato:'bozza', archivio_id:null, rev:1, updated_at:new Date().toISOString(), created_at:new Date().toISOString(),
+  data:{v:1, sezione:'Pesaro', analisi:[], swot:null, obiettivi:[0, 1, 2].map(n => ({id:k + n, testo:lungo2 + ' ' + k + n, aree:['educativa', 'gestionale', 'territorio'], ricadute:false, origine:'', rif:'', indirizzi:['ps26:1.1', 'ps26:4.2']})), azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}}}); });
+await ev(() => location.reload()); await sleep(3000);
+await ev(() => pnOpen('p1')); await sleep(1900); await ev(() => pnSez('obi')); await sleep(700);
+ok(await ev(() => document.querySelectorAll('#pn-pdg > details').length) === 4, 'Progetto di Sezione: «Dai Gruppi della Sezione» con i 4 Piani di Gruppo della Sezione');
+await ev(() => document.querySelectorAll('#pn-pdg details').forEach(d => d.open = true)); await sleep(300);
+await sw('Dai Gruppi della Sezione'); const pc4 = await piccoli(); ok(!pc4.length, 'Dai Gruppi: pulsanti e righe da toccare abbastanza grandi' + (pc4.length ? ' («' + pc4.slice(0, 4).join(', ') + '»)' : ''));
+ok(await ev(() => [...document.querySelectorAll('#pn-pdg .pn-ni, #pn-pdg summary, #pn-pdg .pn-nchip')].filter(e => { const r = e.getBoundingClientRect(), c = document.querySelector('#pn-pdg').getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).length) === 0, 'Dai Gruppi: niente esce dalla scheda');
+await P.click('#pn-pdg-pgga .pn-ni >> nth=0 >> button'); await sleep(2800);
+ok(db.t.pee_piani.find(p => p.id === 'p1').data.obiettivi.some(o => /^pgga:/.test(o.pdgRif || '')), 'si porta un obiettivo dal Gruppo anche da questo dispositivo, e si salva');
 ok(!pa.errors.length, 'nessun errore nella pagina' + (pa.errors.length ? ': ' + pa.errors[0].slice(0, 160) : ''));
 process.exit(summary() ? 1 : 0);

@@ -1,0 +1,64 @@
+// 28/11 «Porta dai Gruppi»: chi guida la Sezione legge gli obiettivi dei Piani di Gruppo della sua Sezione (anche in bozza) e li porta nel Progetto di Sezione.
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+import fs from 'fs';
+import JSZip from '/home/claude/work/libs/node_modules/jszip/lib/index.js';
+const engine = process.argv[2] || 'chromium';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(engine); const db = new FakeDB();
+const U = {}; const prof = (k, nome, ruolo) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:'', sezione:'Pesaro', gruppo:'Pesaro 1', area_rcdf:'altoadriatico', dashboard:{}}); };
+const prof2 = (k, nome, ruolo, gr, dash, sez) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:'', sezione:sez || 'Pesaro', gruppo:gr || '', area_rcdf:'altoadriatico', dashboard:dash || {}}); };
+prof2('comm', 'Dino Commissario', 'cds'); prof2('vcds', 'Vito Vice', 'vcds'); prof2('cosP', 'Cora Presidente', 'cos', '', {cos:{incarichi:['presidente']}});
+prof2('cg1', 'Carla CG', 'cg', '1'); prof2('cg2', 'Gigi CG', 'cg', '2'); prof2('cgF', 'Fabio Fano', 'cg', '1', {}, 'Fano');
+const ob = (id, t, aree, ind) => ({id, testo:t, aree, origine:'', rif:'', ricadute:false, indirizzi:ind || []});
+const dati = x => Object.assign({v:1, titolareNome:'x', analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}, sezione:'Pesaro'}, x || {});
+const push = (id, own, tipo, stato, anno, d) => db.t.pee_piani.push({id, owner_id:U[own].id, owner_email:own + '@x.it', tipo, titolo:tipo === 'sezione' ? 'Progetto di Sezione Pesaro' : 'Piano di Gruppo', anno_inizio:anno, durata:3, stato, archivio_id:null, rev:1, updated_at:new Date().toISOString(), created_at:new Date().toISOString(), data:d});
+push('s1', 'comm', 'sezione', 'bozza', 2026, dati({}));
+push('g1', 'cg1', 'gruppo', 'bozza', 2026, dati({obiettivi:[ob('a1', 'Più famiglie nel Gruppo', ['educativa'], ['ps26:4.2']), ob('a2', 'Rinnovare la sede', ['gestionale', 'personale']), ob('a3', '  ', [])]}));
+push('g2', 'cg2', 'gruppo', 'deliberato', 2026, dati({obiettivi:[ob('b1', 'Formare i Capi Unità', ['formativa'])]}));
+push('g3', 'cgF', 'gruppo', 'bozza', 2026, dati({obiettivi:[ob('f1', 'OBIETTIVO DI FANO da non vedere', ['educativa'])]}));
+push('g4', 'cg1', 'gruppo', 'approvato', 2020, dati({obiettivi:[ob('o1', 'PIANO VECCHIO di un altro triennio', ['educativa'])]}));
+for(const [k, r] of [['vcds', 'lettore'], ['cosP', 'lettore']]) db.t.pee_piani_membri.push({id:'m' + k, piano_id:'s1', email:k + '@x.it', ruolo:r, etichetta:r, nome:k, invitato_da:U.comm.id, visto_il:null, created_at:new Date().toISOString()});
+const mk = async (k, w) => { const pa = await person(br, db, {ctx:{viewport:{width:w || 1280, height:900}, acceptDownloads:true}}); await pa.page.clock.setFixedTime(new Date('2026-12-10T10:00:00+01:00')); await loginAs(pa.page, base, U[k]); await sleep(2000); return {pa, P:pa.page, ev:(f, a) => pa.page.evaluate(f, a)}; };
+const txt = x => x.replace(/<w:tab\/>/g, ' ').replace(/<\/w:p>/g, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+const dbp = id => db.t.pee_piani.find(p => p.id === id);
+const C = await mk('comm');
+await C.ev(() => pnOpen('s1')); await sleep(1900); await C.ev(() => pnSez('obi')); await sleep(600);
+ok(await C.ev(() => !!document.querySelector('#pn-pdg') && document.querySelectorAll('#pn-pdg > details').length) === 2, 'Progetto di Sezione: «Dai Gruppi della Sezione» con i 2 Piani di Gruppo di Pesaro (non quello di Fano, non quello di un altro triennio)');
+ok(await C.ev(() => !/OBIETTIVO DI FANO|PIANO VECCHIO/.test(document.body.textContent) && /2 Piani di Gruppo · 3 obiettivi/.test(document.querySelector('#pn-pdg').textContent)), 'conteggio: 2 Piani, 3 obiettivi (quello senza testo non c’è)');
+ok(await C.ev(() => /Gruppo 1 · Piano 2026-28 · bozza · 2/.test(document.querySelector('#pn-pdg-g1 summary').textContent) && /Gruppo 2 · Piano 2026-28 · deliberato · 1/.test(document.querySelector('#pn-pdg-g2 summary').textContent)), 'per ogni Gruppo: nome, periodo, stato (anche bozza) e numero di obiettivi');
+await C.ev(() => document.querySelectorAll('#pn-pdg details').forEach(d => d.open = true)); await sleep(300);
+ok(await C.ev(() => document.querySelectorAll('#pn-pdg .pn-nchip').length) === 1, 'si vede l’indirizzo nazionale dove c’è');
+await C.P.click('#pn-pdg-g1 .pn-ni >> nth=0 >> button'); await sleep(1900);
+const s1 = () => dbp('s1').data.obiettivi;
+ok(s1().length === 1 && s1()[0].testo === 'Più famiglie nel Gruppo' && s1()[0].origine === 'gruppo' && s1()[0].pdgRif === 'g1:a1' && /Piano di Gruppo · Gruppo 1 · obiettivo 1/.test(s1()[0].rif), 'Porta nel Progetto: obiettivo con testo, origine «Piano di Gruppo» e riferimento al Gruppo');
+ok(JSON.stringify(s1()[0].indirizzi) === '["ps26:4.2"]' && JSON.stringify(s1()[0].aree) === '["educativa"]', 'arrivano indirizzo nazionale e aree');
+await C.ev(() => document.querySelectorAll('#pn-pdg details').forEach(d => d.open = true)); await sleep(300);
+ok(await C.ev(() => /Già nel Progetto/.test(document.querySelector('#pn-pdg-g1').textContent)), 'l’obiettivo portato diventa «Già nel Progetto»');
+await C.ev(() => pnPdgPorta('g1', 'a1')); await sleep(400); ok(s1().length === 1, 'portarlo di nuovo non duplica');
+await C.ev(() => pnPdgPorta('g1', 'a2')); await sleep(1800);
+ok(s1().length === 2 && JSON.stringify(s1()[1].aree) === '["gestionale"]', 'secondo obiettivo: solo le aree valide («personale» non è un’area del piano)');
+ok(await C.ev(() => document.querySelector('select[id^="pn-obo-"]').value) === 'gruppo', 'in «Da dove viene» risulta «Piano di Gruppo»');
+// Word
+await C.ev(() => pnSez('pan')); await sleep(400);
+const [dl] = await Promise.all([C.P.waitForEvent('download', {timeout:40000}), C.P.click('button[onclick="pnScarica()"]')]);
+const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const t = txt(await z.file('word/document.xml').async('string'));
+ok(/Da dove viene: Piano di Gruppo \(Piano di Gruppo · Gruppo 1 · obiettivo 1\)/.test(t), 'Word: «Da dove viene: Piano di Gruppo (… Gruppo 1 · obiettivo 1)»');
+// chi legge il Progetto
+const V = await mk('vcds');
+await V.ev(() => pnOpen('s1')); await sleep(1900); await V.ev(() => pnSez('obi')); await sleep(600);
+ok(await V.ev(() => !!document.querySelector('#pn-pdg') && !document.querySelector('#pn-pdg button')), 'Vice Commissario in lettura: vede l’elenco, senza «Porta nel Progetto»');
+const P = await mk('cosP');
+await P.ev(() => pnOpen('s1')); await sleep(1900); await P.ev(() => pnSez('obi')); await sleep(600);
+ok(await P.ev(() => !document.querySelector('#pn-pdg')), 'il Presidente non vede i Piani di Gruppo');
+// il Capo Gruppo non vede la card nel proprio piano
+const G = await mk('cg1');
+await G.ev(() => pnOpen('g1')); await sleep(1900); await G.ev(() => pnSez('obi')); await sleep(600);
+ok(await G.ev(() => !document.querySelector('#pn-pdg')), 'nel Piano di Gruppo non c’è «Dai Gruppi della Sezione»');
+// database non aggiornato
+db.sqlPdg = false;
+const C2 = await mk('comm');
+await C2.ev(() => pnOpen('s1')); await sleep(1900); await C2.ev(() => pnSez('obi')); await sleep(600);
+ok(await C2.ev(() => !document.querySelector('#pn-pdg') && document.querySelectorAll('.pn-ob').length === 2), 'database non aggiornato: nessun elenco, il Progetto funziona come prima');
+const nerr = [C, V, P, G, C2].reduce((n, x) => n + x.pa.errors.length, 0); ok(nerr === 0, 'nessun errore di pagina (' + nerr + ')'); if(nerr) console.log([C, V, P, G, C2].flatMap(x => x.pa.errors));
+await br.close(); process.exit(summary() ? 1 : 0);

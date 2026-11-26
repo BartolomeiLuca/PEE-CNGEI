@@ -136,6 +136,7 @@ export class FakeDB {
         return {data:this.t.pee_piani_contributi.filter(c => c.giro_id === gi.id && c.tipo === 'unita' && c.consegnato).map(c => ({unita:(c.data && c.data.unita) || c.autore_nome, branca:c.autore_branca || null, s:(c.data && c.data.s && typeof c.data.s === 'object') ? c.data.s : {}, consegnato_il:c.consegnato_il})).sort((a, b) => String(a.unita).localeCompare(String(b.unita))), error:null}; }
       if(req.name === 'pee_persone_elenco') return this.personeElenco(req.args.p_tipo, uid);
       if(req.name === 'pee_pds_della_mia_sezione') return this.pdsSezione(uid);
+      if(req.name === 'pee_pdg_della_mia_sezione') return this.pdgSezione(uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -295,6 +296,20 @@ export class FakeDB {
       }
       return {data:null, error:null};
     }
+  }
+  // Piani di Gruppo letti da chi guida la Sezione (SQL del 28 novembre, «Porta dai Gruppi»); db.sqlPdg = false per provare il database non aggiornato
+  pdgSezione(uid){
+    if(this.sqlPdg === false) return this.err('PGRST202', 'Could not find the function public.pee_pdg_della_mia_sezione');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const me = this.t.pee_profili.find(x => x.user_id === uid);
+    const comm = me && (me.ruolo === 'cds' || me.ruolo === 'vcds' || (me.ruolo === 'cos' && (((me.dashboard || {}).cos || {}).incarichi || []).some(x => norm(x) === 'commissario')));
+    if(!comm) return this.err('P0001', 'I Piani di Gruppo li legge chi guida la Sezione.');
+    const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const pr = p => this.t.pee_profili.find(x => x.user_id === p.owner_id) || {};
+    const rows = this.t.pee_piani.filter(p => p.tipo === 'gruppo' && norm(pr(p).sezione) === sez).sort((x, y) => String(pr(x).gruppo).localeCompare(String(pr(y).gruppo)) || y.anno_inizio - x.anno_inizio)
+      .map(p => ({id:p.id, titolo:p.titolo, gruppo:pr(p).gruppo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato,
+        obiettivi:((p.data || {}).obiettivi || []).filter(o => String(o.testo || '').trim()).map(o => ({id:o.id, testo:o.testo, aree:o.aree || [], indirizzi:o.indirizzi || []}))}));
+    return {data:rows, error:null};
   }
   // Progetti di Sezione letti dal Gruppo (SQL del 28 novembre): stesse regole della funzione; db.sqlPds = false per provare il database non aggiornato
   pdsSezione(uid){
