@@ -29,7 +29,7 @@ const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const x = awa
 const t = x.replace(/<w:tab\/>/g, ' ').replace(/<\/w:p>/g, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 ok(/Piano di Gruppo «Pesaro 1» 2026-29/.test(t) && /Deliberato/.test(t) && /Luca Titolare/.test(t) && /15\/10\/2026/.test(t) && /Sede/.test(t), 'testata: titolo, stato, titolare, delibera');
 ok(/Le famiglie/.test(t) && /Poche famiglie partecipano/.test(t) && /Vorremmo più serate insieme/.test(t), 'dove siamo');
-ok(/Obiettivo 1/.test(t) && /Più famiglie nel Gruppo & più serate <insieme>/.test(t) && /Aree: Educativa, Territorio/.test(t) && /Con ricadute educative/.test(t) && /Giro del Piano \(Giro 1 · Anna Verdi\)/.test(t), 'obiettivi con aree, ricadute e provenienza (caratteri speciali compresi)');
+ok(/Obiettivo 1/.test(t) && /Più famiglie nel Gruppo & più serate <insieme>/.test(t) && /Aree: Educativa, Territorio/.test(t) && /Con ricadute educative/.test(t) && /Ascolto del Piano \(Ascolto 1 · Anna Verdi\)/.test(t), 'obiettivi con aree, ricadute e provenienza (caratteri speciali compresi)');
 ok(/Due serate con le famiglie/.test(t) && /Anche a metà anno/.test(t) && /Fine anno 2/.test(t) && /Referente: Vera Vice/.test(t) && /Con i genitori/.test(t) && /Consiglio di Gruppo, Unità/.test(t) && /In corso/.test(t), 'azioni con inizio, verifica, chi, referente, stato');
 ok(/Quadro sinottico/.test(t) && /Verifiche/.test(t) && /20\/02\/2027/.test(t) && /Le serate non partono/.test(t), 'quadro sinottico e verifiche');
 ok(/Una giornata insieme/.test(t) && /Vecchio obiettivo/.test(t), 'spunti dalle Unità e obiettivi uniti');

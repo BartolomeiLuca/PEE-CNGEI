@@ -33,10 +33,10 @@ for(const w of [luca, vice, coll, lett, cu2]) await apri(w, pid);
 ok(await cnt(luca, '#pn-sb-pan') === 1 && await cnt(luca, '#pn-sb-g-giro') === 1, 'nel menu a sinistra ci sono «Il Piano» e «Il giro»');
 ok(await cnt(luca, '.pn-card') >= 2, 'la parte «Il Piano» è come prima');
 await vaiGiro(luca);
-ok(await cnt(luca, 'input[name="gi-rit"]') === 3 && await cnt(luca, '#gi-apri') === 1, 'Capo Gruppo: senza giro vede i tre ritmi e «Apri il giro»');
+ok(await cnt(luca, 'input[name="gi-rit"]') === 3 && await cnt(luca, '#gi-apri') === 1, 'Capo Gruppo: senza Ascolto vede i tre ritmi e «Apri l’Ascolto»');
 ok(/Prima di parlarne/.test(await txt(luca, '#gi-t ~ .sh-sub')) , 'tono di apertura del giro');
 await vaiGiro(coll);
-ok(await cnt(coll, '#gi-apri') === 0 && /Non c’è ancora nessun giro aperto/.test(await txt(coll, 'main.pn')), 'un collaboratore non può aprire il giro: gli viene detto che non c’è ancora');
+ok(await cnt(coll, '#gi-apri') === 0 && /Non c’è ancora nessun Ascolto aperto/.test(await txt(coll, 'main.pn')), 'un collaboratore non può aprire il giro: gli viene detto che non c’è ancora');
 const err = await coll.ev(async id => { try{ await PIANI.giroApri(id, {}); return 'ok'; }catch(e){ return pianoErr(e); } }, pid);
 ok(/Solo il titolare o un co-titolare/.test(err), 'il database rifiuta anche la chiamata diretta di un collaboratore (' + err + ')');
 
@@ -48,13 +48,13 @@ const sc7 = await luca.ev(() => document.getElementById('gi-sc').value);
 ok(sc4 < sc7, 'cambiando ritmo cambia la scadenza proposta (' + sc4 + ' → ' + sc7 + ')');
 await luca.P.click('#gi-apri'); await sleep(1500);
 ok(db.t.pee_piani_giri.length === 1 && db.t.pee_piani_giri[0].stato === 'aperto' && db.t.pee_piani_giri[0].ritmo === 'standard' && db.t.pee_piani_giri[0].scadenza === sc7, 'il giro è aperto, ritmo standard, con la scadenza');
-ok(/Giro 1 · ritmo standard/.test(await txt(luca, '#gi-t')) && await cnt(luca, '#gi-pas-t') === 1, 'la pagina mostra il giro e «I tuoi passi»');
+ok(/Ascolto 1 · ritmo standard/.test(await txt(luca, '#gi-t')) && await cnt(luca, '#gi-pas-t') === 1, 'la pagina mostra il giro e «I tuoi passi»');
 await sez(luca, 'g-carte');
 ok(await cnt(luca, '.gi-carta') >= 5, 'le carte ci sono');
 await sez(luca, 'g-giro');
 ok((await txt(luca, '#pn-sb-g-giro')).includes('aperto'), 'la voce di menu dice che il giro è aperto');
 const err2 = await luca.ev(async id => { try{ await PIANI.giroApri(id, {}); return 'ok'; }catch(e){ return pianoErr(e); } }, pid);
-ok(/già un giro aperto/.test(err2), 'un secondo giro insieme al primo non si apre (' + err2 + ')');
+ok(/già un Ascolto aperto/.test(err2), 'un secondo giro insieme al primo non si apre (' + err2 + ')');
 await sleep(800);
 ok(await cnt(coll, '#pn-sb-g-giro') === 1, 'le altre persone vedono la voce del giro');
 await coll.ev(() => giCarica(false)); await sleep(500);
@@ -89,7 +89,7 @@ ok(!db.t.pee_piani_contributi.some(c => c.autore_id === cu2.u.id && c.consegnato
 
 // ── 4. chi coordina vede chi ha consegnato, non cosa ──
 await luca.ev(() => giCarica(false)); await sleep(800);
-const tab = await luca.ev(() => [...document.querySelectorAll('table[aria-label="Consegne del giro"] tbody tr')].map(r => [...r.children].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
+const tab = await luca.ev(() => [...document.querySelectorAll('table[aria-label="Consegne dell’Ascolto"] tbody tr')].map(r => [...r.children].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
 ok(tab.length === 5, 'tabella con le cinque persone');
 const rc = n => tab.find(r => r[0].includes(n));
 ok(rc('Collab')[1] === '●' && rc('Lettore')[1] === '●' && rc('Capo Unita')[1] !== '●' && rc('Vice')[1] !== '●', 'consegnato / non consegnato per persona');
@@ -113,7 +113,7 @@ const e3 = await coll.ev(async g => { try{ await PIANI.personaInvia(g, [{q:'p1',
 ok(/già risposto/.test(e3), 'nemmeno dal database (' + e3 + ')');
 ok((await luca.ev(g => PIANI.personaVoci(g), gid)).length === 0, 'a giro aperto nemmeno il titolare legge le risposte');
 await luca.ev(() => giCarica(false)); await sleep(800);
-const tab2 = await luca.ev(() => [...document.querySelectorAll('table[aria-label="Consegne del giro"] tbody tr')].map(r => [...r.children].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
+const tab2 = await luca.ev(() => [...document.querySelectorAll('table[aria-label="Consegne dell’Ascolto"] tbody tr')].map(r => [...r.children].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
 ok(tab2.find(r => r[0].includes('Collab'))[3] === '●' && tab2.find(r => r[0].includes('Lettore'))[3] !== '●', 'chi coordina vede chi ha risposto, non cosa');
 await sez(luca, 'g-pers');
 ok(/1 persona ha risposto/.test(await txt(luca, '#gi-pe-t ~ .pn-avv')), 'e quante persone hanno risposto');
@@ -122,7 +122,7 @@ await sez(luca, 'g-giro');
 // ── 6. scadenza e chiusura anticipata ──
 await luca.P.fill('#gi-sc2', '2026-12-31'); await luca.P.click('button >> text=Sposta la scadenza'); await sleep(600);
 ok(db.t.pee_piani_giri[0].scadenza === '2026-12-31', 'la scadenza si sposta');
-await luca.P.click('button >> text=Chiudi il giro'); await sleep(500);
+await luca.P.click('button >> text=Chiudi l’Ascolto'); await sleep(500);
 ok(/Mancano le carte di 3 persone/.test(await txt(luca, '#sh-dlg')), 'la finestra di chiusura dice quante carte mancano');
 await luca.P.click('#gi-ch-ok'); await sleep(1500);
 const g1 = db.t.pee_piani_giri[0];
@@ -130,7 +130,7 @@ ok(g1.stato === 'chiuso' && g1.chiusura_tipo === 'anticipata', 'giro chiuso in a
 const reg = db.t.pee_piani_giri_registro.find(x => x.giro_id === gid);
 ok(reg && reg.data.senza_carte.map(x => x.nome).sort().join('|') === 'Capo Unita|Luca Titolare|Vice Cotitolare', 'il registro tiene i nomi di chi non ha consegnato');
 ok(reg.data.risposte_persona === 1 && reg.data.senza_persona.length === 4, 'e di chi non ha risposto al Mazzo persona');
-ok(/Chi non ha consegnato le carte/.test(await txt(luca, 'main.pn')) && /Vice Cotitolare/.test(await txt(luca, '.pn-avv')) && /Il giro è chiuso\. Ora le carte sono scoperte/.test(await txt(luca, 'main.pn')), 'chi coordina vede i nomi, e il messaggio di chiusura');
+ok(/Chi non ha consegnato le carte/.test(await txt(luca, 'main.pn')) && /Vice Cotitolare/.test(await txt(luca, '.pn-avv')) && /L’Ascolto è chiuso\. Ora le carte sono scoperte/.test(await txt(luca, 'main.pn')), 'chi coordina vede i nomi, e il messaggio di chiusura');
 await sez(luca, 'g-pers');
 ok(/Hanno risposto 1 persona su 5: sotto le 4/.test(await txt(luca, '#gi-pe-t ~ .pn-avv')), 'con meno di 4 risposte restano nascoste (anche a giro chiuso)');
 ok((await luca.ev(g => PIANI.personaVoci(g), gid)).length === 0, 'anche chiedendole al database');

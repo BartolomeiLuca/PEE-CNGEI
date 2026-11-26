@@ -38,7 +38,7 @@ ok(/Staff: 2 persone \(CU, VCU\)/.test(pg) && !/Marco|Bianchi/.test(pg), 'staff:
 ok(/Personale/.test(pg) && /Lavorare in squadra senza litigare/.test(pg) && await cnt(anna, '#cdu-b2a') === 0, 'parte educativa letta dalla programmazione (sola lettura)');
 ok(/Quali passaggi di branca vi preoccupano/.test(pg) && await cnt(anna, '#cdu-b2') === 1, 'una riga in più sui passaggi di branca');
 ok(await cnt(anna, 'input[name="cdu-s-b3"]') === 3 && await cnt(anna, 'input[name="cdu-s-b1"]') === 0, 'il semaforo c’è sui blocchi 3-6');
-ok(/Il Capo Gruppo non ha ancora aperto il giro/.test(await txt(anna, '#cdu-dest')) , 'senza giro aperto lo dice');
+ok(/Il Capo Gruppo non ha ancora aperto l’Ascolto/.test(await txt(anna, '#cdu-dest')) , 'senza Ascolto aperto lo dice');
 // si scrive: salvataggio nella programmazione
 await anna.P.fill('#cdu-b1', 'Sono arrivati sette ragazzi dal Branco'); await anna.P.fill('#cdu-b3', 'Ci serve una formazione sulla sicurezza'); await anna.P.check('input[name="cdu-s-b3"][value="g"]');
 await anna.P.fill('#cdu-b7r', 'Un aiuto con i trasporti'); await anna.P.fill('#cdu-b7o', 'Un’uscita aperta a tutto il Gruppo'); await sleep(2800);
@@ -48,7 +48,7 @@ ok(dbp.data.scheda.cdu && dbp.data.scheda.cdu.b.b1 === 'Sono arrivati sette raga
 // ── 2. si apre il giro e si consegna ──
 await luca.ev(async id => { await PIANI.giroApri(id, {ritmo:'standard'}); }, pid); await sleep(300);
 await anna.ev(() => shCdU()); await sleep(1800);
-ok(await cnt(anna, '#cdu-go') === 1 && /Giro 1 di «Piano di prova»/.test(await txt(anna, '#cdu-dest')), 'con il giro aperto compare «Consegna al giro del Piano di Gruppo»');
+ok(await cnt(anna, '#cdu-go') === 1 && /Ascolto 1 di «Piano di prova»/.test(await txt(anna, '#cdu-dest')), 'con il giro aperto compare «Consegna all’Ascolto del Piano di Gruppo»');
 ok(await anna.ev(() => document.getElementById('cdu-b1').value) === 'Sono arrivati sette ragazzi dal Branco', 'riaprendo la pagina il testo c’è');
 await anna.P.click('#cdu-go'); await sleep(1500);
 let cu = db.t.pee_piani_contributi.filter(c => c.tipo === 'unita');
@@ -57,7 +57,7 @@ const d = cu[0].data;
 ok(d.unita === 'Reparto Aquile' && d.n.tot === 22 && d.n.staff === 2 && d.fonte === 'pee' && d.edu[0].amb === 'Personale' && d.edu[0].nec === 'Lavorare in squadra senza litigare', 'contenuto: numeri, staff, parte educativa dalla programmazione');
 ok(!JSON.stringify(d).match(/Marco|Bianchi|anna@x.it|Anna Verdi/), 'nessun nome né email di persone dello staff nella Carta consegnata');
 ok(d.b.b3 === 'Ci serve una formazione sulla sicurezza' && d.s.b3 === 'g' && d.b.b7r === 'Un aiuto con i trasporti', 'risposte e semaforo');
-ok(/Consegnata il \d\d\/\d\d\/\d{4} al giro 1/.test(await txt(anna, '#cdu-st')), 'la pagina ricorda che è consegnata');
+ok(/Consegnata il \d\d\/\d\d\/\d{4} all’Ascolto 1/.test(await txt(anna, '#cdu-st')), 'la pagina ricorda che è consegnata');
 // modifica dopo la consegna e nuova consegna: stessa riga
 await anna.P.fill('#cdu-b5', 'La sede ha bisogno di una pittura'); await sleep(400);
 ok(/consegnala di nuovo/.test(await txt(anna, '#cdu-st')), 'dopo una modifica avvisa di consegnare di nuovo');
@@ -65,17 +65,21 @@ await anna.P.click('#cdu-go'); await sleep(1500);
 cu = db.t.pee_piani_contributi.filter(c => c.tipo === 'unita');
 ok(cu.length === 1 && cu[0].data.b.b5 === 'La sede ha bisogno di una pittura', 'la nuova consegna sostituisce la precedente (una sola riga)');
 
-// ── 3. modulo di ripiego nella pagina del giro (nessuna programmazione) ──
+// ── 3. nella pagina dell’Ascolto la Carta è in sola lettura: niente modulo di ripiego (27/11) ──
 await bruno.ev(id => pnOpen(id), pid); await sleep(1200); await bruno.ev(() => pnSez('g-cdu')); await sleep(900);
-ok(await cnt(bruno, '#gcu-b1') === 1 && await cnt(bruno, '#gcu-n-nome') === 1 && await cnt(bruno, '#gcu-b2a') === 1, 'senza programmazione la pagina del giro ha il modulo completo, con le due domande libere');
-ok(await cnt(luca, '#gi-cu-t') === 0, 'chi non è Capo Unità non vede il modulo');
-await bruno.P.fill('#gcu-n-nome', 'Branco Popolo Libero'); await bruno.P.fill('#gcu-n-tot', '18'); await bruno.P.fill('#gcu-n-staff', '4'); await bruno.P.fill('#gcu-b2a', 'Il lavoro di squadra'); await bruno.P.fill('#gcu-b4', 'Poche famiglie vengono alle riunioni');
-await bruno.P.check('input[name="gcu-s-b4"][value="r"]'); await sleep(2200);
-let bu = db.t.pee_piani_contributi.find(c => c.tipo === 'unita' && c.autore_id === bruno.u.id);
-ok(bu && !bu.consegnato && bu.data.s.b4 === 'r' && bu.data.fonte === 'libera', 'bozza salvata da sola (non consegnata)');
-await bruno.P.click('button >> text=Consegna la Carta di Unità'); await sleep(1500);
-bu = db.t.pee_piani_contributi.find(c => c.tipo === 'unita' && c.autore_id === bruno.u.id);
-ok(bu.consegnato && bu.data.unita === 'Branco Popolo Libero' && bu.data.n.tot === 18 && bu.data.n.staff === 4 && bu.data.b.b2a === 'Il lavoro di squadra', 'consegnata dal modulo di ripiego');
+ok(await cnt(bruno, '#gcu-b1') === 0 && await cnt(bruno, 'section[aria-labelledby="gi-cu-t"] textarea') === 0, 'senza programmazione la pagina non ha più il modulo: niente campi da scrivere');
+const pb = await txt(bruno, '#gi-cu-t ~ *') ; const pbAll = await bruno.ev(() => document.querySelector('.pn-card') ? [...document.querySelectorAll('.pn-card')].map(x => x.textContent.replace(/\s+/g, ' ')).join(' | ') : '');
+ok(/si scrive e si consegna dalla programmazione dell’Unità/.test(pbAll) && /Apri le mie programmazioni/.test(pbAll) && /Crea la programmazione dell’Unità/.test(pbAll), 'dice dove si scrive e offre «Apri le mie programmazioni» e «Crea la programmazione dell’Unità»');
+ok(await cnt(luca, '#gi-cu-t') === 0, 'chi non è Capo Unità non vede la pagina della Carta');
+const eLib = await bruno.ev(async g => { try{ await PIANI.contributoSalva(g, 'unita', {v:1, unita:'X', b:{b1:'ciao'}, s:{}, n:{tot:1}, fonte:'libera'}, false); return 'ok'; }catch(x){ return pianoErr(x); } }, db.t.pee_piani_giri[0].id);
+ok(eLib !== 'ok' && /programmazione dell’Unità/.test(eLib), 'il database rifiuta una Carta scritta a mano (' + eLib + ')');
+const eNon = await luca.ev(async g => { try{ await PIANI.contributoSalva(g, 'unita', {v:1, unita:'X', b:{}, s:{}, n:{tot:1}, fonte:'pee'}, false); return 'ok'; }catch(x){ return pianoErr(x); } }, db.t.pee_piani_giri[0].id);
+ok(eNon !== 'ok' && !/giro/i.test(eNon), 'e rifiuta chi non è Capo Unità, senza la parola «giro» (' + eNon + ')');
+await bruno.P.click('button >> text=Crea la programmazione dell’Unità'); await sleep(1200);
+ok(await bruno.ev(() => !!document.getElementById('sh-dlg-t') && /Nuovo progetto/.test(document.getElementById('sh-dlg-t').textContent)), '«Crea la programmazione dell’Unità» porta alla finestra Nuovo progetto');
+await bruno.ev(() => { try{ shDlgClose(); }catch(e){} });
+// Bruno consegna dalla programmazione (come Anna): la sua Carta esiste e porta il nome dell’Unità
+await bruno.ev(async g => { await PIANI.contributoSalva(g, 'unita', {v:1, unita:'Branco Popolo Libero', b:{b4:'Poche famiglie vengono alle riunioni', b2a:'Il lavoro di squadra'}, s:{b4:'r'}, n:{tot:18, m:0, f:0, ann:[], staff:4, ruoli:[]}, fonte:'pee'}, true); }, db.t.pee_piani_giri[0].id); await sleep(500);
 
 // ── 4. chi coordina ──
 await luca.ev(id => pnOpen(id), pid); await sleep(1200); await luca.ev(() => pnSez('g-cdus')); await sleep(900);
@@ -88,11 +92,28 @@ ok(ra && /ci pensiamo/.test(ra[1]) && rb && /ci serve una mano/.test(rb[2]), 'se
 const ric = await luca.ev(() => [...document.querySelectorAll('#gi-cc-t ~ details')].map(x => x.textContent.replace(/\s+/g, ' ')).join(' | '));
 ok(/Un aiuto con i trasporti/.test(ric) && /Un’uscita aperta a tutto il Gruppo/.test(ric) && /Lavorare in squadra senza litigare/.test(ric), 'richieste, offerte e parte educativa si leggono');
 ok(/Anna Verdi/.test(tab[0].concat(tab[1]).join(' ')) , 'accanto all’Unità c’è chi ha consegnato');
+// chi non coordina vede solo i segnali, mai il testo; il VCU della stessa Unità legge la Carta
+const carlo = await entra('carlo', 'Carlo Gialli', 'cu'), vera = await entra('vera', 'Vera Rossi', 'vcu');
+db.t.pee_profili.find(x => x.user_id === carlo.u.id).branca = 'L'; db.t.pee_profili.find(x => x.user_id === vera.u.id).branca = 'E';
+for(const w of [carlo, vera]) db.t.pee_piani_membri.push({id:'m-' + w.u.email, piano_id:pid, email:w.u.email, ruolo:'lettore', etichetta:'Capo Unità', nome:w.u.meta.nome, visto_il:null, invitato_da:luca.u.id, created_at:'2026-11-24T10:00:00Z'});
+await carlo.ev(async g => { await PIANI.contributoSalva(g, 'carte', {v:1, a:{educativa:{v:'x', c:'', p:'', b:false}}}, true); }, db.t.pee_piani_giri[0].id);
+await vera.ev(async g => { await PIANI.contributoSalva(g, 'carte', {v:1, a:{educativa:{v:'x', c:'', p:'', b:false}}}, true); }, db.t.pee_piani_giri[0].id);
+await carlo.ev(id => pnOpen(id), pid); await sleep(1200); await carlo.ev(() => pnSez('g-cdu')); await sleep(1000);
+const sc = await carlo.ev(() => [...document.querySelectorAll('.pn-card')].map(x => x.textContent.replace(/\s+/g, ' ')).join(' | '));
+ok(/Come stanno le Unità/.test(sc) && /Reparto Aquile/.test(sc) && !/Un aiuto con i trasporti|Lavorare in squadra/.test(sc), 'un Capo Unità di un’altra Branca vede i segnali, non il testo delle Carte');
+await vera.ev(id => pnOpen(id), pid); await sleep(1200); await vera.ev(() => pnSez('g-cdu')); await sleep(1000);
+const sv = await vera.ev(() => [...document.querySelectorAll('.pn-card')].map(x => x.textContent.replace(/\s+/g, ' ')).join(' | '));
+ok(/consegna il Capo Unità/.test(sv) && !/Apri le mie programmazioni/.test(sv), 'il Vice Capo Unità non ha i pulsanti per consegnare');
+const letta = await vera.ev(async g => (await PIANI.contributi(g)).filter(c => c.tipo === 'unita').map(c => c.autore_id), db.t.pee_piani_giri[0].id);
+ok(letta.length === 2, 'il VCU della stessa Branca, Gruppo e Sezione legge le Carte delle sue Unità (' + letta.length + ')');
+const pv = db.t.pee_profili.find(x => x.user_id === vera.u.id); pv.gruppo = '2';
+const letta2 = await vera.ev(async g => (await PIANI.contributi(g)).filter(c => c.tipo === 'unita').length, db.t.pee_piani_giri[0].id);
+ok(letta2 === 0, 'un VCU di un altro Gruppo non le legge (' + letta2 + ')'); pv.gruppo = '1';
 
 // ── 5. chiuso il giro non si consegna più ──
 await luca.ev(async g => { await PIANI.giroChiudi(g, 'anticipata'); }, db.t.pee_piani_giri[0].id); await sleep(400);
 await anna.ev(() => shCdU()); await sleep(1800);
-ok(await cnt(anna, '#cdu-go') === 0 && /non ha ancora aperto il giro/.test(await txt(anna, '#cdu-dest')), 'a giro chiuso non c’è più il pulsante di consegna');
+ok(await cnt(anna, '#cdu-go') === 0 && /non ha ancora aperto l’Ascolto/.test(await txt(anna, '#cdu-dest')), 'ad Ascolto chiuso non c’è più il pulsante di consegna');
 const e = await anna.ev(async g => { try{ await PIANI.contributoSalva(g, 'unita', {v:1, b:{}}, true); return 'ok'; }catch(x){ return pianoErr(x); } }, db.t.pee_piani_giri[0].id);
 ok(e !== 'ok', 'e il database la rifiuta (' + e + ')');
 

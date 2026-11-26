@@ -100,6 +100,14 @@ const sql3 = fs.readFileSync(new URL('../supabase_aggiornamento_25novembre_nome_
   const el = await as('luca', `select nome from pee_persone_elenco('gruppo')`);
   ok(!el.err && el.rows.some(x => x.nome === 'Nome b'), 'un Senior in Servizio compare nell’elenco del Gruppo' + (el.err ? ': ' + el.err : ''));
 }
+// 27/11: la Carta di Unità la consegna solo il Capo Unità, dalla programmazione; la legge chi coordina e il VCU della stessa Unità
+{
+  const sql5 = fs.readFileSync(new URL('../supabase_aggiornamento_27novembre_carta_di_unita.sql', import.meta.url), 'utf8');
+  let e7 = null, e8 = null; try { await db.exec(sql5); } catch(e){ e7 = e; } ok(!e7, 'lo script del 27 novembre gira' + (e7 ? ': ' + e7.message : '')); try { await db.exec(sql5); } catch(e){ e8 = e; } ok(!e8, 'e si può rieseguire (27/11)');
+  await db.query(`insert into pee_profili(user_id, nome, ruolo, branca, sezione, gruppo, dashboard) values ($1,'Nome c','vcu','R','Pesaro','Pesaro 1','{}') on conflict (user_id) do update set ruolo='vcu', branca='R'`, [U.c]);
+}
+const insU = (who, d) => as(who, `insert into pee_piani_contributi(giro_id, tipo, data, consegnato) values ($1,'unita',$2::jsonb,true) returning id`, [G, JSON.stringify(d)]);
+const DU = {v:1, unita:'Reparto Aquile', fonte:'pee', s:{b1:'v', b3:'r'}, b:{b2a:'testo riservato'}, n:{tot:22}};
 ok(await nrows('b', `select id from pee_piani_contributi`) === 0, 'chi non ha ancora consegnato non vede le carte degli altri');
 ok(await nrows('luca', `select id from pee_piani_contributi`) === 0, 'neanche il titolare, finché non consegna');
 ok(await nrows('c', `select id from pee_piani_contributi`) === 1, 'una bozza propria resta visibile a chi la scrive');
@@ -108,8 +116,22 @@ ok(await nrows('b', `select id from pee_piani_contributi where consegnato`) === 
 ok(await nrows('b', `select id from pee_piani_contributi where autore_id = $1`, [U.c]) === 0, 'ma non le bozze non consegnate');
 ok(!(await as('c', `update pee_piani_contributi set data = '{"x":2}', consegnato = true where autore_id = $1`, [U.c])).err, 'c completa e consegna');
 ok(await nrows('a', `select id from pee_piani_contributi where autore_id <> $1`, [U.a]) === 2, 'a vede quelle consegnate da b e c');
-ok(!(await ins('vice', 'unita', true)).err, 'una Carta di Unità si consegna come tipo a parte');
-ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 1, 'dopo aver consegnato le carte si vede anche la Carta di Unità');
+const x1 = await ins('vice', 'unita', true); ok(x1.err && /Capo Unità/.test(x1.err), 'chi non è Capo Unità non consegna la Carta di Unità: ' + (x1.err || '').slice(0, 60));
+const x2 = await insU('b', DU); ok(x2.err && /Capo Unità/.test(x2.err), 'un Senior in Servizio non la consegna');
+const x3 = await insU('c', DU); ok(x3.err && /Capo Unità/.test(x3.err), 'nemmeno il Vice Capo Unità');
+const x4 = await insU('a', {v:1, unita:'Reparto Aquile', fonte:'libera', b:{b2a:'scritta a mano'}}); ok(x4.err && /programmazione/.test(x4.err), 'la Carta scritta nel vecchio modulo (non dalla programmazione) è rifiutata');
+ok(!(await insU('a', DU)).err, 'il Capo Unità la consegna dalla programmazione');
+ok((await as('a', `update pee_piani_contributi set data = '{"v":1,"fonte":"libera"}'::jsonb where autore_id = $1 and tipo = 'unita'`, [U.a])).err !== undefined, 'e non può trasformarla in una Carta scritta a mano');
+ok(await nrows('b', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'un’altra persona del piano non legge il testo della Carta di Unità');
+const sb = await as('b', `select * from pee_giro_unita_semaforo($1)`, [G]); ok(!sb.err && sb.rows.length === 1 && sb.rows[0].unita === 'Reparto Aquile' && sb.rows[0].s.b3 === 'r' && !('b' in sb.rows[0]) && !JSON.stringify(sb.rows[0]).includes('riservato'), 'ma vede i segnali dell’Unità, senza testo' + (sb.err ? ': ' + sb.err : ''));
+ok((await as('d', `select * from pee_giro_unita_semaforo($1)`, [G])).err !== undefined, 'chi non ha consegnato le sue carte non vede nemmeno i segnali');
+ok((await as('estr', `select * from pee_giro_unita_semaforo($1)`, [G])).err !== undefined, 'un estraneo al piano nemmeno');
+ok(await nrows('c', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'il Vice Capo Unità di un’altra Branca non la legge');
+await db.query(`update pee_profili set branca = 'E' where user_id = $1`, [U.c]);
+ok(await nrows('c', `select id from pee_piani_contributi where tipo = 'unita'`) === 1, 'il Vice Capo Unità della stessa Unità la legge');
+await db.query(`update pee_profili set gruppo = 'Pesaro 2' where user_id = $1`, [U.c]);
+ok(await nrows('c', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'non se è di un altro Gruppo');
+await db.query(`update pee_profili set gruppo = 'Pesaro 1' where user_id = $1`, [U.c]);
 ok(await nrows('d', `select id from pee_piani_contributi where tipo = 'unita'`) === 0, 'chi non ha consegnato non vede la Carta di Unità');
 ok((await as('b', `update pee_piani_contributi set data = '{"hack":1}' where autore_id = $1`, [U.a])).rows?.length === 0 || (await db.query(`select data from pee_piani_contributi where autore_id=$1 and tipo='carte'`, [U.a])).rows[0].data.x === 1, 'nessuno modifica le carte altrui');
 ok((await as('a', `delete from pee_piani_contributi where autore_id = $1 and tipo='carte' returning 1`, [U.a])).rows.length === 0, 'una carta consegnata non si cancella');
@@ -145,6 +167,9 @@ ok(await nrows('lett', `select giro_id from pee_piani_giri_registro`) === 0 && a
 ok((await as('a', `update pee_piani_contributi set data='{"x":9}' where autore_id=$1 returning 1`, [U.a])).rows.length === 0, 'a giro chiuso le carte non si modificano');
 ok((await as('d', `select pee_piano_giro_persona($1,$2::jsonb)`, [G, voci])).err !== undefined, 'a giro chiuso non si risponde più');
 ok(await nrows('d', `select id from pee_piani_contributi where tipo='carte'`) === 3, 'a giro chiuso tutti vedono le carte consegnate');
+ok(await nrows('luca', `select id from pee_piani_contributi where tipo='unita'`) === 1, 'chi coordina legge la Carta di Unità');
+ok(await nrows('d', `select id from pee_piani_contributi where tipo='unita'`) === 0, 'chi non coordina non la legge nemmeno a Ascolto chiuso');
+const sd = await as('d', `select * from pee_giro_unita_semaforo($1)`, [G]); ok(!sd.err && sd.rows.length === 1, 'ma a Ascolto chiuso vede i segnali delle Unità');
 
 // ── soglia: secondo giro con 4 risposte ──
 const g2 = await as('luca', `select pee_piano_giro_apri($1,'rapido','giro1',null) as id`, [P]);

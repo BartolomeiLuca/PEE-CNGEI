@@ -29,7 +29,7 @@ const gid = db.t.pee_piani_giri[0].id;
 const carta = (a) => ({v:1, a:Object.assign({}, ...['educativa', 'formativa', 'gestionale', 'sviluppo', 'territorio'].map(k => ({[k]:Object.assign({v:'', c:'', p:'', b:false}, a[k] || {})})))});
 await coll.ev(async ([g, c]) => { await PIANI.contributoSalva(g, 'carte', c, true); }, [gid, carta({educativa:{v:'I passaggi sono improvvisati', p:'Una riunione dei Capi Unità prima dei passaggi'}, gestionale:{c:'La sede è troppo piccola'}})]);
 await lett.ev(async ([g, c]) => { await PIANI.contributoSalva(g, 'carte', c, true); }, [gid, carta({educativa:{p:'Una serata con le famiglie'}, territorio:{p:'Un gemellaggio con un altro Gruppo'}})]);
-await lett.ev(async g => { await PIANI.contributoSalva(g, 'unita', {v:1, unita:'Reparto Aquile', b:{b7r:'Un aiuto con i trasporti', b7o:'Un’uscita aperta a tutto il Gruppo'}, s:{}, n:{}}, true); }, gid);
+await lett.ev(async g => { await PIANI.contributoSalva(g, 'unita', {v:1, unita:'Reparto Aquile', b:{b7r:'Un aiuto con i trasporti', b7o:'Un’uscita aperta a tutto il Gruppo'}, s:{}, n:{}, fonte:'pee'}, true); }, gid);
 await luca.ev(async ([g, c]) => { await PIANI.contributoSalva(g, 'carte', c, true); }, [gid, carta({formativa:{p:'Un corso interno per chi arriva'}})]);
 
 // ── 1. chi la vede ──
@@ -38,7 +38,7 @@ ok(await cnt(coll, '#pn-sb-g-spu') === 0 && await cnt(lett, '#pn-sb-g-spu') === 
 await luca.ev(() => giCarica(false)); await sleep(700); await luca.ev(() => pnRender()); await sleep(300);
 ok(await cnt(luca, '#pn-sb-g-spu') === 1, 'il Capo Gruppo (ha consegnato le sue carte) la vede');
 await sez(luca, 'g-spu');
-ok(/Dal giro al Piano/.test(await txt(luca, '#spg-t')), 'la pagina si chiama «Dal giro al Piano»');
+ok(/Dall’Ascolto al Piano/.test(await txt(luca, '#spg-t')), 'la pagina si chiama «Dall’Ascolto al Piano»');
 const tav = () => cnt(luca, '.spg-c');
 ok(await tav() === 7, 'da decidere: 4 proposte, 1 preoccupazione e 2 dalle Unità, senza le osservazioni (' + await tav() + ')');
 const nomi = await luca.ev(() => [...document.querySelectorAll('.spg-c')].map(e => e.textContent.replace(/\s+/g, ' ')).join(' | '));
@@ -60,7 +60,7 @@ const t0 = await luca.ev(() => document.querySelector('#sh-dlg p').textContent);
 await luca.P.click('#spg-ok'); await sleep(700);
 ok(await luca.ev(() => PN.d.obiettivi.length) === 1, 'di default diventa un nuovo obiettivo');
 const ob = await luca.ev(() => PN.d.obiettivi[0]);
-ok(ob.origine === 'giro' && /Giro 1/.test(ob.rif) && ob.testo.length > 5 && ob.aree.length <= 1, 'con origine «Giro del Piano», il riferimento a chi l’ha scritto e l’ambito (' + ob.rif + ')');
+ok(ob.origine === 'giro' && /Ascolto 1/.test(ob.rif) && ob.testo.length > 5 && ob.aree.length <= 1, 'con origine «Ascolto del Piano», il riferimento a chi l’ha scritto e l’ambito (' + ob.rif + ')');
 ok(await luca.ev(() => PN.d.spg.length) === 1 && await luca.ev(() => PN.d.spg[0].s) === 'piano', 'lo spunto è segnato «Nel Piano»');
 ok(await tav() === 6, 'e non è più sul tavolo');
 ok(await salvato(luca) && db.t.pee_piani.find(p => p.id === pid).data.spg.length === 1, 'salvato nel piano');
@@ -79,8 +79,8 @@ await luca.P.click('.spg-c >> nth=0 >> button >> text=Nel Piano'); await sleep(5
 await luca.P.click('input[name="spg-d"][value="an"]'); await luca.P.click('#spg-ok'); await sleep(600);
 await luca.P.click('.spg-c >> nth=0 >> button >> text=Nel Piano'); await sleep(500);
 await luca.P.click('input[name="spg-d"][value="an"]'); await luca.P.click('#spg-ok'); await sleep(600);
-const an = await luca.ev(() => PN.d.analisi.filter(a => a.titolo === 'Dal giro 1'));
-ok(an.length === 1 && an[0].testo.split('\n\n').length === 2, 'due note nella stessa voce «Dal giro 1»');
+const an = await luca.ev(() => PN.d.analisi.filter(a => a.titolo === 'Dall’Ascolto 1'));
+ok(an.length === 1 && an[0].testo.split('\n\n').length === 2, 'due note nella stessa voce «Dall’Ascolto 1»');
 // ── 5. panchina, via, di nuovo sul tavolo ──
 ok(await tav() === 3, 'restano 3 sul tavolo');
 await luca.P.click('.spg-c >> nth=0 >> button >> text=In panchina'); await sleep(400);

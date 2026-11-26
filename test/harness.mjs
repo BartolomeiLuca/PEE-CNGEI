@@ -67,6 +67,11 @@ export class FakeDB {
   // piani (SQL del 23 novembre): db.sqlPiani = false per provare il database non aggiornato
   pRuolo(uid, p){ const pi = this.t.pee_piani.find(x => x.id === p); if(!pi) return null; if(pi.owner_id === uid) return 'titolare'; const m = this.t.pee_piani_membri.find(x => x.piano_id === p && x.email === this.myEmail(uid)); return m ? m.ruolo : null; }
   pCoord(uid, p){ return ['titolare','cotitolare'].includes(this.pRuolo(uid, p)); }
+  // 27/11: la Carta di Unità la consegna il Capo Unità dalla programmazione; la leggono chi coordina e il VCU della stessa Unità (db.sqlCarta27 = false: database di prima)
+  brUnita(pr){ return pr ? (pr.ruolo === 'cu' ? pr.branca : ((pr.dashboard || {}).unita || {}).branca) : ''; }
+  vcuStessaUnita(uid, aut){ const me = (this.t.pee_profili || []).find(x => x.user_id === uid), au = (this.t.pee_profili || []).find(x => x.user_id === aut);
+    const nn = v => String(v || '').trim().toLowerCase();
+    return !!(me && au && me.ruolo === 'vcu' && ['L','E','R'].includes(me.branca) && ['cu','cg','cds'].includes(au.ruolo) && me.branca === this.brUnita(au) && nn(me.gruppo) && nn(me.gruppo) === nn(au.gruppo) && nn(me.sezione) === nn(au.sezione)); }
   giroRec(g){ return this.t.pee_piani_giri.find(x => x.id === g) || null; }
   giroAperto(g){ const x = this.giroRec(g); return !!x && x.stato === 'aperto'; }
   giroVedoAltri(uid, g){ const x = this.giroRec(g); return !!(x && x.stato === 'chiuso') || this.t.pee_piani_contributi.some(c => c.giro_id === g && c.autore_id === uid && c.tipo === 'carte' && c.consegnato); }
@@ -91,7 +96,7 @@ export class FakeDB {
       case 'pee_piani_membri': return r.email === em || ['titolare','cotitolare'].includes(this.pRuolo(uid, r.piano_id));
       case 'pee_piani_versioni': return this.pRuolo(uid, r.piano_id) !== null;
       case 'pee_piani_giri': return this.pRuolo(uid, r.piano_id) !== null;
-      case 'pee_piani_contributi': return r.autore_id === uid || (r.consegnato && this.pRuolo(uid, r.piano_id) !== null && this.giroVedoAltri(uid, r.giro_id));
+      case 'pee_piani_contributi': return r.autore_id === uid || (r.consegnato && this.pRuolo(uid, r.piano_id) !== null && this.giroVedoAltri(uid, r.giro_id) && (this.sqlCarta27 === false || r.tipo === 'carte' || this.pCoord(uid, r.piano_id) || this.vcuStessaUnita(uid, r.autore_id)));
       case 'pee_piani_giri_persona': return r.user_id === uid || this.pCoord(uid, r.piano_id);
       case 'pee_piani_voci_anonime': return this.pCoord(uid, r.piano_id) && this.giroPersonaLeggibile(r.giro_id);
       case 'pee_piani_giri_registro': return this.pCoord(uid, r.piano_id);
@@ -126,6 +131,9 @@ export class FakeDB {
       if(req.name === 'revisore_abilitato') return {data:this.revAbil(req.args.em), error:null};
       if(req.name === 'pee_piano_segna_visto'){ if(this.sqlPiani === false) return this.err('PGRST202', 'Could not find the function'); const m = this.t.pee_piani_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_piani_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(/^pee_piano_giro_(apri|scadenza|stato|chiudi|persona)$/.test(req.name)) return this.giroRpc(req.name, req.args, uid, u);
+      if(req.name === 'pee_giro_unita_semaforo'){ if(this.sqlGiri === false || this.sqlCarta27 === false) return this.err('PGRST202', 'Could not find the function'); const gi = this.giroRec(req.args.g);
+        if(!gi || this.pRuolo(uid, gi.piano_id) === null) return this.err('P0001', 'Non hai accesso a questo piano.'); if(!this.giroVedoAltri(uid, gi.id)) return this.err('P0001', 'Consegna prima le tue carte: poi potrai vedere i segnali delle Unità.');
+        return {data:this.t.pee_piani_contributi.filter(c => c.giro_id === gi.id && c.tipo === 'unita' && c.consegnato).map(c => ({unita:(c.data && c.data.unita) || c.autore_nome, branca:c.autore_branca || null, s:(c.data && c.data.s && typeof c.data.s === 'object') ? c.data.s : {}, consegnato_il:c.consegnato_il})).sort((a, b) => String(a.unita).localeCompare(String(b.unita))), error:null}; }
       if(req.name === 'pee_persone_elenco') return this.personeElenco(req.args.p_tipo, uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
@@ -208,6 +216,9 @@ export class FakeDB {
           r.piano_id = gp.piano_id; r.autore_id = uid; r.autore_nome = (u.meta && u.meta.nome) || ''; Object.assign(r, this.etichProf(uid)); r.updated_at = r.created_at; r.data = r.data || {}; r.consegnato = !!r.consegnato; r.consegnato_il = r.consegnato ? now() : null;
           if(this.pRuolo(uid, gp.piano_id) === null || gp.stato !== 'aperto') return this.err('42501', 'new row violates row-level security policy');
           if(!['carte','unita'].includes(r.tipo) || JSON.stringify(r.data).length > 100000) return this.err('23514', 'new row for relation "pee_piani_contributi" violates check constraint');
+          if(r.tipo === 'unita' && this.sqlCarta27 !== false){ const pr = (this.t.pee_profili || []).find(x => x.user_id === uid);
+            if(!(pr && (pr.ruolo === 'cu' || (['cg','cds'].includes(pr.ruolo) && ['L','E','R'].includes(((pr.dashboard || {}).unita || {}).branca))))) return this.err('P0001', 'La Carta di Unità la consegna il Capo Unità, dalla programmazione dell’Unità.');
+            if((r.data || {}).fonte !== 'pee') return this.err('P0001', 'La Carta di Unità si consegna dalla programmazione dell’Unità: apri la voce «Carta di Unità» e consegnala da lì.'); }
           if(T.some(x => x.giro_id === r.giro_id && x.autore_id === uid && x.tipo === r.tipo)) return this.err('23505', 'duplicate key value violates unique constraint'); }
         T.push(r); out.push(r); if(q.table === 'pee_giri') this.revAfterGiro(r); if(q.table === 'pee_giri_rev') this.revAfterNota(r, null); this.emit(q.table, 'INSERT', r);
       }

@@ -46,16 +46,15 @@ await ev(() => shCdU()); await sleep(1500);
 if(await ev(() => !!document.getElementById('cdu-go'))){ await P.click('#cdu-go'); await sleep(1500); ok(db.t.pee_piani_contributi.some(c => c.tipo === 'unita' && c.consegnato), 'la Carta si consegna dal dispositivo'); }
 else ok(false, 'pulsante di consegna non trovato');
 await sw('Carta dopo la consegna');
-// 3. modulo di ripiego nella pagina del giro (senza programmazione): rimuovo la programmazione e riapro
+// 3. pagina della Carta nel piano (27/11): sola lettura, con «Apri le mie programmazioni» e «Crea la programmazione dell’Unità»
 db.t.pee_archivi.length = 0; db.t.pee_piani_contributi.length = 0;
 await ev(() => shGoHome()); await sleep(1500); await ev(id => pnOpen(id), 'p1'); await sleep(1500); await ev(() => pnSez('g-cdu')); await sleep(1000);
-ok(await ev(() => !!document.getElementById('gcu-b1')), 'modulo di ripiego nella pagina del giro');
-await P.fill('#gcu-n-nome', 'Reparto con un nome molto molto molto lungo ' + lungo); await P.fill('#gcu-b1', lungo + ' ' + lungo); await P.fill('#gcu-b5', lungo);
-await sleep(400); await sw('giro: modulo di ripiego');
-if(process.env.SHOT) await P.screenshot({path:process.env.SHOT + '/giro_ripiego_' + name + '.png', fullPage:true});
-const pg = await piccoli('.gi-rit, .pn-side .sh-si, .sh-btn, .pn-chk');
-ok(!pg.length, 'giro: pulsanti e scelte abbastanza grandi da toccare' + (pg.length ? ' («' + pg.join(', ') + '»)' : ''));
-const fg = await ev(() => [...document.querySelectorAll('.pn-card .gi-carta, .pn-card .gi-carta textarea, .pn-card .gi-carta input')].filter(e => { const cc = e.closest('.pn-card'); if(!cc) return true; const r = e.getBoundingClientRect(), c = cc.getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).map(e => e.tagName + '.' + e.className + '#' + e.id).slice(0, 4));
-ok(fg.length === 0, 'giro: nessun elemento esce dalla sua scheda');
+ok(await ev(() => document.querySelectorAll('section[aria-labelledby="gi-cu-t"] textarea, section[aria-labelledby="gi-cu-t"] input').length === 0 && /Crea la programmazione dell’Unità/.test(document.body.innerText) && /Apri le mie programmazioni/.test(document.body.innerText)), 'pagina della Carta nel piano: nessun campo, due pulsanti');
+await sw('Ascolto: Carta in sola lettura');
+if(process.env.SHOT) await P.screenshot({path:process.env.SHOT + '/ascolto_carta_' + name + '.png', fullPage:true});
+const pg = await piccoli('.pn-side .sh-si, .sh-btn, .pn-chk');
+ok(!pg.length, 'Ascolto: pulsanti abbastanza grandi da toccare' + (pg.length ? ' («' + pg.join(', ') + '»)' : ''));
+const fg = await ev(() => [...document.querySelectorAll('.pn-card .sh-btn, .pn-card .sh-sub')].filter(e => { const cc = e.closest('.pn-card'); if(!cc) return true; const r = e.getBoundingClientRect(), c = cc.getBoundingClientRect(); return r.width > 0 && (r.right > c.right + 1 || r.left < c.left - 1); }).map(e => e.tagName + '.' + e.className).slice(0, 4));
+ok(fg.length === 0, 'Ascolto: nessun elemento esce dalla sua scheda');
 ok(pa.errors.length === 0, 'nessun errore di pagina (' + pa.errors.length + ')'); if(pa.errors.length) console.log('  ', pa.errors.slice(0, 2).join(' | ').slice(0, 300));
 await br.close(); process.exit(summary() ? 1 : 0);
