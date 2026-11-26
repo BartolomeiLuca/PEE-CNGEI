@@ -32,7 +32,7 @@ ok(w.sw <= w.iw + 1 && w.rw <= w.rc + 1, 'la pagina non scorre in orizzontale ('
 const fuori = await ev(() => [...document.querySelectorAll('.pn-qa td, .pn-qoh, .pn-qf select')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.right > window.innerWidth + 1 || r.left < -1); }).length);
 ok(fuori === 0, 'nessuna cella o filtro esce dallo schermo (' + fuori + ')');
 const soglia = (d.hasTouch || (d.viewport || {}).width <= 700) ? 40 : 24;
-const piccoli = await ev(min => [...document.querySelectorAll('.pn-qf select, .pn-qf .pn-chip, .pn-qa a, .pn-qoh a')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height < min; }).map(e => (e.id || e.className || e.tagName) + ':' + Math.round(e.getBoundingClientRect().height)).slice(0, 5), soglia);
+const piccoli = await ev(min => [...document.querySelectorAll('.pn-qf select, .pn-qf .pn-chip, #pn-q-xl, .pn-qa a, .pn-qoh a')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height < min; }).map(e => (e.id || e.className || e.tagName) + ':' + Math.round(e.getBoundingClientRect().height)).slice(0, 5), soglia);
 ok(!piccoli.length, 'filtri e collegamenti abbastanza grandi da toccare' + (piccoli.length ? ' (' + piccoli.join(', ') + ')' : ''));
 const stretto = await ev(() => window.innerWidth <= 700);
 const lay = await ev(() => { const tr = document.querySelector('.pn-qa'); return getComputedStyle(tr).display; });

@@ -14609,23 +14609,35 @@ function docFooterText(){
   const parts=[(pp.nome||'').trim(), (pp.sezione||'').trim(), (g&&g!=='unico')?grpLabel(g):'', (MODE==='giovani'&&FASCIA)?'Branca '+FASCIA:'', 'PEE CNGEI'];
   return parts.filter(Boolean).join(' - ');
 }
-function dDocument(children, headerText){
-  const D = dxLib();
+function dDocument(children, headerText, opt){
+  const D = dxLib(); opt = opt || {};
   // indice automatico di Word (collegato ai titoli): compare se il documento ha almeno tre capitoli
   // 10/11: niente indice iniziale (in Word e Pages si vedeva male e il Word ha già il pannello dei capitoli)
+  const foot = w => new D.Footer({children:[new D.Paragraph({tabStops:[{type:D.TabStopType.RIGHT, position:w}], children:[
+    new D.TextRun({text:(window._dFootOverride!=null?window._dFootOverride:docFooterText()), font:MF, size:15, color:'999999'}),
+    new D.TextRun({children:[(D.Tab?new D.Tab():'\t'), D.PageNumber.CURRENT], font:MF, size:15, color:'999999'})
+  ]})]});
+  const head = () => new D.Header({children:[dPara((UNIT_NAME?UNIT_NAME+' · ':'')+headerText,{size:15, color:'999999', align:'right', after:0})]});
+  // 26/11: carta intestata (prima pagina): logo della Sezione a sinistra, nome della Sezione e ente a destra, filetto blu
+  const L = opt.letter, first = L ? new D.Header({children:[new D.Table({width:{size:9638, type:D.WidthType.DXA}, columnWidths:[1500, 8138], layout:D.TableLayoutType.FIXED, borders:{top:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, bottom:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, left:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, right:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, insideHorizontal:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, insideVertical:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}}, rows:[new D.TableRow({children:[
+    new D.TableCell({width:{size:1500, type:D.WidthType.DXA}, borders:{top:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, bottom:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, left:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, right:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}}, children:[new D.Paragraph({spacing:{before:0, after:0}, children:L.logo ? [new D.ImageRun({data:L.logo, type:'png', transformation:{width:60, height:60}})] : []})]}),
+    new D.TableCell({width:{size:8138, type:D.WidthType.DXA}, verticalAlign:D.VerticalAlign.CENTER, borders:{top:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, bottom:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, left:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, right:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}}, children:[dPara('CNGEI ' + L.sez, {size:26, bold:true, color:'2C3E7A', align:'right', after:0}), dPara('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani', {size:14, color:'777777', align:'right', after:0})]})
+  ]})]}), new D.Paragraph({spacing:{before:0, after:0}, border:{bottom:{style:D.BorderStyle.SINGLE, size:8, color:'2C3E7A', space:4}}, children:[]})]}) : null;
+  const sections = [{
+    properties:Object.assign({page:{size:{width:11906, height:16838}, margin:{top:1134, bottom:1134, left:1134, right:1134}}}, L ? {titlePage:true} : {}),
+    headers:Object.assign({default:head()}, first ? {first} : {}),
+    footers:Object.assign({default:foot(9638)}, L ? {first:foot(9638)} : {}),
+    children
+  }];
+  (opt.extra || []).forEach(ex => sections.push({
+    properties:{page:{size:{width:11906, height:16838, orientation:D.PageOrientation.LANDSCAPE}, margin:{top:1134, bottom:1134, left:1134, right:1134}}},
+    headers:{default:head()}, footers:{default:foot(14570)}, children:ex
+  }));
   return new D.Document({
     creator:'PEE CNGEI', description:'PEE CNGEI build '+APP_BUILD, title:(UNIT_NAME?UNIT_NAME+' — ':'')+headerText,
     styles:{default:{document:{run:{font:MF, size:20}}, heading1:{run:{font:MF}}, heading2:{run:{font:MF}}, heading3:{run:{font:MF}}}, paragraphStyles:[{id:'TOC1',name:'toc 1',basedOn:'Normal',next:'Normal',run:{font:MF,size:19,bold:true},paragraph:{spacing:{before:60,after:40}}},{id:'TOC2',name:'toc 2',basedOn:'Normal',next:'Normal',run:{font:MF,size:18},paragraph:{spacing:{after:20},indent:{left:240}}}]},
     numbering:{config:[{reference:'bul', levels:[{level:0, format:D.LevelFormat.BULLET, text:'•', alignment:D.AlignmentType.LEFT, style:{paragraph:{indent:{left:420, hanging:260}}, run:{font:MF}}}]}]},
-    sections:[{
-      properties:{page:{size:{width:11906, height:16838}, margin:{top:1134, bottom:1134, left:1134, right:1134}}},
-      headers:{default:new D.Header({children:[dPara((UNIT_NAME?UNIT_NAME+' · ':'')+headerText,{size:15, color:'999999', align:'right', after:0})]})},
-      footers:{default:new D.Footer({children:[new D.Paragraph({tabStops:[{type:D.TabStopType.RIGHT, position:9638}], children:[
-        new D.TextRun({text:(window._dFootOverride!=null?window._dFootOverride:docFooterText()), font:MF, size:15, color:'999999'}),
-        new D.TextRun({children:[(D.Tab?new D.Tab():'\t'), D.PageNumber.CURRENT], font:MF, size:15, color:'999999'})
-      ]})]})},
-      children
-    }]
+    sections
   });
 }
 // i ritorni a capo scritti nei campi di testo diventano veri «a capo» del Word (il generatore li leggerebbe come semplici spazi)
@@ -19622,6 +19634,108 @@ window.pnSez = async function(id){
   const r = $('sh-root'); if(r) r.scrollTop = 0;
 };
 // ── il piano in Word (25/11): senza le carte dell’Ascolto (hanno i nomi e non sono parte del Piano) ──
+// ── Il Quadro nel Word e in Excel (B2d) ──
+const pnMix = (hex, t) => { const n = i => parseInt(hex.slice(i, i + 2), 16), m = c => Math.round(c + (255 - c) * t).toString(16).padStart(2, '0'); return (m(n(0)) + m(n(2)) + m(n(4))).toUpperCase(); };
+const pnHx = c => String(c).replace('#', '').toUpperCase();
+function pnQDati(){ const R = pnQRighe(true), E = pnQEv(R); return Object.assign({R}, E, {T:pnQTappe(E.M, E.N)}); }
+const pnQOrgano = a => [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.genitori ? 'con i genitori' : ''].filter(Boolean).join(' · ');
+// la sezione orizzontale del Word: tabella colorata (chi fa cosa e quando) e timeline a celle colorate
+function pnQWordSez(){
+  const D = dxLib(), p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), oggi = giOggi().slice(0, 7), W = 14570, BLU = '2C3E7A';
+  const kids = [dH3('Quadro del Piano'), dPara('Chi fa cosa e quando. Il colore è quello dell’area dell’obiettivo; nella timeline la barra è chiara se l’azione è da iniziare, media se è in corso, piena se è fatta. ◆ = azione una volta sola · ◇ = verifica.', {size:16, color:'555555', after:80})];
+  kids.push(dPara(PN_AREE.filter(([k]) => R.some(r => (r.o.aree || [])[0] === k)).map(([k, t]) => new D.TextRun({text:'■ ' + t + '   ', font:MF, size:17, bold:true, color:pnHx(PN_COL[k][0])})), {after:120}));
+  const W1 = [4300, 2000, 2300, 2200, 2200, 1570], TOP = D.VerticalAlign.TOP;
+  const rows = [['Obiettivo e azioni', 'Referente', 'Organo', 'Quando', 'Si verifica', 'Stato'].map((h, i) => dCell(dPara(h, {size:16, bold:true, color:'FFFFFF', after:0}), {w:W1[i], fill:BLU, border:BLU}))];
+  R.forEach(({o, i, az}) => {
+    const c = pnColOb(o), dk = pnHx(c[0]), pl = pnHx(c[1]), aree = (o.aree || []).map(k => pnLab(PN_AREE, k)).join(', ');
+    rows.push([dCell([dPara((i + 1) + ' · ' + (o.testo || '(senza testo)'), {size:17, bold:true, color:dk, after:0}), ...(aree || o.ricadute ? [dPara([aree, o.ricadute ? 'con ricadute educative' : ''].filter(Boolean).join(' · '), {size:14, color:'555555', after:0})] : [])], {w:W, fill:pl, border:dk, span:6})]);
+    if(!az.length) rows.push([dCell(dPara('Nessuna azione ancora.', {size:15, color:'999999', after:0}), {w:W, span:6})]);
+    az.forEach(a => { const st = a.stato || 'da_iniziare', X = (t, k, o2) => dCell(t, Object.assign({w:W1[k], size:16, vAlign:TOP}, o2 || {}));
+      rows.push([X([dPara(a.testo || '(senza testo)', {size:16, after:0}), ...(a.urgente ? [dPara('★ Urgente', {size:14, bold:true, color:'B03A2E', after:0})] : [])], 0, {fill:pnMix(dk, .9)}), X((a.ref || '').trim() || '—', 1), X(pnQOrgano(a) || '—', 2), X(pnQuando(a, p), 3), X(pnVerTxt(a), 4), X(pnLab(PN_STATI_AZ, st), 5, {bold:true, color:dk})]); });
+  });
+  kids.push(dTable(rows, W1, true, true));
+  // timeline
+  kids.push(dH3('Timeline'));
+  const LW = 3600, mw = Math.floor((W - LW) / N), nb = {style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, gl = {style:D.BorderStyle.SINGLE, size:2, color:'E3E3DB'};
+  const tc = (txt, o) => { const col = o.fill || null, bd = o.nob ? {top:nb, bottom:nb, left:nb, right:nb} : o.bar ? {top:gl, bottom:gl, left:{style:D.BorderStyle.SINGLE, size:2, color:col}, right:{style:D.BorderStyle.SINGLE, size:2, color:col}} : {top:gl, bottom:gl, left:gl, right:gl};
+    return new D.TableCell({children:[new D.Paragraph({alignment:o.al === 'l' ? D.AlignmentType.LEFT : D.AlignmentType.CENTER, spacing:{before:0, after:0, line:220}, children:txt ? [new D.TextRun({text:txt, font:MF, size:o.sz || 14, bold:!!o.b, color:o.color || '1A1A18'})] : []})], width:{size:o.w, type:D.WidthType.DXA}, columnSpan:o.span, shading:col ? {type:D.ShadingType.CLEAR, fill:col, color:'auto'} : undefined, borders:bd, verticalAlign:D.VerticalAlign.CENTER, margins:{top:25, bottom:25, left:o.al === 'l' ? 70 : 0, right:o.al === 'l' ? 40 : 0}}); };
+  const TR = (cells, head) => new D.TableRow({children:cells, cantSplit:true, tableHeader:!!head});
+  const trs = [];
+  trs.push(TR([tc('', {w:LW, nob:true})].concat(Array.from({length:p.durata}, (_, k) => tc('Anno ' + (k + 1) + ' · ' + (Number(p.anno_inizio) + k) + '-' + String(Number(p.anno_inizio) + k + 1).slice(2), {w:mw * 12, span:12, fill:BLU, color:'FFFFFF', b:true, sz:15, nob:true}))), true));
+  trs.push(TR([tc('', {w:LW, nob:true})].concat(M.map(m => tc(PN_MESI_N[Number(m.k.slice(5, 7)) - 1].slice(0, 1).toUpperCase(), {w:mw, fill:m.k === oggi ? 'FADBD8' : 'EEF0FB', sz:13, b:m.k === oggi, color:m.k === oggi ? 'B03A2E' : '444444'}))), true));
+  const vm = {}; T.forEach(x => { (vm[x.s] = vm[x.s] || []).push(x); });
+  trs.push(TR([tc('Verifiche', {w:LW, al:'l', b:true, sz:15, fill:'F5F5F0'})].concat(M.map((m, k) => { const x = vm[k]; return tc(x ? (x.some(y => y.t.fatta) ? '◆' : '◇') : '', {w:mw, sz:15, b:true, color:x && x.every(y => y.sug) ? 'AAAAAA' : '1A1A18'}); }))));
+  R.forEach(({o, i, az}) => {
+    const c = pnColOb(o), dk = pnHx(c[0]), pl = pnHx(c[1]);
+    trs.push(TR([tc((i + 1) + ' · ' + (o.testo || '(senza testo)'), {w:LW, al:'l', b:true, sz:15, fill:pl, color:dk}), tc('', {w:mw * N, span:N, fill:pl})]));
+    az.forEach(a => { const x = ev.find(y => y.a === a), st = a.stato || 'da_iniziare', fill = st === 'fatta' ? dk : st === 'in_corso' ? pnMix(dk, .45) : pnMix(dk, .78), fg = st === 'fatta' ? 'FFFFFF' : '1A1A18';
+      const lab = (a.testo || '(senza testo)') + (a.urgente ? '  ★' : '') + (x ? '' : ' · mese da scegliere');
+      trs.push(TR([tc(lab.length > 80 ? lab.slice(0, 78) + '…' : lab, {w:LW, al:'l', sz:14, color:x ? '1A1A18' : 'B06A00'})].concat(M.map((m, k) => { if(!x || k < x.s || k > x.e) return tc('', {w:mw, sz:12});
+        const first = k === x.s; return tc(first && a.tipo !== 'cont' ? '◆' : (k === x.e && x.aperta ? '›' : ''), {w:mw, fill, bar:true, color:fg, sz:14, b:true}); }))));
+    });
+  });
+  kids.push(new D.Table({width:{size:LW + mw * N, type:D.WidthType.DXA}, columnWidths:[LW].concat(M.map(() => mw)), layout:D.TableLayoutType.FIXED, rows:trs}));
+  if(sciolte.length) kids.push(dPara(sciolte.length + (sciolte.length === 1 ? ' azione senza mese: non compare nella timeline' : ' azioni senza mese: non compaiono nella timeline') + ' (nella tabella dice «mese da scegliere»).', {size:15, color:'B06A00', before:80, after:40}));
+  kids.push(dPara('Ritmi fissi: ' + PN_RITMI_TXT.map(([a, b]) => a + ', ' + b).join(' · ') + '.', {size:15, color:'555555', before:80, after:0}));
+  return kids;
+}
+// carta intestata: logo della Sezione (circolare/sezioni) + nome della Sezione; senza logo resta il nome
+async function pnLetter(){
+  const sez = ((SH.prof || {}).sezione || '').trim(); if(!sez) return null;
+  const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, ''); let logo = null;
+  try{ const r = await fetch(base + 'circolare/sezioni/' + encodeURIComponent(axSezFile(sez)) + '.png'); if(r.ok) logo = new Uint8Array(await r.arrayBuffer()); }catch(e){}
+  return {sez:axSezFile(sez), logo};
+}
+async function pnQExcel(){
+  if(!PN.p) return;
+  try{ clToast('Preparo l’Excel del Quadro…'); await pnFlush(); await needExcel(); }catch(e){ clToast('Impossibile preparare l’Excel: ' + (e && e.message || e)); return; }
+  try{
+    const p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), tit = PN.meta.titolo || PIANI_TIPI[p.tipo], sez = ((SH.prof || {}).sezione || '').trim(), oggi = giOggi().slice(0, 7), BLU = '2C3E7A';
+    const wb = new ExcelJS.Workbook(); wb.creator = 'PEE CNGEI';
+    const F = (o = {}) => Object.assign({name:'Montserrat', size:10}, o), fill = h => ({type:'pattern', pattern:'solid', fgColor:{argb:'FF' + h}});
+    const thin = {style:'thin', color:{argb:'FFD9D9D9'}}, box = {top:thin, left:thin, bottom:thin, right:thin};
+    const intest = (ws, cols, sub) => { ws.mergeCells(1, 1, 1, cols); const c = ws.getCell(1, 1); c.value = tit; c.font = F({size:16, bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.alignment = {vertical:'middle', indent:1}; ws.getRow(1).height = 30;
+      ws.mergeCells(2, 1, 2, cols); const d = ws.getCell(2, 1); d.value = [sez ? 'CNGEI ' + axSezFile(sez) : 'CNGEI', PIANI_TIPI[p.tipo], pnPeriodo(p), sub].filter(Boolean).join(' · '); d.font = F({size:9, italic:true, color:{argb:'FF666666'}}); d.alignment = {indent:1, vertical:'middle'}; };
+    const setup = ws => { ws.pageSetup = {orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0, paperSize:9}; ws.views = [Object.assign({showGridLines:false}, ws.views && ws.views[0])]; };
+    // foglio 1: il Quadro, una riga per azione (si può filtrare e ordinare)
+    const ws = wb.addWorksheet('Quadro'); setup(ws);
+    ws.columns = [{width:5}, {width:38}, {width:22}, {width:44}, {width:22}, {width:26}, {width:26}, {width:13}, {width:13}, {width:22}, {width:13}, {width:40}];
+    intest(ws, 12, 'Quadro del Piano · una riga per azione');
+    const H = ['N.', 'Obiettivo', 'Aree', 'Azione', 'Referente', 'Organo', 'Quando', 'Inizio', 'Fine', 'Si verifica', 'Stato', 'Indicatore'];
+    H.forEach((h, i) => { const c = ws.getCell(4, i + 1); c.value = h; c.font = F({bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.alignment = {vertical:'middle', wrapText:true}; c.border = box; }); ws.getRow(4).height = 22;
+    let r = 5; const MD = k => k ? new Date(Date.UTC(Number(k.slice(0, 4)), Number(k.slice(5, 7)) - 1, 1)) : null;
+    R.forEach(({o, i, az}) => { const c = pnColOb(o), dk = pnHx(c[0]), pl = pnHx(c[1]), aree = (o.aree || []).map(k => pnLab(PN_AREE, k)).join(', ') + (o.ricadute ? '' : '');
+      (az.length ? az : [null]).forEach(a => { const st = a ? (a.stato || 'da_iniziare') : '', fine = a && a.tipo === 'cont' ? (a.fine === 'piano' ? 'fine piano' : (a.fine && pnMeseLab(p, a.fine) ? MD(a.fine) : '')) : '';
+        const v = [i + 1, o.testo || '(senza testo)', aree + (o.ricadute ? ' · con ricadute educative' : ''), a ? (a.testo || '(senza testo)') + (a.urgente ? '  ★ Urgente' : '') : 'Nessuna azione ancora', a ? (a.ref || '').trim() : '', a ? pnQOrgano(a) : '', a ? pnQuando(a, p) : '', a && a.mese && pnMeseLab(p, a.mese) ? MD(a.mese) : '', fine, a ? pnVerTxt(a) : '', a ? pnLab(PN_STATI_AZ, st) : '', a ? (a.indicatore || '') : ''];
+        v.forEach((x, k) => { const cell = ws.getCell(r, k + 1); cell.value = x === '' ? null : x; cell.font = F(k === 10 && a ? {bold:true, color:{argb:'FF' + dk}} : {}); cell.border = box; cell.alignment = {vertical:'top', wrapText:true, horizontal:k === 0 ? 'center' : undefined}; if(x instanceof Date) cell.numFmt = 'mmm yyyy'; if(k < 3) cell.fill = fill(k === 3 ? pnMix(dk, .9) : pl); });
+        ws.getCell(r, 4).fill = fill(pnMix(dk, .9)); r++; }); });
+    ws.autoFilter = {from:{row:4, column:1}, to:{row:Math.max(4, r - 1), column:12}}; ws.views = [{state:'frozen', ySplit:4, xSplit:4, showGridLines:false}];
+    ws.getCell(r + 1, 2).value = 'Ritmi fissi: ' + PN_RITMI_TXT.map(([a, b]) => a + ', ' + b).join(' · ') + '.'; ws.getCell(r + 1, 2).font = F({size:9, italic:true, color:{argb:'FF666666'}});
+    // foglio 2: la timeline a celle colorate
+    const wt = wb.addWorksheet('Timeline'); setup(wt);
+    wt.columns = [{width:46}].concat(M.map(() => ({width:3.6})));
+    intest(wt, N + 1, 'Timeline · barra chiara = da iniziare, media = in corso, piena = fatta · ◆ una volta sola · ◇ verifica');
+    p.durata && Array.from({length:p.durata}, (_, k) => k).forEach(k => { wt.mergeCells(4, 2 + k * 12, 4, 13 + k * 12); const c = wt.getCell(4, 2 + k * 12); c.value = 'Anno ' + (k + 1) + ' · ' + (Number(p.anno_inizio) + k) + '-' + String(Number(p.anno_inizio) + k + 1).slice(2); c.font = F({bold:true, size:9, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.alignment = {horizontal:'center'}; });
+    M.forEach((m, k) => { const c = wt.getCell(5, 2 + k); c.value = PN_MESI_N[Number(m.k.slice(5, 7)) - 1].slice(0, 1).toUpperCase(); c.font = F({size:8, bold:m.k === oggi, color:{argb:m.k === oggi ? 'FFB03A2E' : 'FF444444'}}); c.fill = fill(m.k === oggi ? 'FADBD8' : 'EEF0FB'); c.alignment = {horizontal:'center'}; c.border = box; });
+    let q = 6; const vm = {}; T.forEach(x => { (vm[x.s] = vm[x.s] || []).push(x); });
+    wt.getCell(q, 1).value = 'Verifiche'; wt.getCell(q, 1).font = F({bold:true}); M.forEach((m, k) => { const x = vm[k], c = wt.getCell(q, 2 + k); c.border = box; if(x){ c.value = x.some(y => y.t.fatta) ? '◆' : '◇'; c.font = F({size:10, bold:true, color:{argb:x.every(y => y.sug) ? 'FFAAAAAA' : 'FF1A1A18'}}); c.alignment = {horizontal:'center'}; c.note = x.map(pnQTappaTxt).join('\n'); } }); q++;
+    R.forEach(({o, i, az}) => { const c = pnColOb(o), dk = pnHx(c[0]), pl = pnHx(c[1]);
+      for(let k = 1; k <= N + 1; k++) wt.getCell(q, k).fill = fill(pl); const oc = wt.getCell(q, 1); oc.value = (i + 1) + ' · ' + (o.testo || '(senza testo)'); oc.font = F({bold:true, color:{argb:'FF' + dk}}); q++;
+      az.forEach(a => { const x = ev.find(y => y.a === a), st = a.stato || 'da_iniziare', fl = st === 'fatta' ? dk : st === 'in_corso' ? pnMix(dk, .45) : pnMix(dk, .78);
+        const lc = wt.getCell(q, 1); lc.value = (a.testo || '(senza testo)') + (a.urgente ? '  ★' : '') + (x ? '' : '  · mese da scegliere'); lc.font = F({size:9, color:{argb:x ? 'FF1A1A18' : 'FFB06A00'}}); lc.alignment = {indent:1};
+        if(x) for(let k = x.s; k <= x.e; k++){ const cl = wt.getCell(q, 2 + k); cl.fill = fill(fl); cl.border = box; if(k === x.s){ cl.value = a.tipo === 'cont' ? null : '◆'; cl.font = F({size:9, bold:true, color:{argb:st === 'fatta' ? 'FFFFFFFF' : 'FF1A1A18'}}); cl.alignment = {horizontal:'center'}; } else if(k === x.e && x.aperta){ cl.value = '›'; cl.font = F({size:9, bold:true}); cl.alignment = {horizontal:'center'}; } }
+        q++; }); });
+    wt.views = [{state:'frozen', ySplit:5, xSplit:1, showGridLines:false}];
+    // foglio 3: le verifiche
+    const wv = wb.addWorksheet('Verifiche'); setup(wv); wv.columns = [{width:10}, {width:28}, {width:14}, {width:8}, {width:70}]; intest(wv, 5, 'Verifiche');
+    ['Anno', 'Tappa', 'Data', 'Fatta', 'Cosa è emerso e cosa cambiamo'].forEach((h, i) => { const c = wv.getCell(4, i + 1); c.value = h; c.font = F({bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.border = box; });
+    pnTappeOrd().forEach((t, k) => [ 'Anno ' + t.anno, pnLab(PN_TAPPE, t.tipo), giData(t.data), t.fatta ? 'Sì' : 'No', t.note || '' ].forEach((x, i) => { const c = wv.getCell(5 + k, i + 1); c.value = x || null; c.font = F(); c.border = box; c.alignment = {vertical:'top', wrapText:true}; }));
+    const buf = await rtXlsxBuf(wb);
+    axDownload(new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Quadro_' + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.xlsx'); clToast('Excel del Quadro pronto.');
+  }catch(e){ clToast('Impossibile creare l’Excel: ' + (e && e.message || e)); }
+}
+window.pnQExcel = pnQExcel;
+
 window.pnScarica = async function(){
   if(!PN.p) return; const p = PN.p;
   try{ clToast('Preparo il Word del piano…'); await pnFlush(); await needDocx(); }catch(e){ clToast('Impossibile preparare il Word: ' + (e && e.message || e)); return; }
@@ -19646,7 +19760,7 @@ window.pnScarica = async function(){
       if(meta) ch.push(dPara(meta, {size:17, color:'666666', after:60}));
       const az = d.azioni.filter(a => a.ob === o.id);
       if(az.length){
-        const W = [2500, 800, 1150, 1850, 1000, 2338];
+        const W = [2300, 1250, 1150, 1750, 900, 2288];
         ch.push(dGridTable(['Azione', 'Quando', 'Si verifica', 'Chi e referente', 'Stato', 'Indicatore'], az.map(a => [
           X(a.testo), pnQuando(a, PN.p) + (a.urgente ? '\nUrgente' : ''), (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? '\n' + (a.step === 'meta' ? 'Anche a metà anno' : 'A ogni Consiglio di Gruppo') : ''),
           [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.genitori ? 'Con i genitori' : '', a.ref ? 'Referente: ' + X(a.ref) : ''].filter(Boolean).join('\n'), pnLab(PN_STATI_AZ, a.stato || 'da_iniziare'), X(a.indicatore)]), W, 16));
@@ -19662,7 +19776,8 @@ window.pnScarica = async function(){
     }
     if(d.spunti.length){ ch.push(dH3('Spunti dalle Unità')); d.spunti.forEach(s => ch.push(dPara((s.da ? s.da + ': ' : '') + T(s.testo), {size:19, bullet:true, after:40}))); }
     if(d.uniti.length){ ch.push(dH3('Obiettivi uniti (note)')); d.uniti.forEach(u => ch.push(dPara(T(u.testo) || '—', {size:19, bullet:true, after:40}))); }
-    await dSave(dDocument(ch, tit), (tit.toLowerCase().indexOf(PIANI_TIPI[p.tipo].toLowerCase()) === 0 ? '' : PIANI_TIPI[p.tipo].replace(/[^\w]+/g, '_') + '_') + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.docx');
+    const lett = await pnLetter(), ext = d.obiettivi.length ? [pnQWordSez()] : [];
+    await dSave(dDocument(ch, tit, {letter:lett, extra:ext}), (tit.toLowerCase().indexOf(PIANI_TIPI[p.tipo].toLowerCase()) === 0 ? '' : PIANI_TIPI[p.tipo].replace(/[^\w]+/g, '_') + '_') + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.docx');
   }catch(e){ clToast('Impossibile creare il Word: ' + (e && e.message || e)); }
   finally{ UNIT_NAME = un; window._dFootOverride = fo; [GREEN, PALE, ONG, GRTXT] = tema; }
 };
@@ -19786,8 +19901,8 @@ const pnColOb = o => (PN_COL[(o.aree || [])[0]] || ['#6B6B64', '#F0F0EA']);
 const pnAreaChip = k => { const c = PN_COL[k] || ['#6B6B64', '#F0F0EA']; return `<span class="pn-ac" style="--c:${c[0]};--p:${c[1]}">${esc(pnLab(PN_AREE, k))}</span>`; };
 function pnVerTxt(a){ return (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? ' · ' + (a.step === 'meta' ? 'anche a metà anno' : 'a ogni Consiglio di Gruppo') : ''); }
 // le azioni di ogni obiettivo, nell’ordine del tempo (prima quelle col mese più vicino, in coda quelle senza mese), con i filtri scelti
-function pnQRighe(){
-  const d = PN.d, f = PN.qf || {};
+function pnQRighe(tutte){
+  const d = PN.d, f = tutte ? {} : (PN.qf || {});
   const ok = a => (!f.ref || (f.ref === '__no' ? !(a.ref || '').trim() : affNorm(a.ref || '') === affNorm(f.ref))) && (!f.chi || (a.chi || []).includes(f.chi)) && (!f.stato || (a.stato || 'da_iniziare') === f.stato) && (!f.urg || a.urgente);
   const sulleAzioni = !!(f.ref || f.chi || f.stato || f.urg);
   return d.obiettivi.map((o, i) => {
@@ -19928,7 +20043,7 @@ function pnQuadroHTML(){
   const sel = (k, lab, opts) => `<div><label class="sh-lb" for="pn-qf-${k}">${lab}</label><select class="sh-in" id="pn-qf-${k}" onchange="pnQf('${k}',this.value)">${opts.map(([v, t]) => `<option value="${E(v)}"${(f[k] || '') === v ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>`;
   return `<section class="pn-card" id="pn-q-card" aria-labelledby="pn-q-t"><h2 class="pn-h" id="pn-q-t">Quadro del Piano</h2>
     <p class="sh-hint" style="margin:0">Il piano da guardare: chi fa cosa, quando, come si verifica. Si scrive in «Obiettivi e azioni»: un clic su una riga porta lì.</p>
-    <div class="pn-seg" role="group" aria-label="Come guardare il quadro">${PN_VISTE.map(([k, t]) => `<button type="button" class="pn-segb${(f.vista || 'tab') === k ? ' on' : ''}" id="pn-qv-${k}" aria-pressed="${(f.vista || 'tab') === k}" onclick="pnQf('vista','${k}')">${t}</button>`).join('')}</div>
+    <div class="pn-seg" role="group" aria-label="Come guardare il quadro">${PN_VISTE.map(([k, t]) => `<button type="button" class="pn-segb${(f.vista || 'tab') === k ? ' on' : ''}" id="pn-qv-${k}" aria-pressed="${(f.vista || 'tab') === k}" onclick="pnQf('vista','${k}')">${t}</button>`).join('')}${d.obiettivi.length ? `<button type="button" class="sh-btn sm gh" id="pn-q-xl" style="margin-left:auto" onclick="pnQExcel()">Scarica in Excel</button>` : ''}</div>
     <div class="pn-qf">${sel('ref', 'Referente', [['', 'Tutti']].concat(refs.map(r => [r, r]), [['__no', 'Senza referente']]))}${sel('chi', 'Organo', [['', 'Tutti']].concat(PN_CHI))}${sel('area', 'Area', [['', 'Tutte']].concat(PN_AREE))}${sel('stato', 'Stato', [['', 'Tutti']].concat(PN_STATI_AZ))}
     <label class="pn-chip sm${f.urg ? ' on' : ''}" style="align-self:end"><input type="checkbox" id="pn-qf-urg" ${f.urg ? 'checked' : ''} onchange="pnQf('urg',this.checked);this.parentNode.classList.toggle('on',this.checked)">Solo urgenti</label></div>
     <div id="pn-qb">${pnQCorpo()}</div></section>`;
