@@ -18792,10 +18792,10 @@ window.shTrashEmpty = async function(){
 // 23/11: le figure nuove (Comitato di Sezione, Coordinatore Senior, Vice) hanno già il profilo; i loro strumenti arrivano a pezzi: intanto un avviso chiaro, poi le scelte di sempre
 function figuraNuovaHome(p){
   const T = {
-    cos:'Gli strumenti per il Comitato di Sezione (Progetto di Sezione, calendario condiviso) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
-    coords:'Gli strumenti per il Coordinatore Senior (Progetto di Clan, calendario, Percorso Senior) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
+    cos:'Se nel Comitato hai l’incarico di Commissario, scrivi il Progetto di Sezione da «I tuoi piani»; per gli altri incarichi gli strumenti (calendario condiviso) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
+    coords:'Come Coordinatore Senior scrivi il Progetto di Clan da «I tuoi piani»; gli altri strumenti (calendario, Percorso Senior) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
     vcg:'Lavori con il Capo Gruppo: quando ti invita nel suo progetto lo trovi in «Condivisi con te». Gli strumenti per il Piano di Gruppo sono in preparazione.',
-    vcds:'Lavori con il Commissario di Sezione: quando ti invita nel suo progetto lo trovi in «Condivisi con te». Gli strumenti per il Progetto di Sezione sono in preparazione.'
+    vcds:'Lavori con il Commissario di Sezione: puoi scrivere un Progetto di Sezione da «I tuoi piani» o lavorare in quello del Commissario quando ti invita: lo trovi in «Condivisi con te». Il calendario condiviso della Sezione è in preparazione.'
   };
   if(!T[p.ruolo]) return '';
   return `<section class="sh-card2 wide" style="margin-bottom:14px"><h2 style="margin:0 0 4px;font-size:18px">${esc(ruoloLab(p))}</h2><p class="sh-sub" style="margin:0">${esc(T[p.ruolo])}</p></section>`;
@@ -18880,14 +18880,26 @@ function pnAnnoTxt(p){
 const pnLab = (arr, k) => (arr.find(x => x[0] === k) || [0, k || ''])[1];
 const pnSoglia = p => PN_SOGLIE[p.tipo] || PN_SOGLIE.gruppo;
 
+// 28/11: chi può aprire quale piano. Gruppo: Capo Gruppo e Vice; Sezione: Commissario, Vice Commissario e chi nel Comitato ha l'incarico di Commissario; Clan: Coordinatore Senior
+function pnTipoCrea(p){
+  p = p || {}; const r = p.ruolo;
+  if(r === 'cg' || r === 'vcg') return 'gruppo';
+  if(r === 'cds' || r === 'vcds' || (r === 'cos' && cosInc(p).includes('commissario'))) return 'sezione';
+  if(r === 'coords') return 'clan';
+  return '';
+}
+const PN_PER = {gruppo:'Per il Gruppo', sezione:'Per la Sezione', clan:'Per il Clan'};
+const PN_INTRO = {gruppo:'Il Piano di Gruppo riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Qui lo scrivi con il Consiglio di Gruppo.',
+  sezione:'Il Progetto di Sezione riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Quando lo deliberi, i Gruppi della Sezione ne leggono gli obiettivi e possono portarli nel loro Piano.',
+  clan:'Il Progetto di Clan riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. I Gruppi della Sezione non lo vedono: è del Clan.'};
 // ── elenco nella home ──
 async function pnHomeFill(){
   const box = $('sh-piani'); if(!box || !CL.sb || !CL.user) return;
-  const ruolo = (SH.prof || {}).ruolo; const crea = ruolo === 'cg' || ruolo === 'vcg';
+  const tc = pnTipoCrea(SH.prof), crea = !!tc;
   let ok = false; try{ ok = await PIANI.pronto(); }catch(e){}
   if(SH.view !== 'home' || !$('sh-piani')) return;
   const cardIn = (x) => { box.innerHTML = x; if(box.dataset.card) box.hidden = !x; };
-  if(!ok){ cardIn((crea && PIANI.ok === false) ? `<small>Per il Gruppo</small><h2>Piano di Gruppo</h2><p class="sh-hint" style="margin:0">Il Piano di Gruppo sarà disponibile dopo l’aggiornamento del database (script SQL del 23 novembre).</p>` : ''); return; }
+  if(!ok){ cardIn((crea && PIANI.ok === false) ? `<small>${PN_PER[tc]}</small><h2>${PIANI_TIPI[tc]}</h2><p class="sh-hint" style="margin:0">${PIANI_TIPI[tc] === 'Piano di Gruppo' ? 'Il Piano di Gruppo' : 'Il ' + PIANI_TIPI[tc]} sarà disponibile dopo l’aggiornamento del database (script SQL del 23 novembre).</p>` : ''); return; }
   let list = [], inv = [];
   try{ list = await PIANI.elenco(); inv = await PIANI.inviti(); }catch(e){ return; }
   if(SH.view !== 'home' || !$('sh-piani')) return;
@@ -18895,28 +18907,29 @@ async function pnHomeFill(){
   const me = CL.user.id; const mie = list.filter(x => x.owner_id === me), altri = list.filter(x => x.owner_id !== me);
   const riga = x => { const i = inv.find(q => q.id === x.id);
     return `<div class="pn-row"><div style="min-width:0"><b>${esc(x.titolo || PIANI_TIPI[x.tipo])}</b>${i && i.nuovo ? ' <span class="sh-pill sh-pill-wait">nuovo</span>' : ''}<div class="sh-hint" style="margin:2px 0 0">${esc(PIANI_TIPI[x.tipo])} · ${esc(pnPeriodo(x))} · ${esc(pnAnnoTxt(x))} · ${esc(pnLab(PN_STATI, x.stato).toLowerCase())}${x.owner_id === me ? '' : ' · di ' + esc(x.owner_email || '') + (i ? ' · ' + esc(i.etichetta || pianoRuoloNome(i.ruolo)) : '')}</div></div><button class="sh-btn sm" type="button" onclick="pnOpen('${esc(x.id)}')">Apri</button></div>`; };
-  let h = box.dataset.card ? '<small>Per il Gruppo, su tre anni</small>' : '';
-  if(crea || mie.length){ h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:${box.dataset.card ? '0' : '14px 0 0'}">${mie.length ? 'I tuoi piani' : 'Piano di Gruppo'}</h2>${crea ? `<button class="sh-btn sm gh" type="button" style="margin-left:auto" onclick="pnNuovo()">+ Nuovo Piano di Gruppo</button>` : ''}</div>`;
-    h += mie.length ? mie.map(riga).join('') : `<p class="sh-sub" style="margin:0">Il Piano di Gruppo riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Qui lo scrivi con il Consiglio di Gruppo.</p>`; }
+  let h = box.dataset.card ? `<small>${tc ? PN_PER[tc] : 'Per il Gruppo'}, su tre anni</small>` : '';
+  if(crea || mie.length){ h += `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:${box.dataset.card ? '0' : '14px 0 0'}">${mie.length ? 'I tuoi piani' : (tc ? PIANI_TIPI[tc] : 'Piano di Gruppo')}</h2>${crea ? `<button class="sh-btn sm gh" type="button" style="margin-left:auto" onclick="pnNuovo('${tc}')">+ Nuovo ${PIANI_TIPI[tc]}</button>` : ''}</div>`;
+    h += mie.length ? mie.map(riga).join('') : `<p class="sh-sub" style="margin:0">${esc(PN_INTRO[tc] || PN_INTRO.gruppo)}</p>`; }
   if(altri.length) h += `<h2>Piani condivisi con te</h2>` + altri.map(riga).join('');
   cardIn(h);
 }
-window.pnNuovo = function(){
+window.pnNuovo = function(tipo){
   const p = SH.prof || {}; const cur = annoScoutStart();
-  const gr = [p.sezione, p.gruppo ? grpLabel(p.gruppo) : ''].filter(Boolean).join(' · ');
-  dlgOpen(`<h2 id="sh-dlg-t">Nuovo Piano di Gruppo</h2>
-    <p class="sh-hint" style="margin:0">Il Piano vale tre anni, con una verifica ogni anno. Il Regolamento fissa gli incarichi a tre anni: il quarto, di staffetta, è una buona prassi facoltativa.</p>
+  tipo = (tipo && tipo === pnTipoCrea(p)) ? tipo : (pnTipoCrea(p) || 'gruppo'); PN.nuovoTipo = tipo; const nome = PIANI_TIPI[tipo];
+  const gr = [p.sezione, tipo === 'gruppo' && p.gruppo ? grpLabel(p.gruppo) : ''].filter(Boolean).join(' · ');
+  dlgOpen(`<h2 id="sh-dlg-t">Nuovo ${esc(nome)}</h2>
+    <p class="sh-hint" style="margin:0">${tipo === 'gruppo' ? 'Il Piano vale tre anni, con una verifica ogni anno. Il Regolamento fissa gli incarichi a tre anni: il quarto, di staffetta, è una buona prassi facoltativa.' : 'Il Progetto vale tre anni, con una verifica ogni anno. Il quarto anno, di staffetta, è facoltativo.'}</p>
     <div><label class="sh-lb" for="pn-n-anno">Da quale anno scout parte?</label><select class="sh-in" id="pn-n-anno">${[cur, cur + 1, cur - 1].map(y => `<option value="${y}">${annoScoutTxt(y)}</option>`).join('')}</select></div>
     <div><label class="sh-lb" for="pn-n-dur">Durata</label><select class="sh-in" id="pn-n-dur"><option value="3">3 anni</option><option value="4">3 anni + un quarto anno di staffetta</option></select></div>
-    <div><label class="sh-lb" for="pn-n-tit">Nome del piano</label><input class="sh-in" id="pn-n-tit" maxlength="160" value="${esc('Piano di Gruppo' + (gr ? ' · ' + gr : ''))}"></div>
+    <div><label class="sh-lb" for="pn-n-tit">Nome del piano</label><input class="sh-in" id="pn-n-tit" maxlength="160" value="${esc(nome + (gr ? ' · ' + gr : ''))}"></div>
     <div class="sh-msg" id="pn-n-msg" role="alert"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="sh-btn gh" type="button" onclick="shDlgClose()">Annulla</button><button class="sh-btn" type="button" id="pn-n-ok" onclick="pnCrea()">Crea il piano</button></div>`);
 };
 window.pnCrea = async function(){
   const b = $('pn-n-ok'), m = $('pn-n-msg'); if(!b) return; b.disabled = true; m.className = 'sh-msg'; m.textContent = '';
   try{
-    const anno = Number($('pn-n-anno').value), dur = Number($('pn-n-dur').value), tit = ($('pn-n-tit').value || '').trim() || 'Piano di Gruppo';
-    const p = await PIANI.crea({tipo:'gruppo', titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || '', sezione:String((SH.prof || {}).sezione || '').trim()})});
+    const anno = Number($('pn-n-anno').value), dur = Number($('pn-n-dur').value), tipo = (PN.nuovoTipo && PN.nuovoTipo === pnTipoCrea(SH.prof)) ? PN.nuovoTipo : 'gruppo', tit = ($('pn-n-tit').value || '').trim() || PIANI_TIPI[tipo];
+    const p = await PIANI.crea({tipo, titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || '', sezione:String((SH.prof || {}).sezione || '').trim()})});
     shDlgClose(); pnOpen(p.id);
   }catch(e){ b.disabled = false; m.className = 'sh-msg err'; m.textContent = pianoErr(e); }
 };

@@ -25,12 +25,13 @@ const fill = async (w, sel, v) => { await w.P.fill(sel, v); };
 const sez = async (w, id) => { await w.ev(i => pnSez(i), id); await sleep(300); };
 
 // ── 1. home ──
-ok(await cnt(luca, '#sh-piani button[onclick="pnNuovo()"]') === 1, 'il Capo Gruppo vede «+ Nuovo Piano di Gruppo» in home');
-ok(await cnt(coll, '#sh-piani button[onclick="pnNuovo()"]') === 0, 'un Capo Unità non vede il pulsante');
-ok(await cnt(lett, '#sh-piani button') === 0, 'chi non ha piani e non può crearli non vede nulla');
+ok(await cnt(luca, "#sh-piani button[onclick=\"pnNuovo('gruppo')\"]") === 1, 'il Capo Gruppo vede «+ Nuovo Piano di Gruppo» in home');
+ok(await cnt(coll, "#sh-piani button[onclick=\"pnNuovo('gruppo')\"]") === 0, 'un Capo Unità non vede il pulsante');
+ok(await cnt(cu2, '#sh-piani button') === 0, 'chi non ha piani e non può crearli (Capo Unità) non vede nulla');
+ok(await cnt(lett, "#sh-piani button[onclick=\"pnNuovo('sezione')\"]") === 1, 'il Commissario vede «+ Nuovo Progetto di Sezione», non quello di Gruppo');
 
 // ── 2. creare ──
-await luca.P.click('#sh-piani button[onclick="pnNuovo()"]'); await sleep(400);
+await luca.P.click("#sh-piani button[onclick=\"pnNuovo('gruppo')\"]"); await sleep(400);
 ok(await cnt(luca, '#sh-dlg #pn-n-anno') === 1 && /Pesaro/.test(await luca.ev(() => document.getElementById('pn-n-tit').value)), 'si apre la finestra di creazione, con titolo suggerito dal profilo');
 const anni = await luca.ev(() => [...document.getElementById('pn-n-anno').options].map(o => o.textContent));
 ok(anni.length === 3 && /\d{4}.{1,3}\d{2,4}/.test(anni[0]), 'tre anni scout tra cui scegliere («' + anni.join(' | ') + '»)');
