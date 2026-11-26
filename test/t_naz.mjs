@@ -25,15 +25,8 @@ db.t.pee_piani_membri.push({id:'m1', piano_id:'p1', email:'vera@x.it', ruolo:'le
 const L = await mk('luca');
 await L.ev(() => pnOpen('p1')); await sleep(1600);
 // ── menu e pagina ──
-ok(await L.ev(() => !!document.querySelector('#pn-sb-naz') && /Piano nazionale/.test(document.querySelector('#pn-sb-naz').textContent)), 'menu: voce «Piano nazionale»');
 ok(await L.ev(() => PN_NAZ.indirizzi.length === 18 && PN_NAZ.pilastri.length === 4 && PN_NAZ.indirizzi.filter(i => i.prior).length === 12), 'costante nazionale: 4 pilastri, 18 indirizzi, 12 prioritari');
 ok(await L.ev(() => PN_NAZ.indirizzi.every(i => i.id && i.t && i.assi.length && i.mon.length)) && await L.ev(() => new Set(PN_NAZ.indirizzi.map(i => i.id)).size === 18), 'ogni indirizzo ha ID unico, titolo, assi e indicatori');
-await L.P.click('#pn-sb-naz'); await sleep(400);
-ok(await L.ev(() => document.querySelectorAll('.pn-ni').length) === 18, 'pagina: 18 indirizzi');
-ok(await L.ev(() => /1 dei 12 indirizzi prioritari/.test(document.querySelector('#pn-naz-sum').textContent) && /1 altro indirizzo collegato/.test(document.querySelector('#pn-naz-sum').textContent)), 'sintesi: 1 prioritario e 1 altro collegati (p1)');
-ok(await L.ev(() => !!document.querySelector('#pn-naz-manca') && /Non è un obbligo/.test(document.querySelector('#pn-naz-manca').textContent)), 'Progetto di Sezione: elenco dei prioritari senza obiettivi, senza obbligo');
-ok(await L.ev(() => /pt99:9\.9/.test(document.body.textContent)), 'un ID di un’altra versione non si perde e resta visibile');
-ok(await L.ev(() => /Traguardo 2030/.test(document.querySelector('#pn-nz-4\\.2') ? document.querySelector('#pn-nz-4\\.2').textContent : '')), 'ogni indirizzo mostra i KPI e i traguardi 2030');
 // ── collegamento dall'obiettivo ──
 await L.P.click('#pn-sb-obi'); await sleep(400);
 ok(await L.ev(() => document.querySelectorAll('.pn-nchip').length) >= 3, 'scheda obiettivo: gli indirizzi collegati si vedono come etichette');
@@ -59,14 +52,10 @@ ok(/Indirizzi del Piano nazionale/.test(ss) && /4\.2/.test(ss), 'Excel: colonna 
 // ── lettore ──
 const V = await mk('vera');
 await V.ev(() => pnOpen('p1')); await sleep(1600);
-await V.P.click('#pn-sb-naz'); await sleep(300);
-ok(await V.ev(() => document.querySelectorAll('.pn-ni').length) === 18, 'chi legge vede la pagina Piano nazionale');
 await V.P.click('#pn-sb-obi'); await sleep(300);
 ok(await V.ev(() => document.querySelectorAll('.pn-chip input[disabled]').length) > 0 || await V.ev(() => document.querySelectorAll('.pn-ni-sel .pn-nchip').length) > 0, 'chi legge non modifica gli indirizzi');
 // ── piano di prima ──
 await L.ev(() => pnOpen('p2')); await sleep(1500);
-await L.P.click('#pn-sb-naz'); await sleep(300);
-ok(await L.ev(() => /0 dei 12 indirizzi prioritari/.test(document.querySelector('#pn-naz-sum').textContent) && !document.querySelector('#pn-naz-manca')), 'piano di prima (Gruppo): pagina vuota, senza elenco di mancanze');
 ok(JSON.stringify(await L.ev(() => pnSliceNaz().indirizzi)) === '{}', 'piano di prima: nessun indirizzo salito');
 const nerr = L.pa.errors.length + V.pa.errors.length; ok(nerr === 0, 'nessun errore di pagina (' + nerr + ')'); if(nerr) console.log([...L.pa.errors, ...V.pa.errors]);
 await br.close(); process.exit(summary() ? 1 : 0);

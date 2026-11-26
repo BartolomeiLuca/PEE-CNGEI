@@ -16347,6 +16347,8 @@ const PIANI = {
   async giroApri(id, o){ o = o || {}; const {data, error} = await CL.sb.rpc('pee_piano_giro_apri', {p:id, ritmo_:o.ritmo || 'standard', fase_:o.fase || 'giro1', scadenza_:o.scadenza || null}); if(error) throw error; return data; },
   async giroScadenza(g, d){ const {error} = await CL.sb.rpc('pee_piano_giro_scadenza', {g, scadenza_:d || null}); if(error) throw error; },
   async unitaSemaforo(g){ const {data, error} = await CL.sb.rpc('pee_giro_unita_semaforo', {g}); if(error) throw error; return data || []; },
+  // Progetti di Sezione deliberati/approvati della mia Sezione: solo titolo, periodo e obiettivi (funzione in sola lettura sul database)
+  async pdsSezione(){ const {data, error} = await CL.sb.rpc('pee_pds_della_mia_sezione'); if(error) throw error; return Array.isArray(data) ? data : []; },
   async giroStato(g){ const {data, error} = await CL.sb.rpc('pee_piano_giro_stato', {g}); if(error) throw error; return data || []; },
   async giroChiudi(g, tipo){ const {error} = await CL.sb.rpc('pee_piano_giro_chiudi', {g, tipo_:tipo || 'anticipata'}); if(error) throw error; },
   // contributi con il nome: i miei sempre; quelli delle altre persone solo se consegnati e dopo aver consegnato le mie carte (o ad Ascolto chiuso)
@@ -18930,7 +18932,7 @@ async function pnPage(id){
     if(SH.view !== 'piano') return;
     if(!p){ r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano non trovato</h1><p class="sh-sub">Il piano non esiste più o non hai più accesso.</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`; return; }
     pnCarica(p);
-    pnRender(); pnLiveStart(); giCarica(true); pnMembriCarica(p.id);
+    pnRender(); pnLiveStart(); giCarica(true); pnMembriCarica(p.id); pnPdsCarica(p);
     if(p.ruolo !== 'titolare'){ try{ const mi = (await PIANI.inviti()).find(x => x.id === p.id); if(mi && mi.nuovo) PIANI.visto(mi.mid); }catch(e){} }
   }catch(e){
     if(SH.view === 'piano') r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano</h1><p class="sh-sub">${esc(pianoErr(e))}</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`;
@@ -18946,7 +18948,7 @@ function pnCarica(p){
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
   ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
-  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; PN.qf = {}; }
+  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; PN.qf = {}; PN.pds = null; }
   Object.assign(PN, {p, d:v, base:pnClone(v), meta:{titolo:p.titolo, stato:p.stato}, baseMeta:{titolo:p.titolo, stato:p.stato}, ruolo:p.ruolo || 'lettore', dirty:false, saving:false, again:false, st:'', sel:{}});
 }
 
@@ -19694,7 +19696,7 @@ function pnRender(){
 const pnPianoVuoto = d => !!d && !(d.obiettivi || []).length && !(d.azioni || []).length && !(d.analisi || []).length && !(d.spunti || []).length && !(d.spg || []).length;
 function pnMenu(){
   const d = PN.d, g = PN.p && PN.p.tipo === 'gruppo' && GI.ok === true, coord = pnTutto();
-  const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock'], ['naz', 'Piano nazionale', 'flag'], ['spu', 'Spunti dalle Unità', 'list']];
+  const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock'], ['spu', 'Spunti dalle Unità', 'list']];
   // ordine di lavoro (27/11): Panoramica, Ascolto, Dove siamo, Obiettivi, Verifiche
   const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']].concat(lavoro)}];
   if(g){
@@ -19902,7 +19904,7 @@ function pnPaneHTML(id){
   h += `</section>`;
   }
   else if(id === 'obi'){
-    h += `<div id="pn-avv-o"></div>`;
+    h += `<div id="pn-avv-o"></div>`; h += pnPdsHTML();
   h += `<section class="pn-card" aria-labelledby="pn-ob-t"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="pn-h" id="pn-ob-t" style="margin:0">Obiettivi e azioni</h2>
     <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${d.obiettivi.length > 1 ? `<button class="sh-btn sm gh" type="button" onclick="pnObTutti(true)">Apri tutti</button><button class="sh-btn sm gh" type="button" onclick="pnObTutti(false)">Chiudi tutti</button>` : ''}${tutto ? `<button class="sh-btn sm gh" type="button" id="pn-unisci" onclick="pnUnisciDlg()" disabled>Unisci i selezionati</button><button class="sh-btn sm" type="button" onclick="pnObAdd()">+ Obiettivo</button>` : ''}</span></div>
     <p class="sh-hint" style="margin:0">Pochi obiettivi, ognuno con una o più etichette di area. Se due obiettivi si assomigliano, selezionali e uniscili.</p>`;
@@ -19927,6 +19929,11 @@ function pnPaneHTML(id){
   return h;
 }
 function pnGrow(t){ try{ t.style.height = 'auto'; t.style.height = Math.max(t.scrollHeight + 2, 60) + 'px'; }catch(e){} }
+function pnPdsSelect(o, dis){
+  const x = pnPdsScelto(); if(!x || !PN.p || PN.p.tipo === 'sezione') return '';
+  const E = esc, ks = x.obiettivi.map(q => pnPdsChiave(x, q)), nota = o.pdsRif && !ks.includes(o.pdsRif);
+  return `<label class="sh-lb" for="pn-obs-${E(o.id)}">Dal Progetto di Sezione</label><select class="sh-in" id="pn-obs-${E(o.id)}" onchange="pnPdsLega('${E(o.id)}',this.value)"${dis}><option value="">— nessuno —</option>${nota ? `<option value="${E(o.pdsRif)}" selected>${E(o.rif || o.pdsRif)}</option>` : ''}${x.obiettivi.map((q, i) => `<option value="${E(ks[i])}"${o.pdsRif === ks[i] ? ' selected' : ''}>${i + 1}. ${E(String(q.testo || '').slice(0, 90))}</option>`).join('')}</select>`;
+}
 function pnObHTML(o, i){
   const E = esc, tutto = pnTutto(), dis = tutto ? '' : ' disabled'; const d = PN.d, p = PN.p;
   const az = d.azioni.filter(a => a.ob === o.id);
@@ -19939,7 +19946,7 @@ function pnObHTML(o, i){
     <fieldset class="pn-fs"><legend class="sh-lb">Aree</legend><div class="pn-chips">${PN_AREE.map(([k, t]) => `<label class="pn-chip${(o.aree || []).includes(k) ? ' on' : ''}"><input type="checkbox" ${(o.aree || []).includes(k) ? 'checked' : ''} onchange="pnArea('${E(o.id)}','${k}',this.checked);this.parentNode.classList.toggle('on',this.checked)"${dis}>${E(t)}</label>`).join('')}</div></fieldset>
     ${pnIndFS(o)}
     <div class="sh-g2"><div><label class="sh-lb" for="pn-obo-${E(o.id)}">Da dove viene</label><select class="sh-in" id="pn-obo-${E(o.id)}" onchange="pnOb('${E(o.id)}','origine',this.value)"${dis}><option value="">—</option>${PN_ORIGINI.map(([k, t]) => `<option value="${k}"${o.origine === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
-    <div><label class="sh-lb" for="pn-obr-${E(o.id)}">A quale obiettivo del livello sopra risponde</label><input class="sh-in" id="pn-obr-${E(o.id)}" maxlength="160" placeholder="Es. obiettivo 4 del Progetto di Sezione" value="${E(o.rif)}" oninput="pnOb('${E(o.id)}','rif',this.value)"${dis}></div></div>
+    <div>${pnPdsSelect(o, dis)}<label class="sh-lb" for="pn-obr-${E(o.id)}">A quale obiettivo del livello sopra risponde</label><input class="sh-in" id="pn-obr-${E(o.id)}" maxlength="160" placeholder="Es. obiettivo 4 del Progetto di Sezione" value="${E(o.rif)}" oninput="pnOb('${E(o.id)}','rif',this.value)"${dis}></div></div>
     <label class="pn-chk"><input type="checkbox" ${o.ricadute ? 'checked' : ''} onchange="pnOb('${E(o.id)}','ricadute',this.checked)"${dis}> Ha ricadute educative: arriva fino alle programmazioni delle Unità</label>
     <div class="pn-azs"><div class="pn-azh"><b>Azioni</b> <span class="sh-hint">${az.length ? az.length : 'nessuna'}</span></div>`;
   az.forEach((a, j) => { h += pnAzHTML(a, j, p); });
@@ -20165,12 +20172,6 @@ window.pnVaiAz = function(id){
   const e = $('pn-az-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'center'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); }
 };
 
-window.pnVai = function(id){
-  if(!PN.d.obiettivi.find(x => x.id === id)) return;
-  PN.open[id] = true; if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } else pnObSet(id, true);
-  const e = $('pn-ob-' + id); if(e) e.scrollIntoView({behavior:'smooth', block:'start'});
-};
-
 // ── quadro sinottico e avvisi gentili ──
 function pnRefresh(){
   const s = $('pn-sin'), av = $('pn-avv'), avo = $('pn-avv-o'); if(!PN.p || (!s && !av && !avo)) return; const d = PN.d, E = esc;
@@ -20198,6 +20199,50 @@ function pnAvvisi(){
   if(senzaAr.length) w.push(`Senza etichetta di area: obiettivo ${senzaAr.join(', ')}.`);
   return w.slice(0, 5);
 }
+// ── dal Progetto di Sezione al piano del Gruppo ──
+// Il Gruppo legge gli obiettivi del Progetto di Sezione deliberato della propria Sezione (solo testo, aree e indirizzi nazionali) e li porta nel suo piano.
+async function pnPdsCarica(p){
+  if(!p || p.tipo === 'sezione'){ PN.pds = null; return; }
+  let l = []; try{ l = await PIANI.pdsSezione(); }catch(e){ l = []; }
+  if(!PN.p || PN.p.id !== p.id) return;
+  PN.pds = l; if(PN.sez === 'obi' && !PN.dirty && !PN.saving) pnRender();
+}
+function pnPdsScelto(){
+  const l = (PN.pds || []).filter(x => x && Array.isArray(x.obiettivi) && x.obiettivi.length); if(!l.length || !PN.p) return null;
+  const a = PN.p.anno_inizio, b = a + (PN.p.durata || 3) - 1;
+  return l.find(x => x.anno_inizio <= b && x.anno_inizio + (x.durata || 3) - 1 >= a) || l[0];
+}
+const pnPdsPer = x => 'Progetto di Sezione ' + x.anno_inizio + '-' + String(x.anno_inizio + (x.durata || 3) - 1).slice(2);
+const pnPdsChiave = (x, ob) => x.id + ':' + ob.id;
+function pnPdsDati(x, ob, n){
+  const aree = (ob.aree || []).filter(a => PN_AREE.some(r => r[0] === a));
+  return {origine:'sezione', rif:pnPdsPer(x) + ' · obiettivo ' + n, pdsRif:pnPdsChiave(x, ob), aree, indirizzi:(ob.indirizzi || []).filter(k => typeof k === 'string').slice(0, 30)};
+}
+function pnPdsHTML(){
+  const x = pnPdsScelto(); if(!x || !PN.p || PN.p.tipo === 'sezione') return '';
+  const E = esc, tutto = pnTutto(), gia = new Set(PN.d.obiettivi.map(o => o.pdsRif).filter(Boolean));
+  return `<section class="pn-card" aria-labelledby="pn-pds-t" id="pn-pds"><h2 class="pn-h" id="pn-pds-t" style="margin:0">Dal Progetto di Sezione</h2>
+    <p class="sh-sub" style="margin:0">${E(x.titolo || pnPdsPer(x))} · ${E(pnPdsPer(x))} · ${x.stato === 'approvato' ? 'approvato' : 'deliberato'}${x.sezione ? ' · Sezione ' + E(x.sezione) : ''}</p>
+    <p class="sh-hint" style="margin:0">Gli obiettivi che la Sezione si è data. ${tutto ? 'Portane uno nel piano e adattalo al Gruppo: con lui arriva anche l’indirizzo del Piano nazionale. Non sei obbligato a portarli tutti.' : ''}</p>
+    ${x.obiettivi.map((ob, i) => { const k = pnPdsChiave(x, ob), ar = (ob.aree || []).map(a => pnLab(PN_AREE, a)).filter(Boolean).join(', '), ind = (ob.indirizzi || []).filter(q => typeof q === 'string');
+      return `<article class="pn-ni" id="pn-pds-${E(ob.id)}"><div class="pn-ni-h"><b>${i + 1}. ${E(ob.testo || '(senza testo)')}</b></div>${ar ? `<div class="sh-hint" style="margin:0">Aree: ${E(ar)}</div>` : ''}${ind.length ? `<div class="pn-ni-sel">${ind.map(q => `<span class="pn-nchip">${E(pnNazTxt(q))}</span>`).join('')}</div>` : ''}
+        ${gia.has(k) ? `<div class="sh-hint" style="margin:4px 0 0"><b>Già nel piano.</b></div>` : tutto ? `<div style="margin-top:6px"><button class="sh-btn sm gh" type="button" onclick="pnPdsPorta('${E(ob.id)}')">Porta nel piano</button></div>` : ''}</article>`; }).join('')}</section>`;
+}
+window.pnPdsPorta = function(obId){
+  const x = pnPdsScelto(); if(!x || !pnTutto()) return; const i = x.obiettivi.findIndex(o => o.id === obId); if(i < 0) return; const ob = x.obiettivi[i];
+  if(PN.d.obiettivi.some(o => o.pdsRif === pnPdsChiave(x, ob))) return;
+  const o = Object.assign({id:pnUid(), testo:String(ob.testo || ''), aree:[], ricadute:false, origine:'', rif:''}, pnPdsDati(x, ob, i + 1));
+  PN.d.obiettivi.push(o); PN.open[o.id] = true; pnTouch(); pnRender();
+  const e = $('pn-obt-' + o.id); if(e){ e.scrollIntoView({behavior:'smooth', block:'center'}); try{ e.focus({preventScroll:true}); }catch(x2){} }
+};
+// scelta dall'elenco, sull'obiettivo già scritto: indirizzo e aree si portano solo se l'obiettivo non ne ha ancora
+window.pnPdsLega = function(id, v){
+  const o = PN.d.obiettivi.find(q => q.id === id); if(!o || !pnTutto()) return; const x = pnPdsScelto();
+  if(!v){ o.pdsRif = ''; }
+  else if(x){ const i = x.obiettivi.findIndex(q => pnPdsChiave(x, q) === v); if(i < 0) return; const d = pnPdsDati(x, x.obiettivi[i], i + 1);
+    o.pdsRif = d.pdsRif; o.rif = d.rif; if(!o.origine) o.origine = 'sezione'; if(!(o.indirizzi || []).length) o.indirizzi = d.indirizzi; if(!(o.aree || []).length) o.aree = d.aree; }
+  pnTouch(); pnRender();
+};
 window.pnVai = function(id){ PN.open[id] = true; if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } else pnObSet(id, true); const e = $('pn-ob-' + id); if(e){ e.scrollIntoView({behavior:'smooth', block:'start'}); const t = e.querySelector('textarea'); if(t) setTimeout(() => { try{ t.focus({preventScroll:true}); }catch(x){} }, 350); } };
 
 // ── modifiche ──

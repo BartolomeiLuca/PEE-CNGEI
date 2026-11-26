@@ -25,13 +25,6 @@ await P.click('#sh-piani .pn-row button'); await sleep(1500);
 const sw = async (e) => { const w = await ev(() => ({sw: document.documentElement.scrollWidth, iw: window.innerWidth, rw: document.getElementById('sh-root').scrollWidth, rc: document.getElementById('sh-root').clientWidth})); ok(w.sw - w.iw <= 1 && w.rw - w.rc <= 1, e + ': niente scorrimento orizzontale della pagina (' + w.sw + '/' + w.iw + ')'); };
 const piccoli = () => ev(() => [...document.querySelectorAll('.pn-chip, .pn-ib, .sh-btn, .pn-det > summary')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 40 || r.width < 40); }).map(e => e.className + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height)));
 const fuori = () => ev(() => [...document.querySelectorAll('.pn-ni, .pn-chip, .pn-nchip, .pn-det, .pn-ni-ob, .pn-ul')].filter(e => { const r = e.getBoundingClientRect(), c = e.closest('.pn-card'); if(!c || r.width === 0) return false; const k = c.getBoundingClientRect(); return r.right > k.right + 1 || r.left < k.left - 1; }).length);
-// pagina Piano nazionale
-await ev(() => pnSez('naz')); await sleep(500);
-ok(await ev(() => document.querySelectorAll('.pn-ni').length) === 18, 'pagina Piano nazionale: 18 indirizzi');
-await sw('Piano nazionale'); ok(await fuori() === 0, 'Piano nazionale: niente esce dalle schede');
-await ev(() => document.querySelectorAll('.pn-det').forEach(d => d.open = true)); await sleep(300);
-await sw('Piano nazionale con i KPI aperti'); ok(await fuori() === 0, 'KPI aperti: niente esce dalle schede');
-const pc = await piccoli(); ok(!pc.length, 'Piano nazionale: riquadri da toccare abbastanza grandi' + (pc.length ? ' («' + pc.slice(0, 4).join(', ') + '»)' : ''));
 // scelta nell'obiettivo
 await ev(() => pnSez('obi')); await sleep(400); await ev(() => pnObTutti(true)); await sleep(400);
 await ev(() => document.querySelectorAll('.pn-ob .pn-det').forEach(d => d.open = true)); await sleep(300);
@@ -40,5 +33,22 @@ await sw('obiettivi con gli indirizzi aperti'); ok(await fuori() === 0, 'obietti
 const pc2 = await piccoli(); ok(!pc2.length, 'obiettivi: caselle degli indirizzi abbastanza grandi' + (pc2.length ? ' («' + pc2.slice(0, 4).join(', ') + '»)' : ''));
 await P.click('#pn-ob-o2 .pn-chip.pi >> nth=0'); await sleep(2800);
 ok(db.t.pee_piani[0].data.obiettivi[1].indirizzi.length === 1, 'si sceglie un indirizzo anche da questo dispositivo, e si salva');
+// Piano di Gruppo con il Progetto di Sezione deliberato della propria Sezione
+const uc = db.addUser('comm@x.it', 'password123', 'Dino Commissario'); db.t.pee_profili.push({user_id:uc.id, nome:'Dino Commissario', ruolo:'cds', branca:null, sezione:'Pesaro', gruppo:'', area_rcdf:'altoadriatico', dashboard:{}});
+const lungo2 = 'Costruire un rapporto stabile con le famiglie, con incontri regolari e momenti di festa condivisi tra tutte le Unità di tutti i Gruppi della Sezione';
+db.t.pee_piani.push({id:'s1', owner_id:uc.id, owner_email:'comm@x.it', tipo:'sezione', titolo:'Progetto di Sezione Pesaro', anno_inizio:2026, durata:3, stato:'deliberato', archivio_id:null, rev:1, updated_at:new Date().toISOString(), created_at:new Date().toISOString(),
+  data:{v:1, sezione:'Pesaro', analisi:[], swot:null, obiettivi:[0, 1, 2, 3].map(n => ({id:'so' + n, testo:lungo2 + ' ' + n, aree:['educativa', 'gestionale', 'territorio'], ricadute:false, origine:'', rif:'', indirizzi:['ps26:1.1', 'ps26:2.1', 'ps26:4.2']})), azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}}});
+db.t.pee_piani.push({id:'g1', owner_id:u.id, owner_email:'luca@x.it', tipo:'gruppo', titolo:'Piano di Gruppo', anno_inizio:2026, durata:3, stato:'bozza', archivio_id:null, rev:1, updated_at:new Date().toISOString(), created_at:new Date().toISOString(),
+  data:{v:1, titolareNome:'Luca', sezione:'Pesaro', analisi:[], swot:null, obiettivi:[ob('go1', 'Più famiglie nel Gruppo', [])], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}}});
+await ev(() => pnOpen('g1')); await sleep(1800); await ev(() => pnSez('obi')); await sleep(600);
+ok(await ev(() => document.querySelectorAll('#pn-pds .pn-ni').length) === 4, 'Piano di Gruppo: elenco «Dal Progetto di Sezione» con 4 obiettivi');
+await sw('Dal Progetto di Sezione'); ok(await fuori() === 0, 'Dal Progetto di Sezione: niente esce dalle schede');
+const pc3 = await piccoli(); ok(!pc3.length, 'Dal Progetto di Sezione: pulsanti abbastanza grandi' + (pc3.length ? ' («' + pc3.slice(0, 4).join(', ') + '»)' : ''));
+await ev(() => pnObTutti(true)); await sleep(400);
+const selOk = await ev(() => { const e = document.querySelector('#pn-obs-go1'); if(!e) return false; const r = e.getBoundingClientRect(), c = e.closest('.pn-card').getBoundingClientRect(); return r.height >= 40 && r.left >= c.left - 1 && r.right <= c.right + 1; });
+ok(selOk, 'la scelta «Dal Progetto di Sezione» sull’obiettivo sta nella scheda ed è grande abbastanza');
+await sw('obiettivo con la scelta dal Progetto di Sezione');
+await P.click('#pn-pds-so0 button'); await sleep(2800);
+ok(db.t.pee_piani.find(p => p.id === 'g1').data.obiettivi.length === 2, 'si porta un obiettivo nel piano anche da questo dispositivo, e si salva');
 ok(!pa.errors.length, 'nessun errore nella pagina' + (pa.errors.length ? ': ' + pa.errors[0].slice(0, 160) : ''));
 process.exit(summary() ? 1 : 0);

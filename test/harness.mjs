@@ -135,6 +135,7 @@ export class FakeDB {
         if(!gi || this.pRuolo(uid, gi.piano_id) === null) return this.err('P0001', 'Non hai accesso a questo piano.'); if(!this.giroVedoAltri(uid, gi.id)) return this.err('P0001', 'Consegna prima le tue carte: poi potrai vedere i segnali delle Unità.');
         return {data:this.t.pee_piani_contributi.filter(c => c.giro_id === gi.id && c.tipo === 'unita' && c.consegnato).map(c => ({unita:(c.data && c.data.unita) || c.autore_nome, branca:c.autore_branca || null, s:(c.data && c.data.s && typeof c.data.s === 'object') ? c.data.s : {}, consegnato_il:c.consegnato_il})).sort((a, b) => String(a.unita).localeCompare(String(b.unita))), error:null}; }
       if(req.name === 'pee_persone_elenco') return this.personeElenco(req.args.p_tipo, uid);
+      if(req.name === 'pee_pds_della_mia_sezione') return this.pdsSezione(uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -294,6 +295,18 @@ export class FakeDB {
       }
       return {data:null, error:null};
     }
+  }
+  // Progetti di Sezione letti dal Gruppo (SQL del 28 novembre): stesse regole della funzione; db.sqlPds = false per provare il database non aggiornato
+  pdsSezione(uid){
+    if(this.sqlPds === false) return this.err('PGRST202', 'Could not find the function public.pee_pds_della_mia_sezione');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const me = this.t.pee_profili.find(x => x.user_id === uid);
+    if(!me || !['cg', 'vcg', 'cu', 'vcu', 'senior', 'cds', 'vcds', 'cos', 'coords'].includes(me.ruolo)) return this.err('P0001', 'Il Progetto di Sezione lo leggono le figure di Gruppo e di Sezione.');
+    const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const rows = this.t.pee_piani.filter(p => p.tipo === 'sezione' && ['deliberato', 'approvato'].includes(p.stato) && norm((this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione) === sez)
+      .sort((x, y) => y.anno_inizio - x.anno_inizio).map(p => ({id:p.id, titolo:p.titolo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato, sezione:(this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione,
+        obiettivi:((p.data || {}).obiettivi || []).map(o => ({id:o.id, testo:o.testo || '', aree:o.aree || [], indirizzi:o.indirizzi || []}))}));
+    return {data:rows, error:null};
   }
   // elenco persone iscritte (SQL del 25 novembre): stesse regole e stessi messaggi della funzione; db.sqlPersone = false per provare il database non aggiornato
   personeElenco(tipo, uid){
