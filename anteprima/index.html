@@ -19802,6 +19802,8 @@ function pnQCorpo(){
   let h = `<p class="sh-hint" style="margin:0" id="pn-q-conta">${d.obiettivi.length} ${d.obiettivi.length === 1 ? 'obiettivo' : 'obiettivi'} · ${tutte.length} ${tutte.length === 1 ? 'azione' : 'azioni'}${nU ? ` · ${nU} urgent${nU === 1 ? 'e' : 'i'}` : ''}${nM ? ` · ${nM} senza mese` : ''}${nR ? ` · ${nR} senza referente` : ''}</p>`;
   if(!d.obiettivi.length) return h + `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo, in «Obiettivi e azioni».</p>`;
   if(!R.length) return h + `<p class="sh-sub" style="margin:0">Nessuna azione con questi filtri.</p>`;
+  if(f.vista === 'tl') return h + pnQTimeline(R);
+  if(f.vista === 'cal') return h + pnQCal(R);
   h += `<div class="pn-tw"><table class="pn-qt" aria-label="Quadro degli obiettivi e delle azioni"><thead><tr><th scope="col">Obiettivo e azioni</th><th scope="col">Referente</th><th scope="col">Organo</th><th scope="col">Quando</th><th scope="col">Si verifica</th><th scope="col">Stato</th></tr></thead>`;
   R.forEach(({o, i, az}) => {
     const c = pnColOb(o);
@@ -19820,17 +19822,118 @@ function pnQCorpo(){
   });
   return h + `</table></div>`;
 }
+// ── Quadro: timeline e calendario (B2c) ──
+// Ritmi fissi, con la fonte: cambiare solo qui. Il mese suggerito per la verifica di metà anno è «entro marzo» (Manuale del Capo Gruppo, pp. 51-52).
+const PN_META_MESE = 3;
+const PN_RITMI_TXT = [['Consiglio di Gruppo', 'almeno ogni due mesi (Regolamento, art. ConsG1)'], ['Verifica di metà anno', 'entro marzo (Manuale del Capo Gruppo, p. 52)'], ['Verifica di fine anno', 'ogni anno, con la data che fissi in «Verifiche»']];
+const PN_VISTE = [['tab', 'Tabella'], ['tl', 'Timeline'], ['cal', 'Calendario']];
+// azioni e tappe messe sui mesi del piano (indici in pnMesi)
+function pnQEv(R){
+  const p = PN.p, M = pnMesi(p), N = M.length, ix = k => M.findIndex(m => m.k === k), ev = [], sciolte = [];
+  R.forEach(({o, i, az}) => az.forEach(a => {
+    const s = a.mese ? ix(a.mese) : -1;
+    if(s < 0){ sciolte.push({a, o, i}); return; }
+    let e = s, aperta = false;
+    if(a.tipo === 'cont'){ if(a.fine && a.fine !== 'piano' && ix(a.fine) >= s) e = ix(a.fine); else { e = N - 1; aperta = !(a.fine === 'piano'); } }
+    ev.push({a, o, i, s, e, aperta, fineMese: a.tipo === 'cont' && !!a.fine && a.fine !== 'piano' && ix(a.fine) >= s});
+  }));
+  return {ev, sciolte, M, N};
+}
+function pnQTappe(M, N){
+  const p = PN.p, out = [], T = PN.d.tappe || [], ix = k => M.findIndex(m => m.k === k), dd = ['', ''];
+  T.forEach(t => {
+    const k = /^\d{4}-\d{2}/.test(t.data || '') ? t.data.slice(0, 7) : '', s = k ? ix(k) : -1;
+    if(s < 0) return;
+    const gg = /^\d{4}-\d{2}-(\d{2})$/.test(t.data) ? Number(t.data.slice(8, 10)) : 0;
+    out.push({t, s, gg, lab: ((PN_TAPPE.find(x => x[0] === t.tipo) || [])[1] || 'Verifica'), sug: false});
+  });
+  for(let k = 1; k <= p.durata; k++){
+    if(T.some(t => t.anno === k && t.tipo === 'meta')) continue;
+    const y = Number(p.anno_inizio) + k, s = ix(y + '-' + String(PN_META_MESE).padStart(2, '0'));
+    if(s >= 0) out.push({t:{anno:k, tipo:'meta', fatta:false}, s, gg:0, lab:'Verifica di metà anno', sug:true});
+  }
+  return out.sort((a, b) => a.s - b.s);
+}
+const pnQTappaTxt = x => x.lab + (x.gg ? ' · ' + x.gg + ' ' + PN_MESI_N[Number(PN.p ? pnMesi(PN.p)[x.s].k.slice(5, 7) : 1) - 1] : '') + (x.sug ? ' (suggerita: entro marzo)' : '') + (x.t.fatta ? ' · fatta' : '');
+function pnQTimeline(R){
+  const E = esc, p = PN.p, {ev, sciolte, M, N} = pnQEv(R), T = pnQTappe(M, N), pct = x => (x / N * 100).toFixed(3) + '%';
+  const oggi = giOggi(), im = M.findIndex(m => m.k === oggi.slice(0, 7));
+  let frac = -1; if(im >= 0){ const d = Number(oggi.slice(8, 10)), dim = new Date(Number(oggi.slice(0, 4)), Number(oggi.slice(5, 7)), 0).getDate(); frac = (im + (d - 1) / dim) / N; }
+  const anni = Array.from({length:p.durata}, (_, k) => k + 1);
+  const mesiRow = M.map(m => `<span title="${E(m.lab)}">${E(PN_MESI_N[Number(m.k.slice(5, 7)) - 1].slice(0, 1).toUpperCase())}</span>`).join('');
+  let h = `<div class="pn-tl-box" role="figure" aria-label="Timeline del piano: la stessa informazione è nella Tabella e nel Calendario"><div class="pn-tw"><div class="pn-tl" style="--n:${N};--y:${p.durata}">
+    <div class="pn-tl-r pn-tl-h"><div class="pn-tl-l"></div><div class="pn-tl-g">${anni.map(k => `<span>Anno ${k} · ${Number(p.anno_inizio) + k - 1}-${String(Number(p.anno_inizio) + k).slice(2)}</span>`).join('')}</div></div>
+    <div class="pn-tl-r pn-tl-m"><div class="pn-tl-l"></div><div class="pn-tl-g">${mesiRow}</div></div>
+    <div class="pn-tl-r pn-tl-v"><div class="pn-tl-l"><b>Verifiche</b></div><div class="pn-tl-g">${T.map(x => `<span class="pn-tv${x.t.fatta ? ' fatta' : ''}${x.sug ? ' sug' : ''}" style="left:${(((x.s + (x.gg ? (x.gg - 1) / 30 : .5)) / N) * 100).toFixed(3)}%" title="${E(pnQTappaTxt(x))}" role="img" aria-label="${E(pnQTappaTxt(x))}"></span>`).join('')}</div></div>`;
+  R.forEach(({o, i, az}) => {
+    const c = pnColOb(o);
+    h += `<div class="pn-tl-r pn-tl-o" style="--c:${c[0]};--p:${c[1]}"><div class="pn-tl-l"><span class="pn-qn">${i + 1}</span><a href="#pn-ob-${E(o.id)}" onclick="pnVai('${E(o.id)}');return false">${E(o.testo || '(senza testo)')}</a></div><div class="pn-tl-g"></div></div>`;
+    if(!az.length) h += `<div class="pn-tl-r pn-tl-a"><div class="pn-tl-l"><span class="pn-no">Nessuna azione ancora.</span></div><div class="pn-tl-g"></div></div>`;
+    az.forEach(a => {
+      const x = ev.find(y => y.a === a), st = a.stato || 'da_iniziare', quando = pnQuando(a, p), tx = (a.testo || '(senza testo)') + ': ' + quando + ', ' + (PN_ST_SEG[st] || PN_ST_SEG.da_iniziare)[1].toLowerCase();
+      let g = '';
+      if(x){
+        if(a.tipo === 'cont') g = `<a class="pn-tb s-${E(st)}${x.aperta ? ' open' : ''}" style="left:${pct(x.s)};width:${pct(x.e - x.s + 1)}" href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false" title="${E(tx)}" aria-label="${E(tx)}"></a>`;
+        else g = `<a class="pn-td s-${E(st)}" style="left:${pct(x.s + .5)}" href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false" title="${E(tx)}" aria-label="${E(tx)}"></a>`;
+      }
+      h += `<div class="pn-tl-r pn-tl-a${st === 'fatta' ? ' fatta' : ''}" style="--c:${c[0]};--p:${c[1]}"><div class="pn-tl-l"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}${x ? '' : ` <span class="pn-manca">${E(quando)}</span>`}</div><div class="pn-tl-g">${g}</div></div>`;
+    });
+  });
+  if(frac >= 0) h += `<div class="pn-tl-oggi" style="--f:${frac.toFixed(4)}" aria-hidden="true"><span>oggi</span></div>`;
+  h += `</div></div>
+    <p class="sh-hint pn-tl-leg" style="margin:6px 0 0"><span class="pn-lg b"></span> azione continuativa · <span class="pn-lg d"></span> azione una volta sola · <span class="pn-lg v"></span> verifica (<span class="pn-lg v sug"></span> sfumata: suggerita, senza data) · pieno = fatta, a righe = in corso, chiaro = da iniziare · la linea rossa è oggi</p></div>`;
+  return h + pnQLista(ev, sciolte, T);
+}
+// l’elenco per scadenza: è la timeline sul telefono (sotto i 700 px la barra non si legge)
+function pnQLista(ev, sciolte, T){
+  const E = esc, p = PN.p, M = pnMesi(p), righe = [];
+  ev.forEach(x => righe.push({k:x.e, t:'a', x}));
+  T.forEach(x => righe.push({k:x.s, t:'v', x}));
+  righe.sort((a, b) => (a.k - b.k) || (a.t < b.t ? -1 : 1));
+  let h = `<div class="pn-tl-ls" aria-label="Elenco per scadenza">`;
+  let cur = -2;
+  righe.forEach(r => {
+    if(r.k !== cur){ if(cur !== -2) h += `</ul>`; cur = r.k; h += `<h3 class="pn-tl-mh">${E(M[r.k].lab)}</h3><ul class="pn-tl-ul">`; }
+    if(r.t === 'v') h += `<li class="v"><span aria-hidden="true">◇</span> ${E(pnQTappaTxt(r.x))}</li>`;
+    else { const a = r.x.a, c = pnColOb(r.x.o), st = PN_ST_SEG[a.stato || 'da_iniziare'] || PN_ST_SEG.da_iniziare;
+      h += `<li class="a" style="--c:${c[0]}"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}<small>${E(pnQuando(a, p))}${(a.ref || '').trim() ? ' · ' + E(a.ref) : ''} · <span aria-hidden="true">${st[0]}</span> ${E(st[1])}</small></li>`; }
+  });
+  if(cur !== -2) h += `</ul>`;
+  if(sciolte.length) h += `<h3 class="pn-tl-mh">Mese da scegliere</h3><ul class="pn-tl-ul">${sciolte.map(({a}) => `<li class="a"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a><small><span class="pn-manca">${E(pnQuando(a, p))}</span></small></li>`).join('')}</ul>`;
+  return h + `</div>`;
+}
+function pnQCal(R){
+  const E = esc, p = PN.p, {ev, sciolte, M, N} = pnQEv(R), T = pnQTappe(M, N), anno = Math.min(p.durata, Math.max(1, Number((PN.qf || {}).anno) || pnAnnoCur(p))), oggi = giOggi();
+  const giro = (typeof GI !== 'undefined' && GI && GI.g && GI.g.piano_id === p.id && /^\d{4}-\d{2}-\d{2}/.test(GI.g.scadenza || '')) ? GI.g.scadenza.slice(0, 10) : '';
+  let h = `<div class="pn-cal-nav" role="group" aria-label="Anno del piano">${Array.from({length:p.durata}, (_, k) => k + 1).map(k => `<button type="button" class="pn-segb${k === anno ? ' on' : ''}" aria-pressed="${k === anno}" onclick="pnQf('anno',${k})">Anno ${k} · ${Number(p.anno_inizio) + k - 1}-${String(Number(p.anno_inizio) + k).slice(2)}</button>`).join('')}</div>
+    <div class="pn-cal">`;
+  M.forEach((m, gi) => {
+    if(m.anno !== anno) return;
+    const li = [];
+    ev.forEach(x => { const c = pnColOb(x.o), t = E(x.a.testo || '(senza testo)'), L = (ic, pre) => `<li style="--c:${c[0]}"><span aria-hidden="true" class="pn-ci">${ic}</span> <a href="#pn-az-${E(x.a.id)}" onclick="pnVaiAz('${E(x.a.id)}');return false">${pre}${t}</a>${x.a.urgente ? ' <span class="pn-urg">★</span>' : ''}</li>`;
+      if(x.a.tipo !== 'cont'){ if(x.s === gi) li.push(L('◆', '')); }
+      else { if(x.s === gi) li.push(L('▶', 'Inizia: ')); if(x.fineMese && x.e === gi && x.e !== x.s) li.push(L('■', 'Finisce: ')); } });
+    const corso = ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e > gi).length + ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e === gi && !x.fineMese).length;
+    T.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">◇</span> ${E(pnQTappaTxt(x))}</li>`));
+    if(giro && giro.slice(0, 7) === m.k) li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">○</span> Ascolto: scadenza ${E(giro.slice(8, 10))} ${E(PN_MESI_N[Number(m.k.slice(5, 7)) - 1])}</li>`);
+    h += `<section class="pn-cm${oggi.slice(0, 7) === m.k ? ' cur' : ''}" aria-label="${E(m.lab)}"><h3>${E(m.lab)}${oggi.slice(0, 7) === m.k ? ' <small>· questo mese</small>' : ''}</h3>${li.length ? `<ul>${li.join('')}</ul>` : '<p class="pn-no" style="margin:0">Niente in programma.</p>'}${corso ? `<p class="pn-cc">${corso === 1 ? '+ 1 azione in corso' : '+ ' + corso + ' azioni in corso'}</p>` : ''}</section>`;
+  });
+  h += `</div><div class="pn-cal-rit"><b>Ritmi fissi</b><ul>${PN_RITMI_TXT.map(([a, b]) => `<li><b>${E(a)}</b>: ${E(b)}</li>`).join('')}</ul></div>`;
+  if(sciolte.length) h += `<p class="sh-hint" style="margin:0"><span class="pn-manca">${sciolte.length === 1 ? '1 azione senza mese' : sciolte.length + ' azioni senza mese'}</span>: finché non scegli il mese non compare nel calendario.</p>`;
+  return h;
+}
 function pnQuadroHTML(){
   const E = esc, d = PN.d, f = PN.qf || (PN.qf = {});
   const refs = [...new Set(d.azioni.map(a => (a.ref || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
   const sel = (k, lab, opts) => `<div><label class="sh-lb" for="pn-qf-${k}">${lab}</label><select class="sh-in" id="pn-qf-${k}" onchange="pnQf('${k}',this.value)">${opts.map(([v, t]) => `<option value="${E(v)}"${(f[k] || '') === v ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>`;
-  return `<section class="pn-card" aria-labelledby="pn-q-t"><h2 class="pn-h" id="pn-q-t">Quadro del Piano</h2>
+  return `<section class="pn-card" id="pn-q-card" aria-labelledby="pn-q-t"><h2 class="pn-h" id="pn-q-t">Quadro del Piano</h2>
     <p class="sh-hint" style="margin:0">Il piano da guardare: chi fa cosa, quando, come si verifica. Si scrive in «Obiettivi e azioni»: un clic su una riga porta lì.</p>
+    <div class="pn-seg" role="group" aria-label="Come guardare il quadro">${PN_VISTE.map(([k, t]) => `<button type="button" class="pn-segb${(f.vista || 'tab') === k ? ' on' : ''}" id="pn-qv-${k}" aria-pressed="${(f.vista || 'tab') === k}" onclick="pnQf('vista','${k}')">${t}</button>`).join('')}</div>
     <div class="pn-qf">${sel('ref', 'Referente', [['', 'Tutti']].concat(refs.map(r => [r, r]), [['__no', 'Senza referente']]))}${sel('chi', 'Organo', [['', 'Tutti']].concat(PN_CHI))}${sel('area', 'Area', [['', 'Tutte']].concat(PN_AREE))}${sel('stato', 'Stato', [['', 'Tutti']].concat(PN_STATI_AZ))}
     <label class="pn-chip sm${f.urg ? ' on' : ''}" style="align-self:end"><input type="checkbox" id="pn-qf-urg" ${f.urg ? 'checked' : ''} onchange="pnQf('urg',this.checked);this.parentNode.classList.toggle('on',this.checked)">Solo urgenti</label></div>
     <div id="pn-qb">${pnQCorpo()}</div></section>`;
 }
-window.pnQf = function(k, v){ (PN.qf || (PN.qf = {}))[k] = v; const b = $('pn-qb'); if(b) b.innerHTML = pnQCorpo(); };
+window.pnQf = function(k, v){ (PN.qf || (PN.qf = {}))[k] = v; if(k === 'vista' || k === 'anno'){ const c = $('pn-q-card'); if(c){ c.outerHTML = pnQuadroHTML(); const e = $('pn-qv-' + (PN.qf.vista || 'tab')); try{ if(k === 'vista' && e) e.focus({preventScroll:true}); }catch(x){} } return; } const b = $('pn-qb'); if(b) b.innerHTML = pnQCorpo(); };
 window.pnVaiAz = function(id){
   const a = PN.d.azioni.find(x => x.id === id); if(!a) return;
   PN.open[a.ob] = true; if(PN.sez !== 'obi'){ PN.sez = 'obi'; pnRender(); } else pnObSet(a.ob, true);
@@ -20485,6 +20588,45 @@ body.sh-in .toast{pointer-events:none}
 .pn-qa td{padding:8px 8px;border-bottom:1px solid #ECECE4;vertical-align:top;text-align:left}
 .pn-qa a{color:#1A1A18;text-decoration:none;font-weight:600}
 @media(pointer:coarse),(max-width:700px){.pn-qa td[data-l="Azione"] a,.pn-qoh a{display:inline-block;min-height:40px;padding:9px 0;box-sizing:border-box}}
+.pn-seg,.pn-cal-nav{display:flex;gap:6px;flex-wrap:wrap}
+#pn-qb{display:flex;flex-direction:column;gap:10px}
+.pn-segb{min-height:40px;padding:0 14px;border:1.5px solid #C9C9C0;background:#fff;border-radius:999px;font:inherit;font-weight:700;font-size:13px;color:#1A1A18;cursor:pointer}
+.pn-segb.on{background:var(--brand-ink,#1F4B8F);color:#fff;border-color:transparent}
+.pn-tl{--lw:300px;min-width:1040px;position:relative;font-size:13px;padding-top:14px}
+.pn-tl-r{display:grid;grid-template-columns:var(--lw) minmax(0,1fr);align-items:stretch;min-height:30px;border-bottom:1px solid #F0F0E8}
+.pn-tl-l{position:sticky;left:0;z-index:2;background:#fff;padding:4px 8px;overflow:hidden;display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;border-right:1px solid #E0E0D8}
+.pn-tl-l a{color:inherit;text-decoration:none;font-weight:600;overflow-wrap:anywhere}.pn-tl-l a:hover{text-decoration:underline}
+.pn-tl-g{position:relative;display:flex;background-image:linear-gradient(to right,rgba(0,0,0,.07) 1px,transparent 1px),linear-gradient(to right,rgba(0,0,0,.3) 1px,transparent 1px);background-size:calc(100% / var(--n)) 100%,calc(100% / var(--y)) 100%}
+.pn-tl-h span{flex:1;text-align:center;font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;padding:6px 0}
+.pn-tl-m span{flex:1;text-align:center;font-size:11px;color:#55554E;padding:2px 0}
+.pn-tl-o .pn-tl-l,.pn-tl-o .pn-tl-g{background-color:var(--p);font-weight:700}.pn-tl-o .pn-tl-l{white-space:normal}
+.pn-tl-a.fatta .pn-tl-l a{color:#6B6B64}
+.pn-tb{position:absolute;top:6px;height:18px;border-radius:9px;border:2px solid var(--c);box-sizing:border-box;background:var(--p)}
+.pn-tb.s-in_corso{background:repeating-linear-gradient(45deg,var(--c) 0 5px,var(--p) 5px 10px)}.pn-tb.s-fatta{background:var(--c)}
+.pn-tb.open{border-right-style:dashed;border-radius:9px 0 0 9px}
+.pn-td,.pn-tv{position:absolute;top:6px;width:18px;height:18px;margin-left:-9px;transform:rotate(45deg) scale(.78);border:2px solid var(--c,#1A1A18);background:var(--p,#fff);box-sizing:border-box}
+.pn-td.s-in_corso{background:repeating-linear-gradient(45deg,var(--c) 0 4px,var(--p) 4px 8px)}.pn-td.s-fatta{background:var(--c)}
+.pn-tv{border-color:#1A1A18;background:#fff}.pn-tv.fatta{background:#1A1A18}.pn-tv.sug{opacity:.45}
+.pn-tb:focus-visible,.pn-td:focus-visible,.pn-tl-l a:focus-visible{outline:2px solid #1A1A18;outline-offset:2px}
+.pn-tl-oggi{position:absolute;top:0;bottom:0;left:calc(var(--lw) + (100% - var(--lw)) * var(--f));width:2px;background:#C0392B;pointer-events:none;z-index:3}
+.pn-tl-oggi span{position:absolute;top:0;left:3px;font-size:10px;font-weight:800;color:#C0392B;background:#fff;padding:0 2px}
+.pn-lg{display:inline-block;vertical-align:middle;width:22px;height:10px;border:2px solid #2E7D5A;border-radius:6px;background:#E3F1EA;box-sizing:border-box}
+.pn-lg.d,.pn-lg.v{width:11px;height:11px;transform:rotate(45deg);border-radius:0;margin:0 4px}.pn-lg.v{border-color:#1A1A18;background:#fff}.pn-lg.v.sug{opacity:.45}
+.pn-tl-ls{display:none}
+.pn-tl-mh{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:12px 0 4px}
+.pn-tl-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pn-tl-ul li{border-left:4px solid var(--c,#1A1A18);padding:2px 10px;background:#fff;border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:0;font-size:13.5px}.pn-tl-ul li.v{border-left-style:dashed}
+.pn-tl-ul li a{color:#1A1A18;text-decoration:none;font-weight:600;display:inline-block;padding:8px 0;min-height:40px;box-sizing:border-box}.pn-tl-ul small{color:#55554E;padding-bottom:6px}
+@media(max-width:700px){.pn-tl-box{display:none}.pn-tl-ls{display:block}}
+.pn-cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.pn-cm{border:1px solid #E0E0D8;border-radius:12px;padding:10px 12px;background:#fff;display:flex;flex-direction:column;gap:6px}.pn-cm.cur{border:2px solid #C0392B}
+.pn-cm h3{margin:0;font-size:14px;text-transform:capitalize}.pn-cm h3 small{font-weight:600;color:#C0392B;text-transform:none}
+.pn-cm ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.pn-cm li{font-size:13px;border-left:3px solid var(--c,#1A1A18);padding-left:7px}.pn-cm li.v{border-left-style:dashed}
+.pn-cm li a{color:inherit;text-decoration:none;font-weight:600}.pn-cm li a:hover{text-decoration:underline}
+.pn-ci{font-size:11px}.pn-cc{margin:0;font-size:12px;color:#55554E}
+.pn-cal-rit{border:1px dashed #C9C9C0;border-radius:12px;padding:10px 14px;font-size:13px}.pn-cal-rit ul{margin:4px 0 0;padding-left:18px}
+@media(pointer:coarse),(max-width:700px){.pn-cm li a{display:inline-block;min-height:40px;padding:9px 0;box-sizing:border-box}}
 .pn-qa.fatta td{color:#6B6B64}
 .pn-urg{display:inline-block;font-size:11.5px;font-weight:800;color:#8A4B00;background:#FFF3E0;border:1px solid #E2B36B;border-radius:999px;padding:0 8px;white-space:nowrap}
 .pn-manca{color:#8A4B00;font-weight:600}

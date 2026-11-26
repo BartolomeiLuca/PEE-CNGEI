@@ -45,5 +45,16 @@ const nf = await ev(() => document.querySelectorAll('.pn-qa').length); ok(nf > 0
 await P.selectOption('#pn-qf-stato', ''); await sleep(200);
 await P.locator('.pn-qa a').first().click(); await sleep(900);
 ok(await ev(() => PN.sez) === 'obi', 'un tocco su un’azione porta a modificarla');
+// timeline e calendario (B2c)
+await P.click('#sh-root #pn-sb-qua').catch(() => {}); await sleep(200);
+await P.click('#pn-qv-tl'); await sleep(400);
+const tl = await ev(() => ({box:getComputedStyle(document.querySelector('.pn-tl-box')).display, ls:getComputedStyle(document.querySelector('.pn-tl-ls')).display, sw:document.documentElement.scrollWidth, iw:window.innerWidth, tw:(() => { const t = document.querySelector('.pn-tw'); const r = t.getBoundingClientRect(); return r.right <= window.innerWidth + 1 && r.left >= -1; })(), seg:[...document.querySelectorAll('.pn-segb')].map(b => Math.round(b.getBoundingClientRect().height))}));
+ok(tl.sw <= tl.iw + 1, 'timeline: la pagina non scorre in orizzontale');
+ok(stretto ? (tl.box === 'none' && tl.ls === 'block') : (tl.box !== 'none' && tl.ls === 'none' && tl.tw), stretto ? 'telefono: la timeline è l’elenco per scadenza' : 'schermo largo: la timeline sta nello schermo (scorre dentro il suo riquadro)');
+ok(tl.seg.every(h => h >= 40), 'i tre pulsanti di vista si toccano bene');
+if(stretto) ok(await ev(() => [...document.querySelectorAll('.pn-tl-ul li a')].every(a => a.getBoundingClientRect().height >= 40)), 'elenco: collegamenti ≥ 40 px');
+await P.click('#pn-qv-cal'); await sleep(400);
+const cal = await ev(() => ({n:document.querySelectorAll('.pn-cm').length, sw:document.documentElement.scrollWidth, iw:window.innerWidth, fuori:[...document.querySelectorAll('.pn-cm')].filter(c => { const r = c.getBoundingClientRect(); return r.right > window.innerWidth + 1 || r.left < -1; }).length}));
+ok(cal.n === 12 && cal.sw <= cal.iw + 1 && cal.fuori === 0, 'calendario: dodici mesi dentro lo schermo (' + JSON.stringify(cal) + ')');
 ok(pa.errors.length === 0, 'nessun errore di pagina (' + pa.errors.length + ')');
 await br.close(); process.exit(summary() ? 1 : 0);
