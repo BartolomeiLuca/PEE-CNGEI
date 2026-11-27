@@ -16,16 +16,20 @@ const vis = (P, id) => P.evaluate(i => { const e = document.getElementById(i); i
 async function scegli(P, ruolo){ await P.evaluate(r => { const i = document.querySelector('input[name="sh-ruolo"][value="' + r + '"]'); i.click(); }, ruolo); await sleep(200); }
 
 // ── 1. database aggiornato: ogni figura salva e rientra ──
+// cosw = spunta «Faccio parte del Comitato di Sezione» visibile (Commissario, Presidente e Tesoriere ne fanno parte già); unita = casella «Ho anche un'Unità»
 {
   const db = new FakeDB();
   const casi = [
-    ['cos', 'Comitato di Sezione', {branca:false, gruppo:false, cos:true}],
-    ['coords', 'Coordinatore Senior', {branca:false, gruppo:false, cos:false}],
-    ['vcg', 'Vice Capo Gruppo', {branca:false, gruppo:true, cos:false}],
-    ['vcds', 'Vice Commissario di Sezione', {branca:false, gruppo:false, cos:false}],
-    ['cu', 'Capo Unità', {branca:true, gruppo:true, cos:false}],
-    ['cg', 'Capo Gruppo', {branca:false, gruppo:true, cos:false}],
-    ['cds', 'Commissario di Sezione', {branca:false, gruppo:false, cos:false}]
+    ['vcg', 'Vice Capo Gruppo', {branca:false, gruppo:true, cosw:true, unita:true}],
+    ['vcds', 'Vice Commissario di Sezione', {branca:false, gruppo:false, cosw:true, unita:true}],
+    ['pres', 'Presidente di Sezione', {branca:false, gruppo:false, cosw:false, unita:true}],
+    ['tes', 'Tesoriere di Sezione', {branca:false, gruppo:false, cosw:false, unita:true}],
+    ['coords', 'Coordinatore Senior', {branca:false, gruppo:false, cosw:true, unita:true}],
+    ['snr', 'Senior', {branca:false, gruppo:false, cosw:true, unita:false}],
+    ['senior', 'Senior in Servizio', {branca:true, gruppo:true, cosw:true, unita:false}],
+    ['cu', 'Capo Unità', {branca:true, gruppo:true, cosw:true, unita:false}],
+    ['cg', 'Capo Gruppo', {branca:false, gruppo:true, cosw:true, unita:true}],
+    ['cds', 'Commissario di Sezione', {branca:false, gruppo:false, cosw:false, unita:true}]
   ];
   for(const [ruolo, nome, att] of casi){
     const {pa, P, u} = await nuova(db, ruolo + '@x.it', 'Prova ' + ruolo);
@@ -34,53 +38,101 @@ async function scegli(P, ruolo){ await P.evaluate(r => { const i = document.quer
     await scegli(P, ruolo);
     ok((await vis(P, 'sh-brw')) === att.branca, nome + ': Branca ' + (att.branca ? 'visibile' : 'nascosta'));
     ok((await vis(P, 'sh-grw')) === att.gruppo, nome + ': Gruppo ' + (att.gruppo ? 'visibile' : 'nascosto'));
-    ok((await vis(P, 'sh-cosw')) === att.cos, nome + ': incarichi del Comitato ' + (att.cos ? 'visibili' : 'nascosti'));
+    ok((await vis(P, 'sh-cosw')) === att.cosw, nome + ': spunta del Comitato ' + (att.cosw ? 'visibile' : 'nascosta (è automatico)'));
+    ok((await vis(P, 'sh-unw')) === att.unita, nome + ': «Ho anche un’Unità» ' + (att.unita ? 'visibile' : 'nascosta'));
     await P.fill('#sh-nome', 'Prova ' + ruolo); await P.fill('#sh-sez', 'Pesaro');
     if(att.gruppo) await P.selectOption('#sh-grp', '1');
     if(att.branca){ await P.evaluate(() => document.querySelector('input[name="sh-branca"][value="E"]').click()); }
-    if(att.cos){
-      // senza incarico non si salva
-      await P.click('#sh-psave'); await sleep(500);
-      ok(/almeno un incarico/i.test(await P.evaluate(() => document.getElementById('sh-pmsg').textContent)), nome + ': senza incarico non si salva');
-      ok(!db.t.pee_profili.some(r => r.user_id === u.id), nome + ': nulla nel database prima della scelta');
-      await P.evaluate(() => { document.getElementById('sh-cosinc0').click(); document.getElementById('sh-cosinc2').click(); });
-    }
+    if(att.cosw) await P.evaluate(() => document.getElementById('sh-cosm').click());
     await P.click('#sh-psave'); await sleep(1800);
     const riga = db.t.pee_profili.find(r => r.user_id === u.id);
     ok(riga && riga.ruolo === ruolo, nome + ': salvato con ruolo «' + ruolo + '»');
     ok(riga && (att.branca ? riga.branca === 'E' : !riga.branca), nome + ': Branca ' + (att.branca ? 'salvata' : 'vuota'));
     ok(riga && (att.gruppo ? riga.gruppo === '1' : !riga.gruppo), nome + ': Gruppo ' + (att.gruppo ? 'salvato' : 'vuoto'));
-    if(att.cos) ok(riga && JSON.stringify(riga.dashboard.cos) === JSON.stringify({incarichi:['presidente','tesoriere']}), nome + ': incarichi salvati nel profilo (Presidente, Tesoriere)');
-    else ok(riga && !(riga.dashboard && riga.dashboard.cos), nome + ': nessun incarico del Comitato nel profilo');
-    // home: riga del ruolo (con incarichi) e, per le figure nuove, l'avviso
+    if(att.cosw) ok(riga && JSON.stringify(riga.dashboard.cos) === JSON.stringify({membro:true}), nome + ': spunta del Comitato salvata nel profilo');
+    else ok(riga && !(riga.dashboard && riga.dashboard.cos), nome + ': nessun dato del Comitato nel profilo (automatico)');
+    // home: riga del ruolo (con il Comitato) e, per le figure nuove, l'avviso
     ok(await until(async () => await P.$('.sh-prof-line')), nome + ': compare la home');
     const t = await P.evaluate(() => document.querySelector('.sh-prof-line').textContent);
-    ok(t.includes(nome) && (!att.cos || /Presidente, Tesoriere/.test(t)), nome + ': la riga del profilo dice «' + t.replace(/\s+/g, ' ').slice(0, 80) + '»');
-    const nuovaFig = ['cos', 'coords', 'vcg', 'vcds'].includes(ruolo);
+    ok(t.includes(nome) && (!att.cosw || /Comitato di Sezione/.test(t)), nome + ': la riga del profilo dice «' + t.replace(/\s+/g, ' ').slice(0, 90) + '»');
+    const nuovaFig = ['vcg', 'vcds', 'pres', 'tes', 'coords', 'snr', 'senior'].includes(ruolo);
     const home = await P.evaluate(() => document.body.innerText);
     ok(nuovaFig ? /in preparazione/.test(home) : !/in preparazione/.test(home), nome + ': avviso «in preparazione» ' + (nuovaFig ? 'presente' : 'assente'));
     // rientro: il profilo si riapre con le stesse scelte
     await P.evaluate(() => shProfileOpen()); await sleep(800);
     ok(await P.evaluate(r => document.querySelector('input[name="sh-ruolo"]:checked').value === r, ruolo), nome + ': riaprendo il profilo il ruolo è lo stesso');
-    if(att.cos) ok(await P.evaluate(() => [...document.querySelectorAll('input[name="sh-cosinc"]:checked')].map(i => i.value).join() === 'presidente,tesoriere'), nome + ': gli incarichi restano spuntati');
+    if(att.cosw) ok(await P.evaluate(() => document.getElementById('sh-cosm').checked), nome + ': la spunta resta');
     // colore: nessuna Branca → blu
     if(!att.branca) ok(await P.evaluate(() => document.body.getAttribute('data-theme') === 'S'), nome + ': colore blu');
     await pa.ctx.close();
   }
+  // «Comitato di Sezione» non è più un ruolo
+  const {pa: pb, P: Pb} = await nuova(db, 'nocos@x.it', 'No Cos'); await until(async () => await Pb.$('#sh-pf'));
+  ok(await Pb.$('input[name="sh-ruolo"][value="cos"]') === null, 'tra i ruoli del profilo «Comitato di Sezione» non c’è più');
+  const ordine = await Pb.evaluate(() => [...document.querySelectorAll('input[name="sh-ruolo"]')].map(i => i.value).join());
+  ok(ordine === 'cu,vcu,senior,cg,vcg,cds,vcds,pres,tes,coords,snr,volontario', 'ordine dei ruoli: Capo Unità, Vice Capo Unità, Senior in Servizio, Capo Gruppo, Vice Capo Gruppo, Commissario, Vice Commissario, Presidente, Tesoriere, Coordinatore Senior, Senior, Adulto in formazione (' + ordine + ')');
+  const etic = await Pb.evaluate(() => [...document.querySelectorAll('input[name="sh-ruolo"]')].map(i => i.closest('label').textContent.trim()).join('|'));
+  ok(/Senior in Servizio/.test(etic) && /\|Senior\|/.test(etic), 'Senior in Servizio e Senior sono due voci diverse');
+  await pb.ctx.close();
 }
 
-// ── 2. cambiare ruolo non cancella i dati del profilo (incarichi e Unità restano) ──
+// ── 1b. «Ho anche un'Unità» per Vice, Presidente, Tesoriere e Coordinatore Senior: si salva e si ritrova ──
+{
+  const db = new FakeDB();
+  for(const ruolo of ['vcg', 'vcds', 'pres', 'tes', 'coords']){
+    const {pa, P, u} = await nuova(db, 'un' + ruolo + '@x.it', 'Unità ' + ruolo); await until(async () => await P.$('#sh-pf'));
+    await scegli(P, ruolo); await P.fill('#sh-nome', 'Unità ' + ruolo); await P.fill('#sh-sez', 'Pesaro'); if(ruolo === 'vcg') await P.selectOption('#sh-grp', '1');
+    await P.evaluate(() => document.getElementById('sh-hasun').click()); await sleep(200);
+    ok(await vis(P, 'sh-unf'), ruolo + ': spuntando compaiono Branca e nome dell’Unità');
+    await P.click('#sh-psave'); await sleep(1000);
+    ok(/Branca della tua Unità/.test(await P.evaluate(() => document.getElementById('sh-pmsg').textContent)) && !db.t.pee_profili.some(r => r.user_id === u.id), ruolo + ': senza Branca non si salva');
+    await P.evaluate(() => document.querySelector('input[name="sh-unbr"][value="R"]').click()); await P.fill('#sh-unn', 'Compagnia Aquila'); await P.click('#sh-psave'); await sleep(1800);
+    const r = db.t.pee_profili.find(x => x.user_id === u.id);
+    ok(r && r.ruolo === ruolo && JSON.stringify(r.dashboard.unita) === JSON.stringify({branca:'R', nome:'Compagnia Aquila'}) && !r.branca, ruolo + ': Unità nel profilo (Rover, Compagnia Aquila), nessuna Branca di profilo');
+    await until(async () => await P.$('.sh-prof-line'));
+    await P.evaluate(() => shProfileOpen()); await sleep(800);
+    ok(await P.evaluate(() => document.getElementById('sh-hasun').checked && document.getElementById('sh-unn').value === 'Compagnia Aquila'), ruolo + ': riaprendo il profilo l’Unità c’è');
+    const cu = await P.evaluate(() => typeof giSonoCU === 'function' ? null : null); 
+    await pa.ctx.close();
+  }
+}
+
+// ── 2. cambiare ruolo non cancella i dati del profilo (Comitato e Unità restano) ──
 {
   const db = new FakeDB(); const {pa, P, u} = await nuova(db, 'cambio@x.it', 'Cambio Ruolo');
   await until(async () => await P.$('#sh-pf'));
-  await scegli(P, 'cos'); await P.fill('#sh-nome', 'Cambio Ruolo'); await P.fill('#sh-sez', 'Pesaro');
-  await P.evaluate(() => document.getElementById('sh-cosinc1').click()); await P.click('#sh-psave'); await sleep(1800);
+  await scegli(P, 'vcg'); await P.fill('#sh-nome', 'Cambio Ruolo'); await P.fill('#sh-sez', 'Pesaro'); await P.selectOption('#sh-grp', '1');
+  await P.evaluate(() => document.getElementById('sh-cosm').click()); await P.click('#sh-psave'); await sleep(1800);
   await until(async () => await P.$('.sh-prof-line'));
   await P.evaluate(() => shProfileOpen()); await sleep(600); await scegli(P, 'cg'); await P.selectOption('#sh-grp', '2'); await P.click('#sh-psave'); await sleep(1800);
-  const r = db.t.pee_profili.find(x => x.user_id === u.id);
+  let r = db.t.pee_profili.find(x => x.user_id === u.id);
   ok(r && r.ruolo === 'cg' && r.gruppo === '2', 'passando a Capo Gruppo il ruolo cambia');
-  ok(r && r.dashboard && r.dashboard.cos && r.dashboard.cos.incarichi[0] === 'commissario', 'gli incarichi del Comitato restano nel profilo (nessun dato perso)');
+  ok(r && r.dashboard && r.dashboard.cos && r.dashboard.cos.membro === true, 'la spunta del Comitato resta nel profilo (nessun dato perso)');
+  // passando a Presidente (Comitato automatico) la spunta resta com'era
+  await P.evaluate(() => shProfileOpen()); await sleep(600); await scegli(P, 'pres'); await P.click('#sh-psave'); await sleep(1800);
+  r = db.t.pee_profili.find(x => x.user_id === u.id);
+  ok(r && r.ruolo === 'pres' && r.dashboard && r.dashboard.cos && r.dashboard.cos.membro === true && !r.gruppo, 'passando a Presidente il dato del Comitato resta; il Gruppo non serve più');
   await pa.ctx.close();
+}
+
+// ── 2b. profilo salvato PRIMA del 27/11 con ruolo «Comitato di Sezione»: l'app chiede il ruolo vero, senza perdere nulla ──
+{
+  const db = new FakeDB(); const u = db.addUser('vecchiocos@x.it', 'password123', 'Vecchio Cos');
+  db.t.pee_profili.push({user_id:u.id, nome:'Vecchio Cos', ruolo:'cos', branca:'', sezione:'Pesaro', gruppo:'', area_rcdf:'altoadriatico', dashboard:{cos:{incarichi:['tesoriere']}}});
+  const pa = await person(br, db); const P = pa.page; await loginAs(P, base, u); await sleep(2500);
+  ok(await until(async () => await P.$('#sh-pf')), 'ruolo «Comitato di Sezione» salvato prima: compare il profilo da completare');
+  ok(await P.evaluate(() => (document.querySelector('input[name="sh-ruolo"]:checked') || {}).value) === 'tes', 'con l’incarico di Tesoriere il ruolo proposto è Tesoriere');
+  await P.click('#sh-psave'); await sleep(1800);
+  const r = db.t.pee_profili.find(x => x.user_id === u.id);
+  ok(r && r.ruolo === 'tes' && r.sezione === 'Pesaro' && r.nome === 'Vecchio Cos', 'salvato come Tesoriere, Sezione e nome intatti');
+  await pa.ctx.close();
+  const u2 = db.addUser('vecchiocos2@x.it', 'password123', 'Vecchio Membro');
+  db.t.pee_profili.push({user_id:u2.id, nome:'Vecchio Membro', ruolo:'cos', branca:'', sezione:'Pesaro', gruppo:'', area_rcdf:'altoadriatico', dashboard:{cos:{incarichi:['membro']}}});
+  const pb = await person(br, db); await loginAs(pb.page, base, u2); await sleep(2500);
+  ok(await until(async () => await pb.page.$('#sh-pf')) && await pb.page.evaluate(() => !document.querySelector('input[name="sh-ruolo"]:checked')), 'Membro del Comitato di prima: nessun ruolo preselezionato, va scelto');
+  const msg0 = await pb.page.evaluate(async () => { document.getElementById('sh-psave').click(); await new Promise(r => setTimeout(r, 600)); return document.getElementById('sh-pmsg').textContent; });
+  ok(/ruolo/i.test(msg0), 'senza ruolo non si salva («' + msg0 + '»)');
+  await pb.ctx.close();
 }
 
 // ── 3. database NON ancora aggiornato: messaggio chiaro, profilo invariato ──
@@ -90,7 +142,7 @@ async function scegli(P, ruolo){ await P.evaluate(r => { const i = document.quer
   await until(async () => await P.$('#sh-pf'));
   await scegli(P, 'coords'); await P.fill('#sh-nome', 'Db Vecchio'); await P.fill('#sh-sez', 'Pesaro'); await P.click('#sh-psave'); await sleep(1500);
   const m = await P.evaluate(() => document.getElementById('sh-pmsg').textContent);
-  ok(/database va aggiornato/.test(m) && /23 novembre/.test(m), 'senza script SQL: messaggio chiaro («' + m.slice(0, 70) + '…»)');
+  ok(/database va aggiornato/.test(m) && /28 novembre/.test(m), 'senza script SQL: messaggio chiaro («' + m.slice(0, 70) + '…»)');
   ok(!db.t.pee_profili.some(r => r.user_id === u.id), 'senza script SQL: nessun profilo scritto');
   ok(await P.$('#sh-pf') !== null, 'senza script SQL: si resta sul profilo');
   // i ruoli di prima funzionano comunque

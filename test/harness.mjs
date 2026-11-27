@@ -58,11 +58,11 @@ export class FakeDB {
   // vincolo reale di pee_profili.ruolo (verificato in Supabase il 23/11); con sqlFigure = true vale quello allargato dallo script del 23 novembre
   // 26/11: ruolo e Branca di chi scrive la carta (dal profilo), come fa il trigger del database; con sqlRuoloCarte = false il database è quello di prima
   etichProf(uid){ if(this.sqlRuoloCarte === false) return {}; const pr = (this.t.pee_profili || []).find(x => x.user_id === uid); if(!pr) return {autore_etichetta:'', autore_branca:''};
-    const inc = ((pr.dashboard && pr.dashboard.cos && pr.dashboard.cos.incarichi) || []).map(x => String(x).toLowerCase());
-    const M = {cu:'Capo Unità', vcu:'Vice Capo Unità', senior:'Senior in Servizio', cg:'Capo Gruppo', vcg:'Vice Capo Gruppo', cds:'Commissario di Sezione', vcds:'Vice Commissario di Sezione', coords:'Coordinatore Senior', volontario:'Adulto in formazione'};
-    const et = pr.ruolo === 'cos' ? (inc.includes('commissario') ? 'Commissario di Sezione' : inc.includes('presidente') ? 'Presidente' : 'Comitato di Sezione') : (M[pr.ruolo] || '');
+    const M = {cu:'Capo Unità', vcu:'Vice Capo Unità', senior:'Senior in Servizio', cg:'Capo Gruppo', vcg:'Vice Capo Gruppo', cds:'Commissario di Sezione', vcds:'Vice Commissario di Sezione', coords:'Coordinatore Senior', volontario:'Adulto in formazione', cos:'Comitato di Sezione'};
+    if(this.sqlPres !== false) Object.assign(M, {pres:'Presidente', tes:'Tesoriere', snr:'Senior'});
+    const et = M[pr.ruolo] || '';
     return {autore_etichetta:et, autore_branca:['L','E','R'].includes(pr.branca) ? pr.branca : ''}; }
-  ruoloProfiloAmmesso(r){ return !r || ['cu','vcu','cg','cds','senior','volontario'].includes(r) || (this.sqlFigure !== false && ['cos','coords','vcg','vcds'].includes(r)); }
+  ruoloProfiloAmmesso(r){ return !r || ['cu','vcu','cg','cds','senior','volontario'].includes(r) || (this.sqlFigure !== false && ['cos','coords','vcg','vcds'].includes(r)) || (this.sqlPres !== false && ['pres','tes','snr'].includes(r)); }
   ruoloAmmesso(r){ return ['lettore','cotitolare','collaboratore'].includes(r) || (r === 'commissario' && this.sqlComm !== false); }
   // piani (SQL del 23 novembre): db.sqlPiani = false per provare il database non aggiornato
   pRuolo(uid, p){ const pi = this.t.pee_piani.find(x => x.id === p); if(!pi) return null; if(pi.owner_id === uid) return 'titolare'; const m = this.t.pee_piani_membri.find(x => x.piano_id === p && x.email === this.myEmail(uid)); return m ? m.ruolo : null; }
@@ -71,7 +71,7 @@ export class FakeDB {
   brUnita(pr){ return pr ? (pr.ruolo === 'cu' ? pr.branca : ((pr.dashboard || {}).unita || {}).branca) : ''; }
   vcuStessaUnita(uid, aut){ const me = (this.t.pee_profili || []).find(x => x.user_id === uid), au = (this.t.pee_profili || []).find(x => x.user_id === aut);
     const nn = v => String(v || '').trim().toLowerCase();
-    return !!(me && au && (me.ruolo === 'vcu' || (me.ruolo === 'senior' && this.sqlSis27 !== false)) && ['L','E','R'].includes(me.branca) && ['cu','cg','cds'].includes(au.ruolo) && me.branca === this.brUnita(au) && nn(me.gruppo) && nn(me.gruppo) === nn(au.gruppo) && nn(me.sezione) === nn(au.sezione)); }
+    return !!(me && au && (me.ruolo === 'vcu' || (me.ruolo === 'senior' && this.sqlSis27 !== false)) && ['L','E','R'].includes(me.branca) && (['cu','cg','cds'].concat(this.sqlPres === false ? [] : ['vcg','vcds','pres','tes','coords'])).includes(au.ruolo) && me.branca === this.brUnita(au) && nn(me.gruppo) && nn(me.gruppo) === nn(au.gruppo) && nn(me.sezione) === nn(au.sezione)); }
   giroRec(g){ return this.t.pee_piani_giri.find(x => x.id === g) || null; }
   giroAperto(g){ const x = this.giroRec(g); return !!x && x.stato === 'aperto'; }
   giroVedoAltri(uid, g){ const x = this.giroRec(g); return !!(x && x.stato === 'chiuso') || this.t.pee_piani_contributi.some(c => c.giro_id === g && c.autore_id === uid && c.tipo === 'carte' && c.consegnato); }
@@ -139,6 +139,7 @@ export class FakeDB {
       if(req.name === 'pee_pdg_della_mia_sezione') return this.pdgSezione(uid);
       if(req.name === 'pee_richieste_al_clan') return this.richiesteClan(uid);
       if(req.name === 'pee_pdc_della_mia_sezione') return this.pdcSezione(uid);
+      if(req.name === 'pee_pdc_per_senior') return this.pdcSenior(uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -221,7 +222,7 @@ export class FakeDB {
           if(this.pRuolo(uid, gp.piano_id) === null || gp.stato !== 'aperto') return this.err('42501', 'new row violates row-level security policy');
           if(!['carte','unita'].includes(r.tipo) || JSON.stringify(r.data).length > 100000) return this.err('23514', 'new row for relation "pee_piani_contributi" violates check constraint');
           if(r.tipo === 'unita' && this.sqlCarta27 !== false){ const pr = (this.t.pee_profili || []).find(x => x.user_id === uid);
-            if(!(pr && (pr.ruolo === 'cu' || (['cg','cds'].includes(pr.ruolo) && ['L','E','R'].includes(((pr.dashboard || {}).unita || {}).branca))))) return this.err('P0001', 'La Carta di Unità la consegna il Capo Unità, dalla programmazione dell’Unità.');
+            if(!(pr && (pr.ruolo === 'cu' || ((['cg','cds'].concat(this.sqlPres === false ? [] : ['vcg','vcds','pres','tes','coords'])).includes(pr.ruolo) && ['L','E','R'].includes(((pr.dashboard || {}).unita || {}).branca))))) return this.err('P0001', 'La Carta di Unità la consegna il Capo Unità, dalla programmazione dell’Unità.');
             if((r.data || {}).fonte !== 'pee') return this.err('P0001', 'La Carta di Unità si consegna dalla programmazione dell’Unità: apri la voce «Carta di Unità» e consegnala da lì.'); }
           if(T.some(x => x.giro_id === r.giro_id && x.autore_id === uid && x.tipo === r.tipo)) return this.err('23505', 'duplicate key value violates unique constraint'); }
         T.push(r); out.push(r); if(q.table === 'pee_giri') this.revAfterGiro(r); if(q.table === 'pee_giri_rev') this.revAfterNota(r, null); this.emit(q.table, 'INSERT', r);
@@ -304,7 +305,7 @@ export class FakeDB {
     if(this.sqlPdg === false) return this.err('PGRST202', 'Could not find the function public.pee_pdg_della_mia_sezione');
     const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
     const me = this.t.pee_profili.find(x => x.user_id === uid);
-    const comm = me && (me.ruolo === 'cds' || me.ruolo === 'vcds' || (me.ruolo === 'cos' && (((me.dashboard || {}).cos || {}).incarichi || []).some(x => norm(x) === 'commissario')));
+    const comm = me && (me.ruolo === 'cds' || me.ruolo === 'vcds' || (this.sqlPres !== false && me.ruolo === 'pres'));
     if(!comm) return this.err('P0001', 'I Piani di Gruppo li legge chi guida la Sezione.');
     const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
     const pr = p => this.t.pee_profili.find(x => x.user_id === p.owner_id) || {};
@@ -331,7 +332,7 @@ export class FakeDB {
     if(this.sqlClan === false) return this.err('PGRST202', 'Could not find the function public.pee_pdc_della_mia_sezione');
     const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
     const me = this.t.pee_profili.find(x => x.user_id === uid);
-    const comm = me && (me.ruolo === 'cds' || me.ruolo === 'vcds' || (me.ruolo === 'cos' && (((me.dashboard || {}).cos || {}).incarichi || []).some(x => norm(x) === 'commissario')));
+    const comm = me && (me.ruolo === 'cds' || me.ruolo === 'vcds' || (this.sqlPres !== false && me.ruolo === 'pres'));
     if(!comm) return this.err('P0001', 'Il Progetto di Clan lo legge chi guida la Sezione.');
     const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
     const rows = this.t.pee_piani.filter(p => p.tipo === 'clan' && norm((this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione) === sez).sort((x, y) => y.anno_inizio - x.anno_inizio)
@@ -340,12 +341,24 @@ export class FakeDB {
         disponibilita:((p.data || {}).disp || []).filter(q => String(q.cosa || '').trim()).map(q => ({id:q.id, cosa:q.cosa, quanti:q.quanti || '', quando:q.quando || '', note:q.note || ''}))}));
     return {data:rows, error:null};
   }
+  // Il Senior legge il Progetto di Clan deliberato o approvato della sua Sezione (SQL del 28 novembre sera); db.sqlPres = false per il database non aggiornato
+  pdcSenior(uid){
+    if(this.sqlPres === false) return this.err('PGRST202', 'Could not find the function public.pee_pdc_per_senior');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const me = this.t.pee_profili.find(x => x.user_id === uid);
+    if(!me || me.ruolo !== 'snr') return this.err('P0001', 'Il Progetto di Clan lo leggono i Senior della Sezione.');
+    const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const rows = this.t.pee_piani.filter(p => p.tipo === 'clan' && ['deliberato', 'approvato'].includes(p.stato) && norm((this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione) === sez)
+      .sort((x, y) => y.anno_inizio - x.anno_inizio).map(p => ({id:p.id, tipo:p.tipo, titolo:p.titolo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato, data:JSON.parse(JSON.stringify(p.data || {})), rev:p.rev || 1, updated_at:p.updated_at, created_at:p.created_at}));
+    return {data:rows, error:null};
+  }
   // Progetti di Sezione letti dal Gruppo (SQL del 28 novembre): stesse regole della funzione; db.sqlPds = false per provare il database non aggiornato
   pdsSezione(uid){
     if(this.sqlPds === false) return this.err('PGRST202', 'Could not find the function public.pee_pds_della_mia_sezione');
     const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
     const me = this.t.pee_profili.find(x => x.user_id === uid);
-    if(!me || !['cg', 'vcg', 'cu', 'vcu', 'senior', 'cds', 'vcds', 'cos', 'coords'].includes(me.ruolo)) return this.err('P0001', 'Il Progetto di Sezione lo leggono le figure di Gruppo e di Sezione.');
+    const flag = this.sqlPres !== false && !!(me && me.dashboard && me.dashboard.cos && me.dashboard.cos.membro === true);
+    if(!me || !(['cg', 'vcg', 'cu', 'vcu', 'senior', 'cds', 'vcds', 'cos', 'coords'].concat(this.sqlPres === false ? [] : ['pres', 'tes']).includes(me.ruolo) || flag)) return this.err('P0001', 'Il Progetto di Sezione lo leggono le figure di Gruppo e di Sezione e chi fa parte del Comitato di Sezione.');
     const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
     const rows = this.t.pee_piani.filter(p => p.tipo === 'sezione' && ['deliberato', 'approvato'].includes(p.stato) && norm((this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione) === sez)
       .sort((x, y) => y.anno_inizio - x.anno_inizio).map(p => ({id:p.id, titolo:p.titolo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato, sezione:(this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione,
@@ -359,15 +372,14 @@ export class FakeDB {
     if(!['gruppo', 'sezione', 'clan'].includes(tipo)) return this.err('P0001', 'Elenco non valido.');
     const me = this.t.pee_profili.find(x => x.user_id === uid); if(!me) return this.err('P0001', 'Completa prima il tuo profilo.');
     const sez = norm(me.sezione), gr = norm(me.gruppo); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
-    const inc = ((me.dashboard || {}).cos || {}).incarichi || [];
-    const comm = me.ruolo === 'cds' || (me.ruolo === 'cos' && inc.some(x => norm(x) === 'commissario'));
+    const comm = me.ruolo === 'cds' || (this.sqlPres !== false && me.ruolo === 'pres');
     if(tipo === 'gruppo'){ if(!['cg', 'vcg'].includes(me.ruolo)) return this.err('P0001', 'Solo chi guida il Gruppo vede questo elenco.'); if(!gr) return this.err('P0001', 'Nel tuo profilo manca il Gruppo.'); }
     else if(tipo === 'sezione'){ if(!(comm || me.ruolo === 'vcds')) return this.err('P0001', 'Solo chi guida la Sezione vede questo elenco.'); }
     else if(me.ruolo !== 'coords') return this.err('P0001', 'Solo il Coordinatore Senior vede questo elenco.');
     const rows = this.t.pee_profili.filter(pr => pr.user_id !== uid && norm(pr.sezione) === sez && (
-      (tipo === 'gruppo' && ((norm(pr.gruppo) === gr && ['cu', 'vcu', 'cg', 'vcg'].concat(this.sqlRuoloCarte === false ? [] : ['senior']).includes(pr.ruolo)) || ['cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo))) ||
-      (tipo === 'sezione' && ['cg', 'vcg', 'cds', 'vcds', 'cos', 'coords'].includes(pr.ruolo)) ||
-      (tipo === 'clan' && ['cg', 'vcg', 'cds', 'vcds', 'cos'].includes(pr.ruolo)))).map(pr => { const u = this.user(pr.user_id); return u ? {persona_id:pr.user_id, nome:pr.nome, ruolo:pr.ruolo, branca:pr.branca || null, gruppo:pr.gruppo || null, sezione:pr.sezione, incarichi:((pr.dashboard || {}).cos || {}).incarichi || [], email:u.email} : null; }).filter(Boolean);
+      (tipo === 'gruppo' && ((norm(pr.gruppo) === gr && ['cu', 'vcu', 'cg', 'vcg'].concat(this.sqlRuoloCarte === false ? [] : ['senior']).includes(pr.ruolo)) || ['cds', 'vcds', 'cos', 'coords', 'pres'].includes(pr.ruolo))) ||
+      (tipo === 'sezione' && (['cg', 'vcg', 'cds', 'vcds', 'cos', 'coords', 'pres', 'tes'].includes(pr.ruolo) || !!(pr.dashboard && pr.dashboard.cos && pr.dashboard.cos.membro === true))) ||
+      (tipo === 'clan' && ['cg', 'vcg', 'cds', 'vcds', 'cos', 'pres', 'snr'].includes(pr.ruolo)))).map(pr => { const u = this.user(pr.user_id); return u ? {persona_id:pr.user_id, nome:pr.nome, ruolo:pr.ruolo, branca:pr.branca || null, gruppo:pr.gruppo || null, sezione:pr.sezione, incarichi:((pr.dashboard || {}).cos || {}).incarichi || [], comitato:['cds', 'pres', 'tes', 'cos'].includes(pr.ruolo) || !!(pr.dashboard && pr.dashboard.cos && pr.dashboard.cos.membro === true), email:u.email} : null; }).filter(Boolean);
     return {data:rows.sort((a, b) => String(a.nome).localeCompare(b.nome)), error:null};
   }
   // funzioni del giro (SQL del 24 novembre): db.sqlGiri = false per provare il database non aggiornato

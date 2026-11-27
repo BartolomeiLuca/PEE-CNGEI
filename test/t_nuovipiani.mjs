@@ -9,11 +9,11 @@ const br = await launch(engine); const db = new FakeDB();
 const U = {}; const prof = (k, nome, ruolo) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:'', sezione:'Pesaro', gruppo:'Pesaro 1', area_rcdf:'altoadriatico', dashboard:{}}); };
 const prof2 = (k, nome, ruolo, dash, sez) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:ruolo === 'cu' || ruolo === 'senior' ? 'E' : '', sezione:sez || 'Pesaro', gruppo:['cg', 'vcg', 'cu', 'senior'].includes(ruolo) ? 'Pesaro 1' : '', area_rcdf:'altoadriatico', dashboard:dash || {}}); };
 prof2('cg', 'Carla CG', 'cg'); prof2('vcg', 'Vera VCG', 'vcg'); prof2('cds', 'Dino Commissario', 'cds'); prof2('vcds', 'Vito Vice', 'vcds');
-prof2('cosC', 'Cosimo Comitato Commissario', 'cos', {cos:{incarichi:['commissario']}}); prof2('cosP', 'Cora Presidente', 'cos', {cos:{incarichi:['presidente']}});
+prof2('presC', 'Cora Presidente', 'pres'); prof2('tesT', 'Tina Tesoriera', 'tes');
 prof2('coords', 'Cora Senior', 'coords'); prof2('cu', 'Ugo CU', 'cu'); prof2('vol', 'Vol Volontario', 'volontario');
 const mk = async (k, w) => { const pa = await person(br, db, {ctx:{viewport:{width:w || 1280, height:900}, acceptDownloads:true}}); await pa.page.clock.setFixedTime(new Date('2026-12-10T10:00:00+01:00')); await loginAs(pa.page, base, U[k]); await sleep(2200); return {pa, P:pa.page, ev:(f, a) => pa.page.evaluate(f, a)}; };
 const bottoni = async S => S.ev(() => [...document.querySelectorAll('#sh-piani button')].filter(b => /^\+ Nuovo/.test(b.textContent.trim())).map(b => b.textContent.trim()));
-const attesa = { cg:['+ Nuovo Piano di Gruppo'], vcg:['+ Nuovo Piano di Gruppo'], cds:['+ Nuovo Progetto di Sezione'], vcds:['+ Nuovo Progetto di Sezione'], cosC:['+ Nuovo Progetto di Sezione'], cosP:[], coords:['+ Nuovo Progetto di Clan'], cu:[], vol:[] };
+const attesa = { cg:['+ Nuovo Piano di Gruppo'], vcg:['+ Nuovo Piano di Gruppo'], cds:['+ Nuovo Progetto di Sezione'], vcds:['+ Nuovo Progetto di Sezione'], presC:['+ Nuovo Progetto di Sezione'], tesT:[], coords:['+ Nuovo Progetto di Clan'], cu:[], vol:[] };
 const S = {}; const errs = [];
 for(const k of Object.keys(attesa)){ S[k] = await mk(k); const b = await bottoni(S[k]); ok(JSON.stringify(b) === JSON.stringify(attesa[k]), k + ': ' + (attesa[k].length ? attesa[k][0] : 'nessun pulsante «Nuovo…»') + (JSON.stringify(b) === JSON.stringify(attesa[k]) ? '' : ' (trovato: ' + JSON.stringify(b) + ')')); }
 // Commissario: crea il Progetto di Sezione
@@ -49,7 +49,7 @@ const pc = db.t.pee_piani.find(p => p.tipo === 'clan');
 ok(!!pc && pc.owner_id === U.coords.id && pc.data.sezione === 'Pesaro', 'si crea un Progetto di Clan');
 ok(await K.ev(() => PN.p.tipo === 'clan' && !!document.querySelector('#pn-sb-obi')), 'il Progetto di Clan si apre con Obiettivi, Quadro e Verifiche');
 // il Comitato con incarico Commissario crea; il Presidente no
-const Q = S.cosC; await Q.P.click('#sh-piani button:has-text("+ Nuovo Progetto di Sezione")'); await sleep(400); await Q.P.click('#pn-n-ok'); await sleep(2200);
-ok(db.t.pee_piani.filter(p => p.tipo === 'sezione' && p.owner_id === U.cosC.id).length === 1, 'Comitato con incarico Commissario: crea il Progetto di Sezione');
+const Q = S.presC; await Q.P.click('#sh-piani button:has-text("+ Nuovo Progetto di Sezione")'); await sleep(400); await Q.P.click('#pn-n-ok'); await sleep(2200);
+ok(db.t.pee_piani.filter(p => p.tipo === 'sezione' && p.owner_id === U.presC.id).length === 1, 'Presidente: crea il Progetto di Sezione');
 const nerr = Object.values(S).reduce((n, x) => n + x.pa.errors.length, 0); ok(nerr === 0, 'nessun errore di pagina (' + nerr + ')'); if(nerr) console.log(Object.values(S).flatMap(x => x.pa.errors));
 await br.close(); process.exit(summary() ? 1 : 0);

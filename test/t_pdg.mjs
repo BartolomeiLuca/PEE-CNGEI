@@ -8,7 +8,7 @@ const base = (await serve()) + 'anteprima/';
 const br = await launch(engine); const db = new FakeDB();
 const U = {}; const prof = (k, nome, ruolo) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:'', sezione:'Pesaro', gruppo:'Pesaro 1', area_rcdf:'altoadriatico', dashboard:{}}); };
 const prof2 = (k, nome, ruolo, gr, dash, sez) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:'', sezione:sez || 'Pesaro', gruppo:gr || '', area_rcdf:'altoadriatico', dashboard:dash || {}}); };
-prof2('comm', 'Dino Commissario', 'cds'); prof2('vcds', 'Vito Vice', 'vcds'); prof2('cosP', 'Cora Presidente', 'cos', '', {cos:{incarichi:['presidente']}});
+prof2('comm', 'Dino Commissario', 'cds'); prof2('vcds', 'Vito Vice', 'vcds'); prof2('cosP', 'Cora Presidente', 'pres', '');
 prof2('cg1', 'Carla CG', 'cg', '1'); prof2('cg2', 'Gigi CG', 'cg', '2'); prof2('cgF', 'Fabio Fano', 'cg', '1', {}, 'Fano');
 const ob = (id, t, aree, ind) => ({id, testo:t, aree, origine:'', rif:'', ricadute:false, indirizzi:ind || []});
 const dati = x => Object.assign({v:1, titolareNome:'x', analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}, sezione:'Pesaro'}, x || {});

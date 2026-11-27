@@ -16241,7 +16241,7 @@ function pianoErr(e){
   if(c === '40001' || /modificato da un.altra persona/i.test(m)) return 'Il piano è stato modificato da un’altra persona: ho ricaricato l’ultima versione, rifai la modifica.';
   if(c === 'PGRST202' || /pee_piano_giro|pee_piani_(giri|contributi|voci)/i.test(m)) return 'Per gli Ascolti serve aggiornare il database (script SQL del 24 novembre): chiedi a chi cura l’app.';
   if(c === 'P0001' && /giro|risposte anonime|già risposto|titolare o un co-titolare|Capo Unità|programmazione dell|segnali delle Unità/i.test(m)) return ascoltoTxt(m);
-  if(c === '42P01' || c === 'PGRST205' || /pee_piani.*(does not exist|schema cache)|does not exist.*pee_piani/i.test(m)) return 'Per i piani serve aggiornare il database (script SQL del 23 novembre): chiedi a chi cura l’app.';
+  if(c === '42P01' || c === 'PGRST205' || /pee_piani.*(does not exist|schema cache)|does not exist.*pee_piani/i.test(m)) return 'Per i piani serve aggiornare il database (script SQL del 28 novembre «Presidente, Tesoriere, Senior»): chiedi a chi cura l’app.';
   if(c === '42501' || /row-level security|permission denied/i.test(m)) return 'Non hai il permesso di fare questa modifica al piano.';
   if(/pee_piani_data_check|2000000/i.test(m)) return 'Il piano è troppo grande per essere salvato.';
   if(c === '23505' || /duplicate/i.test(m)) return 'Questa persona ha già accesso al piano.';
@@ -16268,7 +16268,12 @@ const PIANI = {
   },
   // un piano completo; ruolo = 'titolare' | 'cotitolare' | 'collaboratore' | 'lettore'
   async apri(id){
-    const {data, error} = await CL.sb.from('pee_piani').select('*').eq('id', id).maybeSingle(); if(error) throw error; if(!data) return null;
+    const {data, error} = await CL.sb.from('pee_piani').select('*').eq('id', id).maybeSingle(); if(error) throw error;
+    if(!data){
+      // il Senior non è invitato: il Progetto di Clan deliberato della sua Sezione lo apre dalla funzione di lettura
+      if(((SH.prof || {}).ruolo) === 'snr'){ try{ const r = (await this.pdcSenior()).find(x => x.id === id); if(r) return Object.assign({owner_id:'', owner_email:'', archivio_id:null, updated_by_nome:''}, r, {tipo:'clan', ruolo:'lettore'}); }catch(e){} }
+      return null;
+    }
     data.ruolo = await this.ruolo(data); return data;
   },
   async ruolo(p){
@@ -16352,6 +16357,8 @@ const PIANI = {
   // Richieste «Chi: Clan» dei Piani di Gruppo della mia Sezione, per il Coordinatore Senior: solo azione, obiettivo, anno, mese, stato (funzione in sola lettura)
   async richiesteClan(){ const {data, error} = await CL.sb.rpc('pee_richieste_al_clan'); if(error) throw error; return Array.isArray(data) ? data : []; },
   // Progetti di Clan (anche in bozza) della mia Sezione, per chi guida la Sezione: solo obiettivi e «Disponibilità e prospettive» (funzione in sola lettura)
+  // il Senior legge il Progetto di Clan deliberato della sua Sezione (intero, in sola lettura), senza essere invitato
+  async pdcSenior(){ const {data, error} = await CL.sb.rpc('pee_pdc_per_senior'); if(error) throw error; return Array.isArray(data) ? data : []; },
   async pdcSezione(){ const {data, error} = await CL.sb.rpc('pee_pdc_della_mia_sezione'); if(error) throw error; return Array.isArray(data) ? data : []; },
   async giroStato(g){ const {data, error} = await CL.sb.rpc('pee_piano_giro_stato', {g}); if(error) throw error; return data || []; },
   async giroChiudi(g, tipo){ const {error} = await CL.sb.rpc('pee_piano_giro_chiudi', {g, tipo_:tipo || 'anticipata'}); if(error) throw error; },
@@ -18336,24 +18343,32 @@ if(!on) return;
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RUOLI = [['cu','Capo Unità'],['vcu','Vice Capo Unità'],['cg','Capo Gruppo'],['cds','Commissario di Sezione'],['senior','Senior in Servizio'],['volontario','Adulto in formazione']];
-// 23/11: figure nuove, solo nel profilo (non entrano nella «veste» di un nuovo progetto: RUOLI resta com'era). Comitato di Sezione ha più incarichi (dashboard.cos.incarichi)
-const RUOLI_NUOVI = [['cos','Comitato di Sezione'],['coords','Coordinatore Senior'],['vcg','Vice Capo Gruppo'],['vcds','Vice Commissario di Sezione']];
-const RUOLI_PROFILO = [RUOLI[0], RUOLI[1], RUOLI[2], RUOLI_NUOVI[2], RUOLI[3], RUOLI_NUOVI[3], RUOLI_NUOVI[0], RUOLI_NUOVI[1], RUOLI[4], RUOLI[5]];
-const RUOLO_TXT = Object.fromEntries(RUOLI_PROFILO);
-const COS_INC = [['presidente','Presidente'],['commissario','Commissario'],['tesoriere','Tesoriere'],['membro','Membro']];
-const cosInc = p => { const c = p && p.dashboard && p.dashboard.cos; return (c && Array.isArray(c.incarichi) ? c.incarichi : []).filter(k => COS_INC.some(x => x[0] === k)); };
-const ruoloLab = p => { p = p || {}; const base = RUOLO_TXT[p.ruolo] || ''; if(p.ruolo !== 'cos') return base; const L = cosInc(p).map(k => (COS_INC.find(x => x[0] === k) || [])[1]).filter(Boolean); return L.length ? base + ' (' + L.join(', ') + ')' : base; };
+// 23/11: figure nuove, solo nel profilo (non entrano nella «veste» di un nuovo progetto: RUOLI resta com'era).
+// 27/11: Presidente, Tesoriere e Senior sono ruoli a sé. «Comitato di Sezione» non è più un ruolo ma una spunta (dashboard.cos.membro), automatica per Commissario, Presidente e Tesoriere.
+// «Senior in Servizio» ('senior', adulti di staff) e «Senior» ('snr', i giovani del Clan) sono due cose diverse.
+const RUOLI_NUOVI = [['vcg','Vice Capo Gruppo'],['vcds','Vice Commissario di Sezione'],['pres','Presidente di Sezione'],['tes','Tesoriere di Sezione'],['coords','Coordinatore Senior'],['snr','Senior']];
+const RUOLO_NU = Object.fromEntries(RUOLI_NUOVI);
+// ordine del profilo: Capo Unità, Vice Capo Unità, Senior in Servizio, Capo Gruppo, Vice Capo Gruppo, Commissario, Vice Commissario, Presidente, Tesoriere, Coordinatore Senior, Senior, Adulto in formazione
+const RUOLI_PROFILO = ['cu','vcu','senior','cg','vcg','cds','vcds','pres','tes','coords','snr','volontario'].map(k => [k, RUOLO_NU[k] || (RUOLI.find(x => x[0] === k) || [])[1]]);
+const RUOLO_TXT = Object.assign({cos:'Comitato di Sezione'}, Object.fromEntries(RUOLI_PROFILO));   // «cos»: solo profili salvati prima del 27/11 (non si sceglie più)
+// Comitato di Sezione: spunta nel profilo. Commissario, Presidente e Tesoriere ne fanno parte per il ruolo.
+const cosAuto = r => r === 'cds' || r === 'pres' || r === 'tes';
+const cosMembro = p => { p = p || {}; if(cosAuto(p.ruolo) || p.ruolo === 'cos') return true; const c = p.dashboard && p.dashboard.cos; return !!(c && c.membro === true); };
+const cosVecchio = p => { const c = p && p.dashboard && p.dashboard.cos; return (c && Array.isArray(c.incarichi) ? c.incarichi : []).map(x => String(x).toLowerCase()); };   // profili salvati prima del 27/11
+const ruoloLab = p => { p = p || {}; const base = RUOLO_TXT[p.ruolo] || ''; return (!cosAuto(p.ruolo) && p.ruolo !== 'cos' && cosMembro(p) && base) ? base + ' · Comitato di Sezione' : base; };
 const BRANCHE = ['L','E','R'];
 const BR_FULL = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
 const BR_UNIT = {L:'Es. Branco Popolo Libero', E:'Es. Reparto Kontiki', R:'Es. Compagnia Aquila'};
 const SH_RUOLI_CLIENT = {lettore:'Lettore', cotitolare:'Co-titolare', collaboratore:'Collaboratore', commissario:'Commissario di Sezione'};
 const noBranca = r => r === 'cg' || r === 'cds';
 const noGruppo = r => r === 'cds';
+// «Ho anche un’Unità» (Branca e nome nel profilo): Capo Gruppo, Commissario e, dal 27/11, anche i Vice, il Presidente, il Tesoriere e il Coordinatore Senior
+const puoUnita = r => r === 'cg' || r === 'cds' || r === 'vcg' || r === 'vcds' || r === 'pres' || r === 'tes' || r === 'coords';
 // nel profilo le figure nuove non scelgono la Branca; Gruppo solo il Vice Capo Gruppo
-const senzaBranca = r => noBranca(r) || r === 'cos' || r === 'coords' || r === 'vcg' || r === 'vcds';
-const senzaGruppo = r => noGruppo(r) || r === 'cos' || r === 'coords' || r === 'vcds';
+const senzaBranca = r => noBranca(r) || r === 'cos' || r === 'coords' || r === 'vcg' || r === 'vcds' || r === 'pres' || r === 'tes' || r === 'snr';
+const senzaGruppo = r => noGruppo(r) || r === 'cos' || r === 'coords' || r === 'vcds' || r === 'pres' || r === 'tes' || r === 'snr';
 // Capo Gruppo e Commissario che sono anche Capi Unità: Branca e nome dell'Unità stanno nel profilo (campo `dashboard`, chiave `unita`: nessun cambio al database)
-const unitaOf = p => { p = p || SH.prof || {}; const u = p.dashboard && p.dashboard.unita; return (noBranca(p.ruolo) && u && ['L','E','R'].indexOf(u.branca) >= 0) ? {branca:u.branca, nome:String(u.nome || '').trim()} : null; };
+const unitaOf = p => { p = p || SH.prof || {}; const u = p.dashboard && p.dashboard.unita; return (puoUnita(p.ruolo) && u && ['L','E','R'].indexOf(u.branca) >= 0) ? {branca:u.branca, nome:String(u.nome || '').trim()} : null; };
 SH.RUOLI = RUOLI; SH.RUOLI_PROFILO = RUOLI_PROFILO; SH.noBranca = noBranca; SH.esc = esc;
 
 document.body.classList.add('sh-on','sh-pend');
@@ -18405,6 +18420,7 @@ SH.profSave = profSave;
 function profOk(p){
   p = p || SH.prof || {};
   if(!String(p.nome||'').trim() || !p.ruolo || !String(p.sezione||'').trim()) return false;
+  if(p.ruolo === 'cos') return false;   // profilo salvato prima del 27/11: «Comitato di Sezione» non è più un ruolo, va scelto quello vero
   if(!senzaGruppo(p.ruolo) && !String(p.gruppo||'').trim()) return false;
   if(['cu', 'vcu', 'senior'].includes(p.ruolo) && !p.branca) return false;
   return true;
@@ -18548,10 +18564,10 @@ function profCard(p, mode, disabled){
       <h2 class="sh-h2">${first ? '2 · Il tuo profilo' : 'Il tuo profilo'}</h2>
       ${first ? '' : '<p class="sh-sub">Puoi cambiarlo quando cambia il tuo incarico. I progetti già creati non cambiano.</p>'}
       <div><label class="sh-lb" for="sh-nome">Nome e cognome</label><input class="sh-in" id="sh-nome" autocomplete="name" maxlength="120" value="${esc(nome)}"><div class="sh-hint">Compare nei tuoi progetti, nelle condivisioni e nell’oggetto delle mail del Progetto Personale.</div></div>
-      <div><div class="sh-lb" id="sh-ruolo-l">Il tuo ruolo</div>${rrGroup('sh-ruolo', RUOLI_PROFILO, p.ruolo)}<div class="sh-hint">Lo potrai cambiare dal profilo quando cambia il tuo incarico.</div></div>
-      <div id="sh-cosw" hidden><div class="sh-lb" id="sh-cos-l">Il tuo incarico nel Comitato di Sezione</div><div class="sh-rrs" role="group" aria-labelledby="sh-cos-l">${COS_INC.map(([k, t], i) => `<label class="sh-rr${cosInc(p).indexOf(k) >= 0 ? ' on' : ''}"><input type="checkbox" name="sh-cosinc" id="sh-cosinc${i}" value="${k}"${cosInc(p).indexOf(k) >= 0 ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked)">${t}</label>`).join('')}</div><div class="sh-hint">Puoi sceglierne più d’uno. Se sei Commissario e vuoi gli strumenti del Commissario, scegli «Commissario di Sezione» come ruolo.</div></div>
+      <div><div class="sh-lb" id="sh-ruolo-l">Il tuo ruolo</div>${rrGroup('sh-ruolo', RUOLI_PROFILO, p.ruolo === 'cos' ? (cosVecchio(p).includes('tesoriere') ? 'tes' : '') : p.ruolo)}<div class="sh-hint">Lo potrai cambiare dal profilo quando cambia il tuo incarico.</div></div>
+      <div id="sh-cosw" hidden><label class="sh-rr${cosMembro(p) && !cosAuto(p.ruolo) ? ' on' : ''}" id="sh-cosm-l"><input type="checkbox" id="sh-cosm"${cosMembro(p) && !cosAuto(p.ruolo) ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked)">Faccio parte del Comitato di Sezione</label><div class="sh-hint">Commissario, Presidente e Tesoriere ne fanno parte già per il loro ruolo. Chi fa parte del Comitato legge il Progetto di Sezione.</div></div>
       <div id="sh-brw"><div class="sh-lb" id="sh-branca-l">Branca</div>${rrGroup('sh-branca', BRANCHE.map(b => [b,b]), p.branca)}<div class="sh-hint" id="sh-brh">L = Lupetti e Lupette · E = Esploratori ed Esploratrici · R = Rover. Il colore dell’app segue la tua Branca; se non la indichi, o sei Capo Gruppo o Commissario di Sezione, è blu.</div></div>
-      <div id="sh-unw" hidden><label class="sh-rr${(p.dashboard && p.dashboard.unita && noBranca(p.ruolo)) ? ' on' : ''}" id="sh-hasun-l"><input type="checkbox" id="sh-hasun"${(p.dashboard && p.dashboard.unita && noBranca(p.ruolo)) ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked);shProfRole()">Ho anche un’Unità: sono anche Capo Unità</label>
+      <div id="sh-unw" hidden><label class="sh-rr${(p.dashboard && p.dashboard.unita && puoUnita(p.ruolo)) ? ' on' : ''}" id="sh-hasun-l"><input type="checkbox" id="sh-hasun"${(p.dashboard && p.dashboard.unita && puoUnita(p.ruolo)) ? ' checked' : ''} onchange="this.closest('.sh-rr').classList.toggle('on', this.checked);shProfRole()">Ho anche un’Unità: sono anche Capo Unità</label>
         <div id="sh-unf" style="margin-top:12px;display:none;flex-direction:column;gap:12px"><div><div class="sh-lb" id="sh-unbr-l">Branca della tua Unità</div>${rrGroup('sh-unbr', BRANCHE.map(b => [b,b]), ((p.dashboard || {}).unita || {}).branca)}</div>
           <div><label class="sh-lb" for="sh-unn">Nome dell’Unità</label><input class="sh-in" id="sh-unn" maxlength="60" autocomplete="off" placeholder="Es. Reparto Kontiki" value="${esc(((p.dashboard || {}).unita || {}).nome || '')}"></div></div>
         <div class="sh-hint">Così, quando apri un nuovo progetto, trovi già la Programmazione educativa della tua Unità con Branca e nome compilati.</div></div>
@@ -18603,9 +18619,9 @@ window.shProfRole = function(){
   const r = rv('sh-ruolo');
   const b = $('sh-brw'), g = $('sh-grw'); if(!b) return;
   b.style.display = senzaBranca(r) ? 'none' : ''; g.style.display = senzaGruppo(r) ? 'none' : '';
-  const cw = $('sh-cosw'); if(cw) cw.hidden = r !== 'cos';
+  const cw = $('sh-cosw'); if(cw) cw.hidden = !r || cosAuto(r);
   const uw = $('sh-unw'), uf = $('sh-unf'), hc = $('sh-hasun');
-  if(uw){ uw.hidden = !noBranca(r); if(uf) uf.style.display = (noBranca(r) && hc && hc.checked) ? 'flex' : 'none'; }
+  if(uw){ uw.hidden = !puoUnita(r); if(uf) uf.style.display = (puoUnita(r) && hc && hc.checked) ? 'flex' : 'none'; }
 };
 window.shSegnalaSezione = function(){
   try{ fbOpen(); const v = ($('sh-sez') ? $('sh-sez').value : '').trim(), t = $('fb-tipo'), x = $('fb-txt') || document.querySelector('#fb-ov textarea');
@@ -18633,19 +18649,19 @@ window.shProfSubmit = async function(ev){
   const p = {nome:v('sh-nome'), ruolo:rv('sh-ruolo'), branca:rv('sh-branca'), sezione:v('sh-sez'), gruppo:v('sh-grp'), area_rcdf:($('sh-area')?v('sh-area'):String((SH.prof&&SH.prof.area_rcdf)||''))};
   if(senzaBranca(p.ruolo)) p.branca = '';
   if(senzaGruppo(p.ruolo)) p.gruppo = '';
-  // «Ho anche un'Unità»: solo per Capo Gruppo e Commissario. Se la casella è spenta si toglie; se il ruolo non è tra questi, il dato resta com'è
+  // «Ho anche un'Unità»: Capo Gruppo, Commissario, Vice, Presidente, Tesoriere, Coordinatore Senior. Se la casella è spenta si toglie; se il ruolo non è tra questi, il dato resta com'è
   let unMiss = null;
-  if(noBranca(p.ruolo)){
+  if(puoUnita(p.ruolo)){
     const d0 = Object.assign({}, (SH.prof && SH.prof.dashboard) || {});
     if($('sh-hasun') && $('sh-hasun').checked){ const ub = rv('sh-unbr'); if(!ub) unMiss = ['Scegli la Branca della tua Unità', 'sh-unf']; else { d0.unita = {branca:ub, nome:v('sh-unn').slice(0, 60)}; p.dashboard = d0; } }
     else if(d0.unita){ delete d0.unita; p.dashboard = d0; }
   }
-  // Comitato di Sezione: gli incarichi stanno nel profilo (campo `dashboard`, chiave `cos`: nessun cambio al database); cambiando ruolo il dato resta com'è
+  // Comitato di Sezione: spunta nel profilo (campo `dashboard`, chiave `cos`: nessun cambio al database). Per Commissario, Presidente e Tesoriere è automatico: il dato resta com'è
   let cosMiss = null;
-  if(p.ruolo === 'cos'){
-    const inc = [...document.querySelectorAll('input[name="sh-cosinc"]:checked')].map(i => i.value);
-    if(!inc.length) cosMiss = ['Scegli almeno un incarico nel Comitato di Sezione', 'sh-cosinc0'];
-    else { const d1 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {}); d1.cos = {incarichi: inc}; p.dashboard = d1; }
+  if(p.ruolo && !cosAuto(p.ruolo) && $('sh-cosm')){
+    const d1 = Object.assign({}, p.dashboard || (SH.prof && SH.prof.dashboard) || {});
+    if($('sh-cosm').checked) d1.cos = {membro:true}; else delete d1.cos;
+    p.dashboard = d1;
   }
   // Sezione: dall'elenco ufficiale; se non c'è, la casella «non è in elenco»; un valore vecchio non in elenco, se non lo cambi, si conserva
   let sezMiss = null;
@@ -18669,7 +18685,7 @@ window.shProfSubmit = async function(ev){
   }catch(e){
     btn.disabled = false; m.className = 'sh-msg err';
     const _es = String((e && (e.code + ' ' + e.message)) || '');
-    m.textContent = (/23514|ruolo_check|check constraint/i.test(_es) && RUOLI_NUOVI.some(x => x[0] === p.ruolo)) ? 'Per questo ruolo il database va aggiornato (script SQL del 23 novembre): chiedi a chi cura l’app. Il profilo non è stato cambiato.' : /42P01|PGRST205|does not exist|relation "?public\.pee_profili"? does not exist/i.test(_es) ? 'Il database non ha ancora la tabella dei profili: serve lo script SQL del profilo.' : 'Non sono riuscito a salvare: ' + ((e && e.message) || 'riprova tra poco') + '.';
+    m.textContent = (/23514|ruolo_check|check constraint/i.test(_es) && RUOLI_NUOVI.some(x => x[0] === p.ruolo)) ? 'Per questo ruolo il database va aggiornato (script SQL del 28 novembre «Presidente, Tesoriere, Senior»): chiedi a chi cura l’app. Il profilo non è stato cambiato.' : /42P01|PGRST205|does not exist|relation "?public\.pee_profili"? does not exist/i.test(_es) ? 'Il database non ha ancora la tabella dei profili: serve lo script SQL del profilo.' : 'Non sono riuscito a salvare: ' + ((e && e.message) || 'riprova tra poco') + '.';
   }
   return false;
 };
@@ -18796,9 +18812,11 @@ window.shTrashEmpty = async function(){
 // 23/11: le figure nuove (Comitato di Sezione, Coordinatore Senior, Vice) hanno già il profilo; i loro strumenti arrivano a pezzi: intanto un avviso chiaro, poi le scelte di sempre
 function figuraNuovaHome(p){
   const T = {
-    cos:'Se nel Comitato hai l’incarico di Commissario, scrivi il Progetto di Sezione da «I tuoi piani»; per gli altri incarichi gli strumenti (calendario condiviso) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
+    pres:'Sei co-responsabile del Progetto di Sezione: lo scrivi insieme al Commissario da «I tuoi piani» (se lo ha già aperto lui, chiedigli di invitarti come Co-titolare). Il calendario della Sezione è in preparazione.',
+    tes:'Come Tesoriere fai parte del Comitato di Sezione e leggi il Progetto di Sezione deliberato. Il calendario della Sezione è in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
     coords:'Come Coordinatore Senior scrivi il Progetto di Clan da «I tuoi piani»; gli altri strumenti (calendario, Percorso Senior) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
-    senior:'Lavori con il Coordinatore Senior: quando ti invita nel Progetto di Clan (o in un altro piano) lo trovi in «Condivisi con te», da leggere o da scrivere con lui. Il calendario condiviso della Sezione è in preparazione.',
+    snr:'Il Progetto di Clan della tua Sezione lo leggi da qui, quando è deliberato. Se il Coordinatore Senior ti invita in un altro piano lo trovi in «Condivisi con te». Il calendario della Sezione è in preparazione.',
+    senior:'Presti servizio in un’Unità. Se il Capo Unità o il Coordinatore Senior ti invita in un progetto lo trovi in «Condivisi con te». Il calendario condiviso della Sezione è in preparazione.',
     vcg:'Lavori con il Capo Gruppo: quando ti invita nel suo progetto lo trovi in «Condivisi con te». Gli strumenti per il Piano di Gruppo sono in preparazione.',
     vcds:'Lavori con il Commissario di Sezione: puoi scrivere un Progetto di Sezione da «I tuoi piani» o lavorare in quello del Commissario quando ti invita: lo trovi in «Condivisi con te». Il calendario condiviso della Sezione è in preparazione.'
   };
@@ -18891,25 +18909,49 @@ function pnAnnoTxt(p){
 const pnLab = (arr, k) => (arr.find(x => x[0] === k) || [0, k || ''])[1];
 const pnSoglia = p => PN_SOGLIE[p.tipo] || PN_SOGLIE.gruppo;
 
-// 28/11: chi può aprire quale piano. Gruppo: Capo Gruppo e Vice; Sezione: Commissario, Vice Commissario e chi nel Comitato ha l'incarico di Commissario; Clan: Coordinatore Senior
+// 28/11: chi può aprire quale piano. Gruppo: Capo Gruppo e Vice; Sezione: Commissario, Vice Commissario e Presidente (co-responsabile del Progetto di Sezione); Clan: Coordinatore Senior
 function pnTipoCrea(p){
   p = p || {}; const r = p.ruolo;
   if(r === 'cg' || r === 'vcg') return 'gruppo';
-  if(r === 'cds' || r === 'vcds' || (r === 'cos' && cosInc(p).includes('commissario'))) return 'sezione';
+  if(r === 'cds' || r === 'vcds' || r === 'pres') return 'sezione';
   if(r === 'coords') return 'clan';
   return '';
 }
 const PN_PER = {gruppo:'Per il Gruppo', sezione:'Per la Sezione', clan:'Per il Clan'};
 const PN_INTRO = {gruppo:'Il Piano di Gruppo riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Qui lo scrivi con il Consiglio di Gruppo.',
   sezione:'Il Progetto di Sezione riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Quando lo deliberi, i Gruppi della Sezione ne leggono gli obiettivi e possono portarli nel loro Piano.',
-  clan:'Il Progetto di Clan riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. I Gruppi della Sezione non lo vedono: è del Clan.'};
+  clan:'Il Progetto di Clan riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Lo leggono il Commissario, il Presidente e i Senior in Servizio della Sezione; i Gruppi non lo vedono.'};
+// ── letture dalla Sezione (nella home) ──
+// Senior: il Progetto di Clan deliberato della Sezione, intero, in sola lettura. Chi fa parte del Comitato di Sezione (Tesoriere, o chi ha messo la spunta) e non ha una pagina
+// di piano da cui leggerlo: gli obiettivi del Progetto di Sezione deliberato.
+const PN_STATO_LETT = {deliberato:'deliberato', approvato:'approvato dall’Assemblea'};
+async function pnLetturaHtml(){
+  const p = SH.prof || {}, E = esc; if(!CL.sb || !CL.user) return '';
+  let h = '';
+  if(p.ruolo === 'snr'){
+    let l = []; try{ l = await PIANI.pdcSenior(); }catch(e){ l = []; }
+    const righe = l.map(x => `<div class="pn-row"><div style="min-width:0"><b>${E(x.titolo || 'Progetto di Clan')}</b><div class="sh-hint" style="margin:2px 0 0">Progetto di Clan · ${E(pnPeriodo(x))} · ${E(pnAnnoTxt(x))} · ${E(PN_STATO_LETT[x.stato] || x.stato)}</div></div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="pnOpen('${E(x.id)}')">Leggi</button></div>`).join('');
+    h += `<h2 style="margin-top:14px">Il Progetto di Clan della tua Sezione</h2>` + (righe || `<p class="sh-sub" style="margin:0">Quando il Coordinatore Senior delibera il Progetto di Clan lo trovi qui, da leggere.</p>`);
+  }
+  const tc = pnTipoCrea(p);
+  if(cosMembro(p) && tc !== 'sezione' && tc !== 'gruppo'){   // Commissario, Vice e Presidente lo scrivono; Capo Gruppo e Vice lo leggono dalla pagina del Piano di Gruppo
+    let l = []; try{ l = await PIANI.pdsSezione(); }catch(e){ l = []; }
+    if(l.length) h += `<h2 style="margin-top:14px">Il Progetto di Sezione</h2>` + l.map(x => {
+      const ob = (x.obiettivi || []).filter(o => o && String(o.testo || '').trim());
+      return `<details class="pn-row" style="display:block"><summary style="cursor:pointer"><b>${E(x.titolo || 'Progetto di Sezione')}</b> <span class="sh-hint">· ${E(pnPeriodo(x))} · ${E(pnAnnoTxt(x))} · ${E(PN_STATO_LETT[x.stato] || x.stato)}</span></summary>${ob.length ? `<ol style="margin:8px 0 0 18px">${ob.map(o => `<li>${E(o.testo)}</li>`).join('')}</ol>` : `<p class="sh-hint" style="margin:8px 0 0">Nessun obiettivo scritto.</p>`}</details>`;
+    }).join('');
+  }
+  return h;
+}
 // ── elenco nella home ──
 async function pnHomeFill(){
   const box = $('sh-piani'); if(!box || !CL.sb || !CL.user) return;
   const tc = pnTipoCrea(SH.prof), crea = !!tc;
   let ok = false; try{ ok = await PIANI.pronto(); }catch(e){}
   if(SH.view !== 'home' || !$('sh-piani')) return;
-  const cardIn = (x) => { box.innerHTML = x; if(box.dataset.card) box.hidden = !x; };
+  let lett = ''; try{ lett = await pnLetturaHtml(); }catch(e){ lett = ''; }
+  if(SH.view !== 'home' || !$('sh-piani')) return;
+  const cardIn = (x) => { x = (x || '') + lett; box.innerHTML = x; if(box.dataset.card) box.hidden = !x; };
   if(!ok){ cardIn((crea && PIANI.ok === false) ? `<small>${PN_PER[tc]}</small><h2>${PIANI_TIPI[tc]}</h2><p class="sh-hint" style="margin:0">${PIANI_TIPI[tc] === 'Piano di Gruppo' ? 'Il Piano di Gruppo' : 'Il ' + PIANI_TIPI[tc]} sarà disponibile dopo l’aggiornamento del database (script SQL del 23 novembre).</p>` : ''); return; }
   let list = [], inv = [];
   try{ list = await PIANI.elenco(); inv = await PIANI.inviti(); }catch(e){ return; }
@@ -19745,7 +19787,7 @@ function pnMenu(){
   const d = PN.d, g = PN.p && PN.p.tipo === 'gruppo' && GI.ok === true, coord = pnTutto();
   const clan = PN.p && PN.p.tipo === 'clan';
   // Progetto di Clan: al posto degli «Spunti dalle Unità» le richieste dei Gruppi e le disponibilità del Clan (gli spunti già scritti restano visibili)
-  const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock']].concat(clan ? [['ric', 'Richieste dei Gruppi', 'users'], ['dis', 'Disponibilità e prospettive', 'flag']].concat(d.spunti && d.spunti.length ? [['spu', 'Spunti dalle Unità', 'list']] : []) : [['spu', 'Spunti dalle Unità', 'list']]);
+  const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock']].concat(clan ? (coord && (SH.prof || {}).ruolo === 'coords' ? [['ric', 'Richieste dei Gruppi', 'users']] : []).concat([['dis', 'Disponibilità e prospettive', 'flag']].concat(d.spunti && d.spunti.length ? [['spu', 'Spunti dalle Unità', 'list']] : [])) : [['spu', 'Spunti dalle Unità', 'list']]);
   // ordine di lavoro (27/11): Panoramica, Ascolto, Dove siamo, Obiettivi, Verifiche
   const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']].concat(lavoro)}];
   if(g){
@@ -20596,15 +20638,13 @@ window.pnShare = async function(){
 const PN_TIPO_ELENCO = {gruppo:'gruppo', sezione:'sezione', clan:'clan'};
 const PN_ELENCO_TIT = {gruppo:'Persone iscritte nel tuo Gruppo e in Sezione', sezione:'Persone iscritte nella tua Sezione', clan:'Persone di Sezione e Capi Gruppo iscritti'};
 function pnEtichettaDa(r){
-  const inc = (Array.isArray(r.incarichi) ? r.incarichi : []).map(x => String(x).toLowerCase());
   if(r.ruolo === 'cu' || r.ruolo === 'vcu') return 'Capo Unità'; if(r.ruolo === 'senior') return 'Senior in Servizio'; if(r.ruolo === 'vcg') return 'Vice Capo Gruppo';
-  if(r.ruolo === 'cds' || (r.ruolo === 'cos' && inc.includes('commissario'))) return 'Commissario di Sezione';
-  if(r.ruolo === 'cos' && inc.includes('presidente')) return 'Presidente'; if(r.ruolo === 'coords') return 'Coordinatore Senior'; return 'Altro';
+  if(r.ruolo === 'cds') return 'Commissario di Sezione';
+  if(r.ruolo === 'pres') return 'Presidente'; if(r.ruolo === 'tes') return 'Tesoriere'; if(r.ruolo === 'snr') return 'Senior'; if(r.ruolo === 'coords') return 'Coordinatore Senior'; return 'Altro';
 }
 function pnRuoloEt(r){
-  const base = ([...RUOLI, ...RUOLI_NUOVI].find(x => x[0] === r.ruolo) || [0, r.ruolo || ''])[1];
-  const inc = (Array.isArray(r.incarichi) ? r.incarichi : []).filter(Boolean);
-  return base + (r.ruolo === 'cos' && inc.length ? ' (' + inc.join(', ') + ')' : '');
+  const base = RUOLO_TXT[r.ruolo] || r.ruolo || '';
+  return base + (r.comitato && !cosAuto(r.ruolo) && r.ruolo !== 'cos' ? ' · Comitato di Sezione' : '');
 }
 async function pnShElenco(membri){
   const E = esc, tipo = PN_TIPO_ELENCO[PN.p.tipo]; if(!tipo) return '';
