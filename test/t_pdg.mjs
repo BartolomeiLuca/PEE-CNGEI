@@ -39,11 +39,25 @@ await C.ev(() => pnPdgPorta('g1', 'a1')); await sleep(400); ok(s1().length === 1
 await C.ev(() => pnPdgPorta('g1', 'a2')); await sleep(1800);
 ok(s1().length === 2 && JSON.stringify(s1()[1].aree) === '["gestionale"]', 'secondo obiettivo: solo le aree valide («personale» non è un’area del piano)');
 ok(await C.ev(() => document.querySelector('select[id^="pn-obo-"]').value) === 'gruppo', 'in «Da dove viene» risulta «Piano di Gruppo»');
+// Panoramica: «Piani dei Gruppi» (chi ha un Piano e chi no) e data dell'Assemblea
+db.t.pee_gruppi.push({sezione:'Pesaro', gruppo:'1'}, {sezione:'Pesaro', gruppo:'2'}, {sezione:'Pesaro', gruppo:'3'});
+await C.ev(() => pnOpen('s1')); await sleep(400); await C.ev(() => pnOpen('g1')); await sleep(900); await C.ev(() => pnOpen('s1')); await sleep(2300);
+await C.ev(() => pnSez('pan')); await sleep(500);
+const pg = await C.ev(() => (document.querySelector('#pn-pdgp') || {textContent:''}).textContent.replace(/\s+/g, ' '));
+ok(/2 Gruppi su 3 hanno un Piano/.test(pg), 'Panoramica: «2 Gruppi su 3 hanno un Piano» (' + pg.slice(0, 120) + ')');
+ok(/Gruppo 1 · bozza · .* · 2 obiettivi/.test(pg) && /Gruppo 2 · deliberato/.test(pg) && /Gruppo 3 · nessun Piano ancora/.test(pg), 'Panoramica: stato di ogni Gruppo e quello senza Piano');
+ok(!/OBIETTIVO DI FANO|PIANO VECCHIO/.test(pg), 'Panoramica: niente di altre Sezioni né di altri trienni');
+ok(await C.ev(() => document.getElementById('pn-asw').hidden), 'data dell’Assemblea nascosta finché il Progetto non è approvato');
+await C.ev(() => { const s = document.getElementById('pn-stato'); s.value = 'approvato'; s.dispatchEvent(new Event('change', {bubbles:true})); }); await sleep(500);
+ok(await C.ev(() => !document.getElementById('pn-asw').hidden), 'approvato: compare «Approvato dall’Assemblea di Sezione il»');
+await C.P.fill('#pn-asD', '2026-11-20'); await sleep(2800);
+ok(dbp('s1').data.delibera.assemblea === '2026-11-20', 'la data si salva');
 // Word
 await C.ev(() => pnSez('pan')); await sleep(400);
 const [dl] = await Promise.all([C.P.waitForEvent('download', {timeout:40000}), C.P.click('button[onclick="pnScarica()"]')]);
 const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const t = txt(await z.file('word/document.xml').async('string'));
 ok(/Da dove viene: Piano di Gruppo \(Piano di Gruppo · Gruppo 1 · obiettivo 1\)/.test(t), 'Word: «Da dove viene: Piano di Gruppo (… Gruppo 1 · obiettivo 1)»');
+ok(/Approvato dall’Assemblea\s+20\/11\/2026/.test(t), 'Word: «Approvato dall’Assemblea 20/11/2026»');
 // chi legge il Progetto
 const V = await mk('vcds');
 await V.ev(() => pnOpen('s1')); await sleep(1900); await V.ev(() => pnSez('obi')); await sleep(600);

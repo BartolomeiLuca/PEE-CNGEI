@@ -18940,7 +18940,7 @@ window.pnCrea = async function(){
     shDlgClose(); pnOpen(p.id);
   }catch(e){ b.disabled = false; m.className = 'sh-msg err'; m.textContent = pianoErr(e); }
 };
-window.pnOpen = function(id){ show('piano', id); };
+window.pnOpen = function(id){ PN.rip = true; show('piano', id); };
 window.pnBack = async function(){ await pnFlush(); pnLiveStop(); SH.rows = null; show('home'); };
 
 // ── apertura della pagina ──
@@ -18968,7 +18968,7 @@ function pnCarica(p){
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
   ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
-  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; PN.qf = {}; PN.pds = null; PN.pdg = null; }
+  if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; PN.qf = {}; PN.pds = null; PN.pdg = null; PN.pdgOk = false; }
   Object.assign(PN, {p, d:v, base:pnClone(v), meta:{titolo:p.titolo, stato:p.stato}, baseMeta:{titolo:p.titolo, stato:p.stato}, ruolo:p.ruolo || 'lettore', dirty:false, saving:false, again:false, st:'', sel:{}});
 }
 
@@ -19654,6 +19654,19 @@ function pnAzioniDa(anno, quale){
   const d = PN.d;
   return d.azioni.filter(a => (a.inizio || 1) <= anno && a.stato !== 'fatta' && (quale === 'fine' ? (a.verifica === 'ogni' || !a.verifica || String(a.verifica) === String(anno)) : quale === 'meta' ? (a.step === 'meta' || a.step === 'cdg') : a.step === 'cdg'));
 }
+// ── esito per azione dentro ogni tappa di verifica (27/11): Sì / In parte / No / Rimandata, con una nota. Sta nella tappa: t.esiti = {idAzione: {e, n}} ──
+const PN_ESITI = [['si', 'Sì'], ['parte', 'In parte'], ['no', 'No'], ['rinv', 'Rimandata']];
+const pnEsito = (t, a) => ((t && t.esiti) || {})[a.id] || null;
+// le azioni da guardare in una tappa, più quelle che hanno già un esito (anche se nel frattempo sono diventate «fatte»)
+function pnAzioniTappa(t){
+  const base = t.tipo === 'altra' ? [] : pnAzioniDa(t.anno, t.tipo), ids = new Set(base.map(a => a.id));
+  return base.concat(PN.d.azioni.filter(a => !ids.has(a.id) && pnEsito(t, a)));
+}
+// righe di testo dell'esito (Word, Excel): «Ob. 1 · azione: Sì — nota»
+function pnEsitiTxt(t){
+  return PN.d.azioni.filter(a => pnEsito(t, a)).map(a => { const x = pnEsito(t, a), i = PN.d.obiettivi.findIndex(o => o.id === a.ob);
+    return (i >= 0 ? 'Ob. ' + (i + 1) + ' · ' : '') + (a.testo || '(senza testo)') + ': ' + (pnLab(PN_ESITI, x.e) || 'senza esito') + ((x.n || '').trim() ? ' — ' + x.n.trim() : ''); });
+}
 function pnVerHTML(){
   const p = PN.p, d = PN.d, E = esc, tutto = pnTutto(), dis = tutto ? '' : ' disabled', cur = pnAnnoCur(p);
   let h = `<section class="pn-card" aria-labelledby="pn-ve-t"><h2 class="pn-h" id="pn-ve-t">Verifiche</h2>
@@ -19666,12 +19679,14 @@ function pnVerHTML(){
     h += `<section class="pn-card" aria-labelledby="pn-ve-a${k}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h3 class="pn-h" id="pn-ve-a${k}" style="margin:0">Anno ${k} · ${E(annoScoutTxt(p.anno_inizio + k - 1))}${k === cur ? ' <span class="sh-hint" style="margin:0">· quest’anno</span>' : ''}</h3>${tutto ? `<button class="sh-btn sm gh" style="margin-left:auto" type="button" onclick="pnTappaAdd(${k})">+ Un’altra verifica</button><button class="sh-btn sm gh" type="button" onclick="pnTappaAdd(${k},'cdg')">+ Consiglio di Gruppo</button>` : ''}</div>`;
     if(!T.length) h += `<p class="sh-hint" style="margin:0">Nessuna tappa in questo anno.</p>`;
     T.forEach(t => {
-      const lista = t.tipo === 'altra' ? [] : pnAzioniDa(k, t.tipo);
+      const lista = pnAzioniTappa(t), nEs = lista.filter(a => pnEsito(t, a)).length;
       h += `<div class="pn-ve${t.fatta ? ' ok' : ''}" id="pn-ve-${E(t.id)}"><div class="pn-ve-h"><b>${E(pnLab(PN_TAPPE, t.tipo))}</b>${tutto ? `<button class="pn-ib" type="button" aria-label="Elimina la tappa" onclick="pnTappaDel('${E(t.id)}')">✕</button>` : ''}</div>
         <div class="sh-hint" style="margin:0">${E((PN_TAPPE.find(x => x[0] === t.tipo) || [0, 0, ''])[2])}</div>
         <div class="sh-g2"><div><label class="sh-lb" for="pn-vd-${E(t.id)}">Data</label><input class="sh-in" type="date" id="pn-vd-${E(t.id)}" value="${E(t.data || '')}" oninput="pnTappa('${E(t.id)}','data',this.value)"${dis}></div>
         <label class="pn-chip${t.fatta ? ' on' : ''}" style="align-self:end"><input type="checkbox" ${t.fatta ? 'checked' : ''} onchange="pnTappa('${E(t.id)}','fatta',this.checked);this.parentNode.classList.toggle('on',this.checked);this.closest('.pn-ve').classList.toggle('ok',this.checked)"${dis}>Fatta</label></div>
-        ${lista.length ? `<details class="pn-det"><summary>Azioni da guardare · ${lista.length}</summary><ul class="pn-ul">${lista.map(a => { const i = d.obiettivi.findIndex(o => o.id === a.ob); return `<li>${i >= 0 ? `<b>Ob. ${i + 1}</b> · ` : ''}${E(a.testo || '(senza testo)')}${a.indicatore ? `<span class="sh-hint" style="display:block;margin:0">Indicatore: ${E(a.indicatore)}</span>` : ''}</li>`; }).join('')}</ul></details>` : (t.tipo === 'meta' ? '<p class="sh-hint" style="margin:0">Per far comparire qui le azioni, in «Obiettivi e azioni» scegli «Anche a metà anno» nel controllo intermedio.</p>' : '')}
+        ${lista.length ? `<details class="pn-det" id="pn-vl-${E(t.id)}"><summary>Azioni da guardare · ${lista.length}${nEs ? ` · ${nEs} con esito` : ''}</summary><ul class="pn-ul">${lista.map(a => { const i = d.obiettivi.findIndex(o => o.id === a.ob), x = pnEsito(t, a) || {e:'', n:''}; return `<li class="pn-es"><div>${i >= 0 ? `<b>Ob. ${i + 1}</b> · ` : ''}${E(a.testo || '(senza testo)')}${a.indicatore ? `<span class="sh-hint" style="display:block;margin:0">Indicatore: ${E(a.indicatore)}</span>` : ''}</div>
+          <div class="pn-es-c"><label class="sh-lb" for="pn-es-${E(t.id)}-${E(a.id)}">Esito</label><select class="sh-in" id="pn-es-${E(t.id)}-${E(a.id)}" onchange="pnEsitoSet('${E(t.id)}','${E(a.id)}','e',this.value)"${dis}><option value="">— da dire</option>${PN_ESITI.map(([k, tt]) => `<option value="${k}"${x.e === k ? ' selected' : ''}>${tt}</option>`).join('')}</select>
+          <label class="sh-lb" for="pn-esn-${E(t.id)}-${E(a.id)}">Nota</label><textarea class="sh-in pn-ta" id="pn-esn-${E(t.id)}-${E(a.id)}" rows="1" maxlength="400" placeholder="Facoltativa" oninput="pnEsitoSet('${E(t.id)}','${E(a.id)}','n',this.value);pnGrow(this)"${dis}>${E(x.n || '')}</textarea></div></li>`; }).join('')}</ul></details>` : (t.tipo === 'meta' ? '<p class="sh-hint" style="margin:0">Per far comparire qui le azioni, in «Obiettivi e azioni» scegli «Anche a metà anno» nel controllo intermedio.</p>' : '')}
         <div><label class="sh-lb" for="pn-vn-${E(t.id)}">${t.tipo === 'cdg' ? 'Cosa si è detto del Piano' : 'Cosa è emerso e cosa cambiamo'}</label><textarea class="sh-in pn-ta" id="pn-vn-${E(t.id)}" rows="3" placeholder="${t.tipo === 'cdg' ? 'Anche poche righe: a che punto siamo, cosa si decide.' : 'Anche poche righe: cosa va, cosa no, cosa si cambia nel Piano.'}" oninput="pnTappa('${E(t.id)}','note',this.value);pnGrow(this)"${dis}>${E(t.note || '')}</textarea></div></div>`;
     });
     h += `</section>`;
@@ -19686,6 +19701,14 @@ window.pnTappeProponi = function(){
 };
 window.pnTappaAdd = function(anno, tipo){ if(!pnTutto()) return; const t = {id:pnUid(), anno, tipo:tipo === 'cdg' ? 'cdg' : 'altra', data:'', fatta:false, note:''}; PN.d.tappe.push(t); pnTouch(); pnRender(); const e = $('pn-vd-' + t.id); if(e) e.focus(); };
 window.pnTappa = function(id, k, v){ const t = PN.d.tappe.find(x => x.id === id); if(!t || !pnTutto()) return; t[k] = v; pnTouch(); };
+window.pnEsitoSet = function(tid, aid, k, v){
+  const t = PN.d.tappe.find(x => x.id === tid); if(!t || !pnTutto() || !PN.d.azioni.some(a => a.id === aid)) return;
+  const es = Object.assign({}, t.esiti || {}), x = Object.assign({e:'', n:''}, es[aid] || {});
+  x[k] = k === 'e' ? (PN_ESITI.some(([q]) => q === v) ? v : '') : String(v || '').slice(0, 400);
+  if(!x.e && !(x.n || '').trim()) delete es[aid]; else es[aid] = x;
+  t.esiti = es; pnTouch();
+  if(k === 'e'){ const sm = document.querySelector('#pn-vl-' + tid + ' summary'); if(sm){ const n = Object.keys(es).filter(q => PN.d.azioni.some(a => a.id === q)).length; sm.textContent = sm.textContent.replace(/ · \d+ con esito$/, '') + (n ? ' · ' + n + ' con esito' : ''); } }
+};
 window.pnTappaDel = function(id){ if(!pnTutto()) return; const t = PN.d.tappe.find(x => x.id === id); if(t && (t.note || '').trim() && !confirm('Eliminare questa tappa e le sue note?')) return; PN.d.tappe = PN.d.tappe.filter(x => x.id !== id); pnTouch(); pnRender(); };
 
 // ── la pagina ──
@@ -19706,7 +19729,7 @@ function pnRender(){
       <button class="sh-btn sm gh" type="button" onclick="pnShare()">Chi ha accesso</button><button class="sh-btn sm gh" type="button" onclick="pnStorico()">Storico</button><button class="sh-btn sm gh" type="button" onclick="pnScarica()">Scarica il piano</button></div>
     ${ro ? '<p class="sh-hint" style="margin:0">Puoi leggere il piano. I pareri si raccolgono in presenza: qui non si modifica.</p>' : ''}
   </section>`;
-  h += `<div class="pn-lay">${pnSideHTML(sez)}<div class="pn-pane" id="pn-pane" tabindex="-1">${pnPaneHTML(sez)}</div></div></main>`;
+  h += `<div class="pn-lay">${pnSideHTML(sez)}<div class="pn-pane" id="pn-pane" tabindex="-1">${pnRiprendiHTML(sez)}${pnPaneHTML(sez)}</div></div></main>`;
   r.innerHTML = h;
   pnRefresh(); pnStato(); r.querySelectorAll('.pn-ta').forEach(pnGrow); pnSelBtn();
   { const sd = r.querySelector('.pn-side'), on = sd && sd.querySelector('.sh-si.on'); if(sd && on && sd.scrollWidth > sd.clientWidth + 4) sd.scrollLeft = Math.max(0, on.offsetLeft - 24); }   // sul telefono il menu scorre di lato: la voce attiva resta in vista
@@ -19742,8 +19765,16 @@ function pnSideHTML(cur){
   const E = esc;
   return `<nav class="pn-side" aria-label="Sezioni del piano">` + pnMenu().map(G => `<div class="sh-sg">${E(G.g)}</div>` + G.it.map(([id, t, ic]) => `<button type="button" id="pn-sb-${id}" class="sh-si${cur === id ? ' on' : ''}" ${cur === id ? 'aria-current="page"' : ''} onclick="pnSez('${id}')">${ico(ic)}<span>${E(t)}</span></button>`).join('')).join('') + `</nav>`;
 }
+// «Riprendi da dove eri» (27/11): l'ultima voce del piano in cui si è stati, per piano, su questo dispositivo; compare nella Panoramica quando si apre il piano
+const pnPosGet = id => { try{ return (JSON.parse(localStorage.getItem('pee_pn_pos') || '{}'))[id] || ''; }catch(e){ return ''; } };
+const pnPosSet = (id, v) => { try{ const o = JSON.parse(localStorage.getItem('pee_pn_pos') || '{}'); o[id] = v; localStorage.setItem('pee_pn_pos', JSON.stringify(o)); }catch(e){} };
+function pnRiprendiHTML(cur){
+  const pos = PN.rip && PN.p ? pnPosGet(PN.p.id) : '', it = pos && pos !== cur && pnMenu().reduce((a, G) => a.concat(G.it), []).find(x => x[0] === pos);
+  return it ? `<section class="pn-card" aria-label="Riprendi da dove eri"><p class="sh-sub" style="margin:0">L’ultima volta eri in <b>${esc(it[1])}</b>.</p><div><button class="sh-btn sm" type="button" id="pn-riprendi" onclick="pnSez('${esc(pos)}')">Riprendi da dove eri</button></div></section>` : '';
+}
 window.pnSez = async function(id){
   if(id === PN.sez) return; await giFlush();
+  PN.rip = false; if(PN.p && id !== 'pan') pnPosSet(PN.p.id, id);
   PN.sez = id; pnRender(); if(id.indexOf('g-') === 0) giCarica(true);
   const r = $('sh-root'); if(r) r.scrollTop = 0;
 };
@@ -19791,6 +19822,17 @@ function pnQWordSez(){
     });
   });
   kids.push(new D.Table({width:{size:LW + mw * N, type:D.WidthType.DXA}, columnWidths:[LW].concat(M.map(() => mw)), layout:D.TableLayoutType.FIXED, rows:trs}));
+  // per organo (documento attuativo)
+  { const og = pnQOrg(R); if(og.length){
+    kids.push(dH3('Per organo')); kids.push(dPara('Le stesse azioni, raggruppate per chi le porta avanti, nell’ordine del tempo.', {size:16, color:'555555', after:80}));
+    const Wo = [4300, 3000, 1800, 2100, 2100, 1270];
+    og.forEach(g => {
+      kids.push(dPara(g.t + ' · ' + g.righe.length + (g.righe.length === 1 ? ' azione' : ' azioni'), {size:19, bold:true, color:BLU, before:100, after:40, keepNext:true}));
+      const rr = [['Azione', 'Obiettivo', 'Referente', 'Quando', 'Si verifica', 'Stato'].map((h, i) => dCell(dPara(h, {size:16, bold:true, color:'FFFFFF', after:0}), {w:Wo[i], fill:BLU, border:BLU}))];
+      g.righe.forEach(({a, o, i}) => { const dk = pnHx(pnColOb(o)[0]), X = (t, k, o2) => dCell(t, Object.assign({w:Wo[k], size:16, vAlign:D.VerticalAlign.TOP}, o2 || {}));
+        rr.push([X([dPara(a.testo || '(senza testo)', {size:16, after:0}), ...(a.urgente ? [dPara('★ Urgente', {size:14, bold:true, color:'B03A2E', after:0})] : [])], 0, {fill:pnMix(dk, .9)}), X((i + 1) + ' · ' + ((o.testo || '(senza testo)').length > 70 ? o.testo.slice(0, 68) + '…' : (o.testo || '(senza testo)')), 1), X((a.ref || '').trim() || '—', 2), X(pnQuando(a, p), 3), X(pnVerTxt(a), 4), X(pnLab(PN_STATI_AZ, a.stato || 'da_iniziare'), 5, {bold:true, color:dk})]); });
+      kids.push(dTable(rr, Wo, true, true));
+    }); } }
   if(sciolte.length) kids.push(dPara(sciolte.length + (sciolte.length === 1 ? ' azione senza mese: non compare nella timeline' : ' azioni senza mese: non compaiono nella timeline') + ' (nella tabella dice «mese da scegliere»).', {size:15, color:'B06A00', before:80, after:40}));
   kids.push(dPara('Ritmi fissi: ' + PN_RITMI_TXT.map(([a, b]) => a + ', ' + b).join(' · ') + '.', {size:15, color:'555555', before:80, after:0}));
   return kids;
@@ -19875,7 +19917,13 @@ async function pnQExcel(){
     // foglio 3: le verifiche
     const wv = wb.addWorksheet('Verifiche'); setup(wv); wv.columns = [{width:10}, {width:28}, {width:14}, {width:8}, {width:70}]; intest(wv, 5, 'Verifiche');
     ['Anno', 'Tappa', 'Data', 'Fatta', 'Cosa è emerso e cosa cambiamo'].forEach((h, i) => { const c = wv.getCell(4, i + 1); c.value = h; c.font = F({bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.border = box; });
-    pnTappeOrd().forEach((t, k) => [ 'Anno ' + t.anno, pnLab(PN_TAPPE, t.tipo), giData(t.data), t.fatta ? 'Sì' : 'No', t.note || '' ].forEach((x, i) => { const c = wv.getCell(5 + k, i + 1); c.value = x || null; c.font = F(); c.border = box; c.alignment = {vertical:'top', wrapText:true}; }));
+    pnTappeOrd().forEach((t, k) => [ 'Anno ' + t.anno, pnLab(PN_TAPPE, t.tipo), giData(t.data), t.fatta ? 'Sì' : 'No', [t.note || ''].concat(pnEsitiTxt(t)).filter(Boolean).join('\n') ].forEach((x, i) => { const c = wv.getCell(5 + k, i + 1); c.value = x || null; c.font = F(); c.border = box; c.alignment = {vertical:'top', wrapText:true}; }));
+    // foglio 4: per organo (documento attuativo)
+    { const og = pnQOrg(R); if(og.length){ const wo = wb.addWorksheet('Per organo'); setup(wo); wo.columns = [{width:20}, {width:6}, {width:36}, {width:44}, {width:22}, {width:26}, {width:26}, {width:13}, {width:9}]; intest(wo, 9, 'Per organo · le azioni raggruppate per chi le porta avanti');
+      ['Organo', 'N.', 'Obiettivo', 'Azione', 'Referente', 'Quando', 'Si verifica', 'Stato', 'Urgente'].forEach((h, i) => { const c = wo.getCell(4, i + 1); c.value = h; c.font = F({bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.border = box; c.alignment = {vertical:'middle', wrapText:true}; });
+      let q = 5; og.forEach(g => g.righe.forEach(({a, o, i}) => { const dk = pnHx(pnColOb(o)[0]);
+        [g.t, i + 1, o.testo || '(senza testo)', a.testo || '(senza testo)', (a.ref || '').trim(), pnQuando(a, p), pnVerTxt(a), pnLab(PN_STATI_AZ, a.stato || 'da_iniziare'), a.urgente ? '★' : ''].forEach((x, k) => { const c = wo.getCell(q, k + 1); c.value = x === '' ? null : x; c.font = F(k === 7 ? {bold:true, color:{argb:'FF' + dk}} : {}); c.border = box; c.alignment = {vertical:'top', wrapText:true, horizontal:k === 1 || k === 8 ? 'center' : 'left'}; }); q++; }));
+      wo.autoFilter = {from:{row:4, column:1}, to:{row:Math.max(4, q - 1), column:9}}; wo.views = [{state:'frozen', ySplit:4, showGridLines:false}]; } }
     const buf = await rtXlsxBuf(wb);
     axDownload(new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Quadro_' + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.xlsx'); clToast('Excel del Quadro pronto.');
   }catch(e){ clToast('Impossibile creare l’Excel: ' + (e && e.message || e)); }
@@ -19896,6 +19944,7 @@ window.pnScarica = async function(){
     titolo.push(dPara('', {size:8, after:120}));
     const kv = [['Stato', pnLab(PN_STATI, PN.meta.stato)]];
     if(d.titolareNome) kv.push(['Titolare', d.titolareNome]);
+    if(p.tipo === 'sezione' && PN.meta.stato === 'approvato' && d.delibera.assemblea) kv.push(['Approvato dall’Assemblea', giData(pnDataIso(d.delibera.assemblea)) || T(d.delibera.assemblea)]);
     if(PN.meta.stato !== 'bozza' && (d.delibera.data || d.delibera.luogo)) kv.push(['Delibera in presenza', [giData(pnDataIso(d.delibera.data)) || T(d.delibera.data), T(d.delibera.luogo)].filter(Boolean).join(' · ')]);
     const kvw = (() => { const w = [1500, PN_C2 - 260 - 1500 - 60], out = []; kv.forEach(([l, v]) => dSplitRows(l, dMulti(X(v)), w).forEach(r => out.push(r))); return dTable(out, w, true); })();
     ch.push(pnCartaTabella(lett, titolo, [kvw]), dPara('', {size:8, after:120}));
@@ -19924,7 +19973,7 @@ window.pnScarica = async function(){
       if(col.length){ ch.push(dH3('Piano strategico nazionale')); ch.push(dGridTable(['Indirizzo', 'Prioritario 2027-2030', 'Obiettivi del piano'], col.map(({i, ob}) => [X(i.id + ' · ' + i.t), i.prior ? 'Sì' : 'No', ob.join(', ')]), [5638, 2000, 2000], 16)); } }
     if((d.tappe || []).length){
       ch.push(dH3('Verifiche'));
-      ch.push(dGridTable(['Anno', 'Tappa', 'Data', 'Fatta', 'Cosa è emerso e cosa cambiamo'], pnTappeOrd().map(t => ['Anno ' + t.anno, pnLab(PN_TAPPE, t.tipo), giData(t.data), t.fatta ? 'Sì' : 'No', X(t.note)]), [900, 2300, 1300, 800, 4338], 16));
+      ch.push(dGridTable(['Anno', 'Tappa', 'Data', 'Fatta', 'Cosa è emerso e cosa cambiamo'], pnTappeOrd().map(t => ['Anno ' + t.anno, pnLab(PN_TAPPE, t.tipo), giData(t.data), t.fatta ? 'Sì' : 'No', [X(t.note)].concat(pnEsitiTxt(t).map(X)).filter(Boolean).join('\n')]), [900, 2300, 1300, 800, 4338], 16));
     }
     if(d.spunti.length){ ch.push(dH3('Spunti dalle Unità')); d.spunti.forEach(s => ch.push(dPara((s.da ? s.da + ': ' : '') + T(s.testo), {size:19, bullet:true, after:40}))); }
     if(d.uniti.length){ ch.push(dH3('Obiettivi uniti (note)')); d.uniti.forEach(u => ch.push(dPara(T(u.testo) || '—', {size:19, bullet:true, after:40}))); }
@@ -19944,7 +19993,9 @@ function pnPaneHTML(id){
     <div><label class="sh-lb" for="pn-sez">Sezione</label><input class="sh-in" id="pn-sez" list="pn-dl-sez" autocomplete="off" maxlength="80" placeholder="Scrivi le prime lettere e scegli" value="${E(d.sezione || '')}" oninput="pnSezione(this.value)" aria-describedby="pn-sezh"${dis}><datalist id="pn-dl-sez">${sezOpts()}</datalist><p class="sh-hint" id="pn-sezh" style="margin:4px 0 0">Compare sulla carta intestata del Word e dell’Excel.${d.sezione ? (sezIn(d.sezione) ? '' : ' Scegli una Sezione dall’elenco: serve a riconoscerla.') : ' Se la lasci vuota si usa quella del tuo profilo.'}</p></div>
     ${p.tipo === 'gruppo' ? `<div><label class="sh-lb" for="pn-grp">Gruppo</label><input class="sh-in" id="pn-grp" autocomplete="off" maxlength="80" placeholder="es. Gruppo 1 · Kontiki" value="${E(d.gruppo || pnGruppoPiano())}" oninput="pnGruppoSet(this.value)" aria-describedby="pn-grph"${dis}><p class="sh-hint" id="pn-grph" style="margin:4px 0 0">Numero e, se c’è, nome del Gruppo: compaiono sotto il titolo del Word.</p></div>` : ''}
     <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" type="date" aria-label="Data della delibera" value="${E(pnDataIso(d.delibera.data))}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" aria-label="Luogo della delibera" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div>${d.delibera.data && !pnDataIso(d.delibera.data) ? `<p class="sh-hint" id="pn-delOld" style="margin:4px 0 0">Avevi scritto «${E(d.delibera.data)}»: scegli la data dal calendario.</p>` : ''}</div></div>
+    ${p.tipo === 'sezione' ? `<div id="pn-asw"${PN.meta.stato === 'approvato' ? '' : ' hidden'}><label class="sh-lb" for="pn-asD">Approvato dall’Assemblea di Sezione il</label><input class="sh-in" id="pn-asD" type="date" value="${E(pnDataIso(d.delibera.assemblea || ''))}" oninput="pnDel('assemblea',this.value)"${dis}><p class="sh-hint" style="margin:4px 0 0">Compare nel Word.</p></div>` : ''}
     </section>`;
+  h += pnPdgPanHTML();
   { const pr = pnProssima(); h += `<section class="pn-card" aria-labelledby="pn-pv-t"><h2 class="pn-h" id="pn-pv-t">Prossima verifica</h2><p class="sh-sub" style="margin:0" id="pn-prox">${pr ? E(pnTappaNome(pr)) : (d.tappe.length ? 'Tutte le tappe sono fatte.' : 'Nessuna tappa segnata.')}</p><div><button class="sh-btn sm gh" type="button" onclick="pnSez('ver')">Vai alle verifiche</button></div></section>`; }
   h += `<section class="pn-card" aria-labelledby="pn-sin-t"><h2 class="pn-h" id="pn-sin-t">Quadro sinottico</h2><div id="pn-sin"></div><div id="pn-avv"></div></section>`;
   }
@@ -20072,12 +20123,37 @@ function pnQRighe(tutte){
     return (sulleAzioni && !az.length) ? null : {o, i, az};
   }).filter(Boolean);
 }
+// «Per organo» (Fermignano, documento attuativo): le stesse azioni raggruppate per chi le porta avanti, nell'ordine del tempo
+function pnQOrg(R){
+  const gr = PN_CHI.map(([k, t]) => ({k, t, righe:[]})), senza = {k:'', t:'Senza organo', righe:[]};
+  R.forEach(({o, i, az}) => az.forEach(a => { const ks = (a.chi || []).filter(k => gr.some(g => g.k === k)); (ks.length ? ks : ['']).forEach(k => (gr.find(g => g.k === k) || senza).righe.push({a, o, i})); }));
+  const mese = x => x.a.mese || '9999';
+  return gr.concat([senza]).filter(g => g.righe.length).map(g => Object.assign(g, {righe:g.righe.sort((x, y) => mese(x) < mese(y) ? -1 : mese(x) > mese(y) ? 1 : x.i - y.i)}));
+}
+function pnQPerOrgano(R){
+  const E = esc, p = PN.p; let h = '';
+  pnQOrg(R).forEach(g => {
+    h += `<section class="pn-org" aria-label="${E(g.t)}"><h3 class="pn-orgh">${E(g.t)} <small>· ${g.righe.length} ${g.righe.length === 1 ? 'azione' : 'azioni'}</small></h3><div class="pn-tw"><table class="pn-qt" aria-label="Azioni di ${E(g.t)}"><thead><tr><th scope="col">Azione</th><th scope="col">Obiettivo</th><th scope="col">Referente</th><th scope="col">Quando</th><th scope="col">Si verifica</th><th scope="col">Stato</th></tr></thead><tbody>`;
+    g.righe.forEach(({a, o, i}) => {
+      const st = PN_ST_SEG[a.stato || 'da_iniziare'] || PN_ST_SEG.da_iniziare, c = pnColOb(o);
+      h += `<tr class="pn-qa${a.stato === 'fatta' ? ' fatta' : ''}" style="--c:${c[0]};--p:${c[1]}"><td data-l="Azione"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}</td>
+        <td data-l="Obiettivo"><span class="pn-qn">${i + 1}</span> ${E((o.testo || '(senza testo)').length > 70 ? o.testo.slice(0, 68) + '…' : (o.testo || '(senza testo)'))}</td>
+        <td data-l="Referente">${(a.ref || '').trim() ? E(a.ref) : '<span class="pn-no">—</span>'}</td>
+        <td data-l="Quando">${a.mese ? E(pnQuando(a, p)) : `<span class="pn-manca">${E(pnQuando(a, p))}</span>`}</td>
+        <td data-l="Si verifica">${E(pnVerTxt(a))}</td>
+        <td data-l="Stato"><span class="pn-stc s-${E(a.stato || 'da_iniziare')}"><span aria-hidden="true">${st[0]}</span> ${E(st[1])}</span></td></tr>`;
+    });
+    h += `</tbody></table></div></section>`;
+  });
+  return h;
+}
 function pnQCorpo(){
   const E = esc, d = PN.d, p = PN.p, R = pnQRighe(), f = PN.qf || {};
   const tutte = d.azioni, nU = tutte.filter(a => a.urgente).length, nM = tutte.filter(a => !a.mese).length, nR = tutte.filter(a => !(a.ref || '').trim()).length;
   let h = `<p class="sh-hint" style="margin:0" id="pn-q-conta">${d.obiettivi.length} ${d.obiettivi.length === 1 ? 'obiettivo' : 'obiettivi'} · ${tutte.length} ${tutte.length === 1 ? 'azione' : 'azioni'}${nU ? ` · ${nU} urgent${nU === 1 ? 'e' : 'i'}` : ''}${nM ? ` · ${nM} senza mese` : ''}${nR ? ` · ${nR} senza referente` : ''}</p>`;
   if(!d.obiettivi.length) return h + `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo, in «Obiettivi e azioni».</p>`;
   if(!R.length) return h + `<p class="sh-sub" style="margin:0">Nessuna azione con questi filtri.</p>`;
+  if(f.vista === 'org') return h + pnQPerOrgano(R);
   if(f.vista === 'tl') return h + pnQTimeline(R);
   if(f.vista === 'cal') return h + pnQCal(R);
   h += `<div class="pn-tw"><table class="pn-qt" aria-label="Quadro degli obiettivi e delle azioni"><thead><tr><th scope="col">Obiettivo e azioni</th><th scope="col">Referente</th><th scope="col">Organo</th><th scope="col">Quando</th><th scope="col">Si verifica</th><th scope="col">Stato</th></tr></thead>`;
@@ -20102,7 +20178,7 @@ function pnQCorpo(){
 // Ritmi fissi, con la fonte: cambiare solo qui. Il mese suggerito per la verifica di metà anno è «entro marzo» (Manuale del Capo Gruppo, pp. 51-52).
 const PN_META_MESE = 3;
 const PN_RITMI_TXT = [['Consiglio di Gruppo', 'almeno ogni due mesi (Regolamento, art. ConsG1)'], ['Verifica di metà anno', 'entro marzo (Manuale del Capo Gruppo, p. 52)'], ['Verifica di fine anno', 'ogni anno, con la data che fissi in «Verifiche»']];
-const PN_VISTE = [['tab', 'Tabella'], ['tl', 'Timeline'], ['cal', 'Calendario']];
+const PN_VISTE = [['tab', 'Tabella'], ['org', 'Per organo'], ['tl', 'Timeline'], ['cal', 'Calendario']];
 // azioni e tappe messe sui mesi del piano (indici in pnMesi)
 function pnQEv(R){
   const p = PN.p, M = pnMesi(p), N = M.length, ix = k => M.findIndex(m => m.k === k), ev = [], sciolte = [];
@@ -20300,10 +20376,25 @@ window.pnPdsLega = function(id, v){
 // ── dai Piani di Gruppo al Progetto di Sezione («Porta dai Gruppi») ──
 // Chi guida la Sezione legge gli obiettivi dei Piani di Gruppo della propria Sezione (solo testo, aree e indirizzi nazionali) e porta nel Progetto quelli che servono.
 async function pnPdgCarica(p){
-  if(!p || p.tipo !== 'sezione' || pnTipoCrea(SH.prof) !== 'sezione'){ PN.pdg = null; return; }
-  let l = []; try{ l = await PIANI.pdgSezione(); }catch(e){ l = []; }
+  if(!p || p.tipo !== 'sezione' || pnTipoCrea(SH.prof) !== 'sezione'){ PN.pdg = null; PN.pdgOk = false; return; }
+  let l = [], okk = false; try{ l = await PIANI.pdgSezione(); okk = true; }catch(e){ l = []; }
+  try{ if(okk) await grpFetch(pnSezPiano()); }catch(e){}
   if(!PN.p || PN.p.id !== p.id) return;
-  PN.pdg = l; if(PN.sez === 'obi' && !PN.dirty && !PN.saving) pnRender();
+  PN.pdg = l; PN.pdgOk = okk; if((PN.sez === 'obi' || PN.sez === 'pan') && !PN.dirty && !PN.saving) pnRender();
+}
+// «Piani dei Gruppi della Sezione» (Panoramica del Progetto di Sezione): per ogni Gruppo presente nell'app, se ha un Piano, in che stato, per quali anni
+function pnPdgPanHTML(){
+  if(!PN.p || PN.p.tipo !== 'sezione' || !PN.pdgOk) return '';
+  const E = esc, a = PN.p.anno_inizio, b = a + (PN.p.durata || 3) - 1, key = g => String(g || '').trim().toLowerCase(), righe = new Map();
+  grpKnown(pnSezPiano()).forEach(g => righe.set(key(g), {g, piani:[]}));
+  (PN.pdg || []).filter(x => x && x.anno_inizio <= b && x.anno_inizio + (x.durata || 3) - 1 >= a).forEach(x => { const k = key(x.gruppo); if(!k) return; if(!righe.has(k)) righe.set(k, {g:x.gruppo, piani:[]}); righe.get(k).piani.push(x); });
+  const R = [...righe.values()].sort((x, y) => String(x.g).localeCompare(String(y.g), 'it', {numeric:true})); if(!R.length) return '';
+  const con = R.filter(r => r.piani.length).length, lab = x => { let g = ''; try{ g = grpLabel(x); }catch(e){} return g || String(x); };
+  return `<section class="pn-card" id="pn-pdgp" aria-labelledby="pn-pdgp-t"><h2 class="pn-h" id="pn-pdgp-t" style="margin:0">Piani dei Gruppi</h2>
+    <p class="sh-sub" style="margin:0">${con} ${R.length === 1 ? 'Gruppo' : 'Gruppi'} su ${R.length} ${con === 1 ? 'ha' : 'hanno'} un Piano per questi anni.</p>
+    <ul class="pn-ul">${R.map(r => { const x = r.piani.sort((u, v) => v.anno_inizio - u.anno_inizio)[0];
+      return `<li><b>${E(lab(r.g))}</b> · ${x ? `${E(pnLab(PN_STATI, x.stato).toLowerCase())} · ${E(annoScoutTxt(x.anno_inizio) + ' → ' + annoScoutTxt(x.anno_inizio + (x.durata || 3) - 1))} · ${(x.obiettivi || []).length} ${(x.obiettivi || []).length === 1 ? 'obiettivo' : 'obiettivi'}` : '<span class="pn-manca">nessun Piano ancora</span>'}</li>`; }).join('')}</ul>
+    <p class="sh-hint" style="margin:0">Compaiono i Gruppi della Sezione presenti nell’app. Gli obiettivi si portano nel Progetto da «Obiettivi e azioni».</p></section>`;
 }
 function pnPdgElenco(){
   if(!PN.p || PN.p.tipo !== 'sezione') return [];
@@ -20333,7 +20424,7 @@ window.pnVai = function(id){ PN.open[id] = true; if(PN.sez !== 'obi'){ PN.sez = 
 
 // ── modifiche ──
 window.pnMeta = function(k, v){ if(!pnTutto()) return; PN.meta[k] = v;
-  if(k === 'stato'){ const w = $('pn-delw'); if(w) w.hidden = v === 'bozza'; try{ if(v !== PN.baseMeta.stato && PIANI.puoScrivere(PN.ruolo)) PN.versioneStato = {stato:v}; }catch(e){} }
+  if(k === 'stato'){ const w = $('pn-delw'); if(w) w.hidden = v === 'bozza'; const as = $('pn-asw'); if(as) as.hidden = v !== 'approvato'; try{ if(v !== PN.baseMeta.stato && PIANI.puoScrivere(PN.ruolo)) PN.versioneStato = {stato:v}; }catch(e){} }
   pnTouch(); if(k === 'stato') pnVersioneStato(); };
 async function pnVersioneStato(){ // quando cambia lo stato (deliberato, approvato) resta una copia nello storico
   const v = PN.versioneStato; PN.versioneStato = null; if(!v || !PN.p) return;
@@ -20943,6 +21034,8 @@ body.sh-in .toast{pointer-events:none}
 .pn-az-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .pn-mancante{border-style:dashed!important;border-color:var(--amber)!important}
 .pn-qf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.pn-es{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:8px 14px;align-items:start;padding:8px 0;border-top:1px solid #ECECE4;list-style:none}.pn-es-c{display:grid;gap:4px}@media(max-width:700px){.pn-es{grid-template-columns:1fr}}
+.pn-orgh{margin:14px 0 6px;font-size:15px}.pn-orgh small{font-weight:500;color:#6B6B64;font-size:12px}.pn-org .pn-qa td:first-child{border-left:4px solid var(--c,#6B6B64)}
 .pn-qt{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 .pn-qt thead th{position:sticky;top:0;background:#fff;text-align:left;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#3D3D38;padding:8px 8px;border-bottom:2px solid #D8D8D0}
 .pn-qo{border-left:6px solid var(--c)}

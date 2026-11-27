@@ -23,7 +23,7 @@ db.t.pee_piani_membri.push({id:'m1', piano_id:'p1', email:'vera@x.it', ruolo:'le
 const mk = async (k, w) => { const pa = await person(br, db, {ctx:{viewport:{width:w || 1280, height:900}}}); await pa.page.clock.setFixedTime(new Date('2026-12-10T10:00:00+01:00')); await loginAs(pa.page, base, U[k]); await sleep(1800); return {pa, P:pa.page, ev:(f, a) => pa.page.evaluate(f, a)}; };
 const L = await mk('luca');
 await L.ev(() => pnOpen('p1')); await sleep(1600); await L.P.click('#pn-sb-qua'); await sleep(400);
-ok(await L.ev(() => [...document.querySelectorAll('.pn-seg .pn-segb')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')).join()) === 'Tabella:true,Timeline:false,Calendario:false', 'tre viste: Tabella, Timeline, Calendario (si parte dalla Tabella)');
+ok(await L.ev(() => [...document.querySelectorAll('.pn-seg .pn-segb')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')).join()) === 'Tabella:true,Per organo:false,Timeline:false,Calendario:false', 'quattro viste: Tabella, Per organo, Timeline, Calendario (si parte dalla Tabella)');
 // ── timeline ──
 await L.P.click('#pn-qv-tl'); await sleep(300);
 ok(await L.ev(() => !!document.querySelector('.pn-tl') && !document.querySelector('.pn-qt')), 'la timeline sostituisce la tabella');
