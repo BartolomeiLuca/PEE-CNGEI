@@ -125,7 +125,7 @@ ok(await luca.ev((id) => PIANI.apri(id), p0.id) === null && db.t.pee_piani_membr
 db.sqlPiani = false;
 ok(await luca.ev(() => PIANI.pronto(true)) === false, 'senza lo script SQL: «pronto» dice no');
 const mancante = await errDi(luca, `await PIANI.elenco()`);
-ok(mancante && /script SQL del 23 novembre/.test(mancante.msg), 'senza lo script SQL: messaggio chiaro («' + (mancante && mancante.msg) + '»)');
+ok(mancante && /script SQL del 28 novembre/.test(mancante.msg), 'senza lo script SQL: messaggio chiaro («' + (mancante && mancante.msg) + '»)');
 ok(await luca.ev(() => PIANI.ok) === false, 'l\'app ricorda che le tabelle mancano (nessuna richiesta ripetuta)');
 db.sqlPiani = true;
 ok(await luca.ev(() => PIANI.pronto(true)) === true, 'dopo lo script SQL: «pronto» dice sì');

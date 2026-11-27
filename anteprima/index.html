@@ -10423,6 +10423,7 @@ function uscFull(){ try{ if(window.BRO) return false; return typeof CL==='undefi
 // uscite dello staff: chi non è titolare né co-titolare (collaboratore, lettore) vede solo i momenti che gli sono affidati, salvo che il titolare le «apra» (u.aperta). Nasconde l'interfaccia: il dato resta nel progetto condiviso
 function uscRes(u){ return !!(u&&(u.dest==='staff'||MODE==='staff')&&!u.aperta&&!uscFull()&&!(clIsComm()&&MODE==='staff')); }   // il Commissario di Sezione vede tutto del progetto formativo del Capo Gruppo (non lo modifica: window.BRO)
 function uscHideBlk(u,m){ return uscRes(u)&&!(m&&m.aff&&affIsMe(m.aff)); }
+function uscSetRisSez(on){ const u=uscCur(); if(!u||!uscCan()||!uscFull()) return; if(on) u.risSez=true; else delete u.risSez; uscSave(); }
 function uscSetRis(on){ const u=uscCur(); if(!u||!uscCan()||!uscFull()) return; u.aperta=!on; u.riservata=!!on; uscSave(); uscRe(); }
 function uscNewId(p){ return (p||'u')+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function uscMap(){ if(!scheda.uscite||typeof scheda.uscite!=='object'||Array.isArray(scheda.uscite)) scheda.uscite={}; return scheda.uscite; }
@@ -11093,7 +11094,7 @@ function uscOneHTML(u){ const j=uscJ(u.id), x=u.ax, N=axN(x), can=uscCan(); cons
     <input class="usc-title" value="${uscE(u.testo)}" placeholder="Titolo dell’uscita" maxlength="90" ${can?'':'readonly'} oninput="uscSetTitle(this.value)" aria-label="Titolo dell’uscita">
     <div class="usc-sub" id="usc-sub">${uscE([d||'Date da scegliere in «Persone e date»',dove,n>1?n+' giornate, '+(n-1)+(n-1===1?' notte':' notti'):''].filter(Boolean).join(' · '))}</div></div>
     <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Formato" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}${can||uscTipoLab(u)?uscTipoSel(u,can):''}${(can&&!uscSt()&&u.dest!=='staff')?`<button type="button" class="btn-ghost usc-btn" onclick="uscCicloAsk('${u.id}')" title="Sposta questo evento in un altro ciclo">Ciclo: ${uscE(((scheda.ciclo||{}).nome||'questo ciclo'))} ▾</button>`:''}</div></div>
-    <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
+    <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${!uscSt()&&can&&uscFull()&&uscModK(u)!=='sede'?`<label class="usc-res"><input type="checkbox" ${u.risSez?'checked':''} onchange="uscSetRisSez(this.checked)"> Riservato <span class="ax-opt">non compare nel calendario della Sezione: senza spunta le uscite, i bivacchi e i campi con una data ci arrivano, con solo titolo, date e nome dell’Unità</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
   const tb=(id,t,s,cls)=>`<button type="button" role="tab"${typeof id==='string'&&uscMCol(id.replace(/^m:/,''))&&/^(m:|pasti)/.test(id)?` style="--mc:${uscMCol(id.replace(/^m:/,''))}"`:''} class="usc-tab ${cls||''}${USC_TAB===id?' on':''}" aria-selected="${USC_TAB===id}" id="usc-tab-${typeof id==='string'?id.replace(':','-'):id}" onclick="uscTab(${typeof id==='string'?`'${id}'`:id})">${uscE(t)}${s?`<small>${uscE(s)}</small>`:''}</button>`;
   const mods=uscModList(u).map(([k,l])=>tb(k==='pasti'?'pasti':'m:'+k,l,'',' mod'+(k!=='pasti'&&uscModFilled(u,k)?' done':''))).join('')+uscOwn(u).map(({k,o})=>tb('o:'+k,o.t||'Modulo','',' mod own')).join('');
   h+=`<div class="usc-nav"><div class="usc-navr"><div class="usc-tabs usc-tabs1" id="usc-tabs" role="tablist" aria-label="Evento e moduli">${tb('campo','Visione d’insieme','','gen')}${mods}${can?`<button type="button" class="usc-tab mod add" onclick="USC_ADDMOD=!USC_ADDMOD;uscRe()" aria-expanded="${USC_ADDMOD}">+ Aggiungi un modulo</button>`:''}</div>
@@ -16358,6 +16359,7 @@ const PIANI = {
   async richiesteClan(){ const {data, error} = await CL.sb.rpc('pee_richieste_al_clan'); if(error) throw error; return Array.isArray(data) ? data : []; },
   // Progetti di Clan (anche in bozza) della mia Sezione, per chi guida la Sezione: solo obiettivi e «Disponibilità e prospettive» (funzione in sola lettura)
   // il Senior legge il Progetto di Clan deliberato della sua Sezione (intero, in sola lettura), senza essere invitato
+  async calSezione(anno){ const {data, error} = await CL.sb.rpc('pee_cal_sezione', {p_anno:anno}); if(error) throw error; return Array.isArray(data) ? data : []; },
   async pdcSenior(){ const {data, error} = await CL.sb.rpc('pee_pdc_per_senior'); if(error) throw error; return Array.isArray(data) ? data : []; },
   async pdcSezione(){ const {data, error} = await CL.sb.rpc('pee_pdc_della_mia_sezione'); if(error) throw error; return Array.isArray(data) ? data : []; },
   async giroStato(g){ const {data, error} = await CL.sb.rpc('pee_piano_giro_stato', {g}); if(error) throw error; return data || []; },
@@ -18440,6 +18442,7 @@ function show(view, arg){
   else if(view === 'profile') profileHTML(arg);
   else if(view === 'home') homeHTML();
   else if(view === 'piano') pnPage(arg);
+  else if(view === 'calendari') calsPage();
 }
 const ICO_S = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>';
 const ICO_H = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.7-6.2"/><path d="M3.3 3.8v4.7h4.7"/><path d="M12 7.5V12l3 2"/></svg>';
@@ -18850,7 +18853,7 @@ const PN_TITOLI = ['Punti di forza e di debolezza', 'Le Unità e i ragazzi e le 
 const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Senior in Servizio', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
 const pnUid = () => 'x' + Math.random().toString(36).slice(2, 9);
 const pnClone = o => JSON.parse(JSON.stringify(o == null ? null : o));
-const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], disp:[], spg:[], tappe:[], delibera:{data:'', luogo:''}, sezione:'', gruppo:''});
+const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], disp:[], spg:[], tappe:[], cal:[], delibera:{data:'', luogo:''}, sezione:'', gruppo:''});
 // la Sezione del piano (carta intestata del Word): quella scritta nel piano, altrimenti quella del profilo di chi lo guarda
 const pnSezPiano = () => String((PN.d && PN.d.sezione) || (SH.prof || {}).sezione || '').trim();
 // il Gruppo del piano (titolo del Word): quello scritto nel piano; nei vecchi piani, se sono io il titolare, quello del mio profilo
@@ -18920,7 +18923,7 @@ function pnTipoCrea(p){
 const PN_PER = {gruppo:'Per il Gruppo', sezione:'Per la Sezione', clan:'Per il Clan'};
 const PN_INTRO = {gruppo:'Il Piano di Gruppo riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Qui lo scrivi con il Consiglio di Gruppo.',
   sezione:'Il Progetto di Sezione riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Quando lo deliberi, i Gruppi della Sezione ne leggono gli obiettivi e possono portarli nel loro Piano.',
-  clan:'Il Progetto di Clan riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Lo leggono il Commissario, il Presidente e i Senior in Servizio della Sezione; i Gruppi non lo vedono.'};
+  clan:'Il Progetto di Clan riunisce pochi obiettivi, le azioni per raggiungerli e la verifica di ogni anno. Lo leggono il Commissario, il Presidente e i Senior della Sezione; i Gruppi non lo vedono.'};
 // ── letture dalla Sezione (nella home) ──
 // Senior: il Progetto di Clan deliberato della Sezione, intero, in sola lettura. Chi fa parte del Comitato di Sezione (Tesoriere, o chi ha messo la spunta) e non ha una pagina
 // di piano da cui leggerlo: gli obiettivi del Progetto di Sezione deliberato.
@@ -18928,6 +18931,7 @@ const PN_STATO_LETT = {deliberato:'deliberato', approvato:'approvato dall’Asse
 async function pnLetturaHtml(){
   const p = SH.prof || {}, E = esc; if(!CL.sb || !CL.user) return '';
   let h = '';
+  if(calSezOk(p)) h += `<h2 style="margin-top:14px">Calendari</h2><div class="pn-rowc"><div style="min-width:0"><b>Il calendario della Sezione</b><div class="sh-hint" style="margin:2px 0 0">Uscite, bivacchi, campi e consigli di tutta la Sezione, e il calendario di ognuno dei tuoi piani.</div></div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="calsOpen()">Apri i calendari</button></div>`;
   if(p.ruolo === 'snr'){
     let l = []; try{ l = await PIANI.pdcSenior(); }catch(e){ l = []; }
     const righe = l.map(x => `<div class="pn-row"><div style="min-width:0"><b>${E(x.titolo || 'Progetto di Clan')}</b><div class="sh-hint" style="margin:2px 0 0">Progetto di Clan · ${E(pnPeriodo(x))} · ${E(pnAnnoTxt(x))} · ${E(PN_STATO_LETT[x.stato] || x.stato)}</div></div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="pnOpen('${E(x.id)}')">Leggi</button></div>`).join('');
@@ -18966,6 +18970,75 @@ async function pnHomeFill(){
   if(altri.length) h += `<h2>Piani condivisi con te</h2>` + altri.map(riga).join('');
   cardIn(h);
 }
+// ── Pagina «Calendari» (27/11): il calendario della Sezione (somma, in sola lettura, di ciò che pubblicano i piani e le Unità) e il calendario di ogni piano ──
+const CAL_RUOLI = ['cu', 'vcu', 'senior', 'cg', 'vcg', 'cds', 'vcds', 'pres', 'tes', 'coords', 'snr', 'cos'];
+const calSezOk = p => !!p && (CAL_RUOLI.includes(p.ruolo) || cosMembro(p));
+const CAL_BN = {L:'Lupetti e Lupette', E:'Esploratori ed Esploratrici', R:'Rover'};
+const calsChi = x => x.origine === 'sezione' ? 'Sezione' : x.origine === 'clan' ? 'Clan' : x.origine === 'unita' ? [x.unita || CAL_BN[x.branca] || 'Unità', x.gruppo ? grpLabel(x.gruppo) : ''].filter(Boolean).join(' · ') : (x.gruppo ? grpLabel(x.gruppo) : 'Gruppo');
+const calsKey = x => x.origine === 'sezione' ? 'sezione' : x.origine === 'clan' ? 'clan' : 'g:' + String(x.gruppo || '').trim().toLowerCase();
+const calsTipoLab = (tipo, origine) => tipo === 'consiglio' ? 'Consiglio di ' + ({gruppo:'Gruppo', clan:'Clan', sezione:'Sezione', unita:'Unità'}[origine] || 'Gruppo') : (PN_CALT_ALL.find(q => q[0] === tipo) || [0, 'Evento'])[1];
+const calsIso = v => typeof v === 'string' ? v.slice(0, 10) : '';
+function calsWk(iso){ const d = new Date(iso + 'T12:00'), w = d.getDay(); if(w === 0) d.setDate(d.getDate() - 1); const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), g = String(d.getDate()).padStart(2, '0'); return (w === 6 || w === 0) ? y + '-' + m + '-' + g : iso; }
+const calsDt = iso => { try{ return new Date(iso + 'T12:00').toLocaleDateString('it-IT', {weekday:'short'}).replace(/\.$/, '') + ' ' + Number(iso.slice(8, 10)); }catch(e){ return giData(iso); } };
+window.calsOpen = function(){ show('calendari'); };
+async function calsCarica(){
+  const C = SH._cals, p = SH.prof || {};
+  C.st = 'no'; C.rows = []; C.msg = '';
+  if(calSezOk(p)){ try{ C.rows = await PIANI.calSezione(C.anno); C.st = 'ok'; }catch(e){ C.st = /PGRST202|Could not find|schema cache|42883/i.test(String((e && (e.code || '')) + ' ' + (e && e.message || ''))) ? 'old' : 'err'; C.msg = pianoErr(e); } }
+  C.mine = [];
+  try{
+    const l = await PIANI.elenco(); const me = CL.user.id;
+    for(const x of l){ try{ const f = await PIANI.apri(x.id); C.mine.push({x, mio:x.owner_id === me, cal:(f && f.data && Array.isArray(f.data.cal)) ? f.data.cal.filter(e => e && typeof e === 'object' && e.id) : []}); }catch(e){} }
+  }catch(e){}
+}
+async function calsPage(){
+  const r = $('sh-root');
+  r.innerHTML = top(true) + `<main class="sh-wrap"><p class="sh-sub" role="status">Apro i calendari…</p></main>`;
+  SH._cals = {anno:annoScoutStart(), f:'all', rows:[], mine:[], st:'', msg:''};
+  await calsCarica(); if(SH.view !== 'calendari') return; calsDraw();
+}
+function calsConflitti(L){
+  const by = {}; L.filter(x => (x.origine === 'gruppo' || x.origine === 'unita') && ['uscita', 'bivacco', 'campo'].includes(x.tipo) && calsIso(x.data_da)).forEach(x => { (by[calsWk(calsIso(x.data_da))] = by[calsWk(calsIso(x.data_da))] || []).push(x); });
+  return Object.keys(by).sort().map(k => ({k, L:by[k], g:[...new Set(by[k].map(calsKey))]})).filter(c => c.g.length > 1);
+}
+function calsSezHTML(){
+  const C = SH._cals, E = esc, p = SH.prof || {};
+  let h = `<section class="pn-card" aria-labelledby="cs-t"><h2 class="pn-h" id="cs-t">Calendario della Sezione</h2>`;
+  if(!calSezOk(p)) return '';
+  if(C.st === 'old') return h + `<p class="sh-hint" style="margin:0">Il calendario della Sezione sarà disponibile dopo l’aggiornamento del database (script SQL del 28 novembre «Calendario della Sezione»).</p></section>`;
+  if(C.st === 'err') return h + `<p class="sh-msg err" role="alert" style="display:block;margin:0">${E(C.msg || 'Non riesco a leggere il calendario della Sezione.')}</p></section>`;
+  const y = C.anno;
+  h += `<p class="sh-hint" style="margin:0">${p.ruolo === 'snr' ? 'Come Senior vedi gli appuntamenti del Clan.' : 'Gli appuntamenti pubblicati dai Piani di Gruppo, dal Progetto di Sezione, dal Progetto di Clan e dalle Unità. Solo titolo, date e di chi sono: niente note e niente nomi.'} Si scrivono nei calendari dei piani e dei progetti; qui si legge.</p>
+    <div class="pn-seg" role="group" aria-label="Anno scout">${[y - 1, y, y + 1].map(k => `<button type="button" class="pn-segb${k === y ? ' on' : ''}" aria-pressed="${k === y}" onclick="calsAnno(${k})">${E(annoScoutTxt(k))}</button>`).join('')}</div>`;
+  const chiavi = []; C.rows.forEach(x => { const k = calsKey(x); if(!chiavi.some(q => q[0] === k)) chiavi.push([k, x.origine === 'unita' || x.origine === 'gruppo' ? (x.gruppo ? grpLabel(x.gruppo) : 'Gruppo') : calsChi(x)]); });
+  if(chiavi.length > 1) h += `<div class="pn-seg" role="group" aria-label="Di chi sono gli appuntamenti"><button type="button" class="pn-segb${C.f === 'all' ? ' on' : ''}" aria-pressed="${C.f === 'all'}" onclick="calsF('all')">Tutti</button>${chiavi.map(([k, t]) => `<button type="button" class="pn-segb${C.f === k ? ' on' : ''}" aria-pressed="${C.f === k}" onclick="calsF(${E(JSON.stringify(k)).replace(/&quot;/g, '&#34;')})">${E(t)}</button>`).join('')}</div>`;
+  const L = C.rows.filter(x => calsIso(x.data_da) && (C.f === 'all' || calsKey(x) === C.f));
+  const conf = calsConflitti(L);
+  if(conf.length) h += `<div class="sh-msg" role="note" style="display:block;margin:0"><b>Da guardare</b> · nello stesso fine settimana ci sono appuntamenti di Gruppi diversi. Non è un divieto: è uno spunto per sentirvi.<ul style="margin:6px 0 0;padding-left:20px">${conf.slice(0, 8).map(c => `<li>${E(giData(c.k))}: ${c.L.map(x => E(calsChi(x) + ' (' + calsTipoLab(x.tipo, x.origine) + ': ' + x.titolo + ')')).join(' · ')}</li>`).join('')}</ul></div>`;
+  if(!L.length){ h += `<p class="sh-sub" style="margin:0">Nessun appuntamento pubblicato per ${E(annoScoutTxt(y))}${C.f !== 'all' ? ' con questo filtro' : ''}. Compaiono da soli quando un piano o un’Unità segna uscite, bivacchi, campi o consigli con una data.</p></section>`; return h; }
+  let cur = '';
+  L.forEach(x => { const d = calsIso(x.data_da), m = d.slice(0, 7);
+    if(m !== cur){ if(cur) h += '</div>'; cur = m; h += `<div class="cal-mese"><h3>${E(PN_MESI_N[Number(m.slice(5, 7)) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + m.slice(0, 4))}</h3>`; }
+    const f = calsIso(x.data_a), c = pnCalCol(x.tipo);
+    h += `<div class="pn-row" style="border-left:6px solid ${c};align-items:flex-start"><div style="min-width:5.5em;font-weight:800">${E(calsDt(d))}${f ? `<div class="sh-hint" style="margin:0">→ ${E(calsDt(f))}</div>` : ''}</div><div style="min-width:0"><b>${E(x.titolo)}</b><div class="sh-hint" style="margin:2px 0 0"><span style="font-weight:800;color:${c}">${E(calsTipoLab(x.tipo, x.origine))}</span> · ${E(calsChi(x))}</div></div></div>`; });
+  if(cur) h += '</div>';
+  return h + `</section>`;
+}
+function calsMieiHTML(){
+  const C = SH._cals, E = esc, oggi = giOggi();
+  let h = `<section class="pn-card" aria-labelledby="cm-t"><h2 class="pn-h" id="cm-t">I calendari dei tuoi piani</h2>`;
+  if(!C.mine.length) h += `<p class="sh-sub" style="margin:0">Quando crei un piano, o ti invitano in uno, il suo calendario compare qui.</p>`;
+  C.mine.forEach(({x, mio, cal}) => { const prox = cal.filter(e => !e.d1 || e.d1 >= oggi).sort((a, b) => (a.d1 || '9999') < (b.d1 || '9999') ? -1 : 1).slice(0, 4);
+    h += `<div class="pn-row" style="align-items:flex-start"><div style="min-width:0"><b>${E(x.titolo || PIANI_TIPI[x.tipo])}</b><div class="sh-hint" style="margin:2px 0 0">${E(PIANI_TIPI[x.tipo])}${mio ? '' : ' · condiviso con te'} · ${cal.length} ${cal.length === 1 ? 'appuntamento' : 'appuntamenti'}</div>${prox.length ? `<ul style="margin:6px 0 0;padding-left:20px">${prox.map(e => `<li>${E(calsTipoLab(e.tipo, x.tipo))}: ${E(e.titolo || 'senza titolo')} · ${E(e.d1 ? giData(e.d1) : 'data da fissare')}${e.ris ? ' · Riservato' : ''}</li>`).join('')}</ul>` : ''}</div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="calsPiano('${E(x.id)}')">Apri il calendario</button></div>`; });
+  return h + `<p class="sh-hint" style="margin:6px 0 0">Il calendario dell’Unità e quello dello staff stanno dentro i tuoi progetti, nella voce «Calendario». Chi guida più cose ha un calendario per ognuna: il Gruppo e l’Unità, la Sezione e l’Unità. <a href="#" onclick="shGoHome();return false">Vai ai tuoi progetti</a></p></section>`;
+}
+function calsDraw(){
+  const r = $('sh-root'); if(!r || SH.view !== 'calendari') return;
+  r.innerHTML = top(true) + `<main class="sh-wrap"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1 style="margin:0">Calendari</h1><button class="sh-btn sm gh" type="button" style="margin-left:auto" onclick="shGoHome()">Torna ai progetti</button></div>${calsSezHTML()}${calsMieiHTML()}</main>`;
+}
+window.calsAnno = async function(y){ const C = SH._cals; if(!C) return; C.anno = y; C.f = 'all'; await calsCarica(); calsDraw(); };
+window.calsF = function(k){ if(!SH._cals) return; SH._cals.f = k; calsDraw(); };
+window.calsPiano = function(id){ PN.goto = 'cal'; PN.rip = false; show('piano', id); };
 window.pnNuovo = function(tipo){
   const p = SH.prof || {}; const cur = annoScoutStart();
   tipo = (tipo && tipo === pnTipoCrea(p)) ? tipo : (pnTipoCrea(p) || 'gruppo'); PN.nuovoTipo = tipo; const nome = PIANI_TIPI[tipo];
@@ -18997,7 +19070,7 @@ async function pnPage(id){
     const p = await PIANI.apri(id);
     if(SH.view !== 'piano') return;
     if(!p){ r.innerHTML = top(true) + `<main class="sh-wrap"><h1>Piano non trovato</h1><p class="sh-sub">Il piano non esiste più o non hai più accesso.</p><div><button class="sh-btn" type="button" onclick="pnBack()">Torna ai piani</button></div></main>`; return; }
-    pnCarica(p);
+    pnCarica(p); if(PN.goto){ PN.sez = PN.goto; PN.goto = ''; }
     pnRender(); pnLiveStart(); giCarica(true); pnMembriCarica(p.id); pnPdsCarica(p); pnPdgCarica(p); pnClanCarica(p);
     if(p.ruolo !== 'titolare'){ try{ const mi = (await PIANI.inviti()).find(x => x.id === p.id); if(mi && mi.nuovo) PIANI.visto(mi.mid); }catch(e){} }
   }catch(e){
@@ -19012,7 +19085,7 @@ async function pnMembriCarica(id){
 function pnCarica(p){
   clearTimeout(PN.timer); if(GI.pid !== p.id) giReset(p.id);
   const d = (p.data && typeof p.data === 'object') ? p.data : {}; const v = Object.assign(pnVuoto(), pnClone(d));
-  ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'disp', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
+  ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'disp', 'spg', 'tappe', 'cal'].forEach(k => { if(!Array.isArray(v[k])) v[k] = []; });
   if(!v.delibera || typeof v.delibera !== 'object') v.delibera = {data:'', luogo:''};
   if(!PN.p || PN.p.id !== p.id) { PN.membri = null; PN.sez = "pan"; PN.ap = true; PN.qf = {}; PN.pds = null; PN.pdg = null; PN.pdgOk = false; PN.ric = null; PN.ricOk = false; PN.pdc = null; PN.pdcOk = false; }
   Object.assign(PN, {p, d:v, base:pnClone(v), meta:{titolo:p.titolo, stato:p.stato}, baseMeta:{titolo:p.titolo, stato:p.stato}, ruolo:p.ruolo || 'lettore', dirty:false, saving:false, again:false, st:'', sel:{}});
@@ -19789,7 +19862,7 @@ function pnMenu(){
   // Progetto di Clan: al posto degli «Spunti dalle Unità» le richieste dei Gruppi e le disponibilità del Clan (gli spunti già scritti restano visibili)
   const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock']].concat(clan ? (coord && (SH.prof || {}).ruolo === 'coords' ? [['ric', 'Richieste dei Gruppi', 'users']] : []).concat([['dis', 'Disponibilità e prospettive', 'flag']].concat(d.spunti && d.spunti.length ? [['spu', 'Spunti dalle Unità', 'list']] : [])) : [['spu', 'Spunti dalle Unità', 'list']]);
   // ordine di lavoro (27/11): Panoramica, Ascolto, Dove siamo, Obiettivi, Verifiche
-  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal']].concat(lavoro)}];
+  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal']].concat(lavoro)}];
   if(g){
     const it = [['g-giro', GI.g && GI.g.stato === 'aperto' ? 'Ascolto · aperto' : 'Ascolto', 'users']];
     if(GI.g){
@@ -20079,6 +20152,7 @@ function pnPaneHTML(id){
   else if(id === 'ver'){ h += pnVerHTML(); }
   else if(id === 'naz'){ h += pnNazHTML(); }
   else if(id === 'qua'){ h += pnQuadroHTML(); }
+  else if(id === 'cal'){ h += pnCalHTML(); }
   else if(id === 'uni'){
   if(d.uniti.length) h += `<section class="pn-card" aria-labelledby="pn-un-t"><h2 class="pn-h" id="pn-un-t">Obiettivi uniti</h2><p class="sh-hint" style="margin:0">Gli obiettivi originali, tenuti come nota.</p>${d.uniti.map(u => `<div class="pn-un"><b>${E(u.testo || '—')}</b><div class="sh-hint" style="margin:2px 0 0">${(u.aree || []).map(a => E(pnLab(PN_AREE, a))).join(', ')}${u.nota ? ' · ' + E(u.nota) : ''}</div></div>`).join('')}</section>`;
   }
@@ -20327,6 +20401,7 @@ function pnQCal(R){
       else { if(x.s === gi) li.push(L('▶', 'Inizia: ')); if(x.fineMese && x.e === gi && x.e !== x.s) li.push(L('■', 'Finisce: ')); } });
     const corso = ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e > gi).length + ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e === gi && !x.fineMese).length;
     T.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">◇</span> ${E(pnQTappaTxt(x))}</li>`));
+    pnCalOrd().filter(e => (e.d1 || '').slice(0, 7) === m.k).forEach(e => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">●</span> <a href="#" onclick="pnSez('cal');return false">${E(pnCalTipoLab(e.tipo))}: ${E(e.titolo || 'senza titolo')} · ${E(pnCalDate(e))}</a></li>`));
     C.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">▲</span> ${E(pnQTappaTxt(x))}</li>`));
     if(giro && giro.slice(0, 7) === m.k) li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">○</span> Ascolto: scadenza ${E(giro.slice(8, 10))} ${E(PN_MESI_N[Number(m.k.slice(5, 7)) - 1])}</li>`);
     h += `<section class="pn-cm${oggi.slice(0, 7) === m.k ? ' cur' : ''}" aria-label="${E(m.lab)}"><h3>${E(m.lab)}${oggi.slice(0, 7) === m.k ? ' <small>· questo mese</small>' : ''}</h3>${li.length ? `<ul>${li.join('')}</ul>` : '<p class="pn-no" style="margin:0">Niente in programma.</p>'}${corso ? `<p class="pn-cc">${corso === 1 ? '+ 1 azione in corso' : '+ ' + corso + ' azioni in corso'}</p>` : ''}</section>`;
@@ -20480,6 +20555,64 @@ window.pnDisAdd = function(t){ if(!pnTutto()) return; const q = {id:pnUid(), cos
 window.pnDisSet = function(id, k, v){ const q = PN.d.disp.find(x => x.id === id); if(!q || !pnTutto()) return; q[k] = v; pnTouch(); };
 window.pnDisDel = function(id){ if(!pnTutto()) return; const q = PN.d.disp.find(x => x.id === id); if(q && (q.cosa || q.note || '').trim() && !confirm('Eliminare questa voce?')) return; PN.d.disp = PN.d.disp.filter(x => x.id !== id); pnTouch(); pnRender(); };
 // per chi guida la Sezione: il Progetto di Clan (obiettivi e disponibilità), da portare nel Progetto di Sezione
+// ── Calendario del piano (27/11): appuntamenti per gli adulti. Salgono al calendario della Sezione (solo titolo, date, tipo) quelli che non sono riunioni e non sono «Riservati» ──
+const PN_CALT_ALL = [['riunione', 'Riunione', '#4a6b8a'], ['uscita', 'Uscita', '#2f7d5b'], ['bivacco', 'Bivacco', '#a0612b'], ['campo', 'Campo', '#7a3f8f'], ['consiglio', 'Consiglio', '#b0482f'], ['assemblea', 'Assemblea', '#8a6d00'], ['altro', 'Altro', '#555555']];
+function pnCalTipi(){ const t = PN.p && PN.p.tipo; return PN_CALT_ALL.filter(x => (x[0] !== 'consiglio' || t === 'sezione' || t === 'clan') && (x[0] !== 'assemblea' || t === 'sezione')).map(x => x[0] === 'consiglio' ? [x[0], t === 'clan' ? 'Consiglio di Clan' : 'Consiglio di Sezione', x[2]] : x); }
+function pnCalTipoLab(k){ const x = pnCalTipi().find(q => q[0] === k) || PN_CALT_ALL.find(q => q[0] === k); return x ? x[1] : 'Evento'; }
+const pnCalCol = k => (PN_CALT_ALL.find(q => q[0] === k) || PN_CALT_ALL[6])[2];
+const pnCalOrd = () => ((PN.d && PN.d.cal) || []).filter(e => e && typeof e === 'object' && e.id).slice().sort((a, b) => { const x = a.d1 || '9999', y = b.d1 || '9999'; return x < y ? -1 : x > y ? 1 : 0; });
+const pnCalSale = e => !!(e && e.d1 && !e.ris && e.tipo !== 'riunione');
+const pnCalErr = e => !!(e && e.d1 && e.d2 && e.d2 < e.d1);
+function pnCalDate(e){ if(!e.d1) return 'data da fissare'; return pnCalFine(e) ? giData(e.d1) + ' → ' + giData(e.d2) : giData(e.d1); }
+const pnCalFine = e => !!(e.d1 && e.d2 && e.d2 > e.d1);
+function pnCalSug(){
+  const t = PN.p.tipo, d = PN.d;
+  const base = t === 'clan' ? [['Consiglio di Clan', 'consiglio', 'Promemoria, non un obbligo: almeno ogni 2 mesi.'], ['Riunione di tutti i Senior', 'riunione', 'Una volta a trimestre.'], ['Incontro di primavera con i Rover e il Consiglio di Sezione', 'altro', 'Circa aprile, con i Rover dell’ultimo anno.']]
+    : t === 'sezione' ? [['Assemblea di Sezione', 'assemblea', ''], ['Consiglio di Sezione', 'consiglio', '']]
+    : [['Riunione dei genitori', 'altro', ''], ['Campo estivo', 'campo', '']];
+  return base.filter(x => !(d.cal || []).some(e => e.titolo === x[0]));
+}
+function pnCalHTML(){
+  const E = esc, d = PN.d, tutto = pnTutto(), dis = tutto ? '' : ' disabled', T = pnCalTipi(), tp = PN.p.tipo;
+  const org = tp === 'gruppo' ? 'del Gruppo' : tp === 'clan' ? 'del Clan' : 'della Sezione';
+  let h = `<section class="pn-card" aria-labelledby="pn-cal-t"><h2 class="pn-h" id="pn-cal-t">Calendario ${org}</h2>
+    <p class="sh-hint" style="margin:0">Gli appuntamenti per gli adulti: uscite, bivacchi, campi, consigli e così via. Salgono da soli al calendario della Sezione, con solo titolo, date e tipo, tutti tranne le riunioni e quelli che segni «Riservato». Le date dei Consigli di Gruppo e delle verifiche stanno in «Verifiche».</p>
+    <div class="sh-msg err" role="note" style="display:block;margin:0"><b>Niente nomi di ragazzi o ragazze</b> nel titolo: il titolo arriva a tutta la Sezione. Le note restano nel piano.</div>`;
+  const L = pnCalOrd();
+  L.forEach((e, i) => { const sale = pnCalSale(e), err = pnCalErr(e), c = pnCalCol(e.tipo), id = E(e.id);
+    h += `<div class="pn-sp pn-ce" style="border-left:6px solid ${c}" id="pn-ce-${id}"><div style="flex:1;min-width:0">
+      <div class="sh-g2"><div><label class="sh-lb" for="pn-cet-${id}">Tipo</label><select class="sh-in" id="pn-cet-${id}" onchange="pnCalSet('${id}','tipo',this.value)"${dis}>${T.map(([k, t]) => `<option value="${k}"${e.tipo === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
+      <div><label class="sh-lb" for="pn-cex-${id}">Titolo</label><input class="sh-in" id="pn-cex-${id}" maxlength="100" placeholder="es. Campo estivo del Reparto" value="${E(e.titolo || '')}" oninput="pnCalSet('${id}','titolo',this.value,true)"${dis}></div></div>
+      <div class="sh-g2"><div><label class="sh-lb" for="pn-ced-${id}">Data${e.tipo === 'bivacco' || e.tipo === 'campo' || e.tipo === 'uscita' ? ' di inizio' : ''}</label><input class="sh-in" type="date" id="pn-ced-${id}" value="${E(e.d1 || '')}" onchange="pnCalSet('${id}','d1',this.value)"${dis}></div>
+      <div><label class="sh-lb" for="pn-cef-${id}">Data di fine (se dura più giorni)</label><input class="sh-in" type="date" id="pn-cef-${id}" value="${E(e.d2 || '')}"${e.d1 ? ` min="${E(e.d1)}"` : ''} onchange="pnCalSet('${id}','d2',this.value)"${dis}></div></div>
+      ${err ? '<p class="sh-msg err" role="alert" style="display:block;margin:6px 0 0">La data di fine è prima di quella di inizio.</p>' : ''}
+      <label class="pn-chip sm${e.ris ? ' on' : ''}" style="margin-top:6px"><input type="checkbox" id="pn-cer-${id}" ${e.ris ? 'checked' : ''} onchange="pnCalSet('${id}','ris',this.checked)"${dis}>Riservato</label>
+      <p class="sh-hint" style="margin:4px 0 0" id="pn-ces-${id}">${E(pnCalStato(e))}</p>
+      <textarea class="sh-in pn-ta" aria-label="Note dell’evento ${i + 1} (restano nel piano)" rows="2" maxlength="300" placeholder="Note (restano nel piano)" oninput="pnCalSet('${id}','nota',this.value,true);pnGrow(this)"${dis}>${E(e.nota || '')}</textarea></div>${tutto ? `<div class="pn-col"><button class="pn-ib" type="button" aria-label="Elimina l’evento ${i + 1}" onclick="pnCalDel('${id}')">✕</button></div>` : ''}</div>`; });
+  if(!L.length) h += `<p class="sh-sub" style="margin:0">Ancora nessun appuntamento.</p>`;
+  if(tutto){
+    const sug = pnCalSug();
+    h += `<div class="pn-chips">${T.map(([k, t]) => `<button class="pn-sug" type="button" onclick="pnCalAdd('${k}')">+ ${E(t)}</button>`).join('')}</div>`;
+    if(sug.length) h += `<div><p class="sh-hint" style="margin:0 0 6px"><b>Appuntamenti tipici</b>, dalle fonti: li aggiungi senza data e la scegli tu.</p><div class="pn-chips">${sug.map(([t, k, n]) => `<button class="pn-sug" type="button" onclick="pnCalAdd('${k}',${E(JSON.stringify(t)).replace(/&quot;/g, '&#34;')})" title="${E(n)}">+ ${E(t)}${n ? ' · ' + E(n) : ''}</button>`).join('')}</div></div>`;
+  }
+  const tp2 = (d.tappe || []).filter(t => t.data && !t.fatta);
+  if(tp2.length) h += `<details class="pn-card" style="margin:0"><summary>Dalle verifiche del piano (${tp2.length})</summary><ul style="margin:6px 0 0;padding-left:20px">${pnTappeOrd().filter(t => t.data && !t.fatta).map(t => `<li>${E(pnTappaNome(t))}${t.tipo === 'cdg' && tp === 'gruppo' ? ' · sale al calendario della Sezione' : ''}</li>`).join('')}</ul></details>`;
+  return h + `</section>`;
+}
+function pnCalStato(e){ if(!e.d1) return 'Senza data: non compare ancora nel calendario della Sezione.'; if(e.tipo === 'riunione') return 'Le riunioni restano nel calendario del piano.'; if(e.ris) return 'Riservato: resta nel piano e non sale al calendario della Sezione.'; return 'Sale al calendario della Sezione: titolo, date e tipo.'; }
+window.pnCalAdd = function(tipo, titolo){ if(!pnTutto()) return; const e = {id:pnUid(), tipo:pnCalTipi().some(x => x[0] === tipo) ? tipo : 'altro', titolo:String(titolo || '').slice(0, 100), d1:'', d2:'', ris:false, nota:''}; PN.d.cal.push(e); pnTouch(); pnRender(); const f = $('pn-cex-' + e.id); if(f) f.focus(); };
+window.pnCalSet = function(id, k, v, soft){
+  const e = (PN.d.cal || []).find(x => x.id === id); if(!e || !pnTutto() || !['tipo', 'titolo', 'd1', 'd2', 'ris', 'nota'].includes(k)) return;
+  if(k === 'tipo' && !pnCalTipi().some(x => x[0] === v)) return;
+  if(k === 'd1' || k === 'd2') v = /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : '';
+  if(k === 'ris') v = !!v;
+  e[k] = k === 'titolo' ? String(v).slice(0, 100) : k === 'nota' ? String(v).slice(0, 300) : v;
+  if(k === 'd1' && e.d2 && e.d2 < e.d1) e.d2 = '';
+  pnTouch();
+  if(soft){ const s = $('pn-ces-' + id); if(s) s.textContent = pnCalStato(e); return; }
+  pnRender(); const f = $('pn-' + ({tipo:'cet', d1:'ced', d2:'cef', ris:'cer'}[k] || 'cex') + '-' + id); if(f) f.focus();
+};
+window.pnCalDel = function(id){ if(!pnTutto()) return; const e = PN.d.cal.find(x => x.id === id); if(e && ((e.titolo || '') + (e.nota || '')).trim() && !confirm('Eliminare questo appuntamento?')) return; PN.d.cal = PN.d.cal.filter(x => x.id !== id); pnTouch(); pnRender(); };
 function pnPdcElenco(){ return PN.p && PN.p.tipo === 'sezione' ? (PN.pdc || []).filter(x => x && pnSovrap(x) && ((x.obiettivi || []).length || (x.disponibilita || []).length)) : []; }
 const pnPdcNome = x => 'Progetto di Clan ' + x.anno_inizio + '-' + String(x.anno_inizio + (x.durata || 3) - 1).slice(2);
 function pnPdcHTML(){
@@ -20626,7 +20759,7 @@ window.pnShare = async function(){
       <button class="sh-btn sm gh" type="button"${(m.ruolo === 'cotitolare' && !me) ? ' disabled' : ''} onclick="pnShTogli('${E(m.id)}')">Togli</button></div>`).join('');
     if(gestisce) h += await pnShElenco(rows);
     if(gestisce) h += `<h3 style="margin:10px 0 0;font-size:14px">Invita una persona</h3>
-      <div class="sh-g2"><div><label class="sh-lb" for="pn-i-m">E-mail</label><input class="sh-in" id="pn-i-m" type="email" maxlength="200" autocomplete="off"></div><div><label class="sh-lb" for="pn-i-n">Nome (facoltativo)</label><input class="sh-in" id="pn-i-n" maxlength="120"></div>
+      <div class="sh-g2"><div><label class="sh-lb" for="pn-i-m">E-mail</label><input class="sh-in" id="pn-i-m" type="email" maxlength="200" autocomplete="off"></div><div><label class="sh-lb" for="pn-i-n">Nome, se vuoi</label><input class="sh-in" id="pn-i-n" maxlength="120"></div>
       <div><label class="sh-lb" for="pn-i-e">Chi è</label><select class="sh-in" id="pn-i-e" onchange="pnShEt()">${PN_ETICHETTE.map(([t]) => `<option>${E(t)}</option>`).join('')}</select></div>
       <div><label class="sh-lb" for="pn-i-r">Cosa può fare</label><select class="sh-in" id="pn-i-r">${PIANI_RUOLI.filter(([k]) => me || k !== 'cotitolare').map(([k, t]) => `<option value="${k}">${E(t)}</option>`).join('')}</select></div></div>
       <p class="sh-hint" style="margin:0">Lettore: legge soltanto (i pareri si raccolgono in presenza). Collaboratore: lavora sulle azioni di cui è referente. Co-titolare: modifica tutto.</p>`;
@@ -20709,7 +20842,7 @@ window.pnRipristina = async function(vid){
   try{
     await pnFlush(); const v = await PIANI.versioneDati(vid); if(!v) throw new Error('Versione non trovata');
     await PIANI.versione(PN.p, {motivo:'auto', nota:'Copia prima di ripristinare la versione ' + v.n, data:PN.d, stato:PN.meta.stato});
-    PN.d = Object.assign(pnVuoto(), pnClone(v.data)); ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'disp', 'spg', 'tappe'].forEach(k => { if(!Array.isArray(PN.d[k])) PN.d[k] = []; }); PN.sel = {};
+    PN.d = Object.assign(pnVuoto(), pnClone(v.data)); ['analisi', 'obiettivi', 'azioni', 'uniti', 'spunti', 'disp', 'spg', 'tappe', 'cal'].forEach(k => { if(!Array.isArray(PN.d[k])) PN.d[k] = []; }); PN.sel = {};
     PN.dirty = true; shDlgClose(); pnRender(); await pnSave(); clToast('Versione ' + v.n + ' ripristinata.');
   }catch(e){ const m = $('pn-sv-msg'); if(m){ m.className = 'sh-msg err'; m.textContent = pianoErr(e); } }
 };
@@ -21092,6 +21225,8 @@ body.sh-in .toast{pointer-events:none}
 .pn-st{font-size:13px;font-weight:600;color:#55554f}.pn-st.err{color:#a1260f}
 .pn-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE4}
 .pn-row>div{flex:1}
+.pn-rowc{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE4}
+.pn-rowc>div{flex:1}
 .pn-an,.pn-ob,.pn-az,.pn-sp,.pn-un{border:1px solid #E2E2DA;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .pn-az{background:#FAFAF6}
 .pn-an-h,.pn-az-h,.pn-ob-h{display:flex;align-items:flex-start;gap:8px}

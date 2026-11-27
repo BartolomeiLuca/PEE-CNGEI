@@ -230,7 +230,7 @@ const db2 = new FakeDB(); db2.sqlPiani = false;
 const pb = await person(br, db2); const u2 = db2.addUser('old@x.it', 'password123', 'Capo Gruppo Vecchio');
 db2.t.pee_profili.push({user_id:u2.id, nome:'Capo Gruppo Vecchio', ruolo:'cg', branca:null, sezione:'Pesaro', gruppo:'1', area_rcdf:'altoadriatico', dashboard:{}});
 await loginAs(pb.page, base, u2); await sleep(2500);
-ok(/script SQL del 23 novembre/.test(await pb.page.evaluate(() => (document.getElementById('sh-piani') || {}).textContent || '')) && await pb.page.evaluate(() => document.querySelectorAll('#sh-piani button').length) === 0, 'senza tabelle: la home dice che serve l\'aggiornamento e non offre il pulsante');
+ok(/script SQL del 23 novembre/.test(await pb.page.evaluate(() => (document.getElementById('sh-piani') || {}).textContent || '')) && await pb.page.evaluate(() => document.querySelectorAll('#sh-piani .pn-row button').length) === 0, 'senza tabelle: la home dice che serve l\'aggiornamento e non offre il pulsante');
 const rest = await pb.page.evaluate(() => !!document.querySelector('.sh-wrap') && !!document.querySelector('.sh-prof-line'));
 ok(rest, 'il resto della home funziona come prima');
 

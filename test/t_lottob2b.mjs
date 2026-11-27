@@ -20,7 +20,7 @@ db.t.pee_piani_membri.push({id:'m1', piano_id:'p1', email:'vera@x.it', ruolo:'le
 const mk = async k => { const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); await loginAs(pa.page, base, U[k]); await sleep(1800); return {pa, P:pa.page, ev:(f, a) => pa.page.evaluate(f, a)}; };
 const L = await mk('luca');
 await L.ev(() => pnOpen('p1')); await sleep(1600);
-ok(await L.ev(() => [...document.querySelectorAll('[id^="pn-sb-"]')].map(b => b.id.slice(6)).slice(0, 3).join()) === 'pan,qua,g-giro', 'nel menu «Quadro» sta dopo la Panoramica (' + await L.ev(() => [...document.querySelectorAll('[id^="pn-sb-"]')].map(b => b.id.slice(6)).join()) + ')');
+ok(await L.ev(() => [...document.querySelectorAll('[id^="pn-sb-"]')].map(b => b.id.slice(6)).slice(0, 3).join()) === 'pan,qua,cal', 'nel menu «Quadro» sta dopo la Panoramica (' + await L.ev(() => [...document.querySelectorAll('[id^="pn-sb-"]')].map(b => b.id.slice(6)).join()) + ')');
 await L.P.click('#pn-sb-qua'); await sleep(400);
 const righe = () => L.ev(() => [...document.querySelectorAll('.pn-qt tbody tr')].map(r => r.className.indexOf('pn-qoh') >= 0 ? 'OB:' + r.textContent.replace(/\s+/g, ' ').trim().slice(0, 25) : 'AZ:' + r.querySelector('td').textContent.replace(/\s+/g, ' ').trim().slice(0, 30)));
 let R = await righe();

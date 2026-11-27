@@ -140,6 +140,7 @@ export class FakeDB {
       if(req.name === 'pee_richieste_al_clan') return this.richiesteClan(uid);
       if(req.name === 'pee_pdc_della_mia_sezione') return this.pdcSezione(uid);
       if(req.name === 'pee_pdc_per_senior') return this.pdcSenior(uid);
+      if(req.name === 'pee_cal_sezione') return this.calSezione(req.args && req.args.p_anno, uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -340,6 +341,29 @@ export class FakeDB {
         obiettivi:((p.data || {}).obiettivi || []).filter(o => String(o.testo || '').trim()).map(o => ({id:o.id, testo:o.testo, aree:o.aree || [], indirizzi:o.indirizzi || []})),
         disponibilita:((p.data || {}).disp || []).filter(q => String(q.cosa || '').trim()).map(q => ({id:q.id, cosa:q.cosa, quanti:q.quanti || '', quando:q.quando || '', note:q.note || ''}))}));
     return {data:rows, error:null};
+  }
+  // Calendario della Sezione (SQL del 28 novembre sera): stesse regole della funzione; db.sqlCal = false per provare il database non aggiornato
+  calSezione(anno, uid){
+    if(this.sqlCal === false) return this.err('PGRST202', 'Could not find the function public.pee_cal_sezione');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const me = this.t.pee_profili.find(x => x.user_id === uid);
+    const flag = !!(me && me.dashboard && me.dashboard.cos && me.dashboard.cos.membro === true);
+    if(!me || !(['cu', 'vcu', 'senior', 'cg', 'vcg', 'cds', 'vcds', 'pres', 'tes', 'coords', 'snr', 'cos'].includes(me.ruolo) || flag)) return this.err('P0001', 'Il calendario della Sezione lo leggono le figure di Unità, di Gruppo e di Sezione.');
+    const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const clan = me.ruolo === 'snr', y = anno || 2026, da = y + '-09-01', a2 = (y + 1) + '-08-31';
+    const iso = v => /^\d{4}-\d{2}-\d{2}/.test(String(v || '')) && !isNaN(new Date(String(v).slice(0, 10) + 'T12:00')) ? String(v).slice(0, 10) : null;
+    const prof = id => this.t.pee_profili.find(x => x.user_id === id) || {};
+    const ev = [];
+    for(const p of this.t.pee_piani){ const pr = prof(p.owner_id); if(norm(pr.sezione) !== sez || !['gruppo', 'sezione', 'clan'].includes(p.tipo)) continue; const d = p.data || {};
+      (Array.isArray(d.cal) ? d.cal : []).forEach(o => { if(!o || typeof o !== 'object' || o.tipo === 'riunione' || o.ris === true) return; ev.push({origine:p.tipo, tipo:['uscita', 'bivacco', 'campo', 'consiglio', 'assemblea'].includes(o.tipo) ? o.tipo : 'altro', titolo:String(o.titolo || '').trim().slice(0, 100) || 'Senza titolo', d1:iso(o.d1), d2:iso(o.d2), gruppo:pr.gruppo || '', branca:'', unita:''}); });
+      if(p.tipo === 'gruppo') (Array.isArray(d.tappe) ? d.tappe : []).forEach(o => { if(o && o.tipo === 'cdg') ev.push({origine:'gruppo', tipo:'consiglio', titolo:'Consiglio di Gruppo', d1:iso(o.data), d2:null, gruppo:pr.gruppo || '', branca:'', unita:''}); }); }
+    if(!clan) for(const ar of this.t.pee_archivi || []){ const pr = prof(ar.user_id); const meta = ar.meta || {}; if(norm(pr.sezione) !== sez || ['staff', 'anno'].includes(meta.mode || '') || meta.cest) continue; const U = ar.data && ar.data.scheda && ar.data.scheda.uscite; if(!U || typeof U !== 'object' || Array.isArray(U)) continue;
+      Object.values(U).forEach(u => { if(!u || typeof u !== 'object' || u.del === true || u.dest === 'staff' || !['giorno', 'bivacco', 'campo'].includes(u.modello) || u.risSez === true) return; const x = u.ax || {};
+        ev.push({origine:'unita', tipo:u.modello === 'giorno' ? 'uscita' : u.modello, titolo:String(u.testo || '').trim().slice(0, 100) || 'Uscita senza titolo', d1:iso(x.data), d2:x.durata === 'piu' ? iso(x.dataFine) : null, gruppo:pr.gruppo || '', branca:['L', 'E', 'R'].includes(pr.branca) ? pr.branca : '', unita:String((ar.data || {}).UNIT_NAME || '').trim().slice(0, 60)}); }); }
+    const seen = new Set(), out = [];
+    ev.filter(e => e.d1 && e.d1 <= a2 && (e.d2 || e.d1) >= da && (!clan || e.origine === 'clan')).forEach(e => { const r = {origine:e.origine, tipo:e.tipo, titolo:e.titolo, data_da:e.d1, data_a:e.d2 && e.d2 > e.d1 ? e.d2 : null, gruppo:e.gruppo, branca:e.branca, unita:e.unita}; const k = JSON.stringify(r); if(!seen.has(k)){ seen.add(k); out.push(r); } });
+    out.sort((x, y2) => x.data_da < y2.data_da ? -1 : x.data_da > y2.data_da ? 1 : x.tipo < y2.tipo ? -1 : x.tipo > y2.tipo ? 1 : x.titolo < y2.titolo ? -1 : 1);
+    return {data:out, error:null};
   }
   // Il Senior legge il Progetto di Clan deliberato o approvato della sua Sezione (SQL del 28 novembre sera); db.sqlPres = false per il database non aggiornato
   pdcSenior(uid){
