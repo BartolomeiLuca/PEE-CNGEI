@@ -36,6 +36,15 @@ await G.ev(() => { const e = PN.d.cal[0]; pnCalSet(e.id, 'ris', true); }); await
 ok(await G.ev(() => /Riservato: resta nel piano/.test(document.getElementById('pn-ces-' + PN.d.cal[0].id).textContent) && PN.d.cal[0].ris === true), 'Riservato: non sale');
 await G.ev(() => { const e = PN.d.cal[0]; pnCalSet(e.id, 'ris', false); pnCalSet(e.id, 'tipo', 'riunione'); }); await sleep(300);
 ok(await G.ev(() => /Le riunioni restano nel calendario del piano/.test(document.getElementById('pn-ces-' + PN.d.cal[0].id).textContent)), 'una riunione non sale');
+ok(await G.ev(() => { const e = PN.d.cal[0]; const s = document.getElementById('pn-cem-' + e.id); return !!s && [...s.options].map(o => o.textContent).join('|') === 'Da decidere|In presenza|Online' && s.value === '' && e.modo === ''; }), 'riunione: tendina «presenza / online», di default «Da decidere»');
+await G.ev(() => { const e = PN.d.cal[0]; pnCalSet(e.id, 'modo', 'online'); }); await sleep(300);
+ok(await G.ev(() => PN.d.cal[0].modo === 'online' && document.getElementById('pn-cem-' + PN.d.cal[0].id).value === 'online'), 'riunione: «Online» salvato nel piano');
+await G.ev(() => { pnCalSet(PN.d.cal[0].id, 'modo', 'boh'); }); await sleep(200);
+ok(await G.ev(() => PN.d.cal[0].modo === 'online'), 'valore non valido: ignorato');
+await G.ev(() => { pnCalSet(PN.d.cal[0].id, 'tipo', 'uscita'); }); await sleep(300);
+ok(await G.ev(() => !document.getElementById('pn-cem-' + PN.d.cal[0].id)), 'uscita: nessuna tendina presenza/online');
+await G.ev(() => { pnCalSet(PN.d.cal[0].id, 'tipo', 'riunione'); }); await sleep(300);
+ok(await G.ev(() => document.getElementById('pn-cem-' + PN.d.cal[0].id).value === 'online'), 'cambiando tipo e tornando a riunione, la scelta resta');
 await G.ev(() => { const e = PN.d.cal[0]; pnCalSet(e.id, 'tipo', 'uscita'); pnCalSet(e.id, 'd2', '2027-07-10'); }); await sleep(300);
 ok(await G.ev(() => !!document.querySelector('#pn-ce-' + PN.d.cal[0].id + ' [role=alert]')), 'data di fine prima dell’inizio: avviso');
 await G.ev(() => { const e = PN.d.cal[0]; pnCalSet(e.id, 'd2', ''); pnCalSet(e.id, 'd1', '2027-01-15'); pnCalSet(e.id, 'titolo', 'Uscita di Gruppo', true); }); await sleep(300);

@@ -18443,6 +18443,7 @@ function show(view, arg){
   else if(view === 'home') homeHTML();
   else if(view === 'piano') pnPage(arg);
   else if(view === 'calendari') calsPage();
+  else if(view === 'verbali') verbPage();
 }
 const ICO_S = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>';
 const ICO_H = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.7-6.2"/><path d="M3.3 3.8v4.7h4.7"/><path d="M12 7.5V12l3 2"/></svg>';
@@ -18932,6 +18933,7 @@ async function pnLetturaHtml(){
   const p = SH.prof || {}, E = esc; if(!CL.sb || !CL.user) return '';
   let h = '';
   if(calSezOk(p)) h += `<h2 style="margin-top:14px">Calendari</h2><div class="pn-rowc"><div style="min-width:0"><b>Il calendario della Sezione</b><div class="sh-hint" style="margin:2px 0 0">Uscite, bivacchi, campi e consigli di tutta la Sezione, e il calendario di ognuno dei tuoi piani.</div></div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="calsOpen()">Apri i calendari</button></div>`;
+  if(verbOk(p)) h += `<h2 style="margin-top:14px">Verbali</h2><div class="pn-rowc"><div style="min-width:0"><b>I verbali delle riunioni</b><div class="sh-hint" style="margin:2px 0 0">Dallo staff di Unità al Comitato di Sezione: li leggono chi c’era e chi sta sopra. Integrano il libro dei verbali.</div></div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="verbOpen()">Apri i verbali</button></div>`;
   if(p.ruolo === 'snr'){
     let l = []; try{ l = await PIANI.pdcSenior(); }catch(e){ l = []; }
     const righe = l.map(x => `<div class="pn-row"><div style="min-width:0"><b>${E(x.titolo || 'Progetto di Clan')}</b><div class="sh-hint" style="margin:2px 0 0">Progetto di Clan · ${E(pnPeriodo(x))} · ${E(pnAnnoTxt(x))} · ${E(PN_STATO_LETT[x.stato] || x.stato)}</div></div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="pnOpen('${E(x.id)}')">Leggi</button></div>`).join('');
@@ -19039,6 +19041,201 @@ function calsDraw(){
 window.calsAnno = async function(y){ const C = SH._cals; if(!C) return; C.anno = y; C.f = 'all'; await calsCarica(); calsDraw(); };
 window.calsF = function(k){ if(!SH._cals) return; SH._cals.f = k; calsDraw(); };
 window.calsPiano = function(id){ PN.goto = 'cal'; PN.rip = false; show('piano', id); };
+// ── Verbali delle riunioni degli adulti (27/11 sera): dallo staff di Unità al Comitato di Sezione. Integrano il libro dei verbali, non lo sostituiscono. ──
+const VERB_RUOLI = ['cu', 'vcu', 'senior', 'cg', 'vcg', 'cds', 'vcds', 'pres', 'tes', 'coords', 'cos'];
+const verbOk = p => !!p && (VERB_RUOLI.includes(p.ruolo) || cosMembro(p));
+const VERB_DEMO = true;   // finché l’app è uno strumento dimostrativo con iscrizione libera: riga d’avviso ben visibile (si toglie quando passa sul portale)
+const VERB_TIPI = {staff:'Riunione di staff', cdg:'Consiglio di Gruppo', rica:'Riunione dei Capi (RiCa)', cosez:'Consiglio di Sezione', cos:'Comitato di Sezione (COS)'};
+const VERB_COL = {staff:'#2f7d5b', cdg:'#b0482f', rica:'#4a6b8a', cosez:'#7a3f8f', cos:'#2C3E7A'};
+const VERB_RL = {cu:'Capo Unità', vcu:'Vice Capo Unità', senior:'Senior in Servizio', cg:'Capo Gruppo', vcg:'Vice Capo Gruppo', cds:'Commissario', vcds:'Vice Commissario', pres:'Presidente', tes:'Tesoriere', coords:'Coordinatore Senior', cos:'Comitato di Sezione', volontario:'Comitato di Sezione'};
+const VERB_STATI = [['bozza', 'Bozza: la vedi solo tu'], ['condiviso', 'Condiviso: lo leggono le persone indicate'], ['approvato', 'Approvato: non si modifica più']];
+const VERB_STL = {bozza:'Bozza', condiviso:'Condiviso', approvato:'Approvato'};
+function verbTipiPer(p){
+  p = p || {}; const r = p.ruolo, gr = String(p.gruppo || '').trim(), L = [];
+  if(['cds', 'vcds', 'coords'].includes(r) || (['cu', 'vcu', 'senior', 'cg', 'vcg'].includes(r) && gr)) L.push('staff');
+  if(['cg', 'vcg'].includes(r) && gr) L.push('cdg');
+  if(['cds', 'vcds'].includes(r)) L.push('rica', 'cosez');
+  if(cosMembro(p)) L.push('cos');
+  return L;
+}
+const verbTipoLab = (tipo, ruolo) => tipo !== 'staff' ? (VERB_TIPI[tipo] || 'Verbale') : (['cu', 'vcu', 'senior'].includes(ruolo) ? 'Staff di Unità' : ['cg', 'vcg'].includes(ruolo) ? 'Staff di Gruppo' : ruolo === 'coords' ? 'Staff del Clan' : ['cds', 'vcds'].includes(ruolo) ? 'Staff del Commissario' : 'Riunione di staff');
+function verbChiVede(tipo, ruolo, sez){
+  if(tipo === 'staff') return ['cu', 'vcu', 'senior'].includes(ruolo) ? 'il Capo Gruppo e il Vice del tuo Gruppo, il Commissario e il Vice Commissario' : ['cds', 'vcds'].includes(ruolo) ? 'il Presidente' : 'il Commissario e il Vice Commissario';
+  if(tipo === 'cdg') return 'tutti gli adulti del Gruppo, il Commissario e il Vice Commissario';
+  if(tipo === 'rica') return 'tutti i Capi della Sezione, il Coordinatore Senior, il Commissario e il Vice Commissario';
+  if(tipo === 'cosez') return 'i Capi Gruppo e i Vice, il Coordinatore Senior, il Commissario e il Vice Commissario';
+  return sez ? 'tutti gli adulti della Sezione' : 'i membri del Comitato di Sezione';
+}
+const verbModoTxt = m => m === 'online' ? 'Online' : 'In presenza';
+const VERB = {
+  async lista(anno){ const {data, error} = await CL.sb.rpc('pee_verbali_lista', {p_anno:anno == null ? null : anno}); if(error) throw error; return Array.isArray(data) ? data : []; },
+  async salva(v){
+    const row = {tipo:v.tipo, titolo:String(v.titolo || '').slice(0, 160), data:v.data, modalita:v.modalita === 'online' ? 'online' : 'presenza', luogo:String(v.luogo || '').slice(0, 200), partecipanti:String(v.partecipanti || '').slice(0, 4000),
+      odg:String(v.odg || '').slice(0, 8000), sintesi:String(v.sintesi || '').slice(0, 30000), decisioni:String(v.decisioni || '').slice(0, 12000),
+      azioni:(v.azioni || []).filter(a => (a.chi || a.cosa || a.entro)).slice(0, 100).map(a => ({chi:String(a.chi || '').slice(0, 120), cosa:String(a.cosa || '').slice(0, 400), entro:/^\d{4}-\d{2}-\d{2}$/.test(a.entro || '') ? a.entro : ''})),
+      prossima:/^\d{4}-\d{2}-\d{2}$/.test(v.prossima || '') ? v.prossima : null, stato:v.stato, approvato_il:v.stato === 'approvato' && /^\d{4}-\d{2}-\d{2}$/.test(v.approvato_il || '') ? v.approvato_il : null, sez:v.tipo === 'cos' && !!v.sez};
+    if(v.id){ const {data, error} = await CL.sb.from('pee_verbali').update(row).eq('id', v.id).select('id').maybeSingle(); if(error) throw error; if(!data) throw Object.assign(new Error('row-level security'), {code:'42501'}); return data.id; }
+    const {data, error} = await CL.sb.from('pee_verbali').insert(row).select('id').single(); if(error) throw error; return data.id;
+  },
+  async elimina(id){ const {error} = await CL.sb.from('pee_verbali').delete().eq('id', id); if(error) throw error; const c = await CL.sb.from('pee_verbali').select('id').eq('id', id).maybeSingle(); if(c.data) throw Object.assign(new Error('row-level security'), {code:'42501'}); }
+};
+function verbErr(e){
+  const m = String(e && (e.message || e.code) || e), c = String(e && e.code || '');
+  if(c === 'PGRST202' || c === '42P01' || c === 'PGRST205' || /pee_verbali/i.test(m) && /(does not exist|schema cache|Could not find)/i.test(m)) return 'I verbali saranno disponibili dopo l’aggiornamento del database (script SQL del 28 novembre «Verbali»).';
+  if(/approvato non si modifica/i.test(m)) return 'Il verbale approvato non si modifica: riaprilo prima.';
+  if(/non puoi scrivere questo tipo/i.test(m)) return 'Con il tuo ruolo non puoi scrivere questo tipo di verbale.';
+  if(/manca la Sezione/i.test(m)) return 'Nel tuo profilo manca la Sezione.';
+  if(c === '42501' || /row-level security|permission denied/i.test(m)) return 'Non hai il permesso di fare questa modifica al verbale (un verbale approvato non si cancella: va prima riaperto).';
+  if(c === '23514' || /check constraint/i.test(m)) return 'Qualcosa nel verbale non è nei limiti (titolo, date o lunghezza dei testi).';
+  return clErr(e);
+}
+window.verbOpen = function(){ show('verbali'); };
+window.verbTipiPer = verbTipiPer;
+async function verbCarica(){
+  const V = SH._verb; V.st = 'no'; V.rows = []; V.msg = '';
+  try{ V.rows = await VERB.lista(V.anno === 'all' ? null : V.anno); V.st = 'ok'; }
+  catch(e){ V.st = /PGRST202|Could not find|schema cache|42883/i.test(String((e && (e.code || '')) + ' ' + (e && e.message || ''))) ? 'old' : 'err'; V.msg = verbErr(e); }
+}
+async function verbPage(){
+  const r = $('sh-root');
+  r.innerHTML = top(true) + `<main class="sh-wrap"><p class="sh-sub" role="status">Apro i verbali…</p></main>`;
+  SH._verb = {anno:'all', f:'all', rows:[], st:'', msg:'', det:null, ed:null, err:''};
+  if(!verbOk(SH.prof)){ shGoHome(); return; }
+  await verbCarica(); if(SH.view !== 'verbali') return; verbDraw();
+}
+const verbRiga = v => `<div class="pn-row" style="border-left:6px solid ${VERB_COL[v.tipo] || '#555'};align-items:flex-start"><div style="min-width:5.5em;font-weight:800">${esc(giData(v.data))}</div><div style="min-width:0"><b>${esc(v.titolo || verbTipoLab(v.tipo, v.autore_ruolo))}</b><div class="sh-hint" style="margin:2px 0 0"><span style="font-weight:800;color:${VERB_COL[v.tipo] || '#555'}">${esc(verbTipoLab(v.tipo, v.autore_ruolo))}</span> · ${esc(verbModoTxt(v.modalita))} · ${esc(VERB_STL[v.stato] || v.stato)}${v.tipo === 'cos' && v.sez ? ' · aperto a tutta la Sezione' : ''}${v.mio ? '' : ' · di ' + esc([v.autore_nome, VERB_RL[v.autore_ruolo], v.tipo !== 'cos' && v.gruppo ? grpLabel(v.gruppo) : ''].filter(Boolean).join(', '))}</div></div><button class="sh-btn sm gh" type="button" style="margin-left:auto" aria-label="Apri il verbale ${esc(v.titolo || '')} del ${esc(giData(v.data))}" onclick="verbApri('${esc(v.id)}')">Apri</button></div>`;
+function verbListaHTML(){
+  const V = SH._verb, E = esc, p = SH.prof || {}, y = annoScoutStart();
+  let h = `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1 style="margin:0">Verbali</h1><div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${verbTipiPer(p).length ? `<button class="sh-btn sm" type="button" onclick="verbNuovo()">Nuovo verbale</button>` : ''}<button class="sh-btn sm gh" type="button" onclick="shGoHome()">Torna ai progetti</button></div></div>`;
+  if(VERB_DEMO) h += `<div class="sh-msg err" role="note" style="display:block;margin:10px 0 0"><b>Versione di prova.</b> Usa dati inventati: finché l’iscrizione all’app è libera, chiunque si dichiari della tua Sezione può leggere ciò che condividi con la Sezione.</div>`;
+  h += `<section class="pn-card" aria-labelledby="vb-t"><h2 class="pn-h" id="vb-t">I verbali che puoi leggere</h2>`;
+  if(V.st === 'old') return h + `<p class="sh-hint" style="margin:0">I verbali saranno disponibili dopo l’aggiornamento del database (script SQL del 28 novembre «Verbali»).</p></section>`;
+  if(V.st === 'err') return h + `<p class="sh-msg err" role="alert" style="display:block;margin:0">${E(V.msg || 'Non riesco a leggere i verbali.')}</p></section>`;
+  h += `<p class="sh-hint" style="margin:0">Le riunioni degli adulti, dallo staff di Unità al Comitato di Sezione. Ognuno è letto da chi ha partecipato e da chi sta sopra, e solo da loro. <b>Integrano il libro dei verbali, non lo sostituiscono.</b> Una bozza la vedi solo tu.</p>
+    <div class="pn-seg" role="group" aria-label="Anno scout">${['all', y - 1, y, y + 1].map(k => `<button type="button" class="pn-segb${V.anno === k ? ' on' : ''}" aria-pressed="${V.anno === k}" onclick="verbAnno('${k}')">${k === 'all' ? 'Tutti gli anni' : E(annoScoutTxt(k))}</button>`).join('')}</div>`;
+  const tipi = [...new Set(V.rows.map(v => v.tipo))];
+  if(tipi.length > 1) h += `<div class="pn-seg" role="group" aria-label="Tipo di riunione"><button type="button" class="pn-segb${V.f === 'all' ? ' on' : ''}" aria-pressed="${V.f === 'all'}" onclick="verbF('all')">Tutti</button>${tipi.map(k => `<button type="button" class="pn-segb${V.f === k ? ' on' : ''}" aria-pressed="${V.f === k}" onclick="verbF('${k}')">${E(VERB_TIPI[k] || k)}</button>`).join('')}</div>`;
+  const L = V.rows.filter(v => V.f === 'all' || v.tipo === V.f);
+  if(!L.length) return h + `<p class="sh-sub" style="margin:0">Nessun verbale${V.f !== 'all' || V.anno !== 'all' ? ' con questi filtri' : ''}. ${verbTipiPer(p).length ? 'Scrivi il primo con «Nuovo verbale».' : 'Compaiono qui quando chi ha scritto un verbale lo condivide.'}</p></section>`;
+  h += L.map(verbRiga).join('');
+  h += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="sh-btn sm gh" type="button" id="vb-libro" onclick="verbLibro()">Scarica il libro dei verbali (Word, ${L.length})</button></div></section>`;
+  return h;
+}
+function verbDettHTML(v){
+  const E = esc, T = x => E(x).replace(/\n/g, '<br>'), blocco = (t, x) => String(x || '').trim() ? `<h3 style="margin:14px 0 4px;font-size:15px">${E(t)}</h3><p style="margin:0;line-height:1.5">${T(x)}</p>` : '';
+  const az = (v.azioni || []).filter(a => a && (a.chi || a.cosa));
+  let h = `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1 style="margin:0">${E(v.titolo || verbTipoLab(v.tipo, v.autore_ruolo))}</h1><div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap"><button class="sh-btn sm gh" type="button" onclick="verbBack()">Torna ai verbali</button></div></div>
+    <section class="pn-card" aria-label="Verbale"><p class="sh-hint" style="margin:0"><b style="color:${VERB_COL[v.tipo] || '#555'}">${E(verbTipoLab(v.tipo, v.autore_ruolo))}</b> · ${E(giData(v.data))} · ${E(verbModoTxt(v.modalita))}${v.luogo ? ' · ' + E(v.luogo) : ''} · ${E(VERB_STL[v.stato] || v.stato)}${v.stato === 'approvato' && v.approvato_il ? ' il ' + E(giData(v.approvato_il)) : ''}${v.mio ? '' : ' · scritto da ' + E([v.autore_nome, VERB_RL[v.autore_ruolo]].filter(Boolean).join(', '))}</p>
+    ${blocco('Chi c’era', v.partecipanti)}${blocco('Ordine del giorno', v.odg)}${blocco('Cosa è emerso', v.sintesi)}${blocco('Decisioni', v.decisioni)}`;
+  if(az.length) h += `<h3 style="margin:14px 0 4px;font-size:15px">Azioni</h3><ul style="margin:0;padding-left:20px">${az.map(a => `<li>${E(a.cosa || '—')}${a.chi ? ' · ' + E(a.chi) : ''}${a.entro ? ' · entro ' + E(giData(a.entro)) : ''}</li>`).join('')}</ul>`;
+  if(v.prossima) h += `<p class="sh-hint" style="margin:14px 0 0">Prossima riunione: ${E(giData(v.prossima))}</p>`;
+  h += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="sh-btn sm" type="button" id="vb-word" onclick="verbWord('${E(v.id)}')">Scarica in Word</button>${v.mio && v.stato !== 'approvato' ? `<button class="sh-btn sm gh" type="button" id="vb-mod" onclick="verbModifica('${E(v.id)}')">Modifica</button>` : ''}${v.mio && v.stato === 'approvato' ? `<button class="sh-btn sm gh" type="button" id="vb-riapri" onclick="verbRiapri('${E(v.id)}')">Riapri per modificare</button>` : ''}</div></section>`;
+  return h;
+}
+function verbEdHTML(){
+  const V = SH._verb, e = V.ed, E = esc, p = SH.prof || {}, tipi = verbTipiPer(p), nuovo = !e.id;
+  const ta = (k, lab, rows, ph) => `<div><label class="sh-lb" for="vb-${k}">${E(lab)}</label><textarea class="sh-in pn-ta" id="vb-${k}" rows="${rows}" maxlength="${{partecipanti:4000, odg:8000, sintesi:30000, decisioni:12000}[k]}" placeholder="${E(ph || '')}" oninput="verbSet('${k}',this.value);pnGrow(this)">${E(e[k] || '')}</textarea></div>`;
+  let h = `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1 style="margin:0">${nuovo ? 'Nuovo verbale' : 'Modifica il verbale'}</h1><div style="margin-left:auto"><button class="sh-btn sm gh" type="button" onclick="verbAnnulla()">Annulla</button></div></div>
+    ${VERB_DEMO ? `<div class="sh-msg err" role="note" style="display:block;margin:10px 0 0"><b>Versione di prova.</b> Usa dati inventati.</div>` : ''}
+    <section class="pn-card" aria-label="Verbale"><div class="sh-g2"><div><label class="sh-lb" for="vb-tipo">Che riunione è</label><select class="sh-in" id="vb-tipo" onchange="verbSet('tipo',this.value,true)"${nuovo ? '' : ' disabled'}>${tipi.map(k => `<option value="${k}"${e.tipo === k ? ' selected' : ''}>${E(verbTipoLab(k, p.ruolo))}</option>`).join('')}</select></div>
+    <div><label class="sh-lb" for="vb-data">Data</label><input class="sh-in" type="date" id="vb-data" value="${E(e.data || '')}" onchange="verbSet('data',this.value)"></div></div>
+    <p class="sh-hint" style="margin:0" id="vb-chi">Lo leggono: ${E(verbChiVede(e.tipo, p.ruolo, e.sez))}. Finché è «bozza» lo vedi solo tu.</p>
+    ${['staff', 'cdg'].includes(e.tipo) ? `<div class="sh-msg err" role="note" style="display:block;margin:0"><b>Niente nomi di ragazzi o ragazze</b> se non servono davvero: scrivi i fatti e le decisioni, non le persone.</div>` : ''}
+    <div><label class="sh-lb" for="vb-titolo">Titolo</label><input class="sh-in" id="vb-titolo" maxlength="160" placeholder="${E(verbTipoLab(e.tipo, p.ruolo))} del …" value="${E(e.titolo || '')}" oninput="verbSet('titolo',this.value)"></div>
+    <fieldset class="pn-fs" style="border:0;padding:0;margin:0"><legend class="sh-lb">Come ci si è incontrati</legend><div class="pn-chips"><label class="pn-chip${e.modalita === 'presenza' ? ' on' : ''}"><input type="radio" name="vb-modo" id="vb-modo-p" value="presenza" ${e.modalita === 'presenza' ? 'checked' : ''} onchange="verbSet('modalita','presenza',true)">In presenza</label><label class="pn-chip${e.modalita === 'online' ? ' on' : ''}"><input type="radio" name="vb-modo" id="vb-modo-o" value="online" ${e.modalita === 'online' ? 'checked' : ''} onchange="verbSet('modalita','online',true)">Online</label></div></fieldset>
+    <div><label class="sh-lb" for="vb-luogo">${e.modalita === 'online' ? 'Piattaforma o link' : 'Dove'}</label><input class="sh-in" id="vb-luogo" maxlength="200" placeholder="${e.modalita === 'online' ? 'es. Meet, Zoom' : 'es. Sede del Gruppo'}" value="${E(e.luogo || '')}" oninput="verbSet('luogo',this.value)"></div>
+    ${ta('partecipanti', 'Chi c’era', 2, 'Nomi degli adulti presenti e di chi era assente')}${ta('odg', 'Ordine del giorno', 3, 'Un punto per riga')}${ta('sintesi', 'Cosa è emerso', 6, 'La discussione in sintesi')}${ta('decisioni', 'Decisioni', 3, 'Cosa si è deciso')}
+    <div><h3 style="margin:0 0 6px;font-size:15px">Azioni</h3>${(e.azioni || []).map((a, i) => `<div class="sh-g2" style="align-items:end;margin-bottom:6px"><div><label class="sh-lb" for="vb-az-c-${i}">Cosa</label><input class="sh-in" id="vb-az-c-${i}" maxlength="400" value="${E(a.cosa || '')}" oninput="verbAz(${i},'cosa',this.value)"></div><div style="display:flex;gap:8px;align-items:end"><div style="flex:1"><label class="sh-lb" for="vb-az-w-${i}">Chi</label><input class="sh-in" id="vb-az-w-${i}" maxlength="120" value="${E(a.chi || '')}" oninput="verbAz(${i},'chi',this.value)"></div><div><label class="sh-lb" for="vb-az-e-${i}">Entro</label><input class="sh-in" type="date" id="vb-az-e-${i}" value="${E(a.entro || '')}" onchange="verbAz(${i},'entro',this.value)"></div><button class="pn-ib" type="button" aria-label="Elimina l’azione ${i + 1}" onclick="verbAzDel(${i})">✕</button></div></div>`).join('')}<button class="pn-sug" type="button" id="vb-az-add" onclick="verbAzAdd()">+ Azione</button></div>
+    <div style="max-width:260px"><label class="sh-lb" for="vb-prossima">Prossima riunione</label><input class="sh-in" type="date" id="vb-prossima" value="${E(e.prossima || '')}" onchange="verbSet('prossima',this.value)"></div>
+    ${e.tipo === 'cos' ? `<label class="pn-chip sm${e.sez ? ' on' : ''}"><input type="checkbox" id="vb-sez" ${e.sez ? 'checked' : ''} onchange="verbSet('sez',this.checked,true)">Visibile a tutta la Sezione</label>` : ''}
+    <div><label class="sh-lb" for="vb-stato">Stato</label><select class="sh-in" id="vb-stato" onchange="verbSet('stato',this.value,true)">${VERB_STATI.map(([k, t]) => `<option value="${k}"${e.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
+    ${e.stato === 'approvato' ? `<div style="max-width:260px"><label class="sh-lb" for="vb-appr">Approvato il</label><input class="sh-in" type="date" id="vb-appr" value="${E(e.approvato_il || giOggi())}" onchange="verbSet('approvato_il',this.value)"></div>` : ''}
+    <div class="sh-msg" id="vb-msg" role="alert"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">${nuovo ? '' : `<button class="sh-btn gh" type="button" id="vb-del" onclick="verbElimina()">Elimina</button>`}<button class="sh-btn" type="button" id="vb-salva" onclick="verbSalva()">Salva il verbale</button></div></section>`;
+  return h;
+}
+function verbDraw(){
+  const r = $('sh-root'); if(!r || SH.view !== 'verbali') return; const V = SH._verb;
+  r.innerHTML = top(true) + `<main class="sh-wrap">${V.ed ? verbEdHTML() : V.det ? verbDettHTML(V.det) : verbListaHTML()}</main>`;
+}
+window.verbAnno = async function(k){ const V = SH._verb; if(!V) return; V.anno = k === 'all' ? 'all' : Number(k); V.f = 'all'; await verbCarica(); verbDraw(); };
+window.verbF = function(k){ if(!SH._verb) return; SH._verb.f = k; verbDraw(); };
+window.verbBack = async function(){ const V = SH._verb; if(!V) return; V.det = null; V.ed = null; await verbCarica(); verbDraw(); };
+window.verbApri = function(id){ const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v) return; V.det = v; V.ed = null; verbDraw(); window.scrollTo(0, 0); };
+window.verbNuovo = function(){
+  const V = SH._verb, p = SH.prof || {}, t = verbTipiPer(p); if(!V || !t.length) return;
+  V.det = null; V.ed = {id:'', tipo:t[0], titolo:'', data:giOggi(), modalita:'presenza', luogo:'', partecipanti:'', odg:'', sintesi:'', decisioni:'', azioni:[], prossima:'', stato:'bozza', approvato_il:'', sez:false}; verbDraw(); window.scrollTo(0, 0);
+  const f = $('vb-titolo'); if(f) f.focus();
+};
+window.verbModifica = function(id){ const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v || !v.mio || v.stato === 'approvato') return; V.det = null; V.ed = JSON.parse(JSON.stringify(Object.assign({}, v, {prossima:v.prossima || '', approvato_il:v.approvato_il || '', azioni:Array.isArray(v.azioni) ? v.azioni : []}))); verbDraw(); window.scrollTo(0, 0); };
+window.verbRiapri = async function(id){
+  const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v || !v.mio || v.stato !== 'approvato') return;
+  if(!confirm('Riaprire il verbale approvato? Tornerà «condiviso» e si potrà modificare.')) return;
+  try{ await VERB.salva(Object.assign({}, v, {stato:'condiviso', approvato_il:''})); await verbCarica(); V.det = V.rows.find(x => x.id === id) || null; verbDraw(); clToast('Verbale riaperto.'); }
+  catch(e){ clToast(verbErr(e)); }
+};
+window.verbAnnulla = function(){ const V = SH._verb; if(!V) return; if(V.ed && V.ed.sporco && !confirm('Uscire senza salvare le modifiche?')) return; V.ed = null; verbDraw(); };
+window.verbSet = function(k, v, redraw){
+  const V = SH._verb, e = V && V.ed; if(!e || !['tipo', 'titolo', 'data', 'modalita', 'luogo', 'partecipanti', 'odg', 'sintesi', 'decisioni', 'prossima', 'stato', 'approvato_il', 'sez'].includes(k)) return;
+  if(k === 'tipo' && !verbTipiPer(SH.prof).includes(v)) return;
+  if(k === 'modalita' && !['presenza', 'online'].includes(v)) return;
+  if(k === 'stato' && !VERB_STATI.some(x => x[0] === v)) return;
+  if(k === 'data' || k === 'prossima' || k === 'approvato_il') v = /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : '';
+  if(k === 'sez') v = !!v;
+  e[k] = v; e.sporco = true;
+  if(k === 'stato' && v === 'approvato' && !e.approvato_il) e.approvato_il = giOggi();
+  if(k === 'tipo' && v !== 'cos') e.sez = false;
+  if(redraw){ const s = window.scrollY; verbDraw(); window.scrollTo(0, s); const f = $({tipo:'vb-tipo', modalita:'vb-modo-' + (v === 'online' ? 'o' : 'p'), sez:'vb-sez', stato:'vb-stato'}[k] || ''); if(f) f.focus(); }
+  else if(k === 'sez'){ const c = $('vb-chi'); if(c) c.textContent = 'Lo leggono: ' + verbChiVede(e.tipo, (SH.prof || {}).ruolo, e.sez) + '. Finché è «bozza» lo vedi solo tu.'; }
+};
+window.verbAz = function(i, k, v){ const e = SH._verb && SH._verb.ed; if(!e || !e.azioni[i] || !['cosa', 'chi', 'entro'].includes(k)) return; if(k === 'entro') v = /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : ''; e.azioni[i][k] = v; e.sporco = true; };
+window.verbAzAdd = function(){ const e = SH._verb && SH._verb.ed; if(!e || e.azioni.length >= 100) return; e.azioni.push({cosa:'', chi:'', entro:''}); e.sporco = true; const s = window.scrollY; verbDraw(); window.scrollTo(0, s); const f = $('vb-az-c-' + (e.azioni.length - 1)); if(f) f.focus(); };
+window.verbAzDel = function(i){ const e = SH._verb && SH._verb.ed; if(!e) return; e.azioni.splice(i, 1); e.sporco = true; const s = window.scrollY; verbDraw(); window.scrollTo(0, s); };
+window.verbSalva = async function(){
+  const V = SH._verb, e = V && V.ed; if(!e) return; const b = $('vb-salva'), m = $('vb-msg'); if(!b) return; m.className = 'sh-msg'; m.textContent = '';
+  const err = t => { m.className = 'sh-msg err'; m.textContent = t; };
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(e.data || '')) return err('Scrivi la data della riunione.');
+  if(!verbTipiPer(SH.prof).includes(e.tipo)) return err('Con il tuo ruolo non puoi scrivere questo tipo di verbale.');
+  if(e.stato === 'approvato' && !confirm('Un verbale approvato non si modifica più (si potrà riaprire). Lo approvo?')) return;
+  if(e.stato !== 'bozza' && e.tipo === 'cos' && e.sez && !confirm('Questo verbale sarà letto da tutti gli adulti della Sezione. Procedo?')) return;
+  const titolo = String(e.titolo || '').trim() || (verbTipoLab(e.tipo, (SH.prof || {}).ruolo) + ' del ' + giData(e.data));
+  b.disabled = true;
+  try{
+    const id = await VERB.salva(Object.assign({}, e, {titolo})); await verbCarica();
+    V.ed = null; V.det = V.rows.find(x => x.id === id) || null; verbDraw(); window.scrollTo(0, 0); clToast('Verbale salvato.');
+  }catch(x){ b.disabled = false; err(verbErr(x)); }
+};
+window.verbElimina = async function(){
+  const V = SH._verb, e = V && V.ed; if(!e || !e.id) return;
+  if(!confirm('Eliminare questo verbale? Non si può annullare.')) return;
+  try{ await VERB.elimina(e.id); V.ed = null; V.det = null; await verbCarica(); verbDraw(); clToast('Verbale eliminato.'); }
+  catch(x){ const m = $('vb-msg'); if(m){ m.className = 'sh-msg err'; m.textContent = verbErr(x); } }
+};
+// Word: un verbale, oppure il libro dei verbali (tutti quelli dell’elenco con i filtri attuali, dal più vecchio)
+async function verbWordDoc(L, titolo){
+  await needDocx();
+  const X = x => (x == null ? '' : String(x)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'), p = SH.prof || {}, sez = String(p.sezione || '').trim();
+  const un = UNIT_NAME, fo = window._dFootOverride, tema = [GREEN, PALE, ONG, GRTXT], ch = [];
+  try{
+    UNIT_NAME = ''; window._dFootOverride = (titolo + (sez ? ' · ' + sez : '') + ' · PEE CNGEI'); GREEN = '2C3E7A'; PALE = 'EEF0FB'; ONG = 'FFFFFF'; GRTXT = '2C3E7A';
+    ch.push(...dTitleBlock(titolo, [sez ? 'Sezione ' + sez : '', 'Copia digitale · integra il libro dei verbali, non lo sostituisce', giData(giOggi())].filter(Boolean).join(' · ')));
+    L.forEach((v, i) => {
+      const kv = [['Riunione', verbTipoLab(v.tipo, v.autore_ruolo)], ['Data', giData(v.data)], ['Come', verbModoTxt(v.modalita) + (v.luogo ? ' · ' + v.luogo : '')], ['Stato', (VERB_STL[v.stato] || v.stato) + (v.stato === 'approvato' && v.approvato_il ? ' il ' + giData(v.approvato_il) : '')], ['Scritto da', [v.autore_nome, VERB_RL[v.autore_ruolo], v.tipo !== 'cos' && v.gruppo ? grpLabel(v.gruppo) : ''].filter(Boolean).join(', ')]].filter(r => r[1]);
+      ch.push(dH3((i + 1) + '. ' + (v.titolo || verbTipoLab(v.tipo, v.autore_ruolo)), i ? {before:360, pageBreakBefore:true} : {}));
+      kv.forEach(([l, t]) => ch.push(dPara([new (dxLib().TextRun)({text:l + ': ', bold:true, font:MF, size:19}), new (dxLib().TextRun)({text:t, font:MF, size:19})], {after:20})));
+      [['Chi c’era', v.partecipanti], ['Ordine del giorno', v.odg], ['Cosa è emerso', v.sintesi], ['Decisioni', v.decisioni]].forEach(([t, x]) => { if(String(x || '').trim()){ ch.push(dPara(t, {size:20, bold:true, color:GRTXT, before:120, after:20, keepNext:true})); ch.push(...dMulti(X(x))); } });
+      const az = (v.azioni || []).filter(a => a && (a.cosa || a.chi));
+      if(az.length){ ch.push(dPara('Azioni', {size:20, bold:true, color:GRTXT, before:120, after:40, keepNext:true})); ch.push(dGridTable(['Cosa', 'Chi', 'Entro'], az.map(a => [X(a.cosa), X(a.chi), a.entro ? giData(a.entro) : '']), [5338, 2600, 1700], 17)); }
+      if(v.prossima) ch.push(dPara('Prossima riunione: ' + giData(v.prossima), {size:19, color:'444444', before:100, after:0}));
+    });
+    await dSave(dDocument(ch, titolo), (L.length === 1 ? 'Verbale_' + String(L[0].titolo || verbTipoLab(L[0].tipo, L[0].autore_ruolo)).replace(/[^\w\-]+/g, '_').slice(0, 40) + '_' + String(L[0].data || '') : 'Libro_dei_verbali_' + giOggi()) + '.docx');
+  }finally{ UNIT_NAME = un; window._dFootOverride = fo; [GREEN, PALE, ONG, GRTXT] = tema; }
+}
+window.verbWord = async function(id){ const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v) return; try{ clToast('Preparo il Word del verbale…'); await verbWordDoc([v], 'Verbale'); }catch(e){ clToast('Impossibile creare il Word: ' + (e && e.message || e)); } };
+window.verbLibro = async function(){
+  const V = SH._verb; if(!V) return; const L = V.rows.filter(v => V.f === 'all' || v.tipo === V.f).slice().sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0); if(!L.length) return;
+  try{ clToast('Preparo il libro dei verbali…'); await verbWordDoc(L, 'Libro dei verbali'); }catch(e){ clToast('Impossibile creare il Word: ' + (e && e.message || e)); }
+};
 window.pnNuovo = function(tipo){
   const p = SH.prof || {}; const cur = annoScoutStart();
   tipo = (tipo && tipo === pnTipoCrea(p)) ? tipo : (pnTipoCrea(p) || 'gruppo'); PN.nuovoTipo = tipo; const nome = PIANI_TIPI[tipo];
@@ -20401,7 +20598,7 @@ function pnQCal(R){
       else { if(x.s === gi) li.push(L('▶', 'Inizia: ')); if(x.fineMese && x.e === gi && x.e !== x.s) li.push(L('■', 'Finisce: ')); } });
     const corso = ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e > gi).length + ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e === gi && !x.fineMese).length;
     T.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">◇</span> ${E(pnQTappaTxt(x))}</li>`));
-    pnCalOrd().filter(e => (e.d1 || '').slice(0, 7) === m.k).forEach(e => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">●</span> <a href="#" onclick="pnSez('cal');return false">${E(pnCalTipoLab(e.tipo))}: ${E(e.titolo || 'senza titolo')} · ${E(pnCalDate(e))}</a></li>`));
+    pnCalOrd().filter(e => (e.d1 || '').slice(0, 7) === m.k).forEach(e => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">●</span> <a href="#" onclick="pnSez('cal');return false">${E(pnCalTipoLab(e.tipo))}: ${E(e.titolo || 'senza titolo')} · ${E(pnCalDate(e))}${pnCalModoTxt(e) ? ' · ' + E(pnCalModoTxt(e)) : ''}</a></li>`));
     C.filter(x => x.s === gi).forEach(x => li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">▲</span> ${E(pnQTappaTxt(x))}</li>`));
     if(giro && giro.slice(0, 7) === m.k) li.push(`<li class="v"><span aria-hidden="true" class="pn-ci">○</span> Ascolto: scadenza ${E(giro.slice(8, 10))} ${E(PN_MESI_N[Number(m.k.slice(5, 7)) - 1])}</li>`);
     h += `<section class="pn-cm${oggi.slice(0, 7) === m.k ? ' cur' : ''}" aria-label="${E(m.lab)}"><h3>${E(m.lab)}${oggi.slice(0, 7) === m.k ? ' <small>· questo mese</small>' : ''}</h3>${li.length ? `<ul>${li.join('')}</ul>` : '<p class="pn-no" style="margin:0">Niente in programma.</p>'}${corso ? `<p class="pn-cc">${corso === 1 ? '+ 1 azione in corso' : '+ ' + corso + ' azioni in corso'}</p>` : ''}</section>`;
@@ -20572,6 +20769,9 @@ function pnCalSug(){
     : [['Riunione dei genitori', 'altro', ''], ['Campo estivo', 'campo', '']];
   return base.filter(x => !(d.cal || []).some(e => e.titolo === x[0]));
 }
+const PN_CAL_RIU = ['riunione', 'consiglio', 'assemblea'];
+const PN_CAL_MODO = [['', 'Da decidere'], ['presenza', 'In presenza'], ['online', 'Online']];
+const pnCalModoTxt = e => e && e.modo === 'online' ? 'online' : e && e.modo === 'presenza' ? 'in presenza' : '';
 function pnCalHTML(){
   const E = esc, d = PN.d, tutto = pnTutto(), dis = tutto ? '' : ' disabled', T = pnCalTipi(), tp = PN.p.tipo;
   const org = tp === 'gruppo' ? 'del Gruppo' : tp === 'clan' ? 'del Clan' : 'della Sezione';
@@ -20586,6 +20786,7 @@ function pnCalHTML(){
       <div class="sh-g2"><div><label class="sh-lb" for="pn-ced-${id}">Data${e.tipo === 'bivacco' || e.tipo === 'campo' || e.tipo === 'uscita' ? ' di inizio' : ''}</label><input class="sh-in" type="date" id="pn-ced-${id}" value="${E(e.d1 || '')}" onchange="pnCalSet('${id}','d1',this.value)"${dis}></div>
       <div><label class="sh-lb" for="pn-cef-${id}">Data di fine (se dura più giorni)</label><input class="sh-in" type="date" id="pn-cef-${id}" value="${E(e.d2 || '')}"${e.d1 ? ` min="${E(e.d1)}"` : ''} onchange="pnCalSet('${id}','d2',this.value)"${dis}></div></div>
       ${err ? '<p class="sh-msg err" role="alert" style="display:block;margin:6px 0 0">La data di fine è prima di quella di inizio.</p>' : ''}
+      ${PN_CAL_RIU.includes(e.tipo) ? `<div style="max-width:260px"><label class="sh-lb" for="pn-cem-${id}">Come ci si incontra</label><select class="sh-in" id="pn-cem-${id}" onchange="pnCalSet('${id}','modo',this.value)"${dis}>${PN_CAL_MODO.map(([k, t]) => `<option value="${k}"${(e.modo || '') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>` : ''}
       <label class="pn-chip sm${e.ris ? ' on' : ''}" style="margin-top:6px"><input type="checkbox" id="pn-cer-${id}" ${e.ris ? 'checked' : ''} onchange="pnCalSet('${id}','ris',this.checked)"${dis}>Riservato</label>
       <p class="sh-hint" style="margin:4px 0 0" id="pn-ces-${id}">${E(pnCalStato(e))}</p>
       <textarea class="sh-in pn-ta" aria-label="Note dell’evento ${i + 1} (restano nel piano)" rows="2" maxlength="300" placeholder="Note (restano nel piano)" oninput="pnCalSet('${id}','nota',this.value,true);pnGrow(this)"${dis}>${E(e.nota || '')}</textarea></div>${tutto ? `<div class="pn-col"><button class="pn-ib" type="button" aria-label="Elimina l’evento ${i + 1}" onclick="pnCalDel('${id}')">✕</button></div>` : ''}</div>`; });
@@ -20600,17 +20801,18 @@ function pnCalHTML(){
   return h + `</section>`;
 }
 function pnCalStato(e){ if(!e.d1) return 'Senza data: non compare ancora nel calendario della Sezione.'; if(e.tipo === 'riunione') return 'Le riunioni restano nel calendario del piano.'; if(e.ris) return 'Riservato: resta nel piano e non sale al calendario della Sezione.'; return 'Sale al calendario della Sezione: titolo, date e tipo.'; }
-window.pnCalAdd = function(tipo, titolo){ if(!pnTutto()) return; const e = {id:pnUid(), tipo:pnCalTipi().some(x => x[0] === tipo) ? tipo : 'altro', titolo:String(titolo || '').slice(0, 100), d1:'', d2:'', ris:false, nota:''}; PN.d.cal.push(e); pnTouch(); pnRender(); const f = $('pn-cex-' + e.id); if(f) f.focus(); };
+window.pnCalAdd = function(tipo, titolo){ if(!pnTutto()) return; const e = {id:pnUid(), tipo:pnCalTipi().some(x => x[0] === tipo) ? tipo : 'altro', titolo:String(titolo || '').slice(0, 100), d1:'', d2:'', ris:false, nota:'', modo:''}; PN.d.cal.push(e); pnTouch(); pnRender(); const f = $('pn-cex-' + e.id); if(f) f.focus(); };
 window.pnCalSet = function(id, k, v, soft){
-  const e = (PN.d.cal || []).find(x => x.id === id); if(!e || !pnTutto() || !['tipo', 'titolo', 'd1', 'd2', 'ris', 'nota'].includes(k)) return;
+  const e = (PN.d.cal || []).find(x => x.id === id); if(!e || !pnTutto() || !['tipo', 'titolo', 'd1', 'd2', 'ris', 'nota', 'modo'].includes(k)) return;
   if(k === 'tipo' && !pnCalTipi().some(x => x[0] === v)) return;
   if(k === 'd1' || k === 'd2') v = /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : '';
   if(k === 'ris') v = !!v;
+  if(k === 'modo' && !['', 'presenza', 'online'].includes(v)) return;
   e[k] = k === 'titolo' ? String(v).slice(0, 100) : k === 'nota' ? String(v).slice(0, 300) : v;
   if(k === 'd1' && e.d2 && e.d2 < e.d1) e.d2 = '';
   pnTouch();
   if(soft){ const s = $('pn-ces-' + id); if(s) s.textContent = pnCalStato(e); return; }
-  pnRender(); const f = $('pn-' + ({tipo:'cet', d1:'ced', d2:'cef', ris:'cer'}[k] || 'cex') + '-' + id); if(f) f.focus();
+  pnRender(); const f = $('pn-' + ({tipo:'cet', d1:'ced', d2:'cef', ris:'cer', modo:'cem'}[k] || 'cex') + '-' + id); if(f) f.focus();
 };
 window.pnCalDel = function(id){ if(!pnTutto()) return; const e = PN.d.cal.find(x => x.id === id); if(e && ((e.titolo || '') + (e.nota || '')).trim() && !confirm('Eliminare questo appuntamento?')) return; PN.d.cal = PN.d.cal.filter(x => x.id !== id); pnTouch(); pnRender(); };
 function pnPdcElenco(){ return PN.p && PN.p.tipo === 'sezione' ? (PN.pdc || []).filter(x => x && pnSovrap(x) && ((x.obiettivi || []).length || (x.disponibilita || []).length)) : []; }
