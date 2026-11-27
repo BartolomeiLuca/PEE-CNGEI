@@ -137,6 +137,8 @@ export class FakeDB {
       if(req.name === 'pee_persone_elenco') return this.personeElenco(req.args.p_tipo, uid);
       if(req.name === 'pee_pds_della_mia_sezione') return this.pdsSezione(uid);
       if(req.name === 'pee_pdg_della_mia_sezione') return this.pdgSezione(uid);
+      if(req.name === 'pee_richieste_al_clan') return this.richiesteClan(uid);
+      if(req.name === 'pee_pdc_della_mia_sezione') return this.pdcSezione(uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -309,6 +311,33 @@ export class FakeDB {
     const rows = this.t.pee_piani.filter(p => p.tipo === 'gruppo' && norm(pr(p).sezione) === sez).sort((x, y) => String(pr(x).gruppo).localeCompare(String(pr(y).gruppo)) || y.anno_inizio - x.anno_inizio)
       .map(p => ({id:p.id, titolo:p.titolo, gruppo:pr(p).gruppo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato,
         obiettivi:((p.data || {}).obiettivi || []).filter(o => String(o.testo || '').trim()).map(o => ({id:o.id, testo:o.testo, aree:o.aree || [], indirizzi:o.indirizzi || []}))}));
+    return {data:rows, error:null};
+  }
+  // Clan e Gruppi (SQL del 28 novembre, seconda parte): richieste «Chi: Clan» al Coordinatore Senior; Progetto di Clan al Commissario; db.sqlClan = false per il database non aggiornato
+  richiesteClan(uid){
+    if(this.sqlClan === false) return this.err('PGRST202', 'Could not find the function public.pee_richieste_al_clan');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const me = this.t.pee_profili.find(x => x.user_id === uid);
+    if(!me || me.ruolo !== 'coords') return this.err('P0001', 'Le richieste dei Gruppi le legge il Coordinatore Senior.');
+    const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const pr = p => this.t.pee_profili.find(x => x.user_id === p.owner_id) || {};
+    const rows = this.t.pee_piani.filter(p => p.tipo === 'gruppo' && norm(pr(p).sezione) === sez).map(p => { const d = p.data || {}, ob = d.obiettivi || [];
+      return {id:p.id, titolo:p.titolo, gruppo:pr(p).gruppo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato,
+        richieste:(d.azioni || []).filter(a => String(a.testo || '').trim() && (a.chi || []).includes('clan')).map(a => ({id:a.id, testo:a.testo, obiettivo:((ob.find(o => o.id === a.ob) || {}).testo) || '', inizio:Number(a.inizio) || 1, mese:a.mese || '', stato:a.stato || 'da_iniziare', genitori:!!a.genitori}))}; })
+      .filter(r => r.richieste.length).sort((x, y) => String(x.gruppo).localeCompare(String(y.gruppo)) || y.anno_inizio - x.anno_inizio);
+    return {data:rows, error:null};
+  }
+  pdcSezione(uid){
+    if(this.sqlClan === false) return this.err('PGRST202', 'Could not find the function public.pee_pdc_della_mia_sezione');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const me = this.t.pee_profili.find(x => x.user_id === uid);
+    const comm = me && (me.ruolo === 'cds' || me.ruolo === 'vcds' || (me.ruolo === 'cos' && (((me.dashboard || {}).cos || {}).incarichi || []).some(x => norm(x) === 'commissario')));
+    if(!comm) return this.err('P0001', 'Il Progetto di Clan lo legge chi guida la Sezione.');
+    const sez = norm(me.sezione); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    const rows = this.t.pee_piani.filter(p => p.tipo === 'clan' && norm((this.t.pee_profili.find(x => x.user_id === p.owner_id) || {}).sezione) === sez).sort((x, y) => y.anno_inizio - x.anno_inizio)
+      .map(p => ({id:p.id, titolo:p.titolo, anno_inizio:p.anno_inizio, durata:p.durata, stato:p.stato,
+        obiettivi:((p.data || {}).obiettivi || []).filter(o => String(o.testo || '').trim()).map(o => ({id:o.id, testo:o.testo, aree:o.aree || [], indirizzi:o.indirizzi || []})),
+        disponibilita:((p.data || {}).disp || []).filter(q => String(q.cosa || '').trim()).map(q => ({id:q.id, cosa:q.cosa, quanti:q.quanti || '', quando:q.quando || '', note:q.note || ''}))}));
     return {data:rows, error:null};
   }
   // Progetti di Sezione letti dal Gruppo (SQL del 28 novembre): stesse regole della funzione; db.sqlPds = false per provare il database non aggiornato
