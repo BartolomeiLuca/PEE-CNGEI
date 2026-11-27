@@ -56,6 +56,7 @@ const z = await JSZip.loadAsync(fs.readFileSync(await dl.path())); const x = awa
 ok(/Consiglio di Gruppo/.test(t.slice(0, t.indexOf('Quadro del Piano'))) && /Si è detto: serate ok/.test(t) && /18\/12\/2026/.test(t), 'Word: i Consigli sono tra le Verifiche, con data e note');
 const q = t.slice(t.indexOf('Quadro del Piano')); ok(/Consigli di Gruppo/.test(q) && /▲/.test(q), 'Word: riga «Consigli di Gruppo» nella timeline orizzontale');
 let hh = ''; for(const n of Object.keys(z.files).filter(n => /^word\/header\d+\.xml$/.test(n))) hh += txt(await z.file(n).async('string')) + '\n';
+hh += '\n' + txt(await z.file('word/document.xml').async('string'));   // 27/11: la Sezione sta nella colonna della carta intestata, nel corpo
 ok(/CNGEI Ancona/.test(hh) && !/CNGEI Pesaro/.test(hh), 'carta intestata: la Sezione del piano (Ancona), non quella del profilo (Pesaro)');
 // ── Excel ──
 await L.P.click('#pn-sb-qua'); await sleep(400);

@@ -14618,11 +14618,9 @@ function dDocument(children, headerText, opt){
     new D.TextRun({children:[(D.Tab?new D.Tab():'\t'), D.PageNumber.CURRENT], font:MF, size:15, color:'999999'})
   ]})]});
   const head = () => new D.Header({children:[dPara((UNIT_NAME?UNIT_NAME+' · ':'')+headerText,{size:15, color:'999999', align:'right', after:0})]});
-  // 26/11: carta intestata (prima pagina): logo della Sezione a sinistra, nome della Sezione e ente a destra, filetto blu
-  const L = opt.letter, first = L ? new D.Header({children:[new D.Table({width:{size:9638, type:D.WidthType.DXA}, columnWidths:[1500, 8138], layout:D.TableLayoutType.FIXED, borders:{top:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, bottom:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, left:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, right:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, insideHorizontal:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, insideVertical:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}}, rows:[new D.TableRow({children:[
-    new D.TableCell({width:{size:1500, type:D.WidthType.DXA}, borders:{top:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, bottom:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, left:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, right:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}}, children:[new D.Paragraph({spacing:{before:0, after:0}, children:L.logo ? [new D.ImageRun({data:L.logo, type:'png', transformation:{width:60, height:60}})] : []})]}),
-    new D.TableCell({width:{size:8138, type:D.WidthType.DXA}, verticalAlign:D.VerticalAlign.CENTER, borders:{top:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, bottom:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, left:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, right:{style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}}, children:[dPara('CNGEI ' + L.sez, {size:26, bold:true, color:'2C3E7A', align:'right', after:0}), dPara('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani', {size:14, color:'777777', align:'right', after:0})]})
-  ]})]}), new D.Paragraph({spacing:{before:0, after:0}, border:{bottom:{style:D.BorderStyle.SINGLE, size:8, color:'2C3E7A', space:4}}, children:[]})]}) : null;
+  // 27/11: carta intestata della circolare (prima pagina): due righe in grassetto allineate al testo, a sinistra; colonna dei loghi nel corpo
+  const L = opt.letter, hl = t => new D.Paragraph({spacing:{before:0, after:0, line:240}, alignment:D.AlignmentType.LEFT, indent:{left:(opt.letterIndent || 0)}, children:[new D.TextRun({text:t, font:MF, size:18, bold:true})]});
+  const first = L ? new D.Header({children:[hl('Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani'), hl('Associazione SCOUT Laica di Promozione Sociale')]}) : null;
   const sections = [{
     properties:Object.assign({page:{size:{width:11906, height:16838}, margin:{top:1134, bottom:1134, left:1134, right:1134}}}, L ? {titlePage:true} : {}),
     headers:Object.assign({default:head()}, first ? {first} : {}),
@@ -18796,6 +18794,7 @@ function figuraNuovaHome(p){
   const T = {
     cos:'Se nel Comitato hai l’incarico di Commissario, scrivi il Progetto di Sezione da «I tuoi piani»; per gli altri incarichi gli strumenti (calendario condiviso) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
     coords:'Come Coordinatore Senior scrivi il Progetto di Clan da «I tuoi piani»; gli altri strumenti (calendario, Percorso Senior) sono in preparazione. Intanto puoi ricevere inviti da chi lavora con te e aprire il tuo Progetto Personale.',
+    senior:'Lavori con il Coordinatore Senior: quando ti invita nel Progetto di Clan (o in un altro piano) lo trovi in «Condivisi con te», da leggere o da scrivere con lui. Il calendario condiviso della Sezione è in preparazione.',
     vcg:'Lavori con il Capo Gruppo: quando ti invita nel suo progetto lo trovi in «Condivisi con te». Gli strumenti per il Piano di Gruppo sono in preparazione.',
     vcds:'Lavori con il Commissario di Sezione: puoi scrivere un Progetto di Sezione da «I tuoi piani» o lavorare in quello del Commissario quando ti invita: lo trovi in «Condivisi con te». Il calendario condiviso della Sezione è in preparazione.'
   };
@@ -18829,9 +18828,15 @@ const PN_TITOLI = ['Punti di forza e di debolezza', 'Le Unità e i ragazzi e le 
 const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Senior in Servizio', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
 const pnUid = () => 'x' + Math.random().toString(36).slice(2, 9);
 const pnClone = o => JSON.parse(JSON.stringify(o == null ? null : o));
-const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}, sezione:''});
+const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], spg:[], tappe:[], delibera:{data:'', luogo:''}, sezione:'', gruppo:''});
 // la Sezione del piano (carta intestata del Word): quella scritta nel piano, altrimenti quella del profilo di chi lo guarda
 const pnSezPiano = () => String((PN.d && PN.d.sezione) || (SH.prof || {}).sezione || '').trim();
+// il Gruppo del piano (titolo del Word): quello scritto nel piano; nei vecchi piani, se sono io il titolare, quello del mio profilo
+const pnGruppoPiano = () => {
+  const g = String((PN.d && PN.d.gruppo) || '').trim(); if(g) return g;
+  if(PN.p && PN.p.tipo === 'gruppo' && typeof CL !== 'undefined' && CL.user && PN.p.owner_id === CL.user.id) return grpLabel((SH.prof || {}).gruppo);
+  return '';
+};
 const pnEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // ── unione delle modifiche di due persone (base = ultima versione sincronizzata, loc = la mia, rem = quella sul database) ──
@@ -18931,7 +18936,7 @@ window.pnCrea = async function(){
   const b = $('pn-n-ok'), m = $('pn-n-msg'); if(!b) return; b.disabled = true; m.className = 'sh-msg'; m.textContent = '';
   try{
     const anno = Number($('pn-n-anno').value), dur = Number($('pn-n-dur').value), tipo = (PN.nuovoTipo && PN.nuovoTipo === pnTipoCrea(SH.prof)) ? PN.nuovoTipo : 'gruppo', tit = ($('pn-n-tit').value || '').trim() || PIANI_TIPI[tipo];
-    const p = await PIANI.crea({tipo, titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || '', sezione:String((SH.prof || {}).sezione || '').trim()})});
+    const p = await PIANI.crea({tipo, titolo:tit, anno_inizio:anno, durata:dur, data:Object.assign(pnVuoto(), {titolareNome:clMyName() || '', sezione:String((SH.prof || {}).sezione || '').trim(), gruppo:tipo === 'gruppo' ? grpLabel((SH.prof || {}).gruppo) : ''})});
     shDlgClose(); pnOpen(p.id);
   }catch(e){ b.disabled = false; m.className = 'sh-msg err'; m.textContent = pianoErr(e); }
 };
@@ -19790,12 +19795,41 @@ function pnQWordSez(){
   kids.push(dPara('Ritmi fissi: ' + PN_RITMI_TXT.map(([a, b]) => a + ', ' + b).join(' · ') + '.', {size:15, color:'555555', before:80, after:0}));
   return kids;
 }
-// carta intestata: logo della Sezione (circolare/sezioni) + nome della Sezione; senza logo resta il nome
+// carta intestata della circolare (circolare/base.docx): colonna a sinistra con il filetto tratteggiato, logo della Sezione, organismi internazionali, contatti; il testo a destra
 async function pnLetter(){
-  const sez = pnSezPiano(); if(!sez) return null;
-  const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, ''); let logo = null;
-  try{ const r = await fetch(base + 'circolare/sezioni/' + encodeURIComponent(axSezFile(sez)) + '.png'); if(r.ok) logo = new Uint8Array(await r.arrayBuffer()); }catch(e){}
-  return {sez:axSezFile(sez), logo};
+  const sez = pnSezPiano(), base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
+  const get = async u => { try{ const r = await fetch(u); return r.ok ? await r.arrayBuffer() : null; }catch(e){ return null; } };
+  const L = {sez:sez ? axSezFile(sez) : '', logo:null, crop:null, org:null, soc:null};
+  if(sez){ L.logo = await get(base + 'circolare/sezioni/' + encodeURIComponent(axSezFile(sez)) + '.png'); if(L.logo) L.crop = await axLogoCrop(L.logo); }
+  try{
+    await loadLib(LIB_URLS.jszip, () => !!window.JSZip); const t = await get(base + 'circolare/base.docx');
+    if(t){ const z = await JSZip.loadAsync(t); const o = z.file('word/media/image4.png'), c = z.file('word/media/image3.jpg'); L.org = o ? await o.async('arraybuffer') : null; L.soc = c ? await c.async('arraybuffer') : null; }
+  }catch(e){}
+  return L;
+}
+const PN_C1 = 2900, PN_C2 = 9638 - PN_C1;   // colonna dei loghi e colonna del testo (prima pagina)
+// tabella della prima pagina: colonna a sinistra come la circolare, testo a destra; tutto allineato a sinistra
+function pnCartaTabella(L, titolo, kv){
+  const D = dxLib(), NO = {style:D.BorderStyle.NONE, size:0, color:'FFFFFF'}, px = cm => Math.round(cm * 37.8), LEFT = D.AlignmentType.LEFT;
+  const par = (kids, o = {}) => new D.Paragraph({spacing:{before:o.before || 0, after:o.after || 0, line:240}, alignment:LEFT, children:kids});
+  const img = (data, type, wcm, hcm, o) => par([new D.ImageRun({data:new Uint8Array(data), type, transformation:{width:px(wcm), height:px(hcm)}})], o);
+  const txt = (t, b) => par(t ? [new D.TextRun({text:t, font:MF, size:16, bold:!!b, color:'455556'})] : []);
+  const side = [];
+  if(L.crop){ const w = 3.0; side.push(img(L.crop.buf, 'png', w, w * L.crop.h / L.crop.w, {before:200, after:300})); }
+  else if(L.logo){ side.push(img(L.logo, 'png', 3.0, 3.0, {before:200, after:300})); }
+  if(L.org){ const s = axPngSize(L.org); side.push(img(L.org, 'png', 4.2, 4.2 * s.h / s.w, {before:200, after:200})); }
+  const ow = PN.p && typeof CL !== 'undefined' && CL.user && PN.p.owner_id === CL.user.id, d = PN.d || {};
+  const cont = [d.titolareNome ? txt(d.titolareNome) : null, ow ? txt(ruoloLab(SH.prof)) : null, ow && PN.p.owner_email ? txt(PN.p.owner_email) : null].filter(Boolean);
+  if(cont.length){ side.push(txt('Contatti', true)); cont.forEach(x => side.push(x)); side.push(txt('')); }
+  if(L.sez){ side.push(txt('CNGEI ' + L.sez, true)); side.push(txt('')); }
+  side.push(txt('___________________'));
+  if(L.soc) side.push(img(L.soc, 'jpg', 2.88, 1.38, {before:60}));
+  const cell = (w, kids, ex) => new D.TableCell(Object.assign({width:{size:w, type:D.WidthType.DXA}, borders:{top:NO, bottom:NO, left:NO, right:NO}, children:kids}, ex || {}));
+  return new D.Table({width:{size:PN_C1 + PN_C2, type:D.WidthType.DXA}, columnWidths:[PN_C1, PN_C2], layout:D.TableLayoutType.FIXED,
+    borders:{top:NO, bottom:NO, left:NO, right:NO, insideHorizontal:NO, insideVertical:NO},
+    rows:[new D.TableRow({cantSplit:false, children:[
+      cell(PN_C1, side, {borders:{top:NO, bottom:NO, right:NO, left:{style:D.BorderStyle.DASHED, size:12, color:'7CC49A'}}, margins:{left:380, right:60, top:0, bottom:0}}),
+      cell(PN_C2, titolo.concat(kv), {margins:{left:260, right:0, top:0, bottom:0}})]})]});
 }
 async function pnQExcel(){
   if(!PN.p) return;
@@ -19856,11 +19890,15 @@ window.pnScarica = async function(){
   try{
     UNIT_NAME = ''; window._dFootOverride = tit + ' · PEE CNGEI';
     GREEN = '2C3E7A'; PALE = 'EEF0FB'; ONG = 'FFFFFF'; GRTXT = '2C3E7A';   // 26/11: il Word del piano è blu (blu dell'app), non verde di Branca
-    ch.push(...dTitleBlock(tit, PIANI_TIPI[p.tipo] + ' · ' + pnPeriodo(p) + ' · ' + pnAnnoTxt(p)));
+    const lett = await pnLetter(), sez = pnSezPiano(), grp = p.tipo === 'gruppo' ? pnGruppoPiano() : '';
+    const titolo = [dPara(PIANI_TIPI[p.tipo], {size:44, bold:true, color:GRTXT, after:100, borderBottom:{size:18, color:GRTXT}})];
+    [grp, sez ? 'Sezione ' + axSezFile(sez) : '', 'Anni scout ' + pnPeriodo(p)].filter(Boolean).forEach((t, i) => titolo.push(dPara(t, {size:i === 0 && grp ? 24 : 21, bold:i === 0 && !!grp, color:'444444', after:40})));
+    titolo.push(dPara('', {size:8, after:120}));
     const kv = [['Stato', pnLab(PN_STATI, PN.meta.stato)]];
     if(d.titolareNome) kv.push(['Titolare', d.titolareNome]);
     if(PN.meta.stato !== 'bozza' && (d.delibera.data || d.delibera.luogo)) kv.push(['Delibera in presenza', [giData(pnDataIso(d.delibera.data)) || T(d.delibera.data), T(d.delibera.luogo)].filter(Boolean).join(' · ')]);
-    ch.push(dKV(kv.map(([l, v]) => [l, dMulti(X(v))])));
+    const kvw = (() => { const w = [1500, PN_C2 - 260 - 1500 - 60], out = []; kv.forEach(([l, v]) => dSplitRows(l, dMulti(X(v)), w).forEach(r => out.push(r))); return dTable(out, w, true); })();
+    ch.push(pnCartaTabella(lett, titolo, [kvw]), dPara('', {size:8, after:120}));
     if(d.analisi.length){ ch.push(dH3('Dove siamo')); d.analisi.forEach(a => { ch.push(dPara(a.titolo || 'Senza titolo', {size:20, bold:true, after:20, keepNext:true})); ch.push(...dMulti(X(a.testo))); }); }
     ch.push(dH3('Obiettivi e azioni'));
     if(!d.obiettivi.length) ch.push(dPara('Ancora nessun obiettivo.', {size:19, color:'999999'}));
@@ -19890,8 +19928,8 @@ window.pnScarica = async function(){
     }
     if(d.spunti.length){ ch.push(dH3('Spunti dalle Unità')); d.spunti.forEach(s => ch.push(dPara((s.da ? s.da + ': ' : '') + T(s.testo), {size:19, bullet:true, after:40}))); }
     if(d.uniti.length){ ch.push(dH3('Obiettivi uniti (note)')); d.uniti.forEach(u => ch.push(dPara(T(u.testo) || '—', {size:19, bullet:true, after:40}))); }
-    const lett = await pnLetter(), ext = d.obiettivi.length ? [pnQWordSez()] : [];
-    await dSave(dDocument(ch, tit, {letter:lett, extra:ext}), (tit.toLowerCase().indexOf(PIANI_TIPI[p.tipo].toLowerCase()) === 0 ? '' : PIANI_TIPI[p.tipo].replace(/[^\w]+/g, '_') + '_') + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.docx');
+    const ext = d.obiettivi.length ? [pnQWordSez()] : [];
+    await dSave(dDocument(ch, tit, {letter:lett, letterIndent:PN_C1 + 260, extra:ext}), (tit.toLowerCase().indexOf(PIANI_TIPI[p.tipo].toLowerCase()) === 0 ? '' : PIANI_TIPI[p.tipo].replace(/[^\w]+/g, '_') + '_') + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.docx');
   }catch(e){ clToast('Impossibile creare il Word: ' + (e && e.message || e)); }
   finally{ UNIT_NAME = un; window._dFootOverride = fo; [GREEN, PALE, ONG, GRTXT] = tema; }
 };
@@ -19904,6 +19942,7 @@ function pnPaneHTML(id){
     h += `<section class="pn-card" aria-labelledby="pn-st-t"><h2 class="pn-h" id="pn-st-t">Stato del piano</h2>
     <div class="sh-g2"><div><label class="sh-lb" for="pn-stato">Stato</label><select class="sh-in" id="pn-stato" onchange="pnMeta('stato',this.value)"${dis}>${PN_STATI.map(([k, t]) => `<option value="${k}"${PN.meta.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
     <div><label class="sh-lb" for="pn-sez">Sezione</label><input class="sh-in" id="pn-sez" list="pn-dl-sez" autocomplete="off" maxlength="80" placeholder="Scrivi le prime lettere e scegli" value="${E(d.sezione || '')}" oninput="pnSezione(this.value)" aria-describedby="pn-sezh"${dis}><datalist id="pn-dl-sez">${sezOpts()}</datalist><p class="sh-hint" id="pn-sezh" style="margin:4px 0 0">Compare sulla carta intestata del Word e dell’Excel.${d.sezione ? (sezIn(d.sezione) ? '' : ' Scegli una Sezione dall’elenco: serve a riconoscerla.') : ' Se la lasci vuota si usa quella del tuo profilo.'}</p></div>
+    ${p.tipo === 'gruppo' ? `<div><label class="sh-lb" for="pn-grp">Gruppo</label><input class="sh-in" id="pn-grp" autocomplete="off" maxlength="80" placeholder="es. Gruppo 1 · Kontiki" value="${E(d.gruppo || pnGruppoPiano())}" oninput="pnGruppoSet(this.value)" aria-describedby="pn-grph"${dis}><p class="sh-hint" id="pn-grph" style="margin:4px 0 0">Numero e, se c’è, nome del Gruppo: compaiono sotto il titolo del Word.</p></div>` : ''}
     <div id="pn-delw"${PN.meta.stato === 'bozza' ? ' hidden' : ''}><label class="sh-lb" for="pn-delD">Delibera in presenza: data e luogo</label><div class="sh-g2"><input class="sh-in" id="pn-delD" type="date" aria-label="Data della delibera" value="${E(pnDataIso(d.delibera.data))}" oninput="pnDel('data',this.value)"${dis}><input class="sh-in" id="pn-delL" aria-label="Luogo della delibera" placeholder="Dove" maxlength="80" value="${E(d.delibera.luogo)}" oninput="pnDel('luogo',this.value)"${dis}></div>${d.delibera.data && !pnDataIso(d.delibera.data) ? `<p class="sh-hint" id="pn-delOld" style="margin:4px 0 0">Avevi scritto «${E(d.delibera.data)}»: scegli la data dal calendario.</p>` : ''}</div></div>
     </section>`;
   { const pr = pnProssima(); h += `<section class="pn-card" aria-labelledby="pn-pv-t"><h2 class="pn-h" id="pn-pv-t">Prossima verifica</h2><p class="sh-sub" style="margin:0" id="pn-prox">${pr ? E(pnTappaNome(pr)) : (d.tappe.length ? 'Tutte le tappe sono fatte.' : 'Nessuna tappa segnata.')}</p><div><button class="sh-btn sm gh" type="button" onclick="pnSez('ver')">Vai alle verifiche</button></div></section>`; }
@@ -20303,6 +20342,7 @@ async function pnVersioneStato(){ // quando cambia lo stato (deliberato, approva
 // la data della delibera è una vera data (aaaa-mm-gg); i valori scritti prima a mano come gg/mm/aaaa si leggono e si convertono quando serve, senza perdere nulla
 function pnDataIso(t){ t = String(t || '').trim(); if(/^\d{4}-\d{2}-\d{2}$/.test(t)) return t; const m = t.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/); if(!m) return ''; const g = +m[1], me = +m[2]; if(g < 1 || g > 31 || me < 1 || me > 12) return ''; return m[3] + '-' + String(me).padStart(2, '0') + '-' + String(g).padStart(2, '0'); }
 window.pnSezione = function(v){ if(!pnTutto()) return; PN.d.sezione = String(v || '').slice(0, 80); pnTouch(); };
+window.pnGruppoSet = function(v){ if(!pnTutto()) return; PN.d.gruppo = String(v || '').slice(0, 80); pnTouch(); };
 window.pnDel = function(k, v){ if(!pnTutto()) return; PN.d.delibera[k] = v; if(k === 'data'){ const o = $('pn-delOld'); if(o) o.remove(); } pnTouch(); };
 window.pnAn = function(id, k, v){ const a = PN.d.analisi.find(x => x.id === id); if(!a || !pnTutto()) return; a[k] = v; pnTouch(); };
 window.pnAnAdd = function(t){ if(!pnTutto()) return; const a = {id:pnUid(), titolo:t || '', testo:''}; PN.d.analisi.push(a); pnTouch(); pnRender(); const f = $(t ? 'pn-anx-' + a.id : 'pn-ant-' + a.id); if(f) f.focus(); };

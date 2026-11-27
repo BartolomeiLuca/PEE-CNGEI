@@ -46,6 +46,7 @@ ok(new Set(fills).size >= 8, 'Quadro Word: più sfumature (barre per stato) — 
 // 4. carta intestata: logo + nome Sezione sulla prima pagina
 ok(/w:titlePg/.test(sect[0]), 'Word: prima pagina con intestazione propria');
 const hs = Object.keys(z.files).filter(n => /^word\/header\d+\.xml$/.test(n)); let hh = ''; for(const n of hs) hh += txt(await z.file(n).async('string')) + '\n' + (await z.file(n).async('string'));
+hh += '\n' + txt(await z.file('word/document.xml').async('string'));   // 27/11: la Sezione sta nella colonna della carta intestata, nel corpo
 ok(/CNGEI Pesaro/.test(hh) && /Corpo Nazionale Giovani Esploratori ed Esploratrici Italiani/.test(hh), 'carta intestata: «CNGEI Pesaro» e nome dell’ente');
 ok(Object.keys(z.files).some(n => /^word\/media\//.test(n)), 'carta intestata: il logo della Sezione è nel file');
 // 5. i dati dell'altro utente non servono, ma le carte del giro restano fuori
