@@ -107,14 +107,14 @@ begin
   if not found then raise exception 'Completa prima il tuo profilo.'; end if;
   v_sez := public.pee_norm(me.sezione); v_gr := public.pee_norm(me.gruppo);
   if v_sez = '' then raise exception 'Nel tuo profilo manca la Sezione.'; end if;
-  v_comm := me.ruolo in ('cds', 'pres');
+  v_comm := coalesce(me.ruolo, '') in ('cds', 'pres');
   if p_tipo = 'gruppo' then
-    if me.ruolo not in ('cg', 'vcg') then raise exception 'Solo chi guida il Gruppo vede questo elenco.'; end if;
+    if coalesce(me.ruolo, '') not in ('cg', 'vcg') then raise exception 'Solo chi guida il Gruppo vede questo elenco.'; end if;
     if v_gr = '' then raise exception 'Nel tuo profilo manca il Gruppo.'; end if;
   elsif p_tipo = 'sezione' then
-    if not (v_comm or me.ruolo = 'vcds') then raise exception 'Solo chi guida la Sezione vede questo elenco.'; end if;
+    if not (v_comm or coalesce(me.ruolo, '') = 'vcds') then raise exception 'Solo chi guida la Sezione vede questo elenco.'; end if;
   else
-    if me.ruolo <> 'coords' then raise exception 'Solo il Coordinatore Senior vede questo elenco.'; end if;
+    if coalesce(me.ruolo, '') <> 'coords' then raise exception 'Solo il Coordinatore Senior vede questo elenco.'; end if;
   end if;
 
   return query
@@ -139,7 +139,7 @@ declare me record; v_sez text;
 begin
   if auth.uid() is null then raise exception 'Accesso necessario.'; end if;
   select pr.ruolo, pr.sezione, pr.dashboard into me from public.pee_profili pr where pr.user_id = auth.uid();
-  if not found or not (me.ruolo in ('cg', 'vcg', 'cu', 'vcu', 'senior', 'cds', 'vcds', 'pres', 'tes', 'cos', 'coords') or coalesce((me.dashboard->'cos'->>'membro') = 'true', false)) then
+  if not found or not (coalesce(me.ruolo, '') in ('cg', 'vcg', 'cu', 'vcu', 'senior', 'cds', 'vcds', 'pres', 'tes', 'cos', 'coords') or coalesce((me.dashboard->'cos'->>'membro') = 'true', false)) then
     raise exception 'Il Progetto di Sezione lo leggono le figure di Gruppo e di Sezione e chi fa parte del Comitato di Sezione.';
   end if;
   v_sez := public.pee_norm(me.sezione);
@@ -167,7 +167,7 @@ declare me record; v_sez text;
 begin
   if auth.uid() is null then raise exception 'Accesso necessario.'; end if;
   select pr.ruolo, pr.sezione, pr.dashboard into me from public.pee_profili pr where pr.user_id = auth.uid();
-  if not found or not me.ruolo in ('cds', 'vcds', 'pres') then
+  if not found or coalesce(me.ruolo, '') not in ('cds', 'vcds', 'pres') then
     raise exception 'I Piani di Gruppo li legge chi guida la Sezione.';
   end if;
   v_sez := public.pee_norm(me.sezione);
@@ -195,7 +195,7 @@ declare me record; v_sez text;
 begin
   if auth.uid() is null then raise exception 'Accesso necessario.'; end if;
   select pr.ruolo, pr.sezione, pr.dashboard into me from public.pee_profili pr where pr.user_id = auth.uid();
-  if not found or not me.ruolo in ('cds', 'vcds', 'pres') then
+  if not found or coalesce(me.ruolo, '') not in ('cds', 'vcds', 'pres') then
     raise exception 'Il Progetto di Clan lo legge chi guida la Sezione.';
   end if;
   v_sez := public.pee_norm(me.sezione);
@@ -233,7 +233,7 @@ declare me record; v_sez text;
 begin
   if auth.uid() is null then raise exception 'Accesso necessario.'; end if;
   select pr.ruolo, pr.sezione into me from public.pee_profili pr where pr.user_id = auth.uid();
-  if not found or me.ruolo <> 'snr' then raise exception 'Il Progetto di Clan lo leggono i Senior della Sezione (il ruolo «Senior», non il Senior in Servizio).'; end if;
+  if not found or coalesce(me.ruolo, '') <> 'snr' then raise exception 'Il Progetto di Clan lo leggono i Senior della Sezione (il ruolo «Senior», non il Senior in Servizio).'; end if;
   v_sez := public.pee_norm(me.sezione);
   if v_sez = '' then raise exception 'Nel tuo profilo manca la Sezione.'; end if;
   return query

@@ -4,7 +4,7 @@ import fs from 'fs';
 let oks = 0, fails = 0;
 const ok = (c, m) => { if(c){ oks++; console.log('  ✓ ' + m); } else { fails++; console.log('  ✗ ' + m); } };
 const db = new PGlite();
-const N = ['comm', 'vcds', 'pres', 'tes', 'cosV', 'cg', 'cgFano', 'commFano', 'cu', 'vcu', 'coord', 'snr', 'snrFano', 'snrNoSez', 'senior', 'volC', 'volN', 'snrC', 'presFano', 'cuUnita'];
+const N = ['comm', 'vcds', 'pres', 'tes', 'cosV', 'cg', 'cgFano', 'commFano', 'cu', 'vcu', 'coord', 'snr', 'snrFano', 'snrNoSez', 'senior', 'volC', 'volN', 'snrC', 'presFano', 'cuUnita', 'norole'];
 const U = {}; N.forEach((k, i) => { U[k] = `${(i + 1).toString(16).padStart(2, '0').repeat(4)}-2222-1111-1111-111111111111`; });
 await db.exec(`
   create role anon nologin; create role authenticated nologin; create schema auth;
@@ -21,7 +21,7 @@ const P = (k, ruolo, sez, gr, dash, br) => db.query(`insert into pee_profili(use
 await P('comm', 'cds', 'Pesaro', null); await P('vcds', 'vcds', ' pesaro ', null); await P('cosV', 'cos', 'Pesaro', null, {cos:{incarichi:['tesoriere']}});
 await P('cg', 'cg', 'Pesaro', 'Pesaro 1'); await P('cgFano', 'cg', 'Fano', 'Fano 1'); await P('commFano', 'cds', 'Fano', null); await P('cu', 'cu', 'Pesaro', 'Pesaro 1'); await P('vcu', 'vcu', 'Pesaro', 'Pesaro 1');
 await P('coord', 'coords', 'Pesaro', null); await P('senior', 'senior', 'Pesaro', 'Pesaro 1'); await P('volC', 'volontario', 'Pesaro', 'Pesaro 1', {cos:{membro:true}}); await P('volN', 'volontario', 'Pesaro', 'Pesaro 1', {cos:{}});
-await P('cuUnita', 'cg', 'Pesaro', 'Pesaro 2', {unita:{branca:'E', nome:'Reparto'}});
+await P('norole', null, 'Pesaro', null); await P('cuUnita', 'cg', 'Pesaro', 'Pesaro 2', {unita:{branca:'E', nome:'Reparto'}});
 const sql = fs.readFileSync(new URL('../supabase_aggiornamento_28novembre_presidente_e_senior.sql', import.meta.url), 'utf8');
 let e1 = null, e2 = null; try { await db.exec(sql); } catch(e){ e1 = e; } ok(!e1, 'lo script gira' + (e1 ? ': ' + e1.message : ''));
 try { await db.exec(sql); } catch(e){ e2 = e; } ok(!e2, 'si può rieseguire' + (e2 ? ': ' + e2.message : ''));
@@ -66,6 +66,8 @@ const sF = await f('snrFano', 'pee_pdc_per_senior'); ok(Array.isArray(sF) && sF.
 ok((await f('snrNoSez', 'pee_pdc_per_senior')).err !== undefined, 'Senior senza Sezione: errore chiaro');
 for(const w of ['senior', 'volC', 'volN', 'cg', 'cu', 'comm', 'tes', 'coord']) ok((await f(w, 'pee_pdc_per_senior')).err !== undefined, w + ': non è un Senior, non legge da qui (il Senior in Servizio è un’altra cosa)');
 ok((await f('anon', 'pee_pdc_per_senior')).err !== undefined, 'chi non è entrato: no');
+for(const fn of ['pee_pdg_della_mia_sezione', 'pee_pdc_della_mia_sezione', 'pee_pdc_per_senior', 'pee_pds_della_mia_sezione']) ok((await f('norole', fn)).err !== undefined, 'profilo senza ruolo: ' + fn + ' rifiuta');
+for(const t of ['gruppo', 'sezione', 'clan']) ok((await f('norole', 'pee_persone_elenco', t)).err !== undefined, 'profilo senza ruolo: elenco «' + t + '» rifiutato');
 // ── Progetto di Sezione: leggono Presidente, Tesoriere, Gruppo, Unità e chi ha la spunta del Comitato ──
 for(const w of ['pres', 'tes', 'comm', 'vcds', 'cg', 'cu', 'vcu', 'senior', 'coord', 'cosV', 'volC', 'snrC']){ const p = await f(w, 'pee_pds_della_mia_sezione'); ok(Array.isArray(p) && p.length === 1 && p[0].obiettivi[0].testo === 'PdS deliberato di Pesaro', w + ': legge il Progetto di Sezione deliberato'); }
 for(const w of ['volN', 'snr', 'snrFano']) ok((await f(w, 'pee_pds_della_mia_sezione')).err !== undefined, w + ': senza spunta non lo legge');
