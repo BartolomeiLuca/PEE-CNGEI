@@ -66,7 +66,7 @@ const sF = await f('snrFano', 'pee_pdc_per_senior'); ok(Array.isArray(sF) && sF.
 ok((await f('snrNoSez', 'pee_pdc_per_senior')).err !== undefined, 'Senior senza Sezione: errore chiaro');
 for(const w of ['senior', 'volC', 'volN', 'cg', 'cu', 'comm', 'tes', 'coord']) ok((await f(w, 'pee_pdc_per_senior')).err !== undefined, w + ': non è un Senior, non legge da qui (il Senior in Servizio è un’altra cosa)');
 ok((await f('anon', 'pee_pdc_per_senior')).err !== undefined, 'chi non è entrato: no');
-for(const fn of ['pee_pdg_della_mia_sezione', 'pee_pdc_della_mia_sezione', 'pee_pdc_per_senior', 'pee_pds_della_mia_sezione']) ok((await f('norole', fn)).err !== undefined, 'profilo senza ruolo: ' + fn + ' rifiuta');
+for(const fn of ['pee_richieste_al_clan', 'pee_pdg_della_mia_sezione', 'pee_pdc_della_mia_sezione', 'pee_pdc_per_senior', 'pee_pds_della_mia_sezione']) ok((await f('norole', fn)).err !== undefined, 'profilo senza ruolo: ' + fn + ' rifiuta');
 for(const t of ['gruppo', 'sezione', 'clan']) ok((await f('norole', 'pee_persone_elenco', t)).err !== undefined, 'profilo senza ruolo: elenco «' + t + '» rifiutato');
 // ── Progetto di Sezione: leggono Presidente, Tesoriere, Gruppo, Unità e chi ha la spunta del Comitato ──
 for(const w of ['pres', 'tes', 'comm', 'vcds', 'cg', 'cu', 'vcu', 'senior', 'coord', 'cosV', 'volC', 'snrC']){ const p = await f(w, 'pee_pds_della_mia_sezione'); ok(Array.isArray(p) && p.length === 1 && p[0].obiettivi[0].testo === 'PdS deliberato di Pesaro', w + ': legge il Progetto di Sezione deliberato'); }

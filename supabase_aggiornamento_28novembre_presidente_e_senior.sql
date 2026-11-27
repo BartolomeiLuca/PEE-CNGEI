@@ -9,7 +9,8 @@
 --     la leggono i Vice Capi Unità e i Senior in Servizio della stessa Unità (pee_vcu_stessa_unita).
 --  4) pee_persone_elenco (cambia: aggiunge la colonna «comitato»), 5) pee_pds_della_mia_sezione (la leggono anche Presidente, Tesoriere e chi ha la spunta del Comitato),
 --  6) pee_pdg_della_mia_sezione e 7) pee_pdc_della_mia_sezione (Commissario, Vice Commissario e Presidente),
---  8) pee_pdc_per_senior (NUOVA): i Senior della Sezione leggono, in sola lettura, i Progetti di Clan DELIBERATI o APPROVATI (mai le bozze).
+--  8) pee_richieste_al_clan: un profilo senza ruolo non la legge (prima, per un NULL nel controllo, la leggeva).
+--  9) pee_pdc_per_senior (NUOVA): i Senior della Sezione leggono, in sola lettura, i Progetti di Clan DELIBERATI o APPROVATI (mai le bozze).
 
 alter table public.pee_profili drop constraint if exists pee_profili_ruolo_check;
 alter table public.pee_profili add constraint pee_profili_ruolo_check
@@ -244,7 +245,45 @@ begin
      order by p.anno_inizio desc, p.updated_at desc;
 end $$;
 
+-- pee_richieste_al_clan (script clan_e_gruppi): stessa regola, ma un profilo senza ruolo non la legge
+create or replace function public.pee_richieste_al_clan()
+returns table(id uuid, titolo text, gruppo text, anno_inizio int, durata int, stato text, richieste jsonb)
+language plpgsql stable security definer set search_path = public, auth as $$
+declare me record; v_sez text;
+begin
+  if auth.uid() is null then raise exception 'Accesso necessario.'; end if;
+  select pr.ruolo, pr.sezione into me from public.pee_profili pr where pr.user_id = auth.uid();
+  if not found or coalesce(me.ruolo, '') <> 'coords' then
+    raise exception 'Le richieste dei Gruppi le legge il Coordinatore Senior.';
+  end if;
+  v_sez := public.pee_norm(me.sezione);
+  if v_sez = '' then raise exception 'Nel tuo profilo manca la Sezione.'; end if;
+  return query
+    select p.id, p.titolo, pr.gruppo, p.anno_inizio, p.durata, p.stato, r.richieste
+      from public.pee_piani p
+      join public.pee_profili pr on pr.user_id = p.owner_id
+      cross join lateral (
+        select coalesce(jsonb_agg(jsonb_build_object(
+                 'id', left(coalesce(a.o->>'id', ''), 60),
+                 'testo', left(coalesce(a.o->>'testo', ''), 600),
+                 'obiettivo', left(coalesce((select ob->>'testo' from jsonb_array_elements(case when jsonb_typeof(p.data->'obiettivi') = 'array' then p.data->'obiettivi' else '[]'::jsonb end) ob
+                                              where jsonb_typeof(ob) = 'object' and ob->>'id' = a.o->>'ob' limit 1), ''), 600),
+                 'inizio', case when (a.o->>'inizio') ~ '^[0-9]{1,2}$' then (a.o->>'inizio')::int else 1 end,
+                 'mese', left(coalesce(a.o->>'mese', ''), 7),
+                 'stato', left(coalesce(a.o->>'stato', 'da_iniziare'), 20),
+                 'genitori', coalesce(a.o->>'genitori', 'false') = 'true'
+               ) order by a.n), '[]'::jsonb) as richieste
+          from jsonb_array_elements(case when jsonb_typeof(p.data->'azioni') = 'array' then p.data->'azioni' else '[]'::jsonb end) with ordinality as a(o, n)
+         where jsonb_typeof(a.o) = 'object' and btrim(coalesce(a.o->>'testo', '')) <> ''
+           and jsonb_typeof(a.o->'chi') = 'array' and (a.o->'chi') ? 'clan'
+      ) r
+     where p.tipo = 'gruppo' and public.pee_norm(pr.sezione) = v_sez and jsonb_array_length(r.richieste) > 0
+     order by pr.gruppo, p.anno_inizio desc, p.updated_at desc;
+end $$;
+
 revoke all on function public.pee_persone_elenco(text) from public, anon;
+revoke all on function public.pee_richieste_al_clan() from public, anon;
+grant execute on function public.pee_richieste_al_clan() to authenticated;
 revoke all on function public.pee_pds_della_mia_sezione() from public, anon;
 revoke all on function public.pee_pdg_della_mia_sezione() from public, anon;
 revoke all on function public.pee_pdc_della_mia_sezione() from public, anon;
