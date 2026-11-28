@@ -15,7 +15,8 @@
 --   RiCa ..................... tutti i Capi della Sezione, il Coordinatore Senior, Commissario e Vice
 --   Consiglio di Sezione ..... Capi Gruppo e Vice, Coordinatore Senior, Commissario e Vice (il Presidente no)
 --   Comitato di Sezione ...... i membri del Comitato; con la spunta «Visibile a tutta la Sezione» tutti gli adulti
--- I Senior (giovani del Clan) non leggono verbali.
+-- Il Consiglio di Gruppo lo legge chi ne fa parte per ruolo (Capo Gruppo, Vice, Capi Unità, Vice, Senior in Servizio del Gruppo): un Gruppo rimasto scritto nel profilo dopo un cambio di ruolo non basta.
+-- Il verbale del Comitato di Sezione con la spunta «Visibile a tutta la Sezione» lo legge ogni iscritto della Sezione, Senior e adulti in formazione compresi; di tutti gli altri verbali questi leggono solo i propri.
 -- Un verbale approvato non si modifica e non si cancella: va prima riaperto (torna «condiviso» o «bozza»).
 -- La lettura passa SOLO dalla funzione pee_verbali_lista(): la tabella la legge direttamente solo chi ha scritto il verbale.
 
@@ -111,9 +112,7 @@ begin
   select pr.ruolo, pr.sezione, pr.gruppo, pr.dashboard into me from public.pee_profili pr where pr.user_id = auth.uid();
   m := coalesce(me.ruolo, '');
   v_cos := m in ('cds', 'pres', 'tes', 'cos') or coalesce((me.dashboard->'cos'->>'membro') = 'true', false);
-  if not found or not (m in ('cu', 'vcu', 'senior', 'cg', 'vcg', 'cds', 'vcds', 'pres', 'tes', 'coords', 'cos') or v_cos) then
-    raise exception 'I verbali li leggono gli adulti della Sezione.';
-  end if;
+  if not found then raise exception 'I verbali li leggono gli iscritti di una Sezione.'; end if;
   v_sez := public.pee_norm(me.sezione); v_gr := public.pee_norm(me.gruppo);
   if v_sez = '' then raise exception 'Nel tuo profilo manca la Sezione.'; end if;
   if p_anno is not null then v_da := make_date(p_anno, 9, 1); v_a := make_date(p_anno + 1, 8, 31); end if;
@@ -130,7 +129,7 @@ begin
                        (v.autore_ruolo in ('cu', 'vcu', 'senior') and ((m in ('cg', 'vcg') and v_gr <> '' and v_gr = public.pee_norm(v.gruppo)) or m in ('cds', 'vcds')))
                     or (v.autore_ruolo in ('cg', 'vcg', 'coords') and m in ('cds', 'vcds'))
                     or (v.autore_ruolo in ('cds', 'vcds') and m = 'pres')
-                  when 'cdg' then (v_gr <> '' and v_gr = public.pee_norm(v.gruppo)) or m in ('cds', 'vcds')
+                  when 'cdg' then (m in ('cu', 'vcu', 'senior', 'cg', 'vcg') and v_gr <> '' and v_gr = public.pee_norm(v.gruppo)) or m in ('cds', 'vcds')
                   when 'rica' then m in ('cu', 'vcu', 'senior', 'cg', 'vcg', 'coords', 'cds', 'vcds')
                   when 'cosez' then m in ('cg', 'vcg', 'coords', 'cds', 'vcds')
                   when 'cos' then v_cos or v.sez

@@ -11094,7 +11094,7 @@ function uscOneHTML(u){ const j=uscJ(u.id), x=u.ax, N=axN(x), can=uscCan(); cons
     <input class="usc-title" value="${uscE(u.testo)}" placeholder="Titolo dell’uscita" maxlength="90" ${can?'':'readonly'} oninput="uscSetTitle(this.value)" aria-label="Titolo dell’uscita">
     <div class="usc-sub" id="usc-sub">${uscE([d||'Date da scegliere in «Persone e date»',dove,n>1?n+' giornate, '+(n-1)+(n-1===1?' notte':' notti'):''].filter(Boolean).join(' · '))}</div></div>
     <div class="usc-chips">${N.tot?`<span class="usc-chip g">${uscSt()?N.tot+(N.tot===1?' persona':' persone'):N.rag+' ragazzi + '+N.ad+' capi'}</span>`:''}${can?`<select class="ax-in usc-msel" aria-label="Formato" onchange="uscSetModello(this.value)">${USC_MODELLI.map(([k,l])=>`<option value="${k}" ${uscModK(u)===k?'selected':''}>${l}</option>`).join('')}</select>`:''}${can||uscTipoLab(u)?uscTipoSel(u,can):''}${(can&&!uscSt()&&u.dest!=='staff')?`<button type="button" class="btn-ghost usc-btn" onclick="uscCicloAsk('${u.id}')" title="Sposta questo evento in un altro ciclo">Ciclo: ${uscE(((scheda.ciclo||{}).nome||'questo ciclo'))} ▾</button>`:''}</div></div>
-    <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${!uscSt()&&can&&uscFull()&&uscModK(u)!=='sede'?`<label class="usc-res"><input type="checkbox" ${u.risSez?'checked':''} onchange="uscSetRisSez(this.checked)"> Riservato <span class="ax-opt">non compare nel calendario della Sezione: senza spunta le uscite, i bivacchi e i campi con una data ci arrivano, con solo titolo, date e nome dell’Unità</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
+    <div class="usc-tiles" id="usc-tiles">${uscRes(u)?'':uscTilesHTML(u)}</div>${uscSt()&&can&&uscFull()?`<label class="usc-res"><input type="checkbox" ${u.aperta?'':'checked'} onchange="uscSetRis(this.checked)"> Programma riservato allo staff di conduzione <span class="ax-opt">chi collabora o legge vede solo i momenti che gli affidi (togli la spunta per mostrargli tutto)</span></label>`:''}${!uscSt()&&can&&uscFull()&&uscModK(u)!=='sede'?`<label class="usc-res"><input type="checkbox" ${u.risSez?'checked':''} onchange="uscSetRisSez(this.checked)"> Tienilo solo per la mia Unità <span class="ax-opt">Senza spunta, uscite, bivacchi e campi con una data compaiono nel calendario della Sezione (si vedono solo titolo, date e nome dell’Unità). Con la spunta non esce dalla tua Unità.</span></label>`:''}${uscRes(u)?'<div class="ax-hint">Uscita dello staff: del programma vedi solo i momenti che ti sono affidati. Titolo, data e luogo restano visibili.</div>':''}</div>${uscRes(u)?'':uscTileDetail(u)}`;
   const tb=(id,t,s,cls)=>`<button type="button" role="tab"${typeof id==='string'&&uscMCol(id.replace(/^m:/,''))&&/^(m:|pasti)/.test(id)?` style="--mc:${uscMCol(id.replace(/^m:/,''))}"`:''} class="usc-tab ${cls||''}${USC_TAB===id?' on':''}" aria-selected="${USC_TAB===id}" id="usc-tab-${typeof id==='string'?id.replace(':','-'):id}" onclick="uscTab(${typeof id==='string'?`'${id}'`:id})">${uscE(t)}${s?`<small>${uscE(s)}</small>`:''}</button>`;
   const mods=uscModList(u).map(([k,l])=>tb(k==='pasti'?'pasti':'m:'+k,l,'',' mod'+(k!=='pasti'&&uscModFilled(u,k)?' done':''))).join('')+uscOwn(u).map(({k,o})=>tb('o:'+k,o.t||'Modulo','',' mod own')).join('');
   h+=`<div class="usc-nav"><div class="usc-navr"><div class="usc-tabs usc-tabs1" id="usc-tabs" role="tablist" aria-label="Evento e moduli">${tb('campo','Visione d’insieme','','gen')}${mods}${can?`<button type="button" class="usc-tab mod add" onclick="USC_ADDMOD=!USC_ADDMOD;uscRe()" aria-expanded="${USC_ADDMOD}">+ Aggiungi un modulo</button>`:''}</div>
@@ -18580,7 +18580,7 @@ function profCard(p, mode, disabled){
           <div class="sh-hint" id="sh-sezh" role="status" style="margin:4px 0 0"></div>
           <label class="pn-chk" id="sh-sezlw" style="margin-top:6px"><input type="checkbox" id="sh-sezlib"${(p.dashboard || {}).sezioneLibera ? ' checked' : ''} onchange="shProfSezHint()"> <span>La mia Sezione non è in elenco</span></label>
           <div class="sh-hint" style="margin:2px 0 0"><a href="#" onclick="shSegnalaSezione();return false">Segnalalo</a>: così la aggiungiamo all’elenco.</div></div>
-        <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp">${grpOpts(p.sezione, p.gruppo)}</select></div>
+        <div id="sh-grw"><label class="sh-lb" for="sh-grp">Gruppo</label><select class="sh-in" id="sh-grp" onpointerdown="this.dataset.u=1" onmousedown="this.dataset.u=1" ontouchstart="this.dataset.u=1" onfocus="this.dataset.u=1" onkeydown="this.dataset.u=1">${grpOpts(p.sezione, p.gruppo)}</select></div>
       </div>
       <p class="sh-hint" id="sh-privel" style="margin:0">Il tuo nome, ruolo ed e-mail compaiono nell’elenco di chi coordina il tuo Gruppo o la tua Sezione, per poterti invitare ai piani. Nessun’altra persona li vede.</p>
       <!-- Area RCdF/ICdF: campo nascosto finché non attiviamo l'invio delle mail dall'app. Il valore già salvato si conserva (vedi shProfSubmit). -->
@@ -18617,7 +18617,7 @@ function profileHTML(mode){
     ${acc}${profCard(p, mode, false)}</main>`;
   shProfRole();
   try{ shProfSezHint(); }catch(e){}
-  if(p.sezione) try{ grpFetch(p.sezione).then(() => { const g = $('sh-grp'); if(g && document.activeElement !== g) g.innerHTML = grpOpts($('sh-sez').value, g.value); }); }catch(e){}
+  if(p.sezione) try{ grpFetch(p.sezione).then(() => { const g = $('sh-grp'); if(g && !g.dataset.u && document.activeElement !== g) g.innerHTML = grpOpts($('sh-sez').value, g.value); }); }catch(e){}
 }
 window.shProfRole = function(){
   const r = rv('sh-ruolo');
@@ -18645,7 +18645,7 @@ window.shProfSez = function(){
   const i = $('sh-sez'); if(i){ const c = sezCanon(i.value); if(c && c !== i.value) i.value = c; } try{ shProfSezHint(); }catch(e){}
   const s = ($('sh-sez').value || '').trim(); const g = $('sh-grp');
   if(g) g.innerHTML = grpOpts(s, g.value);
-  try{ grpFetch(s).then(() => { const g2 = $('sh-grp'); if(g2 && document.activeElement !== g2) g2.innerHTML = grpOpts($('sh-sez').value, g2.value); }); }catch(e){}
+  try{ grpFetch(s).then(() => { const g2 = $('sh-grp'); if(g2 && !g2.dataset.u && document.activeElement !== g2) g2.innerHTML = grpOpts($('sh-sez').value, g2.value); }); }catch(e){}
 };
 window.shProfSubmit = async function(ev){
   if(ev) ev.preventDefault();
@@ -18953,14 +18953,16 @@ async function pnLetturaHtml(){
 async function pnHomeFill(){
   const box = $('sh-piani'); if(!box || !CL.sb || !CL.user) return;
   const tc = pnTipoCrea(SH.prof), crea = !!tc;
+  const lettP = pnLetturaHtml().catch(() => '');   // le richieste partono insieme (prima erano una dopo l’altra: la home era lenta)
   let ok = false; try{ ok = await PIANI.pronto(); }catch(e){}
+  const listP = ok ? Promise.all([PIANI.elenco(), PIANI.inviti()]).then(r => ({r}), () => ({r:null})) : null;
   if(SH.view !== 'home' || !$('sh-piani')) return;
-  let lett = ''; try{ lett = await pnLetturaHtml(); }catch(e){ lett = ''; }
+  let lett = ''; try{ lett = await lettP; }catch(e){ lett = ''; }
   if(SH.view !== 'home' || !$('sh-piani')) return;
   const cardIn = (x) => { x = (x || '') + lett; box.innerHTML = x; if(box.dataset.card) box.hidden = !x; };
   if(!ok){ cardIn((crea && PIANI.ok === false) ? `<small>${PN_PER[tc]}</small><h2>${PIANI_TIPI[tc]}</h2><p class="sh-hint" style="margin:0">${PIANI_TIPI[tc] === 'Piano di Gruppo' ? 'Il Piano di Gruppo' : 'Il ' + PIANI_TIPI[tc]} sarà disponibile dopo l’aggiornamento del database (script SQL del 23 novembre).</p>` : ''); return; }
   let list = [], inv = [];
-  try{ list = await PIANI.elenco(); inv = await PIANI.inviti(); }catch(e){ return; }
+  try{ const q = await listP; if(!q || !q.r) return; list = q.r[0]; inv = q.r[1]; }catch(e){ return; }
   if(SH.view !== 'home' || !$('sh-piani')) return;
   if(!list.length && !crea){ cardIn(''); return; }
   const me = CL.user.id; const mie = list.filter(x => x.owner_id === me), altri = list.filter(x => x.owner_id !== me);
@@ -18990,7 +18992,8 @@ async function calsCarica(){
   C.mine = [];
   try{
     const l = await PIANI.elenco(); const me = CL.user.id;
-    for(const x of l){ try{ const f = await PIANI.apri(x.id); C.mine.push({x, mio:x.owner_id === me, cal:(f && f.data && Array.isArray(f.data.cal)) ? f.data.cal.filter(e => e && typeof e === 'object' && e.id) : []}); }catch(e){} }
+    const R = await Promise.all(l.map(async x => { try{ const f = await PIANI.apri(x.id); return {x, mio:x.owner_id === me, cal:(f && f.data && Array.isArray(f.data.cal)) ? f.data.cal.filter(e => e && typeof e === 'object' && e.id) : []}; }catch(e){ return null; } }));
+    R.forEach(r => { if(r) C.mine.push(r); });
   }catch(e){}
 }
 async function calsPage(){
@@ -19030,8 +19033,8 @@ function calsMieiHTML(){
   const C = SH._cals, E = esc, oggi = giOggi();
   let h = `<section class="pn-card" aria-labelledby="cm-t"><h2 class="pn-h" id="cm-t">I calendari dei tuoi piani</h2>`;
   if(!C.mine.length) h += `<p class="sh-sub" style="margin:0">Quando crei un piano, o ti invitano in uno, il suo calendario compare qui.</p>`;
-  C.mine.forEach(({x, mio, cal}) => { const prox = cal.filter(e => !e.d1 || e.d1 >= oggi).sort((a, b) => (a.d1 || '9999') < (b.d1 || '9999') ? -1 : 1).slice(0, 4);
-    h += `<div class="pn-row" style="align-items:flex-start"><div style="min-width:0"><b>${E(x.titolo || PIANI_TIPI[x.tipo])}</b><div class="sh-hint" style="margin:2px 0 0">${E(PIANI_TIPI[x.tipo])}${mio ? '' : ' · condiviso con te'} · ${cal.length} ${cal.length === 1 ? 'appuntamento' : 'appuntamenti'}</div>${prox.length ? `<ul style="margin:6px 0 0;padding-left:20px">${prox.map(e => `<li>${E(calsTipoLab(e.tipo, x.tipo))}: ${E(e.titolo || 'senza titolo')} · ${E(e.d1 ? giData(e.d1) : 'data da fissare')}${e.ris ? ' · Riservato' : ''}</li>`).join('')}</ul>` : ''}</div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="calsPiano('${E(x.id)}')">Apri il calendario</button></div>`; });
+  C.mine.forEach(({x, mio, cal}) => { const tutti = cal.slice().sort((a, b) => (a.d1 || '9999') < (b.d1 || '9999') ? -1 : 1), prox = tutti.slice(0, 8), altri = tutti.length - prox.length;
+    h += `<div class="pn-row" style="align-items:flex-start"><div style="min-width:0"><b>${E(x.titolo || PIANI_TIPI[x.tipo])}</b><div class="sh-hint" style="margin:2px 0 0">${E(PIANI_TIPI[x.tipo])}${mio ? '' : ' · condiviso con te'} · ${cal.length} ${cal.length === 1 ? 'appuntamento' : 'appuntamenti'}</div>${prox.length ? `<ul style="margin:6px 0 0;padding-left:20px">${prox.map(e => `<li>${E(calsTipoLab(e.tipo, x.tipo))}: ${E(e.titolo || 'senza titolo')} · ${E(e.d1 ? giData(e.d1) : 'data da fissare')}${e.ris ? ' · Riservato' : ''}</li>`).join('')}${altri > 0 ? `<li>…e altri ${altri}</li>` : ''}</ul>` : ''}</div><button class="sh-btn sm" type="button" style="margin-left:auto" onclick="calsPiano('${E(x.id)}')">Apri il calendario</button></div>`; });
   return h + `<p class="sh-hint" style="margin:6px 0 0">Il calendario dell’Unità e quello dello staff stanno dentro i tuoi progetti, nella voce «Calendario». Chi guida più cose ha un calendario per ognuna: il Gruppo e l’Unità, la Sezione e l’Unità. <a href="#" onclick="shGoHome();return false">Vai ai tuoi progetti</a></p></section>`;
 }
 function calsDraw(){
@@ -19043,8 +19046,8 @@ window.calsF = function(k){ if(!SH._cals) return; SH._cals.f = k; calsDraw(); };
 window.calsPiano = function(id){ PN.goto = 'cal'; PN.rip = false; show('piano', id); };
 // ── Verbali delle riunioni degli adulti (27/11 sera): dallo staff di Unità al Comitato di Sezione. Integrano il libro dei verbali, non lo sostituiscono. ──
 const VERB_RUOLI = ['cu', 'vcu', 'senior', 'cg', 'vcg', 'cds', 'vcds', 'pres', 'tes', 'coords', 'cos'];
-const verbOk = p => !!p && (VERB_RUOLI.includes(p.ruolo) || cosMembro(p));
-const VERB_DEMO = true;   // finché l’app è uno strumento dimostrativo con iscrizione libera: riga d’avviso ben visibile (si toglie quando passa sul portale)
+const verbOk = p => !!p && !!String(p.sezione || '').trim();   // tutti gli iscritti di una Sezione: chi non scrive né legge per ruolo vede solo i verbali del Comitato aperti a tutta la Sezione
+const VERB_DEMO = false;   // finché l’app è uno strumento dimostrativo con iscrizione libera: riga d’avviso ben visibile (si toglie quando passa sul portale)
 const VERB_TIPI = {staff:'Riunione di staff', cdg:'Consiglio di Gruppo', rica:'Riunione dei Capi (RiCa)', cosez:'Consiglio di Sezione', cos:'Comitato di Sezione (COS)'};
 const VERB_COL = {staff:'#2f7d5b', cdg:'#b0482f', rica:'#4a6b8a', cosez:'#7a3f8f', cos:'#2C3E7A'};
 const VERB_RL = {cu:'Capo Unità', vcu:'Vice Capo Unità', senior:'Senior in Servizio', cg:'Capo Gruppo', vcg:'Vice Capo Gruppo', cds:'Commissario', vcds:'Vice Commissario', pres:'Presidente', tes:'Tesoriere', coords:'Coordinatore Senior', cos:'Comitato di Sezione', volontario:'Comitato di Sezione'};
@@ -20473,8 +20476,8 @@ function pnQCorpo(){
   const E = esc, d = PN.d, p = PN.p, R = pnQRighe(), f = PN.qf || {};
   const tutte = d.azioni, nU = tutte.filter(a => a.urgente).length, nM = tutte.filter(a => !a.mese).length, nR = tutte.filter(a => !(a.ref || '').trim()).length;
   let h = `<p class="sh-hint" style="margin:0" id="pn-q-conta">${d.obiettivi.length} ${d.obiettivi.length === 1 ? 'obiettivo' : 'obiettivi'} · ${tutte.length} ${tutte.length === 1 ? 'azione' : 'azioni'}${nU ? ` · ${nU} urgent${nU === 1 ? 'e' : 'i'}` : ''}${nM ? ` · ${nM} senza mese` : ''}${nR ? ` · ${nR} senza referente` : ''}</p>`;
-  if(!d.obiettivi.length) return h + `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo, in «Obiettivi e azioni».</p>`;
-  if(!R.length) return h + `<p class="sh-sub" style="margin:0">Nessuna azione con questi filtri.</p>`;
+  if(!d.obiettivi.length && f.vista !== 'cal') return h + `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo, in «Obiettivi e azioni». Gli appuntamenti si vedono già nella vista Calendario.</p>`;
+  if(!R.length && f.vista !== 'cal') return h + `<p class="sh-sub" style="margin:0">Nessuna azione con questi filtri.</p>`;
   if(f.vista === 'org') return h + pnQPerOrgano(R);
   if(f.vista === 'tl') return h + pnQTimeline(R);
   if(f.vista === 'cal') return h + pnQCal(R);

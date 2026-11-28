@@ -35,7 +35,7 @@ ok(/dopo l’aggiornamento del database \(script SQL del 28 novembre «Verbali»
 ok(await A.ev(() => !document.querySelector('[onclick="verbNuovo()"]') || true), 'database vecchio: niente crash');
 db.sqlVerb = true;
 await A.ev(() => verbAnno('all')); await sleep(800);
-ok(await A.ev(() => /Versione di prova/.test(document.body.textContent) && /Integrano il libro dei verbali/.test(document.body.textContent)), 'avviso «Versione di prova» e «integrano il libro dei verbali»');
+ok(await A.ev(() => !/Versione di prova/.test(document.body.innerText)), 'nessun avviso «Versione di prova»');
 // ── Capo Unità: scrive lo staff, chi vede ──
 ok(await A.ev(() => JSON.stringify(verbTipiPer(SH.prof)) === '["staff"]'), 'Capo Unità: solo «riunione di staff»');
 await A.ev(() => verbNuovo()); await sleep(300);
@@ -118,9 +118,10 @@ await P.pa.ctx.close(); await C.pa.ctx.close(); await G.pa.ctx.close();
 // ── Senior (giovane del Clan): niente ──
 const S = await mk('snr'); S.P.on('pageerror', e => errs.push('snr: ' + e.message));
 await sleep(1000);
-ok(await S.ev(() => !document.querySelector('[onclick="verbOpen()"]')), 'Senior (giovane del Clan): nessuna scheda Verbali');
+ok(await S.ev(() => !!document.querySelector('[onclick="verbOpen()"]')), 'Senior (giovane del Clan) di una Sezione: scheda Verbali presente');
 await S.ev(() => verbOpen()); await sleep(1200);
-ok(await S.ev(() => !/I verbali che puoi leggere/.test(document.body.innerText)), 'Senior: l’indirizzo diretto riporta ai progetti');
+ok(await S.ev(() => /I verbali che puoi leggere/i.test(document.body.innerText)), 'Senior: apre la pagina dei verbali');
+ok(!/Consiglio di Gruppo di dicembre/.test(await body(S)) && !/Staff di giugno/.test(await body(S)), 'Senior: non legge CdG né staff di Unità');
 await S.pa.ctx.close();
 ok(errs.length === 0, 'nessun errore di pagina · ' + errs.join(' | '));
 await br.close(); process.exit(summary() ? 1 : 0);

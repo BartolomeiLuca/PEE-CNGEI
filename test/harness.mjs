@@ -369,11 +369,11 @@ export class FakeDB {
     const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
     const me = this.t.pee_profili.find(x => x.user_id === uid); const m = (me && me.ruolo) || '';
     const cos = ['cds', 'pres', 'tes', 'cos'].includes(m) || !!(me && me.dashboard && me.dashboard.cos && me.dashboard.cos.membro === true);
-    if(!me || !(['cu', 'vcu', 'senior', 'cg', 'vcg', 'cds', 'vcds', 'pres', 'tes', 'coords', 'cos'].includes(m) || cos)) return this.err('P0001', 'I verbali li leggono gli adulti della Sezione.');
+    if(!me) return this.err('P0001', 'I verbali li leggono gli iscritti di una Sezione.');
     const sez = norm(me.sezione), gr = norm(me.gruppo); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
     const vede = v => { if(v.owner_id === uid) return true; if(v.stato === 'bozza' || norm(v.sezione) !== sez) return false; const a = v.autore_ruolo;
       if(v.tipo === 'staff') return (['cu', 'vcu', 'senior'].includes(a) && ((['cg', 'vcg'].includes(m) && gr && gr === norm(v.gruppo)) || ['cds', 'vcds'].includes(m))) || (['cg', 'vcg', 'coords'].includes(a) && ['cds', 'vcds'].includes(m)) || (['cds', 'vcds'].includes(a) && m === 'pres');
-      if(v.tipo === 'cdg') return (gr && gr === norm(v.gruppo)) || ['cds', 'vcds'].includes(m);
+      if(v.tipo === 'cdg') return (['cu', 'vcu', 'senior', 'cg', 'vcg'].includes(m) && gr && gr === norm(v.gruppo)) || ['cds', 'vcds'].includes(m);
       if(v.tipo === 'rica') return ['cu', 'vcu', 'senior', 'cg', 'vcg', 'coords', 'cds', 'vcds'].includes(m);
       if(v.tipo === 'cosez') return ['cg', 'vcg', 'coords', 'cds', 'vcds'].includes(m);
       if(v.tipo === 'cos') return cos || v.sez; return false; };

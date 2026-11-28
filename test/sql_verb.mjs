@@ -4,7 +4,7 @@ import fs from 'fs';
 let oks = 0, fails = 0;
 const ok = (c, m) => { if(c){ oks++; console.log('  ✓ ' + m); } else { fails++; console.log('  ✗ ' + m); } };
 const db = new PGlite();
-const N = ['comm', 'vcomm', 'pres', 'tes', 'cg', 'vcg', 'cg2', 'cgFano', 'cu', 'cu2', 'sis', 'coord', 'snr', 'volC', 'volN', 'cosV', 'norole', 'noSez', 'cuSenzaGr', 'cuFano'];
+const N = ['comm', 'vcomm', 'pres', 'tes', 'cg', 'vcg', 'cg2', 'cgFano', 'cu', 'cu2', 'sis', 'coord', 'snr', 'volC', 'volN', 'cosV', 'norole', 'noSez', 'cuSenzaGr', 'cuFano', 'coordGr'];
 const U = {}; N.forEach((k, i) => { U[k] = `${(i + 1).toString(16).padStart(2, '0').repeat(4)}-2222-1111-1111-111111111111`; });
 await db.exec(`
   create role anon nologin; create role authenticated nologin; create schema auth;
@@ -67,13 +67,17 @@ const vc = await veg('vcomm'), cs = await veg('cosV'), tt = await veg('tes'), vo
 ok(vc.includes('V staff cu') && vc.includes('CdG Pesaro 2') && vc.includes('CoSez') && vc.includes('RiCa') && !vc.includes('COS riservato') && vc.includes('COS aperto'), 'Vice Commissario: come il Commissario, ma il COS solo se aperto a tutta la Sezione (a meno della spunta del Comitato)');
 ok(tt.includes('COS riservato') && tt.includes('COS aperto') && !tt.includes('CoSez') && !tt.includes('V staff comm') && !tt.includes('RiCa'), 'Tesoriere: solo il COS');
 ok(cs.includes('COS riservato') && vo.includes('COS riservato'), 'membro del Comitato (ruolo «cos» o spunta): legge il COS');
-ok(!vo.includes('CoSez') && vo.includes('CdG Pesaro 1'), 'volontario con la spunta del Comitato: legge anche il Consiglio del suo Gruppo, non il Consiglio di Sezione');
+ok(!vo.includes('CoSez') && !vo.includes('CdG Pesaro 1') && vo.includes('COS riservato'), 'volontario con la spunta del Comitato: legge il COS, non il Consiglio di Gruppo (non ne fa parte per ruolo) né il Consiglio di Sezione');
 ok(co.includes('CoSez') && co.includes('RiCa') && co.includes('COS aperto') && !co.includes('COS riservato') && !co.includes('CdG Pesaro 1') && !co.includes('V staff cu'), 'Coordinatore Senior: CoSez, RiCa e COS aperto; non gli staff né i Consigli di Gruppo');
 ok(vg.includes('V staff cu') && vg.includes('CdG Pesaro 1') && vg.includes('CoSez'), 'Vice Capo Gruppo: come il Capo Gruppo');
 ok(si.includes('CdG Pesaro 1') && si.includes('RiCa') && !si.includes('V staff cu') && !si.includes('CoSez'), 'Senior in Servizio: il Consiglio del suo Gruppo e la RiCa');
 const fa = tit(await lista('cgFano', 2026)); ok(JSON.stringify(fa) === JSON.stringify(S('CdG Fano', 'Staff Fano')), 'altra Sezione: vede solo i propri · ' + JSON.stringify(fa));
 const sn = await lista('snr', 2026), vn = await lista('volN', 2026), nr = await lista('norole', 2026), ns = await lista('noSez', 2026), an = await as('anon', 'select * from pee_verbali_lista()');
-ok(sn.err && vn.err && nr.err && ns.err, 'Senior giovane, volontario senza spunta, profilo senza ruolo o senza Sezione: errore, nessun verbale');
+ok(!sn.err && JSON.stringify(tit(sn)) === JSON.stringify(S('COS aperto')) && !vn.err && JSON.stringify(tit(vn)) === JSON.stringify(S('COS aperto')), 'Senior giovane e volontario senza spunta: leggono SOLO il COS aperto a tutta la Sezione · ' + JSON.stringify(tit(sn)));
+ok(!!ns.err, 'profilo senza Sezione: errore, nessun verbale');
+ok(!nr.err && JSON.stringify(tit(nr)) === JSON.stringify(S('COS aperto')), 'profilo senza ruolo ma con Sezione: solo il COS aperto');
+// un Coordinatore Senior che era stato Capo Gruppo (Gruppo rimasto nel profilo) NON legge il Consiglio di Gruppo
+await P('coordGr', 'coords', 'Pesaro', 'Pesaro 1'); const cgr = await veg('coordGr'); ok(!cgr.includes('CdG Pesaro 1') && cgr.includes('RiCa'), 'Coordinatore Senior con un Gruppo rimasto nel profilo: non legge il Consiglio di Gruppo');
 ok(!!an.err, 'senza accesso: errore');
 const sel = async w => (await as(w, `select titolo from pee_verbali`)).rows || [];
 const dir = await sel('cg'); ok(dir.length === 3 && dir.every(r => /cg|vcg|Pesaro 1/.test(r.titolo)) , 'lettura diretta della tabella: il Capo Gruppo vede solo i suoi 3 · ' + JSON.stringify(dir.map(r => r.titolo)));
