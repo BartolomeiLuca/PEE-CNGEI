@@ -12760,6 +12760,7 @@ function renderSchedaCtx(root){
     <div style="font-size:12px;font-weight:700;color:var(--ink-mid);margin:12px 0 4px">Adulti in staff <span style="font-weight:400;color:var(--ink-faint)">— esperienza, formazione e disponibilità; aggiungi o togli righe secondo il tuo staff</span></div>
     <div style="font-size:12px;line-height:1.45;color:var(--ink-mid);background:#FFF8E6;border:1px solid #F0DFAF;border-radius:6px;padding:7px 10px;margin-bottom:6px"><b>Attenzione ai dati personali.</b> Questa tabella finisce nella Scheda che condividi (${(window.SH&&SH.on&&scheda.tipoProgetto!=='PP')?'Capo Gruppo, Commissario di Sezione':'ICdF, Capo Gruppo, Commissario di Sezione'}). Inserisci solo informazioni che le persone indicate sono d’accordo a condividere, descritte in modo rispettoso e non giudicante, e nessun dato sensibile (salute, situazioni familiari o personali delicate).</div>
     <div id="staff-tab">${staffTabHTML()}</div>
+    ${typeof window.consBoxHTML==='function'?window.consBoxHTML():''}
     <label style="${SC_LBL};margin-top:16px">Appunti dal Piano di Gruppo e dal Progetto di Sezione <span style="font-weight:400;color:var(--ink-faint)">— che cosa dicono questi documenti e riguarda la tua Unità: priorità, scelte condivise, impegni da tenere presenti</span></label>
     <textarea style="${SC_TA}" placeholder="Che cosa c’è nel Piano di Gruppo e nel Progetto di Sezione che riguarda la tua Unità? Appunti liberi, anche in poche righe." oninput="ppSet('appPdg',this.value)">${sEsc(pp.appPdg)}</textarea>
     <div style="font-size:12px;font-weight:800;margin:18px 0 2px;color:var(--ink)">Osservazione con il Kit di Osservazione e Scoperta (KOS 2.0)</div>
@@ -18880,7 +18881,7 @@ const PN_TITOLI = ['Punti di forza e di debolezza', 'Le Unità e i ragazzi e le 
 const PN_ETICHETTE = [['Commissario di Sezione', 'lettore'], ['Vice Capo Gruppo', 'collaboratore'], ['Capo Unità', 'lettore'], ['Senior in Servizio', 'lettore'], ['Coordinatore Senior', 'lettore'], ['Presidente', 'lettore'], ['Altro', 'lettore']];
 const pnUid = () => 'x' + Math.random().toString(36).slice(2, 9);
 const pnClone = o => JSON.parse(JSON.stringify(o == null ? null : o));
-const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], disp:[], spg:[], tappe:[], cal:[], delibera:{data:'', luogo:''}, sezione:'', gruppo:''});
+const pnVuoto = () => ({v:1, analisi:[], swot:null, obiettivi:[], azioni:[], uniti:[], spunti:[], disp:[], spg:[], tappe:[], cal:[], persone:{}, delibera:{data:'', luogo:''}, sezione:'', gruppo:''});
 // la Sezione del piano (carta intestata del Word): quella scritta nel piano, altrimenti quella del profilo di chi lo guarda
 const pnSezPiano = () => String((PN.d && PN.d.sezione) || (SH.prof || {}).sezione || '').trim();
 // il Gruppo del piano (titolo del Word): quello scritto nel piano; nei vecchi piani, se sono io il titolare, quello del mio profilo
@@ -20088,7 +20089,7 @@ function pnMenu(){
   // Progetto di Clan: al posto degli «Spunti dalle Unità» le richieste dei Gruppi e le disponibilità del Clan (gli spunti già scritti restano visibili)
   const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock']].concat(clan ? (coord && (SH.prof || {}).ruolo === 'coords' ? [['ric', 'Richieste dei Gruppi', 'users']] : []).concat([['dis', 'Disponibilità e prospettive', 'flag']].concat(d.spunti && d.spunti.length ? [['spu', 'Spunti dalle Unità', 'list']] : [])) : [['spu', 'Spunti dalle Unità', 'list']]);
   // ordine di lavoro (27/11): Panoramica, Ascolto, Dove siamo, Obiettivi, Verifiche
-  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal']].concat(lavoro)}];
+  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal'], ['per', 'Chi fa parte', 'users']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal'], ['per', 'Chi fa parte', 'users']].concat(lavoro)}];
   if(g){
     const it = [['g-giro', GI.g && GI.g.stato === 'aperto' ? 'Ascolto · aperto' : 'Ascolto', 'users']];
     if(GI.g){
@@ -20379,6 +20380,7 @@ function pnPaneHTML(id){
   else if(id === 'naz'){ h += pnNazHTML(); }
   else if(id === 'qua'){ h += pnQuadroHTML(); }
   else if(id === 'cal'){ h += pnCalHTML(); }
+  else if(id === 'per'){ h += pnPerHTML(); }
   else if(id === 'uni'){
   if(d.uniti.length) h += `<section class="pn-card" aria-labelledby="pn-un-t"><h2 class="pn-h" id="pn-un-t">Obiettivi uniti</h2><p class="sh-hint" style="margin:0">Gli obiettivi originali, tenuti come nota.</p>${d.uniti.map(u => `<div class="pn-un"><b>${E(u.testo || '—')}</b><div class="sh-hint" style="margin:2px 0 0">${(u.aree || []).map(a => E(pnLab(PN_AREE, a))).join(', ')}${u.nota ? ' · ' + E(u.nota) : ''}</div></div>`).join('')}</section>`;
   }
@@ -20857,6 +20859,132 @@ window.pnCalSet = function(id, k, v, soft){
   pnRender(); const f = $('pn-' + ({tipo:'cet', d1:'ced', d2:'cef', ris:'cer', modo:'cem'}[k] || 'cex') + '-' + id); if(f) f.focus();
 };
 window.pnCalDel = function(id){ if(!pnTutto()) return; const e = PN.d.cal.find(x => x.id === id); if(e && ((e.titolo || '') + (e.nota || '')).trim() && !confirm('Eliminare questo appuntamento?')) return; PN.d.cal = PN.d.cal.filter(x => x.id !== id); pnTouch(); pnRender(); };
+// ── Chi fa parte (28/11 sera): le persone degli organi, dentro il piano. Per il Gruppo anche lo staff delle Unità che hanno autorizzato il Capo Gruppo ──
+const PN_PER_ORGANI = {gruppo:[['cdg', 'Consiglio di Gruppo']], sezione:[['cosez', 'Consiglio di Sezione'], ['cos', 'Comitato di Sezione (COS)']], clan:[['clan', 'Adulti del Clan']]};
+const PN_PER_RUOLI = {cdg:['Capo Gruppo', 'Vice Capo Gruppo', 'Capo Unità', 'Vice Capo Unità', 'Senior in Servizio'], cosez:['Commissario', 'Vice Commissario', 'Capo Gruppo'], cos:['Commissario', 'Presidente', 'Tesoriere', 'Vice Commissario'], clan:['Coordinatore Senior', 'Capo Clan']};
+const PN_PER_MAX = 300, PN_FASCIA = {L:'Branco', E:'Reparto', R:'Compagnia'};
+const PERS = {
+  async visibili(){ const {data, error} = await CL.sb.rpc('pee_staff_unita_visibili', {p_anno:null}); if(error) throw error; return Array.isArray(data) ? data : []; },
+  async attese(){ const {data, error} = await CL.sb.rpc('pee_staff_unita_attese'); if(error) throw error; return Array.isArray(data) ? data : []; },
+  async consensi(){ const {data, error} = await CL.sb.rpc('pee_staff_consenso_lista'); if(error) throw error; return Array.isArray(data) ? data : []; },
+  async imposta(mail, on){ const {error} = await CL.sb.rpc('pee_staff_consenso_imposta', {p_email:mail, p_on:!!on}); if(error) throw error; }
+};
+const CONS = {st:'', L:[], msg:''};   // consenso del Capo Unità: elenco delle email autorizzate
+function consBoxHTML(){
+  if(!(typeof CL !== 'undefined' && CL.user) || MODE !== 'giovani') return '';
+  const E = sEsc;
+  let h = `<div id="cons-box" style="margin-top:14px;border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;background:var(--bg)"><div style="font-size:13px;font-weight:800;margin-bottom:2px">Chi vede la tabella del mio staff</div>
+    <div style="font-size:12px;line-height:1.45;color:var(--ink-mid);margin-bottom:8px">Il Capo Gruppo (o chi lavora al Piano di Gruppo) può usare nome, ruolo ed email del tuo staff per i verbali e gli inviti. Autorizza una persona per email: vale anche per gli anni dopo, finché non la togli.</div>`;
+  if(CONS.st === 'old') return h + `<div style="font-size:12px;color:var(--ink-mid)">Disponibile dopo l’aggiornamento del database.</div></div>`;
+  if(CONS.st === '') setTimeout(consCarica, 0);
+  if(CONS.st === '' || CONS.st === 'carico') return h + `<div style="font-size:12px;color:var(--ink-mid)" role="status">Leggo le autorizzazioni…</div></div>`;
+  h += CONS.L.length ? `<ul style="list-style:none;margin:0 0 8px;padding:0">${CONS.L.map(r => `<li style="display:flex;gap:8px;align-items:center;font-size:13px;padding:3px 0"><span style="flex:1;min-width:0;overflow-wrap:anywhere">${E(r.email)}</span><button type="button" class="btn-ghost" style="font-size:12px" aria-label="Togli l’autorizzazione a ${E(r.email)}" onclick="consTogli('${E(r.email).replace(/'/g, '')}')">Togli</button></li>`).join('')}</ul>` : `<div style="font-size:12px;color:var(--ink-mid);margin-bottom:8px">Nessuna autorizzazione data.</div>`;
+  h += `<div style="display:flex;gap:8px;flex-wrap:wrap"><label for="cons-mail" style="position:absolute;left:-9999px">Email della persona da autorizzare</label><input id="cons-mail" type="email" inputmode="email" maxlength="120" placeholder="email@esempio.it" style="flex:1;min-width:180px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--border-light);border-radius:6px" onkeydown="if(event.key==='Enter'){event.preventDefault();consAutorizza();}"><button type="button" class="btn-ghost" onclick="consAutorizza()">Autorizza</button></div>
+    <div id="cons-msg" role="alert" style="font-size:12px;color:#B3261E;min-height:0;margin-top:4px">${E(CONS.msg || '')}</div></div>`;
+  return h;
+}
+async function consCarica(){
+  if(!(typeof CL !== 'undefined' && CL.user)) return; CONS.st = 'carico';
+  try{ CONS.L = await PERS.consensi(); CONS.st = 'ok'; }catch(e){ CONS.st = pnPerVecchio(e) ? 'old' : 'err'; CONS.msg = CONS.st === 'err' ? 'Non riesco a leggere le autorizzazioni. Riprova tra poco.' : ''; }
+  consRefresh();
+}
+function consRefresh(){ const b = document.getElementById('cons-box'); if(b) b.outerHTML = consBoxHTML(); }
+async function consImposta(mail, on){
+  CONS.msg = '';
+  try{ await PERS.imposta(mail, on); CONS.L = await PERS.consensi(); CONS.st = 'ok'; }
+  catch(e){ const m = String((e && e.message) || ''); CONS.msg = /self|te stess|proprio/i.test(m) ? 'Non puoi autorizzare te stesso.' : /max|massim|10/i.test(m) ? 'Puoi autorizzare al massimo 10 persone.' : /mail|email/i.test(m) ? 'Controlla l’email.' : 'Non sono riuscito a salvare. Riprova tra poco.'; }
+  consRefresh();
+}
+window.consAutorizza = function(){ const i = document.getElementById('cons-mail'), v = String((i && i.value) || '').trim().toLowerCase();
+  if(!v || !clEmailOk(v)){ CONS.msg = 'Controlla l’email.'; consRefresh(); const x = document.getElementById('cons-mail'); if(x){ x.value = v; x.focus(); } return; }
+  consImposta(v, true); };
+window.consTogli = function(m){ if(!confirm('Togliere l’autorizzazione a ' + m + '?')) return; consImposta(String(m).toLowerCase(), false); };
+const PER = {pid:'', st:'', unita:[], attese:[]};   // st: '' da caricare · 'carico' · 'ok' · 'old' (SQL non lanciato) · 'err'
+window.PER = PER; window.CONS = CONS; window.consBoxHTML = consBoxHTML; window.pnPerRighe = (org) => pnPerRighe(org);   // per i test e per gli altri pezzi del guscio
+const pnPerVecchio = e => /PGRST202|Could not find|schema cache|42883|42P01/i.test(String((e && (e.code || '')) + ' ' + (e && e.message || '')));
+async function pnPerCarica(){
+  const pid = PN.p && PN.p.id; if(!pid || PN.p.tipo !== 'gruppo') return;
+  PER.pid = pid; PER.st = 'carico';
+  try{ const r = await Promise.all([PERS.visibili(), PERS.attese()]); if(PER.pid !== pid) return; PER.unita = r[0]; PER.attese = r[1]; PER.st = 'ok'; }
+  catch(e){ if(PER.pid !== pid) return; PER.st = pnPerVecchio(e) ? 'old' : 'err'; }
+  if(PN.sez === 'per' && PN.p && PN.p.id === pid) pnRender();
+}
+// le persone dello staff delle Unità che hanno autorizzato (senza il Capo Gruppo stesso)
+const pnPerUnitaRighe = () => PER.unita.filter(u => u.unita).reduce((a, u) => a.concat((u.staff || []).filter(r => !/^(CG|Capo Gruppo)$/i.test(String(r.ruolo || '').trim())).map(r => ({nome:r.nome || '', ruolo:r.ruolo || '', mail:r.mail || '', unita:u.unita}))), []);
+// Allerta: chi non ha autorizzato, chi non ha un progetto dell'anno, chi ha la tabella vuota
+function pnPerAllerte(){
+  const out = [], ok = new Set(PER.unita.map(u => u.owner_id));
+  PER.attese.filter(a => !a.autorizzato && !ok.has(a.owner_id)).forEach(a => out.push({chi:a.nome || 'Un Capo Unità', cosa:'non ti ha ancora autorizzato a vedere lo staff della sua Unità'}));
+  PER.unita.forEach(u => { if(!u.unita) out.push({chi:u.owner_nome || 'Un Capo Unità', cosa:'ti ha autorizzato, ma non ha ancora un progetto di Unità di quest’anno'}); else if(!(u.staff || []).length) out.push({chi:(u.owner_nome || 'Il Capo Unità') + ' · ' + u.unita, cosa:'ha la tabella dello staff vuota'}); });
+  return out;
+}
+// le persone di un organo, per i verbali e gli inviti: quelle scritte a mano + (Consiglio di Gruppo) quelle delle Unità, senza doppioni
+function pnPerRighe(org){
+  const man = (((PN.d || {}).persone || {})[org] || []).filter(r => r && (String(r.nome || '').trim() || String(r.mail || '').trim())).map(r => ({nome:String(r.nome || '').trim(), ruolo:String(r.ruolo || '').trim(), mail:String(r.mail || '').trim().toLowerCase(), unita:''}));
+  const all = man.concat(org === 'cdg' ? pnPerUnitaRighe().map(r => Object.assign({}, r, {mail:String(r.mail || '').toLowerCase()})) : []);
+  const seen = new Set(); return all.filter(r => { const k = r.mail || ('n:' + r.nome.toLowerCase()); if(seen.has(k)) return false; seen.add(k); return true; });
+}
+function pnPerUnitaHTML(){
+  const E = esc;
+  let h = `<section class="pn-card" aria-labelledby="pn-per-u"><h2 class="pn-h" id="pn-per-u">Dalle Unità</h2>
+    <p class="sh-hint" style="margin:0">Lo staff dei Capi Unità che ti hanno autorizzato: nome, ruolo ed email. Si aggiorna da solo quando cambiano la loro tabella, e l’autorizzazione dura finché non la tolgono. Per i verbali e gli inviti si usano queste persone insieme a quelle che scrivi qui sotto.</p>`;
+  if(PER.st === 'carico' || PER.st === '') return h + `<p class="sh-sub" style="margin:0" role="status">Leggo gli staff delle Unità…</p></section>`;
+  if(PER.st === 'old') return h + `<p class="sh-hint" style="margin:0">Disponibile dopo l’aggiornamento del database (script SQL del 28 novembre «Staff di Unità»).</p></section>`;
+  if(PER.st === 'err') return h + `<p class="sh-msg err" role="alert" style="display:block;margin:0">Non riesco a leggere gli staff delle Unità. Riprova tra poco.</p></section>`;
+  const al = pnPerAllerte();
+  if(al.length) h += `<div class="sh-msg err" role="note" style="display:block;margin:0"><b>Da sistemare</b><ul style="margin:6px 0 0;padding-left:18px">${al.map((a, i) => `<li>${E(a.chi)}: ${E(a.cosa)}. <button class="sh-btn sm gh" type="button" onclick="pnPerCopia(${i})">Copia il messaggio</button></li>`).join('')}</ul></div>`;
+  if(!PER.unita.length && !PER.attese.length) h += `<p class="sh-sub" style="margin:0">Nessun Capo Unità del tuo Gruppo ti ha ancora autorizzato. Nel loro progetto di Unità, sotto la tabella dello staff, c’è «Chi vede la tabella del mio staff».</p>`;
+  PER.unita.filter(u => u.unita).forEach(u => {
+    h += `<div class="pn-per-u"><h3 style="margin:10px 0 4px;font-size:15px">${E(u.unita)}${PN_FASCIA[u.fascia] ? ' · ' + E(PN_FASCIA[u.fascia]) : ''}<span class="sh-hint" style="font-weight:500"> · di ${E(u.owner_nome || 'un Capo Unità')}</span></h3>`;
+    h += (u.staff || []).length ? `<div class="pn-tw"><table class="pn-tab"><thead><tr><th scope="col">Nome</th><th scope="col">Ruolo</th><th scope="col">Email</th></tr></thead><tbody>${u.staff.map(r => `<tr><td>${E(r.nome)}</td><td>${E(r.ruolo)}</td><td>${E(r.mail)}</td></tr>`).join('')}</tbody></table></div>` : `<p class="sh-sub" style="margin:0">Tabella vuota.</p>`;
+    h += `</div>`;
+  });
+  return h + `</section>`;
+}
+function pnPerHTML(){
+  const E = esc, tutto = pnTutto(), dis = tutto ? '' : ' disabled', tp = PN.p.tipo, O = PN_PER_ORGANI[tp] || [];
+  let h = `<section class="pn-card" aria-labelledby="pn-per-t"><h2 class="pn-h" id="pn-per-t">Chi fa parte</h2>
+    <p class="sh-hint" style="margin:0">Le persone degli organi di questo piano. Servono per scrivere in fretta «chi c’era» nei verbali e per gli inviti agli appuntamenti.</p>
+    <div class="sh-msg err" role="note" style="display:block;margin:0"><b>Solo adulti:</b> nome, ruolo ed email. Niente ragazzi o ragazze.</div></section>`;
+  if(tp === 'gruppo' && tutto){ if(PER.pid !== PN.p.id) pnPerCarica(); h += pnPerUnitaHTML(); }
+  O.forEach(([org, tit]) => {
+    const L = ((PN.d.persone || {})[org] || []).filter(r => r && typeof r === 'object' && r.id);
+    h += `<section class="pn-card" aria-labelledby="pn-per-${org}"><h2 class="pn-h" id="pn-per-${org}">${E(tit)}</h2>
+      <datalist id="pn-per-dl-${org}">${(PN_PER_RUOLI[org] || []).map(x => `<option value="${E(x)}">`).join('')}</datalist>`;
+    if(!L.length) h += `<p class="sh-sub" style="margin:0">${tutto ? 'Nessuna persona ancora.' : 'Nessuna persona.'}</p>`;
+    L.forEach(r => { const id = E(r.id), mailBad = !!(r.mail || '').trim() && typeof clEmailOk === 'function' && !clEmailOk(String(r.mail).trim().toLowerCase());
+      h += `<div class="pn-per-r"><div><label class="sh-lb" for="pn-pn-${id}">Nome</label><input class="sh-in" id="pn-pn-${id}" maxlength="80" value="${E(r.nome || '')}" oninput="pnPerSet('${org}','${id}','nome',this.value)"${dis}></div>
+        <div><label class="sh-lb" for="pn-pr-${id}">Ruolo</label><input class="sh-in" id="pn-pr-${id}" maxlength="40" list="pn-per-dl-${org}" value="${E(r.ruolo || '')}" oninput="pnPerSet('${org}','${id}','ruolo',this.value)"${dis}></div>
+        <div><label class="sh-lb" for="pn-pm-${id}">Email</label><input class="sh-in" id="pn-pm-${id}" type="email" inputmode="email" maxlength="120" value="${E(r.mail || '')}" oninput="pnPerSet('${org}','${id}','mail',this.value)"${dis}><div class="st-bad" id="pn-pmb-${id}" role="alert">${mailBad ? 'Controlla l’email' : ''}</div></div>
+        ${tutto ? `<button class="pn-ib" type="button" aria-label="Togli ${E(r.nome || 'la persona')}" onclick="pnPerDel('${org}','${id}')">✕</button>` : '<span></span>'}</div>`; });
+    if(tutto) h += `<div><button class="sh-btn sm gh" type="button" onclick="pnPerAdd('${org}')">+ Una persona</button></div>`;
+    h += `</section>`;
+  });
+  return h;
+}
+const pnPerOk = org => !!PN.p && (PN_PER_ORGANI[PN.p.tipo] || []).some(x => x[0] === org);
+window.pnPerAdd = function(org){
+  if(!pnTutto() || !pnPerOk(org)) return;
+  if(!PN.d.persone || typeof PN.d.persone !== 'object' || Array.isArray(PN.d.persone)) PN.d.persone = {};
+  const L = Array.isArray(PN.d.persone[org]) ? PN.d.persone[org] : (PN.d.persone[org] = []); if(L.length >= PN_PER_MAX) return;
+  const r = {id:pnUid(), nome:'', ruolo:'', mail:''}; L.push(r); pnTouch(); pnRender(); const f = $('pn-pn-' + r.id); if(f) f.focus();
+};
+window.pnPerSet = function(org, id, k, v){
+  if(!pnTutto() || !pnPerOk(org) || !['nome', 'ruolo', 'mail'].includes(k)) return;
+  const r = (((PN.d.persone || {})[org]) || []).find(x => x && x.id === id); if(!r) return;
+  r[k] = String(v == null ? '' : v).slice(0, k === 'nome' ? 80 : k === 'ruolo' ? 40 : 120); pnTouch();
+  if(k === 'mail'){ const b = $('pn-pmb-' + id); if(b) b.textContent = (r.mail.trim() && typeof clEmailOk === 'function' && !clEmailOk(r.mail.trim().toLowerCase())) ? 'Controlla l’email' : ''; }
+};
+window.pnPerDel = function(org, id){
+  if(!pnTutto() || !pnPerOk(org)) return; const L = ((PN.d.persone || {})[org]) || [], r = L.find(x => x && x.id === id);
+  if(r && (String(r.nome || '') + String(r.mail || '')).trim() && !confirm('Togliere ' + (String(r.nome || '').trim() || 'questa persona') + ' dall’elenco?')) return;
+  PN.d.persone[org] = L.filter(x => x && x.id !== id); pnTouch(); pnRender();
+};
+window.pnPerCopia = function(i){
+  const a = pnPerAllerte()[i]; if(!a) return; const nome = a.chi.split(' · ')[0];
+  const t = `Ciao ${nome}, nel Piano di Gruppo uso la tabella del tuo staff per i verbali e gli inviti. Puoi autorizzarmi? Nel tuo progetto di Unità, sotto la tabella dello staff, c’è «Chi vede la tabella del mio staff»: scrivi la mia email e premi «Autorizza». Vale anche per gli anni dopo, finché non la togli. Grazie!`;
+  try{ navigator.clipboard.writeText(t).then(() => clToast('Messaggio copiato'), () => prompt('Copia il messaggio', t)); }catch(e){ prompt('Copia il messaggio', t); }
+};
 function pnPdcElenco(){ return PN.p && PN.p.tipo === 'sezione' ? (PN.pdc || []).filter(x => x && pnSovrap(x) && ((x.obiettivi || []).length || (x.disponibilita || []).length)) : []; }
 const pnPdcNome = x => 'Progetto di Clan ' + x.anno_inizio + '-' + String(x.anno_inizio + (x.durata || 3) - 1).slice(2);
 function pnPdcHTML(){
@@ -21486,6 +21614,7 @@ body.sh-in .toast{pointer-events:none}
 .pn-ob.open .pn-ob-tg .pn-tri{transform:rotate(90deg)}
 .pn-ob-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.pn-ob-tx b{flex:none;padding:0}
 .pn-ob-sm{font-size:14px;line-height:1.4;overflow-wrap:anywhere}.pn-ob-mt{margin:0}
+.pn-per-r{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,2fr) 44px;gap:10px;align-items:start;margin-bottom:10px}.pn-per-r>div{min-width:0}.pn-per-r .pn-ib{margin-top:24px}.pn-per-r .st-bad{min-height:0}@media(max-width:900px){.pn-per-r{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px}.pn-per-r>div:nth-child(3){grid-column:1/-1;grid-row:2}.pn-per-r .pn-ib{grid-column:3;grid-row:1}}
 .vb-azr{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) minmax(0,11rem) 44px;gap:10px;align-items:end;margin-bottom:10px}.vb-azr>div{min-width:0}@media(max-width:900px){.vb-azr{grid-template-columns:minmax(0,1fr) minmax(0,11rem) 44px}.vb-azr>div:first-child{grid-column:1/-1}}
 .sh-g2>*{min-width:0}input[type=date].sh-in{min-width:0;max-width:100%;box-sizing:border-box}
 .pn-artx{display:block;font-size:12px;font-weight:600;color:var(--ink-mid);margin-top:1px}small.pn-artx{display:inline;font-weight:600}

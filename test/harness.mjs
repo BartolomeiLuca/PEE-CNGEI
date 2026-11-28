@@ -27,7 +27,7 @@ let clock = Date.parse('2026-10-12T10:00:00Z');
 const now = () => new Date(clock += 1000).toISOString();
 
 export class FakeDB {
-  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[], pee_revisioni:[], pee_revisioni_punto:[], pee_piani:[], pee_piani_membri:[], pee_piani_versioni:[], pee_piani_giri:[], pee_piani_contributi:[], pee_piani_giri_persona:[], pee_piani_voci_anonime:[], pee_piani_giri_registro:[], pee_verbali:[]}; this.sql14 = false; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
+  constructor(){ this.users = []; this.t = {pee_archivi:[], pee_membri:[], pee_versioni:[], pee_suggerimenti:[], pee_gruppi:[], pee_cambi_email:[], pee_archivio_nazionale:[], pee_profili:[], pee_giri:[], pee_giri_dest:[], pee_giri_rev:[], pee_giri_msg:[], pee_revisioni:[], pee_revisioni_punto:[], pee_piani:[], pee_piani_membri:[], pee_piani_versioni:[], pee_piani_giri:[], pee_piani_contributi:[], pee_piani_giri_persona:[], pee_piani_voci_anonime:[], pee_piani_giri_registro:[], pee_verbali:[], pee_staff_consensi:[]}; this.sql14 = false; this.ammessi = ['luca.bartolomei@cngei.it']; this.revAperto = false; this.pages = new Set(); this.mails = []; this.presence = {}; this.log = []; }
   revRuolo(uid, rid){ const v = this.t.pee_revisioni.find(x => x.id === rid); if(!v) return null; if(v.owner_id === uid) return 'titolare'; return this.t.pee_giri.some(g => g.archivio_id === v.archivio_id && this.giroRuolo(uid, g.id) === 'revisore') ? 'revisore' : null; }
   revAfterGiro(g){ if(!this.sql14) return; const a = this.t.pee_revisioni.find(x => x.archivio_id === g.archivio_id && x.stato === 'aperta'); if(a){ a.ultimo_giro_id = g.id; } else this.t.pee_revisioni.push({id:'rev' + Math.random().toString(36).slice(2), archivio_id:g.archivio_id, owner_id:g.owner_id, revisore_email:null, stato:'aperta', fase:'revisore', esito:null, primo_giro_id:g.id, ultimo_giro_id:g.id, nota_chiusura:'', aperta_il:now(), chiusa_il:null}); }
   revAfterNota(r, old){ if(!this.sql14 || r.tipo !== 'nota' || r.autore_ruolo === 'titolare' || !r.testo) return; const g = this.t.pee_giri.find(x => x.id === r.giro_id); const v = g && this.t.pee_revisioni.find(x => x.archivio_id === g.archivio_id && x.stato === 'aperta'); if(!v) return;
@@ -143,6 +143,10 @@ export class FakeDB {
       if(req.name === 'pee_pdc_per_senior') return this.pdcSenior(uid);
       if(req.name === 'pee_cal_sezione') return this.calSezione(req.args && req.args.p_anno, uid);
       if(req.name === 'pee_verbali_lista') return this.verbLista(req.args && req.args.p_anno, uid);
+      if(req.name === 'pee_staff_consenso_lista') return this.staffConsLista(uid);
+      if(req.name === 'pee_staff_consenso_imposta') return this.staffConsImposta(req.args && req.args.p_email, req.args && req.args.p_on, uid);
+      if(req.name === 'pee_staff_unita_visibili') return this.staffVisibili(req.args && req.args.p_anno, uid);
+      if(req.name === 'pee_staff_unita_attese') return this.staffAttese(uid);
       if(req.name === 'pee_segna_visto'){ const m = this.t.pee_membri.find(x => x.id === req.args.m && x.email === u.email); if(m){ m.visto_il = now(); this.emit('pee_membri', 'UPDATE', m); } return {data:null, error:null}; }
       if(req.name === 'pee_prepara_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const nuova = String(req.args.nuova||'').toLowerCase(); this.t.pee_cambi_email = this.t.pee_cambi_email.filter(x => x.user_id !== uid); this.t.pee_cambi_email.push({user_id:uid, vecchia:u.email, nuova}); return {data:null, error:null}; }
       if(req.name === 'pee_completa_cambio_email'){ if(!this.sql13) return this.err('PGRST202', 'Could not find the function'); const c = this.t.pee_cambi_email.find(x => x.user_id === uid && x.nuova === u.email); if(!c) return {data:0, error:null};
@@ -364,6 +368,37 @@ export class FakeDB {
     if(!this.verbPuo(pr, r.tipo)) return this.err('P0001', 'Con il tuo ruolo non puoi scrivere questo tipo di verbale.');
     r.owner_id = uid; r.sezione = String(pr.sezione).trim(); r.gruppo = String(pr.gruppo || '').trim(); r.autore_ruolo = pr.ruolo || ''; r.autore_nome = String((u && u.meta && u.meta.nome) || pr.nome || '').slice(0, 120);
     r.sez = !!r.sez && r.tipo === 'cos'; r.approvato_il = r.stato === 'approvato' ? (r.approvato_il || new Date().toISOString().slice(0, 10)) : null; r.updated_at = new Date().toISOString(); return null; }
+  // «Chi vede lo staff della mia Unità» (SQL del 28 novembre sera); db.sqlStaff = false per il database non aggiornato
+  staffConsLista(uid){
+    if(this.sqlStaff === false) return this.err('PGRST202', 'Could not find the function public.pee_staff_consenso_lista');
+    return {data:this.t.pee_staff_consensi.filter(c => c.owner_id === uid).map(c => ({email:c.email, created_at:c.created_at})), error:null}; }
+  staffConsImposta(email, on, uid){
+    if(this.sqlStaff === false) return this.err('PGRST202', 'Could not find the function public.pee_staff_consenso_imposta');
+    const m = String(email || '').trim().toLowerCase(), me = this.users.find(x => x.id === uid);
+    if(!/^.+@.+\..+$/.test(m)) return this.err('P0001', 'Controlla l\'email.'); if(me && me.email === m) return this.err('P0001', 'Non serve autorizzare te stesso.');
+    const T = this.t.pee_staff_consensi, ex = T.find(c => c.owner_id === uid && c.email === m);
+    if(on){ if(!ex){ if(T.filter(c => c.owner_id === uid).length >= 10) return this.err('P0001', 'Hai già autorizzato troppe persone: toglierne qualcuna prima.'); T.push({owner_id:uid, email:m, created_at:new Date().toISOString()}); } }
+    else if(ex) this.t.pee_staff_consensi = T.filter(c => c !== ex);
+    return {data:null, error:null}; }
+  staffVisibili(anno, uid){
+    if(this.sqlStaff === false) return this.err('PGRST202', 'Could not find the function public.pee_staff_unita_visibili');
+    const me = this.users.find(x => x.id === uid); if(!me) return this.err('P0001', 'Accesso necessario.');
+    const ay = anno != null ? anno : (() => { const d = new Date(); return d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1; })();
+    const out = [];
+    this.t.pee_staff_consensi.filter(g => g.email === me.email).forEach(g => {
+      const pr = this.t.pee_profili.find(x => x.user_id === g.owner_id) || {}, ou = this.users.find(x => x.id === g.owner_id) || {};
+      const ps = this.t.pee_archivi.filter(a => a.user_id === g.owner_id && a.anno === ay && (a.meta || {}).mode === 'giovani' && !(a.meta || {}).cest && !/^Esempio/i.test(a.titolo || '')).sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at))).slice(0, 5);
+      const base = {owner_id:g.owner_id, owner_nome:pr.nome || '', owner_mail:ou.email || '', owner_ruolo:pr.ruolo || ''};
+      if(!ps.length) out.push(Object.assign(base, {unita:null, fascia:null, anno:null, aggiornato:null, staff:[]}));
+      ps.forEach(a => { const tab = (((a.data || {}).scheda || {}).pp || {}).staffTab; out.push(Object.assign({}, base, {unita:(a.meta || {}).nome || (a.data || {}).UNIT_NAME || a.titolo, fascia:(a.meta || {}).fascia || null, anno:a.anno, aggiornato:a.updated_at,
+        staff:(Array.isArray(tab) ? tab : []).filter(e => e && typeof e === 'object' && (String(e.nome || '').trim() || String(e.mail || '').trim())).map(e => ({ruolo:String(e.ruolo || '').trim().slice(0, 40), nome:String(e.nome || '').trim().slice(0, 80), mail:(String(e.mail || '').trim().toLowerCase().split(/[\s,;]+/)[0] || '').slice(0, 120)}))})); });
+    });
+    return {data:out, error:null}; }
+  staffAttese(uid){
+    if(this.sqlStaff === false) return this.err('PGRST202', 'Could not find the function public.pee_staff_unita_attese');
+    const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase(), me = this.t.pee_profili.find(x => x.user_id === uid), mu = this.users.find(x => x.id === uid);
+    if(!me || !['cg', 'vcg'].includes(me.ruolo) || !norm(me.sezione) || !norm(me.gruppo)) return {data:[], error:null};
+    return {data:this.t.pee_profili.filter(p => p.user_id !== uid && p.ruolo === 'cu' && norm(p.sezione) === norm(me.sezione) && norm(p.gruppo) === norm(me.gruppo)).map(p => ({owner_id:p.user_id, nome:p.nome || '', ruolo:p.ruolo, branca:p.branca || '', autorizzato:this.t.pee_staff_consensi.some(g => g.owner_id === p.user_id && g.email === (mu && mu.email))})), error:null}; }
   verbLista(anno, uid){
     if(this.sqlVerb === false) return this.err('PGRST202', 'Could not find the function public.pee_verbali_lista');
     const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
