@@ -38,7 +38,7 @@ const rep = async (nome) => { const r = await over(); console.log(nome, JSON.str
 await A.ev(() => verbOpen()); await sleep(1200); await rep('elenco vuoto');
 await A.ev(() => verbNuovo()); await sleep(500); await rep('editor');
 await A.ev(() => { verbAzAdd(); verbAzAdd(); verbAzAdd(); verbSet('partecipanti', 'Ugo, Ugo Due, Carla Capogruppo, Dino Commissario, Piero Presidente, Sara Senior, Olga, Vera'); verbSet('odg', 'Uno\nDue\nTre\nQuattro'); verbSet('luogo', 'Sede del Gruppo in via Molto Lunga 123, Pesaro, primo piano'); verbAz(0,'testo','Preparare la lista del materiale per il campo estivo e verificare le disponibilità'); verbAz(0,'chi','Ugo Due'); }); await sleep(400);
-await A.ev(() => window.scrollTo(0, 0)); await rep('editor con azioni');
+await A.ev(() => { window.scrollTo(0, 0); document.querySelectorAll('*').forEach(e => { if(e.scrollTop > 0) e.scrollTop = 0; }); }); await sleep(300); await rep('editor con azioni');
 await A.ev(() => { verbSet('titolo', 'Staff di giugno'); verbSet('data', '2026-12-05'); verbSet('sintesi', 'Si è parlato del campo.'); verbSet('decisioni', 'Si va a luglio.'); verbSet('stato', 'condiviso', true); });
 await A.ev(() => { window.confirm = () => true; }); await A.P.click('#vb-salva'); await sleep(1500); await rep('dopo salvataggio');
 await A.ev(() => { const l = SH._verb.rows[0]; if(l) verbApri(l.id); }); await sleep(600); await rep('lettura');
