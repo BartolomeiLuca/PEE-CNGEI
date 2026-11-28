@@ -57,6 +57,12 @@ ok(pg.data.cal.length === 2 && pg.data.cal[0].titolo === 'Uscita di Gruppo' && p
 // Quadro: l'evento compare nel mese
 await G.ev(() => { pnObAdd(); PN.d.obiettivi[0].testo = 'Un obiettivo'; PN.qf = {vista:'cal', anno:1}; pnSez('qua'); }); await sleep(600);
 ok(await G.ev(() => { const t = document.querySelector('.pn-cal'); return !!t && /Uscita: Uscita di Gruppo/.test(t.textContent); }), 'il Quadro mostra l’evento nel suo mese');
+// 28/11: l'intestazione dell'obiettivo chiuso segue quello che scrivi, e l'area compare scritta (non solo colore) nella timeline
+await G.ev(() => { pnSez('obi'); }); await sleep(500);
+await G.ev(() => { const o = PN.d.obiettivi[0]; pnOb(o.id, 'testo', 'Curare la sede del Gruppo'); pnArea(o.id, 'gestionale', true); }); await sleep(300);
+ok(await G.ev(() => { const o = PN.d.obiettivi[0], g = document.getElementById('pn-obg-' + o.id); return !!g && /Curare la sede del Gruppo/.test(g.querySelector('.pn-ob-sm').textContent) && /Gestionale/.test(g.querySelector('.pn-ob-mt').textContent); }), 'obiettivo chiuso: titolo e area si aggiornano mentre scrivi (non «Senza testo»)');
+await G.ev(() => { PN.qf = {vista:'tl', anno:1}; pnSez('qua'); }); await sleep(500);
+ok(await G.ev(() => { const t = document.querySelector('.pn-tl'); return !!t && /Gestionale/.test(t.innerText); }), 'timeline: il nome dell’area è scritto');
 // eliminazione
 await G.ev(() => { pnSez('cal'); }); await sleep(300);
 await G.ev(() => { window.confirm = () => true; pnCalDel(PN.d.cal[1].id); }); await sleep(300);

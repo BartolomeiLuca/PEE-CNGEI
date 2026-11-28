@@ -15570,19 +15570,27 @@ function clToast(t){ if(typeof showToast==='function') showToast(t); }
 
 // ── livello dati (Supabase: tabella pee_archivi, protetta da RLS) ──
 const clTs = v => v ? Date.parse(v) : 0;
+// Una sola lettura condivisa tra chiamate ravvicinate (all'avvio erano 5 identiche): vale 0,3 secondi (le chiamate in contemporanea) e si azzera a ogni scrittura
+let _arcRaw = null, _memRaw = {};
+function dbArcInval(){ _arcRaw = null; _memRaw = {}; _shRaw = null; }
+function dbArcRaw(){
+  const uid = CL.user.id;
+  if(_arcRaw && _arcRaw.uid === uid && Date.now() - _arcRaw.t < 300) return _arcRaw.p;
+  const p = (async () => { const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').eq('user_id', uid); if(error) throw error; return data || []; })();
+  const rec = {uid, t:Date.now(), p}; _arcRaw = rec; p.catch(() => { if(_arcRaw === rec) _arcRaw = null; });
+  return p;
+}
 async function dbList(){
-  const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').eq('user_id', CL.user.id);
-  if(error) throw error;
+  const data = await dbArcRaw();
   return (data||[]).map(r => ({id:r.id, anno:r.anno, titolo:r.titolo, meta:r.meta||{}, ts:clTs(r.updated_at)})).filter(r => !(r.meta && (r.meta.cest || r.meta.mode === 'anno'))).sort((a,b) => b.anno - a.anno || b.ts - a.ts);
 }
 // ── cestino: un progetto eliminato resta recuperabile 30 giorni (segnato nei dati dell'archivio, nessuna modifica al database) ──
 const CL_TRASH_DAYS = 30;
 async function dbTrashList(){
-  const {data, error} = await CL.sb.from('pee_archivi').select('id,anno,titolo,meta,updated_at').eq('user_id', CL.user.id);
-  if(error) throw error;
+  const data = await dbArcRaw();
   return (data||[]).filter(r => r.meta && r.meta.cest).map(r => ({id:r.id, anno:r.anno, titolo:(r.meta.cest.titolo)||r.titolo, meta:r.meta, at:Number(r.meta.cest.at)||0})).sort((a,b) => b.at - a.at);
 }
-async function dbTrash(id){
+async function dbTrash(id){ dbArcInval();
   CL._arc = null; const {data, error} = await CL.sb.from('pee_archivi').select('anno,titolo,meta').eq('id', id).maybeSingle();
   if(error) throw error; if(!data) return;
   const meta = Object.assign({}, data.meta||{}); meta.cest = {at:Date.now(), titolo:data.titolo};
@@ -15590,7 +15598,7 @@ async function dbTrash(id){
   if(r.error) r = await CL.sb.from('pee_archivi').update({meta}).eq('id', id);
   if(r.error) throw r.error;
 }
-async function dbRestoreTrash(id){
+async function dbRestoreTrash(id){ dbArcInval();
   CL._arc = null; const {data, error} = await CL.sb.from('pee_archivi').select('titolo,meta').eq('id', id).maybeSingle();
   if(error) throw error; if(!data) return;
   const meta = Object.assign({}, data.meta||{}); const orig = (meta.cest&&meta.cest.titolo)||data.titolo; delete meta.cest;
@@ -15621,7 +15629,7 @@ async function dbTs(id){
   if(error) throw error;
   return data ? clTs(data.updated_at) : null;
 }
-async function dbInsert(anno, titolo, data, meta){
+async function dbInsert(anno, titolo, data, meta){ dbArcInval();
   CL._arc = null; const {data:r, error} = await CL.sb.from('pee_archivi').insert({anno, titolo, data, meta}).select('id,anno,titolo,updated_at').single();
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
   return {id:r.id, anno:r.anno, titolo:r.titolo, ts:clTs(r.updated_at)};
@@ -15632,7 +15640,7 @@ async function dbTsRaw(id){
   return data ? {ts:clTs(data.updated_at), raw:data.updated_at} : null;
 }
 // salva solo se nel frattempo nessun altro ha salvato (raw = l'ora dell'ultima versione letta); altrimenti 'stale'
-async function dbUpdate(id, data, meta, raw){
+async function dbUpdate(id, data, meta, raw){ dbArcInval();
   let q = CL.sb.from('pee_archivi').update({data, meta}).eq('id', id);
   if(raw) q = q.eq('updated_at', raw);
   const {data:r, error} = await q.select('updated_at');
@@ -15644,7 +15652,7 @@ async function dbUpdate(id, data, meta, raw){
   }
   return clTs(r[0].updated_at);
 }
-async function dbRename(id, titolo){
+async function dbRename(id, titolo){ dbArcInval();
   CL._arc = null; const {error} = await CL.sb.from('pee_archivi').update({titolo}).eq('id', id);
   if(error) throw error;
 }
@@ -15676,7 +15684,7 @@ async function dbVersionPrune(archId){
   const extra = auto.filter(r => !keep.has(r.id)).concat(manual.slice(12)).map(r => r.id);
   if(extra.length){ const {error} = await CL.sb.from('pee_versioni').delete().in('id', extra); if(error) throw error; }
 }
-async function dbDelete(id){
+async function dbDelete(id){ dbArcInval();
   CL._arc = null; const {error} = await CL.sb.from('pee_archivi').delete().eq('id', id);
   if(error) throw error;
 }
@@ -16204,28 +16212,38 @@ const clEditRole = r => clEditOn() && (r === 'cotitolare' || r === 'collaborator
 const clRoleOpts = sel => Object.keys(CL_RUOLI).filter(k => !(CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare' && sel !== 'cotitolare') && (k !== 'commissario' || sel === 'commissario' || clCommOffer())).map(k => { const off = CL.ctx && CL.ctx.ruolo === 'cotitolare' && k === 'cotitolare'; return `<option value="${k}" ${k===sel?'selected':''} ${off?'disabled':''}>${CL_RUOLI[k]}</option>`; }).join('');
 async function clRolesOk(){
   if(CL.roles !== undefined) return CL.roles;
+  if(CL._rolesP) return CL._rolesP;   // chiamate in contemporanea: una sola prova
+  const pr = clRolesProbe(); CL._rolesP = pr; try{ return await pr; } finally { if(CL._rolesP === pr) CL._rolesP = null; }
+}
+async function clRolesProbe(){
+  if(CL.roles !== undefined) return CL.roles;
   // 11/11: «i ruoli non ci sono» si ricorda solo se lo dice il database (colonna mancante); un errore di rete non deve far passare tutti per lettori fino alla ricarica della pagina
   try{ const {error} = await CL.sb.from('pee_membri').select('ruolo,visto_il').limit(1);
     if(!error) CL.roles = true; else if(error.code === '42703' || error.code === 'PGRST204' || /column|colonna|does not exist|schema cache/i.test(error.message || '')) CL.roles = false; else return false; }catch(e){ return false; }
   return CL.roles;
 }
 async function dbMembri(id){
-  const roles = await clRolesOk();
-  const {data, error} = await CL.sb.from('pee_membri').select('id,email,created_at,owner_email' + (roles ? ',ruolo,visto_il' : '')).eq('archivio_id', id).order('created_at');
-  if(error) throw error; return data||[];
+  const r0 = _memRaw[id]; if(r0 && Date.now() - r0.t < 300) return (await r0.p).slice();
+  const p = (async () => {
+    const roles = await clRolesOk();
+    const {data, error} = await CL.sb.from('pee_membri').select('id,email,created_at,owner_email' + (roles ? ',ruolo,visto_il' : '')).eq('archivio_id', id).order('created_at');
+    if(error) throw error; return data||[];
+  })();
+  const rec = {t:Date.now(), p}; _memRaw[id] = rec; p.catch(() => { if(_memRaw[id] === rec) delete _memRaw[id]; });
+  return (await p).slice();
 }
-async function dbInvite(id, email, ruolo){
+async function dbInvite(id, email, ruolo){ dbArcInval();
   const me = (CL.user&&CL.user.email)||'';
   const row = {archivio_id:id, email, owner_email: (CL.ctx && CL.ctx.ruolo === 'cotitolare' && clOwnerMail()) ? CL.ctx.owner : (clMyName() ? clMyName() + ' (' + me + ')' : me)};
   if(ruolo && await clRolesOk()) row.ruolo = ruolo;
-  const {error} = await CL.sb.from('pee_membri').insert(row);
+  const {error} = await CL.sb.from('pee_membri').insert(row); dbArcInval();
   if(error){ if(error.code === '23505' || /duplicate|unique/i.test(error.message||'')) throw new Error('duplicate'); throw error; }
 }
-async function dbSetRole(mid, ruolo){ const {error} = await CL.sb.from('pee_membri').update({ruolo, visto_il:null}).eq('id', mid); if(error) throw error; }
-async function dbSeen(mid){ try{ await CL.sb.rpc('pee_segna_visto', {m:mid}); }catch(e){} }
+async function dbSetRole(mid, ruolo){ dbArcInval(); const {error} = await CL.sb.from('pee_membri').update({ruolo, visto_il:null}).eq('id', mid); dbArcInval(); if(error) throw error; }
+async function dbSeen(mid){ dbArcInval(); try{ await CL.sb.rpc('pee_segna_visto', {m:mid}); }catch(e){} dbArcInval(); }
 // l'invito risulta «visto» comunque si apra il progetto condiviso (elenco, «Continua qui», riapertura automatica)
 async function clMarkSeen(id, force){ try{ if(!CL.sb || !CL.user || !id) return; CL._seenSent = CL._seenSent || {}; if(CL._seenSent[id] && !force) return; const it = (await dbShared()).find(x => x.id === id); if(!it) return; CL._seenSent[id] = 1; if(it.nuovo) await dbSeen(it.mid); }catch(e){} }
-async function dbRevoke(mid){ const {error} = await CL.sb.from('pee_membri').delete().eq('id', mid); if(error) throw error; }
+async function dbRevoke(mid){ dbArcInval(); const {error} = await CL.sb.from('pee_membri').delete().eq('id', mid); dbArcInval(); if(error) throw error; }
 
 // ══ Piani: Piano di Gruppo, Progetto di Clan, Progetto di Sezione — livello dati (23/11) ══
 // Tre tabelle proprie (SQL del 23 novembre): pee_piani (un documento per piano), pee_piani_membri (inviti al PIANO, separati da quelli al progetto),
@@ -16381,7 +16399,15 @@ const PIANI = {
   async personaN(g){ const {data, error} = await CL.sb.from('pee_piani_giri_persona').select('id').eq('giro_id', g); if(error) throw error; return (data || []).length; },
   async registro(g){ const {data, error} = await CL.sb.from('pee_piani_giri_registro').select('data').eq('giro_id', g).maybeSingle(); if(error) throw error; return data ? data.data : null; }
 };
+let _shRaw = null;
 async function dbShared(){
+  const uid = CL.user.id;
+  if(!(_shRaw && _shRaw.uid === uid && Date.now() - _shRaw.t < 300)){
+    const p = dbSharedRaw(), rec = {uid, t:Date.now(), p}; _shRaw = rec; p.catch(() => { if(_shRaw === rec) _shRaw = null; });
+  }
+  return (await _shRaw.p).map(x => Object.assign({}, x));
+}
+async function dbSharedRaw(){
   const roles = await clRolesOk();
   const {data, error} = await CL.sb.from('pee_membri').select('id,archivio_id,owner_email' + (roles ? ',ruolo,visto_il' : '')).eq('email', clLc(CL.user.email));
   if(error) throw error; const rows = data||[]; if(!rows.length) return [];
@@ -19148,7 +19174,7 @@ function verbEdHTML(){
     <fieldset class="pn-fs" style="border:0;padding:0;margin:0"><legend class="sh-lb">Come ci si è incontrati</legend><div class="pn-chips"><label class="pn-chip${e.modalita === 'presenza' ? ' on' : ''}"><input type="radio" name="vb-modo" id="vb-modo-p" value="presenza" ${e.modalita === 'presenza' ? 'checked' : ''} onchange="verbSet('modalita','presenza',true)">In presenza</label><label class="pn-chip${e.modalita === 'online' ? ' on' : ''}"><input type="radio" name="vb-modo" id="vb-modo-o" value="online" ${e.modalita === 'online' ? 'checked' : ''} onchange="verbSet('modalita','online',true)">Online</label></div></fieldset>
     <div><label class="sh-lb" for="vb-luogo">${e.modalita === 'online' ? 'Piattaforma o link' : 'Dove'}</label><input class="sh-in" id="vb-luogo" maxlength="200" placeholder="${e.modalita === 'online' ? 'es. Meet, Zoom' : 'es. Sede del Gruppo'}" value="${E(e.luogo || '')}" oninput="verbSet('luogo',this.value)"></div>
     ${ta('partecipanti', 'Chi c’era', 2, 'Nomi degli adulti presenti e di chi era assente')}${ta('odg', 'Ordine del giorno', 3, 'Un punto per riga')}${ta('sintesi', 'Cosa è emerso', 6, 'La discussione in sintesi')}${ta('decisioni', 'Decisioni', 3, 'Cosa si è deciso')}
-    <div><h3 style="margin:0 0 6px;font-size:15px">Azioni</h3>${(e.azioni || []).map((a, i) => `<div class="sh-g2" style="align-items:end;margin-bottom:6px"><div><label class="sh-lb" for="vb-az-c-${i}">Cosa</label><input class="sh-in" id="vb-az-c-${i}" maxlength="400" value="${E(a.cosa || '')}" oninput="verbAz(${i},'cosa',this.value)"></div><div style="display:flex;gap:8px;align-items:end"><div style="flex:1"><label class="sh-lb" for="vb-az-w-${i}">Chi</label><input class="sh-in" id="vb-az-w-${i}" maxlength="120" value="${E(a.chi || '')}" oninput="verbAz(${i},'chi',this.value)"></div><div><label class="sh-lb" for="vb-az-e-${i}">Entro</label><input class="sh-in" type="date" id="vb-az-e-${i}" value="${E(a.entro || '')}" onchange="verbAz(${i},'entro',this.value)"></div><button class="pn-ib" type="button" aria-label="Elimina l’azione ${i + 1}" onclick="verbAzDel(${i})">✕</button></div></div>`).join('')}<button class="pn-sug" type="button" id="vb-az-add" onclick="verbAzAdd()">+ Azione</button></div>
+    <div><h3 style="margin:0 0 6px;font-size:15px">Azioni</h3>${(e.azioni || []).map((a, i) => `<div class="vb-azr"><div><label class="sh-lb" for="vb-az-c-${i}">Cosa</label><input class="sh-in" id="vb-az-c-${i}" maxlength="400" value="${E(a.cosa || '')}" oninput="verbAz(${i},'cosa',this.value)"></div><div><label class="sh-lb" for="vb-az-w-${i}">Chi</label><input class="sh-in" id="vb-az-w-${i}" maxlength="120" value="${E(a.chi || '')}" oninput="verbAz(${i},'chi',this.value)"></div><div><label class="sh-lb" for="vb-az-e-${i}">Entro</label><input class="sh-in" type="date" id="vb-az-e-${i}" value="${E(a.entro || '')}" onchange="verbAz(${i},'entro',this.value)"></div><button class="pn-ib" type="button" aria-label="Elimina l’azione ${i + 1}" onclick="verbAzDel(${i})">✕</button></div>`).join('')}<button class="pn-sug" type="button" id="vb-az-add" onclick="verbAzAdd()">+ Azione</button></div>
     <div style="max-width:260px"><label class="sh-lb" for="vb-prossima">Prossima riunione</label><input class="sh-in" type="date" id="vb-prossima" value="${E(e.prossima || '')}" onchange="verbSet('prossima',this.value)"></div>
     ${e.tipo === 'cos' ? `<label class="pn-chip sm${e.sez ? ' on' : ''}"><input type="checkbox" id="vb-sez" ${e.sez ? 'checked' : ''} onchange="verbSet('sez',this.checked,true)">Visibile a tutta la Sezione</label>` : ''}
     <div><label class="sh-lb" for="vb-stato">Stato</label><select class="sh-in" id="vb-stato" onchange="verbSet('stato',this.value,true)">${VERB_STATI.map(([k, t]) => `<option value="${k}"${e.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
@@ -20435,6 +20461,7 @@ function pnAzHTML(a, j, p){
 const PN_COL = {educativa:['#2E7D5A', '#E3F1EA'], formativa:['#B06A00', '#FFF3E0'], gestionale:['#2C3E7A', '#E8ECFA'], sviluppo:['#7A2C6B', '#F4E6F1'], territorio:['#0F7C8A', '#DDF1F3']};
 const PN_ST_SEG = {da_iniziare:['○', 'Da iniziare'], in_corso:['◐', 'In corso'], fatta:['●', 'Fatta']};
 const pnColOb = o => (PN_COL[(o.aree || [])[0]] || ['#6B6B64', '#F0F0EA']);
+const pnArTx = o => (o.aree || []).map(k => pnLab(PN_AREE, k)).filter(Boolean).join(', ');   // il nome dell'area scritto: il colore da solo non basta
 const pnAreaChip = k => { const c = PN_COL[k] || ['#6B6B64', '#F0F0EA']; return `<span class="pn-ac" style="--c:${c[0]};--p:${c[1]}">${esc(pnLab(PN_AREE, k))}</span>`; };
 function pnVerTxt(a){ return (a.verifica === 'ogni' || !a.verifica ? 'Ogni anno' : 'Fine anno ' + a.verifica) + (a.step ? ' · ' + (a.step === 'meta' ? 'anche a metà anno' : 'a ogni Consiglio di Gruppo') : ''); }
 // le azioni di ogni obiettivo, nell’ordine del tempo (prima quelle col mese più vicino, in coda quelle senza mese), con i filtri scelti
@@ -20551,7 +20578,7 @@ function pnQTimeline(R){
     <div class="pn-tl-r pn-tl-v"><div class="pn-tl-l"><b>Verifiche</b></div><div class="pn-tl-g">${T.map(x => `<span class="pn-tv${x.t.fatta ? ' fatta' : ''}${x.sug ? ' sug' : ''}" style="left:${(((x.s + (x.gg ? (x.gg - 1) / 30 : .5)) / N) * 100).toFixed(3)}%" title="${E(pnQTappaTxt(x))}" role="img" aria-label="${E(pnQTappaTxt(x))}"></span>`).join('')}</div></div>${C.length ? `<div class="pn-tl-r pn-tl-v"><div class="pn-tl-l"><b>Consigli di Gruppo</b></div><div class="pn-tl-g">${C.map(x => `<span class="pn-tc${x.t.fatta ? ' fatta' : ''}" style="left:${(((x.s + (x.gg - 1) / 30) / N) * 100).toFixed(3)}%" title="${E(pnQTappaTxt(x))}" role="img" aria-label="${E(pnQTappaTxt(x))}"></span>`).join('')}</div></div>` : ''}`;
   R.forEach(({o, i, az}) => {
     const c = pnColOb(o);
-    h += `<div class="pn-tl-r pn-tl-o" style="--c:${c[0]};--p:${c[1]}"><div class="pn-tl-l"><span class="pn-qn">${i + 1}</span><a href="#pn-ob-${E(o.id)}" onclick="pnVai('${E(o.id)}');return false">${E(o.testo || '(senza testo)')}</a></div><div class="pn-tl-g"></div></div>`;
+    h += `<div class="pn-tl-r pn-tl-o" style="--c:${c[0]};--p:${c[1]}"><div class="pn-tl-l"><span class="pn-qn">${i + 1}</span><a href="#pn-ob-${E(o.id)}" onclick="pnVai('${E(o.id)}');return false">${E(o.testo || '(senza testo)')}</a>${pnArTx(o) ? `<span class="pn-artx">${E(pnArTx(o))}</span>` : ''}</div><div class="pn-tl-g"></div></div>`;
     if(!az.length) h += `<div class="pn-tl-r pn-tl-a"><div class="pn-tl-l"><span class="pn-no">Nessuna azione ancora.</span></div><div class="pn-tl-g"></div></div>`;
     az.forEach(a => {
       const x = ev.find(y => y.a === a), st = a.stato || 'da_iniziare', quando = pnQuando(a, p), tx = (a.testo || '(senza testo)') + ': ' + quando + ', ' + (PN_ST_SEG[st] || PN_ST_SEG.da_iniziare)[1].toLowerCase();
@@ -20582,7 +20609,7 @@ function pnQLista(ev, sciolte, T, C){
     if(r.t === 'v') h += `<li class="v"><span aria-hidden="true">◇</span> ${E(pnQTappaTxt(r.x))}</li>`;
     else if(r.t === 'w') h += `<li class="v"><span aria-hidden="true">▲</span> ${E(pnQTappaTxt(r.x))}</li>`;
     else { const a = r.x.a, c = pnColOb(r.x.o), st = PN_ST_SEG[a.stato || 'da_iniziare'] || PN_ST_SEG.da_iniziare;
-      h += `<li class="a" style="--c:${c[0]}"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}<small>${E(pnQuando(a, p))}${(a.ref || '').trim() ? ' · ' + E(a.ref) : ''} · <span aria-hidden="true">${st[0]}</span> ${E(st[1])}</small></li>`; }
+      h += `<li class="a" style="--c:${c[0]}"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a>${a.urgente ? ' <span class="pn-urg">★ Urgente</span>' : ''}<small>${pnArTx(r.x.o) ? E(pnArTx(r.x.o)) + ' · ' : ''}${E(pnQuando(a, p))}${(a.ref || '').trim() ? ' · ' + E(a.ref) : ''} · <span aria-hidden="true">${st[0]}</span> ${E(st[1])}</small></li>`; }
   });
   if(cur !== -2) h += `</ul>`;
   if(sciolte.length) h += `<h3 class="pn-tl-mh">Mese da scegliere</h3><ul class="pn-tl-ul">${sciolte.map(({a}) => `<li class="a"><a href="#pn-az-${E(a.id)}" onclick="pnVaiAz('${E(a.id)}');return false">${E(a.testo || '(senza testo)')}</a><small><span class="pn-manca">${E(pnQuando(a, p))}</span></small></li>`).join('')}</ul>`;
@@ -20596,7 +20623,7 @@ function pnQCal(R){
   M.forEach((m, gi) => {
     if(m.anno !== anno) return;
     const li = [];
-    ev.forEach(x => { const c = pnColOb(x.o), t = E(x.a.testo || '(senza testo)'), L = (ic, pre) => `<li style="--c:${c[0]}"><span aria-hidden="true" class="pn-ci">${ic}</span> <a href="#pn-az-${E(x.a.id)}" onclick="pnVaiAz('${E(x.a.id)}');return false">${pre}${t}</a>${x.a.urgente ? ' <span class="pn-urg">★</span>' : ''}</li>`;
+    ev.forEach(x => { const c = pnColOb(x.o), t = E(x.a.testo || '(senza testo)'), L = (ic, pre) => `<li style="--c:${c[0]}"><span aria-hidden="true" class="pn-ci">${ic}</span> <a href="#pn-az-${E(x.a.id)}" onclick="pnVaiAz('${E(x.a.id)}');return false">${pre}${t}</a>${x.a.urgente ? ' <span class="pn-urg">★</span>' : ''}${pnArTx(x.o) ? ` <small class="pn-artx">· ${E(pnArTx(x.o))}</small>` : ''}</li>`;
       if(x.a.tipo !== 'cont'){ if(x.s === gi) li.push(L('◆', '')); }
       else { if(x.s === gi) li.push(L('▶', 'Inizia: ')); if(x.fineMese && x.e === gi && x.e !== x.s) li.push(L('■', 'Finisce: ')); } });
     const corso = ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e > gi).length + ev.filter(x => x.a.tipo === 'cont' && x.s < gi && x.e === gi && !x.fineMese).length;
@@ -20629,7 +20656,19 @@ window.pnVaiAz = function(id){
 };
 
 // ── quadro sinottico e avvisi gentili ──
+// l'intestazione dell'obiettivo (chiuso) segue quello che scrivi: testo, aree, numero di azioni
+function pnObSync(){
+  const d = PN.d; if(!d) return;
+  d.obiettivi.forEach(o => {
+    const g = $('pn-obg-' + o.id); if(!g) return; const sm = g.querySelector('.pn-ob-sm'), mt = g.querySelector('.pn-ob-mt'); if(!sm && !mt) return;
+    const t = String(o.testo || '').replace(/\s+/g, ' ').trim(), az = d.azioni.filter(a => a.ob === o.id), n = az.length, f = az.filter(a => a.stato === 'fatta').length;
+    const ar = (o.aree || []).map(k => pnLab(PN_AREE, k)).filter(Boolean).join(', ');
+    if(sm) sm.textContent = t ? (t.length > 110 ? t.slice(0, 107) + '…' : t) : 'Senza testo';
+    if(mt) mt.textContent = (ar ? ar + ' · ' : '') + (n ? n + (n === 1 ? ' azione' : ' azioni') + (f ? ' · ' + f + ' fatte' : '') : 'nessuna azione');
+  });
+}
 function pnRefresh(){
+  try{ pnObSync(); }catch(e){}
   const s = $('pn-sin'), av = $('pn-avv'), avo = $('pn-avv-o'); if(!PN.p || (!s && !av && !avo)) return; const d = PN.d, E = esc;
   if(s){ if(!d.obiettivi.length){ s.innerHTML = `<p class="sh-sub" style="margin:0">Il quadro compare quando scrivi il primo obiettivo: righe gli obiettivi, colonne le aree.</p>`; }
   else {
@@ -21447,6 +21486,9 @@ body.sh-in .toast{pointer-events:none}
 .pn-ob.open .pn-ob-tg .pn-tri{transform:rotate(90deg)}
 .pn-ob-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.pn-ob-tx b{flex:none;padding:0}
 .pn-ob-sm{font-size:14px;line-height:1.4;overflow-wrap:anywhere}.pn-ob-mt{margin:0}
+.vb-azr{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) minmax(0,11rem) 44px;gap:10px;align-items:end;margin-bottom:10px}.vb-azr>div{min-width:0}@media(max-width:900px){.vb-azr{grid-template-columns:minmax(0,1fr) minmax(0,11rem) 44px}.vb-azr>div:first-child{grid-column:1/-1}}
+.sh-g2>*{min-width:0}input[type=date].sh-in{min-width:0;max-width:100%;box-sizing:border-box}
+.pn-artx{display:block;font-size:12px;font-weight:600;color:var(--ink-mid);margin-top:1px}small.pn-artx{display:inline;font-weight:600}
 .pn-ob.open .pn-ob-sm{display:none}
 .pn-ob-b[hidden]{display:none}
 .pn-az-h .pn-ta{flex:1}.pn-an-h .sh-in{flex:1}
