@@ -20859,6 +20859,7 @@ const PN_CAL_MODO = [['', 'Da decidere'], ['presenza', 'In presenza'], ['online'
 const pnCalModoTxt = e => e && e.modo === 'online' ? 'online' : e && e.modo === 'presenza' ? 'in presenza' : '';
 function pnCalHTML(){
   const E = esc, d = PN.d, tutto = pnTutto(), dis = tutto ? '' : ' disabled', T = pnCalTipi(), tp = PN.p.tipo;
+  if(tp === 'gruppo' && tutto && PER.pid !== PN.p.id && PER.st !== 'carico') pnPerCarica();
   const org = tp === 'gruppo' ? 'del Gruppo' : tp === 'clan' ? 'del Clan' : 'della Sezione';
   let h = `<section class="pn-card" aria-labelledby="pn-cal-t"><h2 class="pn-h" id="pn-cal-t">Calendario ${org}</h2>
     <p class="sh-hint" style="margin:0">Gli appuntamenti per gli adulti: uscite, bivacchi, campi, consigli e così via. Salgono da soli al calendario della Sezione, con solo titolo, date e tipo, tutti tranne le riunioni e quelli che segni «Riservato». Le date dei Consigli di Gruppo e delle verifiche stanno in «Verifiche».</p>
@@ -20872,6 +20873,7 @@ function pnCalHTML(){
       <div><label class="sh-lb" for="pn-cef-${id}">Data di fine (se dura più giorni)</label><input class="sh-in" type="date" id="pn-cef-${id}" value="${E(e.d2 || '')}"${e.d1 ? ` min="${E(e.d1)}"` : ''} onchange="pnCalSet('${id}','d2',this.value)"${dis}></div></div>
       ${err ? '<p class="sh-msg err" role="alert" style="display:block;margin:6px 0 0">La data di fine è prima di quella di inizio.</p>' : ''}
       ${PN_CAL_RIU.includes(e.tipo) ? `<div style="max-width:260px"><label class="sh-lb" for="pn-cem-${id}">Come ci si incontra</label><select class="sh-in" id="pn-cem-${id}" onchange="pnCalSet('${id}','modo',this.value)"${dis}>${PN_CAL_MODO.map(([k, t]) => `<option value="${k}"${(e.modo || '') === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>` : ''}
+      ${pnCalInvHTML(e, dis)}
       <label class="pn-chip sm${e.ris ? ' on' : ''}" style="margin-top:6px"><input type="checkbox" id="pn-cer-${id}" ${e.ris ? 'checked' : ''} onchange="pnCalSet('${id}','ris',this.checked)"${dis}>Riservato</label>
       <p class="sh-hint" style="margin:4px 0 0" id="pn-ces-${id}">${E(pnCalStato(e))}</p>
       <textarea class="sh-in pn-ta" aria-label="Note dell’evento ${i + 1} (restano nel piano)" rows="2" maxlength="300" placeholder="Note (restano nel piano)" oninput="pnCalSet('${id}','nota',this.value,true);pnGrow(this)"${dis}>${E(e.nota || '')}</textarea></div>${tutto ? `<div class="pn-col"><button class="pn-ib" type="button" aria-label="Elimina l’evento ${i + 1}" onclick="pnCalDel('${id}')">✕</button></div>` : ''}</div>`; });
@@ -20898,6 +20900,24 @@ window.pnCalSet = function(id, k, v, soft){
   pnTouch();
   if(soft){ const s = $('pn-ces-' + id); if(s) s.textContent = pnCalStato(e); return; }
   pnRender(); const f = $('pn-' + ({tipo:'cet', d1:'ced', d2:'cef', ris:'cer', modo:'cem'}[k] || 'cex') + '-' + id); if(f) f.focus();
+};
+// Invitati: persone degli organi del piano (le tabelle di «Chi fa parte»); restano nel piano, non salgono al calendario della Sezione
+const pnPerTutte = () => { const seen = new Set(), out = []; (PN_PER_ORGANI[PN.p.tipo] || []).forEach(([org]) => pnPerRighe(org).forEach(r => { const k = r.mail || ('n:' + r.nome.toLowerCase()); if(r.nome && !seen.has(k)){ seen.add(k); out.push(r); } })); return out; };
+function pnCalInvHTML(e, dis){
+  const E = esc, L = pnPerTutte(), inv = Array.isArray(e.inv) ? e.inv : [], id = E(e.id), n = inv.length;
+  if(!L.length && !n) return `<p class="sh-hint" style="margin:6px 0 0">Per invitare persone scrivile prima in «Chi fa parte».</p>`;
+  const extra = inv.filter(x => !L.some(r => r.nome === x));
+  return `<details class="pn-inv" style="margin-top:6px"${n ? ' open' : ''}><summary>Invitati${n ? ' (' + n + ')' : ''}</summary><div class="pn-chips" role="group" aria-label="Invitati">${L.map((r, i) => `<button type="button" class="pn-chip sm${inv.includes(r.nome) ? ' on' : ''}" aria-pressed="${inv.includes(r.nome) ? 'true' : 'false'}" onclick="pnCalInv('${id}',${i})"${dis}>${E(r.nome)}</button>`).join('')}${extra.map(x => `<span class="pn-chip sm on">${E(x)}</span>`).join('')}${dis ? '' : `<button type="button" class="pn-chip sm" onclick="pnCalInvTutti('${id}')">Tutti</button>`}</div></details>`;
+}
+window.pnCalInv = function(id, i){
+  const e = (PN.d.cal || []).find(x => x.id === id), r = pnPerTutte()[i]; if(!e || !r || !pnTutto()) return;
+  const inv = Array.isArray(e.inv) ? e.inv.slice() : [], k = inv.indexOf(r.nome); if(k >= 0) inv.splice(k, 1); else if(inv.length < 60) inv.push(r.nome);
+  e.inv = inv; pnTouch(); pnRender();
+};
+window.pnCalInvTutti = function(id){
+  const e = (PN.d.cal || []).find(x => x.id === id); if(!e || !pnTutto()) return;
+  const inv = Array.isArray(e.inv) ? e.inv.slice() : []; pnPerTutte().forEach(r => { if(!inv.includes(r.nome) && inv.length < 60) inv.push(r.nome); });
+  e.inv = inv; pnTouch(); pnRender();
 };
 window.pnCalDel = function(id){ if(!pnTutto()) return; const e = PN.d.cal.find(x => x.id === id); if(e && ((e.titolo || '') + (e.nota || '')).trim() && !confirm('Eliminare questo appuntamento?')) return; PN.d.cal = PN.d.cal.filter(x => x.id !== id); pnTouch(); pnRender(); };
 // ── Chi fa parte (28/11 sera): le persone degli organi, dentro il piano. Per il Gruppo anche lo staff delle Unità che hanno autorizzato il Capo Gruppo ──

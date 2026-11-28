@@ -1,0 +1,33 @@
+// 28/11 sera: invitati agli appuntamenti del calendario, dalle tabelle di «Chi fa parte».
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(process.argv[2] || 'chromium'); const db = new FakeDB();
+const U = {}; const prof2 = (k, nome, ruolo) => { U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:ruolo === 'cu' ? 'E' : '', sezione:'Pesaro', gruppo:['cg', 'cu'].includes(ruolo) ? 'Pesaro 1' : '', area_rcdf:'altoadriatico'}); };
+prof2('cg', 'Carla CG', 'cg'); prof2('cu', 'Ugo CU', 'cu');
+const mk = async k => { const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); await pa.page.clock.setFixedTime(new Date('2026-12-10T10:00:00+01:00')); await loginAs(pa.page, base, U[k]); await sleep(2200); return {P:pa.page, ev:(f, a) => pa.page.evaluate(f, a)}; };
+const errs = [];
+db.t.pee_archivi.push({id:'a-cu', user_id:U.cu.id, anno:2026, titolo:'Reparto Aquile', updated_at:new Date().toISOString(), meta:{mode:'giovani', nome:'Reparto Aquile', fascia:'E'}, data:{scheda:{pp:{staffTab:[{ruolo:'VCU', nome:'Bea Verdi', mail:'bea@x.it'}]}}}});
+db.t.pee_staff_consensi.push({owner_id:U.cu.id, email:'cg@x.it', created_at:new Date().toISOString()});
+const G = await mk('cg'); G.P.on('pageerror', e => errs.push('cg: ' + e.message));
+await G.ev(() => pnNuovo('gruppo')); await sleep(400); await G.P.click('#pn-n-ok'); await sleep(2200);
+await G.ev(() => pnSez('cal')); await sleep(500);
+await G.ev(() => pnCalAdd('riunione')); await sleep(500);
+ok(await G.ev(() => /Per invitare persone scrivile prima in «Chi fa parte»|Bea Verdi/.test(document.querySelector('.pn-ce').textContent)), 'evento: invitati proposti dalle Unità o invito a compilare «Chi fa parte»');
+await sleep(1200);
+await G.ev(() => { pnSez('per'); }); await sleep(600); await G.ev(() => pnPerAdd('cdg')); await sleep(300);
+await G.ev(() => { const r = PN.d.persone.cdg[0]; pnPerSet('cdg', r.id, 'nome', 'Gino Neri'); pnPerSet('cdg', r.id, 'mail', 'gino@x.it'); });
+await G.ev(() => pnSez('cal')); await sleep(700);
+ok(await G.ev(() => [...document.querySelectorAll('.pn-ce .pn-inv .pn-chip')].map(b => b.textContent).join('|') === 'Gino Neri|Bea Verdi|Tutti'), 'invitati: persone del Consiglio di Gruppo + staff delle Unità · ' + await G.ev(() => [...document.querySelectorAll('.pn-ce .pn-inv .pn-chip')].map(b => b.textContent).join('|')));
+await G.ev(() => pnCalInv(PN.d.cal[0].id, 1)); await sleep(300);
+ok(await G.ev(() => JSON.stringify(PN.d.cal[0].inv) === '["Bea Verdi"]' && /Invitati \(1\)/.test(document.querySelector('.pn-ce summary').textContent)), 'un tocco: invitato, e il numero compare');
+await G.ev(() => pnCalInvTutti(PN.d.cal[0].id)); await sleep(300);
+ok(await G.ev(() => JSON.stringify(PN.d.cal[0].inv) === '["Bea Verdi","Gino Neri"]'), '«Tutti»: aggiunge chi manca');
+await G.ev(() => pnCalInv(PN.d.cal[0].id, 0)); await sleep(300);
+ok(await G.ev(() => JSON.stringify(PN.d.cal[0].inv) === '["Bea Verdi"]'), 'secondo tocco: toglie');
+// l'invitato non esce dal piano: l'evento sale al calendario di Sezione solo con titolo/date/tipo
+await G.ev(() => { pnCalSet(PN.d.cal[0].id, 'tipo', 'uscita'); pnCalSet(PN.d.cal[0].id, 'titolo', 'Uscita di Gruppo', true); pnCalSet(PN.d.cal[0].id, 'd1', '2027-02-10'); }); await sleep(2500);
+const pi = db.t.pee_piani[0]; ok(pi && pi.data.cal[0].inv.length === 1 && pi.data.cal[0].inv[0] === 'Bea Verdi', 'invitati salvati nel piano');
+await G.ev(() => pnCalDel(PN.d.cal[0].id)); 
+ok(errs.length === 0, 'nessun errore di pagina · ' + errs.join(' | '));
+await br.close(); process.exit(summary() ? 1 : 0);
