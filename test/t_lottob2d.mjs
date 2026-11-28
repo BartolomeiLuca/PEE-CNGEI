@@ -34,7 +34,7 @@ ok(sect.length === 2, 'Word: due sezioni (verticale e orizzontale) — ' + sect.
 ok(/w:orient="landscape"/.test(sect[sect.length - 1]) && !/w:orient="landscape"/.test(sect[0]), 'Word: l’ultima sezione è orizzontale, la prima no');
 const wh = (sect[sect.length - 1].match(/<w:pgSz[^>]*>/) || [''])[0]; ok(/w:w="16838"/.test(wh) && /w:h="11906"/.test(wh), 'Word: pagina orizzontale A4 (' + wh + ')');
 // 3. contenuto e colori del Quadro
-const i0 = t.indexOf('Quadro del Piano'); ok(i0 > t.indexOf('Quadro sinottico'), 'Word: «Quadro del Piano» viene dopo la parte discorsiva');
+const i0 = t.indexOf('Chi, cosa, quando'); ok(i0 > t.indexOf('Quadro sinottico'), 'Word: «Chi, cosa, quando» viene dopo la parte discorsiva');
 const q = t.slice(i0);
 ok(/Due serate con le famiglie/.test(q) && /Un bivacco di Gruppo/.test(q) && /Vera Vice/.test(q) && /Consiglio di Gruppo, Unità/.test(q) && /con i genitori/.test(q) && /da ottobre 2026 a maggio 2027/.test(q), 'Quadro Word: azioni, referente, organo, quando');
 ok(/★ Urgente/.test(q) && /In corso/.test(q) && /Una sede più grande/.test(q) && /Nessuna azione ancora|Anno 1 · mese da scegliere/.test(q) || /mese da scegliere/.test(q), 'Quadro Word: urgente, stati, mese da scegliere');
@@ -54,10 +54,10 @@ ok(!/SEGRETO-DELLE-CARTE/.test(t), 'le carte del giro non finiscono nel Word');
 // 6. Excel
 await P.click('#pn-sb-qua'); await sleep(400);
 const [dx] = await Promise.all([P.waitForEvent('download', {timeout:60000}), P.click('#pn-q-xl')]);
-ok(/^Quadro_.+\.xlsx$/.test(dx.suggestedFilename()), 'Excel: nome «Quadro_….xlsx» (' + dx.suggestedFilename() + ')');
+ok(/^Chi_cosa_quando_.+\.xlsx$/.test(dx.suggestedFilename()), 'Excel: nome «Chi_cosa_quando_….xlsx» (' + dx.suggestedFilename() + ')');
 const xb = fs.readFileSync(await dx.path()); fs.writeFileSync('/tmp/b2d_quadro.xlsx', xb);
 const xz = await JSZip.loadAsync(xb); const wbx = await xz.file('xl/workbook.xml').async('string');
-ok(/name="Quadro"/.test(wbx) && /name="Timeline"/.test(wbx) && /name="Verifiche"/.test(wbx), 'Excel: tre fogli (Quadro, Timeline, Verifiche)');
+ok(/name="Chi, cosa, quando"/.test(wbx) && /name="Timeline"/.test(wbx) && /name="Verifiche"/.test(wbx), 'Excel: tre fogli (Chi cosa quando, Timeline, Verifiche)');
 const ss = txt(await xz.file('xl/sharedStrings.xml').async('string'));
 ok(/Due serate con le famiglie/.test(ss) && /Un bivacco di Gruppo/.test(ss) && /Vera Vice/.test(ss) && /Più famiglie nel Gruppo & più serate <insieme>/.test(ss) && /Cercare un locale/.test(ss) && /mese da scegliere/.test(ss), 'Excel: obiettivi e azioni, anche con il mese da scegliere');
 ok(/Le serate non partono/.test(ss) && /Pesaro/.test(ss) && /Anno 1 · 2026-27/.test(ss), 'Excel: verifiche, Sezione e anni');
@@ -69,6 +69,6 @@ await ev(() => { PN.d.obiettivi = []; PN.d.azioni = []; pnRender && pnRender(); 
 await sleep(300);
 const [d2] = await Promise.all([P.waitForEvent('download', {timeout:40000}), ev(() => pnScarica())]);
 const z2 = await JSZip.loadAsync(fs.readFileSync(await d2.path())); const x2 = await z2.file('word/document.xml').async('string');
-ok(((x2.match(/<w:sectPr/g) || []).length) === 1 && !/Quadro del Piano/.test(txt(x2)), 'piano vuoto: Word senza sezione orizzontale');
+ok(((x2.match(/<w:sectPr/g) || []).length) === 1 && !/Chi, cosa, quando/.test(txt(x2)), 'piano vuoto: Word senza sezione orizzontale');
 const nerr = pa.errors.length; ok(nerr === 0, 'nessun errore di pagina (' + nerr + ')'); if(nerr) console.log(pa.errors.slice(0, 3).join(' | ').slice(0, 400));
 await br.close(); process.exit(summary() ? 1 : 0);

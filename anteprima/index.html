@@ -20089,7 +20089,7 @@ function pnMenu(){
   // Progetto di Clan: al posto degli «Spunti dalle Unità» le richieste dei Gruppi e le disponibilità del Clan (gli spunti già scritti restano visibili)
   const lavoro = [['ana', 'Dove siamo', 'eye'], ['obi', 'Obiettivi e azioni', 'check'], ['ver', 'Verifiche', 'clock']].concat(clan ? (coord && (SH.prof || {}).ruolo === 'coords' ? [['ric', 'Richieste dei Gruppi', 'users']] : []).concat([['dis', 'Disponibilità e prospettive', 'flag']].concat(d.spunti && d.spunti.length ? [['spu', 'Spunti dalle Unità', 'list']] : [])) : [['spu', 'Spunti dalle Unità', 'list']]);
   // ordine di lavoro (27/11): Panoramica, Ascolto, Dove siamo, Obiettivi, Verifiche
-  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal'], ['per', 'Chi fa parte', 'users']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Quadro', 'cal'], ['cal', 'Calendario', 'cal'], ['per', 'Chi fa parte', 'users']].concat(lavoro)}];
+  const G = g ? [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Chi, cosa, quando', 'cal'], ['cal', 'Calendario', 'cal'], ['per', 'Chi fa parte', 'users']]}] : [{g:'Il Piano', it:[['pan', 'Panoramica', 'dash'], ['qua', 'Chi, cosa, quando', 'cal'], ['cal', 'Calendario', 'cal'], ['per', 'Chi fa parte', 'users']].concat(lavoro)}];
   if(g){
     const it = [['g-giro', GI.g && GI.g.stato === 'aperto' ? 'Ascolto · aperto' : 'Ascolto', 'users']];
     if(GI.g){
@@ -20135,7 +20135,7 @@ const pnQOrgano = a => [(a.chi || []).map(k => pnLab(PN_CHI, k)).join(', '), a.g
 // la sezione orizzontale del Word: tabella colorata (chi fa cosa e quando) e timeline a celle colorate
 function pnQWordSez(){
   const D = dxLib(), p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), oggi = giOggi().slice(0, 7), W = 14570, BLU = '2C3E7A';
-  const kids = [dH3('Quadro del Piano'), dPara('Chi fa cosa e quando. Il colore è quello dell’area dell’obiettivo; nella timeline la barra è chiara se l’azione è da iniziare, media se è in corso, piena se è fatta. ◆ = azione una volta sola · ◇ = verifica · ▲ = Consiglio di Gruppo (se hai segnato le date).', {size:16, color:'555555', after:80})];
+  const kids = [dH3('Chi, cosa, quando'), dPara('Chi fa cosa e quando. Il colore è quello dell’area dell’obiettivo; nella timeline la barra è chiara se l’azione è da iniziare, media se è in corso, piena se è fatta. ◆ = azione una volta sola · ◇ = verifica · ▲ = Consiglio di Gruppo (se hai segnato le date).', {size:16, color:'555555', after:80})];
   kids.push(dPara(PN_AREE.filter(([k]) => R.some(r => (r.o.aree || [])[0] === k)).map(([k, t]) => new D.TextRun({text:'■ ' + t + '   ', font:MF, size:17, bold:true, color:pnHx(PN_COL[k][0])})), {after:120}));
   const W1 = [4300, 2000, 2300, 2200, 2200, 1570], TOP = D.VerticalAlign.TOP;
   const rows = [['Obiettivo e azioni', 'Referente', 'Organo', 'Quando', 'Si verifica', 'Stato'].map((h, i) => dCell(dPara(h, {size:16, bold:true, color:'FFFFFF', after:0}), {w:W1[i], fill:BLU, border:BLU}))];
@@ -20223,7 +20223,7 @@ function pnCartaTabella(L, titolo, kv){
 }
 async function pnQExcel(){
   if(!PN.p) return;
-  try{ clToast('Preparo l’Excel del Quadro…'); await pnFlush(); await needExcel(); }catch(e){ clToast('Impossibile preparare l’Excel: ' + (e && e.message || e)); return; }
+  try{ clToast('Preparo l’Excel di «Chi, cosa, quando»…'); await pnFlush(); await needExcel(); }catch(e){ clToast('Impossibile preparare l’Excel: ' + (e && e.message || e)); return; }
   try{
     const p = PN.p, {R, ev, sciolte, M, N, T} = pnQDati(), tit = PN.meta.titolo || PIANI_TIPI[p.tipo], sez = pnSezPiano(), oggi = giOggi().slice(0, 7), BLU = '2C3E7A';
     const wb = new ExcelJS.Workbook(); wb.creator = 'PEE CNGEI';
@@ -20233,9 +20233,9 @@ async function pnQExcel(){
       ws.mergeCells(2, 1, 2, cols); const d = ws.getCell(2, 1); d.value = [sez ? 'CNGEI ' + axSezFile(sez) : 'CNGEI', PIANI_TIPI[p.tipo], pnPeriodo(p), sub].filter(Boolean).join(' · '); d.font = F({size:9, italic:true, color:{argb:'FF666666'}}); d.alignment = {indent:1, vertical:'middle'}; };
     const setup = ws => { ws.pageSetup = {orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0, paperSize:9}; ws.views = [Object.assign({showGridLines:false}, ws.views && ws.views[0])]; };
     // foglio 1: il Quadro, una riga per azione (si può filtrare e ordinare)
-    const ws = wb.addWorksheet('Quadro'); setup(ws);
+    const ws = wb.addWorksheet('Chi, cosa, quando'); setup(ws);
     ws.columns = [{width:5}, {width:38}, {width:22}, {width:44}, {width:22}, {width:26}, {width:26}, {width:13}, {width:13}, {width:22}, {width:13}, {width:40}, {width:44}];
-    intest(ws, 13, 'Quadro del Piano · una riga per azione');
+    intest(ws, 13, 'Chi, cosa, quando · una riga per azione');
     const H = ['N.', 'Obiettivo', 'Aree', 'Azione', 'Referente', 'Organo', 'Quando', 'Inizio', 'Fine', 'Si verifica', 'Stato', 'Indicatore', 'Indirizzi del Piano nazionale'];
     H.forEach((h, i) => { const c = ws.getCell(4, i + 1); c.value = h; c.font = F({bold:true, color:{argb:'FFFFFFFF'}}); c.fill = fill(BLU); c.alignment = {vertical:'middle', wrapText:true}; c.border = box; }); ws.getRow(4).height = 22;
     let r = 5; const MD = k => k ? new Date(Date.UTC(Number(k.slice(0, 4)), Number(k.slice(5, 7)) - 1, 1)) : null;
@@ -20273,7 +20273,7 @@ async function pnQExcel(){
         [g.t, i + 1, o.testo || '(senza testo)', a.testo || '(senza testo)', (a.ref || '').trim(), pnQuando(a, p), pnVerTxt(a), pnLab(PN_STATI_AZ, a.stato || 'da_iniziare'), a.urgente ? '★' : ''].forEach((x, k) => { const c = wo.getCell(q, k + 1); c.value = x === '' ? null : x; c.font = F(k === 7 ? {bold:true, color:{argb:'FF' + dk}} : {}); c.border = box; c.alignment = {vertical:'top', wrapText:true, horizontal:k === 1 || k === 8 ? 'center' : 'left'}; }); q++; }));
       wo.autoFilter = {from:{row:4, column:1}, to:{row:Math.max(4, q - 1), column:9}}; wo.views = [{state:'frozen', ySplit:4, showGridLines:false}]; } }
     const buf = await rtXlsxBuf(wb);
-    axDownload(new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Quadro_' + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.xlsx'); clToast('Excel del Quadro pronto.');
+    axDownload(new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Chi_cosa_quando_' + tit.replace(/[^\w\-]+/g, '_').slice(0, 50) + '.xlsx'); clToast('Excel di «Chi, cosa, quando» pronto.');
   }catch(e){ clToast('Impossibile creare l’Excel: ' + (e && e.message || e)); }
 }
 window.pnQExcel = pnQExcel;
@@ -20510,7 +20510,7 @@ function pnQCorpo(){
   if(f.vista === 'org') return h + pnQPerOrgano(R);
   if(f.vista === 'tl') return h + pnQTimeline(R);
   if(f.vista === 'cal') return h + pnQCal(R);
-  h += `<div class="pn-tw"><table class="pn-qt" aria-label="Quadro degli obiettivi e delle azioni"><thead><tr><th scope="col">Obiettivo e azioni</th><th scope="col">Referente</th><th scope="col">Organo</th><th scope="col">Quando</th><th scope="col">Si verifica</th><th scope="col">Stato</th></tr></thead>`;
+  h += `<div class="pn-tw"><table class="pn-qt" aria-label="Chi, cosa, quando: obiettivi e azioni"><thead><tr><th scope="col">Obiettivo e azioni</th><th scope="col">Referente</th><th scope="col">Organo</th><th scope="col">Quando</th><th scope="col">Si verifica</th><th scope="col">Stato</th></tr></thead>`;
   R.forEach(({o, i, az}) => {
     const c = pnColOb(o);
     h += `<tbody class="pn-qo" style="--c:${c[0]};--p:${c[1]}"><tr class="pn-qoh"><th scope="colgroup" colspan="6"><span class="pn-qn">${i + 1}</span><a href="#pn-ob-${E(o.id)}" onclick="pnVai('${E(o.id)}');return false">${E(o.testo || '(senza testo)')}</a><span class="pn-qar">${(o.aree || []).map(pnAreaChip).join('')}${o.ricadute ? '<span class="pn-ac" style="--c:#6B6B64;--p:#F0F0EA">Ricadute educative</span>' : ''}</span></th></tr>`;
@@ -20643,7 +20643,7 @@ function pnQuadroHTML(){
   const E = esc, d = PN.d, f = PN.qf || (PN.qf = {});
   const refs = [...new Set(d.azioni.map(a => (a.ref || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
   const sel = (k, lab, opts) => `<div><label class="sh-lb" for="pn-qf-${k}">${lab}</label><select class="sh-in" id="pn-qf-${k}" onchange="pnQf('${k}',this.value)">${opts.map(([v, t]) => `<option value="${E(v)}"${(f[k] || '') === v ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>`;
-  return `<section class="pn-card" id="pn-q-card" aria-labelledby="pn-q-t"><h2 class="pn-h" id="pn-q-t">Quadro del Piano</h2>
+  return `<section class="pn-card" id="pn-q-card" aria-labelledby="pn-q-t"><h2 class="pn-h" id="pn-q-t">Chi, cosa, quando</h2>
     <p class="sh-hint" style="margin:0">Il piano da guardare: chi fa cosa, quando, come si verifica. Si scrive in «Obiettivi e azioni»: un clic su una riga porta lì.</p>
     <div class="pn-seg" role="group" aria-label="Come guardare il quadro">${PN_VISTE.map(([k, t]) => `<button type="button" class="pn-segb${(f.vista || 'tab') === k ? ' on' : ''}" id="pn-qv-${k}" aria-pressed="${(f.vista || 'tab') === k}" onclick="pnQf('vista','${k}')">${t}</button>`).join('')}${d.obiettivi.length ? `<button type="button" class="sh-btn sm gh" id="pn-q-xl" style="margin-left:auto" onclick="pnQExcel()">Scarica in Excel</button>` : ''}</div>
     <div class="pn-qf">${sel('ref', 'Referente', [['', 'Tutti']].concat(refs.map(r => [r, r]), [['__no', 'Senza referente']]))}${sel('chi', 'Organo', [['', 'Tutti']].concat(PN_CHI))}${sel('area', 'Area', [['', 'Tutte']].concat(PN_AREE))}${sel('stato', 'Stato', [['', 'Tutti']].concat(PN_STATI_AZ))}
