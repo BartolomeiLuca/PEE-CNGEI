@@ -358,7 +358,7 @@ export class FakeDB {
     if(tipo === 'staff') return ['cds', 'vcds', 'coords'].includes(pr.ruolo) || (['cu', 'vcu', 'senior', 'cg', 'vcg'].includes(pr.ruolo) && !!g);
     if(tipo === 'cdg') return ['cg', 'vcg'].includes(pr.ruolo) && !!g;
     if(tipo === 'rica' || tipo === 'cosez') return ['cds', 'vcds'].includes(pr.ruolo);
-    if(tipo === 'cos') return ['cds', 'pres', 'tes', 'cos'].includes(pr.ruolo) || f;
+    if(tipo === 'cos') return ['cds', 'pres'].includes(pr.ruolo);   // 28/11 sera: il COS lo scrivono solo Commissario e Presidente
     return false; }
   verbPrima(uid, r, old){
     const pr = this.t.pee_profili.find(x => x.user_id === uid), u = this.users.find(x => x.id === uid);
@@ -403,9 +403,14 @@ export class FakeDB {
     if(this.sqlVerb === false) return this.err('PGRST202', 'Could not find the function public.pee_verbali_lista');
     const norm = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
     const me = this.t.pee_profili.find(x => x.user_id === uid); const m = (me && me.ruolo) || '';
-    const cos = ['cds', 'pres', 'tes', 'cos'].includes(m) || !!(me && me.dashboard && me.dashboard.cos && me.dashboard.cos.membro === true);
     if(!me) return this.err('P0001', 'I verbali li leggono gli iscritti di una Sezione.');
     const sez = norm(me.sezione), gr = norm(me.gruppo); if(!sez) return this.err('P0001', 'Nel tuo profilo manca la Sezione.');
+    // COS: per ruolo, oppure email nella tabella COS di un Progetto di Sezione del Commissario/Presidente (la vecchia spunta vale solo se la Sezione non ha la tabella)
+    const mu = this.users.find(x => x.id === uid), mail = String((mu && mu.email) || '').trim().toLowerCase();
+    const piani = (this.t.pee_piani || []).filter(pi => pi.tipo === 'sezione' && Array.isArray(((pi.data || {}).persone || {}).cos) && (() => { const o = this.t.pee_profili.find(x => x.user_id === pi.owner_id); return !!o && ['cds', 'pres'].includes(o.ruolo) && norm(o.sezione) === sez; })());
+    const inTab = piani.some(pi => pi.data.persone.cos.some(e => e && typeof e === 'object' && String(e.mail || '').trim().toLowerCase() === mail && mail));
+    const tabEsiste = piani.some(pi => pi.data.persone.cos.some(e => e && typeof e === 'object' && String(e.mail || '').trim()));
+    const cos = ['cds', 'pres', 'tes', 'cos'].includes(m) || inTab || (!!(me.dashboard && me.dashboard.cos && me.dashboard.cos.membro === true) && !tabEsiste);
     const vede = v => { if(v.owner_id === uid) return true; if(v.stato === 'bozza' || norm(v.sezione) !== sez) return false; const a = v.autore_ruolo;
       if(v.tipo === 'staff') return (['cu', 'vcu', 'senior'].includes(a) && ((['cg', 'vcg'].includes(m) && gr && gr === norm(v.gruppo)) || ['cds', 'vcds'].includes(m))) || (['cg', 'vcg', 'coords'].includes(a) && ['cds', 'vcds'].includes(m)) || (['cds', 'vcds'].includes(a) && m === 'pres');
       if(v.tipo === 'cdg') return (['cu', 'vcu', 'senior', 'cg', 'vcg'].includes(m) && gr && gr === norm(v.gruppo)) || ['cds', 'vcds'].includes(m);

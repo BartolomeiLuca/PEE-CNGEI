@@ -1,0 +1,47 @@
+// 28/11 sera: nei verbali «Chi c'era» e «Chi» delle azioni pescano dalle tabelle di «Chi fa parte».
+import { FakeDB, serve, launch, person, loginAs, sleep, ok, summary } from './harness.mjs';
+process.env.SITE = process.env.SITE || '/tmp/site_sh';
+const base = (await serve()) + 'anteprima/';
+const br = await launch(process.argv[2] || 'chromium'); const db = new FakeDB();
+const U = {}; const prof2 = (k, nome, ruolo, o) => { o = o || {}; U[k] = db.addUser(k + '@x.it', 'password123', nome); db.t.pee_profili.push({user_id:U[k].id, nome, ruolo, branca:ruolo === 'cu' ? 'E' : '', sezione:'Pesaro', gruppo:['cg', 'cu'].includes(ruolo) ? 'Pesaro 1' : '', area_rcdf:'altoadriatico'}); };
+prof2('cg', 'Carla CG', 'cg'); prof2('cu', 'Ugo CU', 'cu'); prof2('cds', 'Dino Commissario', 'cds');
+const mk = async k => { const pa = await person(br, db, {ctx:{viewport:{width:1280, height:900}}}); await pa.page.clock.setFixedTime(new Date('2026-12-10T10:00:00+01:00')); await loginAs(pa.page, base, U[k]); await sleep(2200); return {P:pa.page, ev:(f, a) => pa.page.evaluate(f, a)}; };
+const errs = [];
+const piano = (owner, tipo, persone) => db.t.pee_piani.push({id:'p-' + tipo, owner_id:U[owner].id, owner_email:owner + '@x.it', tipo, titolo:'Piano', anno_inizio:2026, durata:3, stato:'bozza', archivio_id:null, rev:1, updated_at:new Date().toISOString(), created_at:new Date().toISOString(), updated_by_nome:'', data:{v:1, persone}});
+piano('cg', 'gruppo', {cdg:[{id:'a', nome:'Bea Verdi', ruolo:'Vice Capo Unità', mail:'bea@x.it'}, {id:'b', nome:'Gino Neri', ruolo:'Senior in Servizio', mail:''}]});
+piano('cds', 'sezione', {cosez:[{id:'c', nome:'Livia Blu', ruolo:'Vice Commissario', mail:'livia@x.it'}], cos:[{id:'d', nome:'Piero Presidente', ruolo:'Presidente', mail:'piero@x.it'}, {id:'e', nome:'Tea Tesoriera', ruolo:'Tesoriere', mail:''}]});
+// il Capo Unità ha autorizzato il Capo Gruppo: il suo staff entra nel Consiglio di Gruppo
+db.t.pee_archivi.push({id:'a-cu', user_id:U.cu.id, anno:2026, titolo:'Reparto Aquile', updated_at:new Date().toISOString(), meta:{mode:'giovani', nome:'Reparto Aquile', fascia:'E'}, data:{scheda:{pp:{staffTab:[{ruolo:'CU', nome:'Ugo CU', mail:'cu@x.it'}, {ruolo:'VCU', nome:'Bea Verdi', mail:'BEA@x.it'}]}}}});
+db.t.pee_staff_consensi.push({owner_id:U.cu.id, email:'cg@x.it', created_at:new Date().toISOString()});
+const apri = async S => { await S.ev(() => verbOpen()); await sleep(1200); };
+const chips = S => S.ev(() => [...document.querySelectorAll('#vb-pers .pn-chip')].map(b => b.textContent));
+const G = await mk('cg'); G.P.on('pageerror', e => errs.push('cg: ' + e.message));
+await apri(G); await G.ev(() => verbNuovo()); await sleep(600); await G.ev(() => verbSet('tipo', 'cdg', true)); await sleep(1800);
+let c = await chips(G);
+ok(JSON.stringify(c) === JSON.stringify(['Bea Verdi', 'Gino Neri', 'Ugo CU', 'Tutti presenti']), 'Consiglio di Gruppo: persone della tabella + staff delle Unità, senza doppioni · ' + JSON.stringify(c));
+await G.ev(() => verbPersTocca(0)); 
+ok(await G.ev(() => document.getElementById('vb-partecipanti').value === 'Bea Verdi' && SH._verb.ed.partecipanti === 'Bea Verdi' && document.querySelector('#vb-pers .pn-chip').getAttribute('aria-pressed') === 'true'), 'un tocco: il nome entra in «Chi c’era»');
+await G.ev(() => { const t = document.getElementById('vb-partecipanti'); t.value += ', Ospite Esterno'; verbSet('partecipanti', t.value); verbPersTocca(1); });
+ok(await G.ev(() => SH._verb.ed.partecipanti === 'Bea Verdi, Ospite Esterno, Gino Neri'), 'il testo scritto a mano resta, il nome si aggiunge in coda · ' + await G.ev(() => SH._verb.ed.partecipanti));
+await G.ev(() => verbPersTocca(0));
+ok(await G.ev(() => SH._verb.ed.partecipanti === 'Ospite Esterno, Gino Neri'), 'secondo tocco: il nome si toglie, il resto no · ' + await G.ev(() => SH._verb.ed.partecipanti));
+await G.ev(() => verbPersTutti());
+ok(await G.ev(() => ['Bea Verdi', 'Gino Neri', 'Ugo CU', 'Ospite Esterno'].every(n => SH._verb.ed.partecipanti.includes(n))), '«Tutti presenti» aggiunge chi manca');
+await G.ev(() => verbAzAdd()); await sleep(300);
+ok(await G.ev(() => document.getElementById('vb-az-w-0').getAttribute('list') === 'vb-pers-dl' && document.querySelectorAll('#vb-pers-dl option').length === 3), 'azioni: «Chi» propone i nomi');
+await G.ev(() => verbAnnulla()); await sleep(200);
+const C = await mk('cds'); C.P.on('pageerror', e => errs.push('cds: ' + e.message));
+await apri(C); await C.ev(() => verbNuovo()); await sleep(1500);
+await C.ev(() => verbSet('tipo', 'cos', true)); await sleep(1500);
+c = await chips(C); ok(JSON.stringify(c) === JSON.stringify(['Piero Presidente', 'Tea Tesoriera', 'Tutti presenti']), 'COS: persone della tabella COS · ' + JSON.stringify(c));
+await C.ev(() => verbSet('tipo', 'cosez', true)); await sleep(1500);
+c = await chips(C); ok(JSON.stringify(c) === JSON.stringify(['Livia Blu', 'Tutti presenti']), 'Consiglio di Sezione: persone della tabella CoSez · ' + JSON.stringify(c));
+await C.ev(() => verbSet('tipo', 'rica', true)); await sleep(800);
+ok((await chips(C)).length === 0, 'RiCa: nessun elenco (non c’è una tabella)');
+// salvataggio con i nomi scelti
+await C.ev(() => { verbSet('tipo', 'cos', true); }); await sleep(1500);
+await C.ev(() => { verbSet('titolo', 'COS di prova'); verbPersTutti(); }); 
+await C.ev(() => { window.confirm = () => true; }); await C.P.click('#vb-salva'); await sleep(1500);
+ok(db.t.pee_verbali.length === 1 && db.t.pee_verbali[0].partecipanti === 'Piero Presidente, Tea Tesoriera', 'salvato con i nomi scelti');
+ok(errs.length === 0, 'nessun errore di pagina · ' + errs.join(' | '));
+await br.close(); process.exit(summary() ? 1 : 0);

@@ -123,5 +123,21 @@ await S.ev(() => verbOpen()); await sleep(1200);
 ok(await S.ev(() => /I verbali che puoi leggere/i.test(document.body.innerText)), 'Senior: apre la pagina dei verbali');
 ok(!/Consiglio di Gruppo di dicembre/.test(await body(S)) && !/Staff di giugno/.test(await body(S)), 'Senior: non legge CdG né staff di Unità');
 await S.pa.ctx.close();
+// ── 28/11 sera: COS dalla tabella «Chi fa parte» del Progetto di Sezione; Tesoriere e membri in sola lettura ──
+prof2('tes', 'Tea Tesoriera', 'tes');
+{ const o = db.t.pee_verbali.find(v => v.tipo === 'cos'); db.t.pee_verbali.push(Object.assign({}, o, {id:'v-cos-riserv', titolo:'COS riservato di gennaio', sez:false, stato:'condiviso', data:'2027-01-14'})); }
+const TS = await mk('tes'); await apri(TS);
+ok(await TS.ev(() => JSON.stringify(verbTipiPer(SH.prof)) === '[]'), 'Tesoriere: non scrive verbali');
+ok(/COS riservato di gennaio/.test(await body(TS)) && !(await TS.ev(() => !!document.querySelector('[onclick="verbNuovo()"]'))), 'Tesoriere: legge il COS riservato, senza pulsante per scriverne uno');
+const V2 = await mk('vol'); await apri(V2);
+ok(/COS riservato di gennaio/.test(await body(V2)), 'prima della tabella: la spunta del profilo basta');
+await V2.pa.ctx.close();
+db.t.pee_piani.push({id:'pp-1', owner_id:U.cds.id, tipo:'sezione', titolo:'Progetto di Sezione', data:{persone:{cos:[{id:'a', nome:'Sara Senior', ruolo:'Consigliera', mail:' SNR@x.it '}]}}});
+await sleep(500);
+const SN = await mk('snr'); await apri(SN);
+ok(/COS riservato di gennaio/.test(await body(SN)), 'persona nella tabella COS: legge il COS riservato');
+ok(await SN.ev(() => JSON.stringify(verbTipiPer(SH.prof)) === '[]'), 'persona nella tabella COS: legge soltanto');
+const V3 = await mk('vol'); await apri(V3);
+ok(!/COS riservato di gennaio/.test(await body(V3)), 'con la tabella compilata la vecchia spunta del profilo non basta più');
 ok(errs.length === 0, 'nessun errore di pagina · ' + errs.join(' | '));
 await br.close(); process.exit(summary() ? 1 : 0);

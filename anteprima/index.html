@@ -19085,7 +19085,7 @@ function verbTipiPer(p){
   if(['cds', 'vcds', 'coords'].includes(r) || (['cu', 'vcu', 'senior', 'cg', 'vcg'].includes(r) && gr)) L.push('staff');
   if(['cg', 'vcg'].includes(r) && gr) L.push('cdg');
   if(['cds', 'vcds'].includes(r)) L.push('rica', 'cosez');
-  if(cosMembro(p)) L.push('cos');
+  if(['cds', 'pres'].includes(r)) L.push('cos');   // il COS lo scrivono Commissario e Presidente; Tesoriere e membri lo leggono
   return L;
 }
 const verbTipoLab = (tipo, ruolo) => tipo !== 'staff' ? (VERB_TIPI[tipo] || 'Verbale') : (['cu', 'vcu', 'senior'].includes(ruolo) ? 'Staff di Unità' : ['cg', 'vcg'].includes(ruolo) ? 'Staff di Gruppo' : ruolo === 'coords' ? 'Staff del Clan' : ['cds', 'vcds'].includes(ruolo) ? 'Staff del Commissario' : 'Riunione di staff');
@@ -19094,7 +19094,7 @@ function verbChiVede(tipo, ruolo, sez){
   if(tipo === 'cdg') return 'tutti gli adulti del Gruppo, il Commissario e il Vice Commissario';
   if(tipo === 'rica') return 'tutti i Capi della Sezione, il Coordinatore Senior, il Commissario e il Vice Commissario';
   if(tipo === 'cosez') return 'i Capi Gruppo e i Vice, il Coordinatore Senior, il Commissario e il Vice Commissario';
-  return sez ? 'tutti gli adulti della Sezione' : 'i membri del Comitato di Sezione';
+  return sez ? 'tutti gli adulti della Sezione' : 'il Commissario, il Presidente, il Tesoriere e le persone scritte nel COS (Progetto di Sezione → Chi fa parte), che lo leggono soltanto';
 }
 const verbModoTxt = m => m === 'online' ? 'Online' : 'In presenza';
 const VERB = {
@@ -19108,6 +19108,45 @@ const VERB = {
     const {data, error} = await CL.sb.from('pee_verbali').insert(row).select('id').single(); if(error) throw error; return data.id;
   },
   async elimina(id){ const {error} = await CL.sb.from('pee_verbali').delete().eq('id', id); if(error) throw error; const c = await CL.sb.from('pee_verbali').select('id').eq('id', id).maybeSingle(); if(c.data) throw Object.assign(new Error('row-level security'), {code:'42501'}); }
+};
+// «Chi c’era» e «Chi» delle azioni: le persone dell'organo, dalle tabelle di «Chi fa parte» (Piano di Gruppo / Progetto di Sezione) e, per il Consiglio di Gruppo, dallo staff delle Unità autorizzate
+const VERB_PERS_ORG = {cdg:['gruppo', 'cdg'], cosez:['sezione', 'cosez'], cos:['sezione', 'cos']};
+async function verbPersone(tipo){
+  const out = [], add = r => { const nome = String(r.nome || '').trim(), mail = String(r.mail || '').trim().toLowerCase(); if(!nome) return;
+    if(out.some(x => x.nome.toLowerCase() === nome.toLowerCase() || (mail && x.mail === mail))) return; out.push({nome, ruolo:String(r.ruolo || '').trim(), mail}); };
+  if(tipo === 'staff'){ try{ ((typeof staffTab === 'function' && typeof scheda !== 'undefined' && scheda && scheda.pp) ? staffTab() : []).forEach(add); }catch(e){} return out; }
+  const o = VERB_PERS_ORG[tipo]; if(!o) return out;
+  try{
+    const el = (await PIANI.elenco(o[0])).filter(x => x.owner_id === (CL.user || {}).id).concat((await PIANI.elenco(o[0])).filter(x => x.owner_id !== (CL.user || {}).id));
+    if(el.length){ const pi = await PIANI.apri(el[0].id); (((pi && pi.data) || {}).persone || {})[o[1]] && (pi.data.persone[o[1]] || []).forEach(add); }
+  }catch(e){}
+  if(tipo === 'cdg'){ try{ (await PERS.visibili()).filter(u => u.unita).forEach(u => (u.staff || []).filter(r => !/^(CG|Capo Gruppo)$/i.test(String(r.ruolo || '').trim())).forEach(add)); }catch(e){} }
+  return out;
+}
+async function verbPersCarica(){
+  const V = SH._verb, e = V && V.ed; if(!e) return; const t = e.tipo; V.pers = V.pers || {};
+  if(V.pers[t] === undefined){ V.pers[t] = null; try{ V.pers[t] = await verbPersone(t); }catch(x){ V.pers[t] = []; } }
+  if(SH._verb && SH._verb.ed && SH._verb.ed.tipo === t) verbPersDraw();
+}
+const verbNomeIn = (txt, nome) => new RegExp('(^|[\\s,;(])' + String(nome).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?=$|[\\s,;)])', 'i').test(String(txt || ''));
+function verbPersHTML(){
+  const V = SH._verb, e = V && V.ed, L = (e && V.pers && V.pers[e.tipo]) || []; if(!L.length) return '';
+  return `<div class="sh-hint" style="margin:0 0 4px">Tocca un nome per metterlo tra i presenti (di nuovo per toglierlo). Vengono dalla tabella «Chi fa parte».</div><div class="pn-chips" role="group" aria-label="Persone dell’organo">${L.map((r, i) => `<button type="button" class="pn-chip sm${verbNomeIn(e.partecipanti, r.nome) ? ' on' : ''}" aria-pressed="${verbNomeIn(e.partecipanti, r.nome) ? 'true' : 'false'}" onclick="verbPersTocca(${i})">${esc(r.nome)}</button>`).join('')}<button type="button" class="pn-chip sm" onclick="verbPersTutti()">Tutti presenti</button></div>`;
+}
+function verbPersDraw(){
+  const b = $('vb-pers'); if(b) b.innerHTML = verbPersHTML();
+  const V = SH._verb, e = V && V.ed, L = (e && V.pers && V.pers[e.tipo]) || [], d = $('vb-pers-dl'); if(d) d.innerHTML = L.map(r => `<option value="${esc(r.nome)}">`).join('');
+}
+window.verbPersTocca = function(i){
+  const V = SH._verb, e = V && V.ed, r = e && V.pers && (V.pers[e.tipo] || [])[i]; if(!r) return; let t = String(e.partecipanti || '');
+  if(verbNomeIn(t, r.nome)) t = t.replace(new RegExp('(^|[\\s,;(])' + r.nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?=$|[\\s,;)])', 'i'), '$1').replace(/\s*,\s*,/g, ',').replace(/^\s*,\s*|\s*,\s*$/g, '').replace(/\s{2,}/g, ' ').trim();
+  else t = (t.trim() ? t.replace(/[,\s]+$/, '') + ', ' : '') + r.nome;
+  e.partecipanti = t.slice(0, 4000); e.sporco = true; const ta = $('vb-partecipanti'); if(ta){ ta.value = e.partecipanti; try{ pnGrow(ta); }catch(x){} } verbPersDraw();
+};
+window.verbPersTutti = function(){
+  const V = SH._verb, e = V && V.ed, L = (e && V.pers && V.pers[e.tipo]) || []; if(!L.length) return; let t = String(e.partecipanti || '').trim();
+  L.forEach(r => { if(!verbNomeIn(t, r.nome)) t = (t ? t.replace(/[,\s]+$/, '') + ', ' : '') + r.nome; });
+  e.partecipanti = t.slice(0, 4000); e.sporco = true; const ta = $('vb-partecipanti'); if(ta){ ta.value = e.partecipanti; try{ pnGrow(ta); }catch(x){} } verbPersDraw();
 };
 function verbErr(e){
   const m = String(e && (e.message || e.code) || e), c = String(e && e.code || '');
@@ -19174,8 +19213,8 @@ function verbEdHTML(){
     <div><label class="sh-lb" for="vb-titolo">Titolo</label><input class="sh-in" id="vb-titolo" maxlength="160" placeholder="${E(verbTipoLab(e.tipo, p.ruolo))} del …" value="${E(e.titolo || '')}" oninput="verbSet('titolo',this.value)"></div>
     <fieldset class="pn-fs" style="border:0;padding:0;margin:0"><legend class="sh-lb">Come ci si è incontrati</legend><div class="pn-chips"><label class="pn-chip${e.modalita === 'presenza' ? ' on' : ''}"><input type="radio" name="vb-modo" id="vb-modo-p" value="presenza" ${e.modalita === 'presenza' ? 'checked' : ''} onchange="verbSet('modalita','presenza',true)">In presenza</label><label class="pn-chip${e.modalita === 'online' ? ' on' : ''}"><input type="radio" name="vb-modo" id="vb-modo-o" value="online" ${e.modalita === 'online' ? 'checked' : ''} onchange="verbSet('modalita','online',true)">Online</label></div></fieldset>
     <div><label class="sh-lb" for="vb-luogo">${e.modalita === 'online' ? 'Piattaforma o link' : 'Dove'}</label><input class="sh-in" id="vb-luogo" maxlength="200" placeholder="${e.modalita === 'online' ? 'es. Meet, Zoom' : 'es. Sede del Gruppo'}" value="${E(e.luogo || '')}" oninput="verbSet('luogo',this.value)"></div>
-    ${ta('partecipanti', 'Chi c’era', 2, 'Nomi degli adulti presenti e di chi era assente')}${ta('odg', 'Ordine del giorno', 3, 'Un punto per riga')}${ta('sintesi', 'Cosa è emerso', 6, 'La discussione in sintesi')}${ta('decisioni', 'Decisioni', 3, 'Cosa si è deciso')}
-    <div><h3 style="margin:0 0 6px;font-size:15px">Azioni</h3>${(e.azioni || []).map((a, i) => `<div class="vb-azr"><div><label class="sh-lb" for="vb-az-c-${i}">Cosa</label><input class="sh-in" id="vb-az-c-${i}" maxlength="400" value="${E(a.cosa || '')}" oninput="verbAz(${i},'cosa',this.value)"></div><div><label class="sh-lb" for="vb-az-w-${i}">Chi</label><input class="sh-in" id="vb-az-w-${i}" maxlength="120" value="${E(a.chi || '')}" oninput="verbAz(${i},'chi',this.value)"></div><div><label class="sh-lb" for="vb-az-e-${i}">Entro</label><input class="sh-in" type="date" id="vb-az-e-${i}" value="${E(a.entro || '')}" onchange="verbAz(${i},'entro',this.value)"></div><button class="pn-ib" type="button" aria-label="Elimina l’azione ${i + 1}" onclick="verbAzDel(${i})">✕</button></div>`).join('')}<button class="pn-sug" type="button" id="vb-az-add" onclick="verbAzAdd()">+ Azione</button></div>
+    ${ta('partecipanti', 'Chi c’era', 2, 'Nomi degli adulti presenti e di chi era assente')}<div id="vb-pers">${verbPersHTML()}</div><datalist id="vb-pers-dl">${(((V.pers || {})[e.tipo]) || []).map(r => `<option value="${E(r.nome)}">`).join('')}</datalist>${ta('odg', 'Ordine del giorno', 3, 'Un punto per riga')}${ta('sintesi', 'Cosa è emerso', 6, 'La discussione in sintesi')}${ta('decisioni', 'Decisioni', 3, 'Cosa si è deciso')}
+    <div><h3 style="margin:0 0 6px;font-size:15px">Azioni</h3>${(e.azioni || []).map((a, i) => `<div class="vb-azr"><div><label class="sh-lb" for="vb-az-c-${i}">Cosa</label><input class="sh-in" id="vb-az-c-${i}" maxlength="400" value="${E(a.cosa || '')}" oninput="verbAz(${i},'cosa',this.value)"></div><div><label class="sh-lb" for="vb-az-w-${i}">Chi</label><input class="sh-in" id="vb-az-w-${i}" list="vb-pers-dl" maxlength="120" value="${E(a.chi || '')}" oninput="verbAz(${i},'chi',this.value)"></div><div><label class="sh-lb" for="vb-az-e-${i}">Entro</label><input class="sh-in" type="date" id="vb-az-e-${i}" value="${E(a.entro || '')}" onchange="verbAz(${i},'entro',this.value)"></div><button class="pn-ib" type="button" aria-label="Elimina l’azione ${i + 1}" onclick="verbAzDel(${i})">✕</button></div>`).join('')}<button class="pn-sug" type="button" id="vb-az-add" onclick="verbAzAdd()">+ Azione</button></div>
     <div style="max-width:260px"><label class="sh-lb" for="vb-prossima">Prossima riunione</label><input class="sh-in" type="date" id="vb-prossima" value="${E(e.prossima || '')}" onchange="verbSet('prossima',this.value)"></div>
     ${e.tipo === 'cos' ? `<label class="pn-chip sm${e.sez ? ' on' : ''}"><input type="checkbox" id="vb-sez" ${e.sez ? 'checked' : ''} onchange="verbSet('sez',this.checked,true)">Visibile a tutta la Sezione</label>` : ''}
     <div><label class="sh-lb" for="vb-stato">Stato</label><select class="sh-in" id="vb-stato" onchange="verbSet('stato',this.value,true)">${VERB_STATI.map(([k, t]) => `<option value="${k}"${e.stato === k ? ' selected' : ''}>${E(t)}</option>`).join('')}</select></div>
@@ -19195,9 +19234,10 @@ window.verbApri = function(id){ const V = SH._verb; const v = V && V.rows.find(x
 window.verbNuovo = function(){
   const V = SH._verb, p = SH.prof || {}, t = verbTipiPer(p); if(!V || !t.length) return;
   V.det = null; V.ed = {id:'', tipo:t[0], titolo:'', data:giOggi(), modalita:'presenza', luogo:'', partecipanti:'', odg:'', sintesi:'', decisioni:'', azioni:[], prossima:'', stato:'bozza', approvato_il:'', sez:false}; verbDraw(); window.scrollTo(0, 0);
+  verbPersCarica();
   const f = $('vb-titolo'); if(f) f.focus();
 };
-window.verbModifica = function(id){ const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v || !v.mio || v.stato === 'approvato') return; V.det = null; V.ed = JSON.parse(JSON.stringify(Object.assign({}, v, {prossima:v.prossima || '', approvato_il:v.approvato_il || '', azioni:Array.isArray(v.azioni) ? v.azioni : []}))); verbDraw(); window.scrollTo(0, 0); };
+window.verbModifica = function(id){ const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v || !v.mio || v.stato === 'approvato') return; V.det = null; V.ed = JSON.parse(JSON.stringify(Object.assign({}, v, {prossima:v.prossima || '', approvato_il:v.approvato_il || '', azioni:Array.isArray(v.azioni) ? v.azioni : []}))); verbDraw(); window.scrollTo(0, 0); verbPersCarica(); };
 window.verbRiapri = async function(id){
   const V = SH._verb; const v = V && V.rows.find(x => x.id === id); if(!v || !v.mio || v.stato !== 'approvato') return;
   if(!confirm('Riaprire il verbale approvato? Tornerà «condiviso» e si potrà modificare.')) return;
@@ -19218,6 +19258,7 @@ window.verbSet = function(k, v, redraw){
   if(redraw){ const s = window.scrollY; verbDraw(); window.scrollTo(0, s); const f = $({tipo:'vb-tipo', modalita:'vb-modo-' + (v === 'online' ? 'o' : 'p'), sez:'vb-sez', stato:'vb-stato'}[k] || ''); if(f) f.focus(); }
   else if(k === 'sez'){ const c = $('vb-chi'); if(c) c.textContent = 'Lo leggono: ' + verbChiVede(e.tipo, (SH.prof || {}).ruolo, e.sez) + '. Finché è «bozza» lo vedi solo tu.'; }
 };
+window.verbSet = (f => function(k, v, redraw){ f(k, v, redraw); if(k === 'tipo') verbPersCarica(); })(window.verbSet);
 window.verbAz = function(i, k, v){ const e = SH._verb && SH._verb.ed; if(!e || !e.azioni[i] || !['cosa', 'chi', 'entro'].includes(k)) return; if(k === 'entro') v = /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : ''; e.azioni[i][k] = v; e.sporco = true; };
 window.verbAzAdd = function(){ const e = SH._verb && SH._verb.ed; if(!e || e.azioni.length >= 100) return; e.azioni.push({cosa:'', chi:'', entro:''}); e.sporco = true; const s = window.scrollY; verbDraw(); window.scrollTo(0, s); const f = $('vb-az-c-' + (e.azioni.length - 1)); if(f) f.focus(); };
 window.verbAzDel = function(i){ const e = SH._verb && SH._verb.ed; if(!e) return; e.azioni.splice(i, 1); e.sporco = true; const s = window.scrollY; verbDraw(); window.scrollTo(0, s); };
